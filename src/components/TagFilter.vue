@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useEventStore } from '../stores/events'
+import { useNationStore } from '../stores/nations'
 
 const events = useEventStore()
+const nations = useNationStore()
 const active = (t: string) => events.filter.tags?.includes(t)
 </script>
 
@@ -13,6 +15,7 @@ const active = (t: string) => events.filter.tags?.includes(t)
       :class="{ active: active(t) }"
       @click="events.toggleTag(t)"
     >{{ t }}</button>
+    <button :class="{ active: nations.showExtremes }" @click="nations.toggleExtremes()">borders ±</button>
     <button v-if="events.filter.parent" class="active" @click="events.setParentFilter()">
       family: {{ events.byId(events.filter.parent)?.name }} ✕
     </button>
