@@ -2,19 +2,14 @@
 </script>
 
 <template>
-  <header>
-    <nav>
-      <RouterLink to="/">Home</RouterLink>
-    </nav>
-  </header>
-  <main>
-    <RouterView />
-  </main>
+  <RouterView />
 </template>
 
 <style>
-body {
+html, body, #app {
   margin: 0;
+  height: 100%;
+  background: #000;
   font-family: system-ui, sans-serif;
 }
 </style>
