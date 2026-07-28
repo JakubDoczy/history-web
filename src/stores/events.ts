@@ -16,6 +16,8 @@ export const useEventStore = defineStore('events', {
     },
     selected: (s) => s.all.find((e) => e.id === s.selectedId),
     allTags: (s) => [...new Set(s.all.flatMap((e) => e.tags))].sort(),
+    childrenOf: (s) => (id: string) => s.all.filter((e) => e.parent === id),
+    byId: (s) => (id: string) => s.all.find((e) => e.id === id),
   },
   actions: {
     select(id?: string) {
@@ -24,6 +26,12 @@ export const useEventStore = defineStore('events', {
     toggleTag(tag: string) {
       const tags = this.filter.tags ?? []
       this.filter.tags = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag]
+    },
+    setParentFilter(id?: string) {
+      this.filter.parent = id
+    },
+    clearFilter() {
+      this.filter = {}
     },
   },
 })

@@ -13,6 +13,9 @@ export interface HistoricalEvent {
   tags: string[]
   parent?: string // id of parent event
   summary: string
+  /** Optional rich body (markdown subset, see lib/richtext.ts). */
+  body?: string
+  image?: { url: string; caption?: string }
   links?: { label: string; url?: string; event?: string }[]
 }
 

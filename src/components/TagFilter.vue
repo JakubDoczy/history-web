@@ -13,6 +13,9 @@ const active = (t: string) => events.filter.tags?.includes(t)
       :class="{ active: active(t) }"
       @click="events.toggleTag(t)"
     >{{ t }}</button>
+    <button v-if="events.filter.parent" class="active" @click="events.setParentFilter()">
+      family: {{ events.byId(events.filter.parent)?.name }} ✕
+    </button>
   </div>
 </template>
 
@@ -24,7 +27,7 @@ const active = (t: string) => events.filter.tags?.includes(t)
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  max-width: 40vw;
+  max-width: 45vw;
 }
 button {
   background: rgba(10, 15, 25, 0.85);
