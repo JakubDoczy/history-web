@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import GlobeView from '../components/GlobeView.vue'
+import TimelineBar from '../components/TimelineBar.vue'
 import { useTimeStore } from '../stores/time'
 import { formatYear } from '../lib/time'
 
@@ -9,6 +10,7 @@ const time = useTimeStore()
 <template>
   <GlobeView />
   <div class="readout">{{ formatYear(time.currentTime) }}</div>
+  <TimelineBar />
 </template>
 
 <style scoped>

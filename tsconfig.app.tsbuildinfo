@@ -1,1 +1,1 @@
-{"root":["./src/main.ts","./src/vite-env.d.ts","./src/lib/time.ts","./src/router/index.ts","./src/stores/time.ts","./src/App.vue","./src/components/GlobeView.vue","./src/views/HomeView.vue"],"version":"5.7.3"}
+{"root":["./src/main.ts","./src/vite-env.d.ts","./src/lib/time.ts","./src/router/index.ts","./src/stores/time.ts","./src/App.vue","./src/components/GlobeView.vue","./src/components/TimelineBar.vue","./src/views/HomeView.vue"],"version":"5.7.3"}
