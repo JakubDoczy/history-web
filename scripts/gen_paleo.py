@@ -2,7 +2,7 @@
 PALEOMAP/Scotese rasters when licensing is sorted (see docs/plan-phase1.md)."""
 from PIL import Image, ImageDraw, ImageFilter
 
-W, H = 2048, 1024
+W, H = 4096, 2048
 OCEAN = (22, 54, 102)
 LAND = (139, 124, 84)
 SHELF = (60, 105, 150)
@@ -17,11 +17,11 @@ def render(name, polys):
     ds = ImageDraw.Draw(shelf)
     for p in polys:
         ds.polygon([px(*pt) for pt in p], fill=255)
-    halo = shelf.filter(ImageFilter.MaxFilter(15)).filter(ImageFilter.GaussianBlur(6))
+    halo = shelf.filter(ImageFilter.MaxFilter(29)).filter(ImageFilter.GaussianBlur(12))
     img.paste(Image.new('RGB', (W, H), SHELF), mask=halo)
     for p in polys:
         d.polygon([px(*pt) for pt in p], fill=LAND)
-    img = img.filter(ImageFilter.GaussianBlur(1.5))
+    img = img.filter(ImageFilter.GaussianBlur(2))
     img.save(f'public/textures/paleo/{name}.jpg', quality=85)
     print(name, 'ok')
 

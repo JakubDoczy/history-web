@@ -26,3 +26,12 @@ describe('renderRichText', () => {
     expect(renderRichText('[x](javascript:alert(1))')).not.toContain('href')
   })
 })
+
+describe('renderRichText newlines', () => {
+  it('renders single newlines as <br>', () => {
+    expect(renderRichText('a\nb')).toBe('<p>a<br>b</p>')
+  })
+  it('tolerates literal backslash-n escapes in data', () => {
+    expect(renderRichText('a\\n\\nb')).toBe('<p>a</p><p>b</p>')
+  })
+})

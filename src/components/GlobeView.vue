@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, useTemplateRef, watchEffect } from 'vue'
 import Globe, { type GlobeInstance } from 'globe.gl'
-import { DirectionalLight, Vector3 } from 'three'
+import { AmbientLight, DirectionalLight, Vector3 } from 'three'
 import { useEventStore } from '../stores/events'
 import { useNationStore, type BorderEntry } from '../stores/nations'
 import { useTimeStore } from '../stores/time'
@@ -10,6 +10,7 @@ import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { PaleoLayer } from '../lib/paleoLayer'
 import { DayNightLayer } from '../lib/dayNightLayer'
+import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude } from '../lib/sun'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE } from '../data/paleoTextures'
@@ -23,6 +24,7 @@ const el = useTemplateRef('el')
 let globe: GlobeInstance | undefined
 let paleo: PaleoLayer | undefined
 let dayNight: DayNightLayer | undefined
+let celestial: CelestialLayer | undefined
 let resizeObs: ResizeObserver | undefined
 const stops: (() => void)[] = []
 
@@ -83,14 +85,19 @@ onMounted(() => {
   dom.addEventListener('pointerdown', () => (globe!.controls().autoRotate = false), { once: true })
 
   const radius = globe.getGlobeRadius()
+  const base = import.meta.env.BASE_URL
   dayNight = new DayNightLayer(globe.scene(), radius, MODERN_TEXTURE, NIGHT_TEXTURE)
   paleo = new PaleoLayer(globe.scene(), radius, MODERN_TEXTURE)
+  celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
 
+  const coords = (lat: number, lng: number, alt: number) => globe!.getCoords(lat, lng, alt)
   const sunDir = () => {
-    const { x, y, z } = globe!.getCoords(0, subsolarLongitude(settings.sunHour), 1)
+    const { x, y, z } = coords(0, subsolarLongitude(settings.sunHour), 1)
     return new Vector3(x, y, z).normalize()
   }
   const dirLight = globe.lights().find((l): l is DirectionalLight => l instanceof DirectionalLight)
+  const ambient = globe.lights().find((l): l is AmbientLight => l instanceof AmbientLight)
+  if (ambient) ambient.intensity = Math.min(ambient.intensity, 0.7) // let the night side be night
 
   stops.push(
     watchEffect(() => globe!.pointsData(events.visible.filter((e) => !e.area))),
@@ -99,7 +106,8 @@ onMounted(() => {
     watchEffect(() => {
       const dir = sunDir()
       dayNight!.setSunDirection(dir)
-      dirLight?.position.copy(dir.multiplyScalar(radius * 4)) // paleo eras lit by the same sun
+      dirLight?.position.copy(dir.clone().multiplyScalar(radius * 4)) // paleo eras lit by the same sun
+      celestial!.setHour(settings.sunHour, coords)
     }),
   )
 
@@ -111,6 +119,7 @@ onBeforeUnmount(() => {
   stops.forEach((s) => s())
   paleo?.dispose()
   dayNight?.dispose()
+  celestial?.dispose()
   resizeObs?.disconnect()
   globe?._destructor()
 })

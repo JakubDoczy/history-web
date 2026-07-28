@@ -7,7 +7,7 @@ const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 export function renderRichText(src: string): string {
-  return escapeHtml(src)
+  return escapeHtml(src.replace(/\\n/g, '\n')) // tolerate literal \n escapes in data
     .split(/\n\s*\n/)
     .map((p) =>
       p
@@ -16,6 +16,6 @@ export function renderRichText(src: string): string {
         .replace(/\[(.+?)\]\(event:([\w-]+)\)/g, '<a data-event="$2">$1</a>')
         .replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>'),
     )
-    .map((p) => `<p>${p.trim()}</p>`)
+    .map((p) => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`)
     .join('')
 }
