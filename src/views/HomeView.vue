@@ -3,6 +3,7 @@ import GlobeView from '../components/GlobeView.vue'
 import TimelineBar from '../components/TimelineBar.vue'
 import EventPanel from '../components/EventPanel.vue'
 import TagFilter from '../components/TagFilter.vue'
+import SunControl from '../components/SunControl.vue'
 import { useTimeStore } from '../stores/time'
 import { formatYear } from '../lib/time'
 
@@ -14,6 +15,7 @@ const time = useTimeStore()
   <TagFilter />
   <div class="readout">{{ formatYear(time.currentTime) }}</div>
   <EventPanel />
+  <SunControl />
   <TimelineBar />
 </template>
 

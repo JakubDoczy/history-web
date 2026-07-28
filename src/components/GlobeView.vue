@@ -1,21 +1,28 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, useTemplateRef, watchEffect } from 'vue'
 import Globe, { type GlobeInstance } from 'globe.gl'
+import { DirectionalLight, Vector3 } from 'three'
 import { useEventStore } from '../stores/events'
 import { useNationStore, type BorderEntry } from '../stores/nations'
 import { useTimeStore } from '../stores/time'
+import { useSettingsStore } from '../stores/settings'
 import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { PaleoLayer } from '../lib/paleoLayer'
+import { DayNightLayer } from '../lib/dayNightLayer'
 import { textureBlend } from '../lib/paleo'
-import { PALEO_FRAMES, MODERN_TEXTURE } from '../data/paleoTextures'
+import { subsolarLongitude } from '../lib/sun'
+import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE } from '../data/paleoTextures'
 
 const events = useEventStore()
-const time = useTimeStore()
 const nations = useNationStore()
+const time = useTimeStore()
+const settings = useSettingsStore()
 const el = useTemplateRef('el')
+
 let globe: GlobeInstance | undefined
 let paleo: PaleoLayer | undefined
+let dayNight: DayNightLayer | undefined
 let resizeObs: ResizeObserver | undefined
 const stops: (() => void)[] = []
 
@@ -32,7 +39,7 @@ const eventAreas = (): EventAreaEntry[] =>
 onMounted(() => {
   const dom = el.value!
   globe = new Globe(dom)
-    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .globeImageUrl(MODERN_TEXTURE)
     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
     .width(dom.clientWidth)
@@ -43,9 +50,7 @@ onMounted(() => {
     .pointColor((d) => (events.selectedId === asEvent(d).id ? '#ff0' : '#f80'))
     .pointLabel((d) => asEvent(d).name)
     .onPointClick((d) => events.select(asEvent(d).id))
-    // nations layer: semi-transparent caps so overlaps blend visibly
-    // three-globe's GeoJsonGeometry type declares coordinates as number[], which is
-    // narrower than real GeoJSON — cast at this boundary only.
+    // polygons layer: nation borders + event areas
     .polygonGeoJsonGeometry((d) => ({
       type: 'Polygon',
       coordinates: [closed(asPoly(d).ring)] as unknown as number[],
@@ -77,12 +82,25 @@ onMounted(() => {
   globe.controls().autoRotateSpeed = 0.5
   dom.addEventListener('pointerdown', () => (globe!.controls().autoRotate = false), { once: true })
 
-  paleo = new PaleoLayer(globe.scene(), globe.getGlobeRadius(), MODERN_TEXTURE)
+  const radius = globe.getGlobeRadius()
+  dayNight = new DayNightLayer(globe.scene(), radius, MODERN_TEXTURE, NIGHT_TEXTURE)
+  paleo = new PaleoLayer(globe.scene(), radius, MODERN_TEXTURE)
+
+  const sunDir = () => {
+    const { x, y, z } = globe!.getCoords(0, subsolarLongitude(settings.sunHour), 1)
+    return new Vector3(x, y, z).normalize()
+  }
+  const dirLight = globe.lights().find((l): l is DirectionalLight => l instanceof DirectionalLight)
 
   stops.push(
     watchEffect(() => globe!.pointsData(events.visible.filter((e) => !e.area))),
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
     watchEffect(() => paleo!.setBlend(textureBlend(PALEO_FRAMES, time.currentTime))),
+    watchEffect(() => {
+      const dir = sunDir()
+      dayNight!.setSunDirection(dir)
+      dirLight?.position.copy(dir.multiplyScalar(radius * 4)) // paleo eras lit by the same sun
+    }),
   )
 
   resizeObs = new ResizeObserver(() => globe?.width(dom.clientWidth).height(dom.clientHeight))
@@ -92,6 +110,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   stops.forEach((s) => s())
   paleo?.dispose()
+  dayNight?.dispose()
   resizeObs?.disconnect()
   globe?._destructor()
 })
