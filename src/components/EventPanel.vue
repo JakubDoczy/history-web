@@ -46,7 +46,11 @@ function follow(link: { event?: string; url?: string }) {
     </p>
 
     <figure v-if="events.selected.image">
-      <img :src="events.selected.image.url" :alt="events.selected.image.caption ?? events.selected.name" />
+      <img
+        :src="events.selected.image.url"
+        :alt="events.selected.image.caption ?? events.selected.name"
+        @error="($event.target as HTMLElement).parentElement!.style.display = 'none'"
+      />
       <figcaption v-if="events.selected.image.caption">{{ events.selected.image.caption }}</figcaption>
     </figure>
 
