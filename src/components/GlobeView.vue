@@ -5,6 +5,7 @@ import { useEventStore } from '../stores/events'
 import { useNationStore, type BorderEntry } from '../stores/nations'
 import { useTimeStore } from '../stores/time'
 import type { HistoricalEvent } from '../lib/events'
+import type { Ring } from '../lib/nations'
 import { PaleoLayer } from '../lib/paleoLayer'
 import { textureBlend } from '../lib/paleo'
 import { PALEO_FRAMES, MODERN_TEXTURE } from '../data/paleoTextures'
@@ -18,9 +19,15 @@ let paleo: PaleoLayer | undefined
 let resizeObs: ResizeObserver | undefined
 const stops: (() => void)[] = []
 
+type EventAreaEntry = { kind: 'area'; event: HistoricalEvent; ring: Ring }
+type PolyEntry = BorderEntry | EventAreaEntry
+
 const asEvent = (d: object) => d as HistoricalEvent
-const asBorder = (d: object) => d as BorderEntry
-const closed = (ring: [number, number][]) => [...ring, ring[0]]
+const asPoly = (d: object) => d as PolyEntry
+const closed = (ring: Ring) => [...ring, ring[0]]
+
+const eventAreas = (): EventAreaEntry[] =>
+  events.visible.filter((e) => e.area).map((e) => ({ kind: 'area', event: e, ring: e.area! }))
 
 onMounted(() => {
   const dom = el.value!
@@ -41,18 +48,28 @@ onMounted(() => {
     // narrower than real GeoJSON — cast at this boundary only.
     .polygonGeoJsonGeometry((d) => ({
       type: 'Polygon',
-      coordinates: [closed(asBorder(d).ring)] as unknown as number[],
+      coordinates: [closed(asPoly(d).ring)] as unknown as number[],
     }))
-    .polygonCapColor((d) => (asBorder(d).kind === 'full' ? asBorder(d).nation.color + '50' : 'rgba(0,0,0,0)'))
+    .polygonCapColor((d) => {
+      const p = asPoly(d)
+      if (p.kind === 'area') return events.selectedId === p.event.id ? '#ffff0060' : '#ff880040'
+      return p.kind === 'full' ? p.nation.color + '50' : 'rgba(0,0,0,0)'
+    })
     .polygonSideColor(() => 'rgba(0,0,0,0)')
     .polygonStrokeColor((d) => {
-      const b = asBorder(d)
-      return b.kind === 'full' ? b.nation.color : b.kind === 'max' ? b.nation.color + 'aa' : '#ffffffaa'
+      const p = asPoly(d)
+      if (p.kind === 'area') return events.selectedId === p.event.id ? '#ff0' : '#f80'
+      return p.kind === 'full' ? p.nation.color : p.kind === 'max' ? p.nation.color + 'aa' : '#ffffffaa'
     })
-    .polygonAltitude((d) => (asBorder(d).kind === 'full' ? 0.008 : 0.005))
+    .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.012 : asPoly(d).kind === 'full' ? 0.008 : 0.005))
     .polygonLabel((d) => {
-      const b = asBorder(d)
-      return b.kind === 'full' ? b.nation.name : `${b.nation.name} (${b.kind} extent in view)`
+      const p = asPoly(d)
+      if (p.kind === 'area') return p.event.name
+      return p.kind === 'full' ? p.nation.name : `${p.nation.name} (${p.kind} extent in view)`
+    })
+    .onPolygonClick((d) => {
+      const p = asPoly(d)
+      if (p.kind === 'area') events.select(p.event.id)
     })
     .polygonsTransitionDuration(300)
 
@@ -63,8 +80,8 @@ onMounted(() => {
   paleo = new PaleoLayer(globe.scene(), globe.getGlobeRadius(), MODERN_TEXTURE)
 
   stops.push(
-    watchEffect(() => globe!.pointsData([...events.visible])),
-    watchEffect(() => globe!.polygonsData([...nations.borders])),
+    watchEffect(() => globe!.pointsData(events.visible.filter((e) => !e.area))),
+    watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
     watchEffect(() => paleo!.setBlend(textureBlend(PALEO_FRAMES, time.currentTime))),
   )
 

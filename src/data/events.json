@@ -80,6 +80,40 @@
         "label": "Founding of Rome",
         "event": "rome-founding"
       }
+    ],
+    "area": [
+      [
+        -6,
+        36
+      ],
+      [
+        3,
+        43
+      ],
+      [
+        10,
+        44
+      ],
+      [
+        16,
+        40
+      ],
+      [
+        15,
+        36
+      ],
+      [
+        10,
+        33
+      ],
+      [
+        0,
+        34
+      ],
+      [
+        -7,
+        33
+      ]
     ]
   },
   {
@@ -202,5 +236,69 @@
       "science"
     ],
     "summary": "Tim Berners-Lee proposed the Web at CERN, transforming how humanity shares information."
+  },
+  {
+    "id": "black-death",
+    "name": "Black Death",
+    "start": 1346,
+    "end": 1352,
+    "lat": 48,
+    "lng": 15,
+    "area": [
+      [
+        -10,
+        36
+      ],
+      [
+        -5,
+        43
+      ],
+      [
+        0,
+        50
+      ],
+      [
+        10,
+        55
+      ],
+      [
+        25,
+        55
+      ],
+      [
+        40,
+        50
+      ],
+      [
+        45,
+        45
+      ],
+      [
+        40,
+        40
+      ],
+      [
+        30,
+        36
+      ],
+      [
+        20,
+        34
+      ],
+      [
+        10,
+        35
+      ],
+      [
+        0,
+        36
+      ]
+    ],
+    "priority": 91,
+    "tags": [
+      "disease"
+    ],
+    "summary": "The deadliest pandemic in recorded history swept across Europe, killing an estimated third to half of its population.",
+    "body": "Arriving via Genoese trading ships in 1347, the plague spread along trade routes across the continent within five years.\\n\\nIts aftermath reshaped **labor, religion and art** across Europe for generations.\\n\\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Black_Death)."
   }
 ]

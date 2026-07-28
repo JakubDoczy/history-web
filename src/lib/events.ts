@@ -1,4 +1,5 @@
 import type { Year } from './time'
+import type { Ring } from './nations'
 
 export interface HistoricalEvent {
   id: string
@@ -7,8 +8,8 @@ export interface HistoricalEvent {
   end?: Year // omitted = instantaneous
   lat: number
   lng: number
-  /** Optional polygon [lat, lng][] for area events; lat/lng then acts as centroid. */
-  area?: [number, number][]
+  /** Optional polygon (GeoJSON [lng, lat] order) for area events; lat/lng then acts as centroid. */
+  area?: Ring
   priority: number // higher = more important
   tags: string[]
   parent?: string // id of parent event
@@ -48,4 +49,31 @@ export function visibleEvents(
     .filter((e) => !filter.parent || isUnder(e, filter.parent, byId))
     .sort((a, b) => b.priority - a.priority)
     .slice(0, cap)
+}
+
+/**
+ * Query index for large event sets. Events are pre-sorted by priority once,
+ * so a query is a single scan with early exit after `cap` hits — no per-query
+ * sort, and high-priority events are found first.
+ */
+export class EventIndex {
+  private byPriority: HistoricalEvent[]
+  readonly byId: Map<string, HistoricalEvent>
+
+  constructor(events: HistoricalEvent[]) {
+    this.byPriority = [...events].sort((a, b) => b.priority - a.priority)
+    this.byId = new Map(events.map((e) => [e.id, e]))
+  }
+
+  query(start: Year, end: Year, filter: EventFilter = {}, cap = 100): HistoricalEvent[] {
+    const out: HistoricalEvent[] = []
+    for (const e of this.byPriority) {
+      if (!intersects(e, start, end)) continue
+      if (filter.tags?.length && !e.tags.some((t) => filter.tags!.includes(t))) continue
+      if (filter.parent && !isUnder(e, filter.parent, this.byId)) continue
+      out.push(e)
+      if (out.length >= cap) break
+    }
+    return out
+  }
 }

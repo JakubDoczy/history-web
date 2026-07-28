@@ -45,3 +45,41 @@ describe('visibleEvents', () => {
     expect(ids).toEqual(['trinity'])
   })
 })
+
+import { EventIndex } from '../src/lib/events'
+
+describe('EventIndex', () => {
+  const randomEvents = (n: number): HistoricalEvent[] =>
+    Array.from({ length: n }, (_, i) => {
+      const start = Math.floor(Math.random() * 4000) - 2000
+      return ev(`e${i}`, {
+        start,
+        end: Math.random() < 0.3 ? start + Math.floor(Math.random() * 200) : undefined,
+        priority: Math.floor(Math.random() * 100),
+        tags: [['war', 'science', 'culture'][i % 3]],
+        parent: i > 0 && Math.random() < 0.1 ? `e${Math.floor(Math.random() * i)}` : undefined,
+      })
+    })
+
+  it('matches the reference implementation on random data', () => {
+    const data = randomEvents(1000)
+    const idx = new EventIndex(data)
+    for (const [s, e, f] of [
+      [0, 500, {}],
+      [-2000, 2100, { tags: ['war'] }],
+      [-500, 500, { parent: 'e0' }],
+      [100, 120, { tags: ['science', 'culture'] }],
+    ] as const) {
+      expect(idx.query(s, e, f, 50).map((x) => x.id)).toEqual(
+        visibleEvents(data, s, e, f, 50).map((x) => x.id),
+      )
+    }
+  })
+
+  it('handles 50k events fast (perf smoke)', () => {
+    const idx = new EventIndex(randomEvents(50_000))
+    const t0 = performance.now()
+    for (let i = 0; i < 100; i++) idx.query(-2000 + i * 10, -1900 + i * 10, { tags: ['war'] })
+    expect(performance.now() - t0).toBeLessThan(500)
+  })
+})
