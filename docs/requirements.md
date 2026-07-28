@@ -75,7 +75,7 @@ ranges, human-history overlays (nations, borders) and events appear on the globe
 
 ## 5. Open Questions
 
-1. Globe engine: CesiumJS (geo-native, heavy) vs three.js/globe.gl (lighter, more manual)?
+1. ~~Globe engine~~ — **decided: three.js via globe.gl** (see docs/plan-phase1.md).
 2. Data formats: GeoJSON + custom temporal extension? Where do paleo-maps come from
    (e.g. GPlates reconstructions)?
 3. Timeline scale: linear vs logarithmic vs hybrid for deep time?
