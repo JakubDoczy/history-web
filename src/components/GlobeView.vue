@@ -3,12 +3,18 @@ import { onMounted, onBeforeUnmount, useTemplateRef, watchEffect } from 'vue'
 import Globe, { type GlobeInstance } from 'globe.gl'
 import { useEventStore } from '../stores/events'
 import { useNationStore, type BorderEntry } from '../stores/nations'
+import { useTimeStore } from '../stores/time'
 import type { HistoricalEvent } from '../lib/events'
+import { PaleoLayer } from '../lib/paleoLayer'
+import { textureBlend } from '../lib/paleo'
+import { PALEO_FRAMES, MODERN_TEXTURE } from '../data/paleoTextures'
 
 const events = useEventStore()
+const time = useTimeStore()
 const nations = useNationStore()
 const el = useTemplateRef('el')
 let globe: GlobeInstance | undefined
+let paleo: PaleoLayer | undefined
 let resizeObs: ResizeObserver | undefined
 const stops: (() => void)[] = []
 
@@ -54,9 +60,12 @@ onMounted(() => {
   globe.controls().autoRotateSpeed = 0.5
   dom.addEventListener('pointerdown', () => (globe!.controls().autoRotate = false), { once: true })
 
+  paleo = new PaleoLayer(globe.scene(), globe.getGlobeRadius(), MODERN_TEXTURE)
+
   stops.push(
     watchEffect(() => globe!.pointsData([...events.visible])),
     watchEffect(() => globe!.polygonsData([...nations.borders])),
+    watchEffect(() => paleo!.setBlend(textureBlend(PALEO_FRAMES, time.currentTime))),
   )
 
   resizeObs = new ResizeObserver(() => globe?.width(dom.clientWidth).height(dom.clientHeight))
@@ -65,6 +74,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stops.forEach((s) => s())
+  paleo?.dispose()
   resizeObs?.disconnect()
   globe?._destructor()
 })
