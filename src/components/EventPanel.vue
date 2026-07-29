@@ -16,7 +16,7 @@ function goTo(id: string) {
   const target = events.byId(id)
   if (!target) return
   events.select(id)
-  time.setTime(target.start)
+  time.focusTime(target.start)
 }
 
 /** Delegated handler for internal links inside rendered rich text. */

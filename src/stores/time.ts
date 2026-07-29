@@ -13,6 +13,16 @@ export const useTimeStore = defineStore('time', {
     setTime(t: Year) {
       this.currentTime = clamp(t, this.range.start, this.range.end)
     },
+    /** Jump to a time; if it lies outside the window, recenter the window on it. */
+    focusTime(t: Year) {
+      const target = clamp(t)
+      if (target < this.range.start || target > this.range.end) {
+        const half = (toWarp(this.range.end) - toWarp(this.range.start)) / 2
+        const c = toWarp(target)
+        this.range = { start: clamp(fromWarp(c - half)), end: clamp(fromWarp(c + half)) }
+      }
+      this.currentTime = target
+    },
     /** Zoom in warp (display) space around a focus fraction [0..1] of the window. */
     zoom(factor: number, focus = 0.5) {
       const ws = toWarp(this.range.start)

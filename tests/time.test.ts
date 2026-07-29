@@ -75,6 +75,17 @@ describe('time store', () => {
     expect(s.range.end).toBeLessThanOrEqual(MAX_TIME)
   })
 
+  it('focusTime recenters the window when the target is outside it', () => {
+    const s = useTimeStore()
+    s.range = { start: 1900, end: 2000 }
+    s.focusTime(1950)
+    expect(s.range).toEqual({ start: 1900, end: 2000 }) // inside: window untouched
+    s.focusTime(-250e6)
+    expect(s.currentTime).toBe(-250e6)
+    expect(s.range.start).toBeLessThan(-250e6)
+    expect(s.range.end).toBeGreaterThan(-250e6)
+  })
+
   it('pan shifts window and stops at bounds', () => {
     const s = useTimeStore()
     s.range = { start: 0, end: 1000 }

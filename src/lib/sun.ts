@@ -12,9 +12,9 @@ export const moonLongitude = (utcHour: number): number => {
 export const moonLatitude = (lng: number): number => 12 * Math.sin((lng * Math.PI) / 180)
 
 /**
- * How lit-up civilization is at a given year: 0 before ~1850 (no electric
- * lighting visible from space), growing to 1 at the present. Slow start,
- * accelerating — mirrors electrification then urban sprawl.
+ * How lit-up civilization is at a given year: 0 before ~1880 (electric street
+ * lighting begins), major city cores visible by ~1900-1930, broad coverage by
+ * the 1960s, full modern extent at the present.
  */
 export const cityLightsFactor = (year: number): number =>
-  Math.min(1, Math.max(0, (year - 1850) / 176)) ** 1.8
+  Math.min(1, Math.max(0, (year - 1880) / 146)) ** 1.1

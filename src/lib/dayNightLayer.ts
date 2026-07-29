@@ -32,11 +32,13 @@ void main() {
   vec3 day = texture2D(dayTex, vUv).rgb;
   vec3 nightRaw = texture2D(nightTex, vUv).rgb;
 
-  // city lights reveal from the brightest cores outward as lightsF grows
+  // city lights reveal from the brightest cores outward as lightsF grows;
+  // threshold sweeps the actual luminance range of city pixels (~0.5 → 0)
   float lum = dot(nightRaw, vec3(0.333));
-  float reveal = smoothstep(1.0 - lightsF * 1.05, 1.12 - lightsF * 1.05, lum);
+  float th = 0.5 * (1.0 - lightsF);
+  float reveal = smoothstep(th, th + 0.12, lum);
   vec3 moonlit = day * vec3(0.05, 0.07, 0.12);
-  vec3 night = moonlit + nightRaw * 1.6 * reveal;
+  vec3 night = moonlit + nightRaw * 1.6 * (0.4 + 0.6 * lightsF) * reveal;
 
   vec3 color = mix(night, day, daylight);
 
