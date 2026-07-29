@@ -20,6 +20,14 @@ export const useEventStore = defineStore('events', {
     allTags: (s) => [...new Set(s.all.flatMap((e) => e.tags))].sort(),
     childrenOf: (s) => (id: string) => s.all.filter((e) => e.parent === id),
     byId: (s) => (id: string) => s.all.find((e) => e.id === id),
+    search: (s) => (q: string) => {
+      const needle = q.trim().toLowerCase()
+      if (!needle) return [] as HistoricalEvent[]
+      return s.all
+        .filter((e) => e.name.toLowerCase().includes(needle) || e.tags.some((t) => t.includes(needle)))
+        .sort((a, b) => b.priority - a.priority)
+        .slice(0, 8)
+    },
   },
   actions: {
     select(id?: string) {

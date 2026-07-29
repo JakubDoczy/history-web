@@ -4,6 +4,7 @@ import TimelineBar from '../components/TimelineBar.vue'
 import EventPanel from '../components/EventPanel.vue'
 import TagFilter from '../components/TagFilter.vue'
 import SunControl from '../components/SunControl.vue'
+import SearchBox from '../components/SearchBox.vue'
 import EventSearch from '../components/EventSearch.vue'
 import { useTimeStore } from '../stores/time'
 import { formatYear } from '../lib/time'
@@ -14,6 +15,7 @@ const time = useTimeStore()
 <template>
   <GlobeView />
   <TagFilter />
+  <SearchBox />
   <div class="readout">{{ formatYear(time.currentTime) }}</div>
   <EventSearch />
   <EventPanel />
@@ -24,7 +26,7 @@ const time = useTimeStore()
 <style scoped>
 .readout {
   position: absolute;
-  top: 1rem;
+  top: 3.2rem;
   left: 50%;
   transform: translateX(-50%);
   color: #fff;

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { visibleEvents, type HistoricalEvent } from '../src/lib/events'
 
 const ev = (id: string, o: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
@@ -81,5 +81,21 @@ describe('EventIndex', () => {
     const t0 = performance.now()
     for (let i = 0; i < 100; i++) idx.query(-2000 + i * 10, -1900 + i * 10, { tags: ['war'] })
     expect(performance.now() - t0).toBeLessThan(500)
+  })
+})
+
+import { setActivePinia, createPinia } from 'pinia'
+import { useEventStore } from '../src/stores/events'
+
+describe('event search', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+  it('matches names case-insensitively, ranked by priority', () => {
+    const s = useEventStore()
+    const r = s.search('war')
+    expect(r.length).toBeGreaterThan(0)
+    for (let i = 1; i < r.length; i++) expect(r[i].priority).toBeLessThanOrEqual(r[i - 1].priority)
+  })
+  it('returns nothing for blank query', () => {
+    expect(useEventStore().search('   ')).toEqual([])
   })
 })
