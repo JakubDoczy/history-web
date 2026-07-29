@@ -24,7 +24,7 @@ const trim = (n: number) => `${+n.toPrecision(3)}`
  * and deep time compresses logarithmically. No singularity anywhere.
  */
 const PRESENT = 2026
-const LINEAR_YEARS = 60 // half-width of the essentially-linear zone
+const LINEAR_YEARS = 120 // half-width of the essentially-linear zone
 export const toWarp = (t: Year): number =>
   Math.asinh((clamp(t, MIN_TIME, MAX_TIME) - PRESENT) / LINEAR_YEARS)
 export const fromWarp = (u: number): Year => PRESENT + Math.sinh(u) * LINEAR_YEARS
