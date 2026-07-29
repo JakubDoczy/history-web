@@ -60,15 +60,22 @@ export const bboxToUvRect = (b: Bbox): [number, number, number, number] => [
 ]
 
 /**
- * Pixel size for a bbox. Requested at roughly twice the screen's own density:
- * the patch is sampled at grazing angles across a curved surface, where 1:1
- * sampling still reads as soft.
+ * Pixel size for a bbox, capped three ways: by the screen (asking for detail
+ * nobody can see is waste), by the source's own resolution (asking a 500 m map
+ * for more than 222 px per degree returns upsampled blur, slowly), and by a
+ * hard ceiling. The source cap is what keeps close-up requests small and fast.
  */
-export function imageSize(b: Bbox, viewportPx: number, maxPx = 3072): { width: number; height: number } {
-  const lngSpan = b.maxLng - b.minLng
+export function imageSize(
+  b: Bbox,
+  viewportPx: number,
+  maxPx = 2560,
+  pxPerDeg = BASE_SOURCE.pxPerDeg,
+): { width: number; height: number } {
+  const lngSpan = Math.max(b.maxLng - b.minLng, 1e-6)
   const latSpan = Math.max(b.maxLat - b.minLat, 1e-6)
-  const width = clamp(Math.round(viewportPx * 2.2), 512, maxPx)
-  const height = clamp(Math.round((width * latSpan) / lngSpan), 256, maxPx)
+  const wanted = Math.min(viewportPx * 2, lngSpan * pxPerDeg)
+  const width = clamp(Math.round(wanted), 384, maxPx)
+  const height = clamp(Math.round((width * latSpan) / lngSpan), 192, maxPx)
   return { width, height }
 }
 
@@ -95,12 +102,23 @@ export interface ImagerySource {
   layers: string
   time?: string
   label: string
+  /** Native resolution, in pixels per degree — 500 m ≈ 222 px/°. */
+  pxPerDeg: number
 }
 
 export const BASE_SOURCE: ImagerySource = {
   label: 'Blue Marble 500 m',
   layers: 'BlueMarble_ShadedRelief_Bathymetry',
+  pxPerDeg: 222,
 }
+
+/**
+ * Span at which the patch turns on and off. The two differ on purpose: a single
+ * threshold makes the patch flicker on and off when the camera hovers near it,
+ * because the tiniest zoom jitter crosses back and forth.
+ */
+export const PATCH_ON_BELOW = 42
+export const PATCH_OFF_ABOVE = 55
 
 export interface DetailImageryOptions {
   maxPx?: number
@@ -119,10 +137,11 @@ export class DetailImagery {
   private requestId = 0
   private settle?: ReturnType<typeof setTimeout>
   private strikes = 0
+  private shown = false
   private disabled = false
 
   constructor(opts: DetailImageryOptions = {}) {
-    this.maxPx = opts.maxPx ?? 3072
+    this.maxPx = opts.maxPx ?? 2560
   }
 
   private url(src: ImagerySource, b: Bbox, width: number, height: number) {
@@ -139,20 +158,34 @@ export class DetailImagery {
 
   update(lat: number, lng: number, altitude: number, viewportPx = 900) {
     if (this.disabled) return
-    if (visibleSpanDeg(altitude) > 45) {
-      // zoomed out: the base map is sharp enough. Report it, or the panel keeps
-      // claiming imagery is loaded for an area no longer in view.
-      if (this.mix !== 0 || this.status === 'ready') {
+    const span = visibleSpanDeg(altitude)
+
+    // hysteresis: once shown, the patch survives until well past the threshold
+    if (span > (this.shown ? PATCH_OFF_ABOVE : PATCH_ON_BELOW)) {
+      if (this.shown) {
+        this.shown = false
         this.mix = 0
         this.status = 'idle'
         this.sourceLabel = '—'
-        this.current = undefined
+        this.onReady?.() // or the panel keeps describing a patch nobody can see
+      }
+      return
+    }
+
+    const bbox = viewBbox(lat, lng, altitude)
+
+    // the imagery we already hold may still cover the view — show it again
+    // rather than paying for the same request twice
+    if (this.texture && !movedEnough(this.current, bbox)) {
+      if (!this.shown || this.mix !== 1) {
+        this.shown = true
+        this.mix = 1
+        this.status = 'ready'
+        this.sourceLabel = BASE_SOURCE.label
         this.onReady?.()
       }
       return
     }
-    const bbox = viewBbox(lat, lng, altitude)
-    if (!movedEnough(this.current, bbox)) return
 
     // wait for the camera to settle before spending a request
     clearTimeout(this.settle)
@@ -161,7 +194,7 @@ export class DetailImagery {
 
   private load(bbox: Bbox, viewportPx: number) {
     const id = ++this.requestId
-    const { width, height } = imageSize(bbox, viewportPx, this.maxPx)
+    const { width, height } = imageSize(bbox, viewportPx, this.maxPx, BASE_SOURCE.pxPerDeg)
     this.status = 'loading'
 
     this.fetch(BASE_SOURCE, bbox, width, height, id, {
@@ -211,6 +244,7 @@ export class DetailImagery {
     this.rect = bboxToUvRect(bbox)
     this.current = bbox
     this.mix = 1
+    this.shown = true
     this.status = 'ready'
     this.sourceLabel = label
     this.strikes = 0

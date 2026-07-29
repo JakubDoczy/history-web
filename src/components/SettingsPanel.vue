@@ -12,9 +12,9 @@ const ui = useUiStore()
 const view = useViewStore()
 
 const detailNote = {
-  idle: 'Loads sharper NASA tiles as you zoom in.',
+  idle: 'Loads sharper imagery as you zoom in.',
   loading: 'Loading imagery…',
-  ready: 'Imagery loaded for this area.',
+  ready: 'Sharper imagery active.',
   unavailable: 'NASA imagery unreachable — showing the base map.',
 }
 

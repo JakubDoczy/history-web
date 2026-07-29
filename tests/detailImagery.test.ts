@@ -8,6 +8,8 @@ import {
   IMAGERY_ERA_FROM,
   MIN_ALTITUDE_DETAIL,
   MIN_ALTITUDE_PLAIN,
+  PATCH_ON_BELOW,
+  PATCH_OFF_ABOVE,
 } from '../src/lib/detailImagery'
 
 describe('viewBbox', () => {
@@ -83,6 +85,22 @@ describe('imageSize', () => {
     const { width, height } = imageSize(b, 8000, 2048)
     expect(width).toBeLessThanOrEqual(2048)
     expect(height).toBeLessThanOrEqual(2048)
+  })
+
+  it('never asks a source for more detail than it holds', () => {
+    // a tight view of a 500 m source: more pixels would only be upsampled blur
+    const b = viewBbox(0, 0, 0.002)
+    const { width } = imageSize(b, 4000, 2560, 222)
+    const lngSpan = b.maxLng - b.minLng
+    expect(width).toBeLessThanOrEqual(Math.ceil(lngSpan * 222) + 384)
+    expect(width).toBeLessThan(2560) // and so stays quick to fetch
+  })
+})
+
+describe('patch visibility thresholds', () => {
+  it('uses hysteresis so hovering near the threshold cannot flicker', () => {
+    expect(PATCH_OFF_ABOVE).toBeGreaterThan(PATCH_ON_BELOW)
+    expect(PATCH_OFF_ABOVE - PATCH_ON_BELOW).toBeGreaterThanOrEqual(10)
   })
 })
 
