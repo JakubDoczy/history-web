@@ -66,6 +66,7 @@ const hour = () => {
       </label>
       <p class="hint">{{ detailNote[view.detailStatus] }}</p>
       <p class="hint">Available from 1930 onward — earlier than that, satellite imagery would show modern cities.</p>
+      <p class="hint credit">Imagery: NASA GIBS / Worldview</p>
       <label class="row">
         <input type="checkbox" :checked="settings.scaleBar" @change="settings.toggle('scaleBar')" />
         <span>Show scale bar</span>
@@ -139,6 +140,7 @@ const hour = () => {
 .close:hover { color: var(--frost); }
 section { display: grid; gap: 8px; }
 .hint { margin: 0; font-size: 12px; color: var(--muted); }
+.credit { font-size: 11px; opacity: 0.75; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips button {
   font-family: var(--cond);
@@ -170,7 +172,7 @@ section { display: grid; gap: 8px; }
 @media (max-width: 640px) {
   /* centred vertically: cannot be swallowed by browser chrome at either edge */
   .panel {
-    top: 50%;
+    top: 42%;
     bottom: auto;
     left: 12px;
     right: 12px;

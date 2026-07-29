@@ -16,7 +16,8 @@ import { LinearFilter, SRGBColorSpace, Texture } from 'three'
 /** Modern imagery shows modern cities; before this year it is an anachronism. */
 export const IMAGERY_ERA_FROM = 1930
 
-export const MIN_ALTITUDE_DETAIL = 0.0014
+/** 30 m imagery supports a much closer approach than 500 m did. */
+export const MIN_ALTITUDE_DETAIL = 0.0007
 export const MIN_ALTITUDE_PLAIN = 0.05
 
 export const minAltitudeFor = (year: number, detailEnabled: boolean): number =>
@@ -58,12 +59,16 @@ export const bboxToUvRect = (b: Bbox): [number, number, number, number] => [
   (b.maxLat - b.minLat) / 180,
 ]
 
-/** Pixel size for a bbox, matching the screen's resolution without exceeding limits. */
-export function imageSize(b: Bbox, viewportPx: number, maxPx = 2048): { width: number; height: number } {
+/**
+ * Pixel size for a bbox. Requested at roughly twice the screen's own density:
+ * the patch is sampled at grazing angles across a curved surface, where 1:1
+ * sampling still reads as soft.
+ */
+export function imageSize(b: Bbox, viewportPx: number, maxPx = 3072): { width: number; height: number } {
   const lngSpan = b.maxLng - b.minLng
   const latSpan = Math.max(b.maxLat - b.minLat, 1e-6)
-  const width = clamp(Math.round(viewportPx * 1.3), 256, maxPx)
-  const height = clamp(Math.round((width * latSpan) / lngSpan), 128, maxPx)
+  const width = clamp(Math.round(viewportPx * 2.2), 512, maxPx)
+  const height = clamp(Math.round((width * latSpan) / lngSpan), 256, maxPx)
   return { width, height }
 }
 
@@ -77,8 +82,30 @@ const movedEnough = (a: Bbox | undefined, b: Bbox) => {
   )
 }
 
+/**
+ * Sources tried in order, best first. WMS composites a comma-separated list
+ * bottom-to-top server-side, so Landsat rides on top of Blue Marble and the
+ * oceans — which WELD does not cover — stay filled. If a source fails
+ * repeatedly we fall back to the next, so detail degrades rather than vanishes.
+ */
+export interface ImagerySource {
+  layers: string
+  time?: string
+  label: string
+}
+
+export const IMAGERY_SOURCES: ImagerySource[] = [
+  {
+    label: 'Landsat 30 m',
+    layers:
+      'BlueMarble_ShadedRelief_Bathymetry,Landsat_WELD_CorrectedReflectance_TrueColor_Global_Annual',
+    time: '2012-01-01',
+  },
+  { label: 'Blue Marble 500 m', layers: 'BlueMarble_ShadedRelief_Bathymetry' },
+]
+
 export interface DetailImageryOptions {
-  layer?: string
+  sources?: ImagerySource[]
   maxPx?: number
 }
 
@@ -89,7 +116,8 @@ export class DetailImagery {
   status: 'idle' | 'loading' | 'ready' | 'unavailable' = 'idle'
   onReady?: () => void
 
-  private layer: string
+  private sources: ImagerySource[]
+  private sourceIdx = 0
   private maxPx: number
   private current?: Bbox
   private inFlight?: HTMLImageElement
@@ -99,18 +127,25 @@ export class DetailImagery {
   private disabled = false
 
   constructor(opts: DetailImageryOptions = {}) {
-    this.layer = opts.layer ?? 'BlueMarble_ShadedRelief_Bathymetry'
-    this.maxPx = opts.maxPx ?? 2048
+    this.sources = opts.sources ?? IMAGERY_SOURCES
+    this.maxPx = opts.maxPx ?? 3072
+  }
+
+  /** Which source is currently supplying imagery, for display in settings. */
+  get sourceLabel() {
+    return this.sources[this.sourceIdx]?.label ?? '—'
   }
 
   private url(b: Bbox, width: number, height: number) {
+    const src = this.sources[this.sourceIdx]
     // WMS 1.3.0 with EPSG:4326 takes bbox in lat,lng order
     return (
       'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi' +
       '?version=1.3.0&service=WMS&request=GetMap&format=image/jpeg&STYLE=default' +
       '&CRS=EPSG:4326' +
       `&bbox=${b.minLat},${b.minLng},${b.maxLat},${b.maxLng}` +
-      `&WIDTH=${width}&HEIGHT=${height}&layers=${this.layer}`
+      `&WIDTH=${width}&HEIGHT=${height}&layers=${encodeURIComponent(src.layers)}` +
+      (src.time ? `&TIME=${src.time}` : '')
     )
   }
 
@@ -159,6 +194,13 @@ export class DetailImagery {
     img.onerror = () => {
       if (this.inFlight !== img) return
       this.strikes++
+      // two failures on a source means it is not usable here; try the next one
+      if (this.strikes >= 2 && this.sourceIdx < this.sources.length - 1) {
+        this.sourceIdx++
+        this.strikes = 0
+        this.load(bbox, viewportPx)
+        return
+      }
       if (!this.everWorked && this.strikes >= 3) {
         this.disabled = true
         this.status = 'unavailable'

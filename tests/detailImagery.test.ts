@@ -99,3 +99,22 @@ describe('zoom limits', () => {
     expect(visibleSpanDeg(0.01)).toBeLessThan(visibleSpanDeg(1))
   })
 })
+
+import { IMAGERY_SOURCES } from '../src/lib/detailImagery'
+
+describe('imagery sources', () => {
+  it('prefers the sharpest source and keeps a plain fallback last', () => {
+    expect(IMAGERY_SOURCES.length).toBeGreaterThan(1)
+    expect(IMAGERY_SOURCES[0].layers).toContain('Landsat')
+    const last = IMAGERY_SOURCES[IMAGERY_SOURCES.length - 1]
+    expect(last.layers).not.toContain(',') // a single, always-available layer
+    expect(last.time).toBeUndefined() // and not date-dependent
+  })
+
+  it('keeps a base layer under Landsat so oceans stay covered', () => {
+    // WELD is land-only; WMS draws a comma-separated list bottom-to-top
+    const [base, overlay] = IMAGERY_SOURCES[0].layers.split(',')
+    expect(base).toContain('BlueMarble')
+    expect(overlay).toContain('Landsat')
+  })
+})
