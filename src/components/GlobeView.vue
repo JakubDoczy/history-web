@@ -11,7 +11,7 @@ import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { AtmosphereLayer } from '../lib/skyLayer'
-import { DetailTiles, visibleSpanDeg, minAltitudeFor, IMAGERY_ERA_FROM } from '../lib/detailTiles'
+import { DetailImagery, visibleSpanDeg, minAltitudeFor, IMAGERY_ERA_FROM } from '../lib/detailImagery'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
@@ -28,7 +28,7 @@ let globe: GlobeInstance | undefined
 let surface: GlobeSurface | undefined
 let celestial: CelestialLayer | undefined
 let atmosphere: AtmosphereLayer | undefined
-let detail: DetailTiles | undefined
+let detail: DetailImagery | undefined
 let resizeObs: ResizeObserver | undefined
 let raf = 0
 const stops: (() => void)[] = []
@@ -107,11 +107,11 @@ onMounted(() => {
   const radius = globe.getGlobeRadius()
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
-  detail = new DetailTiles({ grid: 3 })
+  detail = new DetailImagery()
   // the patch only reaches the shader if the loader tells us it arrived
   detail.onReady = () => {
     view.detailStatus = detail!.status
-    surface!.setDetail(detail!.texture, detail!.rect, detail!.mix)
+    surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
   }
 
   /** Detail imagery is modern, so it is only offered within the satellite era. */
@@ -133,7 +133,7 @@ onMounted(() => {
     surface!.setFlatLight(near)
     if (detailAllowed()) {
       detail!.update(pov.lat, pov.lng, pov.altitude, view.viewportPx)
-      surface!.setDetail(detail!.texture, detail!.rect, detail!.mix)
+      surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
     } else {
       surface!.setDetail(null, detail!.rect, 0)
     }
@@ -160,7 +160,7 @@ onMounted(() => {
     if (settings.detail && time.currentTime > -12000) {
       const pov = globe!.pointOfView()
       detail!.update(pov.lat, pov.lng, pov.altitude)
-      surface!.setDetail(detail!.texture, detail!.rect, detail!.mix)
+      surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
     } else {
       surface!.setDetail(null, detail!.rect, 0)
     }
