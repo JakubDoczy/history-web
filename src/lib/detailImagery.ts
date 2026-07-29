@@ -1,4 +1,4 @@
-import { LinearFilter, SRGBColorSpace, Texture } from 'three'
+import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 'three'
 
 /**
  * High-resolution imagery for the region being looked at, fetched from NASA GIBS
@@ -162,6 +162,25 @@ export function wmsUrl(src: ImagerySource, b: Bbox, width: number, height: numbe
   )
 }
 
+/** Effective resolution of the whole-globe base texture, in pixels per degree. */
+export const BASE_TEXTURE_PX_PER_DEG = 4096 / 360
+
+/**
+ * Mip level of the patch whose blur matches the base map's own sharpness.
+ *
+ * Dividing the patch by this blurred copy isolates exactly the detail the base
+ * map lacks; multiplying that back onto the base map's colour transfers
+ * Sentinel-2's structure while keeping NASA's palette.
+ */
+export const detailLod = (
+  imageWidthPx: number,
+  lngSpanDeg: number,
+  basePxPerDeg = BASE_TEXTURE_PX_PER_DEG,
+): number => {
+  const ratio = imageWidthPx / Math.max(lngSpanDeg, 1e-6) / basePxPerDeg
+  return clamp(Math.log2(Math.max(ratio, 1)), 1, 7)
+}
+
 export const PATCH_ON_BELOW = 42
 export const PATCH_OFF_ABOVE = 55
 
@@ -176,6 +195,8 @@ export class DetailImagery {
   status: 'idle' | 'loading' | 'ready' | 'unavailable' = 'idle'
   sourceLabel = '—'
   attribution = ''
+  /** Mip level at which the patch matches the base map's blur. */
+  lod = 4
   onReady?: () => void
 
   private maxPx: number
@@ -240,6 +261,7 @@ export class DetailImagery {
     this.status = 'loading'
     const src = this.sharpDisabled ? BASE_SOURCE : SHARP_SOURCE
     const { width, height } = imageSize(bbox, screenPx, this.maxPx, src.pxPerDeg)
+    this.lod = detailLod(width, bbox.maxLng - bbox.minLng)
 
     this.fetch(src, bbox, width, height, id, {
       fail: () => {
@@ -285,8 +307,11 @@ export class DetailImagery {
   private adopt(img: HTMLImageElement, bbox: Bbox, label: string, attribution = '') {
     const next = new Texture(img)
     next.colorSpace = SRGBColorSpace
-    next.minFilter = next.magFilter = LinearFilter
-    next.generateMipmaps = false
+    // mipmaps are needed: the shader samples a deliberately blurred copy of the
+    // patch to separate its fine detail from its overall colour
+    next.minFilter = LinearMipmapLinearFilter
+    next.magFilter = LinearFilter
+    next.generateMipmaps = true
     next.needsUpdate = true
 
     const previous = this.texture

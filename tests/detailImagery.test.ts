@@ -193,3 +193,29 @@ describe('two-stage sources', () => {
     expect(SHARP_SOURCE.attribution).toMatch(/Copernicus/)
   })
 })
+
+import { detailLod, BASE_TEXTURE_PX_PER_DEG } from '../src/lib/detailImagery'
+
+describe('detailLod', () => {
+  it('rises as the patch out-resolves the base texture', () => {
+    const modest = detailLod(1024, 40) // ~26 px/° vs base ~11
+    const sharp = detailLod(2048, 4) // ~512 px/°
+    expect(sharp).toBeGreaterThan(modest)
+  })
+
+  it('is the log2 of how much finer the patch is', () => {
+    // exactly 8x the base texture's density should ask for mip 3
+    const lngSpan = 10
+    const width = BASE_TEXTURE_PX_PER_DEG * 8 * lngSpan
+    expect(detailLod(width, lngSpan)).toBeCloseTo(3, 5)
+  })
+
+  it('stays inside a usable mip range', () => {
+    for (const [w, span] of [[128, 90], [4096, 0.5], [256, 0.01], [2048, 120]] as const) {
+      const l = detailLod(w, span)
+      expect(l).toBeGreaterThanOrEqual(1)
+      expect(l).toBeLessThanOrEqual(7)
+      expect(Number.isFinite(l)).toBe(true)
+    }
+  })
+})

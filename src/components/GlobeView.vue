@@ -114,7 +114,7 @@ onMounted(() => {
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel
     view.detailAttribution = detail!.attribution
-    surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
+    surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
   }
 
   /** Detail imagery is modern, so it is only offered within the satellite era. */
@@ -142,7 +142,7 @@ onMounted(() => {
       const w = el.value?.clientWidth ?? 900
       const h = el.value?.clientHeight ?? 900
       detail!.update(pov.lat, pov.lng, pov.altitude, h * dpr, w / h)
-      surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
+      surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
     } else {
       surface!.setDetail(null, detail!.rect, 0)
     }
@@ -170,7 +170,7 @@ onMounted(() => {
     if (settings.detail && time.currentTime > -12000) {
       const pov = globe!.pointOfView()
       detail!.update(pov.lat, pov.lng, pov.altitude)
-      surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
+      surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
     } else {
       surface!.setDetail(null, detail!.rect, 0)
     }

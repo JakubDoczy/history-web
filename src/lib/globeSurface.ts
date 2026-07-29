@@ -51,6 +51,8 @@ uniform sampler2D uClouds;    // cloud coverage mask
 uniform sampler2D uDetail;    // streamed high-resolution patch over the viewed region
 uniform vec4 uDetailRect;     // u0, v0, du, dv of that patch
 uniform float uDetailMix;
+uniform float uDetailLod;    // mip level whose blur matches the base map
+uniform float uDetailTint;   // how much of the sharp source's own colour to keep
 uniform vec3 uSunDir;
 uniform float uLights;        // electrification, 0..1
 uniform float uCloudRot;      // cloud drift, in UV units
@@ -100,11 +102,23 @@ void main() {
     // a wide feather, and never a full replacement: the sharp source is a
     // different sensor with a different palette, and blending most of the way
     // keeps its detail while holding the base map's colour
-    vec2 f = smoothstep(vec2(0.0), vec2(0.14), d) * (1.0 - smoothstep(vec2(0.86), vec2(1.0), d));
+    vec2 f = smoothstep(vec2(0.0), vec2(0.08), d) * (1.0 - smoothstep(vec2(0.92), vec2(1.0), d));
     // the patch carries its own alpha: any tile that failed to load stays
     // transparent, so the base map shows through instead of a black hole
-    vec4 det = textureLod(uDetail, clamp(d, 0.0, 1.0), 0.0);
-    albedo = mix(albedo, det.rgb, inside.x * inside.y * f.x * f.y * uDetailMix * det.a * 0.88);
+    vec2 dc = clamp(d, 0.0, 1.0);
+    vec4 det = textureLod(uDetail, dc, 0.0);
+    // a blurred copy of the patch, matched to the base map's own sharpness
+    vec3 detLow = textureLod(uDetail, dc, uDetailLod).rgb;
+
+    // Colour matching: dividing the patch by its blurred self leaves only the
+    // structure the base map is missing. Multiplying that onto the base map's
+    // colour adopts Sentinel-2's detail while keeping NASA's palette, so the
+    // two cannot disagree on hue no matter how the sensors differ.
+    const vec3 guard = vec3(0.05);
+    vec3 matched = albedo * (det.rgb + guard) / (detLow + guard);
+    matched = clamp(mix(matched, det.rgb, uDetailTint), 0.0, 1.5);
+
+    albedo = mix(albedo, matched, inside.x * inside.y * f.x * f.y * uDetailMix * det.a);
   }
 
   vec3 surface = albedo * lambert;
@@ -191,6 +205,8 @@ export class GlobeSurface {
         uDetail: { value: null },
         uDetailRect: { value: new Vector4(0, 0, 1, 1) },
         uDetailMix: { value: 0 },
+        uDetailLod: { value: 4 },
+        uDetailTint: { value: 0.12 },
         uSunDir: { value: new Vector3(1, 0, 0) },
         uLights: { value: 1 },
         uCloudRot: { value: 0 },
@@ -268,11 +284,17 @@ export class GlobeSurface {
   }
 
   /** Point the shader at the streamed detail patch (null clears it). */
-  setDetail(map: Texture | null, rect: [number, number, number, number], mix: number) {
+  setDetail(
+    map: Texture | null,
+    rect: [number, number, number, number],
+    mix: number,
+    lod = 4,
+  ) {
     const u = this.material.uniforms
     u.uDetail.value = map
     u.uDetailRect.value.set(...rect)
     u.uDetailMix.value = map ? mix : 0
+    u.uDetailLod.value = lod
   }
 
   /**
