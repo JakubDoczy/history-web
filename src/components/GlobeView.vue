@@ -8,11 +8,9 @@ import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
 import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
-import { PaleoLayer } from '../lib/paleoLayer'
-import { DayNightLayer } from '../lib/dayNightLayer'
-import { CelestialLayer } from '../lib/celestialLayer'
+import { GlobeSurface } from '../lib/globeSurface'
 import { AtmosphereLayer } from '../lib/skyLayer'
-import { CloudLayer } from '../clouds'
+import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE } from '../data/paleoTextures'
@@ -24,13 +22,11 @@ const settings = useSettingsStore()
 const el = useTemplateRef('el')
 
 let globe: GlobeInstance | undefined
-let paleo: PaleoLayer | undefined
-let dayNight: DayNightLayer | undefined
+let surface: GlobeSurface | undefined
 let celestial: CelestialLayer | undefined
-let clouds: CloudLayer | undefined
 let atmosphere: AtmosphereLayer | undefined
-let raf = 0
 let resizeObs: ResizeObserver | undefined
+let raf = 0
 const stops: (() => void)[] = []
 
 type EventAreaEntry = { kind: 'area'; event: HistoricalEvent; ring: Ring }
@@ -45,9 +41,9 @@ const eventAreas = (): EventAreaEntry[] =>
 
 onMounted(() => {
   const dom = el.value!
+  const base = import.meta.env.BASE_URL
+
   globe = new Globe(dom)
-    .globeImageUrl(MODERN_TEXTURE)
-    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
     .width(dom.clientWidth)
     .height(dom.clientHeight)
@@ -85,28 +81,25 @@ onMounted(() => {
     })
     .polygonsTransitionDuration(300)
 
+  // one material for the planet: era textures, day/night, city lights, clouds
+  surface = new GlobeSurface(
+    {
+      day: MODERN_TEXTURE,
+      night: NIGHT_TEXTURE,
+      relief: '//unpkg.com/three-globe/example/img/earth-topology.png',
+      clouds: `${base}textures/clouds.jpg`,
+    },
+    globe.renderer(),
+  )
+  globe.globeMaterial(surface.material)
+
   globe.controls().autoRotate = true
   globe.controls().autoRotateSpeed = 0.5
   dom.addEventListener('pointerdown', () => (globe!.controls().autoRotate = false), { once: true })
 
   const radius = globe.getGlobeRadius()
-  const base = import.meta.env.BASE_URL
-  dayNight = new DayNightLayer(globe.scene(), radius, MODERN_TEXTURE, NIGHT_TEXTURE)
-  paleo = new PaleoLayer(globe.scene(), radius, MODERN_TEXTURE)
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
-  clouds = new CloudLayer(globe.scene(), radius, `${base}textures/clouds.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
-
-  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const t0 = performance.now()
-  const tick = () => {
-    if (!still) {
-      clouds!.drift((performance.now() - t0) / 1000)
-      dayNight!.setClouds(clouds!.texture, clouds!.rotation, settings.clouds ? 0.5 : 0)
-    }
-    raf = requestAnimationFrame(tick)
-  }
-  tick()
 
   const coords = (lat: number, lng: number, alt: number) => globe!.getCoords(lat, lng, alt)
   const sunDir = () => {
@@ -115,28 +108,33 @@ onMounted(() => {
   }
   const dirLight = globe.lights().find((l): l is DirectionalLight => l instanceof DirectionalLight)
   const ambient = globe.lights().find((l): l is AmbientLight => l instanceof AmbientLight)
-  if (ambient) ambient.intensity = Math.min(ambient.intensity, 0.7) // let the night side be night
+  if (ambient) ambient.intensity = Math.min(ambient.intensity, 0.7)
+
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const t0 = performance.now()
+  const tick = () => {
+    if (!still) surface!.setCloudDrift((performance.now() - t0) / 1000)
+    raf = requestAnimationFrame(tick)
+  }
+  tick()
 
   stops.push(
     watchEffect(() => globe!.pointsData(events.visible.filter((e) => !e.area))),
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
-    watchEffect(() => paleo!.setBlend(textureBlend(PALEO_FRAMES, time.currentTime))),
-    watchEffect(() => dayNight!.setCityLights(cityLightsFactor(time.currentTime))),
+    watchEffect(() => surface!.setEra(textureBlend(PALEO_FRAMES, time.currentTime))),
+    watchEffect(() => surface!.setCityLights(cityLightsFactor(time.currentTime))),
+    // clouds are anachronistic detail in deep time, and would hide the plate drift
+    watchEffect(() =>
+      surface!.setClouds(settings.clouds, time.currentTime > -12000 ? 1 : 0),
+    ),
+    watchEffect(() => (atmosphere!.visible = settings.atmosphere)),
     watchEffect(() => {
       const dir = sunDir()
-      dayNight!.setSunDirection(dir)
-      dirLight?.position.copy(dir.clone().multiplyScalar(radius * 4)) // paleo eras lit by the same sun
-      celestial!.setHour(settings.sunHour, coords)
+      surface!.setSun(dir)
       atmosphere!.setSunDirection(dir)
-      clouds!.setSun(dir)
+      dirLight?.position.copy(dir.clone().multiplyScalar(radius * 4))
+      celestial!.setHour(settings.sunHour, coords)
     }),
-    // clouds are anachronistic detail in deep time, and hide the plate drift
-    watchEffect(() => clouds!.setOpacity(time.currentTime > -12000 ? 1 : 0)),
-    watchEffect(() => {
-      clouds!.visible = settings.clouds
-      dayNight!.setClouds(clouds!.texture, clouds!.rotation, settings.clouds ? 0.5 : 0)
-    }),
-    watchEffect(() => (atmosphere!.visible = settings.atmosphere)),
   )
 
   resizeObs = new ResizeObserver(() => globe?.width(dom.clientWidth).height(dom.clientHeight))
@@ -146,11 +144,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   cancelAnimationFrame(raf)
   stops.forEach((s) => s())
-  clouds?.dispose()
-  atmosphere?.dispose()
-  paleo?.dispose()
-  dayNight?.dispose()
+  surface?.dispose()
   celestial?.dispose()
+  atmosphere?.dispose()
   resizeObs?.disconnect()
   globe?._destructor()
 })

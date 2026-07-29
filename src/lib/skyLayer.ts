@@ -2,71 +2,11 @@ import {
   AdditiveBlending,
   BackSide,
   Mesh,
-  MeshPhongMaterial,
   ShaderMaterial,
   SphereGeometry,
-  TextureLoader,
   Vector3,
   type Scene,
 } from 'three'
-
-type CloudMesh = Mesh<SphereGeometry, MeshPhongMaterial>
-
-/**
- * Two cloud decks lit by the scene's sun: the main deck carries a bump map so
- * billows catch the light, and a thin cirrus deck sits higher and drifts faster,
- * giving parallax as the globe turns.
- */
-export class CloudLayer {
-  private decks: { mesh: CloudMesh; speed: number }[]
-
-  constructor(scene: Scene, radius: number, mapUrl: string, bumpUrl: string, cirrusUrl: string) {
-    const loader = new TextureLoader()
-    const deck = (scale: number, material: MeshPhongMaterial, speed: number) => {
-      const mesh = new Mesh(new SphereGeometry(radius * scale, 96, 96), material) as CloudMesh
-      mesh.rotation.y = -Math.PI / 2
-      scene.add(mesh)
-      return { mesh, speed }
-    }
-    this.decks = [
-      deck(1.016, new MeshPhongMaterial({
-        map: loader.load(mapUrl),
-        bumpMap: loader.load(bumpUrl),
-        bumpScale: 0.35,
-        transparent: true,
-        depthWrite: false,
-        shininess: 0,
-        specular: 0x000000,
-      }), 0.016),
-      deck(1.032, new MeshPhongMaterial({
-        map: loader.load(cirrusUrl),
-        transparent: true,
-        depthWrite: false,
-        shininess: 0,
-        specular: 0x000000,
-      }), 0.027),
-    ]
-  }
-
-  /** Prevailing drift; `seconds` is elapsed wall time. */
-  drift(seconds: number) {
-    for (const d of this.decks) d.mesh.rotation.y = -Math.PI / 2 + seconds * d.speed
-  }
-
-  set visible(v: boolean) {
-    for (const d of this.decks) d.mesh.visible = v
-  }
-
-  dispose() {
-    for (const { mesh } of this.decks) {
-      mesh.removeFromParent()
-      mesh.geometry.dispose()
-      mesh.material.map?.dispose()
-      mesh.material.bumpMap?.dispose()
-      mesh.material.dispose()
-    }
-  }
-}
 
 const atmoVertex = /* glsl */ `
 varying vec3 vNormal;
