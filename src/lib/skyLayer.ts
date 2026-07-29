@@ -10,43 +10,61 @@ import {
   type Scene,
 } from 'three'
 
-/** Clouds lit by the scene's sun, with a bump map so billows catch the light. */
-export class CloudLayer {
-  private mesh: Mesh<SphereGeometry, MeshPhongMaterial>
+type CloudMesh = Mesh<SphereGeometry, MeshPhongMaterial>
 
-  constructor(scene: Scene, radius: number, mapUrl: string, bumpUrl: string) {
+/**
+ * Two cloud decks lit by the scene's sun: the main deck carries a bump map so
+ * billows catch the light, and a thin cirrus deck sits higher and drifts faster,
+ * giving parallax as the globe turns.
+ */
+export class CloudLayer {
+  private decks: { mesh: CloudMesh; speed: number }[]
+
+  constructor(scene: Scene, radius: number, mapUrl: string, bumpUrl: string, cirrusUrl: string) {
     const loader = new TextureLoader()
-    this.mesh = new Mesh(
-      new SphereGeometry(radius * 1.018, 96, 96),
-      new MeshPhongMaterial({
+    const deck = (scale: number, material: MeshPhongMaterial, speed: number) => {
+      const mesh = new Mesh(new SphereGeometry(radius * scale, 96, 96), material) as CloudMesh
+      mesh.rotation.y = -Math.PI / 2
+      scene.add(mesh)
+      return { mesh, speed }
+    }
+    this.decks = [
+      deck(1.016, new MeshPhongMaterial({
         map: loader.load(mapUrl),
         bumpMap: loader.load(bumpUrl),
-        bumpScale: 0.9,
+        bumpScale: 0.35,
         transparent: true,
-        opacity: 0.92,
         depthWrite: false,
-        shininess: 3,
-      }),
-    )
-    this.mesh.rotation.y = -Math.PI / 2
-    scene.add(this.mesh)
+        shininess: 0,
+        specular: 0x000000,
+      }), 0.016),
+      deck(1.032, new MeshPhongMaterial({
+        map: loader.load(cirrusUrl),
+        transparent: true,
+        depthWrite: false,
+        shininess: 0,
+        specular: 0x000000,
+      }), 0.027),
+    ]
   }
 
-  /** Slow prevailing drift; `seconds` is elapsed wall time. */
+  /** Prevailing drift; `seconds` is elapsed wall time. */
   drift(seconds: number) {
-    this.mesh.rotation.y = -Math.PI / 2 + seconds * 0.006
+    for (const d of this.decks) d.mesh.rotation.y = -Math.PI / 2 + seconds * d.speed
   }
 
   set visible(v: boolean) {
-    this.mesh.visible = v
+    for (const d of this.decks) d.mesh.visible = v
   }
 
   dispose() {
-    this.mesh.removeFromParent()
-    this.mesh.geometry.dispose()
-    this.mesh.material.map?.dispose()
-    this.mesh.material.bumpMap?.dispose()
-    this.mesh.material.dispose()
+    for (const { mesh } of this.decks) {
+      mesh.removeFromParent()
+      mesh.geometry.dispose()
+      mesh.material.map?.dispose()
+      mesh.material.bumpMap?.dispose()
+      mesh.material.dispose()
+    }
   }
 }
 

@@ -93,7 +93,13 @@ onMounted(() => {
   dayNight = new DayNightLayer(globe.scene(), radius, MODERN_TEXTURE, NIGHT_TEXTURE)
   paleo = new PaleoLayer(globe.scene(), radius, MODERN_TEXTURE)
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
-  clouds = new CloudLayer(globe.scene(), radius, `${base}textures/clouds.png`, `${base}textures/clouds_bump.jpg`)
+  clouds = new CloudLayer(
+    globe.scene(),
+    radius,
+    `${base}textures/clouds.png`,
+    `${base}textures/clouds_bump.jpg`,
+    `${base}textures/cirrus.png`,
+  )
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
 
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
