@@ -1,37 +1,20 @@
 <script setup lang="ts">
 import GlobeView from '../components/GlobeView.vue'
+import TopBar from '../components/TopBar.vue'
 import TimelineBar from '../components/TimelineBar.vue'
 import EventPanel from '../components/EventPanel.vue'
-import TagFilter from '../components/TagFilter.vue'
-import SunControl from '../components/SunControl.vue'
+import SettingsPanel from '../components/SettingsPanel.vue'
 import SearchBox from '../components/SearchBox.vue'
-import EventSearch from '../components/EventSearch.vue'
-import { useTimeStore } from '../stores/time'
-import { formatYear } from '../lib/time'
+import { useUiStore } from '../stores/ui'
 
-const time = useTimeStore()
+const ui = useUiStore()
 </script>
 
 <template>
   <GlobeView />
-  <TagFilter />
-  <SearchBox />
-  <div class="readout">{{ formatYear(time.currentTime) }}</div>
-  <EventSearch />
+  <TopBar />
+  <SearchBox v-if="ui.search" />
+  <SettingsPanel v-if="ui.settings" />
   <EventPanel />
-  <SunControl />
   <TimelineBar />
 </template>
-
-<style scoped>
-.readout {
-  position: absolute;
-  top: 3.2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #fff;
-  font-size: 1.25rem;
-  text-shadow: 0 0 6px #000;
-  user-select: none;
-}
-</style>

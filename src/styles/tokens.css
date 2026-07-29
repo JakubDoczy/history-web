@@ -1,0 +1,72 @@
+:root {
+  /* palette: deep-space console with brass instrument accents */
+  --void: #060a12;
+  --hull: #0d1420;
+  --panel: rgba(14, 21, 33, 0.94);
+  --line: #223148;
+  --line-soft: #182334;
+  --frost: #ccd8e8;
+  --muted: #7d8fa6;
+  --brass: #e3a758;
+  --ember: #e2653e;
+  --patina: #6fb3a8;
+
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --cond: 'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
+  --serif: 'IBM Plex Serif', Georgia, serif;
+
+  --rail: 92px; /* timeline height */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (max-width: 640px) {
+  :root { --rail: 78px; }
+}
+
+html, body, #app {
+  margin: 0;
+  height: 100%;
+  background: var(--void);
+  font-family: var(--sans);
+  color: var(--frost);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input { font-family: inherit; }
+
+/* utility label: small caps-ish condensed, used for every control label */
+.eyebrow {
+  font-family: var(--cond);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sheet {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(13, 20, 32, 0.8);
+  color: var(--frost);
+  cursor: pointer;
+  transition: border-color 0.18s var(--ease), color 0.18s var(--ease);
+}
+.icon-btn:hover { border-color: var(--brass); color: var(--brass); }
+.icon-btn.on { border-color: var(--brass); color: var(--brass); background: rgba(227, 167, 88, 0.12); }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
