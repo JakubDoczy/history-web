@@ -88,15 +88,19 @@ void main() {
   vec3 albedo = mix(texture(uEraA, vUv).rgb, texture(uEraB, vUv).rgb, uEraMix);
 
   // --- high-resolution patch, feathered at its edges so the join is invisible ---
+  // uDetailMix is uniform across the draw, so branching on it is safe. Branching
+  // on the per-pixel test is not: sampling a texture inside non-uniform control
+  // flow leaves the derivatives undefined, which several mobile GPUs render as
+  // flicker or dropouts. So the patch is sampled unconditionally with an
+  // explicit LOD, and the region test becomes a weight instead of a branch.
   if (uDetailMix > 0.0) {
     vec2 d = (vUv - uDetailRect.xy) / uDetailRect.zw;
-    if (d.x > 0.0 && d.x < 1.0 && d.y > 0.0 && d.y < 1.0) {
-      vec2 f = smoothstep(vec2(0.0), vec2(0.07), d) * (1.0 - smoothstep(vec2(0.93), vec2(1.0), d));
-      // the patch carries its own alpha: any tile that failed to load stays
-      // transparent, so the base map shows through instead of a black hole
-      vec4 det = texture(uDetail, d);
-      albedo = mix(albedo, det.rgb, f.x * f.y * uDetailMix * det.a);
-    }
+    vec2 inside = step(vec2(0.0), d) * step(d, vec2(1.0));
+    vec2 f = smoothstep(vec2(0.0), vec2(0.07), d) * (1.0 - smoothstep(vec2(0.93), vec2(1.0), d));
+    // the patch carries its own alpha: any tile that failed to load stays
+    // transparent, so the base map shows through instead of a black hole
+    vec4 det = textureLod(uDetail, clamp(d, 0.0, 1.0), 0.0);
+    albedo = mix(albedo, det.rgb, inside.x * inside.y * f.x * f.y * uDetailMix * det.a);
   }
 
   vec3 surface = albedo * lambert;

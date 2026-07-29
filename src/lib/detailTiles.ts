@@ -115,6 +115,8 @@ export class DetailTiles {
   private ctx: CanvasRenderingContext2D
   private backCtx: CanvasRenderingContext2D
   private current?: TileRange
+  private queued?: TileRange
+  private settle?: ReturnType<typeof setTimeout>
   private pending = 0
   private layer: string
   private matrixSet: string
@@ -144,6 +146,7 @@ export class DetailTiles {
     this.texture = new CanvasTexture(this.canvas)
     this.texture.colorSpace = SRGBColorSpace
     this.texture.minFilter = this.texture.magFilter = LinearFilter
+    this.texture.generateMipmaps = false // canvas is resized on every swap
   }
 
   private url(level: number, row: number, col: number) {
@@ -159,8 +162,16 @@ export class DetailTiles {
       return
     }
     const range = tileRange(lat, lng, level, this.grid)
-    if (sameRange(this.current, range) || this.pending > 0) return
-    this.load(range)
+    if (sameRange(this.current, range) || sameRange(this.queued, range) || this.pending > 0) return
+
+    // wait for the camera to settle: mid-gesture the block changes constantly,
+    // and every change is a multi-megabyte texture upload
+    this.queued = range
+    clearTimeout(this.settle)
+    this.settle = setTimeout(() => {
+      this.queued = undefined
+      if (!this.disabled) this.load(range)
+    }, 260)
   }
 
   private load(range: TileRange) {
@@ -232,6 +243,8 @@ export class DetailTiles {
   }
 
   dispose() {
+    clearTimeout(this.settle)
+    clearTimeout(this.timer)
     this.texture.dispose()
   }
 }

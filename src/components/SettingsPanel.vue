@@ -103,13 +103,39 @@ const hour = () => {
   top: 60px;
   right: 16px;
   width: min(300px, calc(100vw - 32px));
-  padding: 14px;
+  max-height: calc(100dvh - 76px - var(--rail));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 14px 14px;
   display: grid;
   gap: 18px;
-  z-index: 6;
+  z-index: 7;
 }
-.head { display: flex; justify-content: space-between; align-items: center; }
-.close { background: none; border: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+/* pinned so the close control stays reachable however long the panel grows */
+.head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0 8px;
+  margin: 0 -14px;
+  padding-inline: 14px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line-soft);
+}
+.close {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--frost);
+  font-size: 18px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
 .close:hover { color: var(--frost); }
 section { display: grid; gap: 8px; }
 .hint { margin: 0; font-size: 12px; color: var(--muted); }
@@ -142,6 +168,14 @@ section { display: grid; gap: 8px; }
 .row input { accent-color: var(--brass); }
 .slider { width: 100%; accent-color: var(--brass); }
 @media (max-width: 640px) {
-  .panel { top: auto; bottom: calc(var(--rail) + 12px); left: 16px; right: 16px; width: auto; }
+  /* anchored to the bottom, where the browser chrome cannot swallow it */
+  .panel {
+    top: auto;
+    bottom: calc(var(--rail) + 12px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: 58dvh;
+  }
 }
 </style>

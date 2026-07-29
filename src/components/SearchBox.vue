@@ -80,6 +80,14 @@ li:hover { background: rgba(227, 167, 88, 0.12); }
 .year { color: var(--brass); font-family: var(--cond); font-size: 11px; white-space: nowrap; }
 .empty { margin: 8px 10px 4px; font-size: 12.5px; color: var(--muted); }
 @media (max-width: 640px) {
-  .wrap { left: 16px; right: 16px; width: auto; }
+  .wrap {
+    top: auto;
+    bottom: calc(var(--rail) + 12px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: 58dvh;
+    overflow-y: auto;
+  }
 }
 </style>
