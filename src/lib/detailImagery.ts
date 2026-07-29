@@ -16,8 +16,12 @@ import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 
 /** Modern imagery shows modern cities; before this year it is an anachronism. */
 export const IMAGERY_ERA_FROM = 1930
 
-/** 30 m imagery supports a much closer approach than 500 m did. */
-export const MIN_ALTITUDE_DETAIL = 0.0007
+/**
+ * 10 m imagery only shows its worth close in. At the old floor the view was
+ * ~475 km across, where even a 500 m source is nearly adequate; this puts the
+ * closest view at roughly 100 km, where the difference is obvious.
+ */
+export const MIN_ALTITUDE_DETAIL = 0.00004
 export const MIN_ALTITUDE_PLAIN = 0.05
 
 export const minAltitudeFor = (year: number, detailEnabled: boolean): number =>
@@ -197,6 +201,8 @@ export class DetailImagery {
   attribution = ''
   /** Mip level at which the patch matches the base map's blur. */
   lod = 4
+  /** Ground resolution of the loaded patch, in metres per pixel. */
+  groundRes = 0
   onReady?: () => void
 
   private maxPx: number
@@ -210,7 +216,7 @@ export class DetailImagery {
   private disabled = false
 
   constructor(opts: DetailImageryOptions = {}) {
-    this.maxPx = opts.maxPx ?? 2048
+    this.maxPx = opts.maxPx ?? 1536
   }
 
   update(lat: number, lng: number, altitude: number, screenPx = 900, aspect = 1) {
@@ -262,6 +268,7 @@ export class DetailImagery {
     const src = this.sharpDisabled ? BASE_SOURCE : SHARP_SOURCE
     const { width, height } = imageSize(bbox, screenPx, this.maxPx, src.pxPerDeg)
     this.lod = detailLod(width, bbox.maxLng - bbox.minLng)
+    this.groundRes = ((bbox.maxLat - bbox.minLat) * 111_320) / height
 
     this.fetch(src, bbox, width, height, id, {
       fail: () => {

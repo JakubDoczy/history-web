@@ -305,10 +305,14 @@ export class GlobeSurface {
     this.material.uniforms.uFlatLight.value = v
   }
 
-  setClouds(visible: boolean, opacity = 1) {
+  setClouds(visible: boolean, opacity = 1, shadows = true) {
     const u = this.material.uniforms
     u.uCloudAlpha.value = visible ? opacity : 0
-    u.uCloudShadow.value = visible ? 0.5 * opacity : 0
+    u.uCloudShadow.value = visible && shadows ? 0.5 * opacity : 0
+  }
+
+  setRelief(strength: number) {
+    this.material.uniforms.uRelief_.value = strength
   }
 
   dispose() {

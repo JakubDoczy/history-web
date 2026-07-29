@@ -99,13 +99,11 @@ onMounted(() => {
   globe.globeMaterial(surface.material)
   surface.upgrade(MODERN_TEXTURE, HIRES_MODERN) // sharper basemap if NASA is reachable
 
-  globe.controls().autoRotate = true
   globe.controls().autoRotateSpeed = 0.5
-  dom.addEventListener('pointerdown', () => (globe!.controls().autoRotate = false), { once: true })
 
+  const radius = globe.getGlobeRadius()
   const cam = globe.camera()
   if (cam instanceof PerspectiveCamera) view.fov = cam.fov
-  const radius = globe.getGlobeRadius()
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
   detail = new DetailImagery()
@@ -114,6 +112,7 @@ onMounted(() => {
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel
     view.detailAttribution = detail!.attribution
+    view.detailGroundRes = detail!.groundRes
     surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
   }
 
@@ -130,6 +129,16 @@ onMounted(() => {
     const pov = globe!.pointOfView()
     // how close the camera may come depends on whether modern imagery is allowed
     globe!.controls().minDistance = radius * (1 + minAltitudeFor(time.currentTime, settings.detail))
+    // globe.gl pins near at 0.05, which is what limits how close the camera may
+    // come. Tracking it to the camera's own height keeps depth precision good
+    // while allowing a far closer approach.
+    if (cam instanceof PerspectiveCamera) {
+      const wanted = Math.max(0.004, radius * pov.altitude * 0.35)
+      if (Math.abs(cam.near - wanted) > wanted * 0.2) {
+        cam.near = wanted
+        cam.updateProjectionMatrix()
+      }
+    }
     const near = closeness(pov.altitude)
     view.altitude = pov.altitude
     view.detailStatus = detail!.status
@@ -148,7 +157,11 @@ onMounted(() => {
     }
     // clouds retire well before the ground fills the screen; haze lingers longer
     const cloudy = cloudFadeFor(visibleSpanDeg(pov.altitude))
-    surface!.setClouds(settings.clouds && cloudy > 0.01, (time.currentTime > -12000 ? 1 : 0) * cloudy)
+    surface!.setClouds(
+      settings.clouds && cloudy > 0.01,
+      (time.currentTime > -12000 ? 1 : 0) * cloudy,
+      settings.cloudShadows,
+    )
     atmosphere!.visible = settings.atmosphere && near < 0.9
   }
 
@@ -181,6 +194,8 @@ onMounted(() => {
   stops.push(
     watchEffect(() => globe!.pointsData(events.visible.filter((e) => !e.area))),
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
+    watchEffect(() => (globe!.controls().autoRotate = settings.autoRotate)),
+    watchEffect(() => surface!.setRelief(settings.relief ? 0.7 : 0)),
     watchEffect(() => surface!.setEra(textureBlend(PALEO_FRAMES, time.currentTime))),
     watchEffect(() => surface!.setCityLights(cityLightsFactor(time.currentTime))),
     // clouds are anachronistic detail in deep time, and would hide the plate drift

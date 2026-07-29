@@ -9,5 +9,6 @@ export const useViewStore = defineStore('view', {
     detailStatus: 'idle' as 'idle' | 'loading' | 'ready' | 'unavailable',
     detailSource: '—',
     detailAttribution: '',
+    detailGroundRes: 0,
   }),
 })
