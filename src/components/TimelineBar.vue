@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { useTimeStore } from '../stores/time'
-import { formatYear, type Year } from '../lib/time'
+import { formatYear, toWarp, fromWarp, type Year } from '../lib/time'
 
 const time = useTimeStore()
 const el = useTemplateRef('el')
@@ -15,16 +15,23 @@ onMounted(() => {
 })
 onBeforeUnmount(() => resizeObs.disconnect())
 
-const toX = (t: Year) => ((t - time.range.start) / time.span) * width.value
-const toT = (x: number): Year => time.range.start + (x / width.value) * time.span
+const ws = () => toWarp(time.range.start)
+const we = () => toWarp(time.range.end)
+const toX = (t: Year) => ((toWarp(t) - ws()) / (we() - ws())) * width.value
+const toT = (x: number): Year => fromWarp(ws() + (x / width.value) * (we() - ws()))
 
-/** Nice tick step: 1/2/5 × 10^n, aiming for ~100px spacing. */
+/** Ticks uniform in display space, each snapped to a locally-round year. */
 const ticks = computed(() => {
-  const target = time.span / (width.value / 100)
-  const pow = 10 ** Math.floor(Math.log10(target))
-  const step = [1, 2, 5, 10].map((m) => m * pow).find((s) => s >= target)!
+  const [a, b] = [toWarp(time.range.start), toWarp(time.range.end)]
+  const n = Math.max(2, Math.floor(width.value / 110))
   const out: Year[] = []
-  for (let t = Math.ceil(time.range.start / step) * step; t <= time.range.end; t += step) out.push(t)
+  for (let i = 0; i <= n; i++) {
+    const u = a + ((b - a) * i) / n
+    const local = fromWarp(u + (b - a) / n) - fromWarp(u) // local tick spacing in years
+    const step = 10 ** Math.floor(Math.log10(Math.max(1, Math.abs(local))))
+    const t = Math.round(fromWarp(u) / step) * step
+    if (t !== out[out.length - 1]) out.push(t)
+  }
   return out
 })
 
@@ -48,7 +55,7 @@ function onPointerMove(e: PointerEvent) {
   if (pointers.size === 1) {
     const dx = e.offsetX - pointers.get(e.pointerId)!
     if (Math.abs(dx) > 2) dragged = true
-    time.pan((-dx / width.value) * time.span)
+    time.pan(-dx / width.value)
   } else if (pointers.size === 2) {
     dragged = true
     const before = dist()
