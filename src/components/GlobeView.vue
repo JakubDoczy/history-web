@@ -113,6 +113,7 @@ onMounted(() => {
   detail.onReady = () => {
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel
+    view.detailAttribution = detail!.attribution
     surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
   }
 

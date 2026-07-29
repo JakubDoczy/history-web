@@ -127,3 +127,47 @@ describe('imagery source', () => {
     expect(BASE_SOURCE.label).toMatch(/Blue Marble/)
   })
 })
+
+import { SHARP_SOURCE, wmsUrl } from '../src/lib/detailImagery'
+
+describe('wmsUrl', () => {
+  const bbox = { minLat: 10, minLng: 20, maxLat: 30, maxLng: 50 }
+
+  it('uses lat,lng order and CRS for WMS 1.3.0', () => {
+    const url = wmsUrl(BASE_SOURCE, bbox, 512, 256)
+    expect(url).toContain('CRS=EPSG:4326')
+    expect(url).toContain('bbox=10,20,30,50')
+  })
+
+  it('uses lng,lat order and SRS for WMS 1.1.1', () => {
+    const url = wmsUrl(SHARP_SOURCE, bbox, 512, 256)
+    expect(url).toContain('SRS=EPSG:4326')
+    expect(url).toContain('bbox=20,10,50,30') // the axis order differs by version
+  })
+
+  it('carries the requested size and layer', () => {
+    const url = wmsUrl(SHARP_SOURCE, bbox, 1024, 512)
+    expect(url).toContain('width=1024')
+    expect(url).toContain('height=512')
+    expect(url).toContain(encodeURIComponent(SHARP_SOURCE.layers))
+  })
+
+  it('omits TIME unless the source is date-dependent', () => {
+    expect(wmsUrl(BASE_SOURCE, bbox, 256, 256)).not.toContain('TIME=')
+    expect(BASE_SOURCE.time).toBeUndefined()
+  })
+})
+
+describe('two-stage sources', () => {
+  it('keeps the fallback simple and the sharp source genuinely sharper', () => {
+    expect(BASE_SOURCE.layers).not.toContain(',')
+    expect(BASE_SOURCE.time).toBeUndefined()
+    expect(SHARP_SOURCE.pxPerDeg).toBeGreaterThan(BASE_SOURCE.pxPerDeg * 10)
+  })
+
+  it('carries attribution for both sources, as their licences require', () => {
+    expect(BASE_SOURCE.attribution).toBeTruthy()
+    expect(SHARP_SOURCE.attribution).toMatch(/EOX/)
+    expect(SHARP_SOURCE.attribution).toMatch(/Copernicus/)
+  })
+})

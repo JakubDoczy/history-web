@@ -90,33 +90,64 @@ const movedEnough = (a: Bbox | undefined, b: Bbox) => {
 }
 
 /**
- * Imagery comes from a single, well-registered global source.
+ * Imagery is fetched in two stages.
  *
- * A Landsat 30 m composite was tried here — sixteen times finer on paper — but
- * WELD is a land-only mosaic with patchy coverage and visible registration
- * problems, and it looked plainly wrong against Blue Marble. Resolution is not
- * worth much if the picture is in the wrong place, so this stays on the clean
- * 500 m basemap until a source is found that is both sharper *and* correct.
+ * Stage one is NASA Blue Marble: one static layer, no date, always available.
+ * It is displayed as soon as it arrives, so there is always *something*.
+ *
+ * Stage two is Sentinel-2 cloudless — a global, genuinely cloud-free 10 m
+ * mosaic, fifty times finer than Blue Marble. It is requested only after stage
+ * one has already been shown, so a failure costs sharpness and nothing else.
+ * An earlier attempt put an unverified sharp source first and one bad date took
+ * the whole feature down; this ordering makes that failure mode impossible.
  */
 export interface ImagerySource {
-  layers: string
-  time?: string
   label: string
-  /** Native resolution, in pixels per degree — 500 m ≈ 222 px/°. */
+  endpoint: string
+  layers: string
+  /** WMS 1.1.1 takes bbox as lng,lat and calls it SRS; 1.3.0 takes lat,lng and calls it CRS. */
+  version: '1.1.1' | '1.3.0'
+  /** Native resolution in pixels per degree; 500 m ≈ 222, 10 m ≈ 11100. */
   pxPerDeg: number
+  time?: string
+  attribution?: string
 }
 
 export const BASE_SOURCE: ImagerySource = {
   label: 'Blue Marble 500 m',
+  endpoint: 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi',
   layers: 'BlueMarble_ShadedRelief_Bathymetry',
+  version: '1.3.0',
   pxPerDeg: 222,
+  attribution: 'NASA GIBS / Worldview',
 }
 
-/**
- * Span at which the patch turns on and off. The two differ on purpose: a single
- * threshold makes the patch flicker on and off when the camera hovers near it,
- * because the tiniest zoom jitter crosses back and forth.
- */
+export const SHARP_SOURCE: ImagerySource = {
+  label: 'Sentinel-2 10 m',
+  endpoint: 'https://tiles.maps.eox.at/wms',
+  layers: 's2cloudless-2020',
+  version: '1.1.1',
+  pxPerDeg: 11100,
+  attribution:
+    'Sentinel-2 cloudless (s2maps.eu) by EOX IT Services GmbH — modified Copernicus Sentinel data 2020',
+}
+
+/** Builds a WMS GetMap request, honouring each version's axis-order convention. */
+export function wmsUrl(src: ImagerySource, b: Bbox, width: number, height: number): string {
+  const bbox =
+    src.version === '1.3.0'
+      ? `${b.minLat},${b.minLng},${b.maxLat},${b.maxLng}` // 1.3.0 EPSG:4326 is lat,lng
+      : `${b.minLng},${b.minLat},${b.maxLng},${b.maxLat}` // 1.1.1 is lng,lat
+  const crs = src.version === '1.3.0' ? `CRS=EPSG:4326` : `SRS=EPSG:4326`
+  return (
+    `${src.endpoint}?service=WMS&request=GetMap&version=${src.version}` +
+    `&format=image/jpeg&styles=&transparent=false` +
+    `&${crs}&bbox=${bbox}&width=${width}&height=${height}` +
+    `&layers=${encodeURIComponent(src.layers)}` +
+    (src.time ? `&TIME=${src.time}` : '')
+  )
+}
+
 export const PATCH_ON_BELOW = 42
 export const PATCH_OFF_ABOVE = 55
 
@@ -130,6 +161,7 @@ export class DetailImagery {
   mix = 0
   status: 'idle' | 'loading' | 'ready' | 'unavailable' = 'idle'
   sourceLabel = '—'
+  attribution = ''
   onReady?: () => void
 
   private maxPx: number
@@ -137,23 +169,13 @@ export class DetailImagery {
   private requestId = 0
   private settle?: ReturnType<typeof setTimeout>
   private strikes = 0
+  private sharpStrikes = 0
+  private sharpDisabled = false
   private shown = false
   private disabled = false
 
   constructor(opts: DetailImageryOptions = {}) {
     this.maxPx = opts.maxPx ?? 2560
-  }
-
-  private url(src: ImagerySource, b: Bbox, width: number, height: number) {
-    // WMS 1.3.0 with EPSG:4326 takes bbox in lat,lng order
-    return (
-      'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi' +
-      '?version=1.3.0&service=WMS&request=GetMap&format=image/jpeg&STYLE=default' +
-      '&CRS=EPSG:4326' +
-      `&bbox=${b.minLat},${b.minLng},${b.maxLat},${b.maxLng}` +
-      `&WIDTH=${width}&HEIGHT=${height}&layers=${encodeURIComponent(src.layers)}` +
-      (src.time ? `&TIME=${src.time}` : '')
-    )
   }
 
   update(lat: number, lng: number, altitude: number, viewportPx = 900) {
@@ -181,7 +203,7 @@ export class DetailImagery {
         this.shown = true
         this.mix = 1
         this.status = 'ready'
-        this.sourceLabel = BASE_SOURCE.label
+        this.sourceLabel = this.sourceLabel === '—' ? BASE_SOURCE.label : this.sourceLabel
         this.onReady?.()
       }
       return
@@ -194,10 +216,25 @@ export class DetailImagery {
 
   private load(bbox: Bbox, viewportPx: number) {
     const id = ++this.requestId
-    const { width, height } = imageSize(bbox, viewportPx, this.maxPx, BASE_SOURCE.pxPerDeg)
     this.status = 'loading'
 
-    this.fetch(BASE_SOURCE, bbox, width, height, id, {
+    const sizeFor = (src: ImagerySource) =>
+      imageSize(bbox, viewportPx, this.maxPx, src.pxPerDeg)
+
+    // stage one: the source that always works
+    const base = sizeFor(BASE_SOURCE)
+    this.fetch(BASE_SOURCE, bbox, base.width, base.height, id, {
+      ok: () => {
+        // stage two: replace it with something far sharper, if we can
+        if (this.sharpDisabled) return
+        const sharp = sizeFor(SHARP_SOURCE)
+        this.fetch(SHARP_SOURCE, bbox, sharp.width, sharp.height, id, {
+          fail: () => {
+            this.sharpStrikes++
+            if (this.sharpStrikes >= 2) this.sharpDisabled = true
+          },
+        })
+      },
       fail: () => {
         this.strikes++
         if (this.strikes >= 3) {
@@ -221,18 +258,18 @@ export class DetailImagery {
     img.crossOrigin = 'anonymous'
     img.onload = () => {
       if (id !== this.requestId) return // a newer view has superseded this one
-      this.adopt(img, bbox, src.label)
+      this.adopt(img, bbox, src.label, src.attribution)
       handlers.ok?.()
     }
     img.onerror = () => {
       if (id !== this.requestId) return
       handlers.fail?.()
     }
-    img.src = this.url(src, bbox, width, height)
+    img.src = wmsUrl(src, bbox, width, height)
   }
 
   /** Image and its rectangle are taken up together, so they cannot disagree. */
-  private adopt(img: HTMLImageElement, bbox: Bbox, label: string) {
+  private adopt(img: HTMLImageElement, bbox: Bbox, label: string, attribution = '') {
     const next = new Texture(img)
     next.colorSpace = SRGBColorSpace
     next.minFilter = next.magFilter = LinearFilter
@@ -247,6 +284,7 @@ export class DetailImagery {
     this.shown = true
     this.status = 'ready'
     this.sourceLabel = label
+    this.attribution = attribution
     this.strikes = 0
     previous?.dispose()
     this.onReady?.()

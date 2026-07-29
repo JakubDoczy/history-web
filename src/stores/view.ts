@@ -8,5 +8,6 @@ export const useViewStore = defineStore('view', {
     viewportPx: 900,
     detailStatus: 'idle' as 'idle' | 'loading' | 'ready' | 'unavailable',
     detailSource: '—',
+    detailAttribution: '',
   }),
 })

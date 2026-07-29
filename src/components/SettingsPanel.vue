@@ -69,7 +69,9 @@ const hour = () => {
         <template v-if="view.detailStatus === 'ready'"> Source: {{ view.detailSource }}.</template>
       </p>
       <p class="hint">Available from 1930 onward — earlier than that, satellite imagery would show modern cities.</p>
-      <p class="hint credit">Imagery: NASA GIBS / Worldview</p>
+      <p class="hint credit">
+        {{ view.detailAttribution || 'Imagery: NASA GIBS / Worldview' }}
+      </p>
       <label class="row">
         <input type="checkbox" :checked="settings.scaleBar" @change="settings.toggle('scaleBar')" />
         <span>Show scale bar</span>
