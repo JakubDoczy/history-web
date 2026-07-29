@@ -1,6 +1,6 @@
 # Cloud Cover — Research & Plan
 
-Status: draft v0.1 · 2026-07-29
+Status: v0.2 · 2026-07-29 — **outcome recorded, see §7**
 Module: `src/clouds/` (self-contained; the globe consumes one interface)
 
 ## 1. Why the current implementation looks wrong
@@ -141,3 +141,23 @@ GIBS "real clouds today" mode.
    worth the GIBS dependency?
 3. Do we ever want clouds to cast shadows on the surface? Cheap approximation exists
    (project coverage onto the day/night shader) — decide after Phase C.
+
+
+## 7. Outcome
+
+The volumetric shell (phase C) was built and rejected: at globe scale the slab has to
+be exaggerated to hundreds of kilometres thick before raymarching shows anything, and
+that thickness is exactly what makes it look wrong. Real clouds are ~10 km deep against
+a 6371 km radius — from orbit they are a *film*, not a volume.
+
+**Shipped instead:** a thin lit shell at 1.003 R using a satellite-derived coverage
+mask, with the surface picking up cloud shadows offset along the sun ray. The fine
+filament structure that procedural noise never achieved comes free, because the mask
+is made from photographs. Lighting is ours: terminator matched to the ground shader,
+warm band at sunrise/sunset, near-transparent night side.
+
+Phases A/B (the coverage simulation) are **parked, not deleted** — `src/clouds/field.ts`
+and `wind.ts` remain tested and exported, and could later modulate coverage over time
+or drive weather for non-present eras. They are not in the render path.
+
+Retired: `cloudShell.ts`, `noise3d.ts`, `shaders/cloud.glsl.ts`, `scripts/gen_clouds.py`.

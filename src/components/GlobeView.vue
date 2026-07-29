@@ -12,7 +12,7 @@ import { PaleoLayer } from '../lib/paleoLayer'
 import { DayNightLayer } from '../lib/dayNightLayer'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { AtmosphereLayer } from '../lib/skyLayer'
-import { CloudShell } from '../clouds'
+import { CloudLayer } from '../clouds'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE } from '../data/paleoTextures'
@@ -27,7 +27,7 @@ let globe: GlobeInstance | undefined
 let paleo: PaleoLayer | undefined
 let dayNight: DayNightLayer | undefined
 let celestial: CelestialLayer | undefined
-let clouds: CloudShell | undefined
+let clouds: CloudLayer | undefined
 let atmosphere: AtmosphereLayer | undefined
 let raf = 0
 let resizeObs: ResizeObserver | undefined
@@ -94,21 +94,16 @@ onMounted(() => {
   dayNight = new DayNightLayer(globe.scene(), radius, MODERN_TEXTURE, NIGHT_TEXTURE)
   paleo = new PaleoLayer(globe.scene(), radius, MODERN_TEXTURE)
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
-  // fewer march steps on small screens; jittered sampling keeps quality acceptable
-  const lean = window.innerWidth < 820 || window.devicePixelRatio > 2.5
-  clouds = new CloudShell(globe.scene(), radius, {
-    viewSteps: lean ? 24 : 36,
-    lightSteps: lean ? 3 : 4,
-  })
+  clouds = new CloudLayer(globe.scene(), radius, `${base}textures/clouds.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
 
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  let last = performance.now()
+  const t0 = performance.now()
   const tick = () => {
-    const now = performance.now()
-    const dt = Math.min(0.1, (now - last) / 1000)
-    last = now
-    if (!still) clouds!.update(dt)
+    if (!still) {
+      clouds!.drift((performance.now() - t0) / 1000)
+      dayNight!.setClouds(clouds!.texture, clouds!.rotation, settings.clouds ? 0.5 : 0)
+    }
     raf = requestAnimationFrame(tick)
   }
   tick()
@@ -136,8 +131,11 @@ onMounted(() => {
       clouds!.setSun(dir)
     }),
     // clouds are anachronistic detail in deep time, and hide the plate drift
-    watchEffect(() => clouds!.setCoverage(time.currentTime > -12000 ? 1 : 0)),
-    watchEffect(() => (clouds!.visible = settings.clouds)),
+    watchEffect(() => clouds!.setOpacity(time.currentTime > -12000 ? 1 : 0)),
+    watchEffect(() => {
+      clouds!.visible = settings.clouds
+      dayNight!.setClouds(clouds!.texture, clouds!.rotation, settings.clouds ? 0.5 : 0)
+    }),
     watchEffect(() => (atmosphere!.visible = settings.atmosphere)),
   )
 
