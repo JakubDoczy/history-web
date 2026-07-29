@@ -55,7 +55,7 @@ const hour = () => {
         <input type="checkbox" :checked="settings.detail" @change="settings.toggle('detail')" />
         <span>Stream high-detail imagery</span>
       </label>
-      <p class="hint">Loads sharper NASA tiles for the area you zoom into.</p>
+      <p class="hint">Loads sharper NASA tiles as you zoom in. Available from 1930 onward — earlier than that, satellite imagery would show modern cities.</p>
     </section>
 
     <section>

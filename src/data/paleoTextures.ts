@@ -17,3 +17,14 @@ export const PALEO_FRAMES: TextureKeyframe[] = [
   ...frames.map((f) => ({ time: f.time, url: `${base}textures/paleo/${f.file}` })),
   { time: -10_000, url: MODERN_TEXTURE },
 ]
+
+/**
+ * Sharper whole-world basemap from NASA GIBS, fetched as one WMS image. Used to
+ * upgrade MODERN_TEXTURE after load; if the request fails the CDN texture stays.
+ * Note WMS 1.3.0 with EPSG:4326 takes bbox as lat,lng order.
+ */
+export const HIRES_MODERN =
+  'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi' +
+  '?version=1.3.0&service=WMS&request=GetMap&format=image/jpeg&STYLE=default' +
+  '&CRS=EPSG:4326&bbox=-90,-180,90,180&WIDTH=4096&HEIGHT=2048' +
+  '&layers=BlueMarble_ShadedRelief_Bathymetry'

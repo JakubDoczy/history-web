@@ -14,6 +14,20 @@ import { CanvasTexture, LinearFilter, SRGBColorSpace } from 'three'
 
 export const TILE_PX = 512
 
+/**
+ * Modern satellite imagery shows modern cities, fields and reservoirs. Before
+ * this year it would be an anachronism, so close zoom is barred and the base
+ * map carries the view instead.
+ */
+export const IMAGERY_ERA_FROM = 1930
+
+/** Closest the camera may come, in globe radii of altitude. */
+export const MIN_ALTITUDE_DETAIL = 0.0014 // view ~6° across, matching 500 m imagery
+export const MIN_ALTITUDE_PLAIN = 0.05 // without detail, stay back where the base map holds up
+
+export const minAltitudeFor = (year: number, detailEnabled: boolean): number =>
+  detailEnabled && year >= IMAGERY_ERA_FROM ? MIN_ALTITUDE_DETAIL : MIN_ALTITUDE_PLAIN
+
 export const degPerTile = (level: number) => 180 / 2 ** level
 
 /** Angular radius of the visible cap, in degrees, for a camera altitude in globe radii. */

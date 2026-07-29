@@ -2,12 +2,12 @@ import {
   GLSL3,
   ShaderMaterial,
   SRGBColorSpace,
+  Texture,
   TextureLoader,
   Vector2,
   Vector3,
   Vector4,
   RepeatWrapping,
-  type Texture,
   type WebGLRenderer,
 } from 'three'
 import type { TextureBlend } from './paleo'
@@ -48,7 +48,7 @@ uniform float uEraMix;        // 0 = A, 1 = B
 uniform sampler2D uNight;     // city lights
 uniform sampler2D uRelief;    // topography, used as a height field
 uniform sampler2D uClouds;    // cloud coverage mask
-uniform sampler2D uDetail;    // high-resolution patch over the viewed region
+uniform sampler2D uDetail;    // streamed high-resolution patch over the viewed region
 uniform vec4 uDetailRect;     // u0, v0, du, dv of that patch
 uniform float uDetailMix;
 uniform vec3 uSunDir;
@@ -58,9 +58,6 @@ uniform float uCloudAlpha;    // 0 hides clouds
 uniform float uCloudShadow;
 uniform float uRelief_;       // relief strength
 uniform vec2 uTexel;          // 1 / relief texture size
-uniform sampler2D uDetail;    // streamed high-resolution patch
-uniform vec4 uDetailRect;     // u0, v0, du, dv of that patch
-uniform float uDetailMix;
 uniform float uFlatLight;     // 1 = ignore the terminator (close-up imagery is already lit)
 
 const float PI = 3.14159265;
@@ -84,8 +81,8 @@ void main() {
 
   float cosSun = dot(nRelief, uSunDir);
   float cosGeo = dot(n, uSunDir);           // geometric terminator, no relief
-  float daylight = smoothstep(-0.18, 0.22, cosGeo);
-  float lambert = clamp(cosSun * 0.65 + 0.45, 0.0, 1.3);
+  float daylight = mix(smoothstep(-0.18, 0.22, cosGeo), 1.0, uFlatLight);
+  float lambert = mix(clamp(cosSun * 0.65 + 0.45, 0.0, 1.3), 1.0, uFlatLight);
 
   // --- surface: crossfade between two era textures (both are the modern map today) ---
   vec3 albedo = mix(texture(uEraA, vUv).rgb, texture(uEraB, vUv).rgb, uEraMix);
@@ -199,6 +196,33 @@ export class GlobeSurface {
       this.cache.set(url, t)
     }
     return t
+  }
+
+  /**
+   * Try to replace an already-loaded map with a sharper source. If the request
+   * fails — offline, blocked, rate-limited — the original stays in place and
+   * nothing visibly changes, so this can never leave the globe worse off.
+   */
+  upgrade(url: string, betterUrl: string) {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const sharper = new Texture(img)
+      sharper.colorSpace = SRGBColorSpace
+      sharper.anisotropy = this.maxAniso
+      sharper.wrapS = RepeatWrapping
+      sharper.needsUpdate = true
+      const previous = this.cache.get(url)
+      this.cache.set(url, sharper)
+      for (const key of ['uEraA', 'uEraB', 'uNight']) {
+        if (this.material.uniforms[key].value === previous) {
+          this.material.uniforms[key].value = sharper
+        }
+      }
+      previous?.dispose()
+    }
+    img.onerror = () => {} // keep what we have
+    img.src = betterUrl
   }
 
   setEra({ from, to, f }: TextureBlend) {

@@ -10,11 +10,11 @@ import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { AtmosphereLayer } from '../lib/skyLayer'
-import { DetailTiles, visibleSpanDeg } from '../lib/detailTiles'
+import { DetailTiles, visibleSpanDeg, minAltitudeFor, IMAGERY_ERA_FROM } from '../lib/detailTiles'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
-import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE } from '../data/paleoTextures'
+import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE, HIRES_MODERN } from '../data/paleoTextures'
 
 const events = useEventStore()
 const nations = useNationStore()
@@ -94,6 +94,7 @@ onMounted(() => {
     globe.renderer(),
   )
   globe.globeMaterial(surface.material)
+  surface.upgrade(MODERN_TEXTURE, HIRES_MODERN) // sharper basemap if NASA is reachable
 
   globe.controls().autoRotate = true
   globe.controls().autoRotateSpeed = 0.5
@@ -104,8 +105,8 @@ onMounted(() => {
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
   detail = new DetailTiles({ grid: window.innerWidth < 820 ? 2 : 3 })
 
-  // let the camera come far closer than the default, so streamed detail pays off
-  globe.controls().minDistance = radius * 1.0006
+  /** Detail imagery is modern, so it is only offered within the satellite era. */
+  const detailAllowed = () => settings.detail && time.currentTime >= IMAGERY_ERA_FROM
 
   /** 0 far out, 1 close in — drives detail streaming and retires the sky effects. */
   const closeness = (altitude: number) => {
@@ -115,9 +116,11 @@ onMounted(() => {
 
   const applyPov = () => {
     const pov = globe!.pointOfView()
+    // how close the camera may come depends on whether modern imagery is allowed
+    globe!.controls().minDistance = radius * (1 + minAltitudeFor(time.currentTime, settings.detail))
     const near = closeness(pov.altitude)
     surface!.setFlatLight(near)
-    if (settings.detail) {
+    if (detailAllowed()) {
       detail!.update(pov.lat, pov.lng, pov.altitude)
       surface!.setDetail(detail!.texture, detail!.rect, detail!.mix)
     } else {

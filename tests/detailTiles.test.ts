@@ -104,3 +104,21 @@ describe('rangeToUvRect', () => {
     expect(v).toBeLessThanOrEqual(v0 + dv)
   })
 })
+
+import { minAltitudeFor, IMAGERY_ERA_FROM, MIN_ALTITUDE_DETAIL, MIN_ALTITUDE_PLAIN } from '../src/lib/detailTiles'
+
+describe('zoom limits', () => {
+  it('allows close zoom only within the satellite era', () => {
+    expect(minAltitudeFor(2000, true)).toBe(MIN_ALTITUDE_DETAIL)
+    expect(minAltitudeFor(IMAGERY_ERA_FROM, true)).toBe(MIN_ALTITUDE_DETAIL)
+  })
+  it('holds the camera back before it, so modern cities never appear in antiquity', () => {
+    for (const year of [1929, 1800, 1066, -250e6]) {
+      expect(minAltitudeFor(year, true)).toBe(MIN_ALTITUDE_PLAIN)
+    }
+    expect(MIN_ALTITUDE_PLAIN).toBeGreaterThan(MIN_ALTITUDE_DETAIL)
+  })
+  it('also holds back when the user has turned detail off', () => {
+    expect(minAltitudeFor(2020, false)).toBe(MIN_ALTITUDE_PLAIN)
+  })
+})
