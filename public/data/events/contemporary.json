@@ -1,0 +1,1286 @@
+[
+ {
+  "id": "trinity",
+  "name": "Trinity nuclear test",
+  "start": 1945,
+  "lat": 33.68,
+  "lng": -106.48,
+  "priority": 78,
+  "tags": [
+   "science",
+   "war"
+  ],
+  "parent": "ww2",
+  "summary": "The first detonation of a nuclear weapon, in the New Mexico desert before dawn on 16 July 1945.",
+  "body": "Part of [World War II](event:ww2). The product of the Manhattan Project, it made the [bombing of Hiroshima](event:hiroshima) possible three weeks later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trinity_(nuclear_test)).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Trinity_(nuclear_test)"
+   }
+  ]
+ },
+ {
+  "id": "hiroshima",
+  "name": "Atomic bombings of Hiroshima and Nagasaki",
+  "start": 1945,
+  "lat": 34.39,
+  "lng": 132.45,
+  "priority": 84,
+  "tags": [
+   "war",
+   "science"
+  ],
+  "parent": "ww2",
+  "summary": "Two atomic bombs killed well over 100,000 people; Japan surrendered within days.",
+  "body": "Part of [World War II](event:ww2). They remain the only use of nuclear weapons in war. The threat of their use structured the entire [Cold War](event:cold-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atomic_bombings_of_Hiroshima_and_Nagasaki).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Atomic_bombings_of_Hiroshima_and_Nagasaki"
+   }
+  ]
+ },
+ {
+  "id": "un-founded",
+  "name": "United Nations founded",
+  "start": 1945,
+  "lat": 37.78,
+  "lng": -122.42,
+  "priority": 76,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Fifty states signed the UN Charter in San Francisco, creating a permanent forum and a Security Council with teeth on paper.",
+  "body": "The Universal Declaration of Human Rights followed in 1948.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/United_Nations).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/United_Nations"
+   }
+  ]
+ },
+ {
+  "id": "decolonisation",
+  "name": "Decolonisation",
+  "start": 1945,
+  "end": 1975,
+  "lat": 0.0,
+  "lng": 20.0,
+  "area": [
+   [
+    -17,
+    15
+   ],
+   [
+    -17,
+    28
+   ],
+   [
+    10,
+    34
+   ],
+   [
+    32,
+    32
+   ],
+   [
+    43,
+    12
+   ],
+   [
+    51,
+    12
+   ],
+   [
+    40,
+    -5
+   ],
+   [
+    35,
+    -25
+   ],
+   [
+    20,
+    -35
+   ],
+   [
+    12,
+    -18
+   ],
+   [
+    8,
+    4
+   ],
+   [
+    -8,
+    5
+   ],
+   [
+    -17,
+    10
+   ]
+  ],
+  "priority": 82,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Within thirty years of the Second World War, the European overseas empires dissolved into some seventy new states.",
+  "body": "It began with [India](event:indian-independence) in 1947 and accelerated through Africa after 1957; some transitions were negotiated, others — Algeria, Vietnam, Angola — were long wars.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Decolonization).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Decolonization"
+   }
+  ]
+ },
+ {
+  "id": "indian-independence",
+  "name": "Independence of India and Pakistan",
+  "start": 1947,
+  "lat": 28.61,
+  "lng": 77.21,
+  "priority": 84,
+  "tags": [
+   "politics"
+  ],
+  "parent": "decolonisation",
+  "summary": "Britain withdrew from South Asia, and the subcontinent was divided into two states.",
+  "body": "Part of [Decolonisation](event:decolonisation). Independence was the culmination of decades of mass campaigning, including [Gandhi's Salt March](event:salt-march). [Partition](event:partition) accompanied it: 10–20 million displaced and perhaps a million killed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Indian_independence_movement).",
+  "links": [
+   {
+    "label": "Decolonisation",
+    "event": "decolonisation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Indian_independence_movement"
+   }
+  ]
+ },
+ {
+  "id": "partition",
+  "name": "Partition of India",
+  "start": 1947,
+  "lat": 31.55,
+  "lng": 74.34,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "disaster"
+  ],
+  "parent": "indian-independence",
+  "summary": "Hastily drawn borders through Punjab and Bengal triggered the largest mass migration in history and appalling communal violence.",
+  "body": "Part of [Independence of India and Pakistan](event:indian-independence). Hastily drawn borders through Punjab and Bengal triggered the largest mass migration in history and appalling communal violence.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Partition_of_India).",
+  "links": [
+   {
+    "label": "Independence of India and Pakistan",
+    "event": "indian-independence"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Partition_of_India"
+   }
+  ]
+ },
+ {
+  "id": "cold-war",
+  "name": "The Cold War",
+  "start": 1947,
+  "end": 1991,
+  "lat": 50.0,
+  "lng": 20.0,
+  "priority": 95,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "For forty-four years the United States and the Soviet Union confronted each other everywhere except in direct battle.",
+  "body": "It ran through the [Berlin blockade](event:berlin-blockade), [Korea](event:korean-war), the [Cuban Missile Crisis](event:cuban-missile-crisis) — the closest the world has come to nuclear war — [Vietnam](event:vietnam-war), and the [Berlin Wall](event:berlin-wall).\n\nIt also drove the [Space Race](event:space-race). It ended with the [fall of the Wall](event:berlin-wall-fall) and the [collapse of the Soviet Union](event:soviet-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cold_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cold_War"
+   }
+  ]
+ },
+ {
+  "id": "transistor",
+  "name": "Invention of the transistor",
+  "start": 1947,
+  "lat": 40.68,
+  "lng": -74.4,
+  "priority": 80,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Bell Labs built a solid-state amplifier and switch, the component from which all modern electronics is made.",
+  "body": "Shrinking transistors — from one per device to tens of billions on a [chip](event:microprocessor) — is the single trend behind computing, communications and the [internet](event:internet).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Transistor).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Transistor"
+   }
+  ]
+ },
+ {
+  "id": "israel-founded",
+  "name": "Founding of the State of Israel",
+  "start": 1948,
+  "lat": 32.07,
+  "lng": 34.79,
+  "priority": 74,
+  "tags": [
+   "politics",
+   "religion"
+  ],
+  "summary": "Israel declared independence as the British mandate ended; war with its Arab neighbours followed immediately, displacing some 700,000 Palestinians.",
+  "body": "Israel declared independence as the British mandate ended; war with its Arab neighbours followed immediately, displacing some 700,000 Palestinians.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Israeli_Declaration_of_Independence).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Israeli_Declaration_of_Independence"
+   }
+  ]
+ },
+ {
+  "id": "berlin-blockade",
+  "name": "Berlin Blockade and Airlift",
+  "start": 1948,
+  "end": 1949,
+  "lat": 52.47,
+  "lng": 13.4,
+  "priority": 54,
+  "tags": [
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "The Soviets cut off West Berlin; Allied aircraft supplied the city for eleven months.",
+  "body": "Part of [The Cold War](event:cold-war). The Soviets cut off West Berlin; Allied aircraft supplied the city for eleven months.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Berlin_Blockade).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Berlin_Blockade"
+   }
+  ]
+ },
+ {
+  "id": "prc-founded",
+  "name": "People's Republic of China proclaimed",
+  "start": 1949,
+  "lat": 39.9,
+  "lng": 116.39,
+  "priority": 82,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Mao Zedong declared the PRC from Tiananmen after the Communist victory in the civil war.",
+  "body": "The following decades brought land reform, the famine of the Great Leap Forward, the [Cultural Revolution](event:cultural-revolution) and, after 1978, the reforms that made China the world's second-largest economy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Proclamation_of_the_People%27s_Republic_of_China).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Proclamation_of_the_People%27s_Republic_of_China"
+   }
+  ]
+ },
+ {
+  "id": "korean-war",
+  "name": "Korean War",
+  "start": 1950,
+  "end": 1953,
+  "lat": 38.0,
+  "lng": 127.5,
+  "priority": 70,
+  "tags": [
+   "war"
+  ],
+  "parent": "cold-war",
+  "summary": "North Korean, Chinese, American and UN forces fought to a stalemate close to the original border; no peace treaty was ever signed.",
+  "body": "Part of [The Cold War](event:cold-war). North Korean, Chinese, American and UN forces fought to a stalemate close to the original border; no peace treaty was ever signed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Korean_War).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Korean_War"
+   }
+  ]
+ },
+ {
+  "id": "green-revolution",
+  "name": "Green Revolution",
+  "start": 1950,
+  "end": 1970,
+  "lat": 19.43,
+  "lng": -99.13,
+  "priority": 76,
+  "tags": [
+   "technology",
+   "biology"
+  ],
+  "summary": "High-yield dwarf wheat and rice, fertiliser and irrigation roughly tripled cereal yields in the developing world.",
+  "body": "Norman Borlaug's varieties are credited with averting famine for a billion people, at the cost of heavy fertiliser and water use.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Green_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Green_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "dna-structure",
+  "name": "Structure of DNA",
+  "start": 1953,
+  "lat": 52.2,
+  "lng": 0.12,
+  "priority": 88,
+  "tags": [
+   "science",
+   "biology"
+  ],
+  "summary": "Watson and Crick, using Rosalind Franklin's X-ray data, described the double helix — and with it, how genes copy themselves.",
+  "body": "Molecular biology, genetic engineering, [the Human Genome Project](event:human-genome) and [CRISPR](event:crispr) all follow from this two-page paper.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nucleic_acid_double_helix).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Nucleic_acid_double_helix"
+   }
+  ]
+ },
+ {
+  "id": "civil-rights",
+  "name": "American civil rights movement",
+  "start": 1954,
+  "end": 1968,
+  "lat": 32.37,
+  "lng": -86.3,
+  "priority": 80,
+  "tags": [
+   "politics"
+  ],
+  "summary": "A mass campaign of boycotts, marches and litigation dismantled legal segregation in the United States.",
+  "body": "From *Brown v. Board* and the Montgomery bus boycott through the [March on Washington](event:march-washington) to the [Civil Rights Act](event:civil-rights-act) and the Voting Rights Act, and the [assassination of Martin Luther King](event:mlk-assassination).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Civil_rights_movement).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Civil_rights_movement"
+   }
+  ]
+ },
+ {
+  "id": "vietnam-war",
+  "name": "Vietnam War",
+  "start": 1955,
+  "end": 1975,
+  "lat": 16.0,
+  "lng": 107.0,
+  "priority": 76,
+  "tags": [
+   "war"
+  ],
+  "parent": "cold-war",
+  "summary": "Two decades of war ended with American withdrawal and the unification of Vietnam under the north.",
+  "body": "Part of [The Cold War](event:cold-war). Perhaps three million Vietnamese died. Televised coverage and mass protest changed how Western democracies relate to their own wars.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vietnam_War).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Vietnam_War"
+   }
+  ]
+ },
+ {
+  "id": "space-race",
+  "name": "The Space Race",
+  "start": 1957,
+  "end": 1975,
+  "lat": 28.57,
+  "lng": -80.65,
+  "priority": 86,
+  "tags": [
+   "exploration",
+   "science"
+  ],
+  "parent": "cold-war",
+  "summary": "The superpowers competed to reach orbit, then the Moon, in a contest of prestige with military roots.",
+  "body": "Part of [The Cold War](event:cold-war). It ran from [Sputnik](event:sputnik) through [Gagarin](event:gagarin) to the [Apollo programme](event:apollo-program), and ended symbolically with a US–Soviet docking in orbit in 1975.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Space_Race).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Space_Race"
+   }
+  ]
+ },
+ {
+  "id": "sputnik",
+  "name": "Sputnik 1",
+  "start": 1957,
+  "lat": 45.92,
+  "lng": 63.34,
+  "priority": 76,
+  "tags": [
+   "exploration",
+   "technology"
+  ],
+  "parent": "space-race",
+  "summary": "The first artificial satellite beeped overhead every 96 minutes and stunned the United States into action.",
+  "body": "Part of [The Space Race](event:space-race). The first artificial satellite beeped overhead every 96 minutes and stunned the United States into action.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sputnik_1).",
+  "links": [
+   {
+    "label": "The Space Race",
+    "event": "space-race"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Sputnik_1"
+   }
+  ]
+ },
+ {
+  "id": "berlin-wall",
+  "name": "Berlin Wall built",
+  "start": 1961,
+  "lat": 52.52,
+  "lng": 13.38,
+  "priority": 64,
+  "tags": [
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "East Germany walled off West Berlin overnight to stop the flight of its population.",
+  "body": "Part of [The Cold War](event:cold-war). East Germany walled off West Berlin overnight to stop the flight of its population.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Berlin_Wall).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Berlin_Wall"
+   }
+  ]
+ },
+ {
+  "id": "gagarin",
+  "name": "Yuri Gagarin orbits the Earth",
+  "start": 1961,
+  "lat": 45.92,
+  "lng": 63.34,
+  "priority": 80,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "space-race",
+  "summary": "The first human in space completed a single orbit aboard Vostok 1 and landed by parachute.",
+  "body": "Part of [The Space Race](event:space-race). The first human in space completed a single orbit aboard Vostok 1 and landed by parachute.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Yuri_Gagarin).",
+  "links": [
+   {
+    "label": "The Space Race",
+    "event": "space-race"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Yuri_Gagarin"
+   }
+  ]
+ },
+ {
+  "id": "apollo-program",
+  "name": "Apollo programme",
+  "start": 1961,
+  "end": 1972,
+  "lat": 28.57,
+  "lng": -80.65,
+  "priority": 76,
+  "tags": [
+   "exploration",
+   "science"
+  ],
+  "parent": "space-race",
+  "summary": "Kennedy's commitment to land a man on the Moon before the decade was out mobilised 400,000 people and 4% of the federal budget.",
+  "body": "Part of [The Space Race](event:space-race). Kennedy's commitment to land a man on the Moon before the decade was out mobilised 400,000 people and 4% of the federal budget.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_program).",
+  "links": [
+   {
+    "label": "The Space Race",
+    "event": "space-race"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Apollo_program"
+   }
+  ]
+ },
+ {
+  "id": "cuban-missile-crisis",
+  "name": "Cuban Missile Crisis",
+  "start": 1962,
+  "lat": 23.0,
+  "lng": -82.0,
+  "priority": 78,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "parent": "cold-war",
+  "summary": "Thirteen days in October 1962 brought the superpowers closer to nuclear war than at any other moment.",
+  "body": "Part of [The Cold War](event:cold-war). Soviet missiles in Cuba were withdrawn in exchange for a US pledge not to invade and the quiet removal of American missiles from Turkey. A direct Moscow–Washington hotline followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cuban_Missile_Crisis).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cuban_Missile_Crisis"
+   }
+  ]
+ },
+ {
+  "id": "march-washington",
+  "name": "March on Washington",
+  "start": 1963,
+  "lat": 38.89,
+  "lng": -77.05,
+  "priority": 64,
+  "tags": [
+   "politics"
+  ],
+  "parent": "civil-rights",
+  "summary": "A quarter of a million people gathered at the Lincoln Memorial to hear King's \"I Have a Dream\" speech.",
+  "body": "Part of [American civil rights movement](event:civil-rights). A quarter of a million people gathered at the Lincoln Memorial to hear King's \"I Have a Dream\" speech.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/March_on_Washington_for_Jobs_and_Freedom).",
+  "links": [
+   {
+    "label": "American civil rights movement",
+    "event": "civil-rights"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/March_on_Washington_for_Jobs_and_Freedom"
+   }
+  ]
+ },
+ {
+  "id": "civil-rights-act",
+  "name": "Civil Rights Act of 1964",
+  "start": 1964,
+  "lat": 38.9,
+  "lng": -77.04,
+  "priority": 72,
+  "tags": [
+   "politics"
+  ],
+  "parent": "civil-rights",
+  "summary": "Federal law outlawed discrimination by race, colour, religion, sex or national origin in employment and public accommodation.",
+  "body": "Part of [American civil rights movement](event:civil-rights). Federal law outlawed discrimination by race, colour, religion, sex or national origin in employment and public accommodation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Civil_Rights_Act_of_1964).",
+  "links": [
+   {
+    "label": "American civil rights movement",
+    "event": "civil-rights"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Civil_Rights_Act_of_1964"
+   }
+  ]
+ },
+ {
+  "id": "cultural-revolution",
+  "name": "Cultural Revolution",
+  "start": 1966,
+  "end": 1976,
+  "lat": 39.9,
+  "lng": 116.39,
+  "priority": 68,
+  "tags": [
+   "politics"
+  ],
+  "parent": "prc-founded",
+  "summary": "Mao mobilised students against the party and the \"four olds\"; universities closed, millions were persecuted and much cultural heritage was destroyed.",
+  "body": "Part of [People's Republic of China proclaimed](event:prc-founded). Mao mobilised students against the party and the \"four olds\"; universities closed, millions were persecuted and much cultural heritage was destroyed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cultural_Revolution).",
+  "links": [
+   {
+    "label": "People's Republic of China proclaimed",
+    "event": "prc-founded"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cultural_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "mlk-assassination",
+  "name": "Assassination of Martin Luther King Jr.",
+  "start": 1968,
+  "lat": 35.13,
+  "lng": -90.05,
+  "priority": 58,
+  "tags": [
+   "politics"
+  ],
+  "parent": "civil-rights",
+  "summary": "King was shot in Memphis while supporting a strike by sanitation workers; riots followed in over a hundred cities.",
+  "body": "Part of [American civil rights movement](event:civil-rights). King was shot in Memphis while supporting a strike by sanitation workers; riots followed in over a hundred cities.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Martin_Luther_King_Jr.).",
+  "links": [
+   {
+    "label": "American civil rights movement",
+    "event": "civil-rights"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Assassination_of_Martin_Luther_King_Jr."
+   }
+  ]
+ },
+ {
+  "id": "moon-landing",
+  "name": "Apollo 11 Moon landing",
+  "start": 1969,
+  "lat": 28.6,
+  "lng": -80.6,
+  "priority": 95,
+  "tags": [
+   "exploration",
+   "science"
+  ],
+  "parent": "apollo-program",
+  "summary": "Humans walked on another world for the first time; some 600 million people watched.",
+  "body": "Part of [Apollo programme](event:apollo-program). *That's one small step for a man, one giant leap for mankind.* Armstrong and Aldrin spent 21 hours on the Sea of Tranquillity while Collins orbited above.\n\nIt was the culmination of the [Space Race](event:space-race), and the furthest humans have yet travelled.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_11).",
+  "links": [
+   {
+    "label": "Apollo programme",
+    "event": "apollo-program"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Apollo_11"
+   }
+  ],
+  "image": {
+   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aldrin_Apollo_11_original.jpg?width=640",
+   "caption": "Buzz Aldrin on the lunar surface"
+  }
+ },
+ {
+  "id": "internet",
+  "name": "ARPANET and the Internet",
+  "start": 1969,
+  "lat": 34.07,
+  "lng": -118.44,
+  "priority": 76,
+  "tags": [
+   "technology"
+  ],
+  "summary": "The first packet-switched network linked four American universities; TCP/IP made networks of networks possible.",
+  "body": "It carried email, then the [World Wide Web](event:www), and now most of human communication and commerce.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/ARPANET).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/ARPANET"
+   }
+  ]
+ },
+ {
+  "id": "apollo-13",
+  "name": "Apollo 13",
+  "start": 1970,
+  "lat": 28.57,
+  "lng": -80.65,
+  "priority": 52,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "apollo-program",
+  "summary": "An oxygen tank exploded on the way to the Moon; the crew improvised their way home in the lunar module.",
+  "body": "Part of [Apollo programme](event:apollo-program). An oxygen tank exploded on the way to the Moon; the crew improvised their way home in the lunar module.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_13).",
+  "links": [
+   {
+    "label": "Apollo programme",
+    "event": "apollo-program"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Apollo_13"
+   }
+  ]
+ },
+ {
+  "id": "microprocessor",
+  "name": "The microprocessor",
+  "start": 1971,
+  "lat": 37.39,
+  "lng": -122.08,
+  "priority": 78,
+  "tags": [
+   "technology"
+  ],
+  "parent": "transistor",
+  "summary": "Intel put a whole central processing unit on one chip, making computers cheap enough to be everywhere.",
+  "body": "Part of [Invention of the transistor](event:transistor). Intel put a whole central processing unit on one chip, making computers cheap enough to be everywhere.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Microprocessor).",
+  "links": [
+   {
+    "label": "Invention of the transistor",
+    "event": "transistor"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Microprocessor"
+   }
+  ]
+ },
+ {
+  "id": "voyager",
+  "name": "Voyager probes launched",
+  "start": 1977,
+  "lat": 28.57,
+  "lng": -80.65,
+  "priority": 62,
+  "tags": [
+   "exploration",
+   "science"
+  ],
+  "summary": "Two spacecraft toured the outer planets and are now the most distant human-made objects, in interstellar space.",
+  "body": "Two spacecraft toured the outer planets and are now the most distant human-made objects, in interstellar space.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyager_program).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Voyager_program"
+   }
+  ]
+ },
+ {
+  "id": "smallpox-eradication",
+  "name": "Eradication of smallpox",
+  "start": 1980,
+  "lat": 46.23,
+  "lng": 6.14,
+  "priority": 76,
+  "tags": [
+   "science",
+   "disease"
+  ],
+  "summary": "The WHO declared smallpox eradicated — the only human disease ever deliberately eliminated.",
+  "body": "A worldwide campaign of surveillance and ring [vaccination](event:smallpox-vaccine) ended a disease that had killed an estimated 300 million people in the twentieth century alone.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Smallpox).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Smallpox"
+   }
+  ]
+ },
+ {
+  "id": "chernobyl",
+  "name": "Chernobyl disaster",
+  "start": 1986,
+  "lat": 51.39,
+  "lng": 30.1,
+  "priority": 74,
+  "tags": [
+   "disaster",
+   "technology"
+  ],
+  "summary": "A reactor test went catastrophically wrong, spreading radioactive fallout across Europe and forcing permanent evacuation.",
+  "body": "The accident damaged Soviet credibility at home and abroad and reshaped nuclear policy worldwide.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chernobyl_disaster).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Chernobyl_disaster"
+   }
+  ]
+ },
+ {
+  "id": "montreal-protocol",
+  "name": "Montreal Protocol",
+  "start": 1987,
+  "lat": 45.5,
+  "lng": -73.57,
+  "priority": 64,
+  "tags": [
+   "politics",
+   "climate"
+  ],
+  "summary": "Every country agreed to phase out CFCs to protect the ozone layer — the most successful environmental treaty yet made.",
+  "body": "The ozone hole is now measurably healing, and the treaty avoided a great deal of additional [warming](event:global-warming) as well.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Montreal_Protocol).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Montreal_Protocol"
+   }
+  ]
+ },
+ {
+  "id": "berlin-wall-fall",
+  "name": "Fall of the Berlin Wall",
+  "start": 1989,
+  "lat": 52.52,
+  "lng": 13.38,
+  "priority": 84,
+  "tags": [
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "A confused press conference on 9 November sent crowds to the checkpoints, and the guards let them through.",
+  "body": "Part of [The Cold War](event:cold-war). Within a year Germany was reunified; within two the [Soviet Union](event:soviet-collapse) had dissolved. Communist governments across Eastern Europe fell in the same few months.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_the_Berlin_Wall).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Fall_of_the_Berlin_Wall"
+   }
+  ]
+ },
+ {
+  "id": "www",
+  "name": "World Wide Web",
+  "start": 1989,
+  "lat": 46.23,
+  "lng": 6.05,
+  "priority": 88,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "summary": "Tim Berners-Lee proposed a hypertext system at CERN; it became the way most of humanity gets information.",
+  "body": "URLs, HTTP and HTML were released royalty-free in 1993, a decision that let the Web grow without a gatekeeper. Built on the [Internet](event:internet), it took the number of connected users from thousands to billions in two decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_Wide_Web).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/World_Wide_Web"
+   }
+  ]
+ },
+ {
+  "id": "soviet-collapse",
+  "name": "Dissolution of the Soviet Union",
+  "start": 1991,
+  "lat": 55.75,
+  "lng": 37.62,
+  "area": [
+   [
+    22,
+    55
+   ],
+   [
+    30,
+    70
+   ],
+   [
+    60,
+    72
+   ],
+   [
+    100,
+    75
+   ],
+   [
+    140,
+    70
+   ],
+   [
+    170,
+    65
+   ],
+   [
+    135,
+    45
+   ],
+   [
+    100,
+    45
+   ],
+   [
+    75,
+    38
+   ],
+   [
+    50,
+    40
+   ],
+   [
+    30,
+    45
+   ]
+  ],
+  "priority": 86,
+  "tags": [
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "The USSR broke into fifteen independent states and the Cold War ended without a shot fired between the superpowers.",
+  "body": "Part of [The Cold War](event:cold-war). Gorbachev's reforms, nationalist movements in the republics and a failed hard-line coup in August 1991 brought down the state founded by the [October Revolution](event:october-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dissolution_of_the_Soviet_Union).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dissolution_of_the_Soviet_Union"
+   }
+  ]
+ },
+ {
+  "id": "maastricht",
+  "name": "Maastricht Treaty and the European Union",
+  "start": 1993,
+  "lat": 50.85,
+  "lng": 5.69,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "economy"
+  ],
+  "summary": "The European Communities became the European Union, with a common currency to follow in 1999.",
+  "body": "The European Communities became the European Union, with a common currency to follow in 1999.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Maastricht_Treaty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Maastricht_Treaty"
+   }
+  ]
+ },
+ {
+  "id": "rwanda-genocide",
+  "name": "Rwandan genocide",
+  "start": 1994,
+  "lat": -1.94,
+  "lng": 29.87,
+  "priority": 66,
+  "tags": [
+   "war",
+   "disaster",
+   "politics"
+  ],
+  "summary": "Some 800,000 Tutsi and moderate Hutu were murdered in a hundred days while the world looked away.",
+  "body": "Some 800,000 Tutsi and moderate Hutu were murdered in a hundred days while the world looked away.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rwandan_genocide).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Rwandan_genocide"
+   }
+  ]
+ },
+ {
+  "id": "apartheid-end",
+  "name": "End of apartheid in South Africa",
+  "start": 1994,
+  "lat": -25.75,
+  "lng": 28.19,
+  "priority": 74,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Nelson Mandela, imprisoned for 27 years, was elected president in the country's first universal-suffrage election.",
+  "body": "The negotiated transition and the Truth and Reconciliation Commission avoided the civil war many had predicted.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apartheid).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Apartheid"
+   }
+  ]
+ },
+ {
+  "id": "9-11",
+  "name": "September 11 attacks",
+  "start": 2001,
+  "lat": 40.71,
+  "lng": -74.01,
+  "priority": 84,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Hijacked airliners destroyed the World Trade Center and struck the Pentagon, killing nearly 3,000 people.",
+  "body": "The attacks triggered the wars in Afghanistan and Iraq, a global expansion of surveillance, and two decades of security policy still in force.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/September_11_attacks).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/September_11_attacks"
+   }
+  ]
+ },
+ {
+  "id": "human-genome",
+  "name": "Human Genome Project completed",
+  "start": 2003,
+  "lat": 39.0,
+  "lng": -77.1,
+  "priority": 78,
+  "tags": [
+   "science",
+   "biology"
+  ],
+  "summary": "Thirteen years and three billion base pairs later, the human genetic sequence was published and placed in the public domain.",
+  "body": "Sequencing a genome cost about a billion dollars in 2003 and a few hundred today — one of the fastest cost collapses in the history of technology. See also [CRISPR](event:crispr).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Human_Genome_Project).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Human_Genome_Project"
+   }
+  ]
+ },
+ {
+  "id": "iphone",
+  "name": "The smartphone era",
+  "start": 2007,
+  "lat": 37.33,
+  "lng": -122.03,
+  "priority": 74,
+  "tags": [
+   "technology"
+  ],
+  "summary": "The iPhone put a networked computer with a camera in a pocket, and within a decade most of humanity carried one.",
+  "body": "The iPhone put a networked computer with a camera in a pocket, and within a decade most of humanity carried one.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/IPhone_(1st_generation)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/IPhone_(1st_generation)"
+   }
+  ]
+ },
+ {
+  "id": "financial-crisis",
+  "name": "Global financial crisis",
+  "start": 2008,
+  "end": 2009,
+  "lat": 40.71,
+  "lng": -74.01,
+  "priority": 74,
+  "tags": [
+   "economy"
+  ],
+  "summary": "The collapse of the American mortgage market brought down banks worldwide and caused the deepest recession since the 1930s.",
+  "body": "The collapse of the American mortgage market brought down banks worldwide and caused the deepest recession since the 1930s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/2007–2008_financial_crisis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/2007–2008_financial_crisis"
+   }
+  ]
+ },
+ {
+  "id": "arab-spring",
+  "name": "Arab Spring",
+  "start": 2010,
+  "end": 2012,
+  "lat": 30.04,
+  "lng": 31.24,
+  "priority": 64,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Protests spread from Tunisia across the Arab world, toppling four governments and setting off civil wars in Syria, Libya and Yemen.",
+  "body": "Protests spread from Tunisia across the Arab world, toppling four governments and setting off civil wars in Syria, Libya and Yemen.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Arab_Spring).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Arab_Spring"
+   }
+  ]
+ },
+ {
+  "id": "higgs",
+  "name": "Discovery of the Higgs boson",
+  "start": 2012,
+  "lat": 46.23,
+  "lng": 6.05,
+  "priority": 66,
+  "tags": [
+   "science"
+  ],
+  "summary": "The LHC at CERN found the particle that completes the Standard Model and explains how other particles acquire mass.",
+  "body": "The LHC at CERN found the particle that completes the Standard Model and explains how other particles acquire mass.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Higgs_boson).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Higgs_boson"
+   }
+  ]
+ },
+ {
+  "id": "crispr",
+  "name": "CRISPR gene editing",
+  "start": 2012,
+  "lat": 37.87,
+  "lng": -122.26,
+  "priority": 70,
+  "tags": [
+   "science",
+   "biology"
+  ],
+  "summary": "A bacterial immune system was turned into a cheap, precise tool for editing the DNA of any organism.",
+  "body": "Doudna and Charpentier shared the 2020 Nobel Prize; the first approved CRISPR therapy, for sickle-cell disease, arrived in 2023. See [DNA](event:dna-structure).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/CRISPR_gene_editing).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/CRISPR_gene_editing"
+   }
+  ]
+ },
+ {
+  "id": "deep-learning",
+  "name": "Deep learning and modern AI",
+  "start": 2012,
+  "end": 2026,
+  "lat": 37.42,
+  "lng": -122.08,
+  "priority": 78,
+  "tags": [
+   "technology",
+   "science"
+  ],
+  "summary": "Neural networks trained on large datasets went from academic curiosity to general-purpose technology in about a decade.",
+  "body": "AlexNet's 2012 win in an image-recognition contest started the boom; transformer models from 2017 led to systems that write, translate, code and reason across domains.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Deep_learning).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Deep_learning"
+   }
+  ]
+ },
+ {
+  "id": "gravitational-waves",
+  "name": "First detection of gravitational waves",
+  "start": 2015,
+  "lat": 30.56,
+  "lng": -90.77,
+  "priority": 64,
+  "tags": [
+   "science"
+  ],
+  "summary": "LIGO recorded spacetime ripples from two merging black holes, a century after [Einstein](event:relativity) predicted them.",
+  "body": "LIGO recorded spacetime ripples from two merging black holes, a century after [Einstein](event:relativity) predicted them.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_observation_of_gravitational_waves).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/First_observation_of_gravitational_waves"
+   }
+  ]
+ },
+ {
+  "id": "paris-agreement",
+  "name": "Paris Agreement on climate change",
+  "start": 2015,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 70,
+  "tags": [
+   "politics",
+   "climate"
+  ],
+  "summary": "Nearly every country agreed to limit warming to well below 2 °C, with national pledges rather than binding quotas.",
+  "body": "It is the main international response to [modern global warming](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paris_Agreement).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Paris_Agreement"
+   }
+  ]
+ },
+ {
+  "id": "covid",
+  "name": "COVID-19 pandemic",
+  "start": 2020,
+  "end": 2023,
+  "lat": 30.59,
+  "lng": 114.31,
+  "priority": 88,
+  "tags": [
+   "disease",
+   "disaster"
+  ],
+  "summary": "A novel coronavirus spread worldwide within months, killing an estimated 7–27 million people and shutting down much of the global economy.",
+  "body": "It produced the fastest vaccine development in history: mRNA vaccines were in arms within a year of the virus being sequenced. Comparisons were drawn throughout to the [1918 influenza pandemic](event:spanish-flu).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/COVID-19_pandemic).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/COVID-19_pandemic"
+   }
+  ]
+ },
+ {
+  "id": "jwst",
+  "name": "James Webb Space Telescope",
+  "start": 2021,
+  "lat": 5.24,
+  "lng": -52.77,
+  "priority": 62,
+  "tags": [
+   "science",
+   "exploration"
+  ],
+  "summary": "A 6.5-metre infrared telescope launched to a point 1.5 million km from Earth to observe the first galaxies.",
+  "body": "A 6.5-metre infrared telescope launched to a point 1.5 million km from Earth to observe the first galaxies.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/James_Webb_Space_Telescope).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/James_Webb_Space_Telescope"
+   }
+  ]
+ },
+ {
+  "id": "ukraine-invasion",
+  "name": "Russian invasion of Ukraine",
+  "start": 2022,
+  "end": 2026,
+  "lat": 50.45,
+  "lng": 30.52,
+  "priority": 76,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Russia launched the largest land war in Europe since 1945, driving millions from their homes and reshaping European security.",
+  "body": "Russia launched the largest land war in Europe since 1945, driving millions from their homes and reshaping European security.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Russian_invasion_of_Ukraine).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Russian_invasion_of_Ukraine"
+   }
+  ]
+ },
+ {
+  "id": "population-8bn",
+  "name": "World population reaches 8 billion",
+  "start": 2022,
+  "lat": 20.0,
+  "lng": 78.0,
+  "priority": 60,
+  "tags": [
+   "economy",
+   "biology"
+  ],
+  "summary": "The UN marked an eightfold increase in human numbers since 1800, with growth now slowing worldwide.",
+  "body": "The UN marked an eightfold increase in human numbers since 1800, with growth now slowing worldwide.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_population).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/World_population"
+   }
+  ]
+ }
+]

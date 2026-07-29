@@ -91,6 +91,13 @@ describe('event search', () => {
   beforeEach(() => setActivePinia(createPinia()))
   it('matches names case-insensitively, ranked by priority', () => {
     const s = useEventStore()
+    // the store starts empty now: data arrives in fetched chunks
+    s.adopt([
+      ev('great-war', { name: 'The Great War', priority: 90, tags: ['war'] }),
+      ev('cold-war', { name: 'Cold War', priority: 80, tags: ['war', 'politics'] }),
+      ev('warsaw-pact', { name: 'Warsaw Pact', priority: 60, tags: ['politics'] }),
+      ev('unrelated', { name: 'Something else', priority: 99, tags: ['science'] }),
+    ])
     const r = s.search('war')
     expect(r.length).toBeGreaterThan(0)
     for (let i = 1; i < r.length; i++) expect(r[i].priority).toBeLessThanOrEqual(r[i - 1].priority)

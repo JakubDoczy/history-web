@@ -1,0 +1,1481 @@
+[
+ {
+  "id": "napoleonic-wars",
+  "name": "Napoleonic Wars",
+  "start": 1803,
+  "end": 1815,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 86,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "french-revolution",
+  "summary": "France under Napoleon fought most of Europe for twelve years and briefly dominated the continent.",
+  "body": "Part of [French Revolution](event:french-revolution). Nelson's victory at [Trafalgar](event:trafalgar) secured British command of the sea; the [invasion of Russia](event:russia-1812) destroyed the Grande Armée; [Waterloo](event:waterloo) ended the adventure.\n\nThe wars spread the Napoleonic Code, conscription and nationalism across Europe, and the peace that followed at Vienna held the great powers back from general war for a century — until [1914](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleonic_Wars).",
+  "links": [
+   {
+    "label": "French Revolution",
+    "event": "french-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Napoleonic_Wars"
+   }
+  ]
+ },
+ {
+  "id": "trafalgar",
+  "name": "Battle of Trafalgar",
+  "start": 1805,
+  "lat": 36.18,
+  "lng": -6.03,
+  "priority": 62,
+  "tags": [
+   "war"
+  ],
+  "parent": "napoleonic-wars",
+  "summary": "Nelson destroyed the combined French and Spanish fleets off Cadiz, ending any prospect of invading Britain.",
+  "body": "Part of [Napoleonic Wars](event:napoleonic-wars). Nelson destroyed the combined French and Spanish fleets off Cadiz, ending any prospect of invading Britain.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Trafalgar).",
+  "links": [
+   {
+    "label": "Napoleonic Wars",
+    "event": "napoleonic-wars"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Trafalgar"
+   }
+  ]
+ },
+ {
+  "id": "austerlitz",
+  "name": "Battle of Austerlitz",
+  "start": 1805,
+  "lat": 49.13,
+  "lng": 16.76,
+  "priority": 58,
+  "tags": [
+   "war"
+  ],
+  "parent": "napoleonic-wars",
+  "summary": "Napoleon's masterpiece: a feigned weakness drew the Austro-Russian army onto ground of his choosing.",
+  "body": "Part of [Napoleonic Wars](event:napoleonic-wars). Napoleon's masterpiece: a feigned weakness drew the Austro-Russian army onto ground of his choosing.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Austerlitz).",
+  "links": [
+   {
+    "label": "Napoleonic Wars",
+    "event": "napoleonic-wars"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Austerlitz"
+   }
+  ]
+ },
+ {
+  "id": "latam-independence",
+  "name": "Latin American wars of independence",
+  "start": 1810,
+  "end": 1826,
+  "lat": -16.5,
+  "lng": -68.15,
+  "area": [
+   [
+    -105,
+    22
+   ],
+   [
+    -85,
+    10
+   ],
+   [
+    -75,
+    10
+   ],
+   [
+    -60,
+    5
+   ],
+   [
+    -35,
+    -8
+   ],
+   [
+    -48,
+    -25
+   ],
+   [
+    -58,
+    -40
+   ],
+   [
+    -72,
+    -45
+   ],
+   [
+    -72,
+    -20
+   ],
+   [
+    -82,
+    0
+   ],
+   [
+    -95,
+    15
+   ]
+  ],
+  "priority": 74,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Spain and Portugal lost almost all of their American empires within a generation.",
+  "body": "Bolívar and San Martín campaigned from Venezuela to Peru; Brazil separated from Portugal without a general war. The new republics inherited enormous inequality and unstable borders.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_American_wars_of_independence).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spanish_American_wars_of_independence"
+   }
+  ]
+ },
+ {
+  "id": "russia-1812",
+  "name": "French invasion of Russia",
+  "start": 1812,
+  "lat": 55.75,
+  "lng": 37.62,
+  "area": [
+   [
+    22,
+    55
+   ],
+   [
+    30,
+    70
+   ],
+   [
+    60,
+    72
+   ],
+   [
+    100,
+    75
+   ],
+   [
+    140,
+    70
+   ],
+   [
+    170,
+    65
+   ],
+   [
+    135,
+    45
+   ],
+   [
+    100,
+    45
+   ],
+   [
+    75,
+    38
+   ],
+   [
+    50,
+    40
+   ],
+   [
+    30,
+    45
+   ]
+  ],
+  "priority": 68,
+  "tags": [
+   "war"
+  ],
+  "parent": "napoleonic-wars",
+  "summary": "An army of some 600,000 marched to Moscow; fewer than a tenth came back.",
+  "body": "Part of [Napoleonic Wars](event:napoleonic-wars). An army of some 600,000 marched to Moscow; fewer than a tenth came back.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/French_invasion_of_Russia).",
+  "links": [
+   {
+    "label": "Napoleonic Wars",
+    "event": "napoleonic-wars"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/French_invasion_of_Russia"
+   }
+  ]
+ },
+ {
+  "id": "waterloo",
+  "name": "Battle of Waterloo",
+  "start": 1815,
+  "lat": 50.68,
+  "lng": 4.41,
+  "priority": 74,
+  "tags": [
+   "war"
+  ],
+  "parent": "napoleonic-wars",
+  "summary": "Wellington held the ridge until the Prussians arrived; Napoleon abdicated four days later and died in exile on St Helena.",
+  "body": "Part of [Napoleonic Wars](event:napoleonic-wars). Wellington held the ridge until the Prussians arrived; Napoleon abdicated four days later and died in exile on St Helena.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Waterloo).",
+  "links": [
+   {
+    "label": "Napoleonic Wars",
+    "event": "napoleonic-wars"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Waterloo"
+   }
+  ]
+ },
+ {
+  "id": "tambora",
+  "name": "Eruption of Tambora",
+  "start": 1815,
+  "lat": -8.25,
+  "lng": 118.0,
+  "priority": 68,
+  "tags": [
+   "disaster",
+   "geology",
+   "climate"
+  ],
+  "summary": "The largest eruption in recorded history threw enough sulphate into the stratosphere to cool the whole planet.",
+  "body": "Tens of thousands died on Sumbawa; far more died in the [famines of the following year](event:year-without-summer).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1815_eruption_of_Mount_Tambora).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/1815_eruption_of_Mount_Tambora"
+   }
+  ]
+ },
+ {
+  "id": "year-without-summer",
+  "name": "The Year Without a Summer",
+  "start": 1816,
+  "lat": 44.0,
+  "lng": -72.0,
+  "priority": 58,
+  "tags": [
+   "climate",
+   "disaster"
+  ],
+  "parent": "tambora",
+  "summary": "Snow fell in New England in June and harvests failed across Europe and Asia, causing the worst famine of the century.",
+  "body": "Part of [Eruption of Tambora](event:tambora). Kept indoors by the weather at Lake Geneva, Mary Shelley wrote *Frankenstein*.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Year_Without_a_Summer).",
+  "links": [
+   {
+    "label": "Eruption of Tambora",
+    "event": "tambora"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Year_Without_a_Summer"
+   }
+  ]
+ },
+ {
+  "id": "railways",
+  "name": "First passenger railway",
+  "start": 1830,
+  "lat": 53.41,
+  "lng": -2.98,
+  "priority": 66,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "parent": "industrial-revolution",
+  "summary": "The Liverpool and Manchester Railway opened, the first intercity line worked entirely by steam locomotives.",
+  "body": "Part of [Industrial Revolution](event:industrial-revolution). Within thirty years rail networks covered Britain, Europe and the eastern United States, collapsing travel times and forcing the adoption of standard time.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Liverpool_and_Manchester_Railway).",
+  "links": [
+   {
+    "label": "Industrial Revolution",
+    "event": "industrial-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Liverpool_and_Manchester_Railway"
+   }
+  ]
+ },
+ {
+  "id": "opium-wars",
+  "name": "Opium Wars",
+  "start": 1839,
+  "end": 1860,
+  "lat": 22.32,
+  "lng": 114.17,
+  "priority": 72,
+  "tags": [
+   "war",
+   "economy"
+  ],
+  "summary": "Britain forced China to keep importing opium, taking Hong Kong and a series of unequal treaties.",
+  "body": "The wars began the \"century of humiliation\" that ended imperial China and shaped Chinese foreign policy to this day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Opium_Wars).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Opium_Wars"
+   }
+  ]
+ },
+ {
+  "id": "telegraph",
+  "name": "Electric telegraph",
+  "start": 1844,
+  "lat": 38.89,
+  "lng": -77.01,
+  "priority": 70,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Morse's Washington–Baltimore line separated communication from transport for the first time in history.",
+  "body": "By 1866 a working cable crossed the Atlantic, cutting the time for a message from London to New York from ten days to minutes.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Electrical_telegraph).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Electrical_telegraph"
+   }
+  ]
+ },
+ {
+  "id": "revolutions-1848",
+  "name": "Revolutions of 1848",
+  "start": 1848,
+  "end": 1849,
+  "lat": 48.86,
+  "lng": 2.35,
+  "area": [
+   [
+    -2,
+    44
+   ],
+   [
+    2,
+    51
+   ],
+   [
+    8,
+    54
+   ],
+   [
+    16,
+    54
+   ],
+   [
+    22,
+    50
+   ],
+   [
+    26,
+    45
+   ],
+   [
+    18,
+    41
+   ],
+   [
+    10,
+    41
+   ],
+   [
+    2,
+    42
+   ]
+  ],
+  "priority": 66,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Liberal and nationalist uprisings swept some fifty European states within months; nearly all were suppressed within two years.",
+  "body": "Liberal and nationalist uprisings swept some fifty European states within months; nearly all were suppressed within two years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Revolutions_of_1848).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Revolutions_of_1848"
+   }
+  ]
+ },
+ {
+  "id": "communist-manifesto",
+  "name": "The Communist Manifesto",
+  "start": 1848,
+  "lat": 50.85,
+  "lng": 4.35,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Marx and Engels published a short pamphlet arguing that history is driven by class struggle.",
+  "body": "It became the founding text of a movement that would govern a third of humanity in the twentieth century — see the [Russian Revolution](event:russian-revolution) and [the founding of the PRC](event:prc-founded).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Communist_Manifesto).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/The_Communist_Manifesto"
+   }
+  ]
+ },
+ {
+  "id": "taiping",
+  "name": "Taiping Rebellion",
+  "start": 1850,
+  "end": 1864,
+  "lat": 32.06,
+  "lng": 118.8,
+  "priority": 74,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "summary": "A millenarian movement led by a man who believed he was Jesus's younger brother held southern China for a decade; 20–30 million died.",
+  "body": "It is among the deadliest wars in history, and it broke the finances and the prestige of the [Qing](event:qing-dynasty).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Taiping_Rebellion).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Taiping_Rebellion"
+   }
+  ]
+ },
+ {
+  "id": "british-raj",
+  "name": "British Raj",
+  "start": 1858,
+  "end": 1947,
+  "lat": 28.61,
+  "lng": 77.21,
+  "priority": 76,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The Crown took over direct rule of India from the East India Company after the rebellion of 1857.",
+  "body": "Railways, telegraphs and English-language institutions coexisted with deindustrialisation and repeated devastating famines. It ended with [independence and partition](event:indian-independence).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/British_Raj).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/British_Raj"
+   }
+  ]
+ },
+ {
+  "id": "origin-species",
+  "name": "Darwin publishes On the Origin of Species",
+  "start": 1859,
+  "lat": 51.26,
+  "lng": 0.05,
+  "priority": 90,
+  "tags": [
+   "science",
+   "biology"
+  ],
+  "summary": "Natural selection explained the diversity and design of life without a designer.",
+  "body": "Darwin had sat on the idea for twenty years; Alfred Russel Wallace's independent arrival at the same conclusion forced publication. The theory unified all of biology and, with [genetics](event:dna-structure), remains its central organising principle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/On_the_Origin_of_Species).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/On_the_Origin_of_Species"
+   }
+  ]
+ },
+ {
+  "id": "germ-theory",
+  "name": "Germ theory of disease",
+  "start": 1861,
+  "end": 1885,
+  "lat": 48.84,
+  "lng": 2.34,
+  "priority": 78,
+  "tags": [
+   "science"
+  ],
+  "summary": "Pasteur, Koch and Lister established that specific microorganisms cause specific diseases.",
+  "body": "Antisepsis, pasteurisation, sterile surgery and public sanitation followed; combined with later [antibiotics](event:penicillin) and [vaccination](event:smallpox-vaccine), they roughly doubled human life expectancy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Germ_theory_of_disease).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Germ_theory_of_disease"
+   }
+  ]
+ },
+ {
+  "id": "us-civil-war",
+  "name": "American Civil War",
+  "start": 1861,
+  "end": 1865,
+  "lat": 37.5,
+  "lng": -79.0,
+  "priority": 84,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "The United States fought its bloodiest war over slavery and secession; some 700,000 died.",
+  "body": "The [Emancipation Proclamation](event:emancipation) turned the war into a war against [slavery](event:slave-trade); [Gettysburg](event:gettysburg) broke the Confederate offensive; [Lincoln was assassinated](event:lincoln-assassination) days after the surrender at Appomattox.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/American_Civil_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/American_Civil_War"
+   }
+  ]
+ },
+ {
+  "id": "emancipation",
+  "name": "Emancipation Proclamation",
+  "start": 1863,
+  "lat": 38.9,
+  "lng": -77.04,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "parent": "us-civil-war",
+  "summary": "Lincoln declared enslaved people in the rebelling states to be free; the Thirteenth Amendment abolished slavery outright in 1865.",
+  "body": "Part of [American Civil War](event:us-civil-war). Lincoln declared enslaved people in the rebelling states to be free; the Thirteenth Amendment abolished slavery outright in 1865.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Emancipation_Proclamation).",
+  "links": [
+   {
+    "label": "American Civil War",
+    "event": "us-civil-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Emancipation_Proclamation"
+   }
+  ]
+ },
+ {
+  "id": "gettysburg",
+  "name": "Battle of Gettysburg",
+  "start": 1863,
+  "lat": 39.81,
+  "lng": -77.23,
+  "priority": 62,
+  "tags": [
+   "war"
+  ],
+  "parent": "us-civil-war",
+  "summary": "Three days of fighting in Pennsylvania ended Lee's invasion of the North.",
+  "body": "Part of [American Civil War](event:us-civil-war). Three days of fighting in Pennsylvania ended Lee's invasion of the North.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Gettysburg).",
+  "links": [
+   {
+    "label": "American Civil War",
+    "event": "us-civil-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Gettysburg"
+   }
+  ]
+ },
+ {
+  "id": "lincoln-assassination",
+  "name": "Assassination of Abraham Lincoln",
+  "start": 1865,
+  "lat": 38.9,
+  "lng": -77.03,
+  "priority": 60,
+  "tags": [
+   "politics"
+  ],
+  "parent": "us-civil-war",
+  "summary": "Lincoln was shot at Ford's Theatre five days after Lee's surrender.",
+  "body": "Part of [American Civil War](event:us-civil-war). Lincoln was shot at Ford's Theatre five days after Lee's surrender.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Abraham_Lincoln).",
+  "links": [
+   {
+    "label": "American Civil War",
+    "event": "us-civil-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Assassination_of_Abraham_Lincoln"
+   }
+  ]
+ },
+ {
+  "id": "meiji",
+  "name": "Meiji Restoration",
+  "start": 1868,
+  "lat": 35.68,
+  "lng": 139.75,
+  "priority": 78,
+  "tags": [
+   "politics",
+   "technology"
+  ],
+  "summary": "Japan abolished the shogunate and deliberately industrialised, becoming a great power within a generation.",
+  "body": "Within forty years of [ending its isolation](event:edo-japan) Japan had defeated Russia at sea — the first modern victory of an Asian state over a European empire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Meiji_Restoration).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Meiji_Restoration"
+   }
+  ]
+ },
+ {
+  "id": "suez-canal",
+  "name": "Suez Canal opens",
+  "start": 1869,
+  "lat": 30.58,
+  "lng": 32.27,
+  "priority": 62,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "summary": "A sea-level canal between the Mediterranean and the Red Sea cut thousands of kilometres from the Europe–Asia route.",
+  "body": "A sea-level canal between the Mediterranean and the Red Sea cut thousands of kilometres from the Europe–Asia route.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Suez_Canal).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Suez_Canal"
+   }
+  ]
+ },
+ {
+  "id": "transcontinental-railroad",
+  "name": "First transcontinental railroad",
+  "start": 1869,
+  "lat": 41.62,
+  "lng": -112.55,
+  "priority": 60,
+  "tags": [
+   "technology"
+  ],
+  "parent": "railways",
+  "summary": "The golden spike at Promontory Summit joined the American rail network coast to coast.",
+  "body": "Part of [First passenger railway](event:railways). The golden spike at Promontory Summit joined the American rail network coast to coast.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_transcontinental_railroad).",
+  "links": [
+   {
+    "label": "First passenger railway",
+    "event": "railways"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/First_transcontinental_railroad"
+   }
+  ]
+ },
+ {
+  "id": "periodic-table",
+  "name": "Mendeleev's periodic table",
+  "start": 1869,
+  "lat": 59.94,
+  "lng": 30.31,
+  "priority": 70,
+  "tags": [
+   "science"
+  ],
+  "summary": "Arranging the elements by weight and property revealed a periodic law — and gaps where undiscovered elements had to be.",
+  "body": "Arranging the elements by weight and property revealed a periodic law — and gaps where undiscovered elements had to be.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Periodic_table).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Periodic_table"
+   }
+  ]
+ },
+ {
+  "id": "telephone",
+  "name": "Telephone",
+  "start": 1876,
+  "lat": 42.36,
+  "lng": -71.06,
+  "priority": 64,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Alexander Graham Bell patented a device that carried the human voice over a wire.",
+  "body": "Alexander Graham Bell patented a device that carried the human voice over a wire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Telephone).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Telephone"
+   }
+  ]
+ },
+ {
+  "id": "electric-light",
+  "name": "Practical electric lighting",
+  "start": 1879,
+  "lat": 40.57,
+  "lng": -74.33,
+  "priority": 66,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Edison's long-lasting incandescent lamp, and the generating stations built to supply it, electrified cities.",
+  "body": "Edison's long-lasting incandescent lamp, and the generating stations built to supply it, electrified cities.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Incandescent_light_bulb).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Incandescent_light_bulb"
+   }
+  ]
+ },
+ {
+  "id": "global-warming",
+  "name": "Modern global warming",
+  "start": 1880,
+  "end": 2026,
+  "lat": 0.0,
+  "lng": 0.0,
+  "priority": 88,
+  "tags": [
+   "climate",
+   "disaster"
+  ],
+  "summary": "Greenhouse gases released since the Industrial Revolution have warmed the planet by about 1.3 °C, and the rate is increasing.",
+  "body": "Atmospheric CO2 has risen from about 280 ppm before the [Industrial Revolution](event:industrial-revolution) to over 420 ppm. Ice sheets and glaciers are losing mass, sea level is rising, and extreme heat has become measurably more frequent.\n\nThe [Montreal Protocol](event:montreal-protocol) and the [Paris Agreement](event:paris-agreement) are the main treaty responses; the geological analogue is the [PETM](event:petm), 56 million years ago.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Global_warming).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Global_warming"
+   }
+  ]
+ },
+ {
+  "id": "scramble-africa",
+  "name": "Scramble for Africa",
+  "start": 1881,
+  "end": 1914,
+  "lat": 0.0,
+  "lng": 20.0,
+  "area": [
+   [
+    -17,
+    15
+   ],
+   [
+    -17,
+    28
+   ],
+   [
+    10,
+    34
+   ],
+   [
+    32,
+    32
+   ],
+   [
+    43,
+    12
+   ],
+   [
+    51,
+    12
+   ],
+   [
+    40,
+    -5
+   ],
+   [
+    35,
+    -25
+   ],
+   [
+    20,
+    -35
+   ],
+   [
+    12,
+    -18
+   ],
+   [
+    8,
+    4
+   ],
+   [
+    -8,
+    5
+   ],
+   [
+    -17,
+    10
+   ]
+  ],
+  "priority": 78,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "European powers partitioned almost the entire African continent among themselves in three decades.",
+  "body": "The Berlin Conference of 1884–85 set the rules; the borders drawn then are largely those of Africa today. Conquest was brutal — the Congo Free State alone may have cost millions of lives — and was undone only by [decolonisation](event:decolonisation) after 1945.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scramble_for_Africa).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Scramble_for_Africa"
+   }
+  ]
+ },
+ {
+  "id": "krakatoa",
+  "name": "Eruption of Krakatoa",
+  "start": 1883,
+  "lat": -6.1,
+  "lng": 105.42,
+  "priority": 62,
+  "tags": [
+   "disaster",
+   "geology"
+  ],
+  "summary": "The explosion was heard 4,800 km away and the tsunamis it raised killed more than 36,000 people.",
+  "body": "It was the first global disaster reported worldwide within hours, by [telegraph](event:telegraph).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1883_eruption_of_Krakatoa).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/1883_eruption_of_Krakatoa"
+   }
+  ]
+ },
+ {
+  "id": "wright-flyer",
+  "name": "First powered flight",
+  "start": 1903,
+  "lat": 36.02,
+  "lng": -75.67,
+  "priority": 78,
+  "tags": [
+   "technology"
+  ],
+  "summary": "The Wright brothers flew a heavier-than-air powered machine under control at Kitty Hawk.",
+  "body": "Sixty-six years separate that 12-second hop from the [Moon landing](event:moon-landing).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wright_Flyer).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Wright_Flyer"
+   }
+  ]
+ },
+ {
+  "id": "relativity",
+  "name": "Einstein's theory of relativity",
+  "start": 1905,
+  "end": 1915,
+  "lat": 46.95,
+  "lng": 7.44,
+  "priority": 88,
+  "tags": [
+   "science"
+  ],
+  "summary": "Space and time turned out to be aspects of one flexible geometry, and mass a form of energy.",
+  "body": "Special relativity (1905) fixed the incompatibility between mechanics and electromagnetism; general relativity (1915) recast gravity as the curvature of spacetime, and was confirmed by the bending of starlight in 1919.\n\nGPS, black holes, cosmology and [gravitational waves](event:gravitational-waves) all follow from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Theory_of_relativity"
+   }
+  ]
+ },
+ {
+  "id": "ww1",
+  "name": "World War I",
+  "start": 1914,
+  "end": 1918,
+  "lat": 49.7,
+  "lng": 3.5,
+  "priority": 95,
+  "tags": [
+   "war"
+  ],
+  "summary": "Four years of industrial-scale war killed some 20 million people and destroyed four empires.",
+  "body": "An [assassination in Sarajevo](event:sarajevo) triggered interlocking alliances; machine guns and artillery made the [Western Front](event:somme) a stalemate of trenches for four years. Russia collapsed into [revolution](event:russian-revolution); the United States entered in 1917.\n\nThe [Treaty of Versailles](event:versailles) redrew Europe and the Middle East, and left grievances that contributed directly to [the next war](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_War_I).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/World_War_I"
+   }
+  ]
+ },
+ {
+  "id": "sarajevo",
+  "name": "Assassination of Franz Ferdinand",
+  "start": 1914,
+  "lat": 43.86,
+  "lng": 18.43,
+  "priority": 72,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "parent": "ww1",
+  "summary": "Gavrilo Princip shot the Austrian heir in Sarajevo, setting off the July Crisis.",
+  "body": "Part of [World War I](event:ww1). Gavrilo Princip shot the Austrian heir in Sarajevo, setting off the July Crisis.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Archduke_Franz_Ferdinand).",
+  "links": [
+   {
+    "label": "World War I",
+    "event": "ww1"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Assassination_of_Archduke_Franz_Ferdinand"
+   }
+  ]
+ },
+ {
+  "id": "verdun",
+  "name": "Battle of Verdun",
+  "start": 1916,
+  "lat": 49.2,
+  "lng": 5.42,
+  "priority": 58,
+  "tags": [
+   "war"
+  ],
+  "parent": "ww1",
+  "summary": "Ten months of attrition around a French fortress city cost some 700,000 casualties.",
+  "body": "Part of [World War I](event:ww1). Ten months of attrition around a French fortress city cost some 700,000 casualties.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Verdun).",
+  "links": [
+   {
+    "label": "World War I",
+    "event": "ww1"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Verdun"
+   }
+  ]
+ },
+ {
+  "id": "somme",
+  "name": "Battle of the Somme",
+  "start": 1916,
+  "lat": 50.0,
+  "lng": 2.7,
+  "priority": 60,
+  "tags": [
+   "war"
+  ],
+  "parent": "ww1",
+  "summary": "Nearly 60,000 British casualties fell on the first day; tanks appeared in battle for the first time.",
+  "body": "Part of [World War I](event:ww1). Nearly 60,000 British casualties fell on the first day; tanks appeared in battle for the first time.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_the_Somme).",
+  "links": [
+   {
+    "label": "World War I",
+    "event": "ww1"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_the_Somme"
+   }
+  ]
+ },
+ {
+  "id": "russian-revolution",
+  "name": "Russian Revolution",
+  "start": 1917,
+  "end": 1923,
+  "lat": 59.94,
+  "lng": 30.31,
+  "priority": 88,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Tsarism fell and the Bolsheviks built the world's first communist state.",
+  "body": "The February revolution ended the monarchy; the [October revolution](event:october-revolution) put Lenin in power; a civil war of five years followed, and the [Soviet Union](event:ussr-founded) was formed in 1922.\n\nIt made [communism](event:communist-manifesto) a governing ideology and set up the [Cold War](event:cold-war) that dominated the century's second half.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Russian_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Russian_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "october-revolution",
+  "name": "October Revolution",
+  "start": 1917,
+  "lat": 59.94,
+  "lng": 30.31,
+  "priority": 76,
+  "tags": [
+   "politics"
+  ],
+  "parent": "russian-revolution",
+  "summary": "Bolshevik forces seized the Winter Palace and the organs of the Provisional Government in Petrograd.",
+  "body": "Part of [Russian Revolution](event:russian-revolution). Bolshevik forces seized the Winter Palace and the organs of the Provisional Government in Petrograd.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/October_Revolution).",
+  "links": [
+   {
+    "label": "Russian Revolution",
+    "event": "russian-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/October_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "spanish-flu",
+  "name": "Spanish flu pandemic",
+  "start": 1918,
+  "end": 1920,
+  "lat": 39.06,
+  "lng": -96.77,
+  "priority": 86,
+  "tags": [
+   "disease",
+   "disaster"
+  ],
+  "summary": "An H1N1 influenza pandemic infected perhaps a third of humanity and killed 50 million or more.",
+  "body": "It spread along the troop movements of [the First World War](event:ww1), and unusually killed healthy young adults. Wartime censorship kept it out of the news everywhere except neutral Spain — hence the misleading name.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_flu).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spanish_flu"
+   }
+  ]
+ },
+ {
+  "id": "versailles",
+  "name": "Treaty of Versailles",
+  "start": 1919,
+  "lat": 48.8,
+  "lng": 2.12,
+  "priority": 74,
+  "tags": [
+   "politics"
+  ],
+  "parent": "ww1",
+  "summary": "The peace imposed on Germany assigned it war guilt and reparations, and redrew the map of Europe.",
+  "body": "Part of [World War I](event:ww1). The peace imposed on Germany assigned it war guilt and reparations, and redrew the map of Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Treaty_of_Versailles).",
+  "links": [
+   {
+    "label": "World War I",
+    "event": "ww1"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Treaty_of_Versailles"
+   }
+  ]
+ },
+ {
+  "id": "ussr-founded",
+  "name": "Soviet Union founded",
+  "start": 1922,
+  "lat": 55.75,
+  "lng": 37.62,
+  "priority": 66,
+  "tags": [
+   "politics"
+  ],
+  "parent": "russian-revolution",
+  "summary": "The union treaty created the USSR, which would last until [1991](event:soviet-collapse).",
+  "body": "Part of [Russian Revolution](event:russian-revolution). The union treaty created the USSR, which would last until [1991](event:soviet-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Soviet_Union).",
+  "links": [
+   {
+    "label": "Russian Revolution",
+    "event": "russian-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Soviet_Union"
+   }
+  ]
+ },
+ {
+  "id": "penicillin",
+  "name": "Discovery of penicillin",
+  "start": 1928,
+  "lat": 51.52,
+  "lng": -0.17,
+  "priority": 80,
+  "tags": [
+   "science"
+  ],
+  "summary": "Alexander Fleming noticed that a stray mould killed bacteria on a forgotten culture plate.",
+  "body": "Mass production from 1943 gave medicine its first reliable cure for bacterial infection and saved uncounted millions of lives.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Penicillin).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Penicillin"
+   }
+  ]
+ },
+ {
+  "id": "great-depression",
+  "name": "Great Depression",
+  "start": 1929,
+  "end": 1939,
+  "lat": 40.71,
+  "lng": -74.01,
+  "priority": 84,
+  "tags": [
+   "economy"
+  ],
+  "summary": "The deepest economic collapse of the industrial age: a quarter of American workers unemployed, world trade down by two thirds.",
+  "body": "It began with the [Wall Street crash](event:wall-street-crash), spread through the gold standard and banking failures, and produced both the New Deal and the political conditions for [fascism in Europe](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Depression).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Great_Depression"
+   }
+  ]
+ },
+ {
+  "id": "wall-street-crash",
+  "name": "Wall Street crash",
+  "start": 1929,
+  "lat": 40.71,
+  "lng": -74.01,
+  "priority": 70,
+  "tags": [
+   "economy"
+  ],
+  "parent": "great-depression",
+  "summary": "The New York stock market lost a third of its value in weeks, wiping out fortunes and confidence alike.",
+  "body": "Part of [Great Depression](event:great-depression). The New York stock market lost a third of its value in weeks, wiping out fortunes and confidence alike.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wall_Street_Crash_of_1929).",
+  "links": [
+   {
+    "label": "Great Depression",
+    "event": "great-depression"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Wall_Street_Crash_of_1929"
+   }
+  ]
+ },
+ {
+  "id": "dust-bowl",
+  "name": "The Dust Bowl",
+  "start": 1930,
+  "end": 1936,
+  "lat": 36.5,
+  "lng": -100.0,
+  "area": [
+   [
+    -104,
+    32
+   ],
+   [
+    -104,
+    42
+   ],
+   [
+    -96,
+    42
+   ],
+   [
+    -94,
+    35
+   ],
+   [
+    -98,
+    31
+   ]
+  ],
+  "priority": 58,
+  "tags": [
+   "disaster",
+   "climate"
+  ],
+  "parent": "great-depression",
+  "summary": "Drought and ploughed-up prairie grass turned the southern Great Plains into moving dunes, displacing hundreds of thousands.",
+  "body": "Part of [Great Depression](event:great-depression). Drought and ploughed-up prairie grass turned the southern Great Plains into moving dunes, displacing hundreds of thousands.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dust_Bowl).",
+  "links": [
+   {
+    "label": "Great Depression",
+    "event": "great-depression"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dust_Bowl"
+   }
+  ]
+ },
+ {
+  "id": "salt-march",
+  "name": "Gandhi's Salt March",
+  "start": 1930,
+  "lat": 20.9,
+  "lng": 72.7,
+  "priority": 66,
+  "tags": [
+   "politics"
+  ],
+  "parent": "british-raj",
+  "summary": "Gandhi walked 385 km to the sea to make salt in defiance of the British monopoly, launching mass civil disobedience.",
+  "body": "Part of [British Raj](event:british-raj). His method of non-violent resistance directly influenced the [American civil rights movement](event:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Salt_March).",
+  "links": [
+   {
+    "label": "British Raj",
+    "event": "british-raj"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Salt_March"
+   }
+  ]
+ },
+ {
+  "id": "spanish-civil-war",
+  "name": "Spanish Civil War",
+  "start": 1936,
+  "end": 1939,
+  "lat": 40.42,
+  "lng": -3.7,
+  "priority": 62,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Franco's nationalists, backed by Germany and Italy, defeated the Republic; the war served as a rehearsal for [the world war](event:ww2).",
+  "body": "Franco's nationalists, backed by Germany and Italy, defeated the Republic; the war served as a rehearsal for [the world war](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_Civil_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spanish_Civil_War"
+   }
+  ]
+ },
+ {
+  "id": "ww2",
+  "name": "World War II",
+  "start": 1939,
+  "end": 1945,
+  "lat": 52.5,
+  "lng": 13.4,
+  "priority": 97,
+  "tags": [
+   "war"
+  ],
+  "summary": "The deadliest conflict in history: some 70–85 million dead, fought across every ocean and most continents.",
+  "body": "Germany's invasion of Poland began it in Europe; [Barbarossa](event:barbarossa) and [Pearl Harbor](event:pearl-harbor) in 1941 made it global. The tide turned at [Stalingrad](event:stalingrad) and [Midway](event:midway); [D-Day](event:d-day) opened the Western Front; the [Holocaust](event:holocaust) murdered six million Jews.\n\nIt ended with the [atomic bombing of Hiroshima](event:hiroshima) weeks after the [Trinity test](event:trinity), opening the nuclear age and the [Cold War](event:cold-war) that followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_War_II).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/World_War_II"
+   }
+  ],
+  "image": {
+   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Into_the_Jaws_of_Death_23-0455M_edit.jpg?width=640",
+   "caption": "US troops landing at Omaha Beach, 1944"
+  }
+ },
+ {
+  "id": "battle-britain",
+  "name": "Battle of Britain",
+  "start": 1940,
+  "lat": 51.5,
+  "lng": 0.5,
+  "priority": 58,
+  "tags": [
+   "war"
+  ],
+  "parent": "ww2",
+  "summary": "The RAF held off the Luftwaffe in the first campaign fought entirely in the air, ending the threat of invasion.",
+  "body": "Part of [World War II](event:ww2). The RAF held off the Luftwaffe in the first campaign fought entirely in the air, ending the threat of invasion.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Britain).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Britain"
+   }
+  ]
+ },
+ {
+  "id": "barbarossa",
+  "name": "Operation Barbarossa",
+  "start": 1941,
+  "lat": 53.9,
+  "lng": 27.57,
+  "area": [
+   [
+    22,
+    55
+   ],
+   [
+    30,
+    70
+   ],
+   [
+    60,
+    72
+   ],
+   [
+    100,
+    75
+   ],
+   [
+    140,
+    70
+   ],
+   [
+    170,
+    65
+   ],
+   [
+    135,
+    45
+   ],
+   [
+    100,
+    45
+   ],
+   [
+    75,
+    38
+   ],
+   [
+    50,
+    40
+   ],
+   [
+    30,
+    45
+   ]
+  ],
+  "priority": 72,
+  "tags": [
+   "war"
+  ],
+  "parent": "ww2",
+  "summary": "Germany invaded the Soviet Union along a 2,900 km front — the largest invasion in history.",
+  "body": "Part of [World War II](event:ww2). Germany invaded the Soviet Union along a 2,900 km front — the largest invasion in history.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Operation_Barbarossa).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Operation_Barbarossa"
+   }
+  ]
+ },
+ {
+  "id": "pearl-harbor",
+  "name": "Attack on Pearl Harbor",
+  "start": 1941,
+  "lat": 21.36,
+  "lng": -157.95,
+  "priority": 74,
+  "tags": [
+   "war"
+  ],
+  "parent": "ww2",
+  "summary": "A Japanese carrier strike on the US Pacific Fleet brought the United States into the war.",
+  "body": "Part of [World War II](event:ww2). A Japanese carrier strike on the US Pacific Fleet brought the United States into the war.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Attack_on_Pearl_Harbor).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Attack_on_Pearl_Harbor"
+   }
+  ]
+ },
+ {
+  "id": "holocaust",
+  "name": "The Holocaust",
+  "start": 1941,
+  "end": 1945,
+  "lat": 50.03,
+  "lng": 19.2,
+  "priority": 84,
+  "tags": [
+   "war",
+   "politics",
+   "disaster"
+  ],
+  "parent": "ww2",
+  "summary": "Nazi Germany murdered six million Jews, along with Roma, disabled people, Soviet prisoners and political opponents.",
+  "body": "Part of [World War II](event:ww2). Mass shootings by the Einsatzgruppen gave way to industrialised killing at extermination camps, of which Auschwitz-Birkenau was the largest. The word *genocide* was coined to describe it, and the Genocide Convention of 1948 followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Holocaust).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/The_Holocaust"
+   }
+  ]
+ },
+ {
+  "id": "stalingrad",
+  "name": "Battle of Stalingrad",
+  "start": 1942,
+  "end": 1943,
+  "lat": 48.7,
+  "lng": 44.5,
+  "priority": 74,
+  "tags": [
+   "war"
+  ],
+  "parent": "ww2",
+  "summary": "The turning point of the Eastern Front; the German Sixth Army was encircled and destroyed in the ruined city.",
+  "body": "Part of [World War II](event:ww2). Roughly **two million** casualties made it one of the bloodiest battles in history. The Soviet counter-offensive *Operation Uranus* closed the ring in November 1942; Paulus surrendered in February.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Stalingrad).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Stalingrad"
+   }
+  ]
+ },
+ {
+  "id": "midway",
+  "name": "Battle of Midway",
+  "start": 1942,
+  "lat": 28.2,
+  "lng": -177.37,
+  "priority": 62,
+  "tags": [
+   "war"
+  ],
+  "parent": "ww2",
+  "summary": "American carriers sank four Japanese fleet carriers in a single day, reversing the balance in the Pacific.",
+  "body": "Part of [World War II](event:ww2). American carriers sank four Japanese fleet carriers in a single day, reversing the balance in the Pacific.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Midway).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Midway"
+   }
+  ]
+ },
+ {
+  "id": "d-day",
+  "name": "D-Day landings",
+  "start": 1944,
+  "lat": 49.34,
+  "lng": -0.6,
+  "priority": 78,
+  "tags": [
+   "war"
+  ],
+  "parent": "ww2",
+  "summary": "The largest amphibious operation ever mounted put 156,000 Allied troops ashore in Normandy in one day.",
+  "body": "Part of [World War II](event:ww2). The largest amphibious operation ever mounted put 156,000 Allied troops ashore in Normandy in one day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Normandy_landings).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Normandy_landings"
+   }
+  ]
+ }
+]

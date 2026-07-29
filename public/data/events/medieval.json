@@ -1,0 +1,1361 @@
+[
+ {
+  "id": "justinian",
+  "name": "Reign of Justinian",
+  "start": 527,
+  "end": 565,
+  "lat": 41.01,
+  "lng": 28.98,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The eastern emperor codified Roman law and briefly reconquered Italy, North Africa and southern Spain.",
+  "body": "The *Corpus Juris Civilis* is the foundation of civil law systems across Europe and Latin America today. His reconquest was undone by the [plague](event:justinian-plague) and by war exhaustion.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Justinian_I).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Justinian_I"
+   }
+  ]
+ },
+ {
+  "id": "hagia-sophia",
+  "name": "Hagia Sophia completed",
+  "start": 537,
+  "lat": 41.01,
+  "lng": 28.98,
+  "priority": 62,
+  "tags": [
+   "culture",
+   "religion"
+  ],
+  "parent": "justinian",
+  "summary": "The great domed church of Constantinople was the largest interior space in the world for nearly a thousand years.",
+  "body": "Part of [Reign of Justinian](event:justinian). The great domed church of Constantinople was the largest interior space in the world for nearly a thousand years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hagia_Sophia).",
+  "links": [
+   {
+    "label": "Reign of Justinian",
+    "event": "justinian"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hagia_Sophia"
+   }
+  ]
+ },
+ {
+  "id": "justinian-plague",
+  "name": "Plague of Justinian",
+  "start": 541,
+  "end": 549,
+  "lat": 41.01,
+  "lng": 28.98,
+  "area": [
+   [
+    -6,
+    36
+   ],
+   [
+    5,
+    44
+   ],
+   [
+    15,
+    45
+   ],
+   [
+    28,
+    45
+   ],
+   [
+    40,
+    40
+   ],
+   [
+    45,
+    32
+   ],
+   [
+    35,
+    25
+   ],
+   [
+    20,
+    30
+   ],
+   [
+    8,
+    34
+   ],
+   [
+    -6,
+    32
+   ]
+  ],
+  "priority": 76,
+  "tags": [
+   "disease"
+  ],
+  "parent": "justinian",
+  "summary": "The first recorded pandemic of bubonic plague killed perhaps 15–50 million people around the Mediterranean.",
+  "body": "Part of [Reign of Justinian](event:justinian). Caused by the same bacterium as the later [Black Death](event:black-death), it struck Constantinople at the height of Justinian's reconquest and helped ensure it did not last.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Plague_of_Justinian).",
+  "links": [
+   {
+    "label": "Reign of Justinian",
+    "event": "justinian"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Plague_of_Justinian"
+   }
+  ]
+ },
+ {
+  "id": "tang-dynasty",
+  "name": "Tang dynasty",
+  "start": 618,
+  "end": 907,
+  "lat": 34.27,
+  "lng": 108.95,
+  "priority": 76,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "A cosmopolitan Chinese golden age of poetry, Buddhism and long-distance trade, with Chang'an the largest city on Earth.",
+  "body": "Li Bai and Du Fu wrote in this period; the imperial examination system matured; and [woodblock printing](event:woodblock-printing) appeared.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tang_dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tang_dynasty"
+   }
+  ]
+ },
+ {
+  "id": "hijra",
+  "name": "The Hijra and the founding of Islam",
+  "start": 622,
+  "lat": 24.47,
+  "lng": 39.61,
+  "priority": 95,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "summary": "Muhammad and his followers migrated from Mecca to Medina, founding the first Muslim community; year one of the Islamic calendar.",
+  "body": "Within a decade the new faith had united the Arabian peninsula, and within a century its armies and merchants had carried it from Spain to the Indus in the [early Muslim conquests](event:islamic-conquests).\n\nIslam is today the second largest religion in the world and shaped law, science and art across three continents.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hijrah).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hijrah"
+   }
+  ]
+ },
+ {
+  "id": "islamic-conquests",
+  "name": "Early Muslim conquests",
+  "start": 632,
+  "end": 750,
+  "lat": 30.0,
+  "lng": 40.0,
+  "area": [
+   [
+    -9,
+    33
+   ],
+   [
+    -2,
+    36
+   ],
+   [
+    10,
+    33
+   ],
+   [
+    25,
+    31
+   ],
+   [
+    35,
+    37
+   ],
+   [
+    48,
+    40
+   ],
+   [
+    62,
+    37
+   ],
+   [
+    70,
+    30
+   ],
+   [
+    55,
+    15
+   ],
+   [
+    43,
+    13
+   ],
+   [
+    32,
+    22
+   ],
+   [
+    10,
+    26
+   ],
+   [
+    -6,
+    29
+   ]
+  ],
+  "priority": 86,
+  "tags": [
+   "war",
+   "religion",
+   "politics"
+  ],
+  "parent": "hijra",
+  "summary": "Arab armies took Persia, Egypt, the Levant, North Africa and Spain within roughly a century.",
+  "body": "Part of [The Hijra and the founding of Islam](event:hijra). The Sasanian empire was destroyed outright and Byzantium lost its richest provinces at [Yarmouk](event:yarmouk). The advance into Western Europe was checked at [Tours](event:tours) in 732.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Muslim_conquests).",
+  "links": [
+   {
+    "label": "The Hijra and the founding of Islam",
+    "event": "hijra"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Early_Muslim_conquests"
+   }
+  ]
+ },
+ {
+  "id": "yarmouk",
+  "name": "Battle of Yarmouk",
+  "start": 636,
+  "lat": 32.82,
+  "lng": 35.9,
+  "priority": 56,
+  "tags": [
+   "war"
+  ],
+  "parent": "islamic-conquests",
+  "summary": "A decisive Arab victory over the Byzantine field army opened Syria and Palestine to Muslim rule.",
+  "body": "Part of [Early Muslim conquests](event:islamic-conquests). A decisive Arab victory over the Byzantine field army opened Syria and Palestine to Muslim rule.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_the_Yarmuk).",
+  "links": [
+   {
+    "label": "Early Muslim conquests",
+    "event": "islamic-conquests"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_the_Yarmuk"
+   }
+  ]
+ },
+ {
+  "id": "reconquista",
+  "name": "The Reconquista",
+  "start": 722,
+  "end": 1492,
+  "lat": 37.18,
+  "lng": -3.6,
+  "priority": 70,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "summary": "Christian kingdoms took the Iberian peninsula from Muslim rule over nearly eight centuries.",
+  "body": "It ended with the surrender of [Granada](event:granada) in January 1492, months before [Columbus](event:columbus) sailed with Castilian backing.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reconquista).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Reconquista"
+   }
+  ]
+ },
+ {
+  "id": "tours",
+  "name": "Battle of Tours",
+  "start": 732,
+  "lat": 46.87,
+  "lng": 0.55,
+  "priority": 58,
+  "tags": [
+   "war"
+  ],
+  "parent": "islamic-conquests",
+  "summary": "Charles Martel's Franks halted an Umayyad raiding army between Tours and Poitiers.",
+  "body": "Part of [Early Muslim conquests](event:islamic-conquests). Charles Martel's Franks halted an Umayyad raiding army between Tours and Poitiers.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Tours).",
+  "links": [
+   {
+    "label": "Early Muslim conquests",
+    "event": "islamic-conquests"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Tours"
+   }
+  ]
+ },
+ {
+  "id": "islamic-golden-age",
+  "name": "Islamic Golden Age",
+  "start": 786,
+  "end": 1258,
+  "lat": 33.34,
+  "lng": 44.4,
+  "priority": 80,
+  "tags": [
+   "science",
+   "culture"
+  ],
+  "summary": "Baghdad, Córdoba and Cairo became centres of mathematics, astronomy, medicine and philosophy.",
+  "body": "Greek, Persian and Indian works were translated into Arabic at the House of Wisdom, then extended: [algebra](event:al-khwarizmi), optics, the astrolabe, hospitals and pharmacology. Much of this learning re-entered Europe through Spain and Sicily.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Islamic_Golden_Age).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Islamic_Golden_Age"
+   }
+  ]
+ },
+ {
+  "id": "viking-age",
+  "name": "Viking Age",
+  "start": 793,
+  "end": 1066,
+  "lat": 60.0,
+  "lng": 10.0,
+  "priority": 80,
+  "tags": [
+   "war",
+   "exploration"
+  ],
+  "summary": "Scandinavian raiders, traders and settlers ranged from Newfoundland to Baghdad for nearly three centuries.",
+  "body": "They sacked [Lindisfarne](event:lindisfarne), settled Iceland, Greenland and briefly [Vinland](event:vinland), founded Dublin and Kyiv, and conquered Normandy — from which their descendants took [England](event:hastings).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Viking_Age).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Viking_Age"
+   }
+  ]
+ },
+ {
+  "id": "lindisfarne",
+  "name": "Raid on Lindisfarne",
+  "start": 793,
+  "lat": 55.68,
+  "lng": -1.8,
+  "priority": 56,
+  "tags": [
+   "war"
+  ],
+  "parent": "viking-age",
+  "summary": "The sack of the Northumbrian monastery is the conventional opening of the Viking Age in Europe.",
+  "body": "Part of [Viking Age](event:viking-age). The sack of the Northumbrian monastery is the conventional opening of the Viking Age in Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Lindisfarne).",
+  "links": [
+   {
+    "label": "Viking Age",
+    "event": "viking-age"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Lindisfarne"
+   }
+  ]
+ },
+ {
+  "id": "charlemagne",
+  "name": "Charlemagne crowned emperor",
+  "start": 800,
+  "lat": 41.9,
+  "lng": 12.45,
+  "priority": 78,
+  "tags": [
+   "politics",
+   "religion"
+  ],
+  "summary": "The pope crowned the Frankish king emperor in Rome, reviving an imperial title in the west after 324 years.",
+  "body": "Charlemagne's realm covered most of western Europe and its court sponsored a revival of learning and a legible new script. Its division among his grandsons sketched the outlines of France and Germany.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charlemagne).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Charlemagne"
+   }
+  ]
+ },
+ {
+  "id": "al-khwarizmi",
+  "name": "Al-Khwarizmi and algebra",
+  "start": 820,
+  "lat": 33.34,
+  "lng": 44.4,
+  "priority": 64,
+  "tags": [
+   "science"
+  ],
+  "parent": "islamic-golden-age",
+  "summary": "His treatise on balancing equations gave algebra its name, and a Latin garbling of his own gave us \"algorithm\".",
+  "body": "Part of [Islamic Golden Age](event:islamic-golden-age). His treatise on balancing equations gave algebra its name, and a Latin garbling of his own gave us \"algorithm\".\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Al-Khwarizmi).",
+  "links": [
+   {
+    "label": "Islamic Golden Age",
+    "event": "islamic-golden-age"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Al-Khwarizmi"
+   }
+  ]
+ },
+ {
+  "id": "gunpowder",
+  "name": "Invention of gunpowder",
+  "start": 850,
+  "lat": 34.27,
+  "lng": 108.95,
+  "priority": 74,
+  "tags": [
+   "technology",
+   "war"
+  ],
+  "summary": "Chinese alchemists seeking an elixir of immortality found a mixture that burned explosively.",
+  "body": "By the thirteenth century it was in bombs and rockets; carried west along the [Silk Road](event:silk-road), it produced the cannon that would eventually bring down [Constantinople](event:fall-constantinople) and the castle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_gunpowder).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_gunpowder"
+   }
+  ]
+ },
+ {
+  "id": "woodblock-printing",
+  "name": "Woodblock printing",
+  "start": 868,
+  "lat": 34.27,
+  "lng": 108.95,
+  "priority": 58,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "parent": "tang-dynasty",
+  "summary": "The Diamond Sutra, printed in China in 868, is the oldest dated printed book that survives.",
+  "body": "Part of [Tang dynasty](event:tang-dynasty). The Diamond Sutra, printed in China in 868, is the oldest dated printed book that survives.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Woodblock_printing).",
+  "links": [
+   {
+    "label": "Tang dynasty",
+    "event": "tang-dynasty"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Woodblock_printing"
+   }
+  ]
+ },
+ {
+  "id": "vinland",
+  "name": "Norse reach North America",
+  "start": 1000,
+  "lat": 51.6,
+  "lng": -55.53,
+  "priority": 64,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "viking-age",
+  "summary": "Leif Erikson's people built a small settlement at L'Anse aux Meadows in Newfoundland, five centuries before Columbus.",
+  "body": "Part of [Viking Age](event:viking-age). Tree-ring dating of the timbers puts occupation precisely at 1021 CE. The colony lasted only a few years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Norse_colonization_of_North_America).",
+  "links": [
+   {
+    "label": "Viking Age",
+    "event": "viking-age"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Norse_colonization_of_North_America"
+   }
+  ]
+ },
+ {
+  "id": "great-schism",
+  "name": "East–West Schism",
+  "start": 1054,
+  "lat": 41.01,
+  "lng": 28.98,
+  "priority": 66,
+  "tags": [
+   "religion"
+  ],
+  "summary": "Mutual excommunications formalised the split between the Catholic and Orthodox churches.",
+  "body": "Mutual excommunications formalised the split between the Catholic and Orthodox churches.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/East–West_Schism).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/East–West_Schism"
+   }
+  ]
+ },
+ {
+  "id": "hastings",
+  "name": "Norman conquest of England",
+  "start": 1066,
+  "lat": 50.91,
+  "lng": 0.49,
+  "priority": 74,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "William of Normandy defeated Harold at Hastings and took the English throne.",
+  "body": "The conquest replaced the English aristocracy wholesale, poured French vocabulary into the language, and produced the Domesday Book — the most detailed survey of any medieval kingdom.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Norman_Conquest).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Norman_Conquest"
+   }
+  ]
+ },
+ {
+  "id": "university-bologna",
+  "name": "First universities",
+  "start": 1088,
+  "lat": 44.5,
+  "lng": 11.35,
+  "priority": 60,
+  "tags": [
+   "culture",
+   "science"
+  ],
+  "summary": "Bologna, then Paris and Oxford, organised teachers and students into self-governing corporations.",
+  "body": "Bologna, then Paris and Oxford, organised teachers and students into self-governing corporations.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/University_of_Bologna).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/University_of_Bologna"
+   }
+  ]
+ },
+ {
+  "id": "crusades",
+  "name": "The Crusades",
+  "start": 1095,
+  "end": 1291,
+  "lat": 31.78,
+  "lng": 35.22,
+  "priority": 82,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "summary": "Two centuries of religious warfare between Latin Christendom and the Muslim states of the Levant.",
+  "body": "Urban II's call at Clermont launched the [First Crusade](event:first-crusade), which took Jerusalem in 1099. Later expeditions achieved less; the [Fourth](event:fourth-crusade) sacked Christian Constantinople instead, and the last mainland stronghold fell at [Acre](event:acre-1291).\n\nThe wars deepened contact — and enmity — between Europe and the Islamic world, and brought Arabic learning and goods westward.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Crusades).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Crusades"
+   }
+  ]
+ },
+ {
+  "id": "first-crusade",
+  "name": "First Crusade",
+  "start": 1096,
+  "end": 1099,
+  "lat": 31.78,
+  "lng": 35.22,
+  "priority": 68,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "parent": "crusades",
+  "summary": "A Latin army marched across Anatolia and took Jerusalem after a five-week siege, massacring much of its population.",
+  "body": "Part of [The Crusades](event:crusades). A Latin army marched across Anatolia and took Jerusalem after a five-week siege, massacring much of its population.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_Crusade).",
+  "links": [
+   {
+    "label": "The Crusades",
+    "event": "crusades"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/First_Crusade"
+   }
+  ]
+ },
+ {
+  "id": "angkor-wat",
+  "name": "Angkor Wat built",
+  "start": 1113,
+  "end": 1150,
+  "lat": 13.41,
+  "lng": 103.87,
+  "priority": 64,
+  "tags": [
+   "culture",
+   "religion"
+  ],
+  "summary": "The Khmer kings raised the largest religious monument in the world, first Hindu and later Buddhist.",
+  "body": "The Khmer kings raised the largest religious monument in the world, first Hindu and later Buddhist.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Angkor_Wat).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Angkor_Wat"
+   }
+  ]
+ },
+ {
+  "id": "fourth-crusade",
+  "name": "Fourth Crusade sacks Constantinople",
+  "start": 1204,
+  "lat": 41.01,
+  "lng": 28.98,
+  "priority": 60,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "parent": "crusades",
+  "summary": "Diverted by Venetian debts and dynastic politics, the crusaders stormed and looted the greatest Christian city in the world.",
+  "body": "Part of [The Crusades](event:crusades). Byzantium never fully recovered, which made the [fall of the city](event:fall-constantinople) in 1453 far easier.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fourth_Crusade).",
+  "links": [
+   {
+    "label": "The Crusades",
+    "event": "crusades"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Fourth_Crusade"
+   }
+  ]
+ },
+ {
+  "id": "mongol-conquests",
+  "name": "Mongol conquests",
+  "start": 1206,
+  "end": 1294,
+  "lat": 47.92,
+  "lng": 106.92,
+  "area": [
+   [
+    28,
+    52
+   ],
+   [
+    60,
+    58
+   ],
+   [
+    90,
+    55
+   ],
+   [
+    120,
+    50
+   ],
+   [
+    128,
+    42
+   ],
+   [
+    122,
+    30
+   ],
+   [
+    105,
+    25
+   ],
+   [
+    92,
+    28
+   ],
+   [
+    75,
+    30
+   ],
+   [
+    58,
+    28
+   ],
+   [
+    44,
+    36
+   ],
+   [
+    30,
+    45
+   ]
+  ],
+  "priority": 90,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "The largest contiguous land empire in history was assembled in three generations, from Korea to Hungary.",
+  "body": "[Genghis Khan](event:genghis-khan) united the steppe tribes and turned them into a disciplined army of mounted archers; his sons and grandsons destroyed the Jin, Khwarazmian and Abbasid states — [Baghdad](event:baghdad-1258) in 1258 — and founded the [Yuan dynasty](event:yuan-dynasty) in China.\n\nThe destruction was immense, but the *Pax Mongolica* also made Eurasia briefly safe for travellers like [Marco Polo](event:marco-polo) — and for the [plague](event:black-death).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mongol_conquests).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mongol_conquests"
+   }
+  ]
+ },
+ {
+  "id": "genghis-khan",
+  "name": "Genghis Khan proclaimed",
+  "start": 1206,
+  "lat": 47.92,
+  "lng": 106.92,
+  "priority": 74,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "parent": "mongol-conquests",
+  "summary": "Temüjin united the Mongol tribes and was acclaimed universal ruler at a kurultai on the Onon river.",
+  "body": "Part of [Mongol conquests](event:mongol-conquests). Temüjin united the Mongol tribes and was acclaimed universal ruler at a kurultai on the Onon river.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
+  "links": [
+   {
+    "label": "Mongol conquests",
+    "event": "mongol-conquests"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Genghis_Khan"
+   }
+  ]
+ },
+ {
+  "id": "magna-carta",
+  "name": "Magna Carta",
+  "start": 1215,
+  "lat": 51.44,
+  "lng": -0.56,
+  "priority": 80,
+  "tags": [
+   "politics"
+  ],
+  "summary": "English barons forced King John to accept written limits on royal power at Runnymede.",
+  "body": "Most of its clauses concerned feudal grievances, but the principle that the ruler is subject to law — and the promise of judgement by peers — was quoted for centuries afterwards, including by the framers of the [American constitution](event:us-constitution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Magna_Carta).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Magna_Carta"
+   }
+  ]
+ },
+ {
+  "id": "baghdad-1258",
+  "name": "Mongol sack of Baghdad",
+  "start": 1258,
+  "lat": 33.34,
+  "lng": 44.4,
+  "priority": 66,
+  "tags": [
+   "war"
+  ],
+  "parent": "mongol-conquests",
+  "summary": "Hulagu's army destroyed the Abbasid capital, killed the caliph and ended the [Islamic Golden Age](event:islamic-golden-age) in Iraq.",
+  "body": "Part of [Mongol conquests](event:mongol-conquests). Hulagu's army destroyed the Abbasid capital, killed the caliph and ended the [Islamic Golden Age](event:islamic-golden-age) in Iraq.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Baghdad_(1258)).",
+  "links": [
+   {
+    "label": "Mongol conquests",
+    "event": "mongol-conquests"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Siege_of_Baghdad_(1258)"
+   }
+  ]
+ },
+ {
+  "id": "yuan-dynasty",
+  "name": "Yuan dynasty founded",
+  "start": 1271,
+  "end": 1368,
+  "lat": 39.9,
+  "lng": 116.4,
+  "priority": 62,
+  "tags": [
+   "politics"
+  ],
+  "parent": "mongol-conquests",
+  "summary": "Kublai Khan completed the conquest of Song China and ruled it as a Chinese emperor from Dadu, modern Beijing.",
+  "body": "Part of [Mongol conquests](event:mongol-conquests). Kublai Khan completed the conquest of Song China and ruled it as a Chinese emperor from Dadu, modern Beijing.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Yuan_dynasty).",
+  "links": [
+   {
+    "label": "Mongol conquests",
+    "event": "mongol-conquests"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Yuan_dynasty"
+   }
+  ]
+ },
+ {
+  "id": "marco-polo",
+  "name": "Travels of Marco Polo",
+  "start": 1271,
+  "end": 1295,
+  "lat": 39.9,
+  "lng": 116.4,
+  "priority": 64,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "mongol-conquests",
+  "summary": "A Venetian merchant's account of twenty years in Asia became medieval Europe's window on China.",
+  "body": "Part of [Mongol conquests](event:mongol-conquests). The book was widely doubted, and widely read — [Columbus](event:columbus) owned an annotated copy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marco_Polo).",
+  "links": [
+   {
+    "label": "Mongol conquests",
+    "event": "mongol-conquests"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Marco_Polo"
+   }
+  ]
+ },
+ {
+  "id": "acre-1291",
+  "name": "Fall of Acre",
+  "start": 1291,
+  "lat": 32.93,
+  "lng": 35.08,
+  "priority": 52,
+  "tags": [
+   "war"
+  ],
+  "parent": "crusades",
+  "summary": "The last crusader stronghold on the Levantine mainland fell to the Mamluks.",
+  "body": "Part of [The Crusades](event:crusades). The last crusader stronghold on the Levantine mainland fell to the Mamluks.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Acre_(1291)).",
+  "links": [
+   {
+    "label": "The Crusades",
+    "event": "crusades"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Siege_of_Acre_(1291)"
+   }
+  ]
+ },
+ {
+  "id": "ottoman-empire",
+  "name": "Ottoman Empire",
+  "start": 1299,
+  "end": 1922,
+  "lat": 39.93,
+  "lng": 32.86,
+  "priority": 80,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "From a frontier beylik in Anatolia the Ottomans built an empire spanning the Balkans, the Middle East and North Africa for six centuries.",
+  "body": "Its high point came under Suleiman the Magnificent; its collapse after [the First World War](event:ww1) created the modern map of the Middle East.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ottoman_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ottoman_Empire"
+   }
+  ]
+ },
+ {
+  "id": "little-ice-age",
+  "name": "Little Ice Age",
+  "start": 1300,
+  "end": 1850,
+  "lat": 50.0,
+  "lng": 0.0,
+  "priority": 70,
+  "tags": [
+   "climate"
+  ],
+  "summary": "A few tenths of a degree of cooling brought advancing glaciers, frozen rivers and repeated harvest failures across the northern hemisphere.",
+  "body": "Solar minima, volcanic eruptions and possibly American [reforestation after depopulation](event:americas-epidemics) all contributed. The Thames froze hard enough for frost fairs; Norse Greenland was abandoned.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Little_Ice_Age).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Little_Ice_Age"
+   }
+  ]
+ },
+ {
+  "id": "mansa-musa",
+  "name": "Mansa Musa's pilgrimage to Mecca",
+  "start": 1324,
+  "lat": 16.77,
+  "lng": -3.01,
+  "priority": 62,
+  "tags": [
+   "economy",
+   "religion"
+  ],
+  "summary": "The ruler of Mali crossed the Sahara with so much gold that he depressed its price in Cairo for years.",
+  "body": "Mali's wealth put Timbuktu on European maps and made it a centre of Islamic scholarship.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mansa_Musa).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mansa_Musa"
+   }
+  ]
+ },
+ {
+  "id": "hundred-years-war",
+  "name": "Hundred Years' War",
+  "start": 1337,
+  "end": 1453,
+  "lat": 48.0,
+  "lng": 1.0,
+  "priority": 76,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "England and France fought intermittently for 116 years over the French crown.",
+  "body": "Longbows won [Crécy](event:crecy) and [Agincourt](event:agincourt), but France recovered under [Joan of Arc](event:joan-of-arc) and, with gunpowder artillery, expelled the English from all but Calais.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hundred_Years%27_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hundred_Years%27_War"
+   }
+  ]
+ },
+ {
+  "id": "black-death",
+  "name": "Black Death",
+  "start": 1346,
+  "end": 1352,
+  "lat": 48.0,
+  "lng": 15.0,
+  "area": [
+   [
+    -10,
+    36
+   ],
+   [
+    -5,
+    43
+   ],
+   [
+    0,
+    50
+   ],
+   [
+    10,
+    55
+   ],
+   [
+    25,
+    55
+   ],
+   [
+    40,
+    50
+   ],
+   [
+    45,
+    45
+   ],
+   [
+    40,
+    40
+   ],
+   [
+    30,
+    36
+   ],
+   [
+    20,
+    34
+   ],
+   [
+    10,
+    35
+   ],
+   [
+    0,
+    36
+   ]
+  ],
+  "priority": 92,
+  "tags": [
+   "disease",
+   "disaster"
+  ],
+  "summary": "The deadliest pandemic in recorded history killed an estimated third to half of Europe's population in six years.",
+  "body": "Plague travelled west along [Silk Road](event:silk-road) and Genoese trade routes, reaching Sicily in 1347 and Scandinavia by 1350. Contemporaries had no idea what caused it; the bacterium *Yersinia pestis* was identified only in 1894.\n\nThe survivors inherited a labour shortage that broke serfdom in much of western Europe, raised wages, and shook the authority of the Church — conditions in which the [Renaissance](event:renaissance) took root.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Black_Death).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Black_Death"
+   }
+  ]
+ },
+ {
+  "id": "crecy",
+  "name": "Battle of Crécy",
+  "start": 1346,
+  "lat": 50.25,
+  "lng": 1.9,
+  "priority": 52,
+  "tags": [
+   "war"
+  ],
+  "parent": "hundred-years-war",
+  "summary": "English longbowmen destroyed the French cavalry, an early sign that armoured knights were losing their dominance.",
+  "body": "Part of [Hundred Years' War](event:hundred-years-war). English longbowmen destroyed the French cavalry, an early sign that armoured knights were losing their dominance.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Crécy).",
+  "links": [
+   {
+    "label": "Hundred Years' War",
+    "event": "hundred-years-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Crécy"
+   }
+  ]
+ },
+ {
+  "id": "ming-dynasty",
+  "name": "Ming dynasty",
+  "start": 1368,
+  "end": 1644,
+  "lat": 32.06,
+  "lng": 118.8,
+  "priority": 74,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Native Chinese rule was restored after the Mongols; the Forbidden City was built and the [Great Wall](event:great-wall) rebuilt in the form seen today.",
+  "body": "Native Chinese rule was restored after the Mongols; the Forbidden City was built and the [Great Wall](event:great-wall) rebuilt in the form seen today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ming_dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ming_dynasty"
+   }
+  ]
+ },
+ {
+  "id": "renaissance",
+  "name": "The Renaissance",
+  "start": 1400,
+  "end": 1600,
+  "lat": 43.77,
+  "lng": 11.26,
+  "priority": 88,
+  "tags": [
+   "culture"
+  ],
+  "summary": "A revival of classical learning and a transformation of European art, architecture and thought, beginning in Florence.",
+  "body": "Perspective, anatomy, humanist scholarship and patronage by bankers and popes produced [Leonardo](event:mona-lisa), [Michelangelo](event:sistine-chapel), Raphael and Brunelleschi's dome.\n\nThe recovery of Greek texts — accelerated by scholars fleeing the [fall of Constantinople](event:fall-constantinople) — and cheap books from the [printing press](event:printing-press) spread the movement across Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Renaissance).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Renaissance"
+   }
+  ]
+ },
+ {
+  "id": "zheng-he",
+  "name": "Voyages of Zheng He",
+  "start": 1405,
+  "end": 1433,
+  "lat": 32.06,
+  "lng": 118.8,
+  "priority": 70,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "ming-dynasty",
+  "summary": "Chinese treasure fleets of hundreds of ships sailed to India, Arabia and East Africa decades before the Portuguese.",
+  "body": "Part of [Ming dynasty](event:ming-dynasty). The largest ships dwarfed anything in Europe. After 1433 the voyages were halted and the records suppressed — one of history's great counterfactuals.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ming_treasure_voyages).",
+  "links": [
+   {
+    "label": "Ming dynasty",
+    "event": "ming-dynasty"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ming_treasure_voyages"
+   }
+  ]
+ },
+ {
+  "id": "agincourt",
+  "name": "Battle of Agincourt",
+  "start": 1415,
+  "lat": 50.46,
+  "lng": 2.14,
+  "priority": 56,
+  "tags": [
+   "war"
+  ],
+  "parent": "hundred-years-war",
+  "summary": "Henry V's outnumbered and exhausted army routed the French in a muddy defile.",
+  "body": "Part of [Hundred Years' War](event:hundred-years-war). Henry V's outnumbered and exhausted army routed the French in a muddy defile.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Agincourt).",
+  "links": [
+   {
+    "label": "Hundred Years' War",
+    "event": "hundred-years-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Agincourt"
+   }
+  ]
+ },
+ {
+  "id": "age-of-discovery",
+  "name": "Age of Discovery",
+  "start": 1418,
+  "end": 1600,
+  "lat": 38.7,
+  "lng": -9.5,
+  "priority": 95,
+  "tags": [
+   "exploration"
+  ],
+  "summary": "European ships opened sea routes to Africa, Asia and the Americas, joining the world's hemispheres into a single system.",
+  "body": "Portuguese caravels worked their way down the African coast for decades before [Dias](event:dias) rounded the Cape and [da Gama](event:da-gama) reached India. [Columbus](event:columbus) sailed west and found a continent nobody in Europe expected; [Magellan's expedition](event:magellan) went all the way round.\n\nWhat followed was the [Columbian Exchange](event:columbian-exchange), the [conquest of the Americas](event:spanish-conquest) and the [Atlantic slave trade](event:slave-trade) — the beginning of a genuinely global economy, built on immense violence.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Discovery).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Age_of_Discovery"
+   }
+  ]
+ },
+ {
+  "id": "aztec-empire",
+  "name": "Aztec Empire",
+  "start": 1428,
+  "end": 1521,
+  "lat": 19.43,
+  "lng": -99.13,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The Triple Alliance ruled central Mexico from Tenochtitlan, a lake city of perhaps 200,000 people.",
+  "body": "The Triple Alliance ruled central Mexico from Tenochtitlan, a lake city of perhaps 200,000 people.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aztec_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Aztec_Empire"
+   }
+  ]
+ },
+ {
+  "id": "joan-of-arc",
+  "name": "Joan of Arc",
+  "start": 1429,
+  "end": 1431,
+  "lat": 47.22,
+  "lng": 2.42,
+  "priority": 64,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "parent": "hundred-years-war",
+  "summary": "A peasant girl claiming divine voices lifted the siege of Orléans and had the dauphin crowned at Reims; she was burned as a heretic two years later.",
+  "body": "Part of [Hundred Years' War](event:hundred-years-war). A peasant girl claiming divine voices lifted the siege of Orléans and had the dauphin crowned at Reims; she was burned as a heretic two years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Joan_of_Arc).",
+  "links": [
+   {
+    "label": "Hundred Years' War",
+    "event": "hundred-years-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Joan_of_Arc"
+   }
+  ]
+ },
+ {
+  "id": "inca-empire",
+  "name": "Inca Empire",
+  "start": 1438,
+  "end": 1533,
+  "lat": -13.52,
+  "lng": -71.98,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Tawantinsuyu stretched 4,000 km along the Andes, bound by roads, terraces and knotted-string records, without wheels or writing.",
+  "body": "Tawantinsuyu stretched 4,000 km along the Andes, bound by roads, terraces and knotted-string records, without wheels or writing.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Inca_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Inca_Empire"
+   }
+  ]
+ },
+ {
+  "id": "printing-press",
+  "name": "Gutenberg's printing press",
+  "start": 1440,
+  "lat": 50.0,
+  "lng": 8.27,
+  "priority": 90,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "summary": "Movable metal type made books cheap, and made it impossible to suppress an idea once it had spread.",
+  "body": "Gutenberg combined a wine-press, oil-based ink and a mould for casting reusable type. By 1500 Europe held perhaps twenty million printed books, more than scribes had produced in the preceding thousand years.\n\nThe press carried the [Reformation](event:reformation), the [Scientific Revolution](event:copernicus) and eventually mass literacy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Printing_press).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Printing_press"
+   }
+  ]
+ },
+ {
+  "id": "fall-constantinople",
+  "name": "Fall of Constantinople",
+  "start": 1453,
+  "lat": 41.01,
+  "lng": 28.98,
+  "priority": 88,
+  "tags": [
+   "war",
+   "politics",
+   "religion"
+  ],
+  "summary": "Ottoman cannon breached the Theodosian walls and the last Roman emperor died fighting; the Byzantine Empire ended after 1,100 years.",
+  "body": "Mehmed II made the city his capital and Hagia Sophia a mosque. Greek scholars fled west with their manuscripts, feeding the [Renaissance](event:renaissance), while Ottoman control of the eastern trade routes sharpened European interest in finding a [sea route to Asia](event:age-of-discovery).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Constantinople).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Fall_of_Constantinople"
+   }
+  ]
+ },
+ {
+  "id": "dias",
+  "name": "Dias rounds the Cape of Good Hope",
+  "start": 1488,
+  "lat": -34.36,
+  "lng": 18.47,
+  "priority": 54,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "Bartolomeu Dias proved that the Atlantic and Indian oceans connect.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). Bartolomeu Dias proved that the Atlantic and Indian oceans connect.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bartolomeu_Dias).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Bartolomeu_Dias"
+   }
+  ]
+ },
+ {
+  "id": "granada",
+  "name": "Fall of Granada",
+  "start": 1492,
+  "lat": 37.18,
+  "lng": -3.6,
+  "priority": 56,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "parent": "reconquista",
+  "summary": "The last Muslim emirate in Spain surrendered to Ferdinand and Isabella; Jews were expelled from Spain the same year.",
+  "body": "Part of [The Reconquista](event:reconquista). The last Muslim emirate in Spain surrendered to Ferdinand and Isabella; Jews were expelled from Spain the same year.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Granada_War).",
+  "links": [
+   {
+    "label": "The Reconquista",
+    "event": "reconquista"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Granada_War"
+   }
+  ]
+ },
+ {
+  "id": "columbus",
+  "name": "Columbus reaches the Americas",
+  "start": 1492,
+  "lat": 24.2,
+  "lng": -74.5,
+  "priority": 88,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "Three Spanish ships made landfall in the Bahamas, beginning sustained contact between the Old World and the New.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). Columbus was looking for Asia and died insisting he had found it. The consequences — [the Columbian Exchange](event:columbian-exchange), the collapse of Indigenous populations under [epidemic disease](event:americas-epidemics), and centuries of colonisation — were world-historical and, for the Americas, catastrophic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus"
+   }
+  ]
+ },
+ {
+  "id": "columbian-exchange",
+  "name": "The Columbian Exchange",
+  "start": 1492,
+  "end": 1700,
+  "lat": 10.0,
+  "lng": -60.0,
+  "priority": 82,
+  "tags": [
+   "biology",
+   "economy"
+  ],
+  "summary": "Crops, animals and diseases moved between hemispheres, transforming diets and populations on every continent.",
+  "body": "Maize, potatoes, tomatoes, cassava, chillies and tobacco went east; wheat, sugar, horses, cattle and — devastatingly — [smallpox and measles](event:americas-epidemics) went west.\n\nThe potato and maize eventually supported large population growth in Europe, Africa and China; the exchange is one reason the world could feed the [Industrial Revolution](event:industrial-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Columbian_exchange).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Columbian_exchange"
+   }
+  ]
+ },
+ {
+  "id": "da-gama",
+  "name": "Vasco da Gama reaches India",
+  "start": 1498,
+  "lat": 11.25,
+  "lng": 75.78,
+  "priority": 72,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "The first sea route from Europe to India broke the Venetian and Ottoman monopoly on the spice trade.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). The first sea route from Europe to India broke the Venetian and Ottoman monopoly on the spice trade.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vasco_da_Gama).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Vasco_da_Gama"
+   }
+  ]
+ }
+]

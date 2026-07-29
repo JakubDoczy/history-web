@@ -1,0 +1,1474 @@
+[
+ {
+  "id": "earth-formation",
+  "name": "Formation of the Earth",
+  "start": -4500000000,
+  "end": -4450000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 100,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Earth accreted from the solar nebula roughly 4.5 billion years ago, a molten world bombarded by planetesimals.",
+  "body": "Dust and rock orbiting the young Sun accreted into planetesimals and then into the proto-Earth over a few tens of millions of years. The heat of accretion and radioactive decay kept the surface molten, and iron sank to form the core while lighter silicates floated up as the mantle and first crust.\n\nRadiometric dating of meteorites and the oldest terrestrial zircons fixes the age at roughly **4.54 billion years** — the floor of this timeline.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Earth).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_Earth"
+   }
+  ]
+ },
+ {
+  "id": "theia-impact",
+  "name": "Giant impact forms the Moon",
+  "start": -4450000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 98,
+  "tags": [
+   "geology"
+  ],
+  "summary": "A Mars-sized body, Theia, struck the proto-Earth; debris from the collision coalesced into the Moon.",
+  "body": "The collision melted much of the planet, stripped away a large fraction of the mantle and left Earth with an unusually large satellite and a strong axial tilt.\n\nThe Moon stabilises Earth's obliquity, which has kept the climate comparatively steady over billions of years — a precondition for the [origin of life](event:abiogenesis).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Giant-impact_hypothesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Giant-impact_hypothesis"
+   }
+  ]
+ },
+ {
+  "id": "abiogenesis",
+  "name": "Origin of life",
+  "start": -3800000000,
+  "end": -3400000000,
+  "lat": -32.0,
+  "lng": 116.0,
+  "priority": 97,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Self-replicating chemistry appeared, most likely around hydrothermal systems, giving rise to the first cells.",
+  "body": "The earliest widely accepted chemical traces of life are carbon-isotope signatures in rocks around **3.8 billion years** old, with unambiguous microfossils and [stromatolites](event:stromatolites) not long after.\n\nEvery organism alive today descends from a single population, the last universal common ancestor.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abiogenesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Abiogenesis"
+   }
+  ]
+ },
+ {
+  "id": "oxygenic-photosynthesis",
+  "name": "Oxygenic photosynthesis evolves",
+  "start": -2700000000,
+  "lat": -21.0,
+  "lng": 119.5,
+  "priority": 86,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Cyanobacteria learned to split water with sunlight, releasing free oxygen as waste.",
+  "body": "This single metabolic innovation eventually rebuilt the atmosphere, the oceans and the chemistry of the crust, leading directly to the [Great Oxidation Event](event:great-oxidation).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Photosynthesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Photosynthesis"
+   }
+  ]
+ },
+ {
+  "id": "great-oxidation",
+  "name": "Great Oxidation Event",
+  "start": -2400000000,
+  "end": -2050000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 96,
+  "tags": [
+   "geology",
+   "climate",
+   "biology"
+  ],
+  "summary": "Free oxygen accumulated in the atmosphere for the first time, poisoning most existing life and rusting the planet.",
+  "body": "Oxygen produced by [cyanobacteria](event:oxygenic-photosynthesis) had for hundreds of millions of years been absorbed by dissolved iron, laying down banded iron formations. Once those sinks were saturated, oxygen escaped into the air.\n\nThe consequences were enormous: an ozone layer formed, methane greenhouse warming collapsed into the [Huronian glaciation](event:huronian-glaciation), and aerobic respiration — far more energetic than fermentation — became possible.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Oxidation_Event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Great_Oxidation_Event"
+   }
+  ]
+ },
+ {
+  "id": "eukaryotes",
+  "name": "First eukaryotic cells",
+  "start": -1800000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 88,
+  "tags": [
+   "biology"
+  ],
+  "summary": "One cell engulfed another and kept it; the result was the complex, compartmented cell with mitochondria.",
+  "body": "Endosymbiosis gave eukaryotes an internal power plant and, with it, the energy budget to support large genomes, large cells and eventually multicellular bodies. Chloroplasts arrived by the same route somewhat later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eukaryote).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Eukaryote"
+   }
+  ]
+ },
+ {
+  "id": "snowball-earth",
+  "name": "Snowball Earth",
+  "start": -720000000,
+  "end": -635000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 95,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Glaciers reached the tropics — possibly the whole ocean froze over — in the Cryogenian period.",
+  "body": "The Sturtian and Marinoan glaciations buried much of the planet in ice for tens of millions of years. Volcanic CO2 slowly built up beneath the ice until a runaway greenhouse thawed the world in a geological instant.\n\nThe extreme environmental swings immediately preceded the appearance of the [Ediacaran biota](event:ediacaran) and the [Cambrian explosion](event:cambrian-explosion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Snowball_Earth).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Snowball_Earth"
+   }
+  ]
+ },
+ {
+  "id": "cambrian-explosion",
+  "name": "Cambrian explosion",
+  "start": -538800000,
+  "end": -515000000,
+  "lat": 51.4,
+  "lng": -116.5,
+  "priority": 96,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Almost every modern animal body plan appears in the fossil record within a few tens of millions of years.",
+  "body": "Eyes, hard shells, jointed limbs and active predation all show up together; the Burgess Shale of British Columbia and the Chengjiang biota of Yunnan preserve the results in exquisite detail.\n\nThe trigger is debated — rising oxygen after [Snowball Earth](event:snowball-earth), the invention of predation, or genetic innovations in developmental regulation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cambrian_explosion).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cambrian_explosion"
+   }
+  ]
+ },
+ {
+  "id": "pangaea",
+  "name": "Pangaea supercontinent",
+  "start": -335000000,
+  "end": -175000000,
+  "lat": 0,
+  "lng": 10,
+  "priority": 90,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Nearly all land assembled into a single supercontinent surrounded by the Panthalassic Ocean.",
+  "body": "Its interior was a vast arid desert, and its coastline was short relative to its area, which stressed shallow-marine life. The break-up beginning in the Jurassic opened the [Atlantic Ocean](event:atlantic-opening) and set the continents on the paths they still follow.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pangaea).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Pangaea"
+   }
+  ]
+ },
+ {
+  "id": "permian-extinction",
+  "name": "Permian–Triassic extinction",
+  "start": -252000000,
+  "end": -251500000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 96,
+  "tags": [
+   "extinction",
+   "geology"
+  ],
+  "summary": "The Great Dying: about 81% of marine species and 70% of land vertebrates disappeared, the worst crisis life has faced.",
+  "body": "Volcanism of the [Siberian Traps](event:siberian-traps) injected enormous volumes of CO2 and sulphur into the atmosphere, driving warming, ocean acidification and widespread anoxia.\n\nRecovery took some **10 million years**, and the emptied world was the one in which the [first dinosaurs](event:first-dinosaurs) arose.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Permian–Triassic_extinction_event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Permian–Triassic_extinction_event"
+   }
+  ]
+ },
+ {
+  "id": "kpg-extinction",
+  "name": "Cretaceous–Paleogene extinction",
+  "start": -66000000,
+  "lat": 21.4,
+  "lng": -89.5,
+  "priority": 96,
+  "tags": [
+   "extinction",
+   "biology"
+  ],
+  "summary": "Three quarters of all species, including every non-avian dinosaur, died out in a geological instant.",
+  "body": "The immediate cause was the [Chicxulub impact](event:chicxulub), whose ejecta blanketed the globe in an iridium-rich layer found at the boundary worldwide; the [Deccan Traps](event:deccan-traps) eruptions were already stressing ecosystems.\n\nThe extinction opened the ecological space in which mammals — and eventually [primates](event:hominin-split) — radiated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous–Paleogene_extinction_event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cretaceous–Paleogene_extinction_event"
+   }
+  ]
+ },
+ {
+  "id": "chicxulub",
+  "name": "Chicxulub impact",
+  "start": -66000000,
+  "lat": 21.4,
+  "lng": -89.5,
+  "area": [
+   [
+    -92,
+    19
+   ],
+   [
+    -91,
+    22
+   ],
+   [
+    -88,
+    22.5
+   ],
+   [
+    -86,
+    21
+   ],
+   [
+    -87,
+    19
+   ],
+   [
+    -90,
+    18
+   ]
+  ],
+  "priority": 90,
+  "tags": [
+   "geology",
+   "disaster"
+  ],
+  "parent": "kpg-extinction",
+  "summary": "A 10-kilometre asteroid struck the Yucatán platform, releasing energy equal to billions of Hiroshima bombs.",
+  "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). The impact excavated a crater 180 km across into sulphur-rich carbonate rock, launching a global cloud of dust and sulphate aerosols that shut down photosynthesis for years.\n\nThe crater was identified from gravity anomalies in the 1970s and confirmed in 1991.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chicxulub_crater).",
+  "links": [
+   {
+    "label": "Cretaceous–Paleogene extinction",
+    "event": "kpg-extinction"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Chicxulub_crater"
+   }
+  ]
+ },
+ {
+  "id": "homo-sapiens",
+  "name": "Origin of Homo sapiens",
+  "start": -315000,
+  "lat": 31.9,
+  "lng": -8.7,
+  "priority": 95,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Anatomically modern humans emerged in Africa; the oldest known fossils come from Jebel Irhoud in Morocco.",
+  "body": "Genetic and fossil evidence points to a pan-African origin rather than a single cradle, with populations exchanging genes across the continent for tens of thousands of years before the [dispersal out of Africa](event:out-of-africa).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Homo_sapiens"
+   }
+  ]
+ },
+ {
+  "id": "out-of-africa",
+  "name": "Out of Africa dispersal",
+  "start": -70000,
+  "end": -50000,
+  "lat": 12.8,
+  "lng": 43.3,
+  "priority": 93,
+  "tags": [
+   "exploration",
+   "biology"
+  ],
+  "summary": "Modern humans expanded out of Africa and, within tens of millennia, reached every habitable continent.",
+  "body": "The descendants of this comparatively small founding population replaced or absorbed all other human groups, interbreeding with [Neanderthals](event:neanderthals) and Denisovans along the way.\n\nBy 65,000 years ago people had crossed to [Australia](event:sahul); by 16,000 they had entered [the Americas](event:americas-peopling).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_human_migrations).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Early_human_migrations"
+   }
+  ]
+ },
+ {
+  "id": "agriculture",
+  "name": "Dawn of agriculture",
+  "start": -10000,
+  "end": -6000,
+  "lat": 36.5,
+  "lng": 40.0,
+  "priority": 95,
+  "tags": [
+   "technology",
+   "culture",
+   "biology"
+  ],
+  "summary": "Farming was invented independently in several regions, beginning with the Fertile Crescent, and permanently changed how humans live.",
+  "body": "Wheat, barley, peas, sheep and goats were domesticated in the hills of the Levant and upper Mesopotamia; rice in the Yangtze valley, maize in Mexico, potatoes in the Andes.\n\nFood surpluses allowed permanent villages, storable wealth, specialists and eventually cities — but also poorer diets, epidemic disease and hierarchy. Everything from [writing](event:writing) to the [Industrial Revolution](event:industrial-revolution) rests on this foundation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neolithic_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Neolithic_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "writing",
+  "name": "Invention of writing",
+  "start": -3200,
+  "lat": 31.32,
+  "lng": 45.64,
+  "priority": 95,
+  "tags": [
+   "culture",
+   "technology"
+  ],
+  "summary": "Cuneiform accounting marks in Sumer became the first true writing system, with Egyptian hieroglyphs following within a century or two.",
+  "body": "What began as tokens for counting grain and livestock became, within a few centuries, a full script able to record law, literature and history — and with it the first records that historians can read directly.\n\nWriting was invented independently at least three more times: in China, in Mesoamerica, and probably in the Indus valley.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_writing).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_writing"
+   }
+  ]
+ },
+ {
+  "id": "buddha",
+  "name": "Life of the Buddha",
+  "start": -562,
+  "end": -482,
+  "lat": 27.47,
+  "lng": 83.28,
+  "priority": 88,
+  "tags": [
+   "religion"
+  ],
+  "summary": "Siddhartha Gautama taught in the Ganges plain, founding one of the world's great religious and philosophical traditions.",
+  "body": "His teaching — the Four Noble Truths and the Eightfold Path — spread with merchants and, later, with the patronage of [Ashoka](event:maurya-empire) across South, Central and East Asia.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gautama_Buddha).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Gautama_Buddha"
+   }
+  ]
+ },
+ {
+  "id": "confucius",
+  "name": "Confucius",
+  "start": -550,
+  "end": -478,
+  "lat": 35.6,
+  "lng": 116.99,
+  "priority": 86,
+  "tags": [
+   "culture",
+   "religion"
+  ],
+  "summary": "Kong Qiu taught an ethic of duty, ritual propriety and learning that shaped Chinese government and society for two millennia.",
+  "body": "Confucian texts became the syllabus of the imperial examinations, making his thought the working philosophy of the Chinese state from the [Han](event:han-dynasty) onward.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Confucius).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Confucius"
+   }
+  ]
+ },
+ {
+  "id": "alexander-conquests",
+  "name": "Conquests of Alexander the Great",
+  "start": -333,
+  "end": -322,
+  "lat": 33.3,
+  "lng": 44.4,
+  "priority": 88,
+  "tags": [
+   "war",
+   "politics",
+   "exploration"
+  ],
+  "summary": "In eleven years Alexander destroyed the Persian Empire and led an army from Greece to the Punjab.",
+  "body": "He founded some twenty cities, [Alexandria](event:alexandria) chief among them, and after his death at 32 his generals carved the conquests into the Hellenistic kingdoms.\n\nGreek language, art and civic forms spread from Egypt to Afghanistan and outlasted the empire that carried them there.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wars_of_Alexander_the_Great).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Wars_of_Alexander_the_Great"
+   }
+  ]
+ },
+ {
+  "id": "qin-unification",
+  "name": "Qin unification of China",
+  "start": -220,
+  "lat": 34.38,
+  "lng": 109.0,
+  "priority": 88,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Ying Zheng conquered the warring states and declared himself Qin Shi Huang, first emperor of a unified China.",
+  "body": "He standardised script, coinage, weights and axle widths, linked frontier walls into an early [Great Wall](event:great-wall), and was buried with the [Terracotta Army](event:terracotta-army). The dynasty lasted fifteen years; the unified state it created has recurred ever since.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Qin_dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Qin_dynasty"
+   }
+  ]
+ },
+ {
+  "id": "roman-empire",
+  "name": "Founding of the Roman Empire",
+  "start": -26,
+  "lat": 41.9,
+  "lng": 12.48,
+  "priority": 86,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The Senate granted Octavian the name Augustus and effective sole power, beginning two centuries of Roman peace.",
+  "body": "The *Pax Romana* united the Mediterranean under one law, one currency and a road network that would not be matched in Europe for well over a millennium.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Roman_Empire"
+   }
+  ]
+ },
+ {
+  "id": "crucifixion",
+  "name": "Crucifixion of Jesus",
+  "start": 33,
+  "lat": 31.78,
+  "lng": 35.23,
+  "priority": 95,
+  "tags": [
+   "religion"
+  ],
+  "summary": "Jesus of Nazareth was executed in Roman Judaea; his followers' claim that he rose again founded Christianity.",
+  "body": "Within three centuries the movement had spread across the empire that killed him, and after [Constantine](event:constantine) it became the religion of the Roman state.\n\nChristianity is today the largest religion in the world, and the Western calendar still counts from an estimate of his birth.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Crucifixion_of_Jesus).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Crucifixion_of_Jesus"
+   }
+  ]
+ },
+ {
+  "id": "rome-fall",
+  "name": "Fall of the Western Roman Empire",
+  "start": 476,
+  "lat": 44.42,
+  "lng": 12.2,
+  "area": [
+   [
+    -9,
+    37
+   ],
+   [
+    -2,
+    43
+   ],
+   [
+    3,
+    44
+   ],
+   [
+    8,
+    47
+   ],
+   [
+    13,
+    46
+   ],
+   [
+    18,
+    42
+   ],
+   [
+    16,
+    38
+   ],
+   [
+    10,
+    33
+   ],
+   [
+    0,
+    32
+   ],
+   [
+    -6,
+    34
+   ]
+  ],
+  "priority": 93,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The last western emperor, Romulus Augustulus, was deposed at Ravenna, ending Roman rule in the west.",
+  "body": "The collapse was gradual — a century of [migrations](event:migration-period), civil wars and lost provinces, punctuated by the [sack of Rome](event:rome-sack-410) — but 476 remains the conventional date.\n\nWestern Europe fragmented into successor kingdoms, while the eastern half ruled from [Constantinople](event:constantinople-founded) continued for another thousand years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_the_Western_Roman_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Fall_of_the_Western_Roman_Empire"
+   }
+  ]
+ },
+ {
+  "id": "hijra",
+  "name": "The Hijra and the founding of Islam",
+  "start": 622,
+  "lat": 24.47,
+  "lng": 39.61,
+  "priority": 95,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "summary": "Muhammad and his followers migrated from Mecca to Medina, founding the first Muslim community; year one of the Islamic calendar.",
+  "body": "Within a decade the new faith had united the Arabian peninsula, and within a century its armies and merchants had carried it from Spain to the Indus in the [early Muslim conquests](event:islamic-conquests).\n\nIslam is today the second largest religion in the world and shaped law, science and art across three continents.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hijrah).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hijrah"
+   }
+  ]
+ },
+ {
+  "id": "islamic-conquests",
+  "name": "Early Muslim conquests",
+  "start": 632,
+  "end": 750,
+  "lat": 30.0,
+  "lng": 40.0,
+  "area": [
+   [
+    -9,
+    33
+   ],
+   [
+    -2,
+    36
+   ],
+   [
+    10,
+    33
+   ],
+   [
+    25,
+    31
+   ],
+   [
+    35,
+    37
+   ],
+   [
+    48,
+    40
+   ],
+   [
+    62,
+    37
+   ],
+   [
+    70,
+    30
+   ],
+   [
+    55,
+    15
+   ],
+   [
+    43,
+    13
+   ],
+   [
+    32,
+    22
+   ],
+   [
+    10,
+    26
+   ],
+   [
+    -6,
+    29
+   ]
+  ],
+  "priority": 86,
+  "tags": [
+   "war",
+   "religion",
+   "politics"
+  ],
+  "parent": "hijra",
+  "summary": "Arab armies took Persia, Egypt, the Levant, North Africa and Spain within roughly a century.",
+  "body": "Part of [The Hijra and the founding of Islam](event:hijra). The Sasanian empire was destroyed outright and Byzantium lost its richest provinces at [Yarmouk](event:yarmouk). The advance into Western Europe was checked at [Tours](event:tours) in 732.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Muslim_conquests).",
+  "links": [
+   {
+    "label": "The Hijra and the founding of Islam",
+    "event": "hijra"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Early_Muslim_conquests"
+   }
+  ]
+ },
+ {
+  "id": "mongol-conquests",
+  "name": "Mongol conquests",
+  "start": 1206,
+  "end": 1294,
+  "lat": 47.92,
+  "lng": 106.92,
+  "area": [
+   [
+    28,
+    52
+   ],
+   [
+    60,
+    58
+   ],
+   [
+    90,
+    55
+   ],
+   [
+    120,
+    50
+   ],
+   [
+    128,
+    42
+   ],
+   [
+    122,
+    30
+   ],
+   [
+    105,
+    25
+   ],
+   [
+    92,
+    28
+   ],
+   [
+    75,
+    30
+   ],
+   [
+    58,
+    28
+   ],
+   [
+    44,
+    36
+   ],
+   [
+    30,
+    45
+   ]
+  ],
+  "priority": 90,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "The largest contiguous land empire in history was assembled in three generations, from Korea to Hungary.",
+  "body": "[Genghis Khan](event:genghis-khan) united the steppe tribes and turned them into a disciplined army of mounted archers; his sons and grandsons destroyed the Jin, Khwarazmian and Abbasid states — [Baghdad](event:baghdad-1258) in 1258 — and founded the [Yuan dynasty](event:yuan-dynasty) in China.\n\nThe destruction was immense, but the *Pax Mongolica* also made Eurasia briefly safe for travellers like [Marco Polo](event:marco-polo) — and for the [plague](event:black-death).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mongol_conquests).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mongol_conquests"
+   }
+  ]
+ },
+ {
+  "id": "black-death",
+  "name": "Black Death",
+  "start": 1346,
+  "end": 1352,
+  "lat": 48.0,
+  "lng": 15.0,
+  "area": [
+   [
+    -10,
+    36
+   ],
+   [
+    -5,
+    43
+   ],
+   [
+    0,
+    50
+   ],
+   [
+    10,
+    55
+   ],
+   [
+    25,
+    55
+   ],
+   [
+    40,
+    50
+   ],
+   [
+    45,
+    45
+   ],
+   [
+    40,
+    40
+   ],
+   [
+    30,
+    36
+   ],
+   [
+    20,
+    34
+   ],
+   [
+    10,
+    35
+   ],
+   [
+    0,
+    36
+   ]
+  ],
+  "priority": 92,
+  "tags": [
+   "disease",
+   "disaster"
+  ],
+  "summary": "The deadliest pandemic in recorded history killed an estimated third to half of Europe's population in six years.",
+  "body": "Plague travelled west along [Silk Road](event:silk-road) and Genoese trade routes, reaching Sicily in 1347 and Scandinavia by 1350. Contemporaries had no idea what caused it; the bacterium *Yersinia pestis* was identified only in 1894.\n\nThe survivors inherited a labour shortage that broke serfdom in much of western Europe, raised wages, and shook the authority of the Church — conditions in which the [Renaissance](event:renaissance) took root.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Black_Death).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Black_Death"
+   }
+  ]
+ },
+ {
+  "id": "renaissance",
+  "name": "The Renaissance",
+  "start": 1400,
+  "end": 1600,
+  "lat": 43.77,
+  "lng": 11.26,
+  "priority": 88,
+  "tags": [
+   "culture"
+  ],
+  "summary": "A revival of classical learning and a transformation of European art, architecture and thought, beginning in Florence.",
+  "body": "Perspective, anatomy, humanist scholarship and patronage by bankers and popes produced [Leonardo](event:mona-lisa), [Michelangelo](event:sistine-chapel), Raphael and Brunelleschi's dome.\n\nThe recovery of Greek texts — accelerated by scholars fleeing the [fall of Constantinople](event:fall-constantinople) — and cheap books from the [printing press](event:printing-press) spread the movement across Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Renaissance).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Renaissance"
+   }
+  ]
+ },
+ {
+  "id": "age-of-discovery",
+  "name": "Age of Discovery",
+  "start": 1418,
+  "end": 1600,
+  "lat": 38.7,
+  "lng": -9.5,
+  "priority": 95,
+  "tags": [
+   "exploration"
+  ],
+  "summary": "European ships opened sea routes to Africa, Asia and the Americas, joining the world's hemispheres into a single system.",
+  "body": "Portuguese caravels worked their way down the African coast for decades before [Dias](event:dias) rounded the Cape and [da Gama](event:da-gama) reached India. [Columbus](event:columbus) sailed west and found a continent nobody in Europe expected; [Magellan's expedition](event:magellan) went all the way round.\n\nWhat followed was the [Columbian Exchange](event:columbian-exchange), the [conquest of the Americas](event:spanish-conquest) and the [Atlantic slave trade](event:slave-trade) — the beginning of a genuinely global economy, built on immense violence.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Discovery).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Age_of_Discovery"
+   }
+  ]
+ },
+ {
+  "id": "printing-press",
+  "name": "Gutenberg's printing press",
+  "start": 1440,
+  "lat": 50.0,
+  "lng": 8.27,
+  "priority": 90,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "summary": "Movable metal type made books cheap, and made it impossible to suppress an idea once it had spread.",
+  "body": "Gutenberg combined a wine-press, oil-based ink and a mould for casting reusable type. By 1500 Europe held perhaps twenty million printed books, more than scribes had produced in the preceding thousand years.\n\nThe press carried the [Reformation](event:reformation), the [Scientific Revolution](event:copernicus) and eventually mass literacy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Printing_press).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Printing_press"
+   }
+  ]
+ },
+ {
+  "id": "fall-constantinople",
+  "name": "Fall of Constantinople",
+  "start": 1453,
+  "lat": 41.01,
+  "lng": 28.98,
+  "priority": 88,
+  "tags": [
+   "war",
+   "politics",
+   "religion"
+  ],
+  "summary": "Ottoman cannon breached the Theodosian walls and the last Roman emperor died fighting; the Byzantine Empire ended after 1,100 years.",
+  "body": "Mehmed II made the city his capital and Hagia Sophia a mosque. Greek scholars fled west with their manuscripts, feeding the [Renaissance](event:renaissance), while Ottoman control of the eastern trade routes sharpened European interest in finding a [sea route to Asia](event:age-of-discovery).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Constantinople).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Fall_of_Constantinople"
+   }
+  ]
+ },
+ {
+  "id": "columbus",
+  "name": "Columbus reaches the Americas",
+  "start": 1492,
+  "lat": 24.2,
+  "lng": -74.5,
+  "priority": 88,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "Three Spanish ships made landfall in the Bahamas, beginning sustained contact between the Old World and the New.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). Columbus was looking for Asia and died insisting he had found it. The consequences — [the Columbian Exchange](event:columbian-exchange), the collapse of Indigenous populations under [epidemic disease](event:americas-epidemics), and centuries of colonisation — were world-historical and, for the Americas, catastrophic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus"
+   }
+  ]
+ },
+ {
+  "id": "reformation",
+  "name": "Protestant Reformation",
+  "start": 1517,
+  "end": 1648,
+  "lat": 51.87,
+  "lng": 12.65,
+  "priority": 90,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "summary": "Western Christianity split, and with it the political order of Europe.",
+  "body": "Luther's [Ninety-five Theses](event:95-theses) were carried across Germany by the [printing press](event:printing-press) within weeks. Calvin, Zwingli and Henry VIII produced further breaks; the Catholic Church answered with the Council of Trent.\n\nA century of religious war followed, culminating in the [Thirty Years' War](event:thirty-years-war) and the [Peace of Westphalia](event:westphalia), which established the sovereign state as the basic unit of European politics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reformation).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Reformation"
+   }
+  ]
+ },
+ {
+  "id": "slave-trade",
+  "name": "Transatlantic slave trade",
+  "start": 1526,
+  "end": 1867,
+  "lat": 5.0,
+  "lng": -25.0,
+  "area": [
+   [
+    -70,
+    -25
+   ],
+   [
+    -80,
+    10
+   ],
+   [
+    -60,
+    20
+   ],
+   [
+    -30,
+    30
+   ],
+   [
+    -10,
+    20
+   ],
+   [
+    5,
+    5
+   ],
+   [
+    12,
+    -10
+   ],
+   [
+    -20,
+    -35
+   ],
+   [
+    -50,
+    -35
+   ]
+  ],
+  "priority": 88,
+  "tags": [
+   "economy",
+   "politics",
+   "disaster"
+  ],
+  "summary": "Some 12.5 million Africans were shipped across the Atlantic in chains; nearly two million died on the voyage.",
+  "body": "The trade supplied labour for sugar, tobacco and cotton plantations in Brazil, the Caribbean and North America, and enriched ports from Lisbon to Liverpool. It depopulated regions of West and Central Africa and built the racial hierarchies of the modern Atlantic world.\n\nBritain abolished the trade in 1807 and slavery itself in 1833; Brazil, the largest importer, abolished slavery only in 1888. See also the [American Civil War](event:us-civil-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_slave_trade).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Atlantic_slave_trade"
+   }
+  ]
+ },
+ {
+  "id": "scientific-revolution",
+  "name": "The Scientific Revolution",
+  "start": 1543,
+  "end": 1687,
+  "lat": 51.75,
+  "lng": -1.26,
+  "priority": 90,
+  "tags": [
+   "science"
+  ],
+  "summary": "Europeans replaced inherited authority with mathematics and experiment as the test of what is true about nature.",
+  "body": "It runs from [Copernicus](event:copernicus) and Vesalius through [Galileo](event:galileo), Kepler, Bacon and Descartes to [Newton's *Principia*](event:newton) — after which the same laws were known to govern falling apples and orbiting planets.\n\nThe habit of publishing, checking and repeating results is arguably the revolution's most durable product.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scientific_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Scientific_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "enlightenment",
+  "name": "The Enlightenment",
+  "start": 1685,
+  "end": 1800,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 86,
+  "tags": [
+   "culture",
+   "science",
+   "politics"
+  ],
+  "summary": "European thinkers argued that reason, evidence and individual rights, not tradition or revelation, should organise society.",
+  "body": "Locke, Voltaire, Hume, Rousseau, Kant, Smith and Diderot were read across a continent-wide republic of letters. Their arguments underwrote the [American](event:american-revolution) and [French](event:french-revolution) revolutions, the abolition of the [slave trade](event:slave-trade), and the idea of progress itself.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Enlightenment).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Age_of_Enlightenment"
+   }
+  ]
+ },
+ {
+  "id": "newton",
+  "name": "Newton's Principia",
+  "start": 1687,
+  "lat": 52.21,
+  "lng": 0.12,
+  "priority": 88,
+  "tags": [
+   "science"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "Three laws of motion and universal gravitation explained falling bodies, tides, comets and planetary orbits with one system.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Newton also invented calculus to do it. The *Principia* is arguably the most influential scientific book ever written, and it made physics the model to which every other science aspired for two hundred years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica"
+   }
+  ]
+ },
+ {
+  "id": "industrial-revolution",
+  "name": "Industrial Revolution",
+  "start": 1760,
+  "end": 1840,
+  "lat": 53.48,
+  "lng": -2.24,
+  "priority": 96,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "summary": "Machines powered by coal replaced muscle, and for the first time in history sustained economic growth outran population growth.",
+  "body": "It began with textiles and [steam](event:watt-engine) in Britain, spread to iron, chemicals and [railways](event:railways), and within a century had remade work, cities, class and warfare.\n\nHuman living standards, life expectancy and energy use all bend sharply upward from this point — as does atmospheric CO2, the beginning of [modern climate change](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Industrial_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Industrial_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "american-revolution",
+  "name": "American Revolution",
+  "start": 1775,
+  "end": 1783,
+  "lat": 39.95,
+  "lng": -75.16,
+  "priority": 86,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Thirteen British colonies declared themselves independent and, with French help, made it stick.",
+  "body": "The [Declaration of Independence](event:declaration-independence) asserted that governments derive their just powers from the consent of the governed; victory at [Yorktown](event:yorktown) secured it, and the [Constitution](event:us-constitution) of 1787 turned it into a working federal republic.\n\nThe example — and the debts France ran up supporting it — helped bring on the [French Revolution](event:french-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/American_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/American_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "french-revolution",
+  "name": "French Revolution",
+  "start": 1789,
+  "end": 1799,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 95,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The old European order of monarchy, aristocracy and established church was overthrown in its most powerful state.",
+  "body": "From the storming of the [Bastille](event:bastille) and the [Declaration of the Rights of Man](event:rights-of-man) through the [Terror](event:terror) to [Napoleon's coup](event:napoleon-coup), the revolution ran through every political possibility in ten years.\n\nIt exported the vocabulary of modern politics — left and right, nation, citizen, ideology — and its wars remade Europe as the [Napoleonic Wars](event:napoleonic-wars).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/French_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/French_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "napoleonic-wars",
+  "name": "Napoleonic Wars",
+  "start": 1803,
+  "end": 1815,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 86,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "french-revolution",
+  "summary": "France under Napoleon fought most of Europe for twelve years and briefly dominated the continent.",
+  "body": "Part of [French Revolution](event:french-revolution). Nelson's victory at [Trafalgar](event:trafalgar) secured British command of the sea; the [invasion of Russia](event:russia-1812) destroyed the Grande Armée; [Waterloo](event:waterloo) ended the adventure.\n\nThe wars spread the Napoleonic Code, conscription and nationalism across Europe, and the peace that followed at Vienna held the great powers back from general war for a century — until [1914](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleonic_Wars).",
+  "links": [
+   {
+    "label": "French Revolution",
+    "event": "french-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Napoleonic_Wars"
+   }
+  ]
+ },
+ {
+  "id": "origin-species",
+  "name": "Darwin publishes On the Origin of Species",
+  "start": 1859,
+  "lat": 51.26,
+  "lng": 0.05,
+  "priority": 90,
+  "tags": [
+   "science",
+   "biology"
+  ],
+  "summary": "Natural selection explained the diversity and design of life without a designer.",
+  "body": "Darwin had sat on the idea for twenty years; Alfred Russel Wallace's independent arrival at the same conclusion forced publication. The theory unified all of biology and, with [genetics](event:dna-structure), remains its central organising principle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/On_the_Origin_of_Species).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/On_the_Origin_of_Species"
+   }
+  ]
+ },
+ {
+  "id": "global-warming",
+  "name": "Modern global warming",
+  "start": 1880,
+  "end": 2026,
+  "lat": 0.0,
+  "lng": 0.0,
+  "priority": 88,
+  "tags": [
+   "climate",
+   "disaster"
+  ],
+  "summary": "Greenhouse gases released since the Industrial Revolution have warmed the planet by about 1.3 °C, and the rate is increasing.",
+  "body": "Atmospheric CO2 has risen from about 280 ppm before the [Industrial Revolution](event:industrial-revolution) to over 420 ppm. Ice sheets and glaciers are losing mass, sea level is rising, and extreme heat has become measurably more frequent.\n\nThe [Montreal Protocol](event:montreal-protocol) and the [Paris Agreement](event:paris-agreement) are the main treaty responses; the geological analogue is the [PETM](event:petm), 56 million years ago.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Global_warming).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Global_warming"
+   }
+  ]
+ },
+ {
+  "id": "relativity",
+  "name": "Einstein's theory of relativity",
+  "start": 1905,
+  "end": 1915,
+  "lat": 46.95,
+  "lng": 7.44,
+  "priority": 88,
+  "tags": [
+   "science"
+  ],
+  "summary": "Space and time turned out to be aspects of one flexible geometry, and mass a form of energy.",
+  "body": "Special relativity (1905) fixed the incompatibility between mechanics and electromagnetism; general relativity (1915) recast gravity as the curvature of spacetime, and was confirmed by the bending of starlight in 1919.\n\nGPS, black holes, cosmology and [gravitational waves](event:gravitational-waves) all follow from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Theory_of_relativity"
+   }
+  ]
+ },
+ {
+  "id": "ww1",
+  "name": "World War I",
+  "start": 1914,
+  "end": 1918,
+  "lat": 49.7,
+  "lng": 3.5,
+  "priority": 95,
+  "tags": [
+   "war"
+  ],
+  "summary": "Four years of industrial-scale war killed some 20 million people and destroyed four empires.",
+  "body": "An [assassination in Sarajevo](event:sarajevo) triggered interlocking alliances; machine guns and artillery made the [Western Front](event:somme) a stalemate of trenches for four years. Russia collapsed into [revolution](event:russian-revolution); the United States entered in 1917.\n\nThe [Treaty of Versailles](event:versailles) redrew Europe and the Middle East, and left grievances that contributed directly to [the next war](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_War_I).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/World_War_I"
+   }
+  ]
+ },
+ {
+  "id": "russian-revolution",
+  "name": "Russian Revolution",
+  "start": 1917,
+  "end": 1923,
+  "lat": 59.94,
+  "lng": 30.31,
+  "priority": 88,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Tsarism fell and the Bolsheviks built the world's first communist state.",
+  "body": "The February revolution ended the monarchy; the [October revolution](event:october-revolution) put Lenin in power; a civil war of five years followed, and the [Soviet Union](event:ussr-founded) was formed in 1922.\n\nIt made [communism](event:communist-manifesto) a governing ideology and set up the [Cold War](event:cold-war) that dominated the century's second half.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Russian_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Russian_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "spanish-flu",
+  "name": "Spanish flu pandemic",
+  "start": 1918,
+  "end": 1920,
+  "lat": 39.06,
+  "lng": -96.77,
+  "priority": 86,
+  "tags": [
+   "disease",
+   "disaster"
+  ],
+  "summary": "An H1N1 influenza pandemic infected perhaps a third of humanity and killed 50 million or more.",
+  "body": "It spread along the troop movements of [the First World War](event:ww1), and unusually killed healthy young adults. Wartime censorship kept it out of the news everywhere except neutral Spain — hence the misleading name.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_flu).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spanish_flu"
+   }
+  ]
+ },
+ {
+  "id": "ww2",
+  "name": "World War II",
+  "start": 1939,
+  "end": 1945,
+  "lat": 52.5,
+  "lng": 13.4,
+  "priority": 97,
+  "tags": [
+   "war"
+  ],
+  "summary": "The deadliest conflict in history: some 70–85 million dead, fought across every ocean and most continents.",
+  "body": "Germany's invasion of Poland began it in Europe; [Barbarossa](event:barbarossa) and [Pearl Harbor](event:pearl-harbor) in 1941 made it global. The tide turned at [Stalingrad](event:stalingrad) and [Midway](event:midway); [D-Day](event:d-day) opened the Western Front; the [Holocaust](event:holocaust) murdered six million Jews.\n\nIt ended with the [atomic bombing of Hiroshima](event:hiroshima) weeks after the [Trinity test](event:trinity), opening the nuclear age and the [Cold War](event:cold-war) that followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_War_II).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/World_War_II"
+   }
+  ],
+  "image": {
+   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Into_the_Jaws_of_Death_23-0455M_edit.jpg?width=640",
+   "caption": "US troops landing at Omaha Beach, 1944"
+  }
+ },
+ {
+  "id": "cold-war",
+  "name": "The Cold War",
+  "start": 1947,
+  "end": 1991,
+  "lat": 50.0,
+  "lng": 20.0,
+  "priority": 95,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "For forty-four years the United States and the Soviet Union confronted each other everywhere except in direct battle.",
+  "body": "It ran through the [Berlin blockade](event:berlin-blockade), [Korea](event:korean-war), the [Cuban Missile Crisis](event:cuban-missile-crisis) — the closest the world has come to nuclear war — [Vietnam](event:vietnam-war), and the [Berlin Wall](event:berlin-wall).\n\nIt also drove the [Space Race](event:space-race). It ended with the [fall of the Wall](event:berlin-wall-fall) and the [collapse of the Soviet Union](event:soviet-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cold_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cold_War"
+   }
+  ]
+ },
+ {
+  "id": "dna-structure",
+  "name": "Structure of DNA",
+  "start": 1953,
+  "lat": 52.2,
+  "lng": 0.12,
+  "priority": 88,
+  "tags": [
+   "science",
+   "biology"
+  ],
+  "summary": "Watson and Crick, using Rosalind Franklin's X-ray data, described the double helix — and with it, how genes copy themselves.",
+  "body": "Molecular biology, genetic engineering, [the Human Genome Project](event:human-genome) and [CRISPR](event:crispr) all follow from this two-page paper.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nucleic_acid_double_helix).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Nucleic_acid_double_helix"
+   }
+  ]
+ },
+ {
+  "id": "space-race",
+  "name": "The Space Race",
+  "start": 1957,
+  "end": 1975,
+  "lat": 28.57,
+  "lng": -80.65,
+  "priority": 86,
+  "tags": [
+   "exploration",
+   "science"
+  ],
+  "parent": "cold-war",
+  "summary": "The superpowers competed to reach orbit, then the Moon, in a contest of prestige with military roots.",
+  "body": "Part of [The Cold War](event:cold-war). It ran from [Sputnik](event:sputnik) through [Gagarin](event:gagarin) to the [Apollo programme](event:apollo-program), and ended symbolically with a US–Soviet docking in orbit in 1975.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Space_Race).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Space_Race"
+   }
+  ]
+ },
+ {
+  "id": "moon-landing",
+  "name": "Apollo 11 Moon landing",
+  "start": 1969,
+  "lat": 28.6,
+  "lng": -80.6,
+  "priority": 95,
+  "tags": [
+   "exploration",
+   "science"
+  ],
+  "parent": "apollo-program",
+  "summary": "Humans walked on another world for the first time; some 600 million people watched.",
+  "body": "Part of [Apollo programme](event:apollo-program). *That's one small step for a man, one giant leap for mankind.* Armstrong and Aldrin spent 21 hours on the Sea of Tranquillity while Collins orbited above.\n\nIt was the culmination of the [Space Race](event:space-race), and the furthest humans have yet travelled.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_11).",
+  "links": [
+   {
+    "label": "Apollo programme",
+    "event": "apollo-program"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Apollo_11"
+   }
+  ],
+  "image": {
+   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aldrin_Apollo_11_original.jpg?width=640",
+   "caption": "Buzz Aldrin on the lunar surface"
+  }
+ },
+ {
+  "id": "www",
+  "name": "World Wide Web",
+  "start": 1989,
+  "lat": 46.23,
+  "lng": 6.05,
+  "priority": 88,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "summary": "Tim Berners-Lee proposed a hypertext system at CERN; it became the way most of humanity gets information.",
+  "body": "URLs, HTTP and HTML were released royalty-free in 1993, a decision that let the Web grow without a gatekeeper. Built on the [Internet](event:internet), it took the number of connected users from thousands to billions in two decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_Wide_Web).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/World_Wide_Web"
+   }
+  ]
+ },
+ {
+  "id": "soviet-collapse",
+  "name": "Dissolution of the Soviet Union",
+  "start": 1991,
+  "lat": 55.75,
+  "lng": 37.62,
+  "area": [
+   [
+    22,
+    55
+   ],
+   [
+    30,
+    70
+   ],
+   [
+    60,
+    72
+   ],
+   [
+    100,
+    75
+   ],
+   [
+    140,
+    70
+   ],
+   [
+    170,
+    65
+   ],
+   [
+    135,
+    45
+   ],
+   [
+    100,
+    45
+   ],
+   [
+    75,
+    38
+   ],
+   [
+    50,
+    40
+   ],
+   [
+    30,
+    45
+   ]
+  ],
+  "priority": 86,
+  "tags": [
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "The USSR broke into fifteen independent states and the Cold War ended without a shot fired between the superpowers.",
+  "body": "Part of [The Cold War](event:cold-war). Gorbachev's reforms, nationalist movements in the republics and a failed hard-line coup in August 1991 brought down the state founded by the [October Revolution](event:october-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dissolution_of_the_Soviet_Union).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dissolution_of_the_Soviet_Union"
+   }
+  ]
+ },
+ {
+  "id": "covid",
+  "name": "COVID-19 pandemic",
+  "start": 2020,
+  "end": 2023,
+  "lat": 30.59,
+  "lng": 114.31,
+  "priority": 88,
+  "tags": [
+   "disease",
+   "disaster"
+  ],
+  "summary": "A novel coronavirus spread worldwide within months, killing an estimated 7–27 million people and shutting down much of the global economy.",
+  "body": "It produced the fastest vaccine development in history: mRNA vaccines were in arms within a year of the virus being sequenced. Comparisons were drawn throughout to the [1918 influenza pandemic](event:spanish-flu).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/COVID-19_pandemic).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/COVID-19_pandemic"
+   }
+  ]
+ }
+]

@@ -16,6 +16,8 @@ import { cloudFadeFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
+import { pinElement } from '../lib/eventPins'
+import { primaryTag, tagColor } from '../lib/tags'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE, RELIEF_TEXTURE, SKY_TEXTURE } from '../data/paleoTextures'
 
 const events = useEventStore()
@@ -41,8 +43,12 @@ const asEvent = (d: object) => d as HistoricalEvent
 const asPoly = (d: object) => d as PolyEntry
 const closed = (ring: Ring) => [...ring, ring[0]]
 
+// Only the selected event's area draws as a polygon: overlapping region fills
+// used to smother the planet. Unselected area events are pins like the rest.
 const eventAreas = (): EventAreaEntry[] =>
-  events.visible.filter((e) => e.area).map((e) => ({ kind: 'area', event: e, ring: e.area! }))
+  events.visible
+    .filter((e) => e.area && e.id === events.selectedId)
+    .map((e) => ({ kind: 'area', event: e, ring: e.area! }))
 
 onMounted(() => {
   const dom = el.value!
@@ -52,28 +58,34 @@ onMounted(() => {
     .backgroundImageUrl(SKY_TEXTURE)
     .width(dom.clientWidth)
     .height(dom.clientHeight)
-    // events layer
-    .pointAltitude(0.02)
-    .pointRadius((d) => 0.3 + (asEvent(d).priority / 100) * 0.7)
-    .pointColor((d) => (events.selectedId === asEvent(d).id ? '#ff0' : '#f80'))
-    .pointLabel((d) => asEvent(d).name)
-    .onPointClick((d) => events.select(asEvent(d).id))
-    // polygons layer: nation borders + event areas
+    // events layer: HTML pins, coloured by the event's primary tag. Area
+    // events get the hollow-square pin; their polygon only draws when selected.
+    .htmlLat((d) => asEvent(d).lat)
+    .htmlLng((d) => asEvent(d).lng)
+    .htmlAltitude(0.006)
+    .htmlTransitionDuration(0)
+    .htmlElement((d) => {
+      const e = asEvent(d)
+      return pinElement(e, events.selectedId === e.id, () => events.select(e.id))
+    })
+    .htmlElementVisibilityModifier((el, visible) => {
+      el.style.opacity = visible ? '1' : '0'
+      el.style.pointerEvents = visible ? 'auto' : 'none'
+    })
+    // polygons layer: nation borders + the selected event's area
     .polygonGeoJsonGeometry((d) => ({
       type: 'Polygon',
       coordinates: [closed(asPoly(d).ring)] as unknown as number[],
     }))
     .polygonCapColor((d) => {
       const p = asPoly(d)
-      // unselected areas are outline-only: several large regions are often in
-      // view at once, and stacked fills used to smother the whole planet
-      if (p.kind === 'area') return events.selectedId === p.event.id ? '#ffff0060' : 'rgba(0,0,0,0)'
+      if (p.kind === 'area') return tagColor(primaryTag(p.event)) + '38'
       return p.kind === 'full' ? p.nation.color + '50' : 'rgba(0,0,0,0)'
     })
     .polygonSideColor(() => 'rgba(0,0,0,0)')
     .polygonStrokeColor((d) => {
       const p = asPoly(d)
-      if (p.kind === 'area') return events.selectedId === p.event.id ? '#ff0' : '#f8803388'
+      if (p.kind === 'area') return tagColor(primaryTag(p.event))
       return p.kind === 'full' ? p.nation.color : p.kind === 'max' ? p.nation.color + 'aa' : '#ffffffaa'
     })
     .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.012 : asPoly(d).kind === 'full' ? 0.008 : 0.005))
@@ -206,7 +218,12 @@ onMounted(() => {
   tick()
 
   stops.push(
-    watchEffect(() => globe!.pointsData(events.visible.filter((e) => !e.area))),
+    // Fresh datum objects on purpose: globe.gl reuses DOM for identical data,
+    // which would leave selection styling stale. <=100 pins, so rebuilding is cheap.
+    watchEffect(() => {
+      void events.selectedId
+      globe!.htmlElementsData(events.visible.map((e) => ({ ...e })))
+    }),
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
     watchEffect(() => (globe!.controls().autoRotate = settings.autoRotate)),
     watchEffect(() => surface!.setRelief(settings.relief ? 0.7 : 0)),
@@ -258,5 +275,23 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   overflow: hidden;
+}
+</style>
+
+<style>
+/* Pins are created imperatively by the globe's HTML layer, so unscoped.
+   CSS2DRenderer centres the wrapper on the coordinate; shifting the SVG up by
+   half its height puts the pin's tip on the spot instead. */
+.event-pin svg {
+  display: block;
+  transform: translateY(-50%);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+  transition: opacity var(--fast, 0.15s ease);
+}
+.event-pin--selected {
+  z-index: 2;
+}
+.event-pin:hover svg {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)) brightness(1.15);
 }
 </style>

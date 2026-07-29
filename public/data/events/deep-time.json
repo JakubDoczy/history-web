@@ -1,0 +1,1149 @@
+[
+ {
+  "id": "earth-formation",
+  "name": "Formation of the Earth",
+  "start": -4500000000,
+  "end": -4450000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 100,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Earth accreted from the solar nebula roughly 4.5 billion years ago, a molten world bombarded by planetesimals.",
+  "body": "Dust and rock orbiting the young Sun accreted into planetesimals and then into the proto-Earth over a few tens of millions of years. The heat of accretion and radioactive decay kept the surface molten, and iron sank to form the core while lighter silicates floated up as the mantle and first crust.\n\nRadiometric dating of meteorites and the oldest terrestrial zircons fixes the age at roughly **4.54 billion years** — the floor of this timeline.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Earth).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_Earth"
+   }
+  ]
+ },
+ {
+  "id": "theia-impact",
+  "name": "Giant impact forms the Moon",
+  "start": -4450000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 98,
+  "tags": [
+   "geology"
+  ],
+  "summary": "A Mars-sized body, Theia, struck the proto-Earth; debris from the collision coalesced into the Moon.",
+  "body": "The collision melted much of the planet, stripped away a large fraction of the mantle and left Earth with an unusually large satellite and a strong axial tilt.\n\nThe Moon stabilises Earth's obliquity, which has kept the climate comparatively steady over billions of years — a precondition for the [origin of life](event:abiogenesis).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Giant-impact_hypothesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Giant-impact_hypothesis"
+   }
+  ]
+ },
+ {
+  "id": "first-oceans",
+  "name": "First oceans",
+  "start": -4400000000,
+  "lat": -26.1,
+  "lng": 117.0,
+  "priority": 72,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Water condensed onto a cooling crust, forming the first liquid oceans.",
+  "body": "Zircon crystals from the Jack Hills of Western Australia carry an oxygen-isotope signature suggesting liquid water existed within about 150 million years of Earth's formation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Origin_of_water_on_Earth).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Origin_of_water_on_Earth"
+   }
+  ]
+ },
+ {
+  "id": "late-heavy-bombardment",
+  "name": "Late Heavy Bombardment",
+  "start": -4100000000,
+  "end": -3800000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 78,
+  "tags": [
+   "geology"
+  ],
+  "summary": "A surge of asteroid impacts scarred the inner Solar System, cratering the Moon and resurfacing the young Earth.",
+  "body": "The Moon's great impact basins cluster in this interval, which is why it is inferred for Earth as well; the terrestrial craters have long since been erased by erosion and plate tectonics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Heavy_Bombardment).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Late_Heavy_Bombardment"
+   }
+  ]
+ },
+ {
+  "id": "abiogenesis",
+  "name": "Origin of life",
+  "start": -3800000000,
+  "end": -3400000000,
+  "lat": -32.0,
+  "lng": 116.0,
+  "priority": 97,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Self-replicating chemistry appeared, most likely around hydrothermal systems, giving rise to the first cells.",
+  "body": "The earliest widely accepted chemical traces of life are carbon-isotope signatures in rocks around **3.8 billion years** old, with unambiguous microfossils and [stromatolites](event:stromatolites) not long after.\n\nEvery organism alive today descends from a single population, the last universal common ancestor.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abiogenesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Abiogenesis"
+   }
+  ]
+ },
+ {
+  "id": "stromatolites",
+  "name": "Earliest stromatolites",
+  "start": -3480000000,
+  "lat": -21.0,
+  "lng": 119.5,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "parent": "abiogenesis",
+  "summary": "Layered microbial mats in Western Australia preserve some of the oldest direct evidence of life.",
+  "body": "Part of [Origin of life](event:abiogenesis). The Dresser and Strelley Pool formations of the Pilbara craton preserve laminated structures built by microbial communities in shallow water.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Stromatolite).",
+  "links": [
+   {
+    "label": "Origin of life",
+    "event": "abiogenesis"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Stromatolite"
+   }
+  ]
+ },
+ {
+  "id": "oxygenic-photosynthesis",
+  "name": "Oxygenic photosynthesis evolves",
+  "start": -2700000000,
+  "lat": -21.0,
+  "lng": 119.5,
+  "priority": 86,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Cyanobacteria learned to split water with sunlight, releasing free oxygen as waste.",
+  "body": "This single metabolic innovation eventually rebuilt the atmosphere, the oceans and the chemistry of the crust, leading directly to the [Great Oxidation Event](event:great-oxidation).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Photosynthesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Photosynthesis"
+   }
+  ]
+ },
+ {
+  "id": "great-oxidation",
+  "name": "Great Oxidation Event",
+  "start": -2400000000,
+  "end": -2050000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 96,
+  "tags": [
+   "geology",
+   "climate",
+   "biology"
+  ],
+  "summary": "Free oxygen accumulated in the atmosphere for the first time, poisoning most existing life and rusting the planet.",
+  "body": "Oxygen produced by [cyanobacteria](event:oxygenic-photosynthesis) had for hundreds of millions of years been absorbed by dissolved iron, laying down banded iron formations. Once those sinks were saturated, oxygen escaped into the air.\n\nThe consequences were enormous: an ozone layer formed, methane greenhouse warming collapsed into the [Huronian glaciation](event:huronian-glaciation), and aerobic respiration — far more energetic than fermentation — became possible.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Oxidation_Event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Great_Oxidation_Event"
+   }
+  ]
+ },
+ {
+  "id": "huronian-glaciation",
+  "name": "Huronian glaciation",
+  "start": -2400000000,
+  "end": -2100000000,
+  "lat": 46.5,
+  "lng": -81.0,
+  "priority": 74,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "parent": "great-oxidation",
+  "summary": "The first known global glaciation, triggered when rising oxygen destroyed atmospheric methane.",
+  "body": "Part of [Great Oxidation Event](event:great-oxidation). Glacial deposits near Lake Huron in Ontario give the event its name. It may have been the longest ice age in Earth history, lasting some 300 million years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Huronian_glaciation).",
+  "links": [
+   {
+    "label": "Great Oxidation Event",
+    "event": "great-oxidation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Huronian_glaciation"
+   }
+  ]
+ },
+ {
+  "id": "eukaryotes",
+  "name": "First eukaryotic cells",
+  "start": -1800000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 88,
+  "tags": [
+   "biology"
+  ],
+  "summary": "One cell engulfed another and kept it; the result was the complex, compartmented cell with mitochondria.",
+  "body": "Endosymbiosis gave eukaryotes an internal power plant and, with it, the energy budget to support large genomes, large cells and eventually multicellular bodies. Chloroplasts arrived by the same route somewhat later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eukaryote).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Eukaryote"
+   }
+  ]
+ },
+ {
+  "id": "rodinia",
+  "name": "Rodinia supercontinent",
+  "start": -1100000000,
+  "end": -750000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 72,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Nearly all continental crust gathered into a single landmass before rifting apart again.",
+  "body": "Its break-up flooded the world with shallow seas and increased silicate weathering, which may have helped tip the planet into [Snowball Earth](event:snowball-earth).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rodinia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Rodinia"
+   }
+  ]
+ },
+ {
+  "id": "snowball-earth",
+  "name": "Snowball Earth",
+  "start": -720000000,
+  "end": -635000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 95,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Glaciers reached the tropics — possibly the whole ocean froze over — in the Cryogenian period.",
+  "body": "The Sturtian and Marinoan glaciations buried much of the planet in ice for tens of millions of years. Volcanic CO2 slowly built up beneath the ice until a runaway greenhouse thawed the world in a geological instant.\n\nThe extreme environmental swings immediately preceded the appearance of the [Ediacaran biota](event:ediacaran) and the [Cambrian explosion](event:cambrian-explosion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Snowball_Earth).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Snowball_Earth"
+   }
+  ]
+ },
+ {
+  "id": "ediacaran",
+  "name": "Ediacaran biota",
+  "start": -575000000,
+  "end": -539000000,
+  "lat": -31.3,
+  "lng": 138.6,
+  "priority": 74,
+  "tags": [
+   "biology"
+  ],
+  "summary": "The first large, soft-bodied multicellular organisms appear in the fossil record.",
+  "body": "Named after the Ediacara Hills of South Australia, these fronds, discs and quilted forms are hard to place on the tree of life; most vanished at the start of the Cambrian.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ediacaran_biota).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ediacaran_biota"
+   }
+  ]
+ },
+ {
+  "id": "cambrian-explosion",
+  "name": "Cambrian explosion",
+  "start": -538800000,
+  "end": -515000000,
+  "lat": 51.4,
+  "lng": -116.5,
+  "priority": 96,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Almost every modern animal body plan appears in the fossil record within a few tens of millions of years.",
+  "body": "Eyes, hard shells, jointed limbs and active predation all show up together; the Burgess Shale of British Columbia and the Chengjiang biota of Yunnan preserve the results in exquisite detail.\n\nThe trigger is debated — rising oxygen after [Snowball Earth](event:snowball-earth), the invention of predation, or genetic innovations in developmental regulation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cambrian_explosion).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cambrian_explosion"
+   }
+  ]
+ },
+ {
+  "id": "land-plants",
+  "name": "Plants colonise the land",
+  "start": -470000000,
+  "end": -420000000,
+  "lat": 52.0,
+  "lng": -3.5,
+  "priority": 84,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Spore-bearing plants moved out of the water, beginning the greening of the continents.",
+  "body": "Rooting systems accelerated chemical weathering and drew down atmospheric CO2; soils, and with them terrestrial ecosystems, became possible for the first time.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Evolutionary_history_of_plants).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Evolutionary_history_of_plants"
+   }
+  ]
+ },
+ {
+  "id": "ordovician-extinction",
+  "name": "Ordovician–Silurian extinction",
+  "start": -445000000,
+  "end": -443000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 80,
+  "tags": [
+   "extinction",
+   "biology"
+  ],
+  "summary": "Roughly 85% of marine species died as glaciation locked up seawater and drained the shallow shelves.",
+  "body": "The second-largest mass extinction by species loss, it struck a world whose life was almost entirely marine.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Ordovician_mass_extinction).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Late_Ordovician_mass_extinction"
+   }
+  ]
+ },
+ {
+  "id": "tetrapods",
+  "name": "Vertebrates walk on land",
+  "start": -375000000,
+  "lat": 79.0,
+  "lng": -84.0,
+  "priority": 80,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Lobe-finned fish with weight-bearing limbs, such as Tiktaalik, ventured onto the shore.",
+  "body": "Every amphibian, reptile, bird and mammal — including us — descends from this transition, recorded in Devonian rocks of the Canadian Arctic and Greenland.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tetrapod).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tetrapod"
+   }
+  ]
+ },
+ {
+  "id": "devonian-extinction",
+  "name": "Late Devonian extinction",
+  "start": -372000000,
+  "end": -359000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 74,
+  "tags": [
+   "extinction",
+   "biology"
+  ],
+  "summary": "A drawn-out series of pulses wiped out most reef ecosystems and much of the shallow marine fauna.",
+  "body": "Expanding land plants may have driven nutrient runoff and ocean anoxia.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Devonian_extinction).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Late_Devonian_extinction"
+   }
+  ]
+ },
+ {
+  "id": "carboniferous-forests",
+  "name": "Carboniferous coal forests",
+  "start": -359000000,
+  "end": -299000000,
+  "lat": 50.0,
+  "lng": -1.0,
+  "priority": 72,
+  "tags": [
+   "biology",
+   "geology"
+  ],
+  "summary": "Vast swamp forests of lycopod trees buried enormous quantities of carbon that became the world's coal.",
+  "body": "Atmospheric oxygen peaked near 35%, allowing dragonflies with 70 cm wingspans. The coal laid down here fuelled the [Industrial Revolution](event:industrial-revolution) 300 million years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Carboniferous_rainforest_collapse).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Carboniferous_rainforest_collapse"
+   }
+  ]
+ },
+ {
+  "id": "pangaea",
+  "name": "Pangaea supercontinent",
+  "start": -335000000,
+  "end": -175000000,
+  "lat": 0,
+  "lng": 10,
+  "priority": 90,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Nearly all land assembled into a single supercontinent surrounded by the Panthalassic Ocean.",
+  "body": "Its interior was a vast arid desert, and its coastline was short relative to its area, which stressed shallow-marine life. The break-up beginning in the Jurassic opened the [Atlantic Ocean](event:atlantic-opening) and set the continents on the paths they still follow.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pangaea).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Pangaea"
+   }
+  ]
+ },
+ {
+  "id": "permian-extinction",
+  "name": "Permian–Triassic extinction",
+  "start": -252000000,
+  "end": -251500000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 96,
+  "tags": [
+   "extinction",
+   "geology"
+  ],
+  "summary": "The Great Dying: about 81% of marine species and 70% of land vertebrates disappeared, the worst crisis life has faced.",
+  "body": "Volcanism of the [Siberian Traps](event:siberian-traps) injected enormous volumes of CO2 and sulphur into the atmosphere, driving warming, ocean acidification and widespread anoxia.\n\nRecovery took some **10 million years**, and the emptied world was the one in which the [first dinosaurs](event:first-dinosaurs) arose.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Permian–Triassic_extinction_event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Permian–Triassic_extinction_event"
+   }
+  ]
+ },
+ {
+  "id": "siberian-traps",
+  "name": "Siberian Traps eruptions",
+  "start": -252000000,
+  "end": -250000000,
+  "lat": 67.0,
+  "lng": 100.0,
+  "area": [
+   [
+    80,
+    55
+   ],
+   [
+    90,
+    72
+   ],
+   [
+    110,
+    74
+   ],
+   [
+    125,
+    66
+   ],
+   [
+    118,
+    54
+   ],
+   [
+    100,
+    50
+   ],
+   [
+    85,
+    50
+   ]
+  ],
+  "priority": 74,
+  "tags": [
+   "geology",
+   "disaster"
+  ],
+  "parent": "permian-extinction",
+  "summary": "One of the largest volcanic events known covered millions of square kilometres of Siberia in basalt.",
+  "body": "Part of [Permian–Triassic extinction](event:permian-extinction). The lavas burned through coal and evaporite deposits, releasing carbon and halogens far beyond what the magma alone would have supplied.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siberian_Traps).",
+  "links": [
+   {
+    "label": "Permian–Triassic extinction",
+    "event": "permian-extinction"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Siberian_Traps"
+   }
+  ]
+ },
+ {
+  "id": "first-dinosaurs",
+  "name": "First dinosaurs",
+  "start": -233000000,
+  "lat": -29.0,
+  "lng": -67.0,
+  "priority": 80,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Small bipedal archosaurs in what is now Argentina mark the beginning of the dinosaur lineage.",
+  "body": "They remained minor players until the [end-Triassic extinction](event:triassic-extinction) cleared their competitors, after which they dominated terrestrial ecosystems for 135 million years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dinosaur).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dinosaur"
+   }
+  ]
+ },
+ {
+  "id": "triassic-extinction",
+  "name": "Triassic–Jurassic extinction",
+  "start": -201400000,
+  "lat": 0,
+  "lng": -30.0,
+  "priority": 74,
+  "tags": [
+   "extinction",
+   "geology"
+  ],
+  "summary": "Half of known species vanished as the Central Atlantic Magmatic Province erupted during the break-up of Pangaea.",
+  "body": "The survivors included the dinosaurs, which radiated into the vacated niches.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Triassic–Jurassic_extinction_event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Triassic–Jurassic_extinction_event"
+   }
+  ]
+ },
+ {
+  "id": "atlantic-opening",
+  "name": "Opening of the Atlantic",
+  "start": -180000000,
+  "end": 2026,
+  "lat": 30.0,
+  "lng": -40.0,
+  "priority": 60,
+  "tags": [
+   "geology"
+  ],
+  "parent": "pangaea",
+  "summary": "Rifting split Pangaea and a new ocean basin began to spread along the Mid-Atlantic Ridge.",
+  "body": "Part of [Pangaea supercontinent](event:pangaea). Seafloor spreading of a few centimetres a year still widens the Atlantic today; the symmetric magnetic stripes on either side of the ridge were key evidence for plate tectonics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_Ocean).",
+  "links": [
+   {
+    "label": "Pangaea supercontinent",
+    "event": "pangaea"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Atlantic_Ocean"
+   }
+  ]
+ },
+ {
+  "id": "first-birds",
+  "name": "Archaeopteryx and the first birds",
+  "start": -150000000,
+  "lat": 48.9,
+  "lng": 11.2,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Feathered theropods in the Jurassic lagoons of Solnhofen show dinosaurs on the way to becoming birds.",
+  "body": "Birds are living dinosaurs — the only branch of the lineage to survive the [end-Cretaceous extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Archaeopteryx).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Archaeopteryx"
+   }
+  ]
+ },
+ {
+  "id": "flowering-plants",
+  "name": "Rise of flowering plants",
+  "start": -130000000,
+  "end": -70000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 66,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Angiosperms appeared and, in partnership with insect pollinators, rapidly came to dominate the world's flora.",
+  "body": "Darwin called their sudden abundance in the fossil record an \"abominable mystery\".\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Flowering_plant).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Flowering_plant"
+   }
+  ]
+ },
+ {
+  "id": "deccan-traps",
+  "name": "Deccan Traps eruptions",
+  "start": -66300000,
+  "end": -65500000,
+  "lat": 19.0,
+  "lng": 76.0,
+  "area": [
+   [
+    72,
+    16
+   ],
+   [
+    73,
+    22
+   ],
+   [
+    78,
+    23
+   ],
+   [
+    80,
+    18
+   ],
+   [
+    78,
+    14
+   ],
+   [
+    74,
+    13
+   ]
+  ],
+  "priority": 64,
+  "tags": [
+   "geology",
+   "disaster"
+  ],
+  "summary": "Flood basalts poured over western India around the same time as the Chicxulub impact.",
+  "body": "Flood basalts poured over western India for hundreds of thousands of years either side of the [K–Pg boundary](event:kpg-extinction). Whether they were a co-cause of the extinction or merely a stressor remains actively debated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Deccan_Traps).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Deccan_Traps"
+   }
+  ]
+ },
+ {
+  "id": "kpg-extinction",
+  "name": "Cretaceous–Paleogene extinction",
+  "start": -66000000,
+  "lat": 21.4,
+  "lng": -89.5,
+  "priority": 96,
+  "tags": [
+   "extinction",
+   "biology"
+  ],
+  "summary": "Three quarters of all species, including every non-avian dinosaur, died out in a geological instant.",
+  "body": "The immediate cause was the [Chicxulub impact](event:chicxulub), whose ejecta blanketed the globe in an iridium-rich layer found at the boundary worldwide; the [Deccan Traps](event:deccan-traps) eruptions were already stressing ecosystems.\n\nThe extinction opened the ecological space in which mammals — and eventually [primates](event:hominin-split) — radiated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous–Paleogene_extinction_event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cretaceous–Paleogene_extinction_event"
+   }
+  ]
+ },
+ {
+  "id": "chicxulub",
+  "name": "Chicxulub impact",
+  "start": -66000000,
+  "lat": 21.4,
+  "lng": -89.5,
+  "area": [
+   [
+    -92,
+    19
+   ],
+   [
+    -91,
+    22
+   ],
+   [
+    -88,
+    22.5
+   ],
+   [
+    -86,
+    21
+   ],
+   [
+    -87,
+    19
+   ],
+   [
+    -90,
+    18
+   ]
+  ],
+  "priority": 90,
+  "tags": [
+   "geology",
+   "disaster"
+  ],
+  "parent": "kpg-extinction",
+  "summary": "A 10-kilometre asteroid struck the Yucatán platform, releasing energy equal to billions of Hiroshima bombs.",
+  "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). The impact excavated a crater 180 km across into sulphur-rich carbonate rock, launching a global cloud of dust and sulphate aerosols that shut down photosynthesis for years.\n\nThe crater was identified from gravity anomalies in the 1970s and confirmed in 1991.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chicxulub_crater).",
+  "links": [
+   {
+    "label": "Cretaceous–Paleogene extinction",
+    "event": "kpg-extinction"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Chicxulub_crater"
+   }
+  ]
+ },
+ {
+  "id": "petm",
+  "name": "Paleocene–Eocene Thermal Maximum",
+  "start": -56000000,
+  "end": -55800000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 72,
+  "tags": [
+   "climate"
+  ],
+  "summary": "A massive carbon release warmed the planet by 5–8 °C within a few thousand years.",
+  "body": "The closest geological analogue to modern [greenhouse warming](event:global-warming), it acidified the oceans and drove a rapid turnover of mammal faunas.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paleocene–Eocene_Thermal_Maximum).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Paleocene–Eocene_Thermal_Maximum"
+   }
+  ]
+ },
+ {
+  "id": "himalaya-uplift",
+  "name": "Uplift of the Himalaya",
+  "start": -50000000,
+  "end": 2026,
+  "lat": 28.0,
+  "lng": 86.9,
+  "priority": 62,
+  "tags": [
+   "geology"
+  ],
+  "summary": "India collided with Asia, raising the highest mountains on Earth and reshaping global climate.",
+  "body": "The collision continues today at about 5 cm per year. Weathering of the fresh rock drew down atmospheric CO2, helping cool the planet toward the ice ages, and the range created the Asian monsoon.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Himalayas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Himalayas"
+   }
+  ]
+ },
+ {
+  "id": "antarctic-glaciation",
+  "name": "Antarctica freezes",
+  "start": -34000000,
+  "lat": -82.0,
+  "lng": 20.0,
+  "priority": 70,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Falling CO2 and the opening of the Drake Passage let permanent ice sheets form at the South Pole.",
+  "body": "The Eocene–Oligocene transition marks the switch from a greenhouse to an icehouse Earth, the state we still live in.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Antarctic_ice_sheet).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Antarctic_ice_sheet"
+   }
+  ]
+ },
+ {
+  "id": "hominin-split",
+  "name": "Human–chimpanzee divergence",
+  "start": -7000000,
+  "end": -6000000,
+  "lat": 7.5,
+  "lng": 17.0,
+  "priority": 78,
+  "tags": [
+   "biology"
+  ],
+  "summary": "The lineages leading to humans and to chimpanzees parted ways in Africa.",
+  "body": "Fossils such as Sahelanthropus from Chad sit near this branching point; the split date comes from combining fossils with molecular clocks.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chimpanzee–human_last_common_ancestor).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Chimpanzee–human_last_common_ancestor"
+   }
+  ]
+ },
+ {
+  "id": "messinian",
+  "name": "Messinian salinity crisis",
+  "start": -5960000,
+  "end": -5330000,
+  "lat": 38.0,
+  "lng": 15.0,
+  "priority": 62,
+  "tags": [
+   "geology"
+  ],
+  "summary": "The Mediterranean was cut off from the Atlantic and largely evaporated, leaving kilometre-thick salt deposits.",
+  "body": "It refilled catastrophically through the Strait of Gibraltar in the Zanclean flood, possibly within a couple of years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Messinian_salinity_crisis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Messinian_salinity_crisis"
+   }
+  ]
+ },
+ {
+  "id": "stone-tools",
+  "name": "First stone tools",
+  "start": -3300000,
+  "end": -2600000,
+  "lat": -2.7,
+  "lng": 36.2,
+  "priority": 84,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Hominins began deliberately flaking stone into cutting edges, the start of the archaeological record.",
+  "body": "The Lomekwi 3 site in Kenya pushes toolmaking back to 3.3 million years; the Oldowan industry from about 2.6 Ma is the first widespread tradition.\n\nStone tools gave access to meat and marrow, an energy-dense diet linked to later brain expansion.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oldowan).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Oldowan"
+   }
+  ]
+ },
+ {
+  "id": "lucy",
+  "name": "Australopithecus and habitual bipedalism",
+  "start": -3200000,
+  "lat": 11.1,
+  "lng": 40.6,
+  "priority": 78,
+  "tags": [
+   "biology"
+  ],
+  "parent": "hominin-split",
+  "summary": "The skeleton known as Lucy showed that upright walking preceded the large human brain by millions of years.",
+  "body": "Part of [Human–chimpanzee divergence](event:hominin-split). Discovered at Hadar in Ethiopia in 1974, Lucy belongs to *Australopithecus afarensis*; the Laetoli footprints in Tanzania record the same gait in volcanic ash.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Lucy_(Australopithecus)).",
+  "links": [
+   {
+    "label": "Human–chimpanzee divergence",
+    "event": "hominin-split"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Lucy_(Australopithecus)"
+   }
+  ]
+ },
+ {
+  "id": "quaternary-ice-ages",
+  "name": "Quaternary ice ages begin",
+  "start": -2580000,
+  "end": -11700,
+  "lat": 60.0,
+  "lng": -45.0,
+  "priority": 80,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Northern hemisphere ice sheets began advancing and retreating on orbital cycles.",
+  "body": "Roughly fifty glacial–interglacial cycles, paced by Milankovitch variations in Earth's orbit, shaped the landscapes and the human evolution of the last 2.6 million years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Quaternary_glaciation).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Quaternary_glaciation"
+   }
+  ]
+ },
+ {
+  "id": "homo-erectus",
+  "name": "Homo erectus spreads out of Africa",
+  "start": -1900000,
+  "end": -110000,
+  "lat": -2.0,
+  "lng": 36.0,
+  "priority": 78,
+  "tags": [
+   "biology",
+   "exploration"
+  ],
+  "summary": "The first hominin with modern body proportions ranged from Africa to Java and northern China.",
+  "body": "Its long success — well over a million years — makes it the most durable human species yet known.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_erectus).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Homo_erectus"
+   }
+  ]
+ },
+ {
+  "id": "fire-control",
+  "name": "Control of fire",
+  "start": -1000000,
+  "lat": -28.4,
+  "lng": 24.3,
+  "priority": 82,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Hominins learned to make and maintain fire, transforming diet, safety and social life.",
+  "body": "Burnt bone and ash at Wonderwerk Cave in South Africa give some of the earliest good evidence. Cooking releases far more calories from food and may have underwritten the expansion of the human brain.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Control_of_fire_by_early_humans).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Control_of_fire_by_early_humans"
+   }
+  ]
+ },
+ {
+  "id": "homo-sapiens",
+  "name": "Origin of Homo sapiens",
+  "start": -315000,
+  "lat": 31.9,
+  "lng": -8.7,
+  "priority": 95,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Anatomically modern humans emerged in Africa; the oldest known fossils come from Jebel Irhoud in Morocco.",
+  "body": "Genetic and fossil evidence points to a pan-African origin rather than a single cradle, with populations exchanging genes across the continent for tens of thousands of years before the [dispersal out of Africa](event:out-of-africa).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Homo_sapiens"
+   }
+  ]
+ },
+ {
+  "id": "toba",
+  "name": "Toba supereruption",
+  "start": -74000,
+  "lat": 2.7,
+  "lng": 98.9,
+  "priority": 64,
+  "tags": [
+   "disaster",
+   "geology"
+  ],
+  "summary": "The largest volcanic eruption of the last two million years covered South Asia in ash.",
+  "body": "The proposed \"Toba catastrophe\" bottleneck in human populations is now largely doubted, but the volcanic winter was real and severe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Toba_catastrophe_theory).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Toba_catastrophe_theory"
+   }
+  ]
+ },
+ {
+  "id": "out-of-africa",
+  "name": "Out of Africa dispersal",
+  "start": -70000,
+  "end": -50000,
+  "lat": 12.8,
+  "lng": 43.3,
+  "priority": 93,
+  "tags": [
+   "exploration",
+   "biology"
+  ],
+  "summary": "Modern humans expanded out of Africa and, within tens of millennia, reached every habitable continent.",
+  "body": "The descendants of this comparatively small founding population replaced or absorbed all other human groups, interbreeding with [Neanderthals](event:neanderthals) and Denisovans along the way.\n\nBy 65,000 years ago people had crossed to [Australia](event:sahul); by 16,000 they had entered [the Americas](event:americas-peopling).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_human_migrations).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Early_human_migrations"
+   }
+  ]
+ },
+ {
+  "id": "sahul",
+  "name": "Peopling of Australia",
+  "start": -65000,
+  "lat": -12.4,
+  "lng": 132.9,
+  "priority": 72,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "out-of-africa",
+  "summary": "Humans crossed open water to Sahul, the joined landmass of Australia and New Guinea.",
+  "body": "Part of [Out of Africa dispersal](event:out-of-africa). Madjedbebe rock shelter in Arnhem Land holds the oldest securely dated artefacts. The crossing required deliberate seafaring across at least 90 km of open ocean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Prehistory_of_Australia).",
+  "links": [
+   {
+    "label": "Out of Africa dispersal",
+    "event": "out-of-africa"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Prehistory_of_Australia"
+   }
+  ]
+ },
+ {
+  "id": "neanderthals",
+  "name": "Neanderthals disappear",
+  "start": -40000,
+  "lat": 36.1,
+  "lng": -5.3,
+  "priority": 72,
+  "tags": [
+   "biology"
+  ],
+  "parent": "out-of-africa",
+  "summary": "The last Neanderthal populations, in Iberia and the Caucasus, died out after millennia of coexistence with modern humans.",
+  "body": "Part of [Out of Africa dispersal](event:out-of-africa). They buried their dead, used fire and pigment, and left 1–2% of their DNA in all non-African people alive today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neanderthal).",
+  "links": [
+   {
+    "label": "Out of Africa dispersal",
+    "event": "out-of-africa"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Neanderthal"
+   }
+  ]
+ },
+ {
+  "id": "cave-art",
+  "name": "Upper Paleolithic cave art",
+  "start": -40000,
+  "end": -12000,
+  "lat": 45.0,
+  "lng": 1.2,
+  "priority": 76,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Painted caves at Chauvet, Lascaux and Sulawesi show symbolic thought in full flower.",
+  "body": "The Chauvet lions and rhinos are around 36,000 years old; hand stencils and animal figures of similar age occur in Indonesia, showing the practice was not a European invention.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cave_painting).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cave_painting"
+   }
+  ]
+ },
+ {
+  "id": "lgm",
+  "name": "Last Glacial Maximum",
+  "start": -26500,
+  "end": -19000,
+  "lat": 55.0,
+  "lng": -40.0,
+  "priority": 76,
+  "tags": [
+   "climate"
+  ],
+  "summary": "Ice sheets reached their greatest extent and sea level stood about 125 metres below today's.",
+  "body": "The exposed shelves created land bridges — Beringia, Doggerland, Sundaland — that shaped where humans could walk.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Last_Glacial_Maximum).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Last_Glacial_Maximum"
+   }
+  ]
+ },
+ {
+  "id": "americas-peopling",
+  "name": "Peopling of the Americas",
+  "start": -16000,
+  "end": -13000,
+  "lat": 65.0,
+  "lng": -165.0,
+  "priority": 80,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "out-of-africa",
+  "summary": "Humans crossed Beringia and moved south along the Pacific coast into two empty continents.",
+  "body": "Part of [Out of Africa dispersal](event:out-of-africa). Sites such as Monte Verde in Chile predate the Clovis culture, implying an earlier coastal route; within a few thousand years people had reached Tierra del Fuego.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Settlement_of_the_Americas).",
+  "links": [
+   {
+    "label": "Out of Africa dispersal",
+    "event": "out-of-africa"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Settlement_of_the_Americas"
+   }
+  ]
+ },
+ {
+  "id": "dog-domestication",
+  "name": "Domestication of the dog",
+  "start": -15000,
+  "lat": 50.0,
+  "lng": 10.0,
+  "priority": 62,
+  "tags": [
+   "biology",
+   "technology"
+  ],
+  "summary": "Wolves became the first domesticated animal, thousands of years before any crop or livestock.",
+  "body": "The Bonn-Oberkassel burial of about 14,200 years ago includes a dog interred with two people.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Origin_of_the_domestic_dog).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Origin_of_the_domestic_dog"
+   }
+  ]
+ },
+ {
+  "id": "younger-dryas",
+  "name": "Younger Dryas cold snap",
+  "start": -12900,
+  "end": -11700,
+  "lat": 60.0,
+  "lng": -30.0,
+  "priority": 66,
+  "tags": [
+   "climate"
+  ],
+  "summary": "The warming world plunged back into near-glacial conditions for over a millennium, then warmed again within decades.",
+  "body": "Its end defines the start of the [Holocene](event:holocene) and coincides with the first experiments in [farming](event:agriculture) in the Levant.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Younger_Dryas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Younger_Dryas"
+   }
+  ]
+ },
+ {
+  "id": "holocene",
+  "name": "Start of the Holocene",
+  "start": -11700,
+  "lat": 72.0,
+  "lng": -38.0,
+  "priority": 80,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "The current interglacial began, ushering in the stable warm climate in which all civilisation developed.",
+  "body": "The boundary is defined in a Greenland ice core; temperatures rose several degrees within a few decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Holocene).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Holocene"
+   }
+  ]
+ }
+]

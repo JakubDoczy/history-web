@@ -1,0 +1,866 @@
+[
+ {
+  "id": "hadean-eon-end",
+  "name": "End of the Hadean Eon",
+  "start": -4000000000,
+  "end": -3800000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 72,
+  "tags": [
+   "geology"
+  ],
+  "summary": "The Hadean eon of planetary violence gave way to a more stable world as the Late Heavy Bombardment waned.",
+  "body": "The transition marks Earth's shift from an inferno of impacts to a world where surface conditions began to stabilise. The end of heavy impacting allowed the first stable continents to form and water to remain liquid on the surface.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hadean).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hadean"
+   }
+  ]
+ },
+ {
+  "id": "earliest-continents",
+  "name": "Formation of earliest continental crust",
+  "start": -3800000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 70,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Lighter rocks began to accumulate into protocontinents, the first permanent landmasses.",
+  "body": "Felsic magmatism and crustal thickening produced the first stable continental nuclei, which would eventually grow into the Archean cratons. These pieces of lighter crust were more buoyant and could survive the recycling of plate tectonics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Craton).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Craton"
+   }
+  ]
+ },
+ {
+  "id": "archean-microbial-mats",
+  "name": "Archean microbial mats and biofilms",
+  "start": -3400000000,
+  "lat": -21.0,
+  "lng": 119.5,
+  "priority": 65,
+  "tags": [
+   "biology"
+  ],
+  "parent": "abiogenesis",
+  "summary": "Microbial communities built layered structures, the ancestors of stromatolites, extracting energy from chemical and solar sources.",
+  "body": "Part of [Origin of life](event:abiogenesis). These earliest complex ecosystems thrived in shallow marine environments, creating the template for all later microbial architecture. Fermentation and anaerobic pathways dominated, since oxygen was not yet abundant.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Biofilm).",
+  "links": [
+   {
+    "label": "Origin of life",
+    "event": "abiogenesis"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Biofilm"
+   }
+  ]
+ },
+ {
+  "id": "anoxygenic-photosynthesis",
+  "name": "Anoxygenic photosynthesis",
+  "start": -3000000000,
+  "lat": -21.0,
+  "lng": 119.5,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Purple and green bacteria evolved to harvest sunlight without splitting water, releasing hydrogen sulphide instead.",
+  "body": "This metabolic innovation spread widely and was enormously successful for hundreds of millions of years before being overtaken by the more energetic oxygenic pathway. Anoxygenic photosynthesizers still thrive today in dark, anoxic environments.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Anoxygenic_photosynthesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Anoxygenic_photosynthesis"
+   }
+  ]
+ },
+ {
+  "id": "banded-iron-formations-peak",
+  "name": "Peak of banded iron formations",
+  "start": -2500000000,
+  "end": -1800000000,
+  "lat": -26.1,
+  "lng": 117.0,
+  "priority": 68,
+  "tags": [
+   "geology"
+  ],
+  "parent": "great-oxidation",
+  "summary": "Iron oxides and silica accumulated in layered deposits as oxygen from early life reacted with dissolved iron.",
+  "body": "Part of [Great Oxidation Event](event:great-oxidation). These formations, mined today for iron ore, record the chemistry of an ocean where oxygen and iron were in flux. Each layer represents seasonal or cyclical changes in oxidation state.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Banded_iron_formation).",
+  "links": [
+   {
+    "label": "Great Oxidation Event",
+    "event": "great-oxidation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Banded_iron_formation"
+   }
+  ]
+ },
+ {
+  "id": "acritarchs",
+  "name": "Acritarchs and earliest eukaryotic fossils",
+  "start": -1500000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 65,
+  "tags": [
+   "biology"
+  ],
+  "parent": "eukaryotes",
+  "summary": "Microfossils with multiple wall layers suggest eukaryotes were diversifying long before animals or plants.",
+  "body": "Part of [First eukaryotic cells](event:eukaryotes). Acritarchs are small, organic-walled fossils of uncertain affinity — most likely resting spores of early eukaryotic algae. They became abundant and diverse, a sign that eukaryotic life was thriving in the oceans.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Acritarch).",
+  "links": [
+   {
+    "label": "First eukaryotic cells",
+    "event": "eukaryotes"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Acritarch"
+   }
+  ]
+ },
+ {
+  "id": "sexual-reproduction",
+  "name": "Evolution of sexual reproduction",
+  "start": -1200000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Eukaryotes evolved meiosis and fusion, mixing genes and accelerating adaptation.",
+  "body": "Sexual reproduction allows organisms to shuffle genes and respond faster to environmental change. Early evidence comes from molecular clocks and the appearance of larger, more complex eukaryotes in the fossil record. The innovation set the stage for [multicellular evolution](event:multicellular-eukaryotes).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sexual_reproduction).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Sexual_reproduction"
+   }
+  ]
+ },
+ {
+  "id": "multicellular-eukaryotes",
+  "name": "First multicellular eukaryotes",
+  "start": -1200000000,
+  "end": -900000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 72,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Eukaryotic cells stuck together and divided labour, inventing multicellular life.",
+  "body": "Filamentous and colonial forms appeared in the Proterozoic, paving the way for algae, plants and animals. The oldest fossils suggestive of multicellularity come from China and Australia; red and green algae diversified in the oceans.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Multicellular_organism).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Multicellular_organism"
+   }
+  ]
+ },
+ {
+  "id": "tonian-oxygenation",
+  "name": "Tonian oxygenation and radiation",
+  "start": -1000000000,
+  "end": -750000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 64,
+  "tags": [
+   "climate",
+   "biology"
+  ],
+  "summary": "Atmospheric oxygen rose in pulses as eukaryotic life diversified.",
+  "body": "The Tonian period saw at least two major oxygenation events and the appearance of diverse multicellular eukaryotes in the fossil record. This oxygenation set the stage for the oxygen-dependent metabolisms that dominated Phanerozoic life.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tonian).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tonian"
+   }
+  ]
+ },
+ {
+  "id": "rodinia-formation",
+  "name": "Rodinia supercontinent assembly",
+  "start": -1100000000,
+  "end": -1000000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 65,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Continental nuclei collided and merged into a supercontinent that lasted hundreds of millions of years.",
+  "body": "The assembly of Rodinia altered ocean circulation and triggered changes in climate and weathering. Plate tectonics had become established enough to drive these large-scale crustal reorganisations.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rodinia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Rodinia"
+   }
+  ]
+ },
+ {
+  "id": "cryogenian-glaciation-start",
+  "name": "Cryogenian glaciations begin",
+  "start": -720000000,
+  "end": -635000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 70,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "parent": "snowball-earth",
+  "summary": "The Sturtian and Marinoan glaciations locked the planet in ice for tens of millions of years at a stretch.",
+  "body": "Part of [Snowball Earth](event:snowball-earth). Glacial deposits at low latitudes and evidence of sea-ice coverage even at the equator make these the most severe ice ages in Earth history. Volcanic outgassing slowly built CO2 reserves beneath the ice until runaway melting occurred.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cryogenian).",
+  "links": [
+   {
+    "label": "Snowball Earth",
+    "event": "snowball-earth"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cryogenian"
+   }
+  ]
+ },
+ {
+  "id": "ediacaran-diversification",
+  "name": "Ediacaran fauna diversification",
+  "start": -560000000,
+  "end": -540000000,
+  "lat": -31.3,
+  "lng": 138.6,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "parent": "ediacaran",
+  "summary": "Soft-bodied organisms radiated into many ecological roles in shallow marine settings.",
+  "body": "Part of [Ediacaran biota](event:ediacaran). Forms included fronds, discs, tubes, and mat-like structures. Some may have been filter feeders, others photosynthesisers or detritivores. Most lineages left no descendants, but they demonstrate that large body size and complex form could arise before shells or predators.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ediacaran_biota).",
+  "links": [
+   {
+    "label": "Ediacaran biota",
+    "event": "ediacaran"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ediacaran_biota"
+   }
+  ]
+ },
+ {
+  "id": "burgess-shale-fauna",
+  "name": "Burgess Shale exceptional preservation",
+  "start": -520000000,
+  "lat": 51.4,
+  "lng": -116.5,
+  "priority": 72,
+  "tags": [
+   "biology"
+  ],
+  "parent": "cambrian-explosion",
+  "summary": "Soft-bodied animals were entombed in rapid sediment flows, preserving detail normally lost to fossilisation.",
+  "body": "Part of [Cambrian explosion](event:cambrian-explosion). The Burgess Shale of British Columbia captures an unexpected diversity of body plans, including many that left no modern descendants — a window into experiments that evolution later pruned. Fossils like *Hallucigenia* and *Opabinia* show that even this early, the oceans held surprising creativity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Burgess_Shale).",
+  "links": [
+   {
+    "label": "Cambrian explosion",
+    "event": "cambrian-explosion"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Burgess_Shale"
+   }
+  ]
+ },
+ {
+  "id": "trilobite-diversification",
+  "name": "Trilobite diversification and radiation",
+  "start": -520000000,
+  "end": -505000000,
+  "lat": 51.4,
+  "lng": -116.5,
+  "priority": 60,
+  "tags": [
+   "biology"
+  ],
+  "parent": "cambrian-explosion",
+  "summary": "Armoured arthropods with complex eyes and jointed limbs spread through the oceans.",
+  "body": "Part of [Cambrian explosion](event:cambrian-explosion). Trilobites were among the most successful animals of the Paleozoic, lasting nearly 300 million years. Their compound eyes and segmented bodies became a template for success that arthropods still follow today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trilobite).",
+  "links": [
+   {
+    "label": "Cambrian explosion",
+    "event": "cambrian-explosion"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Trilobite"
+   }
+  ]
+ },
+ {
+  "id": "ordovician-reef-ecosystems",
+  "name": "Ordovician reef and coral ecosystems",
+  "start": -485000000,
+  "end": -445000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 64,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Shallow-water reefs built by corals, sponges and bryozoans became major features of the seafloor.",
+  "body": "The Ordovician saw the first great reef ecosystems, which would continue as a dominant feature of shallow marine environments for the rest of the Phanerozoic. These ecosystems became a nursery for diversifying animal groups.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ordovician).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ordovician"
+   }
+  ]
+ },
+ {
+  "id": "early-fish",
+  "name": "Radiation of early fish and agnathans",
+  "start": -480000000,
+  "end": -440000000,
+  "lat": 50.0,
+  "lng": 0.0,
+  "priority": 66,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Jawless fish diversified in fresh and salt water, establishing vertebrates as a successful body plan.",
+  "body": "Ostracoderms and other armoured fish appeared in the Ordovician and dominated early vertebrate faunas. Their descendants would eventually evolve jaws, become the shark-fish and jawed fish that populate modern oceans, and eventually walk on land.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Agnathans).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Agnathans"
+   }
+  ]
+ },
+ {
+  "id": "silurian-land-colonisation",
+  "name": "Silurian land colonisation by arthropods",
+  "start": -440000000,
+  "end": -420000000,
+  "lat": 52.0,
+  "lng": -3.5,
+  "priority": 66,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Arthropods — likely arachnids and early insects — ventured onto land, breathing air and seeking prey.",
+  "body": "Fossils from the Silurian of Scotland and Germany show traces of small terrestrial arthropods. They were among the first animals to leave the water, establishing the base of terrestrial food webs that would support plant colonisation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silurian).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Silurian"
+   }
+  ]
+ },
+ {
+  "id": "devonian-fish-revolution",
+  "name": "Devonian fish diversification and radiation",
+  "start": -419000000,
+  "end": -372000000,
+  "lat": 52.0,
+  "lng": -3.5,
+  "priority": 70,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Jawed fish of every conceivable body plan dominated the oceans in the Age of Fishes.",
+  "body": "Sharks, placoderms, lobe-fins and ray-fins all radiated. It was from lobe-finned fish that [tetrapods](event:tetrapods) would evolve the limbs for walking. The diversity of marine ecosystems reached peaks matched only by a few later periods.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Devonian).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Devonian"
+   }
+  ]
+ },
+ {
+  "id": "amniotic-egg",
+  "name": "Evolution of the amniotic egg",
+  "start": -320000000,
+  "lat": 50.0,
+  "lng": 0.0,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "parent": "tetrapods",
+  "summary": "A waterproof egg that could be laid on land freed vertebrates from dependence on water for reproduction.",
+  "body": "Part of [Vertebrates walk on land](event:tetrapods). The amniotic egg, with its protective membranes and yolk supply, was the innovation that allowed early tetrapods and their descendants to colonise deserts, mountains and frozen tundra. Reptiles, dinosaurs and mammals all depend on this adaptation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Amniote).",
+  "links": [
+   {
+    "label": "Vertebrates walk on land",
+    "event": "tetrapods"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Amniote"
+   }
+  ]
+ },
+ {
+  "id": "early-reptiles",
+  "name": "Emergence of early reptiles",
+  "start": -315000000,
+  "end": -305000000,
+  "lat": 50.0,
+  "lng": 0.0,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Fully terrestrial amniotes appeared, with dry skin and reliance on internal fertilisation.",
+  "body": "Fossils from the Carboniferous of Scotland and North America show early sauropsids — the lineage leading to modern lizards, snakes and [dinosaurs](event:first-dinosaurs). They were smaller than the amphibians they coexisted with but better adapted to drying climates.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reptile).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Reptile"
+   }
+  ]
+ },
+ {
+  "id": "synapsid-domination",
+  "name": "Synapsid domination of Permian terrestrial ecosystems",
+  "start": -298000000,
+  "end": -260000000,
+  "lat": 45.0,
+  "lng": -100.0,
+  "priority": 66,
+  "tags": [
+   "biology"
+  ],
+  "summary": "A diverse array of reptilian synapsids ruled the land, from small herbivores to apex predators.",
+  "body": "Synapsids were the dominant land vertebrates of the Permian — a role that would pass to [dinosaurs](event:first-dinosaurs) after the [Great Dying](event:permian-extinction). Mammal-like reptiles such as *Dimetrodon* were widespread and diverse. Their descendants would become the mammals of the Mesozoic and Cenozoic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Synapsida).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Synapsida"
+   }
+  ]
+ },
+ {
+  "id": "triassic-mammalian-radiation",
+  "name": "Triassic mammal diversification",
+  "start": -230000000,
+  "end": -200000000,
+  "lat": -29.0,
+  "lng": -67.0,
+  "priority": 64,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Small mammalian synapsids diversified into many ecological niches while dinosaurs rose to dominance.",
+  "body": "Whilst [dinosaurs](event:first-dinosaurs) were beginning their long reign, early mammals remained small, mostly nocturnal insectivores and omnivores. This pattern would persist for the entire Mesozoic until [dinosaurs](event:kpg-extinction) disappeared.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_mammal).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Early_mammal"
+   }
+  ]
+ },
+ {
+  "id": "ichthyosaur-radiation",
+  "name": "Ichthyosaur radiation and dominance",
+  "start": -245000000,
+  "end": -90000000,
+  "lat": 0.0,
+  "lng": 0.0,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Dolphin-like marine reptiles dominated the Mesozoic oceans for over 150 million years.",
+  "body": "Ichthyosaurs appeared in the Triassic and became the apex predators of Jurassic and Cretaceous seas. Their streamlined bodies and large eyes adapted them perfectly to open-ocean hunting. They gave birth to live young and breathed air — convergently similar to modern cetaceans.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ichthyosaur).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ichthyosaur"
+   }
+  ]
+ },
+ {
+  "id": "sauropod-gigantism",
+  "name": "Sauropod gigantism and herbivory",
+  "start": -180000000,
+  "end": -145000000,
+  "lat": -35.0,
+  "lng": 150.0,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Four-legged dinosaurs evolved into the largest land animals ever, reaching weights over 100 tonnes.",
+  "body": "Sauropods like *Argentinosaurus* and *Brachiosaurus* were made possible by the high productivity of Jurassic landscapes. Their long necks and peg-like teeth were adapted for browsing high vegetation. They dominated Jurassic landscapes for tens of millions of years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sauropoda).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Sauropoda"
+   }
+  ]
+ },
+ {
+  "id": "jurassic-marine-ecosystems",
+  "name": "Jurassic marine ecosystem complexity",
+  "start": -170000000,
+  "end": -145000000,
+  "lat": 48.9,
+  "lng": 11.2,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Shallow epicontinental seas teemed with ammonites, fish, marine reptiles and plesiosaurs.",
+  "body": "Lagoons like Solnhofen were sites of exceptional preservation where a full cross-section of marine life was entombed in limestone. Ichthyosaurs, plesiosaurs, early fish and cephalopods competed for prey in seas that covered much of Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Jurassic).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Jurassic"
+   }
+  ]
+ },
+ {
+  "id": "theropod-radiation",
+  "name": "Theropod radiation and predatory dominance",
+  "start": -170000000,
+  "end": -66000000,
+  "lat": -23.0,
+  "lng": 134.0,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Two-legged carnivorous dinosaurs became the dominant apex predators, evolving from small forms to giants.",
+  "body": "Theropods ranged from chicken-sized hunters to *Tyrannosaurus* at over 9 metres long. They were intelligent, fast and equipped with powerful jaws or claws. Their descendants — [birds](event:first-birds) — are the only dinosaurs that survived [the K–Pg extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theropoda).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Theropoda"
+   }
+  ]
+ },
+ {
+  "id": "cretaceous-seaway",
+  "name": "Cretaceous Western Interior Seaway",
+  "start": -100000000,
+  "end": -66000000,
+  "lat": 43.0,
+  "lng": -100.0,
+  "priority": 60,
+  "tags": [
+   "geology",
+   "biology"
+  ],
+  "summary": "A vast shallow sea stretched from the Arctic to the Gulf of Mexico, home to mosasaurs, plesiosaurs and ammonites.",
+  "body": "Chalk and shale deposits across North America record the existence of this epeiric sea, one of the largest in Earth history. Its fauna and flora are preserved in remarkable detail, particularly in the Pierre Shale and Niobrara Chalk.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Western_Interior_Seaway).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Western_Interior_Seaway"
+   }
+  ]
+ },
+ {
+  "id": "cretaceous-warmth",
+  "name": "Cretaceous greenhouse climate",
+  "start": -120000000,
+  "end": -66000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 64,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "The Cretaceous was one of the warmest periods in Earth history, with CO2 levels several times modern values.",
+  "body": "No ice caps existed at the poles. Shallow tropical seas covered vast areas; rainforests reached high latitudes. This warmth was driven by massive submarine volcanism and high outgassing of CO2. The climate was stable enough for ecosystems to flourish, but ultimately contributed to [mass extinction](event:kpg-extinction) stressors when it ended abruptly.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cretaceous"
+   }
+  ]
+ },
+ {
+  "id": "placental-radiation",
+  "name": "Radiation of placental mammals",
+  "start": -95000000,
+  "end": -66000000,
+  "lat": -23.0,
+  "lng": 134.0,
+  "priority": 66,
+  "tags": [
+   "biology"
+  ],
+  "summary": "In the shadow of dinosaurs, small placental mammals diversified into many ecological niches.",
+  "body": "Fossils from China and Mongolia reveal a diversity of small mammals in the Cretaceous — early relatives of primates, ungulates, carnivores and other modern groups. They were largely restricted to nocturnal and small-body niches as long as dinosaurs dominated, but were poised to diversify after the [K–Pg extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Placentalia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Placentalia"
+   }
+  ]
+ },
+ {
+  "id": "paleocene-mammal-radiation",
+  "name": "Paleocene mammalian radiation",
+  "start": -66000000,
+  "end": -56000000,
+  "lat": -35.0,
+  "lng": 150.0,
+  "priority": 70,
+  "tags": [
+   "biology"
+  ],
+  "parent": "kpg-extinction",
+  "summary": "After [dinosaur extinction](event:kpg-extinction), mammals exploded in diversity and size, filling newly empty niches.",
+  "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). Within a few million years, mammals had evolved from small nocturnal animals into herbivores the size of horses and carnivores hunting them. Primates, perissodactyls, artiodactyls and other modern mammalian orders all originated in this interval.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paleocene).",
+  "links": [
+   {
+    "label": "Cretaceous–Paleogene extinction",
+    "event": "kpg-extinction"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Paleocene"
+   }
+  ]
+ },
+ {
+  "id": "eocene-whale-evolution",
+  "name": "Whale evolution from terrestrial mammals",
+  "start": -60000000,
+  "end": -40000000,
+  "lat": -32.0,
+  "lng": 116.0,
+  "priority": 72,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Artiodactyls returned to the sea and evolved into fully aquatic cetaceans over millions of years.",
+  "body": "Fossils from Pakistan and Egypt show the transition from river-dwelling *Ambulocetus* — still with hind legs — through forms like *Rodhocetus* to modern whales. The presence of blowhole, flippers and flukes in fossil cetaceans documents one of the most complete evolutionary transitions known.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cetacea).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cetacea"
+   }
+  ]
+ },
+ {
+  "id": "eocene-climatic-optimum",
+  "name": "Eocene Climatic Optimum",
+  "start": -53000000,
+  "end": -50000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 62,
+  "tags": [
+   "climate"
+  ],
+  "summary": "Peak warmth in the Cenozoic era with tropical conditions even near the poles.",
+  "body": "The warmest sustained period since the dinosaurs disappeared saw global temperatures perhaps 10–15°C above modern levels. Ice-free polar regions and warm, wet climates everywhere drove a lush biosphere, but created an unstable baseline that would cool markedly over the following millions of years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eocene).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Eocene"
+   }
+  ]
+ },
+ {
+  "id": "oligocene-cooling",
+  "name": "Oligocene transition and global cooling",
+  "start": -34000000,
+  "end": -23000000,
+  "lat": -82.0,
+  "lng": 20.0,
+  "priority": 68,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "parent": "antarctic-glaciation",
+  "summary": "The climate shifted from warm and wet to cooler and drier over a few million years.",
+  "body": "Part of [Antarctica freezes](event:antarctic-glaciation). The Oligocene saw global temperature decline by roughly 5°C, the opening of the Drake Passage, and the establishment of the Antarctic Circumpolar Current. Rainforests gave way to grasslands in many regions, driving terrestrial mammal evolution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oligocene).",
+  "links": [
+   {
+    "label": "Antarctica freezes",
+    "event": "antarctic-glaciation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Oligocene"
+   }
+  ]
+ },
+ {
+  "id": "miocene-grassland-expansion",
+  "name": "Miocene grassland expansion",
+  "start": -20000000,
+  "end": -5000000,
+  "lat": 0.0,
+  "lng": 0.0,
+  "priority": 66,
+  "tags": [
+   "biology",
+   "climate"
+  ],
+  "summary": "Grasses spread across continents and terrestrial ecosystems restructured around grazing herbivores.",
+  "body": "The transition from closed-canopy forests to open grasslands and savannas drove the evolution of hoofed animals with high-crowned teeth suited to abrasive plant material. Africa's great plains began to take shape, and primate evolution in Africa was influenced by the shift from forest to savanna.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Miocene).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Miocene"
+   }
+  ]
+ },
+ {
+  "id": "pliocene-bipedalism-selection",
+  "name": "Pliocene savanna adaptation in hominins",
+  "start": -5300000,
+  "end": -2600000,
+  "lat": 7.5,
+  "lng": 17.0,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "parent": "hominin-split",
+  "summary": "Hominins evolved upright walking, possibly as an adaptation to open and patchy forest-savanna mosaic.",
+  "body": "Part of [Human–chimpanzee divergence](event:hominin-split). Fossils of early hominins like *Orrorin* and *Sahelanthropus* show that bipedalism preceded brain enlargement by millions of years. The selection pressure may have come from foraging efficiency or heat dissipation in open habitats.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hominin).",
+  "links": [
+   {
+    "label": "Human–chimpanzee divergence",
+    "event": "hominin-split"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hominin"
+   }
+  ]
+ },
+ {
+  "id": "hand-axe-tool-tradition",
+  "name": "Acheulean hand-axe tradition",
+  "start": -1600000,
+  "end": -300000,
+  "lat": -2.7,
+  "lng": 36.2,
+  "priority": 64,
+  "tags": [
+   "technology"
+  ],
+  "parent": "stone-tools",
+  "summary": "Symmetrical stone hand-axes crafted by early humans spread across Africa, Eurasia and the Middle East.",
+  "body": "Part of [First stone tools](event:stone-tools). Hand-axes were the dominant tool for over a million years, carefully shaped and re-sharpened. They represent the first evidence of planning, aesthetic sense and standardised design in human technology.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hand_axe).",
+  "links": [
+   {
+    "label": "First stone tools",
+    "event": "stone-tools"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hand_axe"
+   }
+  ]
+ },
+ {
+  "id": "homo-floresiensis",
+  "name": "Homo floresiensis on Flores",
+  "start": -100000,
+  "end": -50000,
+  "lat": -8.4,
+  "lng": 121.3,
+  "priority": 64,
+  "tags": [
+   "biology"
+  ],
+  "summary": "A dwarf hominin species survived on an Indonesian island, possibly descended from H. erectus.",
+  "body": "The metre-tall *Homo floresiensis* used tools and hunted Komodo dragons. Its small size is thought to result from island dwarfing, a common evolutionary response in isolated populations. It disappeared suddenly, possibly due to volcanic eruptions or competition with modern humans.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_floresiensis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Homo_floresiensis"
+   }
+  ]
+ },
+ {
+  "id": "denisovans",
+  "name": "Denisovan presence in Asia",
+  "start": -300000,
+  "end": -30000,
+  "lat": 50.0,
+  "lng": 85.0,
+  "priority": 60,
+  "tags": [
+   "biology"
+  ],
+  "summary": "A sister species to Neanderthals ranged across Siberia, Central Asia and into the tropics, leaving DNA in modern Oceanians.",
+  "body": "Known mainly from DNA extracted from a finger bone and a tooth in a cave in the Altai Mountains, Denisovans interbred with modern humans. Their descendants in Melanesia and Aboriginal Australia carry 3–5% Denisovan DNA, which may have helped them adapt to tropical environments.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Denisova_hominin).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Denisova_hominin"
+   }
+  ]
+ },
+ {
+  "id": "homo-sapiens-africa",
+  "name": "Homo sapiens African diversification",
+  "start": -200000,
+  "end": -100000,
+  "lat": 7.5,
+  "lng": 17.0,
+  "priority": 70,
+  "tags": [
+   "biology"
+  ],
+  "parent": "homo-sapiens",
+  "summary": "Anatomically modern humans spread and diversified across Africa, exchanging genes and ideas.",
+  "body": "Part of [Origin of Homo sapiens](event:homo-sapiens). Fossil and genetic evidence suggest a pan-African origin rather than a single population. Early modern humans coexisted with and likely interbred with Neanderthals and other archaic groups for thousands of years before dispersing globally.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
+  "links": [
+   {
+    "label": "Origin of Homo sapiens",
+    "event": "homo-sapiens"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Homo_sapiens"
+   }
+  ]
+ },
+ {
+  "id": "megafauna-pleistocene",
+  "name": "Pleistocene megafauna diversity",
+  "start": -50000,
+  "end": -10000,
+  "lat": 55.0,
+  "lng": -40.0,
+  "priority": 64,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Massive ice-age animals — mammoths, giant ground sloths, cave bears — roamed the continents.",
+  "body": "The Pleistocene supported a diversity of animals weighing over 40 kg that rivalled modern African megafauna. Many survived multiple ice-age cycles but went extinct within the last 10,000 years, at times coinciding with human arrival in their regions. Climate change, hunting or a combination of both likely drove their extinctions.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Megafauna).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Megafauna"
+   }
+  ]
+ }
+]

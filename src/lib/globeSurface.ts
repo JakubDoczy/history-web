@@ -126,6 +126,15 @@ void main() {
     albedo = mix(albedo, matched, inside.x * inside.y * f.x * f.y * uDetailMix * det.a);
   }
 
+  // Enhanced grades the albedo itself: a saturation lift plus a smoothstep
+  // S-curve. Graded before lighting so coastlines, vegetation and desert
+  // separate clearly without blowing out the lit side. Applied after the
+  // detail patch so the streamed imagery gets the same treatment.
+  float lumA = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
+  vec3 graded = mix(vec3(lumA), albedo, 1.35);
+  graded = clamp(graded * graded * (3.0 - 2.0 * graded), 0.0, 1.0);
+  albedo = mix(albedo, graded, 0.5 * uBoost);
+
   vec3 surface = albedo * lambert;
 
   vec3 viewDir = normalize(cameraPosition - vWorldPos);

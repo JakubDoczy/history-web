@@ -1,29 +1,24 @@
 import { describe, it, expect } from 'vitest'
-import raw from '../src/data/events.json'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { type HistoricalEvent, EventIndex } from '../src/lib/events'
+import { type EventManifest } from '../src/lib/eventChunks'
+import { TAGS } from '../src/lib/tags'
 import { MIN_TIME, MAX_TIME } from '../src/lib/time'
 import { renderRichText } from '../src/lib/richtext'
 
-const events = raw as HistoricalEvent[]
+// The dataset ships as era chunks under public/data/events (see
+// scripts/build_event_chunks.py). Tests validate the union of all chunks,
+// then the manifest and spine against it.
+const DIR = join(__dirname, '..', 'public', 'data', 'events')
+const readJson = (f: string) => JSON.parse(readFileSync(join(DIR, f), 'utf8'))
+const manifest = readJson('manifest.json') as EventManifest
+const chunkEvents = new Map<string, HistoricalEvent[]>(
+  manifest.chunks.map((c) => [c.file, readJson(c.file) as HistoricalEvent[]]),
+)
+const events = [...chunkEvents.values()].flat()
+const spine = readJson(manifest.spine) as HistoricalEvent[]
 const byId = new Map(events.map((e) => [e.id, e]))
-
-/** The controlled tag vocabulary. Extending it is a deliberate act. */
-const TAGS = [
-  'biology',
-  'climate',
-  'culture',
-  'disaster',
-  'disease',
-  'economy',
-  'exploration',
-  'extinction',
-  'geology',
-  'politics',
-  'religion',
-  'science',
-  'technology',
-  'war',
-] as const
 
 const MIN_PRIORITY = 1
 const MAX_PRIORITY = 100
@@ -323,5 +318,34 @@ describe('events.json — behaviour through the query layer', () => {
     expect(got).toContain('ww2')
     expect(got).toContain('stalingrad')
     expect(got.length).toBeGreaterThan(3)
+  })
+})
+
+describe('event chunks — manifest and spine', () => {
+  it('lists every chunk file in the directory, and nothing else', () => {
+    const files = readdirSync(DIR).filter((f) => f.endsWith('.json'))
+    const listed = new Set([...manifest.chunks.map((c) => c.file), manifest.spine, 'manifest.json'])
+    for (const f of files) expect(listed.has(f), `${f} not in manifest`).toBe(true)
+    expect(files.length).toBe(listed.size)
+  })
+
+  it('reports true coverage and counts per chunk', () => {
+    for (const c of manifest.chunks) {
+      const evs = chunkEvents.get(c.file)!
+      expect(evs.length, c.file).toBe(c.count)
+      expect(Math.min(...evs.map((e) => e.start)), c.file).toBe(c.from)
+      expect(Math.max(...evs.map((e) => e.end ?? e.start)), c.file).toBe(c.to)
+    }
+  })
+
+  it('spine is exactly the high-priority backbone, present in era chunks too', () => {
+    const expected = events.filter((e) => e.priority >= 85)
+    expect(new Set(spine.map((e) => e.id))).toEqual(new Set(expected.map((e) => e.id)))
+    expect(spine.length).toBeGreaterThanOrEqual(30) // the timeline is never empty
+  })
+
+  it('every tag in the vocabulary has a pin colour', async () => {
+    const { TAG_COLORS } = await import('../src/lib/tags')
+    for (const t of TAGS) expect(TAG_COLORS[t], t).toMatch(/^#[0-9a-f]{6}$/)
   })
 })

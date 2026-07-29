@@ -1,0 +1,1179 @@
+[
+ {
+  "id": "mona-lisa",
+  "name": "Leonardo paints the Mona Lisa",
+  "start": 1503,
+  "end": 1506,
+  "lat": 43.77,
+  "lng": 11.26,
+  "priority": 56,
+  "tags": [
+   "culture"
+  ],
+  "parent": "renaissance",
+  "summary": "Leonardo da Vinci's portrait became the most famous painting in the world.",
+  "body": "Part of [The Renaissance](event:renaissance). Leonardo da Vinci's portrait became the most famous painting in the world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mona_Lisa).",
+  "links": [
+   {
+    "label": "The Renaissance",
+    "event": "renaissance"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mona_Lisa"
+   }
+  ]
+ },
+ {
+  "id": "sistine-chapel",
+  "name": "Michelangelo paints the Sistine Chapel",
+  "start": 1508,
+  "end": 1512,
+  "lat": 41.9,
+  "lng": 12.45,
+  "priority": 58,
+  "tags": [
+   "culture",
+   "religion"
+  ],
+  "parent": "renaissance",
+  "summary": "Four years of work on scaffolding produced the ceiling frescoes of the Vatican chapel.",
+  "body": "Part of [The Renaissance](event:renaissance). Four years of work on scaffolding produced the ceiling frescoes of the Vatican chapel.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sistine_Chapel_ceiling).",
+  "links": [
+   {
+    "label": "The Renaissance",
+    "event": "renaissance"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Sistine_Chapel_ceiling"
+   }
+  ]
+ },
+ {
+  "id": "reformation",
+  "name": "Protestant Reformation",
+  "start": 1517,
+  "end": 1648,
+  "lat": 51.87,
+  "lng": 12.65,
+  "priority": 90,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "summary": "Western Christianity split, and with it the political order of Europe.",
+  "body": "Luther's [Ninety-five Theses](event:95-theses) were carried across Germany by the [printing press](event:printing-press) within weeks. Calvin, Zwingli and Henry VIII produced further breaks; the Catholic Church answered with the Council of Trent.\n\nA century of religious war followed, culminating in the [Thirty Years' War](event:thirty-years-war) and the [Peace of Westphalia](event:westphalia), which established the sovereign state as the basic unit of European politics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reformation).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Reformation"
+   }
+  ]
+ },
+ {
+  "id": "95-theses",
+  "name": "Luther's Ninety-five Theses",
+  "start": 1517,
+  "lat": 51.87,
+  "lng": 12.65,
+  "priority": 74,
+  "tags": [
+   "religion"
+  ],
+  "parent": "reformation",
+  "summary": "An Augustinian friar's objections to the sale of indulgences, addressed to his archbishop, became the spark of the Reformation.",
+  "body": "Part of [Protestant Reformation](event:reformation). An Augustinian friar's objections to the sale of indulgences, addressed to his archbishop, became the spark of the Reformation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ninety-five_Theses).",
+  "links": [
+   {
+    "label": "Protestant Reformation",
+    "event": "reformation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ninety-five_Theses"
+   }
+  ]
+ },
+ {
+  "id": "magellan",
+  "name": "First circumnavigation of the globe",
+  "start": 1519,
+  "end": 1522,
+  "lat": -52.5,
+  "lng": -70.0,
+  "priority": 76,
+  "tags": [
+   "exploration"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "Magellan's expedition sailed west around South America and across the Pacific; one ship of five returned under Elcano.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). Magellan himself was killed in the Philippines. The survivors proved the world was navigable in one continuous ocean — and discovered they had lost a day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Magellan_expedition).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Magellan_expedition"
+   }
+  ]
+ },
+ {
+  "id": "spanish-conquest",
+  "name": "Spanish conquest of the Americas",
+  "start": 1519,
+  "end": 1572,
+  "lat": 19.43,
+  "lng": -99.13,
+  "priority": 82,
+  "tags": [
+   "war",
+   "exploration"
+  ],
+  "summary": "Small Spanish forces, allied with rival Indigenous states and aided by epidemics, overthrew the Aztec and Inca empires.",
+  "body": "[Tenochtitlan](event:tenochtitlan) fell in 1521 and [Cusco](event:inca-conquest) in 1533. Silver from Potosí and Zacatecas then financed Habsburg Spain and flowed on to China.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_colonization_of_the_Americas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spanish_colonization_of_the_Americas"
+   }
+  ]
+ },
+ {
+  "id": "americas-epidemics",
+  "name": "Epidemics devastate the Americas",
+  "start": 1520,
+  "end": 1600,
+  "lat": 10.0,
+  "lng": -75.0,
+  "area": [
+   [
+    -105,
+    22
+   ],
+   [
+    -85,
+    10
+   ],
+   [
+    -75,
+    10
+   ],
+   [
+    -60,
+    5
+   ],
+   [
+    -35,
+    -8
+   ],
+   [
+    -48,
+    -25
+   ],
+   [
+    -58,
+    -40
+   ],
+   [
+    -72,
+    -45
+   ],
+   [
+    -72,
+    -20
+   ],
+   [
+    -82,
+    0
+   ],
+   [
+    -95,
+    15
+   ]
+  ],
+  "priority": 84,
+  "tags": [
+   "disease",
+   "disaster"
+  ],
+  "parent": "columbian-exchange",
+  "summary": "Smallpox, measles and typhus killed an estimated 80–95% of the Indigenous population of the Americas.",
+  "body": "Part of [The Columbian Exchange](event:columbian-exchange). Populations with no prior exposure collapsed within decades, often ahead of the Europeans themselves. The depopulation was so vast that regrowing forests may have measurably lowered global CO2 in the early 1600s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Population_history_of_Indigenous_peoples_of_the_Americas).",
+  "links": [
+   {
+    "label": "The Columbian Exchange",
+    "event": "columbian-exchange"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Population_history_of_Indigenous_peoples_of_the_Americas"
+   }
+  ]
+ },
+ {
+  "id": "tenochtitlan",
+  "name": "Fall of Tenochtitlan",
+  "start": 1521,
+  "lat": 19.43,
+  "lng": -99.13,
+  "priority": 72,
+  "tags": [
+   "war"
+  ],
+  "parent": "spanish-conquest",
+  "summary": "After a 93-day siege, Cortés and tens of thousands of Tlaxcalan allies destroyed the Aztec capital.",
+  "body": "Part of [Spanish conquest of the Americas](event:spanish-conquest). After a 93-day siege, Cortés and tens of thousands of Tlaxcalan allies destroyed the Aztec capital.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Tenochtitlan).",
+  "links": [
+   {
+    "label": "Spanish conquest of the Americas",
+    "event": "spanish-conquest"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Fall_of_Tenochtitlan"
+   }
+  ]
+ },
+ {
+  "id": "slave-trade",
+  "name": "Transatlantic slave trade",
+  "start": 1526,
+  "end": 1867,
+  "lat": 5.0,
+  "lng": -25.0,
+  "area": [
+   [
+    -70,
+    -25
+   ],
+   [
+    -80,
+    10
+   ],
+   [
+    -60,
+    20
+   ],
+   [
+    -30,
+    30
+   ],
+   [
+    -10,
+    20
+   ],
+   [
+    5,
+    5
+   ],
+   [
+    12,
+    -10
+   ],
+   [
+    -20,
+    -35
+   ],
+   [
+    -50,
+    -35
+   ]
+  ],
+  "priority": 88,
+  "tags": [
+   "economy",
+   "politics",
+   "disaster"
+  ],
+  "summary": "Some 12.5 million Africans were shipped across the Atlantic in chains; nearly two million died on the voyage.",
+  "body": "The trade supplied labour for sugar, tobacco and cotton plantations in Brazil, the Caribbean and North America, and enriched ports from Lisbon to Liverpool. It depopulated regions of West and Central Africa and built the racial hierarchies of the modern Atlantic world.\n\nBritain abolished the trade in 1807 and slavery itself in 1833; Brazil, the largest importer, abolished slavery only in 1888. See also the [American Civil War](event:us-civil-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_slave_trade).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Atlantic_slave_trade"
+   }
+  ]
+ },
+ {
+  "id": "mughal-empire",
+  "name": "Mughal Empire",
+  "start": 1526,
+  "end": 1857,
+  "lat": 27.17,
+  "lng": 78.04,
+  "priority": 76,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Babur's descendants ruled most of the Indian subcontinent, at their height the richest state in the world.",
+  "body": "Akbar's religious tolerance and administrative reforms, and the architecture of Shah Jahan including the [Taj Mahal](event:taj-mahal), mark the empire's high point; the [British East India Company](event:british-raj) picked over its decline.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mughal_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mughal_Empire"
+   }
+  ]
+ },
+ {
+  "id": "inca-conquest",
+  "name": "Conquest of the Inca Empire",
+  "start": 1532,
+  "end": 1533,
+  "lat": -9.53,
+  "lng": -77.53,
+  "priority": 68,
+  "tags": [
+   "war"
+  ],
+  "parent": "spanish-conquest",
+  "summary": "Pizarro seized the emperor Atahualpa at Cajamarca, took a room full of gold as ransom, and executed him anyway.",
+  "body": "Part of [Spanish conquest of the Americas](event:spanish-conquest). Pizarro seized the emperor Atahualpa at Cajamarca, took a room full of gold as ransom, and executed him anyway.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_conquest_of_the_Inca_Empire).",
+  "links": [
+   {
+    "label": "Spanish conquest of the Americas",
+    "event": "spanish-conquest"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spanish_conquest_of_the_Inca_Empire"
+   }
+  ]
+ },
+ {
+  "id": "scientific-revolution",
+  "name": "The Scientific Revolution",
+  "start": 1543,
+  "end": 1687,
+  "lat": 51.75,
+  "lng": -1.26,
+  "priority": 90,
+  "tags": [
+   "science"
+  ],
+  "summary": "Europeans replaced inherited authority with mathematics and experiment as the test of what is true about nature.",
+  "body": "It runs from [Copernicus](event:copernicus) and Vesalius through [Galileo](event:galileo), Kepler, Bacon and Descartes to [Newton's *Principia*](event:newton) — after which the same laws were known to govern falling apples and orbiting planets.\n\nThe habit of publishing, checking and repeating results is arguably the revolution's most durable product.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scientific_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Scientific_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "copernicus",
+  "name": "Copernicus places the Sun at the centre",
+  "start": 1543,
+  "lat": 54.35,
+  "lng": 18.65,
+  "priority": 84,
+  "tags": [
+   "science"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "*De revolutionibus orbium coelestium* argued that the Earth orbits the Sun, published as its author lay dying.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Displacing the Earth from the centre of the cosmos was the first of the great demotions of humanity's cosmic status.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nicolaus_Copernicus).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Nicolaus_Copernicus"
+   }
+  ]
+ },
+ {
+  "id": "trent",
+  "name": "Council of Trent",
+  "start": 1545,
+  "end": 1563,
+  "lat": 46.07,
+  "lng": 11.12,
+  "priority": 54,
+  "tags": [
+   "religion"
+  ],
+  "parent": "reformation",
+  "summary": "The Catholic Church defined its doctrine against Protestantism and reformed clerical discipline.",
+  "body": "Part of [Protestant Reformation](event:reformation). The Catholic Church defined its doctrine against Protestantism and reformed clerical discipline.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Council_of_Trent).",
+  "links": [
+   {
+    "label": "Protestant Reformation",
+    "event": "reformation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Council_of_Trent"
+   }
+  ]
+ },
+ {
+  "id": "lepanto",
+  "name": "Battle of Lepanto",
+  "start": 1571,
+  "lat": 38.25,
+  "lng": 21.3,
+  "priority": 52,
+  "tags": [
+   "war"
+  ],
+  "parent": "ottoman-empire",
+  "summary": "A Holy League fleet destroyed the Ottoman navy in the last great battle fought mainly by oared galleys.",
+  "body": "Part of [Ottoman Empire](event:ottoman-empire). A Holy League fleet destroyed the Ottoman navy in the last great battle fought mainly by oared galleys.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Lepanto).",
+  "links": [
+   {
+    "label": "Ottoman Empire",
+    "event": "ottoman-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Lepanto"
+   }
+  ]
+ },
+ {
+  "id": "spanish-armada",
+  "name": "Defeat of the Spanish Armada",
+  "start": 1588,
+  "lat": 50.5,
+  "lng": -1.5,
+  "priority": 58,
+  "tags": [
+   "war"
+  ],
+  "parent": "reformation",
+  "summary": "Philip II's invasion fleet was scattered by English fireships and Atlantic storms.",
+  "body": "Part of [Protestant Reformation](event:reformation). Philip II's invasion fleet was scattered by English fireships and Atlantic storms.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_Armada).",
+  "links": [
+   {
+    "label": "Protestant Reformation",
+    "event": "reformation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spanish_Armada"
+   }
+  ]
+ },
+ {
+  "id": "shakespeare",
+  "name": "Shakespeare's plays",
+  "start": 1589,
+  "end": 1613,
+  "lat": 51.51,
+  "lng": -0.1,
+  "priority": 70,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Thirty-seven plays written for a London commercial theatre became the central works of English literature.",
+  "body": "Thirty-seven plays written for a London commercial theatre became the central works of English literature.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Shakespeare).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/William_Shakespeare"
+   }
+  ]
+ },
+ {
+  "id": "edo-japan",
+  "name": "Tokugawa Japan and sakoku",
+  "start": 1603,
+  "end": 1868,
+  "lat": 35.68,
+  "lng": 139.69,
+  "priority": 66,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The Tokugawa shogunate imposed two and a half centuries of internal peace and near-total isolation from the outside world.",
+  "body": "Foreign trade was restricted to a single Dutch outpost at Nagasaki until American gunboats forced the country open, precipitating the [Meiji Restoration](event:meiji).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Edo_period).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Edo_period"
+   }
+  ]
+ },
+ {
+  "id": "kepler",
+  "name": "Kepler's laws of planetary motion",
+  "start": 1609,
+  "end": 1619,
+  "lat": 50.09,
+  "lng": 14.42,
+  "priority": 62,
+  "tags": [
+   "science"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "Planets move in ellipses, sweeping equal areas in equal times — the first mathematically exact astronomy.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Planets move in ellipses, sweeping equal areas in equal times — the first mathematically exact astronomy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kepler%27s_laws_of_planetary_motion).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Kepler%27s_laws_of_planetary_motion"
+   }
+  ]
+ },
+ {
+  "id": "galileo",
+  "name": "Galileo turns a telescope on the sky",
+  "start": 1610,
+  "lat": 45.41,
+  "lng": 11.88,
+  "priority": 74,
+  "tags": [
+   "science"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "Moons around Jupiter, phases of Venus and mountains on the Moon: the heavens were neither perfect nor Earth-centred.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). His advocacy of [Copernicus](event:copernicus) brought him before the Inquisition in 1633 and house arrest for the rest of his life.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Galileo_Galilei).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Galileo_Galilei"
+   }
+  ]
+ },
+ {
+  "id": "thirty-years-war",
+  "name": "Thirty Years' War",
+  "start": 1618,
+  "end": 1648,
+  "lat": 50.08,
+  "lng": 14.44,
+  "area": [
+   [
+    -2,
+    44
+   ],
+   [
+    2,
+    51
+   ],
+   [
+    8,
+    54
+   ],
+   [
+    16,
+    54
+   ],
+   [
+    22,
+    50
+   ],
+   [
+    26,
+    45
+   ],
+   [
+    18,
+    41
+   ],
+   [
+    10,
+    41
+   ],
+   [
+    2,
+    42
+   ]
+  ],
+  "priority": 78,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "parent": "reformation",
+  "summary": "A religious quarrel in Bohemia became a general European war that killed perhaps a third of the German population.",
+  "body": "Part of [Protestant Reformation](event:reformation). A religious quarrel in Bohemia became a general European war that killed perhaps a third of the German population.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Thirty_Years%27_War).",
+  "links": [
+   {
+    "label": "Protestant Reformation",
+    "event": "reformation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Thirty_Years%27_War"
+   }
+  ]
+ },
+ {
+  "id": "taj-mahal",
+  "name": "Taj Mahal built",
+  "start": 1632,
+  "end": 1653,
+  "lat": 27.17,
+  "lng": 78.04,
+  "priority": 60,
+  "tags": [
+   "culture"
+  ],
+  "parent": "mughal-empire",
+  "summary": "Shah Jahan built a white marble mausoleum for his wife Mumtaz Mahal on the Yamuna.",
+  "body": "Part of [Mughal Empire](event:mughal-empire). Shah Jahan built a white marble mausoleum for his wife Mumtaz Mahal on the Yamuna.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Taj_Mahal).",
+  "links": [
+   {
+    "label": "Mughal Empire",
+    "event": "mughal-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Taj_Mahal"
+   }
+  ]
+ },
+ {
+  "id": "english-civil-war",
+  "name": "English Civil War",
+  "start": 1642,
+  "end": 1651,
+  "lat": 52.28,
+  "lng": -1.25,
+  "priority": 66,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Parliament defeated and then executed Charles I, the first European monarch tried and beheaded by his own subjects.",
+  "body": "Parliament defeated and then executed Charles I, the first European monarch tried and beheaded by his own subjects.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/English_Civil_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/English_Civil_War"
+   }
+  ]
+ },
+ {
+  "id": "qing-dynasty",
+  "name": "Qing dynasty",
+  "start": 1644,
+  "end": 1912,
+  "lat": 39.92,
+  "lng": 116.39,
+  "priority": 74,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Manchu rulers conquered Ming China and expanded it to its greatest territorial extent, before collapsing under internal revolt and foreign pressure.",
+  "body": "The [Taiping Rebellion](event:taiping) and the [Opium Wars](event:opium-wars) hollowed out the dynasty; it fell in 1912.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Qing_dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Qing_dynasty"
+   }
+  ]
+ },
+ {
+  "id": "westphalia",
+  "name": "Peace of Westphalia",
+  "start": 1648,
+  "lat": 51.96,
+  "lng": 7.63,
+  "priority": 66,
+  "tags": [
+   "politics"
+  ],
+  "parent": "thirty-years-war",
+  "summary": "The treaties ended the war and are conventionally taken to establish the modern system of sovereign states.",
+  "body": "Part of [Thirty Years' War](event:thirty-years-war). The treaties ended the war and are conventionally taken to establish the modern system of sovereign states.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Peace_of_Westphalia).",
+  "links": [
+   {
+    "label": "Thirty Years' War",
+    "event": "thirty-years-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Peace_of_Westphalia"
+   }
+  ]
+ },
+ {
+  "id": "vienna-1683",
+  "name": "Ottoman siege of Vienna",
+  "start": 1683,
+  "lat": 48.21,
+  "lng": 16.37,
+  "priority": 60,
+  "tags": [
+   "war"
+  ],
+  "parent": "ottoman-empire",
+  "summary": "A Polish-led relief army broke the siege, marking the high-water mark of Ottoman expansion in Europe.",
+  "body": "Part of [Ottoman Empire](event:ottoman-empire). A Polish-led relief army broke the siege, marking the high-water mark of Ottoman expansion in Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Vienna).",
+  "links": [
+   {
+    "label": "Ottoman Empire",
+    "event": "ottoman-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Vienna"
+   }
+  ]
+ },
+ {
+  "id": "enlightenment",
+  "name": "The Enlightenment",
+  "start": 1685,
+  "end": 1800,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 86,
+  "tags": [
+   "culture",
+   "science",
+   "politics"
+  ],
+  "summary": "European thinkers argued that reason, evidence and individual rights, not tradition or revelation, should organise society.",
+  "body": "Locke, Voltaire, Hume, Rousseau, Kant, Smith and Diderot were read across a continent-wide republic of letters. Their arguments underwrote the [American](event:american-revolution) and [French](event:french-revolution) revolutions, the abolition of the [slave trade](event:slave-trade), and the idea of progress itself.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Enlightenment).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Age_of_Enlightenment"
+   }
+  ]
+ },
+ {
+  "id": "newton",
+  "name": "Newton's Principia",
+  "start": 1687,
+  "lat": 52.21,
+  "lng": 0.12,
+  "priority": 88,
+  "tags": [
+   "science"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "Three laws of motion and universal gravitation explained falling bodies, tides, comets and planetary orbits with one system.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Newton also invented calculus to do it. The *Principia* is arguably the most influential scientific book ever written, and it made physics the model to which every other science aspired for two hundred years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica"
+   }
+  ]
+ },
+ {
+  "id": "glorious-revolution",
+  "name": "Glorious Revolution",
+  "start": 1688,
+  "lat": 51.51,
+  "lng": -0.13,
+  "priority": 66,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Parliament invited William of Orange to replace James II, and attached a Bill of Rights to the crown.",
+  "body": "Constitutional monarchy, parliamentary supremacy and the Bank of England follow from this settlement.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Glorious_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Glorious_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "lisbon-earthquake",
+  "name": "Lisbon earthquake",
+  "start": 1755,
+  "lat": 38.72,
+  "lng": -9.14,
+  "priority": 62,
+  "tags": [
+   "disaster"
+  ],
+  "summary": "An earthquake, tsunami and fire destroyed one of Europe's great capitals on All Saints' Day.",
+  "body": "Tens of thousands died. The disaster shook Enlightenment optimism — Voltaire's *Candide* is a direct response — and prompted the first systematic scientific survey of an earthquake.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1755_Lisbon_earthquake).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/1755_Lisbon_earthquake"
+   }
+  ]
+ },
+ {
+  "id": "seven-years-war",
+  "name": "Seven Years' War",
+  "start": 1756,
+  "end": 1763,
+  "lat": 50.0,
+  "lng": 14.0,
+  "priority": 70,
+  "tags": [
+   "war"
+  ],
+  "summary": "A war fought in Europe, North America, the Caribbean, West Africa, India and the Philippines — arguably the first global conflict.",
+  "body": "Britain took Canada and effective control of Bengal; the debts it ran up led it to tax the American colonies, with consequences it did not expect.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Seven_Years%27_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Seven_Years%27_War"
+   }
+  ]
+ },
+ {
+  "id": "industrial-revolution",
+  "name": "Industrial Revolution",
+  "start": 1760,
+  "end": 1840,
+  "lat": 53.48,
+  "lng": -2.24,
+  "priority": 96,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "summary": "Machines powered by coal replaced muscle, and for the first time in history sustained economic growth outran population growth.",
+  "body": "It began with textiles and [steam](event:watt-engine) in Britain, spread to iron, chemicals and [railways](event:railways), and within a century had remade work, cities, class and warfare.\n\nHuman living standards, life expectancy and energy use all bend sharply upward from this point — as does atmospheric CO2, the beginning of [modern climate change](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Industrial_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Industrial_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "spinning-jenny",
+  "name": "Mechanised spinning",
+  "start": 1764,
+  "lat": 53.58,
+  "lng": -2.43,
+  "priority": 56,
+  "tags": [
+   "technology"
+  ],
+  "parent": "industrial-revolution",
+  "summary": "Hargreaves' spinning jenny and Arkwright's water frame multiplied the output of a single worker many times over.",
+  "body": "Part of [Industrial Revolution](event:industrial-revolution). Hargreaves' spinning jenny and Arkwright's water frame multiplied the output of a single worker many times over.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spinning_jenny).",
+  "links": [
+   {
+    "label": "Industrial Revolution",
+    "event": "industrial-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spinning_jenny"
+   }
+  ]
+ },
+ {
+  "id": "american-revolution",
+  "name": "American Revolution",
+  "start": 1775,
+  "end": 1783,
+  "lat": 39.95,
+  "lng": -75.16,
+  "priority": 86,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Thirteen British colonies declared themselves independent and, with French help, made it stick.",
+  "body": "The [Declaration of Independence](event:declaration-independence) asserted that governments derive their just powers from the consent of the governed; victory at [Yorktown](event:yorktown) secured it, and the [Constitution](event:us-constitution) of 1787 turned it into a working federal republic.\n\nThe example — and the debts France ran up supporting it — helped bring on the [French Revolution](event:french-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/American_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/American_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "wealth-of-nations",
+  "name": "Adam Smith, The Wealth of Nations",
+  "start": 1776,
+  "lat": 55.95,
+  "lng": -3.19,
+  "priority": 64,
+  "tags": [
+   "economy",
+   "culture"
+  ],
+  "parent": "enlightenment",
+  "summary": "The founding text of economics argued that specialisation and free exchange, not hoarded bullion, create national wealth.",
+  "body": "Part of [The Enlightenment](event:enlightenment). The founding text of economics argued that specialisation and free exchange, not hoarded bullion, create national wealth.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Wealth_of_Nations).",
+  "links": [
+   {
+    "label": "The Enlightenment",
+    "event": "enlightenment"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/The_Wealth_of_Nations"
+   }
+  ]
+ },
+ {
+  "id": "watt-engine",
+  "name": "Watt's steam engine",
+  "start": 1776,
+  "lat": 52.48,
+  "lng": -1.9,
+  "priority": 76,
+  "tags": [
+   "technology"
+  ],
+  "parent": "industrial-revolution",
+  "summary": "A separate condenser made the steam engine efficient enough to power factories anywhere, not just to pump out mines.",
+  "body": "Part of [Industrial Revolution](event:industrial-revolution). A separate condenser made the steam engine efficient enough to power factories anywhere, not just to pump out mines.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Watt_steam_engine).",
+  "links": [
+   {
+    "label": "Industrial Revolution",
+    "event": "industrial-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Watt_steam_engine"
+   }
+  ]
+ },
+ {
+  "id": "declaration-independence",
+  "name": "Declaration of Independence",
+  "start": 1776,
+  "lat": 39.95,
+  "lng": -75.15,
+  "priority": 80,
+  "tags": [
+   "politics"
+  ],
+  "parent": "american-revolution",
+  "summary": "The Continental Congress adopted Jefferson's declaration that all men are created equal and endowed with unalienable rights.",
+  "body": "Part of [American Revolution](event:american-revolution). The Continental Congress adopted Jefferson's declaration that all men are created equal and endowed with unalienable rights.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/United_States_Declaration_of_Independence).",
+  "links": [
+   {
+    "label": "American Revolution",
+    "event": "american-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/United_States_Declaration_of_Independence"
+   }
+  ]
+ },
+ {
+  "id": "yorktown",
+  "name": "Siege of Yorktown",
+  "start": 1781,
+  "lat": 37.24,
+  "lng": -76.51,
+  "priority": 56,
+  "tags": [
+   "war"
+  ],
+  "parent": "american-revolution",
+  "summary": "A Franco-American army and a French fleet trapped Cornwallis, effectively ending the war.",
+  "body": "Part of [American Revolution](event:american-revolution). A Franco-American army and a French fleet trapped Cornwallis, effectively ending the war.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Yorktown).",
+  "links": [
+   {
+    "label": "American Revolution",
+    "event": "american-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Siege_of_Yorktown"
+   }
+  ]
+ },
+ {
+  "id": "us-constitution",
+  "name": "United States Constitution",
+  "start": 1787,
+  "lat": 39.95,
+  "lng": -75.15,
+  "priority": 74,
+  "tags": [
+   "politics"
+  ],
+  "parent": "american-revolution",
+  "summary": "A written constitution with separated powers, federalism and (from 1791) a Bill of Rights.",
+  "body": "Part of [American Revolution](event:american-revolution). It is the oldest national constitution still in force, and the model for most written constitutions since.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Constitution_of_the_United_States).",
+  "links": [
+   {
+    "label": "American Revolution",
+    "event": "american-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Constitution_of_the_United_States"
+   }
+  ]
+ },
+ {
+  "id": "french-revolution",
+  "name": "French Revolution",
+  "start": 1789,
+  "end": 1799,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 95,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The old European order of monarchy, aristocracy and established church was overthrown in its most powerful state.",
+  "body": "From the storming of the [Bastille](event:bastille) and the [Declaration of the Rights of Man](event:rights-of-man) through the [Terror](event:terror) to [Napoleon's coup](event:napoleon-coup), the revolution ran through every political possibility in ten years.\n\nIt exported the vocabulary of modern politics — left and right, nation, citizen, ideology — and its wars remade Europe as the [Napoleonic Wars](event:napoleonic-wars).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/French_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/French_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "bastille",
+  "name": "Storming of the Bastille",
+  "start": 1789,
+  "lat": 48.85,
+  "lng": 2.37,
+  "priority": 76,
+  "tags": [
+   "politics"
+  ],
+  "parent": "french-revolution",
+  "summary": "A Paris crowd took the royal fortress-prison on 14 July, still France's national day.",
+  "body": "Part of [French Revolution](event:french-revolution). A Paris crowd took the royal fortress-prison on 14 July, still France's national day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Storming_of_the_Bastille).",
+  "links": [
+   {
+    "label": "French Revolution",
+    "event": "french-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Storming_of_the_Bastille"
+   }
+  ]
+ },
+ {
+  "id": "rights-of-man",
+  "name": "Declaration of the Rights of Man",
+  "start": 1789,
+  "lat": 48.86,
+  "lng": 2.32,
+  "priority": 64,
+  "tags": [
+   "politics"
+  ],
+  "parent": "french-revolution",
+  "summary": "Liberty, property, security and resistance to oppression declared the natural rights of every man.",
+  "body": "Part of [French Revolution](event:french-revolution). Liberty, property, security and resistance to oppression declared the natural rights of every man.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Declaration_of_the_Rights_of_Man_and_of_the_Citizen).",
+  "links": [
+   {
+    "label": "French Revolution",
+    "event": "french-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Declaration_of_the_Rights_of_Man_and_of_the_Citizen"
+   }
+  ]
+ },
+ {
+  "id": "haitian-revolution",
+  "name": "Haitian Revolution",
+  "start": 1791,
+  "end": 1804,
+  "lat": 18.54,
+  "lng": -72.34,
+  "priority": 72,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Enslaved people in France's richest colony overthrew their masters and founded the first Black republic.",
+  "body": "Toussaint Louverture's army defeated French, Spanish and British forces. It is the only successful large-scale slave revolt in modern history, and it terrified slaveholding societies everywhere — see the [Atlantic slave trade](event:slave-trade).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Haitian_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Haitian_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "terror",
+  "name": "The Reign of Terror",
+  "start": 1793,
+  "end": 1794,
+  "lat": 48.86,
+  "lng": 2.34,
+  "priority": 66,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "parent": "french-revolution",
+  "summary": "The Committee of Public Safety executed some 17,000 people, including the king, the queen and finally Robespierre.",
+  "body": "Part of [French Revolution](event:french-revolution). The Committee of Public Safety executed some 17,000 people, including the king, the queen and finally Robespierre.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reign_of_Terror).",
+  "links": [
+   {
+    "label": "French Revolution",
+    "event": "french-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Reign_of_Terror"
+   }
+  ]
+ },
+ {
+  "id": "smallpox-vaccine",
+  "name": "Jenner's smallpox vaccine",
+  "start": 1796,
+  "lat": 51.72,
+  "lng": -2.37,
+  "priority": 76,
+  "tags": [
+   "science"
+  ],
+  "summary": "Edward Jenner showed that cowpox inoculation protects against smallpox, founding vaccination.",
+  "body": "The technique eventually [eradicated smallpox](event:smallpox-eradication) — the only human disease ever deliberately wiped out.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Smallpox_vaccine).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Smallpox_vaccine"
+   }
+  ]
+ },
+ {
+  "id": "napoleon-coup",
+  "name": "Napoleon seizes power",
+  "start": 1799,
+  "lat": 48.86,
+  "lng": 2.32,
+  "priority": 58,
+  "tags": [
+   "politics"
+  ],
+  "parent": "french-revolution",
+  "summary": "The coup of 18 Brumaire ended the Directory and made Bonaparte First Consul; he crowned himself emperor in 1804.",
+  "body": "Part of [French Revolution](event:french-revolution). The coup of 18 Brumaire ended the Directory and made Bonaparte First Consul; he crowned himself emperor in 1804.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Coup_of_18_Brumaire).",
+  "links": [
+   {
+    "label": "French Revolution",
+    "event": "french-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Coup_of_18_Brumaire"
+   }
+  ]
+ }
+]
