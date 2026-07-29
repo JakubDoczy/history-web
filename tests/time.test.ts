@@ -51,10 +51,21 @@ describe('time store', () => {
 
   it('warp roundtrips and is monotonic', () => {
     for (const t of [MIN_TIME, -250e6, -10_000, 0, 1500, MAX_TIME]) {
-      expect(fromWarp(toWarp(t)) / (t || 1)).toBeCloseTo(t ? 1 : 0, 4)
+      expect(Math.abs(fromWarp(toWarp(t)) - t)).toBeLessThan(Math.max(1e-5 * Math.abs(t), 1e-5))
     }
     expect(toWarp(-1e9)).toBeLessThan(toWarp(-1e6))
     expect(toWarp(-1e6)).toBeLessThan(toWarp(2000))
+  })
+
+  it('is effectively linear for narrow recent windows', () => {
+    // deviation of the midpoint from the linear midpoint, as fraction of span
+    const midDeviation = (a: number, b: number) => {
+      const mid = fromWarp((toWarp(a) + toWarp(b)) / 2)
+      return Math.abs(mid - (a + b) / 2) / (b - a)
+    }
+    expect(midDeviation(2016, 2026)).toBeLessThan(0.005) // 10 years: linear (dev ≈ days)
+    expect(midDeviation(1926, 2026)).toBeLessThan(0.05) // 100 years: pretty linear
+    expect(midDeviation(-4e9, 2026)).toBeGreaterThan(0.3) // full range: strongly log
   })
 
   it('zoom out is clamped to global bounds', () => {

@@ -28,7 +28,7 @@ export const useTimeStore = defineStore('time', {
       const we = toWarp(this.range.end)
       const d0 = (we - ws) * fraction
       const d = Math.max(toWarp(MIN_TIME) - ws, Math.min(toWarp(MAX_TIME) - we, d0))
-      this.range = { start: fromWarp(ws + d), end: fromWarp(we + d) }
+      this.range = { start: clamp(fromWarp(ws + d)), end: clamp(fromWarp(we + d)) }
     },
   },
 })

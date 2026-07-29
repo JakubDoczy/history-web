@@ -18,9 +18,13 @@ export function formatYear(t: Year): string {
 const trim = (n: number) => `${+n.toPrecision(3)}`
 
 /**
- * Logarithmic display warp: u = -ln(years before ~present). Deep time compresses,
- * recent history expands — 250 Ma of drift no longer hides in 5% of a 4.5 Ga bar.
+ * Display warp: asinh centered on the present. Near the center asinh(x) ≈ x
+ * (linear), far away ≈ sign·ln(2|x|) (logarithmic), transitioning smoothly —
+ * so a decade-wide window is effectively linear, ~100 years is nearly linear,
+ * and deep time compresses logarithmically. No singularity anywhere.
  */
-const EPOCH = MAX_TIME + 10
-export const toWarp = (t: Year): number => -Math.log(EPOCH - clamp(t, MIN_TIME, MAX_TIME))
-export const fromWarp = (u: number): Year => EPOCH - Math.exp(-u)
+const PRESENT = 2026
+const LINEAR_YEARS = 60 // half-width of the essentially-linear zone
+export const toWarp = (t: Year): number =>
+  Math.asinh((clamp(t, MIN_TIME, MAX_TIME) - PRESENT) / LINEAR_YEARS)
+export const fromWarp = (u: number): Year => PRESENT + Math.sinh(u) * LINEAR_YEARS
