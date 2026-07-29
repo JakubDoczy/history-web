@@ -107,7 +107,7 @@ onMounted(() => {
   const radius = globe.getGlobeRadius()
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
-  detail = new DetailTiles({ grid: window.innerWidth < 820 ? 2 : 3 })
+  detail = new DetailTiles({ grid: 3 })
   // the patch only reaches the shader if the loader tells us it arrived
   detail.onReady = () => {
     view.detailStatus = detail!.status

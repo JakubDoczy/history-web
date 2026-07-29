@@ -70,6 +70,20 @@ describe('tileRange', () => {
     }
   })
 
+  it('keeps the viewed point near the middle of the block, for odd and even grids', () => {
+    for (const grid of [2, 3, 4]) {
+      for (const [lat, lng] of [[60, 10], [-33, 151], [0, 0], [45, -100]] as const) {
+        const r = tileRange(lat, lng, 5, grid)
+        const [u0, v0, du, dv] = rangeToUvRect(r)
+        const offU = Math.abs((lng + 180) / 360 - (u0 + du / 2)) / du
+        const offV = Math.abs((lat + 90) / 180 - (v0 + dv / 2)) / dv
+        // within a third of the patch of centre — never out at the edge
+        expect(offU).toBeLessThan(0.34)
+        expect(offV).toBeLessThan(0.34)
+      }
+    }
+  })
+
   it('never asks for more tiles than the level contains', () => {
     const r = tileRange(0, 0, 0, 3) // level 0 is only 2×1 tiles
     expect(r.cols).toBe(2)

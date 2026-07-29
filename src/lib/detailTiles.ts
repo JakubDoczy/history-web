@@ -71,15 +71,18 @@ export function tileRange(lat: number, lng: number, level: number, grid: number)
   const maxRow = 2 ** level - 1
   const cols = Math.min(grid, maxCol + 1)
   const rows = Math.min(grid, maxRow + 1)
-  const centreCol = Math.floor((lng + 180) / deg)
-  const centreRow = Math.floor((90 - lat) / deg)
+  // Centre on the *fractional* tile position. Taking the containing tile and
+  // stepping back floor((n-1)/2) leaves even-sized blocks half a block off to
+  // one side, which puts the region you are looking at on the patch's edge.
+  const exactCol = (lng + 180) / deg
+  const exactRow = (90 - lat) / deg
   const clamp = (v: number, hi: number) => Math.max(0, Math.min(hi, v))
   return {
     level,
     cols,
     rows,
-    col0: clamp(centreCol - Math.floor((cols - 1) / 2), maxCol - cols + 1),
-    row0: clamp(centreRow - Math.floor((rows - 1) / 2), maxRow - rows + 1),
+    col0: clamp(Math.round(exactCol - cols / 2), maxCol - cols + 1),
+    row0: clamp(Math.round(exactRow - rows / 2), maxRow - rows + 1),
   }
 }
 

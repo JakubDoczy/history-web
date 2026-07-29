@@ -81,12 +81,11 @@ li:hover { background: rgba(227, 167, 88, 0.12); }
 .empty { margin: 8px 10px 4px; font-size: 12.5px; color: var(--muted); }
 @media (max-width: 640px) {
   .wrap {
-    top: auto;
-    bottom: calc(var(--rail) + 12px);
+    top: 64px;
     left: 12px;
     right: 12px;
     width: auto;
-    max-height: 58dvh;
+    max-height: 60dvh;
     overflow-y: auto;
   }
 }

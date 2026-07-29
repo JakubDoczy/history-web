@@ -168,14 +168,15 @@ section { display: grid; gap: 8px; }
 .row input { accent-color: var(--brass); }
 .slider { width: 100%; accent-color: var(--brass); }
 @media (max-width: 640px) {
-  /* anchored to the bottom, where the browser chrome cannot swallow it */
+  /* centred vertically: cannot be swallowed by browser chrome at either edge */
   .panel {
-    top: auto;
-    bottom: calc(var(--rail) + 12px);
+    top: 50%;
+    bottom: auto;
     left: 12px;
     right: 12px;
     width: auto;
-    max-height: 58dvh;
+    transform: translateY(-50%);
+    max-height: 72dvh;
   }
 }
 </style>
