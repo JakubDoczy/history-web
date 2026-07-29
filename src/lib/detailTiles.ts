@@ -108,8 +108,12 @@ export class DetailTiles {
   rect: [number, number, number, number] = [0, 0, 1, 1]
   mix = 0
 
+  /** Live canvas backing the texture. */
   private canvas: HTMLCanvasElement
+  /** Staging canvas; tiles land here and are swapped in only once complete. */
+  private back: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
+  private backCtx: CanvasRenderingContext2D
   private current?: TileRange
   private pending = 0
   private layer: string
@@ -118,6 +122,8 @@ export class DetailTiles {
   private grid: number
   /** Set once the service proves unreachable, so we stop retrying. */
   private disabled = false
+  private strikes = 0
+  private everWorked = false
   private timer?: ReturnType<typeof setTimeout>
   /** Reported in settings so a failure is visible rather than silently blurry. */
   status: 'idle' | 'loading' | 'ready' | 'unavailable' = 'idle'
@@ -133,6 +139,8 @@ export class DetailTiles {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = this.grid * TILE_PX
     this.ctx = this.canvas.getContext('2d')!
+    this.back = document.createElement('canvas')
+    this.backCtx = this.back.getContext('2d')!
     this.texture = new CanvasTexture(this.canvas)
     this.texture.colorSpace = SRGBColorSpace
     this.texture.minFilter = this.texture.magFilter = LinearFilter
@@ -170,15 +178,17 @@ export class DetailTiles {
       }
     }, 12000)
 
-    this.canvas.width = range.cols * TILE_PX
-    this.canvas.height = range.rows * TILE_PX
+    // sizing a canvas clears it, so stage off-screen: the visible patch keeps
+    // showing the previous area until the new one is fully drawn
+    this.back.width = range.cols * TILE_PX
+    this.back.height = range.rows * TILE_PX
 
     for (let r = 0; r < range.rows; r++) {
       for (let c = 0; c < range.cols; c++) {
         const img = new Image()
         img.crossOrigin = 'anonymous'
         img.onload = () => {
-          this.ctx.drawImage(img, c * TILE_PX, r * TILE_PX, TILE_PX, TILE_PX)
+          this.backCtx.drawImage(img, c * TILE_PX, r * TILE_PX, TILE_PX, TILE_PX)
           this.done(range, failed)
         }
         img.onerror = () => {
@@ -194,18 +204,29 @@ export class DetailTiles {
   private done(range: TileRange, failed: number) {
     if (--this.pending > 0) return
     clearTimeout(this.timer)
+
     if (failed === range.cols * range.rows) {
-      // a whole batch failing means the service is unreachable; stop asking and
-      // let the base texture stand rather than hammering it
-      this.mix = 0
-      this.status = 'unavailable'
-      this.disabled = true
+      // Give up only after repeated total failures, and only if a patch has
+      // never worked — a single bad batch may just be one unlucky zoom level.
+      this.strikes++
+      if (!this.everWorked && this.strikes >= 2) {
+        this.disabled = true
+        this.status = 'unavailable'
+      }
       this.onReady?.()
       return
     }
+
+    // swap the staged patch in as one atomic step
+    this.canvas.width = this.back.width
+    this.canvas.height = this.back.height
+    this.ctx.drawImage(this.back, 0, 0)
+
     this.rect = rangeToUvRect(range)
     this.texture.needsUpdate = true
     this.mix = 1
+    this.strikes = 0
+    this.everWorked = true
     this.status = 'ready'
     this.onReady?.() // the renderer only learns the patch exists if we say so
   }

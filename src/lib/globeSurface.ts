@@ -92,7 +92,10 @@ void main() {
     vec2 d = (vUv - uDetailRect.xy) / uDetailRect.zw;
     if (d.x > 0.0 && d.x < 1.0 && d.y > 0.0 && d.y < 1.0) {
       vec2 f = smoothstep(vec2(0.0), vec2(0.07), d) * (1.0 - smoothstep(vec2(0.93), vec2(1.0), d));
-      albedo = mix(albedo, texture(uDetail, d).rgb, f.x * f.y * uDetailMix);
+      // the patch carries its own alpha: any tile that failed to load stays
+      // transparent, so the base map shows through instead of a black hole
+      vec4 det = texture(uDetail, d);
+      albedo = mix(albedo, det.rgb, f.x * f.y * uDetailMix * det.a);
     }
   }
 
