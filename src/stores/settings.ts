@@ -9,9 +9,13 @@ export type ToggleKey =
   | 'autoRotate'
   | 'relief'
 
+export type VisualStyle = 'enhanced' | 'realistic'
+
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
     sunHour: 12, // UTC hour driving the day/night terminator
+    /** 'enhanced' brightens the day side and lifts the night side; 'realistic' keeps physical lighting. */
+    visuals: 'enhanced' as VisualStyle,
     clouds: true,
     cloudShadows: true,
     atmosphere: true,
@@ -23,6 +27,9 @@ export const useSettingsStore = defineStore('settings', {
   actions: {
     toggle(key: ToggleKey) {
       this[key] = !this[key]
+    },
+    setVisuals(style: VisualStyle) {
+      this.visuals = style
     },
   },
 })

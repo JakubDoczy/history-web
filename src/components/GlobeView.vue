@@ -16,7 +16,7 @@ import { cloudFadeFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
-import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE, HIRES_MODERN } from '../data/paleoTextures'
+import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE, RELIEF_TEXTURE, SKY_TEXTURE } from '../data/paleoTextures'
 
 const events = useEventStore()
 const nations = useNationStore()
@@ -49,7 +49,7 @@ onMounted(() => {
   const base = import.meta.env.BASE_URL
 
   globe = new Globe(dom)
-    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+    .backgroundImageUrl(SKY_TEXTURE)
     .width(dom.clientWidth)
     .height(dom.clientHeight)
     // events layer
@@ -65,13 +65,15 @@ onMounted(() => {
     }))
     .polygonCapColor((d) => {
       const p = asPoly(d)
-      if (p.kind === 'area') return events.selectedId === p.event.id ? '#ffff0060' : '#ff880040'
+      // unselected areas are outline-only: several large regions are often in
+      // view at once, and stacked fills used to smother the whole planet
+      if (p.kind === 'area') return events.selectedId === p.event.id ? '#ffff0060' : 'rgba(0,0,0,0)'
       return p.kind === 'full' ? p.nation.color + '50' : 'rgba(0,0,0,0)'
     })
     .polygonSideColor(() => 'rgba(0,0,0,0)')
     .polygonStrokeColor((d) => {
       const p = asPoly(d)
-      if (p.kind === 'area') return events.selectedId === p.event.id ? '#ff0' : '#f80'
+      if (p.kind === 'area') return events.selectedId === p.event.id ? '#ff0' : '#f8803388'
       return p.kind === 'full' ? p.nation.color : p.kind === 'max' ? p.nation.color + 'aa' : '#ffffffaa'
     })
     .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.012 : asPoly(d).kind === 'full' ? 0.008 : 0.005))
@@ -91,13 +93,15 @@ onMounted(() => {
     {
       day: MODERN_TEXTURE,
       night: NIGHT_TEXTURE,
-      relief: '//unpkg.com/three-globe/example/img/earth-topology.png',
+      relief: RELIEF_TEXTURE,
       clouds: `${base}textures/clouds.jpg`,
     },
     globe.renderer(),
   )
   globe.globeMaterial(surface.material)
-  surface.upgrade(MODERN_TEXTURE, HIRES_MODERN) // sharper basemap if NASA is reachable
+  // No whole-globe network upgrade: the bundled basemap is already 4096×2048,
+  // the same layer and size GIBS would return. Sharper close-up detail comes
+  // from the streamed Sentinel-2 patch instead.
 
   globe.controls().autoRotateSpeed = 0.5
 
@@ -109,6 +113,9 @@ onMounted(() => {
   detail = new DetailImagery()
   // the patch only reaches the shader if the loader tells us it arrived
   detail.onReady = () => {
+    // a load can resolve after imagery was switched off or the time scrubbed
+    // into deep time; adopting it then would flash a patch nobody asked for
+    if (!detailAllowed()) return
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel
     view.detailAttribution = detail!.attribution
@@ -203,6 +210,7 @@ onMounted(() => {
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
     watchEffect(() => (globe!.controls().autoRotate = settings.autoRotate)),
     watchEffect(() => surface!.setRelief(settings.relief ? 0.7 : 0)),
+    watchEffect(() => surface!.setVisuals(settings.visuals === 'enhanced' ? 1 : 0)),
     watchEffect(() => surface!.setEra(textureBlend(PALEO_FRAMES, time.currentTime))),
     watchEffect(() => surface!.setCityLights(cityLightsFactor(time.currentTime))),
     // clouds are anachronistic detail in deep time, and would hide the plate drift
@@ -222,7 +230,10 @@ onMounted(() => {
     }),
   )
 
-  resizeObs = new ResizeObserver(() => globe?.width(dom.clientWidth).height(dom.clientHeight))
+  resizeObs = new ResizeObserver(() => {
+    globe?.width(dom.clientWidth).height(dom.clientHeight)
+    applyPov() // the scale bar reads viewportPx; without this it is stale until the next zoom
+  })
   resizeObs.observe(dom)
 })
 

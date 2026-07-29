@@ -62,6 +62,7 @@ uniform float uCloudH;      // cloud deck height, in globe radii
 uniform float uRelief_;       // relief strength
 uniform vec2 uTexel;          // 1 / relief texture size
 uniform float uFlatLight;     // 1 = ignore the terminator (close-up imagery is already lit)
+uniform float uBoost;         // 0 = realistic lighting, 1 = enhanced (brighter, lifted shadows)
 
 const float PI = 3.14159265;
 
@@ -85,7 +86,11 @@ void main() {
   float cosSun = dot(nRelief, uSunDir);
   float cosGeo = dot(n, uSunDir);           // geometric terminator, no relief
   float daylight = mix(smoothstep(-0.18, 0.22, cosGeo), 1.0, uFlatLight);
-  float lambert = mix(clamp(cosSun * 0.65 + 0.45, 0.0, 1.3), 1.0, uFlatLight);
+  // "Enhanced" lifts the lambert floor and flattens its slope: the day side
+  // stays readable everywhere instead of falling off toward the limb.
+  float slope = mix(0.65, 0.45, uBoost);
+  float floor_ = mix(0.45, 0.72, uBoost);
+  float lambert = mix(clamp(cosSun * slope + floor_, 0.0, 1.3), 1.0, uFlatLight);
 
   // --- surface: crossfade between two era textures (both are the modern map today) ---
   vec3 albedo = mix(texture(uEraA, vUv).rgb, texture(uEraB, vUv).rgb, uEraMix);
@@ -147,7 +152,7 @@ void main() {
   float lum = dot(rawNight, vec3(0.333));
   float thresh = 1.15 - uLights * 1.25;
   float reveal = smoothstep(thresh - 0.18, thresh + 0.18, lum);
-  vec3 night = surface * vec3(0.05, 0.07, 0.12) + rawNight * 1.6 * reveal;
+  vec3 night = surface * vec3(0.05, 0.07, 0.12) * (1.0 + 2.2 * uBoost) + rawNight * 1.6 * reveal;
 
   vec3 color = mix(night, surface, daylight);
 
@@ -166,6 +171,8 @@ void main() {
   color += vec3(0.22, 0.08, 0.0) * smoothstep(0.25, 0.0, abs(cosGeo)) * daylight;
   float rim = pow(1.0 - max(dot(viewDir, n), 0.0), 3.0);
   color += vec3(0.2, 0.45, 1.0) * rim * (0.25 + 0.55 * daylight);
+
+  color *= 1.0 + 0.10 * uBoost; // gentle overall exposure lift for the enhanced look
 
   fragColor = vec4(color, 1.0);
 }
@@ -188,7 +195,12 @@ export class GlobeSurface {
     this.maxAniso = renderer.capabilities.getMaxAnisotropy()
     const day = this.texture(urls.day)
     const night = this.texture(urls.night)
-    const relief = this.texture(urls.relief, 'data')
+    // The relief map is not the same size as the colour maps (2048×1024 against
+    // 4096×2048), so its texel step has to come from the image itself. Stepping
+    // by the colour map's texel takes the finite difference over half a texel
+    // and halves every slope — terrain that is lit, but only half as much as the
+    // strength setting says.
+    const relief = this.texture(urls.relief, 'data', (t) => this.setReliefTexel(t))
     const clouds = this.texture(urls.clouds, 'data')
 
     this.material = new ShaderMaterial({
@@ -214,8 +226,10 @@ export class GlobeSurface {
         uCloudShadow: { value: 0.5 },
         uCloudH: { value: 0.012 },
         uRelief_: { value: 0.7 },
-        uTexel: { value: new Vector2(1 / 4096, 1 / 2048) },
+        // the bundled relief map's size; replaced by the loaded image's own
+        uTexel: { value: new Vector2(1 / 2048, 1 / 1024) },
         uFlatLight: { value: 0 },
+        uBoost: { value: 1 },
       },
     })
   }
@@ -225,16 +239,25 @@ export class GlobeSurface {
    * stay linear, or their mid-tones get crushed. Anisotropy everywhere, since a
    * globe is mostly grazing angles.
    */
-  texture(url: string, kind: 'color' | 'data' = 'color'): Texture {
+  texture(url: string, kind: 'color' | 'data' = 'color', onLoad?: (t: Texture) => void): Texture {
     let t = this.cache.get(url)
     if (!t) {
-      t = this.loader.load(url)
+      t = this.loader.load(url, onLoad)
       if (kind === 'color') t.colorSpace = SRGBColorSpace
       t.anisotropy = this.maxAniso
       t.wrapS = RepeatWrapping
       this.cache.set(url, t)
     }
     return t
+  }
+
+  /** Match the finite-difference step to the height field actually loaded. */
+  private setReliefTexel(t: Texture) {
+    const img = t.image as { width?: number; height?: number } | undefined
+    // the material may not exist yet: a cached image can resolve before the
+    // constructor has finished
+    if (!this.material || !img?.width || !img?.height) return
+    this.material.uniforms.uTexel.value.set(1 / img.width, 1 / img.height)
   }
 
   /**
@@ -309,6 +332,11 @@ export class GlobeSurface {
     const u = this.material.uniforms
     u.uCloudAlpha.value = visible ? opacity : 0
     u.uCloudShadow.value = visible && shadows ? 0.5 * opacity : 0
+  }
+
+  /** 0 = realistic lighting, 1 = enhanced (brighter day side, lifted night side). */
+  setVisuals(boost: number) {
+    this.material.uniforms.uBoost.value = boost
   }
 
   setRelief(strength: number) {
