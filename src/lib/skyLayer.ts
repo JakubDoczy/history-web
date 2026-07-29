@@ -107,6 +107,7 @@ export class AtmosphereLayer {
         depthWrite: false,
       }),
     )
+    this.mesh.renderOrder = 6 // outside the cloud slab, so it glows over it
     scene.add(this.mesh)
   }
 
