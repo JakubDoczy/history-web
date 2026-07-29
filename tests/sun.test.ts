@@ -16,3 +16,20 @@ describe('subsolarLongitude', () => {
     }
   })
 })
+
+import { cityLightsFactor } from '../src/lib/sun'
+
+describe('cityLightsFactor', () => {
+  it('is zero before electrification', () => {
+    expect(cityLightsFactor(1500)).toBe(0)
+    expect(cityLightsFactor(1850)).toBe(0)
+    expect(cityLightsFactor(-250e6)).toBe(0)
+  })
+  it('grows monotonically to full at the present', () => {
+    const years = [1880, 1930, 1970, 2000, 2026]
+    const vals = years.map(cityLightsFactor)
+    for (let i = 1; i < vals.length; i++) expect(vals[i]).toBeGreaterThan(vals[i - 1])
+    expect(cityLightsFactor(2026)).toBe(1)
+    expect(cityLightsFactor(1930)).toBeLessThan(0.25) // early days: dim
+  })
+})

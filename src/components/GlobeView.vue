@@ -12,7 +12,7 @@ import { PaleoLayer } from '../lib/paleoLayer'
 import { DayNightLayer } from '../lib/dayNightLayer'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
-import { subsolarLongitude } from '../lib/sun'
+import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE } from '../data/paleoTextures'
 
 const events = useEventStore()
@@ -103,6 +103,7 @@ onMounted(() => {
     watchEffect(() => globe!.pointsData(events.visible.filter((e) => !e.area))),
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
     watchEffect(() => paleo!.setBlend(textureBlend(PALEO_FRAMES, time.currentTime))),
+    watchEffect(() => dayNight!.setCityLights(cityLightsFactor(time.currentTime))),
     watchEffect(() => {
       const dir = sunDir()
       dayNight!.setSunDirection(dir)
