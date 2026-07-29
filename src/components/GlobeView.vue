@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, useTemplateRef, watchEffect } from 'vue'
 import Globe, { type GlobeInstance } from 'globe.gl'
-import { AmbientLight, DirectionalLight, Vector3 } from 'three'
+import { AmbientLight, DirectionalLight, PerspectiveCamera, Vector3 } from 'three'
 import { useEventStore } from '../stores/events'
 import { useNationStore, type BorderEntry } from '../stores/nations'
 import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
+import { useViewStore } from '../stores/view'
 import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
@@ -20,6 +21,7 @@ const events = useEventStore()
 const nations = useNationStore()
 const time = useTimeStore()
 const settings = useSettingsStore()
+const view = useViewStore()
 const el = useTemplateRef('el')
 
 let globe: GlobeInstance | undefined
@@ -100,10 +102,17 @@ onMounted(() => {
   globe.controls().autoRotateSpeed = 0.5
   dom.addEventListener('pointerdown', () => (globe!.controls().autoRotate = false), { once: true })
 
+  const cam = globe.camera()
+  if (cam instanceof PerspectiveCamera) view.fov = cam.fov
   const radius = globe.getGlobeRadius()
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
-  detail = new DetailTiles({ grid: window.innerWidth < 820 ? 2 : 3 })
+  detail = new DetailTiles({ grid: 3 })
+  // the patch only reaches the shader if the loader tells us it arrived
+  detail.onReady = () => {
+    view.detailStatus = detail!.status
+    surface!.setDetail(detail!.texture, detail!.rect, detail!.mix)
+  }
 
   /** Detail imagery is modern, so it is only offered within the satellite era. */
   const detailAllowed = () => settings.detail && time.currentTime >= IMAGERY_ERA_FROM
@@ -119,9 +128,11 @@ onMounted(() => {
     // how close the camera may come depends on whether modern imagery is allowed
     globe!.controls().minDistance = radius * (1 + minAltitudeFor(time.currentTime, settings.detail))
     const near = closeness(pov.altitude)
+    view.altitude = pov.altitude
+    view.viewportPx = el.value?.clientHeight ?? 900
     surface!.setFlatLight(near)
     if (detailAllowed()) {
-      detail!.update(pov.lat, pov.lng, pov.altitude)
+      detail!.update(pov.lat, pov.lng, pov.altitude, view.viewportPx)
       surface!.setDetail(detail!.texture, detail!.rect, detail!.mix)
     } else {
       surface!.setDetail(null, detail!.rect, 0)

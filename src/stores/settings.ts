@@ -6,9 +6,10 @@ export const useSettingsStore = defineStore('settings', {
     clouds: true,
     atmosphere: true,
     detail: true,
+    scaleBar: true,
   }),
   actions: {
-    toggle(key: 'clouds' | 'atmosphere' | 'detail') {
+    toggle(key: 'clouds' | 'atmosphere' | 'detail' | 'scaleBar') {
       this[key] = !this[key]
     },
   },

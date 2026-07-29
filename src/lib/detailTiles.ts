@@ -41,6 +41,21 @@ export function levelForAltitude(altitude: number, grid: number, maxLevel: numbe
   return Math.max(0, Math.min(maxLevel, level))
 }
 
+/**
+ * Level chosen so the patch is at least as sharp as the screen showing it.
+ *
+ * A tile is TILE_PX across `degPerTile` degrees, so it supplies
+ * TILE_PX/degPerTile pixels per degree; the display needs viewportPx/span.
+ * Solving for the level and rounding up guarantees we never magnify tiles —
+ * which is what made close views blurry when the level was picked purely by
+ * coverage.
+ */
+export function levelForView(spanDeg: number, viewportPx: number, maxLevel: number): number {
+  const needed = viewportPx / Math.max(spanDeg, 1e-4)
+  const level = Math.ceil(Math.log2((needed * 180) / TILE_PX))
+  return Math.max(0, Math.min(maxLevel, level))
+}
+
 export interface TileRange {
   col0: number
   row0: number
@@ -103,6 +118,11 @@ export class DetailTiles {
   private grid: number
   /** Set once the service proves unreachable, so we stop retrying. */
   private disabled = false
+  private timer?: ReturnType<typeof setTimeout>
+  /** Reported in settings so a failure is visible rather than silently blurry. */
+  status: 'idle' | 'loading' | 'ready' | 'unavailable' = 'idle'
+  /** Called when a patch finishes loading, so the renderer can pick it up. */
+  onReady?: () => void
 
   constructor(opts: DetailTilesOptions = {}) {
     this.layer = opts.layer ?? 'BlueMarble_ShadedRelief_Bathymetry'
@@ -123,9 +143,9 @@ export class DetailTiles {
   }
 
   /** Point the patch at the camera's current target; safe to call every frame. */
-  update(lat: number, lng: number, altitude: number) {
+  update(lat: number, lng: number, altitude: number, viewportPx = 900) {
     if (this.disabled) return
-    const level = levelForAltitude(altitude, this.grid, this.maxLevel)
+    const level = levelForView(visibleSpanDeg(altitude), viewportPx, this.maxLevel)
     if (level < 2) {
       this.mix = 0 // zoomed out: the base texture is sharp enough
       return
@@ -138,8 +158,17 @@ export class DetailTiles {
   private load(range: TileRange) {
     this.current = range
     this.pending = range.cols * range.rows
+    this.status = 'loading'
     let failed = 0
-    const first = this.mix === 0
+
+    // never let a hung request wedge the loader permanently
+    clearTimeout(this.timer)
+    this.timer = setTimeout(() => {
+      if (this.pending > 0) {
+        this.pending = 0
+        if (this.mix === 0) this.status = 'unavailable'
+      }
+    }, 12000)
 
     this.canvas.width = range.cols * TILE_PX
     this.canvas.height = range.rows * TILE_PX
@@ -160,24 +189,25 @@ export class DetailTiles {
       }
     }
 
-    // if the very first attempt fails wholesale, the service is unreachable —
-    // stop asking and let the base texture stand
-    if (first) {
-      setTimeout(() => {
-        if (failed === range.cols * range.rows) this.disabled = true
-      }, 8000)
-    }
   }
 
   private done(range: TileRange, failed: number) {
     if (--this.pending > 0) return
+    clearTimeout(this.timer)
     if (failed === range.cols * range.rows) {
+      // a whole batch failing means the service is unreachable; stop asking and
+      // let the base texture stand rather than hammering it
       this.mix = 0
+      this.status = 'unavailable'
+      this.disabled = true
+      this.onReady?.()
       return
     }
     this.rect = rangeToUvRect(range)
     this.texture.needsUpdate = true
     this.mix = 1
+    this.status = 'ready'
+    this.onReady?.() // the renderer only learns the patch exists if we say so
   }
 
   dispose() {

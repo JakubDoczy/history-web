@@ -3,11 +3,20 @@ import { useEventStore } from '../stores/events'
 import { useNationStore } from '../stores/nations'
 import { useSettingsStore } from '../stores/settings'
 import { useUiStore } from '../stores/ui'
+import { useViewStore } from '../stores/view'
 
 const events = useEventStore()
 const nations = useNationStore()
 const settings = useSettingsStore()
 const ui = useUiStore()
+const view = useViewStore()
+
+const detailNote = {
+  idle: 'Loads sharper NASA tiles as you zoom in.',
+  loading: 'Loading tiles…',
+  ready: 'Sharper tiles loaded for this area.',
+  unavailable: 'NASA imagery unreachable — showing the base map.',
+}
 
 const on = (t: string) => events.filter.tags?.includes(t) ?? false
 const hour = () => {
@@ -55,7 +64,12 @@ const hour = () => {
         <input type="checkbox" :checked="settings.detail" @change="settings.toggle('detail')" />
         <span>Stream high-detail imagery</span>
       </label>
-      <p class="hint">Loads sharper NASA tiles as you zoom in. Available from 1930 onward — earlier than that, satellite imagery would show modern cities.</p>
+      <p class="hint">{{ detailNote[view.detailStatus] }}</p>
+      <p class="hint">Available from 1930 onward — earlier than that, satellite imagery would show modern cities.</p>
+      <label class="row">
+        <input type="checkbox" :checked="settings.scaleBar" @change="settings.toggle('scaleBar')" />
+        <span>Show scale bar</span>
+      </label>
     </section>
 
     <section>
