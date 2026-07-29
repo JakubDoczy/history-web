@@ -7,5 +7,6 @@ export const useViewStore = defineStore('view', {
     fov: 50,
     viewportPx: 900,
     detailStatus: 'idle' as 'idle' | 'loading' | 'ready' | 'unavailable',
+    detailSource: '—',
   }),
 })

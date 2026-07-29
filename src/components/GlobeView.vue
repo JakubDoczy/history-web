@@ -111,6 +111,7 @@ onMounted(() => {
   // the patch only reaches the shader if the loader tells us it arrived
   detail.onReady = () => {
     view.detailStatus = detail!.status
+    view.detailSource = detail!.sourceLabel
     surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
   }
 

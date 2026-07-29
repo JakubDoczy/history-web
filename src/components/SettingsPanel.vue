@@ -13,8 +13,8 @@ const view = useViewStore()
 
 const detailNote = {
   idle: 'Loads sharper NASA tiles as you zoom in.',
-  loading: 'Loading tiles…',
-  ready: 'Sharper tiles loaded for this area.',
+  loading: 'Loading imagery…',
+  ready: 'Imagery loaded for this area.',
   unavailable: 'NASA imagery unreachable — showing the base map.',
 }
 
@@ -64,7 +64,10 @@ const hour = () => {
         <input type="checkbox" :checked="settings.detail" @change="settings.toggle('detail')" />
         <span>Stream high-detail imagery</span>
       </label>
-      <p class="hint">{{ detailNote[view.detailStatus] }}</p>
+      <p class="hint">
+        {{ detailNote[view.detailStatus] }}
+        <template v-if="view.detailStatus === 'ready'"> Source: {{ view.detailSource }}.</template>
+      </p>
       <p class="hint">Available from 1930 onward — earlier than that, satellite imagery would show modern cities.</p>
       <p class="hint credit">Imagery: NASA GIBS / Worldview</p>
       <label class="row">

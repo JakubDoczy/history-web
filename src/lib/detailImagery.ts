@@ -83,10 +83,15 @@ const movedEnough = (a: Bbox | undefined, b: Bbox) => {
 }
 
 /**
- * Sources tried in order, best first. WMS composites a comma-separated list
- * bottom-to-top server-side, so Landsat rides on top of Blue Marble and the
- * oceans — which WELD does not cover — stay filled. If a source fails
- * repeatedly we fall back to the next, so detail degrades rather than vanishes.
+ * Imagery is fetched in two stages.
+ *
+ * The base source always works and is what the view falls back to. The sharp
+ * source is Landsat at 30 m — about sixteen times finer — composited server-side
+ * over Blue Marble so its ocean gaps stay filled. It is requested *after* the
+ * base has already been shown, so if it 404s (its coverage is patchy, and GIBS
+ * returns 404 rather than a blank image where a layer has no data) the view is
+ * merely less sharp, never broken. An earlier version put the sharp source
+ * first and a bad date took the whole feature down with it.
  */
 export interface ImagerySource {
   layers: string
@@ -94,19 +99,22 @@ export interface ImagerySource {
   label: string
 }
 
-export const IMAGERY_SOURCES: ImagerySource[] = [
-  {
-    label: 'Landsat 30 m',
-    layers:
-      'BlueMarble_ShadedRelief_Bathymetry,Landsat_WELD_CorrectedReflectance_TrueColor_Global_Annual',
-    time: '2012-01-01',
-  },
-  { label: 'Blue Marble 500 m', layers: 'BlueMarble_ShadedRelief_Bathymetry' },
-]
+export const BASE_SOURCE: ImagerySource = {
+  label: 'Blue Marble 500 m',
+  layers: 'BlueMarble_ShadedRelief_Bathymetry',
+}
+
+/** WELD global composites only exist for Dec 2008 – Nov 2011. */
+export const SHARP_SOURCE: ImagerySource = {
+  label: 'Landsat 30 m',
+  layers:
+    'BlueMarble_ShadedRelief_Bathymetry,Landsat_WELD_CorrectedReflectance_TrueColor_Global_Annual',
+  time: '2010-01-01',
+}
 
 export interface DetailImageryOptions {
-  sources?: ImagerySource[]
   maxPx?: number
+  sharpen?: boolean
 }
 
 export class DetailImagery {
@@ -114,30 +122,25 @@ export class DetailImagery {
   rect: [number, number, number, number] = [0, 0, 1, 1]
   mix = 0
   status: 'idle' | 'loading' | 'ready' | 'unavailable' = 'idle'
+  sourceLabel = '—'
   onReady?: () => void
 
-  private sources: ImagerySource[]
-  private sourceIdx = 0
   private maxPx: number
+  private sharpen: boolean
   private current?: Bbox
-  private inFlight?: HTMLImageElement
+  private requestId = 0
   private settle?: ReturnType<typeof setTimeout>
   private strikes = 0
-  private everWorked = false
+  private sharpStrikes = 0
+  private sharpDisabled = false
   private disabled = false
 
   constructor(opts: DetailImageryOptions = {}) {
-    this.sources = opts.sources ?? IMAGERY_SOURCES
     this.maxPx = opts.maxPx ?? 3072
+    this.sharpen = opts.sharpen ?? true
   }
 
-  /** Which source is currently supplying imagery, for display in settings. */
-  get sourceLabel() {
-    return this.sources[this.sourceIdx]?.label ?? '—'
-  }
-
-  private url(b: Bbox, width: number, height: number) {
-    const src = this.sources[this.sourceIdx]
+  private url(src: ImagerySource, b: Bbox, width: number, height: number) {
     // WMS 1.3.0 with EPSG:4326 takes bbox in lat,lng order
     return (
       'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi' +
@@ -164,56 +167,78 @@ export class DetailImagery {
   }
 
   private load(bbox: Bbox, viewportPx: number) {
+    const id = ++this.requestId
     const { width, height } = imageSize(bbox, viewportPx, this.maxPx)
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    this.inFlight = img
     this.status = 'loading'
 
+    // stage one: the source that always works
+    this.fetch(BASE_SOURCE, bbox, width, height, id, {
+      ok: () => {
+        // stage two: try to replace it with something sharper
+        if (!this.sharpen || this.sharpDisabled) return
+        this.fetch(SHARP_SOURCE, bbox, width, height, id, {
+          fail: () => {
+            this.sharpStrikes++
+            if (this.sharpStrikes >= 2) this.sharpDisabled = true
+          },
+        })
+      },
+      fail: () => {
+        this.strikes++
+        if (this.strikes >= 3) {
+          this.disabled = true
+          this.status = 'unavailable'
+          this.onReady?.()
+        }
+      },
+    })
+  }
+
+  private fetch(
+    src: ImagerySource,
+    bbox: Bbox,
+    width: number,
+    height: number,
+    id: number,
+    handlers: { ok?: () => void; fail?: () => void },
+  ) {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.onload = () => {
-      if (this.inFlight !== img) return // superseded by a newer request
-      const next = new Texture(img)
-      next.colorSpace = SRGBColorSpace
-      next.minFilter = next.magFilter = LinearFilter
-      next.generateMipmaps = false
-      next.needsUpdate = true
-
-      const previous = this.texture
-      // image and its rectangle are adopted together, so they can never disagree
-      this.texture = next
-      this.rect = bboxToUvRect(bbox)
-      this.current = bbox
-      this.mix = 1
-      this.status = 'ready'
-      this.everWorked = true
-      this.strikes = 0
-      previous?.dispose()
-      this.onReady?.()
+      if (id !== this.requestId) return // a newer view has superseded this one
+      this.adopt(img, bbox, src.label)
+      handlers.ok?.()
     }
-
     img.onerror = () => {
-      if (this.inFlight !== img) return
-      this.strikes++
-      // two failures on a source means it is not usable here; try the next one
-      if (this.strikes >= 2 && this.sourceIdx < this.sources.length - 1) {
-        this.sourceIdx++
-        this.strikes = 0
-        this.load(bbox, viewportPx)
-        return
-      }
-      if (!this.everWorked && this.strikes >= 3) {
-        this.disabled = true
-        this.status = 'unavailable'
-      }
-      this.onReady?.()
+      if (id !== this.requestId) return
+      handlers.fail?.()
     }
+    img.src = this.url(src, bbox, width, height)
+  }
 
-    img.src = this.url(bbox, width, height)
+  /** Image and its rectangle are taken up together, so they cannot disagree. */
+  private adopt(img: HTMLImageElement, bbox: Bbox, label: string) {
+    const next = new Texture(img)
+    next.colorSpace = SRGBColorSpace
+    next.minFilter = next.magFilter = LinearFilter
+    next.generateMipmaps = false
+    next.needsUpdate = true
+
+    const previous = this.texture
+    this.texture = next
+    this.rect = bboxToUvRect(bbox)
+    this.current = bbox
+    this.mix = 1
+    this.status = 'ready'
+    this.sourceLabel = label
+    this.strikes = 0
+    previous?.dispose()
+    this.onReady?.()
   }
 
   dispose() {
     clearTimeout(this.settle)
-    this.inFlight = undefined
+    this.requestId++
     this.texture?.dispose()
   }
 }
