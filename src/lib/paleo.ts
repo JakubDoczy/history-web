@@ -25,5 +25,10 @@ export function textureBlend(frames: TextureKeyframe[], t: Year): TextureBlend {
   const i = frames.findIndex((k, idx) => t >= k.time && t < frames[idx + 1].time)
   const a = frames[i]
   const b = frames[i + 1]
-  return { from: a.url, to: b.url, f: (t - a.time) / (b.time - a.time) }
+  // A zero-length interval is reachable without anyone noticing: the frame list
+  // is two lists concatenated (the generated ones, then the pinned modern map),
+  // so a generator change can put two frames on the same year. Dividing by that
+  // gap yields NaN, and mix() with a NaN factor renders the globe black.
+  const dt = b.time - a.time
+  return { from: a.url, to: b.url, f: dt > 0 ? (t - a.time) / dt : 0 }
 }

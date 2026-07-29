@@ -109,13 +109,24 @@ export function imageSize(
   return { width, height }
 }
 
-const movedEnough = (a: Bbox | undefined, b: Bbox) => {
+/**
+ * Has the view left the patch we hold (or asked for) by enough to be worth a
+ * new request?
+ *
+ * Each axis is judged against its *own* span. Measuring an east–west move
+ * against the latitude span looks equivalent and is not: the patch is ~3× wider
+ * than it is tall at 70° N, and narrower than it is tall on a portrait phone at
+ * the equator. The first case refetched on almost any pan; the second let the
+ * view slide more than half a patch-width off the imagery without refetching.
+ */
+export const movedEnough = (a: Bbox | undefined, b: Bbox) => {
   if (!a) return true
-  const span = b.maxLat - b.minLat
+  const latSpan = b.maxLat - b.minLat
+  const lngSpan = b.maxLng - b.minLng
   return (
-    Math.abs(a.minLat - b.minLat) > span * 0.2 ||
-    Math.abs(a.minLng - b.minLng) > span * 0.2 ||
-    Math.abs(a.maxLat - a.minLat - span) > span * 0.1
+    Math.abs(a.minLat - b.minLat) > latSpan * 0.2 ||
+    Math.abs(a.minLng - b.minLng) > lngSpan * 0.2 ||
+    Math.abs(a.maxLat - a.minLat - latSpan) > latSpan * 0.1
   )
 }
 
@@ -200,8 +211,17 @@ export const detailLod = (
 export const PATCH_ON_BELOW = 42
 export const PATCH_OFF_ABOVE = 55
 
+/** How long the camera must hold still before a request is worth spending. */
+export const SETTLE_MS = 280
+
 export interface DetailImageryOptions {
   maxPx?: number
+}
+
+/** Metrics that only become true when the image they describe is on screen. */
+interface PatchMeta {
+  lod: number
+  groundRes: number
 }
 
 export class DetailImagery {
@@ -219,6 +239,8 @@ export class DetailImagery {
 
   private maxPx: number
   private current?: Bbox
+  /** The rectangle a queued or in-flight request is for; distinct from `current`. */
+  private pending?: Bbox
   private requestId = 0
   private settle?: ReturnType<typeof setTimeout>
   private strikes = 0
@@ -226,6 +248,9 @@ export class DetailImagery {
   private sharpDisabled = false
   private shown = false
   private disabled = false
+  /** Provenance of the texture we hold, kept across a hide so it can be restored. */
+  private heldLabel = ''
+  private heldAttribution = ''
 
   constructor(opts: DetailImageryOptions = {}) {
     this.maxPx = opts.maxPx ?? 1536
@@ -237,6 +262,9 @@ export class DetailImagery {
 
     // hysteresis: once shown, the patch survives until well past the threshold
     if (span > (this.shown ? PATCH_OFF_ABOVE : PATCH_ON_BELOW)) {
+      // a queued request must not land after we have zoomed back out, or it
+      // adopts — and shows — a patch for a view nobody is looking at any more
+      this.cancelQueued()
       if (this.shown) {
         this.shown = false
         this.mix = 0
@@ -256,15 +284,34 @@ export class DetailImagery {
         this.shown = true
         this.mix = 1
         this.status = 'ready'
-        this.sourceLabel = this.sourceLabel === '—' ? BASE_SOURCE.label : this.sourceLabel
+        // the label belongs to the texture we are re-showing, not to whichever
+        // source happens to be the fallback — hiding the patch cleared it
+        this.sourceLabel = this.heldLabel || BASE_SOURCE.label
+        this.attribution = this.heldAttribution
         this.onReady?.()
       }
       return
     }
 
-    // wait for the camera to settle before spending a request
+    // Wait for the camera to settle before spending a request — but only re-arm
+    // the timer when the target has actually moved. update() runs once per
+    // animation frame; clearing the timer unconditionally reset it every ~16 ms,
+    // so the 280 ms never elapsed and no patch was ever fetched at all.
+    if (this.pending && !movedEnough(this.pending, bbox)) return
+    this.pending = bbox
     clearTimeout(this.settle)
-    this.settle = setTimeout(() => this.load(bbox, screenPx), 280)
+    this.settle = setTimeout(() => {
+      this.settle = undefined
+      this.load(bbox, screenPx)
+    }, SETTLE_MS)
+  }
+
+  private cancelQueued() {
+    if (!this.pending) return // nothing queued or in flight
+    clearTimeout(this.settle)
+    this.settle = undefined
+    this.pending = undefined
+    this.requestId++ // in-flight images resolve into a superseded id and are dropped
   }
 
   /**
@@ -279,10 +326,16 @@ export class DetailImagery {
     this.status = 'loading'
     const src = this.sharpDisabled ? BASE_SOURCE : SHARP_SOURCE
     const { width, height } = imageSize(bbox, screenPx, this.maxPx, src.pxPerDeg)
-    this.lod = detailLod(width, bbox.maxLng - bbox.minLng)
-    this.groundRes = ((bbox.maxLat - bbox.minLat) * 111_320) / height
+    // These describe the image being requested, so they are only true once it is
+    // on screen. Publishing them here made the shader sharpen the patch it still
+    // held at the incoming patch's mip level, and the panel quote a resolution
+    // for imagery nobody could see yet.
+    const meta = {
+      lod: detailLod(width, bbox.maxLng - bbox.minLng),
+      groundRes: ((bbox.maxLat - bbox.minLat) * 111_320) / height,
+    }
 
-    this.fetch(src, bbox, width, height, id, {
+    this.fetch(src, bbox, width, height, id, meta, {
       fail: () => {
         if (src === SHARP_SOURCE) {
           this.sharpStrikes++
@@ -306,13 +359,14 @@ export class DetailImagery {
     width: number,
     height: number,
     id: number,
+    meta: PatchMeta,
     handlers: { ok?: () => void; fail?: () => void },
   ) {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
       if (id !== this.requestId) return // a newer view has superseded this one
-      this.adopt(img, bbox, src.label, src.attribution)
+      this.adopt(img, bbox, meta, src.label, src.attribution)
       handlers.ok?.()
     }
     img.onerror = () => {
@@ -322,8 +376,14 @@ export class DetailImagery {
     img.src = wmsUrl(src, bbox, width, height)
   }
 
-  /** Image and its rectangle are taken up together, so they cannot disagree. */
-  private adopt(img: HTMLImageElement, bbox: Bbox, label: string, attribution = '') {
+  /** Image, rectangle and metrics are taken up together, so they cannot disagree. */
+  private adopt(
+    img: HTMLImageElement,
+    bbox: Bbox,
+    meta: PatchMeta,
+    label: string,
+    attribution = '',
+  ) {
     const next = new Texture(img)
     next.colorSpace = SRGBColorSpace
     // mipmaps are needed: the shader samples a deliberately blurred copy of the
@@ -337,19 +397,20 @@ export class DetailImagery {
     this.texture = next
     this.rect = bboxToUvRect(bbox)
     this.current = bbox
+    this.lod = meta.lod
+    this.groundRes = meta.groundRes
     this.mix = 1
     this.shown = true
     this.status = 'ready'
-    this.sourceLabel = label
-    this.attribution = attribution
+    this.sourceLabel = this.heldLabel = label
+    this.attribution = this.heldAttribution = attribution
     this.strikes = 0
     previous?.dispose()
     this.onReady?.()
   }
 
   dispose() {
-    clearTimeout(this.settle)
-    this.requestId++
+    this.cancelQueued()
     this.texture?.dispose()
   }
 }

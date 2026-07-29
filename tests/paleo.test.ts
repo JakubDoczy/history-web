@@ -27,4 +27,31 @@ describe('textureBlend', () => {
   it('f approaches 1 near the next keyframe', () => {
     expect(textureBlend(frames, -151e6).f).toBeCloseTo(0.99)
   })
+  it('survives two frames pinned to the same year', () => {
+    // the frame list is a concatenation, so a collision is one data edit away;
+    // the resulting NaN blend factor renders the whole globe black
+    const collided: TextureKeyframe[] = [
+      { time: -250e6, url: 'pangaea' },
+      { time: -10_000, url: 'late' },
+      { time: -10_000, url: 'modern' },
+    ]
+    for (const t of [-20_000, -10_000, 0]) {
+      expect(Number.isFinite(textureBlend(collided, t).f)).toBe(true)
+    }
+  })
+})
+
+import { PALEO_FRAMES } from '../src/data/paleoTextures'
+
+describe('PALEO_FRAMES', () => {
+  it('is strictly ordered, so the surrounding-frame search cannot run off the end', () => {
+    for (let i = 1; i < PALEO_FRAMES.length; i++) {
+      expect(PALEO_FRAMES[i].time).toBeGreaterThan(PALEO_FRAMES[i - 1].time)
+    }
+  })
+  it('ends on the modern map, so the last 10k years never morph', () => {
+    const last = PALEO_FRAMES[PALEO_FRAMES.length - 1]
+    expect(last.time).toBe(-10_000)
+    expect(textureBlend(PALEO_FRAMES, 1500)).toEqual({ from: last.url, to: last.url, f: 0 })
+  })
 })

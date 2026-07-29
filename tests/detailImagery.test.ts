@@ -246,3 +246,133 @@ describe('era-dependent zoom floors', () => {
     }
   })
 })
+
+import { afterEach, beforeEach, vi } from 'vitest'
+import { DetailImagery, movedEnough, SETTLE_MS } from '../src/lib/detailImagery'
+
+describe('movedEnough', () => {
+  const at = (lat: number, lng: number, aspect: number) => viewBbox(lat, lng, 0.02, aspect)
+
+  it('judges an east-west pan against the longitude span, not the latitude one', () => {
+    // portrait phone at the equator: the patch is a third as wide as it is tall,
+    // so a pan of 30% of its width is only ~10% of the latitude span — under the
+    // old threshold, which let the view slide off imagery that was never refetched
+    const a = at(0, 0, 0.35)
+    const width = a.maxLng - a.minLng
+    expect(width).toBeLessThan(a.maxLat - a.minLat) // the shape that broke it
+    expect(movedEnough(a, at(0, width * 0.3, 0.35))).toBe(true)
+  })
+
+  it('does not refetch for a pan well inside the patch at high latitude', () => {
+    // the mirror case: at 70 deg the patch is half again wider than it is tall,
+    // so 15% of its width passed the old latitude-based threshold and refetched
+    const a = at(70, 0, 0.5)
+    const width = a.maxLng - a.minLng
+    expect(width).toBeGreaterThan(a.maxLat - a.minLat)
+    expect(movedEnough(a, at(70, width * 0.15, 0.5))).toBe(false)
+  })
+
+  it('always refetches when there is nothing loaded yet', () => {
+    expect(movedEnough(undefined, at(0, 0, 1))).toBe(true)
+  })
+})
+
+/** Stands in for the browser's Image: records the URL, resolves on demand. */
+class FakeImage {
+  static requests: string[] = []
+  static last?: FakeImage
+  crossOrigin = ''
+  onload: (() => void) | null = null
+  onerror: (() => void) | null = null
+  private url = ''
+  get src() {
+    return this.url
+  }
+  set src(v: string) {
+    this.url = v
+    FakeImage.requests.push(v)
+    FakeImage.last = this
+  }
+}
+
+describe('DetailImagery streaming', () => {
+  const CLOSE = 0.02 // ~23 deg span: patch territory
+  const FAR = 0.5 // ~96 deg span: past the hysteresis ceiling
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.requests = []
+    FakeImage.last = undefined
+    vi.stubGlobal('Image', FakeImage)
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  /** What the render loop does: one update per animation frame, forever. */
+  const frames = (d: DetailImagery, n: number, lat = 45, lng = 10, alt = CLOSE) => {
+    for (let i = 0; i < n; i++) {
+      d.update(lat, lng, alt, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+  }
+
+  it('still requests imagery when update runs every frame', () => {
+    // the settle timer was cleared and re-armed on every call, so it never
+    // elapsed and no patch was ever fetched at all
+    const d = new DetailImagery()
+    frames(d, Math.ceil(SETTLE_MS / 16) + 4)
+    expect(FakeImage.requests).toHaveLength(1)
+  })
+
+  it('does not re-request while the camera holds still', () => {
+    const d = new DetailImagery()
+    frames(d, 200)
+    expect(FakeImage.requests).toHaveLength(1)
+  })
+
+  it('drops a queued request when the camera zooms back out', () => {
+    const d = new DetailImagery()
+    d.update(45, 10, CLOSE, 900, 1)
+    vi.advanceTimersByTime(SETTLE_MS / 2) // still queued
+    d.update(45, 10, FAR, 900, 1)
+    vi.advanceTimersByTime(SETTLE_MS * 2)
+    expect(FakeImage.requests).toHaveLength(0)
+    expect(d.mix).toBe(0)
+  })
+
+  it('publishes resolution only once the image it describes has arrived', () => {
+    const d = new DetailImagery()
+    frames(d, 30)
+    expect(FakeImage.requests).toHaveLength(1)
+    expect(d.groundRes).toBe(0) // in flight: nothing on screen to describe yet
+    FakeImage.last!.onload!()
+    expect(d.groundRes).toBeGreaterThan(0)
+    expect(d.status).toBe('ready')
+  })
+
+  it('keeps the loaded source name when the patch is hidden and shown again', () => {
+    const d = new DetailImagery()
+    frames(d, 30)
+    FakeImage.last!.onload!()
+    expect(d.sourceLabel).toBe(SHARP_SOURCE.label)
+
+    d.update(45, 10, FAR, 900, 1) // zoom out: patch retires
+    expect(d.sourceLabel).toBe('—')
+
+    d.update(45, 10, CLOSE, 900, 1) // and back: the same texture is re-shown
+    expect(d.mix).toBe(1)
+    expect(d.sourceLabel).toBe(SHARP_SOURCE.label) // not the fallback's name
+    expect(d.attribution).toBe(SHARP_SOURCE.attribution)
+  })
+
+  it('falls back to the base source after the sharp one fails twice', () => {
+    const d = new DetailImagery()
+    frames(d, 30)
+    expect(FakeImage.requests[0]).toContain(SHARP_SOURCE.endpoint)
+    FakeImage.last!.onerror!()
+    FakeImage.last!.onerror!()
+    expect(FakeImage.requests[2]).toContain(BASE_SOURCE.endpoint)
+  })
+})
