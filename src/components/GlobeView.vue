@@ -116,8 +116,30 @@ onMounted(() => {
     surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
   }
 
-  /** Detail imagery is modern, so it is only offered within the satellite era. */
-  const detailAllowed = () => settings.detail && time.currentTime >= IMAGERY_ERA_FROM
+  /**
+   * Streaming applies to every era that uses the modern basemap; how *close* the
+   * camera may come is what varies by period, since modern features only become
+   * legible at high zoom.
+   */
+  const detailAllowed = () => settings.detail && time.currentTime > -12000
+
+  /**
+   * The only place detail streaming is driven. It was previously called from
+   * both the zoom handler and the frame loop with different arguments, so the
+   * two computed different rectangles and fought over which one to load.
+   */
+  const syncDetail = (pov: { lat: number; lng: number; altitude: number }) => {
+    if (!detailAllowed()) {
+      surface!.setDetail(null, detail!.rect, 0)
+      return
+    }
+    // device pixels, not CSS pixels: the globe renders at the device ratio
+    const dpr = Math.min(window.devicePixelRatio || 1, 3)
+    const w = el.value?.clientWidth ?? 900
+    const h = el.value?.clientHeight ?? 900
+    detail!.update(pov.lat, pov.lng, pov.altitude, h * dpr, w / h)
+    surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
+  }
 
   /** 0 far out, 1 close in — drives detail streaming and retires the sky effects. */
   const closeness = (altitude: number) => {
@@ -145,16 +167,7 @@ onMounted(() => {
     view.detailSource = detail!.sourceLabel
     view.viewportPx = el.value?.clientHeight ?? 900
     surface!.setFlatLight(near)
-    if (detailAllowed()) {
-      // device pixels, not CSS pixels: the globe renders at the device ratio
-      const dpr = Math.min(window.devicePixelRatio || 1, 3)
-      const w = el.value?.clientWidth ?? 900
-      const h = el.value?.clientHeight ?? 900
-      detail!.update(pov.lat, pov.lng, pov.altitude, h * dpr, w / h)
-      surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
-    } else {
-      surface!.setDetail(null, detail!.rect, 0)
-    }
+    syncDetail(pov)
     // clouds retire well before the ground fills the screen; haze lingers longer
     const cloudy = cloudFadeFor(visibleSpanDeg(pov.altitude))
     surface!.setClouds(
@@ -180,13 +193,7 @@ onMounted(() => {
   const t0 = performance.now()
   const tick = () => {
     if (!still) surface!.setCloudDrift((performance.now() - t0) / 1000)
-    if (settings.detail && time.currentTime > -12000) {
-      const pov = globe!.pointOfView()
-      detail!.update(pov.lat, pov.lng, pov.altitude)
-      surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
-    } else {
-      surface!.setDetail(null, detail!.rect, 0)
-    }
+    syncDetail(globe!.pointOfView())
     raf = requestAnimationFrame(tick)
   }
   tick()

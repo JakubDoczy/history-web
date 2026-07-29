@@ -16,20 +16,32 @@ import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 
 /** Modern imagery shows modern cities; before this year it is an anachronism. */
 export const IMAGERY_ERA_FROM = 1930
 
+/** Camera altitude, in globe radii, at which the view spans a given ground width. */
+export const altitudeForViewKm = (km: number): number => {
+  const halfAngle = (km / 2 / 111.32) * (Math.PI / 180)
+  return 1 / Math.cos(halfAngle) - 1
+}
+
+/** Closest approach once modern imagery is appropriate: a ~100 km view. */
+export const MIN_ALTITUDE_DETAIL = altitudeForViewKm(100)
 /**
- * 10 m imagery only shows its worth close in. At the old floor the view was
- * ~475 km across, where even a 500 m source is nearly adequate; this puts the
- * closest view at roughly 100 km, where the difference is obvious.
+ * Closest approach before the satellite era. Zooming further would show modern
+ * cities, fields and reservoirs in a period that had none; at a ~300 km view
+ * those are not legible, so history stays honest without feeling locked out.
  */
-export const MIN_ALTITUDE_DETAIL = 0.00004
-export const MIN_ALTITUDE_PLAIN = 0.05
+export const MIN_ALTITUDE_PLAIN = altitudeForViewKm(300)
 
 export const minAltitudeFor = (year: number, detailEnabled: boolean): number =>
   detailEnabled && year >= IMAGERY_ERA_FROM ? MIN_ALTITUDE_DETAIL : MIN_ALTITUDE_PLAIN
 
-/** Angular radius of the visible cap, in degrees, for an altitude in globe radii. */
+/**
+ * Angular width of the visible cap, in degrees, for an altitude in globe radii.
+ *
+ * The floor here matters: it was 1e-3, which pinned the closest possible view at
+ * ~570 km however low the zoom limit was set, so finer imagery could never show.
+ */
 export const visibleSpanDeg = (altitude: number) =>
-  2 * Math.acos(Math.min(1, 1 / (1 + Math.max(altitude, 1e-3)))) * (180 / Math.PI)
+  2 * Math.acos(Math.min(1, 1 / (1 + Math.max(altitude, 1e-9)))) * (180 / Math.PI)
 
 export interface Bbox {
   minLat: number

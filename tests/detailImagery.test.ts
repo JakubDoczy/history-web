@@ -219,3 +219,30 @@ describe('detailLod', () => {
     }
   })
 })
+
+import { altitudeForViewKm } from '../src/lib/detailImagery'
+
+describe('altitudeForViewKm', () => {
+  it('round-trips against the visible-span calculation', () => {
+    for (const km of [100, 300, 1000, 5000]) {
+      const span = visibleSpanDeg(altitudeForViewKm(km))
+      expect(span * 111.32).toBeCloseTo(km, 0)
+    }
+  })
+  it('is monotonic: a wider view needs a higher camera', () => {
+    expect(altitudeForViewKm(300)).toBeGreaterThan(altitudeForViewKm(100))
+  })
+})
+
+describe('era-dependent zoom floors', () => {
+  it('permits a ~100 km view in the satellite era', () => {
+    const span = visibleSpanDeg(minAltitudeFor(2000, true))
+    expect(span * 111.32).toBeCloseTo(100, 0)
+  })
+  it('holds earlier periods to a ~300 km view, where modern features are illegible', () => {
+    for (const year of [1929, 1600, -3000]) {
+      const span = visibleSpanDeg(minAltitudeFor(year, true))
+      expect(span * 111.32).toBeCloseTo(300, 0)
+    }
+  })
+})
