@@ -27,11 +27,11 @@ function pick(id: string) {
 
 <template>
   <div class="search">
-    <input v-model="query" type="search" placeholder="Search events…" />
+    <input v-model="query" type="search" placeholder="Search events…" aria-label="Search events" />
     <ul v-if="matches.length">
       <li v-for="e in matches" :key="e.id" @click="pick(e.id)">
-        <span>{{ e.name }}</span>
-        <small>{{ formatYear(e.start) }}</small>
+        <span class="name">{{ e.name }}</span>
+        <small class="tnum">{{ formatYear(e.start) }}</small>
       </li>
     </ul>
   </div>
@@ -40,47 +40,92 @@ function pick(id: string) {
 <style scoped>
 .search {
   position: absolute;
-  top: 3rem;
+  top: calc(3rem + var(--safe-t));
   left: 50%;
   transform: translateX(-50%);
   width: min(300px, 70vw);
+  z-index: 6;
 }
 input {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(10, 15, 25, 0.85);
-  border: 1px solid #345;
-  border-radius: 12px;
-  color: #dde;
-  padding: 5px 12px;
-  font-size: 0.9rem;
+  background: rgba(6, 10, 18, 0.75);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--frost);
+  padding: 9px 13px;
+  font-size: 14px;
   outline: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:
+    border-color var(--fast),
+    box-shadow var(--fast),
+    background-color var(--fast);
+}
+input::placeholder {
+  color: var(--muted);
+}
+input:hover {
+  border-color: #2b3d58;
 }
 input:focus {
-  border-color: #f80;
+  border-color: var(--brass-line);
+  background: rgba(6, 10, 18, 0.92);
+  box-shadow: 0 0 0 3px var(--brass-soft);
 }
 ul {
   list-style: none;
-  margin: 4px 0 0;
-  padding: 0;
-  background: rgba(10, 15, 25, 0.95);
-  border: 1px solid #345;
-  border-radius: 8px;
+  margin: 6px 0 0;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--lift);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   overflow: hidden;
 }
 li {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 6px 12px;
-  color: #dde;
+  gap: var(--s3);
+  padding: 8px 10px;
+  border-radius: 7px;
+  color: var(--frost);
+  font-size: var(--t-md);
   cursor: pointer;
+  transition:
+    background-color var(--fast),
+    color var(--fast);
+}
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 li:hover {
-  background: #234;
+  background: var(--brass-soft);
+  color: #fff;
+}
+li:active {
+  background: rgba(227, 167, 88, 0.2);
 }
 small {
-  color: #f80;
+  color: var(--brass);
+  font-family: var(--cond);
+  font-size: var(--t-xs);
   white-space: nowrap;
+  flex: none;
+}
+
+@media (max-width: 640px) {
+  input {
+    font-size: 16px;
+  }
+  li {
+    min-height: 40px;
+  }
 }
 </style>

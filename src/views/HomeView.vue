@@ -20,11 +20,19 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
 <template>
   <GlobeView />
-  <div v-if="ui.search || ui.settings" class="backdrop" @click="ui.close()" />
+  <Transition name="fade">
+    <div v-if="ui.search || ui.settings" class="backdrop" @click="ui.close()" />
+  </Transition>
   <TopBar />
-  <SearchBox v-if="ui.search" />
-  <SettingsPanel v-if="ui.settings" />
-  <ScaleBar v-if="settings.scaleBar" />
+  <Transition name="pop">
+    <SearchBox v-if="ui.search" />
+  </Transition>
+  <Transition name="pop">
+    <SettingsPanel v-if="ui.settings" />
+  </Transition>
+  <Transition name="fade">
+    <ScaleBar v-if="settings.scaleBar" />
+  </Transition>
   <EventPanel />
   <TimelineBar />
 </template>
@@ -33,6 +41,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .backdrop {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 6;
+}
+@media (max-width: 640px) {
+  /* on a small screen the open panel is the subject; dim what's behind it */
+  .backdrop {
+    background: rgba(6, 10, 18, 0.42);
+  }
 }
 </style>

@@ -10,7 +10,9 @@ const time = useTimeStore()
 
 const e = computed(() => events.selected!)
 const when = computed(() =>
-  e.value.end ? `${formatYear(e.value.start)} – ${formatYear(e.value.end)}` : formatYear(e.value.start),
+  e.value.end
+    ? `${formatYear(e.value.start)} – ${formatYear(e.value.end)}`
+    : formatYear(e.value.start),
 )
 const children = computed(() => events.childrenOf(e.value.id))
 
@@ -31,18 +33,31 @@ function follow(link: { event?: string; url?: string }) {
 </script>
 
 <template>
-  <article v-if="events.selected" class="sheet panel">
-    <button class="close" aria-label="Close" @click="events.select()">×</button>
+  <article v-if="events.selected" class="sheet panel scroll-y">
+    <span class="grabber" aria-hidden="true" />
+    <button class="close" aria-label="Close" @click="events.select()">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+      >
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
 
     <nav v-if="e.parent" class="crumb">
       <a @click="goTo(e.parent!)">{{ events.byId(e.parent!)?.name }}</a>
     </nav>
 
     <h2>{{ e.name }}</h2>
-    <p class="when">{{ when }}</p>
+    <p class="when tnum">{{ when }}</p>
 
     <figure v-if="e.image">
       <img
+        loading="lazy"
         :src="e.image.url"
         :alt="e.image.caption ?? e.name"
         @error="($event.target as HTMLElement).parentElement!.style.display = 'none'"
@@ -51,25 +66,31 @@ function follow(link: { event?: string; url?: string }) {
     </figure>
 
     <div v-if="e.body" class="body" @click="onBodyClick" v-html="renderRichText(e.body)" />
-    <p v-else class="body"><span>{{ e.summary }}</span></p>
+    <p v-else class="body">
+      <span>{{ e.summary }}</span>
+    </p>
 
     <div v-if="children.length" class="block">
       <span class="eyebrow">Part of this event</span>
       <ul>
         <li v-for="c in children" :key="c.id">
           <a @click="goTo(c.id)">{{ c.name }}</a>
-          <span class="year">{{ formatYear(c.start) }}</span>
+          <span class="year tnum">{{ formatYear(c.start) }}</span>
         </li>
       </ul>
     </div>
 
     <div v-if="e.links?.length" class="block">
       <span class="eyebrow">Read more</span>
-      <p class="links"><a v-for="l in e.links" :key="l.label" @click.prevent="follow(l)">{{ l.label }}</a></p>
+      <p class="links">
+        <a v-for="l in e.links" :key="l.label" @click.prevent="follow(l)">{{ l.label }}</a>
+      </p>
     </div>
 
     <div class="tags">
-      <button v-for="t in e.tags" :key="t" @click="events.toggleTag(t)">{{ t }}</button>
+      <button v-for="t in e.tags" :key="t" @click="events.toggleTag(t)">
+        {{ t }}
+      </button>
     </div>
 
     <button
@@ -85,98 +106,327 @@ function follow(link: { event?: string; url?: string }) {
 <style scoped>
 .panel {
   position: absolute;
-  top: 60px;
-  left: 16px;
-  width: min(360px, calc(100vw - 32px));
-  max-height: calc(100% - var(--rail) - 76px);
-  overflow-y: auto;
-  padding: 18px 20px 20px;
+  top: calc(58px + var(--safe-t));
+  left: calc(var(--s4) + var(--safe-l));
+  width: min(370px, calc(100vw - 2 * var(--s4)));
+  max-height: calc(100dvh - var(--rail-clear) - 78px - var(--safe-t));
+  padding: var(--s5) var(--s5) var(--s5);
   z-index: 5;
+  animation: panel-in 0.26s var(--ease);
 }
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+}
+.grabber {
+  display: none;
+}
+
 .close {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: var(--s3);
+  right: var(--s3);
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   background: none;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
   color: var(--muted);
-  font-size: 20px;
-  line-height: 1;
   cursor: pointer;
+  transition:
+    color var(--fast),
+    background-color var(--fast),
+    border-color var(--fast);
 }
-.close:hover { color: var(--frost); }
+.close:hover {
+  color: var(--frost);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--line);
+}
+.close:active {
+  transform: scale(0.94);
+}
 
-.crumb { margin-bottom: 6px; }
-.crumb a::before { content: '↑ '; }
+.crumb {
+  margin-bottom: var(--s1);
+  font-size: var(--t-sm);
+}
+.crumb a::before {
+  content: '↑';
+  margin-right: 5px;
+  opacity: 0.7;
+}
+
 h2 {
   margin: 0;
   font-family: var(--serif);
   font-weight: 600;
-  font-size: 21px;
-  line-height: 1.25;
-  padding-right: 20px;
+  font-size: var(--t-title);
+  line-height: 1.24;
+  letter-spacing: -0.005em;
+  padding-right: var(--s5);
+  text-wrap: balance;
 }
 .when {
-  margin: 4px 0 14px;
+  margin: 6px 0 0;
   font-family: var(--cond);
-  font-size: 12px;
+  font-size: var(--t-sm);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--brass);
 }
-figure { margin: 0 0 14px; }
-img { width: 100%; border-radius: 8px; display: block; }
-figcaption { margin-top: 6px; font-size: 11px; color: var(--muted); font-style: italic; }
 
-.body { font-family: var(--serif); font-size: 14.5px; line-height: 1.62; color: #dde5f0; }
-.body :deep(p) { margin: 0 0 0.85em; }
+figure {
+  margin: var(--s4) 0 0;
+}
+img {
+  width: 100%;
+  border-radius: var(--r-md);
+  display: block;
+  border: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, 0.03);
+}
+figcaption {
+  margin-top: 7px;
+  font-size: var(--t-xs);
+  line-height: 1.45;
+  color: var(--muted);
+  font-style: italic;
+}
 
-.block { margin-top: 16px; display: grid; gap: 6px; }
-ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-li { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
-.year { color: var(--muted); font-family: var(--cond); font-size: 11px; }
-a { color: var(--patina); cursor: pointer; text-decoration: none; border-bottom: 1px solid rgba(111, 179, 168, 0.4); }
-a:hover { color: var(--frost); border-color: var(--frost); }
-.links a { margin-right: 14px; }
-.body :deep(a) { color: var(--patina); cursor: pointer; text-decoration: none; border-bottom: 1px solid rgba(111, 179, 168, 0.4); }
+/* --- the article itself: set for reading, not for filling a box --- */
+.body {
+  margin-top: var(--s4);
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.68;
+  color: #dbe4f1;
+  max-width: 68ch;
+  hyphens: auto;
+}
+.body :deep(p) {
+  margin: 0 0 0.9em;
+}
+.body :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.body :deep(strong) {
+  color: #f0f5fb;
+  font-weight: 600;
+}
+.body :deep(em) {
+  color: #e7eef8;
+}
+.body :deep(h3),
+.body :deep(h4) {
+  margin: 1.4em 0 0.4em;
+  font-family: var(--cond);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--frost);
+}
+.body :deep(ul),
+.body :deep(ol) {
+  margin: 0 0 0.9em;
+  padding-left: 1.15em;
+}
+.body :deep(li) {
+  display: list-item;
+  margin-bottom: 0.3em;
+}
+.body :deep(blockquote) {
+  margin: 0 0 0.9em;
+  padding-left: var(--s3);
+  border-left: 2px solid var(--line);
+  color: var(--frost-dim);
+  font-style: italic;
+}
+.body :deep(img) {
+  width: 100%;
+  border-radius: var(--r-md);
+  display: block;
+  margin: var(--s3) 0;
+}
+.body :deep(code) {
+  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
 
-.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+/* one link treatment everywhere in the panel */
+a,
+.body :deep(a) {
+  color: var(--patina);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--patina-line);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition:
+    color var(--fast),
+    text-decoration-color var(--fast);
+}
+a:hover,
+.body :deep(a:hover) {
+  color: #a5dcd2;
+  text-decoration-color: currentColor;
+}
+
+.block {
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--line-soft);
+  display: grid;
+  gap: var(--s2);
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.block li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  font-size: var(--t-md);
+  padding: 3px 0;
+}
+.year {
+  color: var(--muted);
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  flex: none;
+}
+.links {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1) var(--s4);
+  font-size: var(--t-md);
+}
+.links a {
+  margin-right: 0;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--s4);
+}
 .tags button {
   font-family: var(--cond);
-  font-size: 11px;
+  font-size: var(--t-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   background: transparent;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   color: var(--muted);
-  padding: 2px 10px;
+  padding: 3px 11px;
   cursor: pointer;
+  transition:
+    color var(--fast),
+    border-color var(--fast),
+    background-color var(--fast);
 }
-.tags button:hover { color: var(--brass); border-color: var(--brass); }
+.tags button:hover {
+  color: var(--brass);
+  border-color: var(--brass-line);
+  background: var(--brass-soft);
+}
+.tags button:active {
+  transform: scale(0.96);
+}
 
 .family {
-  margin-top: 14px;
+  margin-top: var(--s3);
   width: 100%;
   background: transparent;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--frost);
-  padding: 7px;
-  font-size: 12.5px;
+  padding: 9px;
+  font-size: var(--t-sm);
   cursor: pointer;
-  transition: border-color 0.15s var(--ease);
+  transition:
+    border-color var(--fast),
+    color var(--fast),
+    background-color var(--fast);
 }
-.family:hover { border-color: var(--brass); color: var(--brass); }
+.family:hover {
+  border-color: var(--brass-line);
+  color: var(--brass);
+  background: var(--brass-soft);
+}
+.family:active {
+  transform: scale(0.995);
+}
 
 @media (max-width: 640px) {
+  /* a bottom sheet, sitting just clear of the timeline */
   .panel {
     top: auto;
-    bottom: calc(var(--rail) + 12px);
-    left: 16px;
-    right: 16px;
+    bottom: calc(var(--rail-clear) + var(--s2));
+    left: calc(var(--s3) + var(--safe-l));
+    right: calc(var(--s3) + var(--safe-r));
     width: auto;
-    max-height: 52vh;
+    max-height: 56dvh;
+    padding: var(--s5) var(--s4) var(--s4);
+    animation-name: sheet-in;
+  }
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+  /* a sheet handle, so the panel reads as a surface you can dismiss */
+  .grabber {
+    display: block;
+    position: sticky;
+    top: -4px;
+    width: 34px;
+    height: 3px;
+    margin: -10px auto 10px;
+    border-radius: var(--r-pill);
+    background: var(--line);
+  }
+  .close {
+    top: var(--s2);
+    right: var(--s2);
+    width: 40px;
+    height: 40px;
+  }
+  h2 {
+    padding-right: 40px;
+  }
+  .body {
+    font-size: 15.5px;
+  }
+  .tags button {
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 7px 14px;
+  }
+  .block li {
+    min-height: 40px;
+    box-sizing: border-box;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .family {
+    min-height: 44px;
   }
 }
 </style>

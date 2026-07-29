@@ -3,52 +3,125 @@
   --void: #060a12;
   --hull: #0d1420;
   --panel: rgba(14, 21, 33, 0.94);
+  --panel-hi: rgba(255, 255, 255, 0.05);
   --line: #223148;
   --line-soft: #182334;
   --frost: #ccd8e8;
+  --frost-dim: #a3b3c8;
   --muted: #7d8fa6;
   --brass: #e3a758;
+  --brass-soft: rgba(227, 167, 88, 0.14);
+  --brass-line: rgba(227, 167, 88, 0.45);
   --ember: #e2653e;
   --patina: #6fb3a8;
+  --patina-line: rgba(111, 179, 168, 0.42);
 
-  --sans: 'IBM Plex Sans', system-ui, sans-serif;
-  --cond: 'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
-  --serif: 'IBM Plex Serif', Georgia, serif;
+  /* type: webfonts can fail to load; fallbacks are picked to keep metrics close */
+  --sans:
+    'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  --cond:
+    'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, system-ui, 'Roboto Condensed',
+    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --serif: 'IBM Plex Serif', ui-serif, Georgia, 'Noto Serif', 'Times New Roman', serif;
+
+  /* type scale */
+  --t-micro: 10px;
+  --t-eyebrow: 10.5px;
+  --t-xs: 11.5px;
+  --t-sm: 12.5px;
+  --t-md: 13.5px;
+  --t-lg: 15px;
+  --t-title: 21px;
+
+  /* spacing scale */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 20px;
+  --s6: 28px;
+
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
 
   --rail: 92px; /* timeline height */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --fast: 0.14s var(--ease);
+  --slow: 0.24s var(--ease);
+  --lift: 0 18px 48px rgba(0, 0, 0, 0.55);
+
+  /* device safe areas; the fallback keeps this valid where env() is unsupported */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+
+  /* vertical space that floating UI must leave clear at the bottom */
+  --rail-clear: calc(var(--rail) + var(--safe-b));
 }
 
 @media (max-width: 640px) {
-  :root { --rail: 78px; }
+  :root {
+    --rail: 84px;
+    --t-md: 14px;
+  }
 }
 
-html, body, #app {
+html,
+body,
+#app {
   margin: 0;
   height: 100%;
   background: var(--void);
   font-family: var(--sans);
   color: var(--frost);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-button, input { font-family: inherit; }
+body {
+  overscroll-behavior: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+button {
+  -webkit-tap-highlight-color: transparent;
+}
 
 /* utility label: small caps-ish condensed, used for every control label */
 .eyebrow {
   font-family: var(--cond);
-  font-size: 10px;
+  font-size: var(--t-eyebrow);
+  font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
+/* numerals that don't jitter as values change */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
 .sheet {
-  background: var(--panel);
+  position: relative;
+  background: linear-gradient(180deg, var(--panel-hi), transparent 140px), var(--panel);
   border: 1px solid var(--line);
-  border-radius: 14px;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  box-shadow:
+    var(--lift),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .icon-btn {
@@ -57,16 +130,98 @@ button, input { font-family: inherit; }
   width: 34px;
   height: 34px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(13, 20, 32, 0.8);
+  border-radius: var(--r-md);
+  background: rgba(13, 20, 32, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--frost);
   cursor: pointer;
-  transition: border-color 0.18s var(--ease), color 0.18s var(--ease);
+  transition:
+    border-color var(--fast),
+    color var(--fast),
+    background-color var(--fast),
+    transform var(--fast);
 }
-.icon-btn:hover { border-color: var(--brass); color: var(--brass); }
-.icon-btn.on { border-color: var(--brass); color: var(--brass); background: rgba(227, 167, 88, 0.12); }
-:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.icon-btn:hover {
+  border-color: var(--brass-line);
+  color: var(--brass);
+  background: rgba(20, 29, 44, 0.85);
+}
+.icon-btn:active {
+  transform: scale(0.94);
+}
+.icon-btn.on {
+  border-color: var(--brass);
+  color: var(--brass);
+  background: var(--brass-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* consistent, unobtrusive scrollbars inside panels */
+.scroll-y {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-y::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-y::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-y::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: var(--r-pill);
+}
+.scroll-y::-webkit-scrollbar-thumb:hover {
+  background: #33475f;
+  background-clip: content-box;
+}
+
+/* shared panel transitions, applied from HomeView */
+.pop-enter-active,
+.pop-leave-active,
+.rise-enter-active,
+.rise-leave-active {
+  transition:
+    opacity var(--slow),
+    transform var(--slow);
+}
+.pop-enter-from,
+.pop-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.985);
+}
+.rise-enter-from,
+.rise-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.99);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--slow);
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
