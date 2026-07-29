@@ -17,4 +17,4 @@ export const moonLatitude = (lng: number): number => 12 * Math.sin((lng * Math.P
  * accelerating — mirrors electrification then urban sprawl.
  */
 export const cityLightsFactor = (year: number): number =>
-  Math.min(1, Math.max(0, (year - 1850) / 176)) ** 1.6
+  Math.min(1, Math.max(0, (year - 1850) / 176)) ** 1.8
