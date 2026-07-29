@@ -1,5 +1,73 @@
 [
  {
+  "id": "portuguese-brazil",
+  "name": "Portuguese colonization of Brazil",
+  "start": 1500,
+  "end": 1800,
+  "lat": -15.0,
+  "lng": -51.0,
+  "priority": 70,
+  "tags": [
+   "exploration",
+   "politics"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "Portugal claimed and settled Brazil, which would become the largest Portuguese-speaking nation and the mainstay of the colonial empire.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). Brazil was initially neglected — the [spice trade](event:da-gama) was the prize — but sugar plantations and slave labour eventually made it immensely profitable. By 1800 Brazil was the empire's most valuable possession, and hundreds of thousands of enslaved Africans had been landed there.\n\nThe colony developed its own identity, mixing Portuguese, indigenous and African peoples in ways the mainland did not, setting the stage for its independence in 1822.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Colonial_Brazil).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Colonial_Brazil"
+   }
+  ]
+ },
+ {
+  "id": "swahili-trade",
+  "name": "Swahili city-states and Indian Ocean trade",
+  "start": 1500,
+  "end": 1800,
+  "lat": -6.8,
+  "lng": 39.3,
+  "priority": 64,
+  "tags": [
+   "economy",
+   "culture"
+  ],
+  "summary": "East African merchant cities from Mogadishu to Kilwa traded gold, ivory, and spices across the Indian Ocean, blending African and Arab cultures.",
+  "body": "The Swahili coast was not a European outpost but a sophisticated merchant civilization with its own ships, cities and rulers. Portuguese arrived in the 1500s and tried to monopolise the trade, but Arab, Persian and Indian merchants persisted, and the culture remained fundamentally African.\n\nSwahili, still widely spoken today, is a Bantu language carrying heavy Arabic and Persian borrowing — the linguistic trace of centuries of Indian Ocean commerce.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Swahili_city-states).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Swahili_city-states"
+   }
+  ]
+ },
+ {
+  "id": "safavid-empire",
+  "name": "Safavid Empire at its height",
+  "start": 1501,
+  "end": 1736,
+  "lat": 32.68,
+  "lng": 51.67,
+  "priority": 72,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Persia under the Safavids became a Shia Islamic empire, a great power rival to the Ottoman and Mughal empires.",
+  "body": "From Isfahan to the Caspian, Persian culture flourished — carpets, calligraphy, poetry, and architecture of extraordinary beauty. The Safavids made Shia Islam the state religion, a choice that shaped Iran's identity to this day.\n\nCaught between Ottoman, Russian and Mughal powers, Safavid Persia ultimately fell to internal strife and external pressure, but its cultural inheritance remains one of history's glories.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Safavid_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Safavid_Empire"
+   }
+  ]
+ },
+ {
   "id": "mona-lisa",
   "name": "Leonardo paints the Mona Lisa",
   "start": 1503,
@@ -47,6 +115,47 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Sistine_Chapel_ceiling"
+   }
+  ]
+ },
+ {
+  "id": "portuguese-goa",
+  "name": "Portuguese conquest of Goa",
+  "start": 1510,
+  "lat": 15.48,
+  "lng": 73.83,
+  "priority": 52,
+  "tags": [
+   "war",
+   "exploration"
+  ],
+  "summary": "Afonso de Albuquerque seized the spice-trade hub of Goa, founding Portugal's Asian empire.",
+  "body": "Goa became the capital of Portuguese India and a crucial hub for the spice trade. The Portuguese held it for over four centuries with a tiny garrison — a sign of how asymmetric colonial power could be, resting on naval superiority rather than numbers.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Portuguese_conquest_of_Goa).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Portuguese_conquest_of_Goa"
+   }
+  ]
+ },
+ {
+  "id": "las-casas",
+  "name": "Bartolomé de las Casas advocates for Indigenous peoples",
+  "start": 1515,
+  "end": 1566,
+  "lat": 18.5,
+  "lng": -71.5,
+  "priority": 60,
+  "tags": [
+   "politics",
+   "religion"
+  ],
+  "summary": "A Spanish Dominican friar documented the atrocities of conquest and argued that Indigenous people were fully human and must not be enslaved.",
+  "body": "Las Casas spent forty years in the Americas, witnessed the [epidemics](event:americas-epidemics) and brutality of [Spanish conquest](event:spanish-conquest), and wrote *A Short Account of the Destruction of the Indies* — a searing indictment that reached the Spanish Crown.\n\nHis advocacy did not stop slavery or conquest, but it introduced the principle that colonised peoples had rights that could not be violated — an idea that would echo through the centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bartolomé_de_las_Casas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Bartolomé_de_las_Casas"
    }
   ]
  },
@@ -214,6 +323,28 @@
   ]
  },
  {
+  "id": "suleiman-magnificent",
+  "name": "Suleiman the Magnificent",
+  "start": 1520,
+  "end": 1566,
+  "lat": 41.0,
+  "lng": 28.98,
+  "priority": 70,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "parent": "ottoman-empire",
+  "summary": "Under Suleiman, the Ottoman Empire reached its height, stretching from North Africa to the Persian Gulf and up into Hungary.",
+  "body": "Part of [Ottoman Empire](event:ottoman-empire). Suleiman was called *Kanuni*, the Lawgiver, for codifying Ottoman law; his court at Constantinople was arguably the era's most splendid. The empire controlled the eastern Mediterranean trade, the Silk Road, and the hajj pilgrimage routes.\n\nAfter his death, the Ottomans became gradually weaker, but remained a great power until 1918.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Suleiman_the_Magnificent).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Suleiman_the_Magnificent"
+   }
+  ]
+ },
+ {
   "id": "tenochtitlan",
   "name": "Fall of Tenochtitlan",
   "start": 1521,
@@ -319,6 +450,28 @@
   ]
  },
  {
+  "id": "ethiopian-ottoman",
+  "name": "Ethiopian–Adal War",
+  "start": 1529,
+  "end": 1543,
+  "lat": 9.0,
+  "lng": 38.0,
+  "priority": 52,
+  "tags": [
+   "war",
+   "religion",
+   "politics"
+  ],
+  "summary": "The Christian Ethiopian empire and the Muslim Sultanate of Adal fought a devastating war, with Ottoman and Portuguese intervention on opposing sides.",
+  "body": "Imam Ahmad ibn Ibrahim al-Ghazi of Adal invaded the Ethiopian highlands in 1529 and overran much of the empire, aided by Ottoman firearms and troops. Ethiopia appealed to Portugal, which landed a musketeer force in 1541; Ahmad was killed at the Battle of Wayna Daga in 1543 and the invasion collapsed.\n\nThe war left both states exhausted and the highlands depopulated, but the Ethiopian monarchy and its Orthodox church survived. The Ottomans held only the Red Sea coast, and Ethiopia remained independent.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ethiopian%E2%80%93Adal_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ethiopian%E2%80%93Adal_War"
+   }
+  ]
+ },
+ {
   "id": "inca-conquest",
   "name": "Conquest of the Inca Empire",
   "start": 1532,
@@ -340,6 +493,31 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Spanish_conquest_of_the_Inca_Empire"
+   }
+  ]
+ },
+ {
+  "id": "henry-viii-reign",
+  "name": "Henry VIII breaks with Rome",
+  "start": 1534,
+  "lat": 51.5,
+  "lng": -0.1,
+  "priority": 66,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "parent": "reformation",
+  "summary": "England's king rejected papal authority, dissolved the monasteries and made himself Supreme Head of the Church of England.",
+  "body": "Part of [Protestant Reformation](event:reformation). Henry wanted a son, the Pope would not annul his marriage, so Henry seized church lands and declared himself the final authority on doctrine. The Break with Rome was less about theology than power — Henry remained Catholic in belief — but it pulled England out of Christendom's common orbit.\n\nThe confiscated monastic wealth enriched the Tudor state and a new aristocracy, reshaping English society and politics for centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Break_with_Rome).",
+  "links": [
+   {
+    "label": "Protestant Reformation",
+    "event": "reformation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Break_with_Rome"
    }
   ]
  },
@@ -388,6 +566,27 @@
   ]
  },
  {
+  "id": "potosi-silver",
+  "name": "Silver boom at Potosí",
+  "start": 1545,
+  "end": 1800,
+  "lat": -19.59,
+  "lng": -65.75,
+  "priority": 72,
+  "tags": [
+   "economy",
+   "politics"
+  ],
+  "summary": "The silver mountain of Potosí in Upper Peru (modern Bolivia) produced a large share of the world's silver, reshaping global trade at an enormous human cost.",
+  "body": "Between 1545 and 1810 Potosí produced roughly two-fifths of the world's silver. The bullion flowed to Spain, financed its wars, and from there into Amsterdam, Venice and the Asian trade — Potosí silver was one of the first genuinely global currencies.\n\nThe human cost was severe. Indigenous communities supplied conscripted labour through the Spanish *mita* system, and enslaved Africans were brought in as well; accidents, cave-ins and mercury poisoning from the refining process killed large numbers of workers, though historians' estimates of the total vary widely.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Potos%C3%AD).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Potos%C3%AD"
+   }
+  ]
+ },
+ {
   "id": "trent",
   "name": "Council of Trent",
   "start": 1545,
@@ -409,6 +608,99 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Council_of_Trent"
+   }
+  ]
+ },
+ {
+  "id": "peace-augsburg",
+  "name": "Peace of Augsburg",
+  "start": 1555,
+  "lat": 48.36,
+  "lng": 10.89,
+  "priority": 60,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "parent": "reformation",
+  "summary": "Catholic and Protestant princes agreed to stop fighting over Germany; cuius regio, eius religio — the ruler chooses the faith.",
+  "body": "Part of [Protestant Reformation](event:reformation). The Peace of Augsburg ended religious civil war in the Holy Roman Empire by letting each territory's prince decide whether his subjects would be Catholic or Lutheran — a revolutionary concession to pluralism, even if it meant forced exile for religious minorities.\n\nThe principle held until the [Thirty Years' War](event:thirty-years-war) shattered it again.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Peace_of_Augsburg).",
+  "links": [
+   {
+    "label": "Protestant Reformation",
+    "event": "reformation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Peace_of_Augsburg"
+   }
+  ]
+ },
+ {
+  "id": "akbar-great",
+  "name": "Akbar the Great reigns",
+  "start": 1556,
+  "end": 1605,
+  "lat": 27.17,
+  "lng": 78.04,
+  "priority": 74,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "parent": "mughal-empire",
+  "summary": "Akbar expanded the Mughal Empire across most of the Indian subcontinent and reformed its administration with remarkable tolerance.",
+  "body": "Part of [Mughal Empire](event:mughal-empire). Akbar was illiterate but intellectually voracious; he abolished the jizya tax on non-Muslims, married a Hindu princess and included Hindus in his administration. His court at Agra became a centre of art and learning, where Hindu and Islamic cultures blended.\n\nHis reign established the pattern of Mughal grandeur — seen later in the [Taj Mahal](event:taj-mahal) — and a model of imperial pluralism rarely matched in its era.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Akbar).",
+  "links": [
+   {
+    "label": "Mughal Empire",
+    "event": "mughal-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Akbar"
+   }
+  ]
+ },
+ {
+  "id": "manila-galleon",
+  "name": "Manila Galleon trade route",
+  "start": 1565,
+  "end": 1815,
+  "lat": 14.6,
+  "lng": 120.97,
+  "priority": 64,
+  "tags": [
+   "economy",
+   "exploration"
+  ],
+  "summary": "Spanish ships carried Chinese silk and porcelain across the Pacific to Mexico, exchanging them for American silver.",
+  "body": "The galleons sailed once a year from Manila to Acapulco, carrying goods worth fortunes, and returned laden with silver from [Potosí](event:potosi-silver) and Mexico. Chinese merchants were the true beneficiaries — they controlled the production of silk and ceramics — but Spain took its cut and Mexico became the Pacific gateway to the Atlantic world.\n\nFor two and a half centuries, the Manila Galleon was one of the world's most valuable trade routes, linking three continents through Spanish empire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Manila_galleon).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Manila_galleon"
+   }
+  ]
+ },
+ {
+  "id": "netherlands-independence",
+  "name": "Dutch Revolt against Spain",
+  "start": 1568,
+  "end": 1648,
+  "lat": 52.1,
+  "lng": 5.29,
+  "priority": 70,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "The Low Countries rebelled against Spanish rule, fought a gruelling eighty-year war, and emerged as an independent republic and a global power.",
+  "body": "What began as resistance to Spanish taxes and Catholic oppression became a foundational moment for Dutch identity and republican government. The Dutch proved that a wealthy merchant republic could defeat an empire — though not for eighty years of bloodshed.\n\nThe independence was sealed at the [Peace of Westphalia](event:westphalia) in 1648, and the Dutch promptly became the world's greatest trading power, rivalling the English and Portuguese in every ocean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eighty_Years%27_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Eighty_Years%27_War"
    }
   ]
  },
@@ -481,6 +773,71 @@
   ]
  },
  {
+  "id": "edict-of-nantes",
+  "name": "Edict of Nantes",
+  "start": 1598,
+  "lat": 47.22,
+  "lng": -1.55,
+  "priority": 62,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "parent": "reformation",
+  "summary": "Henry IV of France granted religious toleration to Huguenots (French Protestants), ending decades of civil war.",
+  "body": "Part of [Protestant Reformation](event:reformation). The Edict granted Huguenots the right to worship in designated places and promised equality before the law — a rare concession in an age of religious conformity enforced by the sword.\n\nThe Edict lasted until Louis XIV revoked it in 1685, driving hundreds of thousands of Huguenots into exile and demonstrating how fragile religious liberty remained.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Edict_of_Nantes).",
+  "links": [
+   {
+    "label": "Protestant Reformation",
+    "event": "reformation"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Edict_of_Nantes"
+   }
+  ]
+ },
+ {
+  "id": "english-east-india",
+  "name": "English East India Company founded",
+  "start": 1600,
+  "lat": 51.51,
+  "lng": -0.09,
+  "priority": 68,
+  "tags": [
+   "economy",
+   "politics"
+  ],
+  "summary": "Elizabeth I chartered a joint-stock company to trade with Asia; it would become the instrument of British empire in India.",
+  "body": "The East India Company started as a trading venture but evolved into a quasi-government, issuing its own currency, maintaining armies, making treaties and collecting taxes. It discovered that political control was necessary for stable trade — so it conquered India piecemeal, justified by commerce.\n\nBy 1800 the Company governed Bengal outright and dominated much of the coast, a private corporation exercising sovereign power under a distant Crown.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/East_India_Company).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/East_India_Company"
+   }
+  ]
+ },
+ {
+  "id": "dutch-east-india",
+  "name": "Dutch East India Company founded",
+  "start": 1602,
+  "lat": 52.37,
+  "lng": 4.9,
+  "priority": 66,
+  "tags": [
+   "economy",
+   "politics"
+  ],
+  "summary": "The Dutch chartered the VOC, history's first multinational corporation, to dominate the spice trade and later global commerce.",
+  "body": "The VOC (Vereenigde Oost-Indische Compagnie) combined dozens of trading companies into one, backed by the state and stockholders who expected profits. It pursued monopoly by force: to control the nutmeg trade the VOC seized the Banda Islands in 1621, killing or deporting almost the whole Bandanese population.\n\nAt its height in the 1700s, the VOC was wealthier than most nations. It proved that commerce, backed by force, could reshape the world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dutch_East_India_Company).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dutch_East_India_Company"
+   }
+  ]
+ },
+ {
   "id": "edo-japan",
   "name": "Tokugawa Japan and sakoku",
   "start": 1603,
@@ -497,6 +854,56 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Edo_period"
+   }
+  ]
+ },
+ {
+  "id": "jamestown",
+  "name": "Jamestown settlement",
+  "start": 1607,
+  "lat": 37.23,
+  "lng": -76.51,
+  "priority": 66,
+  "tags": [
+   "exploration",
+   "politics"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "The first permanent English settlement in North America, Jamestown survived disease, famine and Indigenous resistance to anchor English colonization.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). The early years were nightmarish — half the colonists died in the first year — but tobacco cultivation made profit possible. Indentured servants and then enslaved Africans provided the labour; the Powhatan Confederacy resisted but was gradually driven back.\n\nJamestown became Virginia, which became a cornerstone of English North America and, eventually, the United States.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Jamestown,_Virginia).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Jamestown,_Virginia"
+   }
+  ]
+ },
+ {
+  "id": "quebec-founded",
+  "name": "Founding of Quebec",
+  "start": 1608,
+  "lat": 46.81,
+  "lng": -71.21,
+  "priority": 60,
+  "tags": [
+   "exploration",
+   "politics"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "Samuel de Champlain established the first permanent French settlement in North America, centred on the fur trade and alliance with Algonquian peoples.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). Unlike [Jamestown](event:jamestown), Quebec succeeded through partnership with Indigenous nations rather than conquest — the French needed Indigenous hunters to supply furs. This created a different colonial path, with more intermarriage and métis (mixed-race) populations.\n\nQuebec became the capital of New France and the foundation of Francophone North America.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Quebec_City#Colonial_era).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Quebec_City"
    }
   ]
  },
@@ -614,6 +1021,30 @@
   ]
  },
  {
+  "id": "harvey-circulation",
+  "name": "Harvey discovers blood circulation",
+  "start": 1628,
+  "lat": 51.51,
+  "lng": -0.09,
+  "priority": 70,
+  "tags": [
+   "science"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "William Harvey proved that blood circulates through the body, pumped by the heart — overturning medicine's ancient consensus in one blow.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Harvey used mathematics and dissection to prove that the blood flows in a loop, not ebbing and flowing as Galen had taught for 1,500 years. His *De motu cordis* was published while he was physician to Charles I, and he was 50 when it appeared.\n\nThe discovery opened a new physiology and was the foundation on which cardiovascular medicine was built.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Harvey).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/William_Harvey"
+   }
+  ]
+ },
+ {
   "id": "taj-mahal",
   "name": "Taj Mahal built",
   "start": 1632,
@@ -704,6 +1135,172 @@
   ]
  },
  {
+  "id": "aurangzeb-reign",
+  "name": "Aurangzeb expands the Mughal Empire",
+  "start": 1658,
+  "end": 1707,
+  "lat": 28.61,
+  "lng": 77.21,
+  "priority": 66,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "parent": "mughal-empire",
+  "summary": "The last great Mughal emperor conquered southern India but alienated Hindus with religious orthodoxy, sowing the empire's decline.",
+  "body": "Part of [Mughal Empire](event:mughal-empire). Aurangzeb reversed [Akbar](event:akbar-great)'s tolerance, imposed Islamic law strictly and taxed Hindus discriminatorily. His long southern wars enriched the treasury but exhausted it too — by his death the empire was stretched thin.\n\nWithout his military genius to hold it together, the Mughal state fragmented into provincial kingdoms that the [East India Company](event:english-east-india) could divide and conquer.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aurangzeb).",
+  "links": [
+   {
+    "label": "Mughal Empire",
+    "event": "mughal-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Aurangzeb"
+   }
+  ]
+ },
+ {
+  "id": "kangxi-emperor",
+  "name": "Kangxi Emperor consolidates Qing Dynasty",
+  "start": 1661,
+  "end": 1722,
+  "lat": 39.92,
+  "lng": 116.39,
+  "priority": 74,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "parent": "qing-dynasty",
+  "summary": "Kangxi extended Qing rule over Mongolia, Taiwan and Tibet, and presided over a cultural and economic golden age.",
+  "body": "Part of [Qing dynasty](event:qing-dynasty). Kangxi was a scholar-emperor who loved poetry, calligraphy and scholarship. He toured his realm extensively, showed concern for the welfare of the common people, and filled his court with able administrators.\n\nUnder his rule, China was peaceful and prosperous, the empire expanded steadily on its northern and western frontiers, and the population grew rapidly. He died leaving the dynasty at its height.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kangxi_Emperor).",
+  "links": [
+   {
+    "label": "Qing dynasty",
+    "event": "qing-dynasty"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Kangxi_Emperor"
+   }
+  ]
+ },
+ {
+  "id": "boyle-gas-law",
+  "name": "Boyle's law of gases",
+  "start": 1662,
+  "lat": 51.75,
+  "lng": -1.26,
+  "priority": 56,
+  "tags": [
+   "science"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "Robert Boyle showed that gas pressure and volume are inversely related, laying the foundation of chemistry and thermodynamics.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Boyle's law — pressure times volume is constant — was the first mathematical law governing the behaviour of matter itself, and it proved that gases obeyed the same natural laws as solids and liquids.\n\nIt was among the first triumphs of the experimental method and helped establish chemistry as a quantitative science.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Boyle%27s_law).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Boyle%27s_law"
+   }
+  ]
+ },
+ {
+  "id": "hooke-cells",
+  "name": "Robert Hooke discovers cells",
+  "start": 1665,
+  "lat": 51.51,
+  "lng": -0.1,
+  "priority": 62,
+  "tags": [
+   "science"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "Using an early microscope, Hooke observed the cellular structure of cork and coined the term 'cell' to describe life's basic unit.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Hooke's *Micrographia* (1665) was one of the era's most beautifully illustrated books, with detailed drawings of microscopic organisms and structures. He saw honeycomb-like compartments in plant tissue and called them 'cells', not realizing he had glimpsed the basis of all life.\n\nCell biology would not mature for another two centuries, but Hooke had found the door.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Robert_Hooke).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Robert_Hooke"
+   }
+  ]
+ },
+ {
+  "id": "leeuwenhoek-microscope",
+  "name": "Leeuwenhoek's microscopes reveal microorganisms",
+  "start": 1674,
+  "lat": 52.01,
+  "lng": 4.36,
+  "priority": 66,
+  "tags": [
+   "science",
+   "technology"
+  ],
+  "parent": "scientific-revolution",
+  "summary": "Antonie van Leeuwenhoek ground tiny lenses to magnify water droplets 200-fold and discovered bacteria, protozoa and blood cells.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Leeuwenhoek was an obsessive lens-grinder, not a university man, but his hand-built microscopes surpassed all competitors. He saw what nobody else had imagined — a teeming world of life in a drop of water.\n\nHe spent decades describing what he saw, in hundreds of letters to the Royal Society, proving that life extended far below the threshold of the naked eye.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Antonie_van_Leeuwenhoek).",
+  "links": [
+   {
+    "label": "The Scientific Revolution",
+    "event": "scientific-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Antonie_van_Leeuwenhoek"
+   }
+  ]
+ },
+ {
+  "id": "wren-cathedral",
+  "name": "Christopher Wren builds St. Paul's Cathedral",
+  "start": 1675,
+  "end": 1711,
+  "lat": 51.51,
+  "lng": -0.1,
+  "priority": 58,
+  "tags": [
+   "culture"
+  ],
+  "summary": "After the Great Fire of 1666 burned old London, Wren designed a new baroque cathedral that became the architectural symbol of a restored Britain.",
+  "body": "St. Paul's took 35 years to build and consumed vast resources during [the Glorious Revolution](event:glorious-revolution) and the wars with Louis XIV. Wren's soaring dome became the image of London, rising again from ashes, reassuring and grand.\n\nWren designed over 50 churches after the fire and pioneered English baroque — a style less florid than the Continental version, more restrained and mathematical.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/St_Paul%27s_Cathedral).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/St_Paul%27s_Cathedral"
+   }
+  ]
+ },
+ {
+  "id": "peter-the-great",
+  "name": "Peter the Great modernizes Russia",
+  "start": 1682,
+  "end": 1725,
+  "lat": 55.75,
+  "lng": 37.62,
+  "priority": 72,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Peter I dragged Russia into the modern world by force, building a navy, westernising the court and making Russia a European great power.",
+  "body": "Peter visited Western Europe incognito to study shipbuilding and returned to Russia determined to transform it. He cut off the nobles' beards, reformed the alphabet, moved the capital to [St. Petersburg](event:st-petersburg-founded) on the Baltic, and fought Sweden for access to the sea.\n\nHe was brutal — crushing a rebellion of the old guard with public executions — but he succeeded in making Russia a force to reckon with in European politics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Peter_the_Great).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Peter_the_Great"
+   }
+  ]
+ },
+ {
   "id": "vienna-1683",
   "name": "Ottoman siege of Vienna",
   "start": 1683,
@@ -724,6 +1321,26 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Vienna"
+   }
+  ]
+ },
+ {
+  "id": "bach-baroque",
+  "name": "J.S. Bach's compositions",
+  "start": 1685,
+  "end": 1750,
+  "lat": 51.33,
+  "lng": 12.38,
+  "priority": 60,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Johann Sebastian Bach composed some of humanity's greatest music — mathematically intricate fugues and spiritually profound works for the church.",
+  "body": "Bach worked in provincial German courts and churches, never travelled far, and was not famous in his own time. He composed over 1,000 pieces: suites, concertos, cantatas and the *Art of Fugue*, in which counterpoint becomes almost a philosophy of order.\n\nAfter his death his work fell into obscurity until the 19th-century revival that made him a titan. He is now considered the summit of baroque music.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Johann_Sebastian_Bach).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Johann_Sebastian_Bach"
    }
   ]
  },
@@ -793,6 +1410,223 @@
   ]
  },
  {
+  "id": "voltaire-enlightenment",
+  "name": "Voltaire's philosophy and writings",
+  "start": 1694,
+  "end": 1778,
+  "lat": 48.87,
+  "lng": 2.31,
+  "priority": 64,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "parent": "enlightenment",
+  "summary": "Voltaire attacked superstition, censorship and religious intolerance with satire and reason, becoming the voice of the Enlightenment.",
+  "body": "Part of [The Enlightenment](event:enlightenment). Voltaire lived a long, scandalous and prolific life — writing poetry, philosophy, history and *Candide*, a dark satire on optimism that remains funny and bitter today. He was imprisoned for insulting the powerful and exiled, but his ideas spread across Europe through letters and smuggled books.\n\nHe died in Paris celebrated as the greatest living writer, his pen having sharpened the weapons of reason against the Old Regime.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voltaire).",
+  "links": [
+   {
+    "label": "The Enlightenment",
+    "event": "enlightenment"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Voltaire"
+   }
+  ]
+ },
+ {
+  "id": "st-petersburg-founded",
+  "name": "Founding of St. Petersburg",
+  "start": 1703,
+  "lat": 59.93,
+  "lng": 30.31,
+  "priority": 62,
+  "tags": [
+   "politics"
+  ],
+  "parent": "peter-the-great",
+  "summary": "Peter the Great built a new capital on the Baltic marshes to give Russia a window on Europe and shake off Moscow's old ways.",
+  "body": "Part of [Peter the Great](event:peter-the-great)'s modernisation. St. Petersburg was built in a European style with straight streets and grand buildings, and was intended to rival Western cities in culture and sophistication. Thousands of workers died in the swamps; the city cost a vast sum.\n\nBut it succeeded. St. Petersburg became Russia's window on the West and remained the capital until 1918.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Saint_Petersburg).",
+  "links": [
+   {
+    "label": "Peter the Great",
+    "event": "peter-the-great"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Saint_Petersburg"
+   }
+  ]
+ },
+ {
+  "id": "act-of-union-1707",
+  "name": "Act of Union creates Great Britain",
+  "start": 1707,
+  "lat": 55.9,
+  "lng": -3.2,
+  "priority": 60,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The parliaments of England and Scotland merged, turning a shared monarchy into a single kingdom of Great Britain.",
+  "body": "The two crowns had shared a monarch since 1603; the 1707 Acts joined the parliaments as well. The Union was partly economic (Scotland gained access to English colonial markets), partly religious (both were Protestant) and partly practical — one monarch, one parliament, one army and navy could project power farther than two squabbling realms.\n\nThe union held the British Isles together for colonial conquest and, as Britain, made it the world's greatest imperial power by 1800.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Acts_of_Union_1707).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Acts_of_Union_1707"
+   }
+  ]
+ },
+ {
+  "id": "yongzheng-reforms",
+  "name": "Yongzheng Emperor's Qing reforms",
+  "start": 1722,
+  "end": 1735,
+  "lat": 39.92,
+  "lng": 116.39,
+  "priority": 56,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "parent": "qing-dynasty",
+  "summary": "Yongzheng tightened imperial authority, reformed the bureaucracy and reduced corruption, strengthening the Qing state.",
+  "body": "Part of [Qing dynasty](event:qing-dynasty). Yongzheng succeeded his father [Kangxi](event:kangxi-emperor) and proved an even more meticulous administrator. He created a secret memorial system to bypass bureaucratic channels, settled border disputes, and boosted agricultural productivity.\n\nHis reign was short but crucial in stabilising Qing power, setting the stage for his successors to govern a stable empire of 300 million people.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Yongzheng_Emperor).",
+  "links": [
+   {
+    "label": "Qing dynasty",
+    "event": "qing-dynasty"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Yongzheng_Emperor"
+   }
+  ]
+ },
+ {
+  "id": "hume-philosophy",
+  "name": "Hume's empiricist philosophy",
+  "start": 1739,
+  "end": 1776,
+  "lat": 55.95,
+  "lng": -3.19,
+  "priority": 56,
+  "tags": [
+   "culture"
+  ],
+  "parent": "enlightenment",
+  "summary": "David Hume argued that all knowledge comes from experience, not reason or revelation, shaking the foundations of metaphysics.",
+  "body": "Part of [The Enlightenment](event:enlightenment). Hume published his *Treatise of Human Nature* in 1739 and spent the rest of his life elaborating and defending empiricism — the view that the senses, not pure reason, are the source of knowledge.\n\nHe argued we cannot prove God, causation or the self — only experience impressions. His radical scepticism troubled philosophers then and now, but it steered thought toward experimental science.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/David_Hume).",
+  "links": [
+   {
+    "label": "The Enlightenment",
+    "event": "enlightenment"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/David_Hume"
+   }
+  ]
+ },
+ {
+  "id": "enlightened-despotism",
+  "name": "Enlightened despotism in Prussia and Austria",
+  "start": 1740,
+  "end": 1790,
+  "lat": 52.5,
+  "lng": 13.4,
+  "priority": 58,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "parent": "enlightenment",
+  "summary": "Absolute monarchs like Frederick the Great and Maria Theresa adopted Enlightenment reforms — legal codes, religious toleration, education — while keeping power.",
+  "body": "Part of [The Enlightenment](event:enlightenment). 'Everything for the people, nothing by the people' is the phrase later used to sum up the approach. Frederick the Great reformed the law, promoted science, and invited philosophers like Voltaire to his court.\n\nEnlightened despotism showed that Enlightenment ideas could be imposed from above, even if they contradicted monarchy itself — a tension that would break open in the [French Revolution](event:french-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Enlightened_absolutism).",
+  "links": [
+   {
+    "label": "The Enlightenment",
+    "event": "enlightenment"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Enlightened_absolutism"
+   }
+  ]
+ },
+ {
+  "id": "montesquieu-spirit",
+  "name": "Montesquieu's separation of powers",
+  "start": 1748,
+  "lat": 44.83,
+  "lng": -0.58,
+  "priority": 60,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "parent": "enlightenment",
+  "summary": "Montesquieu argued that liberty depends on dividing government into legislative, executive and judicial branches.",
+  "body": "Part of [The Enlightenment](event:enlightenment). *The Spirit of the Laws* was widely read and directly influenced the design of the [American Constitution](event:us-constitution). The idea that separated powers check each other remains the template for democratic design.\n\nMontesquieu also believed different climates and conditions shaped different forms of government — an early comparative politics that was partly prejudiced but also insightful.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Montesquieu).",
+  "links": [
+   {
+    "label": "The Enlightenment",
+    "event": "enlightenment"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Montesquieu"
+   }
+  ]
+ },
+ {
+  "id": "diderot-encyclopedia",
+  "name": "Diderot's Encyclopédie",
+  "start": 1751,
+  "end": 1772,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 60,
+  "tags": [
+   "culture",
+   "technology"
+  ],
+  "parent": "enlightenment",
+  "summary": "Denis Diderot edited a massive encyclopedia of human knowledge — 28 volumes — that was both radical philosophy and a technical handbook.",
+  "body": "Part of [The Enlightenment](event:enlightenment). The *Encyclopédie* covered everything: philosophy, trades, politics, science, carpentry, music. It was collaborative, featuring contributions from [Voltaire](event:voltaire-enlightenment), [Rousseau](event:rousseau-social) and others, and was constantly harassed by the authorities for subversion.\n\nBy distributing knowledge widely, it embodied Enlightenment faith that reason and facts would reform society.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Encyclopédie).",
+  "links": [
+   {
+    "label": "The Enlightenment",
+    "event": "enlightenment"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Encyclopédie"
+   }
+  ]
+ },
+ {
+  "id": "konbaung-dynasty",
+  "name": "Konbaung Dynasty unites Burma",
+  "start": 1752,
+  "lat": 22.0,
+  "lng": 95.7,
+  "priority": 54,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Alaungpaya and his Konbaung successors reunified Burma after fragmentation, created a powerful kingdom and resisted European control.",
+  "body": "Burma had been divided and weak; Alaungpaya's military genius reconquered the country and invaded Siam; his successors later fought off four Qing invasions. His successors expanded Burmese power to its greatest extent, controlling a territory from the Andaman Sea to the Assamese hills.\n\nThe British would conquer Burma in three wars by 1885, but the Konbaung had created a Burmese nation-state where there had been scattered kingdoms.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Konbaung_Dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Konbaung_Dynasty"
+   }
+  ]
+ },
+ {
   "id": "lisbon-earthquake",
   "name": "Lisbon earthquake",
   "start": 1755,
@@ -808,6 +1642,26 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/1755_Lisbon_earthquake"
+   }
+  ]
+ },
+ {
+  "id": "mozart-symphonies",
+  "name": "Mozart's compositions",
+  "start": 1756,
+  "end": 1791,
+  "lat": 48.21,
+  "lng": 16.37,
+  "priority": 58,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Wolfgang Amadeus Mozart composed over 600 works across every genre of the Classical era, dying at 35 having transformed European music.",
+  "body": "Mozart was a prodigy who was touring Europe by age six and wrote his first symphony at eight. His mature works — the late symphonies, the great operas, the piano concertos — combine mathematical precision with emotional depth.\n\nHe died poor and was buried in a pauper's grave, but his music outlived all the princes and bishops he served.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart"
    }
   ]
  },
@@ -828,6 +1682,26 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Seven_Years%27_War"
+   }
+  ]
+ },
+ {
+  "id": "battle-plassey",
+  "name": "Battle of Plassey",
+  "start": 1757,
+  "lat": 23.8,
+  "lng": 88.25,
+  "priority": 70,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Robert Clive's East India Company army defeated the Nawab of Bengal in a single afternoon, beginning the British conquest of India.",
+  "body": "Clive's [East India Company](event:english-east-india) force of about 3,000 faced perhaps 50,000, but he had disciplined artillery and a downpour that spoiled the Nawab's powder. The victory was above all political: Clive had already bought off Mir Jafar, the Nawab's own commander, who held the bulk of the army out of the fight and took the throne afterwards.\n\nPlassey opened Bengal to the Company, which took over the province's revenues in 1765 and expanded across much of the subcontinent over the following decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Plassey).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Plassey"
    }
   ]
  },
@@ -853,6 +1727,31 @@
   ]
  },
  {
+  "id": "rousseau-social",
+  "name": "Rousseau's The Social Contract",
+  "start": 1762,
+  "lat": 48.9,
+  "lng": 2.36,
+  "priority": 64,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "parent": "enlightenment",
+  "summary": "Rousseau argued that legitimate government rests on the consent of the governed expressed through the 'general will'.",
+  "body": "Part of [The Enlightenment](event:enlightenment). Where [Voltaire](event:voltaire-enlightenment) attacked religion, Rousseau attacked society itself as corrupting humans' natural goodness. His *Social Contract* provided arguments for democracy and was seized by both the [French Revolution](event:french-revolution) and by authoritarian regimes who claimed to embody the 'general will'.\n\nHis ideas remain fertile and dangerous, read by revolutionaries and conservatives alike.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Social_Contract).",
+  "links": [
+   {
+    "label": "The Enlightenment",
+    "event": "enlightenment"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/The_Social_Contract"
+   }
+  ]
+ },
+ {
   "id": "spinning-jenny",
   "name": "Mechanised spinning",
   "start": 1764,
@@ -873,6 +1772,26 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Spinning_jenny"
+   }
+  ]
+ },
+ {
+  "id": "goethe-literature",
+  "name": "Goethe's literary influence",
+  "start": 1774,
+  "end": 1800,
+  "lat": 50.1,
+  "lng": 8.68,
+  "priority": 56,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Johann Wolfgang von Goethe was Germany's greatest writer, whose works bridged the Enlightenment and Romanticism.",
+  "body": "*The Sorrows of Young Werther* (1774) was the first international bestseller, making Goethe famous before he was 25. His poetry, plays and novels moved beyond Enlightenment rationality toward emotion and the power of nature.\n\nBy 1800, Goethe had become Germany's intellectual leader, influential across Europe and a model for the Romantic movement that followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Johann_Wolfgang_von_Goethe).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Johann_Wolfgang_von_Goethe"
    }
   ]
  },
@@ -971,6 +1890,27 @@
   ]
  },
  {
+  "id": "tay-son-rebellion",
+  "name": "Tay Son Rebellion in Vietnam",
+  "start": 1778,
+  "end": 1802,
+  "lat": 16.0,
+  "lng": 107.0,
+  "priority": 56,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Rural rebels in southern Vietnam overthrew the aristocracy, briefly unified the country and redistributed land before being crushed.",
+  "body": "The Tay Son were peasants who rebelled against both the Nguyen lords of the south and the Trinh lords of the north, winning astonishing victories despite being outnumbered. They redistributed confiscated aristocratic lands to the poor and proclaimed a meritocracy.\n\nThey routed a Qing invasion in 1789, but after their leader Nguyen Hue died in 1792 the movement fractured, and Nguyen Anh — backed by French advisers — reconquered the country by 1802 — though the Tay Son legacy of peasant revolt echoed into the 20th century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tây_Sơn_dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tây_Sơn_dynasty"
+   }
+  ]
+ },
+ {
   "id": "yorktown",
   "name": "Siege of Yorktown",
   "start": 1781,
@@ -991,6 +1931,25 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Siege_of_Yorktown"
+   }
+  ]
+ },
+ {
+  "id": "chakri-dynasty",
+  "name": "Chakri Dynasty founded in Siam",
+  "start": 1782,
+  "lat": 13.73,
+  "lng": 100.49,
+  "priority": 52,
+  "tags": [
+   "politics"
+  ],
+  "summary": "General Chakri founded a new royal house in Siam (Thailand) that rules to this day, making it the world's longest-reigning monarchy.",
+  "body": "After the Burmese destroyed the previous Siamese capital at Ayutthaya, Chakri established a new one at Bangkok and created a stable, centralised state. Siam remained independent through both British and French colonialism, a feat achieved by careful diplomacy and strategic modernisation.\n\nThe Chakri dynasty still reigns, having survived wars, revolutions and coups for over 240 years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chakri_Dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Chakri_Dynasty"
    }
   ]
  },

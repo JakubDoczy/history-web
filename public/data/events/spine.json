@@ -1345,6 +1345,10 @@
   "parent": "apollo-program",
   "summary": "Humans walked on another world for the first time; some 600 million people watched.",
   "body": "Part of [Apollo programme](event:apollo-program). *That's one small step for a man, one giant leap for mankind.* Armstrong and Aldrin spent 21 hours on the Sea of Tranquillity while Collins orbited above.\n\nIt was the culmination of the [Space Race](event:space-race), and the furthest humans have yet travelled.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_11).",
+  "image": {
+   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aldrin_Apollo_11_original.jpg?width=640",
+   "caption": "Buzz Aldrin on the lunar surface"
+  },
   "links": [
    {
     "label": "Apollo programme",
@@ -1354,11 +1358,7 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Apollo_11"
    }
-  ],
-  "image": {
-   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aldrin_Apollo_11_original.jpg?width=640",
-   "caption": "Buzz Aldrin on the lunar surface"
-  }
+  ]
  },
  {
   "id": "www",

@@ -223,6 +223,31 @@
   ]
  },
  {
+  "id": "minoan-civilization",
+  "name": "Minoan civilization of Crete",
+  "start": -2700,
+  "end": -1450,
+  "lat": 35.33,
+  "lng": 25.13,
+  "priority": 72,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "summary": "A seafaring Bronze Age culture on Crete built palaces, a merchant fleet and an undeciphered script.",
+  "body": "Knossos, the largest palace, contained plumbing, frescoes and storage for hundreds of olive oil jars. The Minoans traded across the Mediterranean and wrote in a still undeciphered script, Linear A. The [Thera eruption](event:thera-eruption) struck the southern Aegean around 1600 BCE, and by about 1450 BCE the palaces had passed into Mycenaean hands.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Minoan_civilization).",
+  "links": [
+   {
+    "label": "Thera eruption",
+    "event": "thera-eruption"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Minoan_civilization"
+   }
+  ]
+ },
+ {
   "id": "indus-valley",
   "name": "Indus Valley civilisation",
   "start": -2600,
@@ -312,6 +337,47 @@
   ]
  },
  {
+  "id": "ur-nammu-code",
+  "name": "Code of Ur-Nammu",
+  "start": -2100,
+  "lat": 30.95,
+  "lng": 46.1,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "The oldest surviving law code predates Hammurabi by about three centuries, setting out written justice in Sumer.",
+  "body": "Ur-Nammu of the Third Dynasty of Ur, or his son Shulgi, had the laws set down in Sumerian; they survive in later clay-tablet copies covering theft, injury and negligent building. Far shorter than the [Code of Hammurabi](event:hammurabi) but three centuries older, it shows written law already emerging across Mesopotamia.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Code_of_Ur-Nammu).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Code_of_Ur-Nammu"
+   }
+  ]
+ },
+ {
+  "id": "middle-kingdom-egypt",
+  "name": "Egypt's Middle Kingdom",
+  "start": -2055,
+  "end": -1650,
+  "lat": 26.0,
+  "lng": 31.0,
+  "priority": 74,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "A golden age of Egyptian art, literature and stable governance, when the state reasserted control after the First Intermediate Period.",
+  "body": "Pharaohs like Amenemhat III brought Egypt together again after fragmentation. The era saw flourishing literature, refined sculpture and architecture, and the height of Egyptian bureaucratic sophistication.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Middle_Kingdom_of_Egypt).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Middle_Kingdom_of_Egypt"
+   }
+  ]
+ },
+ {
   "id": "hammurabi",
   "name": "Code of Hammurabi",
   "start": -1753,
@@ -332,6 +398,35 @@
   ]
  },
  {
+  "id": "hittite-empire",
+  "name": "Rise of the Hittite Empire",
+  "start": -1680,
+  "end": -1200,
+  "lat": 40.02,
+  "lng": 34.62,
+  "priority": 70,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "The Hittites of Anatolia built an empire that rivalled Egypt and fought Ramesses II to a standstill at Kadesh.",
+  "body": "From their capital at Hattusa they assembled a state of vassal kingdoms, a chariot army and detailed law codes, and fought Egypt at [Kadesh](event:kadesh) before agreeing one of the first recorded peace treaties. The empire fell apart in the [Late Bronze Age collapse](event:bronze-age-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hittites).",
+  "links": [
+   {
+    "label": "Battle of Kadesh",
+    "event": "kadesh"
+   },
+   {
+    "label": "Late Bronze Age collapse",
+    "event": "bronze-age-collapse"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hittites"
+   }
+  ]
+ },
+ {
   "id": "thera-eruption",
   "name": "Eruption of Thera",
   "start": -1609,
@@ -348,6 +443,35 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Minoan_eruption"
+   }
+  ]
+ },
+ {
+  "id": "mycenaean-greece",
+  "name": "Mycenaean civilization",
+  "start": -1600,
+  "end": -1100,
+  "lat": 37.73,
+  "lng": 22.76,
+  "priority": 70,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "summary": "Mainland Greek palace kingdoms built citadels, traded across the Mediterranean and left the first written Greek.",
+  "body": "Palace centres like Mycenae, Tiryns and Pylos were run by warrior kings and kept their accounts in Linear B, the earliest written form of Greek. Later Greeks remembered this age in the legends of the [Trojan War](event:trojan-war); the palaces burned during the [Late Bronze Age collapse](event:bronze-age-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mycenaean_Greece).",
+  "links": [
+   {
+    "label": "Trojan War",
+    "event": "trojan-war"
+   },
+   {
+    "label": "Late Bronze Age collapse",
+    "event": "bronze-age-collapse"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mycenaean_Greece"
    }
   ]
  },
@@ -489,6 +613,31 @@
   ]
  },
  {
+  "id": "oracle-bones",
+  "name": "Chinese oracle bone divination",
+  "start": -1200,
+  "lat": 36.1,
+  "lng": 114.35,
+  "priority": 54,
+  "tags": [
+   "culture",
+   "technology"
+  ],
+  "parent": "shang-dynasty",
+  "summary": "Ox scapulae and turtle shells inscribed for divination by the Shang carry the earliest known Chinese writing.",
+  "body": "Part of [Shang dynasty](event:shang-dynasty). Diviners applied heat to the bones, read the cracks, and inscribed the question and the outcome beside them. These inscriptions are the first direct evidence of the Chinese language and of what the Shang court worried about.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oracle_bone_script).",
+  "links": [
+   {
+    "label": "Shang dynasty",
+    "event": "shang-dynasty"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Oracle_bone_script"
+   }
+  ]
+ },
+ {
   "id": "trojan-war",
   "name": "Trojan War",
   "start": -1193,
@@ -515,6 +664,27 @@
   ]
  },
  {
+  "id": "nubian-kush",
+  "name": "Kingdom of Kush rises in Nubia",
+  "start": -1070,
+  "end": 350,
+  "lat": 18.53,
+  "lng": 31.83,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "A Nubian kingdom on the upper Nile rivalled Egypt, ruled it as the 25th Dynasty, and built hundreds of steep pyramids of its own.",
+  "body": "Kush emerged around Napata as Egyptian power waned, and its kings ruled Egypt itself for a century. The capital later moved south to Meroe, a centre of iron working and of trade in gold, incense and ivory reaching from inner Africa to the Mediterranean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kingdom_of_Kush).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Kingdom_of_Kush"
+   }
+  ]
+ },
+ {
   "id": "phoenician-alphabet",
   "name": "Phoenician alphabet",
   "start": -1049,
@@ -531,6 +701,35 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Phoenician_alphabet"
+   }
+  ]
+ },
+ {
+  "id": "zhou-dynasty",
+  "name": "Zhou Dynasty",
+  "start": -1045,
+  "end": -255,
+  "lat": 34.27,
+  "lng": 107.15,
+  "priority": 76,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "China's longest dynasty saw the invention of the 'Mandate of Heaven', feudal government and the philosophical flowering of the Axial Age.",
+  "body": "The Zhou overthrew the [Shang](event:shang-dynasty), claiming that heaven had withdrawn its mandate from a failed ruler. Their system of regional lords foreshadowed later imperial administration, and the disorder of the Spring and Autumn and Warring States periods produced [Confucius](event:confucius), Laozi and the other classical Chinese thinkers.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zhou_dynasty).",
+  "links": [
+   {
+    "label": "Shang dynasty",
+    "event": "shang-dynasty"
+   },
+   {
+    "label": "Confucius",
+    "event": "confucius"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Zhou_dynasty"
    }
   ]
  },
@@ -595,6 +794,31 @@
   ]
  },
  {
+  "id": "greek-alphabet",
+  "name": "Greek alphabet emerges",
+  "start": -800,
+  "lat": 37.97,
+  "lng": 23.72,
+  "priority": 66,
+  "tags": [
+   "culture",
+   "technology"
+  ],
+  "parent": "phoenician-alphabet",
+  "summary": "Greeks adapted the Phoenician script, added signs for vowels, and produced the ancestor of the Western alphabets.",
+  "body": "Part of [Phoenician alphabet](event:phoenician-alphabet). Writing vowels as well as consonants made the Greek script phonetically complete and easy to learn. Writing spread beyond a narrow scribal class over the following centuries, though full literacy remained limited.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Greek_alphabet).",
+  "links": [
+   {
+    "label": "Phoenician alphabet",
+    "event": "phoenician-alphabet"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Greek_alphabet"
+   }
+  ]
+ },
+ {
   "id": "first-olympics",
   "name": "First Olympic Games",
   "start": -775,
@@ -630,6 +854,73 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Founding_of_Rome"
+   }
+  ]
+ },
+ {
+  "id": "etruscan-influence",
+  "name": "Etruscan civilisation influences Rome",
+  "start": -700,
+  "end": -100,
+  "lat": 42.53,
+  "lng": 11.53,
+  "priority": 62,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "summary": "The Etruscans of central Italy shaped early Roman religion, government, architecture and culture.",
+  "body": "From the Etruscans Rome took augury (reading omens in the flight of birds) and haruspicy (inspecting the livers of sacrificed animals), temple design, drainage engineering and, by way of Greek traders, the alphabet. Etruscan kings ruled Rome until the Republic, and Etruscan practice shaped Roman religion long after.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Etruscan_civilization).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Etruscan_civilization"
+   }
+  ]
+ },
+ {
+  "id": "early-philosophers",
+  "name": "Early Greek philosophers",
+  "start": -600,
+  "end": -400,
+  "lat": 37.53,
+  "lng": 27.28,
+  "priority": 72,
+  "tags": [
+   "culture",
+   "science"
+  ],
+  "summary": "Thales, Pythagoras, Heraclitus and others sought natural explanations for the world rather than mythological ones.",
+  "body": "Thales was credited by later Greeks with predicting an eclipse and held that the Earth floats on water; Pythagoras found ratios linking music and number; Heraclitus declared that all things flow. They worked in the Greek cities of Ionia and southern Italy rather than in Athens.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Presocratic_philosophy).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Presocratic_philosophy"
+   }
+  ]
+ },
+ {
+  "id": "zoroastrianism",
+  "name": "Zoroastrianism in Persia",
+  "start": -600,
+  "end": 650,
+  "lat": 34.0,
+  "lng": 52.0,
+  "priority": 70,
+  "tags": [
+   "religion",
+   "culture"
+  ],
+  "summary": "An ancient Persian faith, dualist in outlook, whose ideas of a final judgment are often argued to have influenced Judaism, Christianity and Islam.",
+  "body": "Zoroaster taught of a cosmic struggle between truth and falsehood, resolved by a final judgment. His own dates are uncertain, with estimates ranging from about 1500 to 600 BCE. The [Achaemenid Empire](event:achaemenid-empire) invoked the god Ahura Mazda, and Zoroastrianism was the state religion of the later Sasanian empire until the Arab conquest.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zoroastrianism).",
+  "links": [
+   {
+    "label": "Achaemenid Persian Empire",
+    "event": "achaemenid-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Zoroastrianism"
    }
   ]
  },
@@ -695,6 +986,26 @@
   ]
  },
  {
+  "id": "roman-republic-founded",
+  "name": "Roman Republic formally established",
+  "start": -508,
+  "lat": 41.9,
+  "lng": 12.5,
+  "priority": 74,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Rome replaced its kings with elected magistrates and citizen assemblies, a constitution that lasted nearly five centuries.",
+  "body": "Tradition dates the expulsion of the last king to 509 BCE; historians see a slower shift away from monarchy. What emerged was a balance of the Senate, annually elected consuls and popular assemblies — a template later republics would study and imitate.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_Republic).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Roman_Republic"
+   }
+  ]
+ },
+ {
   "id": "athenian-democracy",
   "name": "Athenian democracy",
   "start": -507,
@@ -711,6 +1022,73 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Athenian_democracy"
+   }
+  ]
+ },
+ {
+  "id": "hinduism-solidifies",
+  "name": "Hinduism takes classical form",
+  "start": -500,
+  "end": 500,
+  "lat": 25.3,
+  "lng": 83.0,
+  "priority": 72,
+  "tags": [
+   "religion",
+   "culture"
+  ],
+  "summary": "The Vedas, Upanishads and Puranas crystallise the cosmology, deities and rituals of Hinduism over a millennium.",
+  "body": "The [Vedic period](event:vedic-period) produced the foundation hymns; the Upanishads added philosophical enquiry; the epics and Puranas supplied mythology and devotional worship. By the early centuries CE the framework of dharma, karma and rebirth was well established.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hinduism).",
+  "links": [
+   {
+    "label": "Vedic period in India",
+    "event": "vedic-period"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hinduism"
+   }
+  ]
+ },
+ {
+  "id": "hebrew-bible-canon",
+  "name": "Hebrew Bible canon formed",
+  "start": -500,
+  "end": 200,
+  "lat": 31.78,
+  "lng": 35.24,
+  "priority": 72,
+  "tags": [
+   "religion",
+   "culture"
+  ],
+  "summary": "Jewish scholars collected and standardised the Torah, Prophets and Writings, settling a canon that later communities preserved.",
+  "body": "After the Babylonian exile, Jewish communities gathered, edited and copied the texts that had held them together. The resulting scriptures became the foundation of Judaism, were carried into Christianity as the Old Testament, and shaped Islamic tradition in turn.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hebrew_Bible).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hebrew_Bible"
+   }
+  ]
+ },
+ {
+  "id": "african-iron-working",
+  "name": "Iron working spreads in sub-Saharan Africa",
+  "start": -500,
+  "end": 500,
+  "lat": 9.5,
+  "lng": 8.0,
+  "priority": 68,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "summary": "Smelting furnaces appear across sub-Saharan Africa, from the Nok culture of Nigeria to the Great Lakes, reshaping farming and trade.",
+  "body": "Whether the technique was invented locally or carried across the Sahara is still argued. Iron hoes and axes made heavy soils and woodland workable, and ironworking spread alongside the long Bantu migrations that reshaped the languages of central and southern Africa.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Iron_metallurgy_in_Africa).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Iron_metallurgy_in_Africa"
    }
   ]
  },
@@ -807,6 +1185,27 @@
   ]
  },
  {
+  "id": "roman-law-growth",
+  "name": "Roman law developed and codified",
+  "start": -450,
+  "end": 533,
+  "lat": 41.9,
+  "lng": 12.5,
+  "priority": 72,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "A system of jurisprudence emerged over centuries, from the Twelve Tables to Justinian's Digest, shaping all later Western law.",
+  "body": "Roman law separated public from private law and worked out concepts of legal personality, contract, inheritance and property. [Justinian's](event:justinian) jurists compiled it in the sixth century; medieval universities revived it; and modern civil law systems across Europe, Latin America and Asia descend from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_law).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Roman_law"
+   }
+  ]
+ },
+ {
   "id": "parthenon",
   "name": "Parthenon built",
   "start": -446,
@@ -833,6 +1232,29 @@
   ]
  },
  {
+  "id": "herodotus",
+  "name": "Herodotus writes the Histories",
+  "start": -439,
+  "lat": 37.97,
+  "lng": 23.72,
+  "priority": 68,
+  "tags": [
+   "culture"
+  ],
+  "summary": "The \"Father of History\" wrote the first extended prose enquiry into the past, centred on the Greco-Persian Wars.",
+  "body": "Herodotus travelled widely through the Persian empire and the eastern Mediterranean, collecting stories and questioning witnesses. His account of the [Greco-Persian Wars](event:greco-persian-wars) mixes reporting, hearsay and legend, but it established the idea that the past should be investigated and written as a connected narrative.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Herodotus).",
+  "links": [
+   {
+    "label": "Greco-Persian Wars",
+    "event": "greco-persian-wars"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Herodotus"
+   }
+  ]
+ },
+ {
   "id": "peloponnesian-war",
   "name": "Peloponnesian War",
   "start": -430,
@@ -853,6 +1275,26 @@
   ]
  },
  {
+  "id": "maya-calendar",
+  "name": "Maya calendar systems",
+  "start": -400,
+  "lat": 17.36,
+  "lng": -92.2,
+  "priority": 58,
+  "tags": [
+   "science",
+   "culture"
+  ],
+  "summary": "The Maya ran interlocking cycles of 260 and 365 days alongside a Long Count that numbered every day from a fixed starting point.",
+  "body": "The 260-day tzolk'in and the 365-day haab' meshed in a 52-year round, while the Long Count counted days from a mythical zero point placed in 3114 BCE. Later Maya astronomers used the same arithmetic to tabulate the cycles of Venus and the seasons in which eclipses could fall.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mesoamerican_Long_Count_calendar).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mesoamerican_Long_Count_calendar"
+   }
+  ]
+ },
+ {
   "id": "socrates",
   "name": "Trial and death of Socrates",
   "start": -398,
@@ -868,6 +1310,26 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Trial_of_Socrates"
+   }
+  ]
+ },
+ {
+  "id": "plato-academy",
+  "name": "Plato founds the Academy",
+  "start": -386,
+  "lat": 37.97,
+  "lng": 23.73,
+  "priority": 68,
+  "tags": [
+   "culture",
+   "science"
+  ],
+  "summary": "Plato opened a school in a grove outside Athens that taught mathematics, dialectic and philosophy and became a model for later institutions of learning.",
+  "body": "Plato taught that reality rests on abstract Forms reached through reason, and that geometry trained the mind to grasp them. The Academy taught until Sulla's sack of Athens in 86 BCE, was revived by later Platonists, and closed for good in 529 CE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Plato's_Academy).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Plato's_Academy"
    }
   ]
  },
@@ -981,6 +1443,117 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Maurya_Empire"
+   }
+  ]
+ },
+ {
+  "id": "roman-roads",
+  "name": "Roman road network expands",
+  "start": -311,
+  "end": 400,
+  "lat": 41.9,
+  "lng": 12.5,
+  "priority": 72,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "parent": "roman-republic-founded",
+  "summary": "Rome laid some 400,000 km of roads, about 80,000 km of them paved, transforming travel, trade and military logistics.",
+  "body": "Part of [Roman Republic formally established](event:roman-republic-founded). The Appian Way, begun in 312 BCE, set the standard: straight where possible, cambered for drainage, surfaced with fitted stone. A legion could march 30 km a day along them, and goods and messages moved across the empire in weeks rather than months.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_roads).",
+  "links": [
+   {
+    "label": "Roman Republic formally established",
+    "event": "roman-republic-founded"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Roman_roads"
+   }
+  ]
+ },
+ {
+  "id": "epicureanism",
+  "name": "Epicureanism emerges",
+  "start": -306,
+  "lat": 37.97,
+  "lng": 23.72,
+  "priority": 58,
+  "tags": [
+   "culture",
+   "science"
+  ],
+  "summary": "Epicurus taught that pleasure — defined as absence of pain — is the good, and that simple life brings more pleasure than excess.",
+  "body": "Epicureanism was misunderstood in later ages as hedonism, but Epicurus himself lived plainly and advocated friendship, philosophy and modest food over luxury. His garden school in Athens became a lasting model of intellectual community.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Epicureanism).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Epicureanism"
+   }
+  ]
+ },
+ {
+  "id": "meroitic-script",
+  "name": "Meroitic script emerges",
+  "start": -300,
+  "lat": 16.95,
+  "lng": 33.75,
+  "priority": 52,
+  "tags": [
+   "culture",
+   "technology"
+  ],
+  "parent": "nubian-kush",
+  "summary": "The Kingdom of Kush developed its own alphabetic script to write the Meroitic language instead of Egyptian.",
+  "body": "Part of [Kingdom of Kush](event:nubian-kush). Meroitic has hieroglyphic and cursive forms and is read right to left. The signs can be sounded out, but the language behind them is still barely understood, so much of what the inscriptions say remains closed to us.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Meroitic_script).",
+  "links": [
+   {
+    "label": "Kingdom of Kush",
+    "event": "nubian-kush"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Meroitic_script"
+   }
+  ]
+ },
+ {
+  "id": "roman-concrete",
+  "name": "Roman concrete development",
+  "start": -300,
+  "lat": 41.9,
+  "lng": 12.5,
+  "priority": 64,
+  "tags": [
+   "technology",
+   "science"
+  ],
+  "summary": "Romans mixed lime, volcanic ash and seawater into a durable material that hardened underwater.",
+  "body": "Roman concrete (opus caementicium) let builders raise vaults, domes and harbour works far beyond what cut stone allowed. The Pantheon and the aqueducts depend on it, and its marine version, which sets under seawater, survives in harbours two thousand years on and is still studied by materials scientists.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_concrete).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Roman_concrete"
+   }
+  ]
+ },
+ {
+  "id": "stoic-philosophy",
+  "name": "Stoic philosophy founded",
+  "start": -300,
+  "lat": 37.97,
+  "lng": 23.72,
+  "priority": 62,
+  "tags": [
+   "culture",
+   "science"
+  ],
+  "summary": "Zeno of Citium taught that virtue is the highest good and that passion should be controlled by reason.",
+  "body": "Stoicism attracted Romans looking for an ethical framework: duty, reason, and apatheia — freedom from destructive passion. [Marcus Aurelius](event:marcus-aurelius), Seneca and the freed slave Epictetus became its best-known voices.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Stoicism).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Stoicism"
    }
   ]
  },
@@ -1158,6 +1731,27 @@
   ]
  },
  {
+  "id": "han-dynasty",
+  "name": "Han dynasty",
+  "start": -201,
+  "end": 220,
+  "lat": 34.27,
+  "lng": 108.95,
+  "priority": 80,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Four centuries of Han rule set the pattern of Chinese imperial government and gave the majority ethnic group its name.",
+  "body": "The Han institutionalised [Confucian](event:confucius) learning in its bureaucracy, opened the [Silk Road](event:silk-road), and invented paper, the seismoscope and the wheelbarrow.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Han_dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Han_dynasty"
+   }
+  ]
+ },
+ {
   "id": "zama",
   "name": "Battle of Zama",
   "start": -201,
@@ -1182,27 +1776,6 @@
   ]
  },
  {
-  "id": "han-dynasty",
-  "name": "Han dynasty",
-  "start": -201,
-  "end": 220,
-  "lat": 34.27,
-  "lng": 108.95,
-  "priority": 80,
-  "tags": [
-   "politics",
-   "culture"
-  ],
-  "summary": "Four centuries of Han rule set the pattern of Chinese imperial government and gave the majority ethnic group its name.",
-  "body": "The Han institutionalised [Confucian](event:confucius) learning in its bureaucracy, opened the [Silk Road](event:silk-road), and invented paper, the seismoscope and the wheelbarrow.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Han_dynasty).",
-  "links": [
-   {
-    "label": "Wikipedia",
-    "url": "https://en.wikipedia.org/wiki/Han_dynasty"
-   }
-  ]
- },
- {
   "id": "silk-road",
   "name": "Silk Road trade network",
   "start": -129,
@@ -1220,6 +1793,57 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Silk_Road"
+   }
+  ]
+ },
+ {
+  "id": "spread-buddhism",
+  "name": "Buddhism spreads along the Silk Road",
+  "start": -100,
+  "end": 200,
+  "lat": 40.0,
+  "lng": 70.0,
+  "priority": 70,
+  "tags": [
+   "religion",
+   "exploration"
+  ],
+  "parent": "buddha",
+  "summary": "Buddhist monks and merchants carried the faith from India across Central Asia and into China.",
+  "body": "Part of [Life of the Buddha](event:buddha). Monks and merchants carried the teaching north into Bactria and along the [Silk Road](event:silk-road) oasis cities; it reached China by the first century CE. Monasteries became centres of translation and learning, and the religion adapted to each culture it entered.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Buddhism).",
+  "links": [
+   {
+    "label": "Life of the Buddha",
+    "event": "buddha"
+   },
+   {
+    "label": "Silk Road trade network",
+    "event": "silk-road"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Buddhism"
+   }
+  ]
+ },
+ {
+  "id": "nazca-geoglyphs",
+  "name": "Nazca geoglyphs constructed",
+  "start": -100,
+  "end": 500,
+  "lat": -14.72,
+  "lng": -75.13,
+  "priority": 62,
+  "tags": [
+   "culture",
+   "religion"
+  ],
+  "summary": "The Nazca people of Peru scratched enormous geometric and animal figures into the desert floor.",
+  "body": "The lines stretch for miles — some outline spiders, hummingbirds and monkeys, others are long straight tracks and geometric figures. Their purpose is debated: astronomical markers, ritual pathways, or routes to water. Local people always knew of them, but their full shapes were only appreciated once aircraft flew over the pampa in the twentieth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nazca_Lines).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Nazca_Lines"
    }
   ]
  },
@@ -1343,6 +1967,30 @@
   ]
  },
  {
+  "id": "virgil-aeneid",
+  "name": "Virgil composes the Aeneid",
+  "start": -28,
+  "end": -18,
+  "lat": 41.9,
+  "lng": 12.48,
+  "priority": 62,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Virgil's epic poem traced Rome's mythical origins and became the model of the heroic epic for two millennia.",
+  "body": "The Aeneid follows the Trojan Aeneas to Italy and ties Rome's origins to the settlement won under [Augustus](event:roman-empire). Written to stand beside Homer, it was read in schools for centuries as the benchmark of Latin verse.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aeneid).",
+  "links": [
+   {
+    "label": "Founding of the Roman Empire",
+    "event": "roman-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Aeneid"
+   }
+  ]
+ },
+ {
   "id": "roman-empire",
   "name": "Founding of the Roman Empire",
   "start": -26,
@@ -1362,6 +2010,29 @@
   ]
  },
  {
+  "id": "ovid-metamorphoses",
+  "name": "Ovid writes the Metamorphoses",
+  "start": 8,
+  "lat": 41.9,
+  "lng": 12.48,
+  "priority": 60,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Ovid's epic poem narrated myths of transformation and became one of the most read works of the ancient world.",
+  "body": "The Metamorphoses connected mythical tales through the theme of change and rebirth. Written at the height of [the Augustan age](event:roman-empire), it's brimming with Ovid's wit and was hugely influential on medieval and Renaissance literature.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Metamorphoses).",
+  "links": [
+   {
+    "label": "Founding of the Roman Empire",
+    "event": "roman-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Metamorphoses"
+   }
+  ]
+ },
+ {
   "id": "crucifixion",
   "name": "Crucifixion of Jesus",
   "start": 33,
@@ -1377,6 +2048,60 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Crucifixion_of_Jesus"
+   }
+  ]
+ },
+ {
+  "id": "colosseum-built",
+  "name": "Colosseum construction in Rome",
+  "start": 72,
+  "end": 80,
+  "lat": 41.89,
+  "lng": 12.49,
+  "priority": 66,
+  "tags": [
+   "culture",
+   "technology"
+  ],
+  "parent": "roman-empire",
+  "summary": "The Flavian Amphitheatre was built under emperors Vespasian and Titus, the largest such structure in the ancient world.",
+  "body": "Part of [Founding of the Roman Empire](event:roman-empire). The Colosseum could seat 50,000 and was used for gladiatorial combats and public spectacles. It showcased the wealth, engineering and architectural ambition of the [Empire at its peak](event:rome-peak).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Colosseum).",
+  "links": [
+   {
+    "label": "Founding of the Roman Empire",
+    "event": "roman-empire"
+   },
+   {
+    "label": "Roman Empire at its greatest extent",
+    "event": "rome-peak"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Colosseum"
+   }
+  ]
+ },
+ {
+  "id": "pliny-natural-history",
+  "name": "Pliny the Elder's Natural History",
+  "start": 77,
+  "lat": 41.9,
+  "lng": 12.48,
+  "priority": 62,
+  "tags": [
+   "science",
+   "culture"
+  ],
+  "summary": "Pliny compiled an encyclopedic survey of everything known about the natural world, minerals, animals and plants.",
+  "body": "The Natural History gathers fact, folk belief and hearsay into thirty-seven books, and is our fullest window onto Roman knowledge of the natural world. Pliny died in 79 CE at Stabiae, having taken ships across the bay both to observe the [eruption of Vesuvius](event:vesuvius) and to take people off the shore.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Natural_History_(Pliny)).",
+  "links": [
+   {
+    "label": "Eruption of Vesuvius destroys Pompeii",
+    "event": "vesuvius"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Natural_History_(Pliny)"
    }
   ]
  },
@@ -1444,6 +2169,128 @@
   ]
  },
  {
+  "id": "moche-civilization",
+  "name": "Moche civilisation of Peru",
+  "start": 100,
+  "end": 800,
+  "lat": -8.17,
+  "lng": -79.3,
+  "priority": 64,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "summary": "The Moche of northern coastal Peru built irrigation canals, huge adobe platform mounds and the most expressive pottery in the Andes.",
+  "body": "Their modelled and painted vessels show hunting, warfare, ritual and everyday life in unusual detail. Moche engineers irrigated a desert coast from the river valleys, and their largest mound, the Huaca del Sol, is the biggest adobe structure in the Americas. The decline of the culture has been linked to prolonged drought and El Niño flooding.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Moche_culture).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Moche_culture"
+   }
+  ]
+ },
+ {
+  "id": "roman-aqueducts",
+  "name": "Rome supplied by eleven aqueducts",
+  "start": 100,
+  "lat": 41.9,
+  "lng": 12.5,
+  "priority": 68,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "parent": "roman-empire",
+  "summary": "By the early second century, eleven aqueducts carried roughly a million cubic metres of water a day into the city of Rome.",
+  "body": "Part of [Founding of the Roman Empire](event:roman-empire). Engineer Frontinus described the system in his treatise; water was distributed to public baths, fountains, sewers and some private homes. No other ancient city had such abundant fresh water or such sophisticated infrastructure.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aqueduct_(Roman)).",
+  "links": [
+   {
+    "label": "Founding of the Roman Empire",
+    "event": "roman-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Aqueduct_(Roman)"
+   }
+  ]
+ },
+ {
+  "id": "spread-christianity",
+  "name": "Christianity spreads through the Roman Empire",
+  "start": 100,
+  "end": 300,
+  "lat": 41.9,
+  "lng": 12.48,
+  "priority": 80,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "parent": "crucifixion",
+  "summary": "Three centuries after the crucifixion, Christianity had grown from a Judaean movement into a significant minority religion across the Mediterranean.",
+  "body": "Part of [Crucifixion of Jesus](event:crucifixion). Itinerant missionaries like Paul carried the faith along trade routes; communities worshipped in homes and catacombs despite periodic persecution. By 300 CE it had enough political weight to shape emperors.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Christianity).",
+  "links": [
+   {
+    "label": "Crucifixion of Jesus",
+    "event": "crucifixion"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_Christianity"
+   }
+  ]
+ },
+ {
+  "id": "ancestral-puebloans",
+  "name": "Ancestral Puebloan civilization",
+  "start": 100,
+  "end": 1600,
+  "lat": 36.86,
+  "lng": -108.87,
+  "priority": 56,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "summary": "Ancestral Puebloans built cliff dwellings and vast trade networks in the American Southwest before abandoning the region around 1300.",
+  "body": "They left behind remarkable pueblos, kivas and thousands of petroglyphs. The reasons for their migration to river valleys remain debated — drought, social upheaval or resource depletion are all suggested.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ancestral_Puebloans).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ancestral_Puebloans"
+   }
+  ]
+ },
+ {
+  "id": "paper-invention",
+  "name": "Paper invented in China",
+  "start": 105,
+  "lat": 34.62,
+  "lng": 112.45,
+  "priority": 78,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "parent": "han-dynasty",
+  "summary": "Cai Lun reported to the court a method of making sheets from plant fibres, creating a revolution in writing.",
+  "body": "Part of [Han dynasty](event:han-dynasty). Paper was cheaper and lighter than silk or bamboo strips; it could be rolled into scrolls or folded into codices. It was kept secret in China for centuries, then spread westward along the [Silk Road](event:silk-road).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_paper).",
+  "links": [
+   {
+    "label": "Han dynasty",
+    "event": "han-dynasty"
+   },
+   {
+    "label": "Silk Road trade network",
+    "event": "silk-road"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_paper"
+   }
+  ]
+ },
+ {
   "id": "rome-peak",
   "name": "Roman Empire at its greatest extent",
   "start": 117,
@@ -1464,6 +2311,57 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Trajan"
+   }
+  ]
+ },
+ {
+  "id": "pantheon-built",
+  "name": "Pantheon completed in Rome",
+  "start": 126,
+  "lat": 41.89,
+  "lng": 12.48,
+  "priority": 66,
+  "tags": [
+   "culture",
+   "technology"
+  ],
+  "parent": "roman-empire",
+  "summary": "Hadrian built the most complete Roman temple still standing, with a vast dome and oculus open to the sky.",
+  "body": "Part of [Founding of the Roman Empire](event:roman-empire). Its coffered dome, still the largest unreinforced concrete dome on Earth, opens to the sky through a nine-metre oculus, and the exterior was once clad in gilded bronze. Dedicated to the gods of Rome, it survived because it was later consecrated as a church.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pantheon,_Rome).",
+  "links": [
+   {
+    "label": "Founding of the Roman Empire",
+    "event": "roman-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Pantheon,_Rome"
+   }
+  ]
+ },
+ {
+  "id": "marcus-aurelius",
+  "name": "Marcus Aurelius and the Meditations",
+  "start": 161,
+  "end": 180,
+  "lat": 41.9,
+  "lng": 12.48,
+  "priority": 70,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "parent": "roman-empire",
+  "summary": "The last of the Five Good Emperors wrote personal philosophical meditations on Stoicism while governing the empire.",
+  "body": "Part of [Founding of the Roman Empire](event:roman-empire). His writings, originally private journals, became a classic statement of duty, acceptance and virtue. Marcus Aurelius embodied the ideal of the philosopher-king.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marcus_Aurelius).",
+  "links": [
+   {
+    "label": "Founding of the Roman Empire",
+    "event": "roman-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Marcus_Aurelius"
    }
   ]
  },
@@ -1543,6 +2441,27 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Maya_civilization"
+   }
+  ]
+ },
+ {
+  "id": "japanese-kofun",
+  "name": "Kofun culture in Japan",
+  "start": 250,
+  "end": 538,
+  "lat": 34.56,
+  "lng": 135.49,
+  "priority": 60,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "summary": "Japan's Kofun period saw the rise of a unified state, keyhole-shaped tombs, and early Chinese influence.",
+  "body": "Vast keyhole-shaped earthen tombs were raised for the elite, the largest covering more ground than any Egyptian pyramid. Bronze mirrors, iron armour and horse gear from the mounds show growing hierarchy and close contact with Korea. Chinese writing arrived during the period; Buddhism followed in the sixth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kofun_period).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Kofun_period"
    }
   ]
  },
@@ -1659,6 +2578,27 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Migration_Period"
+   }
+  ]
+ },
+ {
+  "id": "latin-vulgate",
+  "name": "Jerome translates the Bible into Latin",
+  "start": 382,
+  "end": 405,
+  "lat": 31.7,
+  "lng": 35.2,
+  "priority": 66,
+  "tags": [
+   "religion",
+   "culture"
+  ],
+  "summary": "Jerome produced the Vulgate, a Latin translation from Hebrew and Greek that became the Church's standard scripture for 1,200 years.",
+  "body": "Working mostly at Bethlehem, Jerome went back to the Hebrew for the Old Testament rather than relying on the Greek Septuagint. The Vulgate became the standard text of Latin Christendom, shaped the vocabulary of medieval Europe, and remained the Catholic Church's official Bible until modern scholarship produced new translations.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vulgate).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Vulgate"
    }
   ]
  },

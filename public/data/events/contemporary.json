@@ -50,6 +50,56 @@
   ]
  },
  {
+  "id": "ve-day",
+  "name": "Victory in Europe",
+  "start": 1945,
+  "lat": 52.52,
+  "lng": 13.4,
+  "priority": 72,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "ww2",
+  "summary": "Germany surrendered unconditionally on May 7, ending the war in Europe and concluding the defeat of Nazi tyranny.",
+  "body": "Part of [World War II](event:ww2). Germany's unconditional surrender was signed at Reims on 7 May and ratified in Berlin the next day. Hitler had killed himself a week earlier as Soviet troops fought through the capital.\n\nUnlike the armistice that ended [the First World War](event:ww1), the surrender left no room to argue that Germany had not been beaten in the field. But victory in Europe was not peace: the continent was divided along the lines the armies had reached, and the wartime alliance dissolved into the [Cold War](event:cold-war) within two years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Victory_in_Europe_Day).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Victory_in_Europe_Day"
+   }
+  ]
+ },
+ {
+  "id": "vj-day",
+  "name": "Victory over Japan",
+  "start": 1945,
+  "lat": 35.68,
+  "lng": 139.75,
+  "priority": 72,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "ww2",
+  "summary": "Japan surrendered on August 15, ending World War II and beginning the occupation of Japan that would remake East Asia.",
+  "body": "Part of [World War II](event:ww2). Japan announced its surrender on 15 August, after the [atomic bombings](event:hiroshima) of Hiroshima and Nagasaki and the Soviet invasion of Manchuria; the formal instrument was signed aboard the USS Missouri on 2 September.\n\nThe Pacific war, which had begun with the attack on [Pearl Harbor](event:pearl-harbor), had lasted three years and eight months and cost millions of lives, most of them Chinese and Japanese civilians.\n\nThe American occupation that followed rewrote Japan's constitution, broke up the industrial combines and renounced war. The settlement held, though the bases on Okinawa remain contested.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Victory_over_Japan_Day).",
+  "links": [
+   {
+    "label": "World War II",
+    "event": "ww2"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Victory_over_Japan_Day"
+   }
+  ]
+ },
+ {
   "id": "un-founded",
   "name": "United Nations founded",
   "start": 1945,
@@ -232,6 +282,26 @@
   ]
  },
  {
+  "id": "marshall-plan",
+  "name": "Marshall Plan",
+  "start": 1948,
+  "lat": 38.9,
+  "lng": -77.04,
+  "priority": 72,
+  "tags": [
+   "economy",
+   "politics"
+  ],
+  "summary": "American aid worth some $13 billion rebuilt Western Europe's shattered economies and tied their recovery to an alliance with the United States.",
+  "body": "Proposed by Secretary of State George Marshall in June 1947 and enacted by Congress the following April, the European Recovery Program sent roughly $13 billion — over $150 billion in today's money — to sixteen countries over four years.\n\nThe aid revived industrial output and secured Western Europe's alignment with the United States during the [Cold War](event:cold-war). Its architects argued that rebuilding a defeated enemy worked better than the punitive settlement imposed after [the First World War](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marshall_Plan).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Marshall_Plan"
+   }
+  ]
+ },
+ {
   "id": "israel-founded",
   "name": "Founding of the State of Israel",
   "start": 1948,
@@ -273,6 +343,31 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Berlin_Blockade"
+   }
+  ]
+ },
+ {
+  "id": "nato-founded",
+  "name": "NATO founded",
+  "start": 1949,
+  "lat": 38.9,
+  "lng": -77.04,
+  "priority": 76,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "parent": "cold-war",
+  "summary": "Twelve Western nations signed the North Atlantic Treaty, creating a collective-defence alliance that still stands today.",
+  "body": "Part of [The Cold War](event:cold-war). The treaty's Article 5 — that an attack on one is an attack on all — has been invoked only once, after [9/11](event:9-11). NATO expanded eastward after 1991, absorbing former Soviet satellite states and shaping European security for decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/NATO).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/NATO"
    }
   ]
  },
@@ -382,6 +477,26 @@
   ]
  },
  {
+  "id": "polio-vaccine",
+  "name": "Polio vaccine developed",
+  "start": 1955,
+  "lat": 40.44,
+  "lng": -79.99,
+  "priority": 74,
+  "tags": [
+   "science",
+   "disease"
+  ],
+  "summary": "Jonas Salk's inactivated polio vaccine was declared safe and effective after the largest medical field trial ever run, and childhood polio soon vanished from the developed world.",
+  "body": "Polio had paralysed thousands of children each year; Salk's vaccine stopped the epidemics. Albert Sabin's live attenuated vaccine followed, leading to a global eradication campaign that nearly succeeded — only two endemic countries remain today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Polio_vaccine).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Polio_vaccine"
+   }
+  ]
+ },
+ {
   "id": "vietnam-war",
   "name": "Vietnam War",
   "start": 1955,
@@ -403,6 +518,56 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Vietnam_War"
+   }
+  ]
+ },
+ {
+  "id": "suez-crisis",
+  "name": "Suez Crisis",
+  "start": 1956,
+  "lat": 31.35,
+  "lng": 32.33,
+  "priority": 68,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "Egypt nationalised the Suez Canal; Britain, France and Israel invaded; superpower pressure and humiliation forced withdrawal.",
+  "body": "Part of [The Cold War](event:cold-war). Egypt nationalised the canal in July 1956; Britain, France and Israel invaded in October under a secret plan. American financial pressure and Soviet threats forced a withdrawal within weeks.\n\nThe crisis ended Britain and France's standing as independent great powers in the Middle East and drew the region further into superpower competition.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Suez_Crisis).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Suez_Crisis"
+   }
+  ]
+ },
+ {
+  "id": "hungarian-revolution",
+  "name": "Hungarian Revolution",
+  "start": 1956,
+  "lat": 47.5,
+  "lng": 19.04,
+  "priority": 62,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "parent": "cold-war",
+  "summary": "Hungarians briefly freed themselves from Soviet control; Soviet tanks rolled in and crushed the uprising, killing thousands.",
+  "body": "Part of [The Cold War](event:cold-war). A student demonstration in Budapest grew into a national uprising, and the new government of Imre Nagy declared neutrality and withdrawal from the Warsaw Pact.\n\nSoviet armour returned in early November. Some 2,500 Hungarians were killed, around 200,000 fled the country, and Nagy was executed two years later. The lesson — that Moscow would use force to hold its sphere — stood until the [Solidarity movement](event:solidarity-poland) tested it again.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hungarian_Revolution_of_1956).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hungarian_Revolution_of_1956"
    }
   ]
  },
@@ -454,6 +619,30 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Sputnik_1"
+   }
+  ]
+ },
+ {
+  "id": "castro-cuba",
+  "name": "Fidel Castro takes power in Cuba",
+  "start": 1959,
+  "lat": 23.11,
+  "lng": -82.37,
+  "priority": 72,
+  "tags": [
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "Castro's guerrillas overthrew the Batista regime; the revolution moved quickly leftward and allied with the Soviet Union.",
+  "body": "Part of [The Cold War](event:cold-war). The American embargo that followed pushed Cuba into Moscow's orbit and brought the superpowers perilously close to war at [the Cuban Missile Crisis](event:cuban-missile-crisis) three years later. Castro governed for nearly five decades, handing power to his brother in 2008.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cuban_Revolution).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cuban_Revolution"
    }
   ]
  },
@@ -557,6 +746,25 @@
   ]
  },
  {
+  "id": "jfk-assassination",
+  "name": "Assassination of John F. Kennedy",
+  "start": 1963,
+  "lat": 32.78,
+  "lng": -96.81,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "summary": "President Kennedy was shot while riding through Dallas in an open car, and Vice-President Lyndon Johnson was sworn in the same afternoon.",
+  "body": "Lee Harvey Oswald was arrested and then shot dead two days later; the Warren Commission concluded he had acted alone, though doubts and conspiracy theories have never gone away.\n\nThe killing came between the [Cuban Missile Crisis](event:cuban-missile-crisis) and the escalation of [the Vietnam War](event:vietnam-war), and Johnson went on to sign the [Civil Rights Act](event:civil-rights-act) his predecessor had proposed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_John_F._Kennedy).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Assassination_of_John_F._Kennedy"
+   }
+  ]
+ },
+ {
   "id": "march-washington",
   "name": "March on Washington",
   "start": 1963,
@@ -577,6 +785,25 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/March_on_Washington_for_Jobs_and_Freedom"
+   }
+  ]
+ },
+ {
+  "id": "beatles-phenomenon",
+  "name": "The Beatles rise to global fame",
+  "start": 1964,
+  "lat": 53.41,
+  "lng": -2.98,
+  "priority": 66,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Four Liverpool musicians from working-class families became the most popular band in the world, reshaping youth culture.",
+  "body": "Their appearance on American television in 1964 drew 73 million viewers. The Beatles pioneered album-focused releases, recording innovations, and psychedelic aesthetics, becoming the backdrop to the sixties counterculture and influencing music for generations.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Beatles).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/The_Beatles"
    }
   ]
  },
@@ -630,6 +857,46 @@
   ]
  },
  {
+  "id": "six-day-war",
+  "name": "Six-Day War",
+  "start": 1967,
+  "lat": 31.78,
+  "lng": 35.22,
+  "priority": 66,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Israel decisively defeated Egypt, Syria and Jordan in six days, occupying the West Bank, Gaza Strip and Golan Heights.",
+  "body": "Israel opened the war with a pre-emptive air strike on Egypt and, within six days, held the Sinai, the Gaza Strip, the West Bank, East Jerusalem and the Golan Heights.\n\nThe outcome left more than a million Palestinians under Israeli military occupation, a situation that has never been fully resolved. It reshaped the politics of the region and gave new impetus to the Palestinian national movement.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Six-Day_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Six-Day_War"
+   }
+  ]
+ },
+ {
+  "id": "first-heart-transplant",
+  "name": "First successful human heart transplant",
+  "start": 1967,
+  "lat": -33.94,
+  "lng": 18.46,
+  "priority": 72,
+  "tags": [
+   "science",
+   "biology"
+  ],
+  "summary": "Christiaan Barnard in Cape Town transplanted a donor heart into a patient who survived for 18 days, proving transplantation possible.",
+  "body": "The patient, Louis Washkansky, lived nearly three weeks — long enough for the world to see that organ transplantation could work. The surgery sparked an international transplant race and led to today's routine organ and tissue replacements.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Heart_transplantation).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Heart_transplantation"
+   }
+  ]
+ },
+ {
   "id": "mlk-assassination",
   "name": "Assassination of Martin Luther King Jr.",
   "start": 1968,
@@ -654,6 +921,46 @@
   ]
  },
  {
+  "id": "stonewall-uprising",
+  "name": "Stonewall uprising",
+  "start": 1969,
+  "lat": 40.73,
+  "lng": -73.99,
+  "priority": 64,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Police raided a gay bar in Greenwich Village; the community fought back, sparking the modern LGBTQ rights movement.",
+  "body": "Police raids on gay bars were routine; on this night the crowd at the Stonewall Inn fought back, and the confrontation ran over several nights in Greenwich Village.\n\nThe first Pride marches were held on its anniversary a year later. The movement that grew from it won decriminalisation and, in much of the West, formal equality — including [marriage rights in the United States](event:usa-marriage-equality) in 2015.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Stonewall_riots).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Stonewall_riots"
+   }
+  ]
+ },
+ {
+  "id": "troubles-begin",
+  "name": "The Troubles begin in Northern Ireland",
+  "start": 1969,
+  "lat": 54.6,
+  "lng": -5.93,
+  "priority": 62,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Civil rights marches by Northern Ireland’s Catholic minority met violence, and the province slid into three decades of sectarian conflict.",
+  "body": "Rioting in Derry and Belfast in August 1969 brought British troops onto the streets. The Provisional IRA and loyalist paramilitaries fought a long campaign of shootings and bombings against each other, the security forces and civilians.\n\nAround 3,500 people were killed, more than half of them civilians, before [the Good Friday Agreement](event:good-friday-agreement) of 1998 brought the conflict to an end.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Troubles).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/The_Troubles"
+   }
+  ]
+ },
+ {
   "id": "moon-landing",
   "name": "Apollo 11 Moon landing",
   "start": 1969,
@@ -667,6 +974,10 @@
   "parent": "apollo-program",
   "summary": "Humans walked on another world for the first time; some 600 million people watched.",
   "body": "Part of [Apollo programme](event:apollo-program). *That's one small step for a man, one giant leap for mankind.* Armstrong and Aldrin spent 21 hours on the Sea of Tranquillity while Collins orbited above.\n\nIt was the culmination of the [Space Race](event:space-race), and the furthest humans have yet travelled.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_11).",
+  "image": {
+   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aldrin_Apollo_11_original.jpg?width=640",
+   "caption": "Buzz Aldrin on the lunar surface"
+  },
   "links": [
    {
     "label": "Apollo programme",
@@ -676,11 +987,7 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Apollo_11"
    }
-  ],
-  "image": {
-   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aldrin_Apollo_11_original.jpg?width=640",
-   "caption": "Buzz Aldrin on the lunar surface"
-  }
+  ]
  },
  {
   "id": "internet",
@@ -750,6 +1057,64 @@
   ]
  },
  {
+  "id": "watergate-scandal",
+  "name": "Watergate scandal",
+  "start": 1972,
+  "lat": 38.89,
+  "lng": -77.04,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "summary": "A burglary at Democratic Party headquarters in Washington unravelled into a scandal that forced Richard Nixon to resign, the only US president ever to do so.",
+  "body": "Congressional hearings and press reporting traced the break-in of June 1972 back to the White House, exposing wiretapping, hush money and obstruction of justice. Nixon resigned in August 1974 rather than face impeachment.\n\nThe affair produced a wave of reform — campaign finance limits, the Ethics in Government Act, a stronger Freedom of Information Act — and a durable public distrust of the presidency.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Watergate_scandal).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Watergate_scandal"
+   }
+  ]
+ },
+ {
+  "id": "oil-crisis",
+  "name": "1973 oil crisis",
+  "start": 1973,
+  "lat": 24.71,
+  "lng": 46.68,
+  "priority": 68,
+  "tags": [
+   "economy",
+   "politics"
+  ],
+  "summary": "Arab oil producers embargoed the West over its support for Israel; oil prices quadrupled and shortages wracked the developed world.",
+  "body": "Western economies relied on cheap oil; the embargo showed their vulnerability and sparked the first energy crisis. It prompted a shift toward nuclear power, fuel efficiency and eventually renewable energy development.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1973_oil_crisis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/1973_oil_crisis"
+   }
+  ]
+ },
+ {
+  "id": "soweto-uprising",
+  "name": "Soweto uprising",
+  "start": 1976,
+  "lat": -26.27,
+  "lng": 27.86,
+  "priority": 64,
+  "tags": [
+   "politics"
+  ],
+  "summary": "School students in Soweto marched against compulsory teaching in Afrikaans; police opened fire, and the killings turned a protest into a national revolt against apartheid.",
+  "body": "Estimates of the dead range from the official figure of 176 to several hundred. Photographs of the shootings circulated worldwide and hardened international opinion against the South African government.\n\nA generation radicalised by Soweto sustained the resistance through the 1980s, on the road that led to [the end of apartheid](event:apartheid-end).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Soweto_uprising).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Soweto_uprising"
+   }
+  ]
+ },
+ {
   "id": "voyager",
   "name": "Voyager probes launched",
   "start": 1977,
@@ -770,6 +1135,114 @@
   ]
  },
  {
+  "id": "camp-david-accords",
+  "name": "Camp David Accords",
+  "start": 1978,
+  "lat": 39.65,
+  "lng": -77.47,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Egypt and Israel agreed a framework for peace after thirteen days of talks at the US presidential retreat, leading to a treaty signed the following year.",
+  "body": "President Carter mediated between Anwar Sadat and Menachem Begin; the accords led to the Egypt-Israel peace treaty of 1979, the first between Israel and an Arab state, and the return of the Sinai to Egypt.\n\nSadat was widely condemned in the Arab world and was assassinated in 1981, but the treaty has held for more than four decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Camp_David_Accords).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Camp_David_Accords"
+   }
+  ]
+ },
+ {
+  "id": "iranian-revolution",
+  "name": "Iranian Revolution",
+  "start": 1979,
+  "lat": 35.68,
+  "lng": 51.39,
+  "priority": 76,
+  "tags": [
+   "politics",
+   "religion"
+  ],
+  "summary": "The shah was overthrown; Ayatollah Khomeini led an Islamic revolution that transformed Iran and reshaped the Middle East.",
+  "body": "Mass strikes and street protests forced Mohammad Reza Shah into exile in January 1979; Ayatollah Khomeini returned from exile weeks later, and a referendum established an Islamic republic.\n\nThe revolution inspired Islamist political movements across the region and turned Iran from an American ally into an adversary. The hostage crisis at the US embassy, the war with Iraq and decades of confrontation followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Iranian_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Iranian_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "three-mile-island",
+  "name": "Three Mile Island nuclear accident",
+  "start": 1979,
+  "lat": 40.15,
+  "lng": -76.72,
+  "priority": 68,
+  "tags": [
+   "disaster",
+   "technology"
+  ],
+  "summary": "A stuck valve and misread instruments led to a partial meltdown at a Pennsylvania reactor, the most serious accident in US commercial nuclear power.",
+  "body": "Roughly half the reactor core melted, but the containment building held and measured radiation doses to the surrounding population were small. An advisory to pregnant women and small children prompted some 140,000 people to leave the area.\n\nThe accident was far smaller than [Chernobyl](event:chernobyl) seven years later, but it shattered American confidence in nuclear power: new reactor orders effectively stopped for three decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Three_Mile_Island_accident).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Three_Mile_Island_accident"
+   }
+  ]
+ },
+ {
+  "id": "soviet-afghanistan",
+  "name": "Soviet invasion of Afghanistan",
+  "start": 1979,
+  "lat": 33.94,
+  "lng": 67.71,
+  "priority": 76,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "Soviet troops invaded to prop up a faltering communist regime; a decade-long war and insurgency followed, draining the USSR.",
+  "body": "Part of [The Cold War](event:cold-war). Soviet forces entered in December 1979 to prop up a communist government losing control of the countryside, and stayed for nine years.\n\nThe United States, Saudi Arabia and Pakistan armed and funded the mujahideen. Around a million Afghans died and millions more became refugees. The withdrawal in 1989 damaged the Soviet leadership's authority on the eve of [the union's collapse](event:soviet-collapse), and left Afghanistan in a civil war from which the Taliban emerged.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Soviet%E2%80%93Afghan_War).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Soviet%E2%80%93Afghan_War"
+   }
+  ]
+ },
+ {
+  "id": "solidarity-poland",
+  "name": "Solidarity movement emerges in Poland",
+  "start": 1980,
+  "lat": 54.35,
+  "lng": 18.65,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "parent": "cold-war",
+  "summary": "Trade unionists led by Lech Walesa organised strikes and protests against communist rule; the movement eventually brought down the regime.",
+  "body": "Part of [The Cold War](event:cold-war). Strikes at the Gdansk shipyard produced the first independent trade union in the Soviet bloc, led by the electrician Lech Walesa; within a year it claimed ten million members.\n\nMartial law drove it underground in 1981, but it survived. Round-table talks in 1989 led to partly free elections that Solidarity won overwhelmingly — the opening move in the year that ended with [the fall of the Berlin Wall](event:berlin-wall-fall).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Solidarity_(Polish_trade_union)).",
+  "links": [
+   {
+    "label": "The Cold War",
+    "event": "cold-war"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Solidarity_(Polish_trade_union)"
+   }
+  ]
+ },
+ {
   "id": "smallpox-eradication",
   "name": "Eradication of smallpox",
   "start": 1980,
@@ -786,6 +1259,45 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Smallpox"
+   }
+  ]
+ },
+ {
+  "id": "aids-identified",
+  "name": "AIDS epidemic identified",
+  "start": 1981,
+  "lat": 34.05,
+  "lng": -118.24,
+  "priority": 74,
+  "tags": [
+   "disease"
+  ],
+  "summary": "US doctors reported clusters of rare infections in previously healthy young men, the first recognition of the disease later named AIDS.",
+  "body": "The virus behind it, HIV, was identified in 1983. Spreading through blood and sexual contact, the epidemic had killed an estimated 40 million people worldwide by the early 2020s, with sub-Saharan Africa worst affected.\n\nAntiretroviral drugs from 1996 turned the infection into a manageable chronic condition where they were available. The epidemic reshaped public health practice, drug regulation and patient activism.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/HIV/AIDS).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/HIV/AIDS"
+   }
+  ]
+ },
+ {
+  "id": "falkland-war",
+  "name": "Falkland Islands War",
+  "start": 1982,
+  "lat": -51.8,
+  "lng": -59.35,
+  "priority": 60,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Argentina invaded the British Falkland Islands; Britain retook them in a ten-week war fought thousands of miles from Europe.",
+  "body": "Argentina's military government seized the islands in April 1982; Britain sent a naval task force 8,000 miles south and retook them by mid-June. Some 650 Argentine and 255 British personnel died, along with three islanders.\n\nDefeat discredited the Argentine junta, which fell within a year, while the victory strengthened Margaret Thatcher's government in Britain.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Falklands_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Falklands_War"
    }
   ]
  },
@@ -830,6 +1342,25 @@
   ]
  },
  {
+  "id": "tiananmen-square",
+  "name": "Tiananmen Square protests",
+  "start": 1989,
+  "lat": 39.9,
+  "lng": 116.4,
+  "priority": 70,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Students and workers occupied the centre of Beijing for seven weeks demanding reform; the army cleared the square by force, killing hundreds or more.",
+  "body": "The protests spread to cities across China and were the largest challenge the Communist Party had faced since the [Cultural Revolution](event:cultural-revolution). Martial law was declared and troops moved in on the night of 3 June.\n\nDeath tolls remain disputed: official figures cite around 200, while other estimates run into the thousands. The crackdown brought international sanctions and ended a decade of political liberalisation, though economic reform continued.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1989_Tiananmen_Square_protests_and_massacre).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/1989_Tiananmen_Square_protests_and_massacre"
+   }
+  ]
+ },
+ {
   "id": "berlin-wall-fall",
   "name": "Fall of the Berlin Wall",
   "start": 1989,
@@ -870,6 +1401,66 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/World_Wide_Web"
+   }
+  ]
+ },
+ {
+  "id": "german-reunification",
+  "name": "Reunification of Germany",
+  "start": 1990,
+  "lat": 52.52,
+  "lng": 13.4,
+  "priority": 76,
+  "tags": [
+   "politics"
+  ],
+  "parent": "berlin-wall-fall",
+  "summary": "East and West Germany merged less than a year after the Berlin Wall fell, reuniting a nation divided for forty-five years.",
+  "body": "The [fall of the Berlin Wall](event:berlin-wall-fall) was followed by free elections in the east and a treaty settlement with the four wartime occupying powers. Reunification took formal effect on 3 October 1990.\n\nIntegration was swift but costly: eastern industry collapsed and regional disparities persist. Reunified Germany became the anchor of the [European Union](event:maastricht) and Europe's largest economy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/German_reunification).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/German_reunification"
+   }
+  ]
+ },
+ {
+  "id": "yugoslav-breakup",
+  "name": "Breakup of Yugoslavia",
+  "start": 1991,
+  "lat": 44.82,
+  "lng": 20.46,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Yugoslavia fragmented into separate states, and the wars that followed brought the worst violence in Europe since 1945.",
+  "body": "Slovenia and Croatia declared independence in June 1991, followed by Macedonia and Bosnia. The federal army and Serb paramilitaries fought to hold territory; the wars in Croatia and Bosnia brought sieges, mass expulsions and the massacre of some 8,000 Bosniak men and boys at Srebrenica in 1995.\n\nAround 130,000 people died and millions were displaced. The conflicts produced the first international war crimes tribunal since Nuremberg and reshaped European security policy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Breakup_of_Yugoslavia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Breakup_of_Yugoslavia"
+   }
+  ]
+ },
+ {
+  "id": "first-gulf-war",
+  "name": "First Gulf War",
+  "start": 1991,
+  "lat": 29.37,
+  "lng": 47.98,
+  "priority": 72,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Iraq annexed Kuwait in 1990; a US-led coalition authorised by the UN drove its forces out in six weeks of air and ground warfare.",
+  "body": "Operation Desert Storm began in January 1991 with a five-week air campaign, followed by a ground offensive that ended in a hundred hours. Coalition losses were light; Iraqi military and civilian deaths ran to tens of thousands, and retreating troops set fire to Kuwait's oil wells.\n\nThe war confirmed American military primacy at the close of the [Cold War](event:cold-war). Sanctions, no-fly zones and a continued US military presence in the Gulf followed, and Saddam Hussein remained in power until [2003](event:iraq-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gulf_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Gulf_War"
    }
   ]
  },
@@ -1004,6 +1595,87 @@
   ]
  },
  {
+  "id": "dolly-sheep",
+  "name": "Dolly the sheep cloned",
+  "start": 1997,
+  "lat": 55.94,
+  "lng": -3.2,
+  "priority": 72,
+  "tags": [
+   "science",
+   "biology"
+  ],
+  "summary": "Scottish scientists cloned an adult sheep using nuclear transfer, proving that the genome of an adult cell could be reprogrammed.",
+  "body": "Dolly was born at the Roslin Institute in July 1996 and announced to the world the following February. She was created by transferring the nucleus of an adult mammary cell into an emptied egg.\n\nThe result overturned the assumption that specialised adult cells could not be reset, opening the way to stem-cell reprogramming and regenerative medicine, and prompting immediate debate about human cloning.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dolly_(sheep)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dolly_(sheep)"
+   }
+  ]
+ },
+ {
+  "id": "kyoto-protocol",
+  "name": "Kyoto Protocol signed",
+  "start": 1997,
+  "lat": 35.01,
+  "lng": 135.75,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "climate"
+  ],
+  "summary": "Industrialised nations accepted binding limits on greenhouse gas emissions, the first treaty to put numbers on climate commitments.",
+  "body": "The protocol bound developed countries to cut emissions below 1990 levels while exempting developing ones — a division that led the United States to sign but never ratify. It entered force in 2005 once Russia ratified.\n\nGlobal emissions kept rising, and the successor [Paris Agreement](event:paris-agreement) of 2015 replaced binding targets with national pledges. Both are responses to [modern global warming](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kyoto_Protocol).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Kyoto_Protocol"
+   }
+  ]
+ },
+ {
+  "id": "good-friday-agreement",
+  "name": "Good Friday Agreement",
+  "start": 1998,
+  "lat": 54.6,
+  "lng": -5.93,
+  "priority": 66,
+  "tags": [
+   "politics"
+  ],
+  "parent": "troubles-begin",
+  "summary": "Ireland and Britain signed an agreement ending 30 years of sectarian violence in Northern Ireland, establishing a power-sharing government.",
+  "body": "Part of the settlement of [the Troubles](event:troubles-begin). Multi-party talks produced power-sharing institutions in Belfast, cross-border bodies with the Republic, and provisions for prisoner release and paramilitary disarmament.\n\nVoters on both sides of the border approved it by referendum. Devolved government has been suspended several times since, and [Brexit](event:brexit-referendum) reopened the question of the Irish border, but the peace has held.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Good_Friday_Agreement).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Good_Friday_Agreement"
+   }
+  ]
+ },
+ {
+  "id": "afghanistan-war",
+  "name": "War in Afghanistan begins",
+  "start": 2001,
+  "lat": 34.53,
+  "lng": 69.13,
+  "priority": 74,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "9-11",
+  "summary": "The US and NATO invaded Afghanistan to overthrow the Taliban and crush al-Qaeda, beginning a twenty-year occupation.",
+  "body": "Part of the response to [9/11](event:9-11). A US-led campaign with Afghan allies removed the Taliban government within weeks, but Osama bin Laden escaped and the insurgency regrouped.\n\nTwenty years of occupation and state-building followed, at a cost of some 170,000 lives. NATO forces withdrew in 2021 and the Taliban retook Kabul within days.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/War_in_Afghanistan_(2001%E2%80%932021)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/War_in_Afghanistan_(2001%E2%80%932021)"
+   }
+  ]
+ },
+ {
   "id": "9-11",
   "name": "September 11 attacks",
   "start": 2001,
@@ -1020,6 +1692,26 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/September_11_attacks"
+   }
+  ]
+ },
+ {
+  "id": "iraq-war",
+  "name": "Invasion of Iraq",
+  "start": 2003,
+  "lat": 33.31,
+  "lng": 44.35,
+  "priority": 72,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A US-led coalition invaded Iraq on the claim that it held weapons of mass destruction; none were found, and the occupation destabilised the region for years.",
+  "body": "Baghdad fell in three weeks and Saddam Hussein's government collapsed, but the occupation met a growing insurgency and a sectarian civil war. Estimates of the dead range from around 200,000 documented civilian deaths to survey figures several times higher.\n\nThe war divided the Western alliance, drew the largest anti-war protests in decades, and left a weakened Iraqi state in which the Islamic State later took root.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/2003_invasion_of_Iraq).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/2003_invasion_of_Iraq"
    }
   ]
  },
@@ -1044,6 +1736,45 @@
   ]
  },
  {
+  "id": "facebook-founded",
+  "name": "Facebook founded",
+  "start": 2004,
+  "lat": 42.37,
+  "lng": -71.11,
+  "priority": 64,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Mark Zuckerberg launched a social network from his Harvard dorm; it grew to billions of users and reshaped how humans communicate.",
+  "body": "Started as a network for Harvard students, Facebook opened to the public in 2006 and passed a billion users in 2012, absorbing Instagram and WhatsApp along the way.\n\nIt made social networking the dominant form of online communication and advertising the dominant business model of the web. It also became the focus of arguments over privacy, algorithmic amplification, misinformation and the effects of social media on adolescents.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Facebook).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Facebook"
+   }
+  ]
+ },
+ {
+  "id": "hurricane-katrina",
+  "name": "Hurricane Katrina",
+  "start": 2005,
+  "lat": 29.95,
+  "lng": -90.07,
+  "priority": 66,
+  "tags": [
+   "disaster",
+   "climate"
+  ],
+  "summary": "A hurricane that had peaked at Category 5 over the Gulf came ashore as a Category 3 and breached the levees protecting New Orleans, flooding most of the city.",
+  "body": "More than 1,800 people died and over a million were displaced across the Gulf coast. Water covered around 80 per cent of New Orleans for weeks, and the failure of the federal and local relief effort became a national scandal.\n\nThe flooding fell hardest on the city's poorest neighbourhoods, and the storm became a reference point in arguments about extreme weather under [modern global warming](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hurricane_Katrina).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hurricane_Katrina"
+   }
+  ]
+ },
+ {
   "id": "iphone",
   "name": "The smartphone era",
   "start": 2007,
@@ -1059,6 +1790,25 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/IPhone_(1st_generation)"
+   }
+  ]
+ },
+ {
+  "id": "obama-elected",
+  "name": "Barack Obama elected president",
+  "start": 2008,
+  "lat": 41.88,
+  "lng": -87.62,
+  "priority": 68,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Obama became the first African-American US president, amid the worst financial crisis since the Great Depression.",
+  "body": "Obama won the presidency in the weeks after the [financial crisis](event:financial-crisis) broke, becoming the first African-American to hold the office.\n\nHis two terms brought a health insurance expansion, the nuclear agreement with Iran and the [Paris Agreement](event:paris-agreement) on climate. He faced sustained congressional opposition, and much of the programme was reversed by his successor.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Barack_Obama).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Barack_Obama"
    }
   ]
  },
@@ -1099,6 +1849,46 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Arab_Spring"
+   }
+  ]
+ },
+ {
+  "id": "fukushima-disaster",
+  "name": "Fukushima nuclear disaster",
+  "start": 2011,
+  "lat": 37.42,
+  "lng": 141.03,
+  "priority": 68,
+  "tags": [
+   "disaster",
+   "technology"
+  ],
+  "summary": "An earthquake and tsunami knocked out cooling at a Japanese nuclear plant, and three reactor cores melted down in the worst nuclear accident since Chernobyl.",
+  "body": "The tsunami that caused the accident killed around 18,000 people along the coast. The meltdowns themselves caused no immediate radiation deaths, but forced the evacuation of some 150,000 people, and more than 2,000 later deaths have been attributed to the strain of displacement.\n\nJapan shut down its reactor fleet and Germany announced a nuclear phase-out — a setback for low-carbon generation at a critical point in the response to [global warming](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fukushima_nuclear_accident).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Fukushima_nuclear_accident"
+   }
+  ]
+ },
+ {
+  "id": "curiosity-mars",
+  "name": "Curiosity rover lands on Mars",
+  "start": 2012,
+  "lat": 28.58,
+  "lng": -80.58,
+  "priority": 62,
+  "tags": [
+   "exploration",
+   "science"
+  ],
+  "summary": "A one-tonne rover touched down in Gale Crater to explore whether Mars ever harboured life, beginning the most ambitious planetary survey yet.",
+  "body": "Launched from Cape Canaveral in November 2011, the one-tonne rover was lowered into Gale Crater by a rocket-powered sky crane in August 2012.\n\nCuriosity has outlasted its two-year primary mission many times over, finding ancient lakebed sediments and organic molecules that show Mars was once warmer, wetter and potentially habitable.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Curiosity_(rover)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Curiosity_(rover)"
    }
   ]
  },
@@ -1163,6 +1953,46 @@
   ]
  },
  {
+  "id": "snowden-leaks",
+  "name": "Edward Snowden reveals NSA mass surveillance",
+  "start": 2013,
+  "lat": 22.32,
+  "lng": 114.17,
+  "priority": 66,
+  "tags": [
+   "politics",
+   "technology"
+  ],
+  "summary": "A former NSA contractor, speaking from Hong Kong, gave journalists documents showing that US and allied agencies collected phone and internet records on a mass scale.",
+  "body": "The disclosures described bulk telephone metadata collection, access to the records of major internet services and the tapping of undersea cables. Snowden was charged under the Espionage Act and took refuge in Russia.\n\nThe revelations forced a public argument about surveillance and civil liberties, prompted limited legal reform in the United States, and pushed the technology industry to encrypt traffic by default.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Edward_Snowden).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Edward_Snowden"
+   }
+  ]
+ },
+ {
+  "id": "usa-marriage-equality",
+  "name": "Same-sex marriage legalized in the US",
+  "start": 2015,
+  "lat": 38.89,
+  "lng": -77.04,
+  "priority": 64,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "The Supreme Court ruled that same-sex couples have a constitutional right to marry, following decades of activism and court battles.",
+  "body": "Obergefell v. Hodges held that the Fourteenth Amendment requires states to license and recognise marriages between same-sex couples, settling the question across all fifty states.\n\nThe decision came less than fifty years after [the Stonewall uprising](event:stonewall-uprising), and followed a rapid shift in public opinion. Marriage equality has since been adopted in more than thirty countries, while same-sex relationships remain criminalised in many others.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Obergefell_v._Hodges).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Obergefell_v._Hodges"
+   }
+  ]
+ },
+ {
   "id": "gravitational-waves",
   "name": "First detection of gravitational waves",
   "start": 2015,
@@ -1198,6 +2028,46 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Paris_Agreement"
+   }
+  ]
+ },
+ {
+  "id": "brexit-referendum",
+  "name": "Brexit referendum",
+  "start": 2016,
+  "lat": 51.51,
+  "lng": -0.13,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "economy"
+  ],
+  "summary": "British voters chose to leave the European Union by a narrow margin, triggering a constitutional crisis and reshaping European politics.",
+  "body": "Fifty-two per cent voted to leave, on a turnout of seventy-two. The result reflected long-running arguments over sovereignty, immigration and the distribution of the gains from globalisation.\n\nThe United Kingdom left the [European Union](event:maastricht) in 2020 after four years of negotiation. Trade frictions followed, and the vote strained the union between England, Scotland and Northern Ireland, where it reopened questions settled by [the Good Friday Agreement](event:good-friday-agreement).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Brexit).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Brexit"
+   }
+  ]
+ },
+ {
+  "id": "metoo-movement",
+  "name": "MeToo movement emerges",
+  "start": 2017,
+  "lat": 40.75,
+  "lng": -73.99,
+  "priority": 64,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "summary": "Women shared stories of sexual harassment and assault on social media, sparking a global reckoning with gender violence and workplace abuse.",
+  "body": "The phrase, coined by the activist Tarana Burke in 2006, spread worldwide after allegations against the film producer Harvey Weinstein were published in October 2017.\n\nThe movement led to prosecutions and resignations across entertainment, media, politics and business, and to revised workplace conduct rules. It also prompted argument about due process and about how allegations should be handled.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Me_Too_movement).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Me_Too_movement"
    }
   ]
  },
@@ -1243,6 +2113,26 @@
   ]
  },
  {
+  "id": "chatgpt-released",
+  "name": "ChatGPT released",
+  "start": 2022,
+  "lat": 37.77,
+  "lng": -122.41,
+  "priority": 68,
+  "tags": [
+   "technology",
+   "science"
+  ],
+  "summary": "OpenAI released a conversational interface to a large language model; it reached a hundred million users within two months and made generative AI a mass technology.",
+  "body": "The system built on the transformer architecture and the [deep learning](event:deep-learning) methods of the previous decade, but its chat interface put them in ordinary hands for the first time.\n\nIts release set off a wave of investment and competition, and arguments over copyright, misinformation, the future of skilled work and the governance of increasingly capable systems.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/ChatGPT).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/ChatGPT"
+   }
+  ]
+ },
+ {
   "id": "ukraine-invasion",
   "name": "Russian invasion of Ukraine",
   "start": 2022,
@@ -1280,6 +2170,46 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/World_population"
+   }
+  ]
+ },
+ {
+  "id": "israel-hamas-war",
+  "name": "Israel-Hamas war begins",
+  "start": 2023,
+  "lat": 31.5,
+  "lng": 34.47,
+  "priority": 70,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Hamas-led fighters attacked southern Israel, killing about 1,200 people and taking some 250 hostages; Israel responded with an air and ground campaign in Gaza.",
+  "body": "The attack of 7 October 2023 was the deadliest day for Israelis since the state was founded. The Israeli campaign that followed killed tens of thousands of Palestinians according to Gaza health authorities, displaced most of the territory's population and left much of it in ruins.\n\nThe war brought accusations of war crimes against both sides before international courts, protests worldwide, and fighting that drew in armed groups in Lebanon and Yemen as well as Iran.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gaza_war).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Gaza_war"
+   }
+  ]
+ },
+ {
+  "id": "turkey-syria-earthquake",
+  "name": "Turkey-Syria earthquake",
+  "start": 2023,
+  "lat": 37.22,
+  "lng": 37.02,
+  "priority": 66,
+  "tags": [
+   "disaster",
+   "geology"
+  ],
+  "summary": "A 7.8 magnitude earthquake killed over 50,000 in Turkey and Syria, one of the deadliest earthquakes in a century.",
+  "body": "The magnitude 7.8 shock struck before dawn near Gaziantep and was followed hours later by a second of magnitude 7.5. Around 60,000 people were killed and millions were left homeless.\n\nPoorly enforced building codes explained much of the collapse in Turkey, while in northern Syria a decade of war had already destroyed housing and hampered the relief effort.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/2023_Turkey%E2%80%93Syria_earthquakes).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/2023_Turkey%E2%80%93Syria_earthquakes"
    }
   ]
  }

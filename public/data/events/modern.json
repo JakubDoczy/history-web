@@ -346,6 +346,26 @@
   ]
  },
  {
+  "id": "ether-anesthesia",
+  "name": "First public demonstration of ether anesthesia",
+  "start": 1846,
+  "lat": 42.36,
+  "lng": -71.06,
+  "priority": 72,
+  "tags": [
+   "science",
+   "technology"
+  ],
+  "summary": "William Morton demonstrated that ether vapour could render a patient painless during surgery at Massachusetts General Hospital.",
+  "body": "For thousands of years surgery meant agony. Morton's demonstration on October 16, 1846 changed that forever, though chloroform would soon become the preferred agent in Europe.\n\nThe ability to operate without pain opened surgery to procedures that had been unthinkable, and together with [germ theory](event:germ-theory) it began to make the operating theatre survivable.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_general_anesthesia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_general_anesthesia"
+   }
+  ]
+ },
+ {
   "id": "revolutions-1848",
   "name": "Revolutions of 1848",
   "start": 1848,
@@ -441,6 +461,102 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Taiping_Rebellion"
+   }
+  ]
+ },
+ {
+  "id": "crimean-war",
+  "name": "Crimean War",
+  "start": 1853,
+  "end": 1856,
+  "lat": 44.5,
+  "lng": 33.5,
+  "priority": 68,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Britain, France and the Ottoman Empire fought Russia over influence in the Black Sea and the Holy Land, and over the fate of a declining Ottoman Empire.",
+  "body": "The war saw the first modern war correspondents and photographers, and brought Florence Nightingale's reform of military nursing. It also introduced the rifle-musket and trench warfare that would reappear, far deadlier, in [1914](event:ww1).\n\nThe Russian defeat checked tsarist expansion for a generation, and the Treaty of Paris neutralised the Black Sea — terms Russia repudiated as soon as the other powers were distracted in 1870. Defeat also pushed St Petersburg into the reforms that ended serfdom.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Crimean_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Crimean_War"
+   }
+  ]
+ },
+ {
+  "id": "bessemer-steel",
+  "name": "Bessemer steel process",
+  "start": 1856,
+  "lat": 53.4,
+  "lng": -1.5,
+  "priority": 70,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "parent": "industrial-revolution",
+  "summary": "Henry Bessemer's process converted pig iron to steel in bulk, cutting costs and making railroads and armaments much cheaper.",
+  "body": "Part of [Industrial Revolution](event:industrial-revolution). The Bessemer converter used a blast of air to burn away carbon impurities, a trick so simple and so profitable that within a generation steel had replaced iron for most purposes.\n\nThe consequence was [railways](event:railways) that covered continents and ships that were faster and more durable — and the steel navies and artillery that the powers raced to build in the decades before [World War I](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bessemer_process).",
+  "links": [
+   {
+    "label": "Industrial Revolution",
+    "event": "industrial-revolution"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Bessemer_process"
+   }
+  ]
+ },
+ {
+  "id": "indian-rebellion",
+  "name": "Indian Rebellion",
+  "start": 1857,
+  "end": 1858,
+  "lat": 26.5,
+  "lng": 80.5,
+  "priority": 74,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "english-east-india",
+  "summary": "Indian soldiers and civilians rose against the East India Company, nearly expelling the British from the subcontinent before being brutally suppressed.",
+  "body": "Part of the [East India Company](event:english-east-india) era in India. The rebellion — sparked partly by rumours that new cartridges were greased with animal fat offensive to Hindu and Muslim soldiers — spread across the north, lasted over a year, and cost hundreds of thousands of lives, most of them Indian.\n\nIts suppression was ferocious, with mass reprisals against civilians. The Crown took direct control from the Company and brought India more firmly into the Empire, but the uprising had shown that British rule was neither inevitable nor unopposed — a lesson that would echo through the next ninety years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Indian_Rebellion_of_1857).",
+  "links": [
+   {
+    "label": "British Raj",
+    "event": "british-raj"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Indian_Rebellion_of_1857"
+   }
+  ]
+ },
+ {
+  "id": "transatlantic-telegraph",
+  "name": "First transatlantic telegraph cable",
+  "start": 1858,
+  "lat": 51.93,
+  "lng": -10.35,
+  "priority": 66,
+  "tags": [
+   "technology"
+  ],
+  "parent": "telegraph",
+  "summary": "A submarine telegraph cable successfully crossed the Atlantic, connecting North America to Europe and shortening communication from ten days to minutes.",
+  "body": "Part of [Electric telegraph](event:telegraph). After three failed attempts, the cable laid in 1858 worked for three weeks before failing — but that was enough to show the feasibility. The cable of 1866 endured and opened a new era of real-time global communication.\n\nIt made possible the instantaneous coordination of ship movements, stock prices and news across an ocean, binding the Atlantic economy into one system.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Transatlantic_telegraph_cable).",
+  "links": [
+   {
+    "label": "Electric telegraph",
+    "event": "telegraph"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Transatlantic_telegraph_cable"
    }
   ]
  },
@@ -681,6 +797,26 @@
   ]
  },
  {
+  "id": "metric-system-1875",
+  "name": "Metre Convention standardises metric system",
+  "start": 1875,
+  "lat": 48.8,
+  "lng": 2.35,
+  "priority": 58,
+  "tags": [
+   "science",
+   "technology"
+  ],
+  "summary": "Seventeen nations agreed on standard definitions of the metre and kilogram, making the metric system international.",
+  "body": "France had built the metric system during the [Revolution](event:french-revolution), but for decades it spread slowly and Britain in particular resisted it. The 1875 Convention created shared prototypes of the metre and kilogram and the Bureau International des Poids et Mesures outside Paris to keep them.\n\nIts successor, the SI, is now the legal basis of measurement in almost every country, and the treaty bodies founded in 1875 still define the units that science and trade depend on.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Metre_Convention).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Metre_Convention"
+   }
+  ]
+ },
+ {
   "id": "telephone",
   "name": "Telephone",
   "start": 1876,
@@ -696,6 +832,25 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Telephone"
+   }
+  ]
+ },
+ {
+  "id": "phonograph",
+  "name": "Edison's phonograph",
+  "start": 1877,
+  "lat": 40.57,
+  "lng": -74.33,
+  "priority": 68,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Thomas Edison built the first device that could both record sound and play it back, capturing a voice on a cylinder wrapped in tinfoil.",
+  "body": "The phonograph was crude — Edison's first recording was \"Mary Had a Little Lamb\" — but within a decade it was commercially manufactured. By the early twentieth century the gramophone and flat disc records were displacing it, but Edison had proved that sound could be captured, stored and retrieved.\n\nThe implications were large: music no longer had to be live, and a performance could outlast the performer. The recording industry followed, and the problem of reproducing sound faithfully would later shape broadcasting and [sound film](event:jazz-singer).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Phonograph).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Phonograph"
    }
   ]
  },
@@ -835,6 +990,144 @@
   ]
  },
  {
+  "id": "kodak-film",
+  "name": "Kodak roll film camera",
+  "start": 1888,
+  "lat": 43.2,
+  "lng": -77.5,
+  "priority": 66,
+  "tags": [
+   "technology"
+  ],
+  "summary": "George Eastman produced the first camera using roll film and affordable for amateurs, putting photography in ordinary hands.",
+  "body": "Before Kodak, photography required glass plates, dark rooms and chemical expertise. Eastman's camera with roll film cost $25 and came with instructions: you exposed the frame, sent the camera back to the factory, and received prints and a reloaded camera.\n\nIt democratised vision — anyone could now capture a moment and keep it forever. By 1900 millions of amateur photographs existed; by 1945 personal photography was routine, and the documentary power of the image was transforming warfare and politics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kodak).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Kodak"
+   }
+  ]
+ },
+ {
+  "id": "wireless-telegraphy",
+  "name": "Guglielmo Marconi and wireless telegraphy",
+  "start": 1895,
+  "lat": 44.51,
+  "lng": 11.31,
+  "priority": 70,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Marconi transmitted radio signals without wires, solving the problem of communication to moving ships and remote locations.",
+  "body": "Building on the discoveries of Hertz and others, Marconi was the first to make wireless transmission practical. By 1897 he was operating a station on the Isle of Wight; in 1901 he claimed the first signal across the Atlantic.\n\nWireless proved its worth at sea: the distress calls sent from the [Titanic](event:titanic-sinks) in 1912 brought the Carpathia to the lifeboats, and the disaster led to rules requiring a continuous radio watch. By the 1920s the same technology had become a mass broadcast medium.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Guglielmo_Marconi).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Guglielmo_Marconi"
+   }
+  ]
+ },
+ {
+  "id": "x-rays",
+  "name": "Discovery of X-rays",
+  "start": 1895,
+  "lat": 49.79,
+  "lng": 9.93,
+  "priority": 74,
+  "tags": [
+   "science"
+  ],
+  "summary": "Wilhelm Röntgen discovered X-rays while experimenting with cathode tubes, opening a new window into the human body and atom.",
+  "body": "On November 8, 1895, Röntgen found that a cathode tube emitted an invisible radiation that could pass through flesh but not bone — the first image of a living skeleton captured without dissection.\n\nX-rays transformed medicine by allowing diagnosis without cutting, and became a tool for probing the structure of matter, from crystals to the atom itself. Their discovery also set others hunting for similar rays: [radioactivity](event:radioactivity) was found the next year.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/X-ray).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/X-ray"
+   }
+  ]
+ },
+ {
+  "id": "cuban-independence",
+  "name": "Cuban War of Independence",
+  "start": 1895,
+  "end": 1898,
+  "lat": 20.0,
+  "lng": -76.0,
+  "priority": 64,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Cuban insurgents fought Spanish rule for three years before American intervention in 1898 ended Spain's empire in the Americas and left the United States dominant on the island.",
+  "body": "The Cuban rising had been running for three years when the United States intervened in 1898; the Spanish-American War that followed lasted ten weeks.\n\nSpain lost its last major colony. Cuba became nominally independent but under American occupation, with American companies controlling the sugar economy. The war marked America's emergence as a global power and began its half-century of military interventions in Latin America.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cuban_War_of_Independence).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cuban_War_of_Independence"
+   }
+  ]
+ },
+ {
+  "id": "radioactivity",
+  "name": "Discovery of radioactivity",
+  "start": 1896,
+  "lat": 48.86,
+  "lng": 2.35,
+  "priority": 72,
+  "tags": [
+   "science"
+  ],
+  "summary": "Henri Becquerel found that uranium salts emit radiation of their own accord, and Marie and Pierre Curie went on to isolate new radioactive elements.",
+  "body": "Becquerel noticed that uranium salts emitted radiation without being heated or exposed to light — an impossible feat unless energy came from inside the atom. The Curies followed in 1898 by isolating polonium and radium, showing that some atoms are simply unstable.\n\nRadioactivity was the key that opened the atom. It provided a new energy source, allowed dating of rocks and fossils, and showed that the transmutation of elements was real. It would lead to [nuclear fission](event:nuclear-fission) and the [atomic bomb](event:trinity).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Radioactive_decay).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Radioactive_decay"
+   }
+  ]
+ },
+ {
+  "id": "boxer-rebellion",
+  "name": "Boxer Rebellion",
+  "start": 1899,
+  "end": 1901,
+  "lat": 39.9,
+  "lng": 116.4,
+  "priority": 66,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Chinese militia rose against foreign influence and Christian missionaries, besieging foreign legations in Beijing and prompting an international military response.",
+  "body": "The Boxers' goal was to drive out foreigners and restore the Qing — they failed, but revealed the fault lines between Chinese nationalism and European imperialism.\n\nAn eight-nation relief force, to which Japan contributed the largest contingent, broke the siege in August 1900; the occupying troops then looted the city. The indemnity imposed on China crippled its finances for a generation and pushed it toward revolution. It also showed that the European powers could cooperate against a non-European enemy — a lesson that would not be lost on Japan itself.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Boxer_Rebellion).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Boxer_Rebellion"
+   }
+  ]
+ },
+ {
+  "id": "boer-war",
+  "name": "Second Boer War",
+  "start": 1899,
+  "end": 1902,
+  "lat": -26.2,
+  "lng": 28.0,
+  "priority": 64,
+  "tags": [
+   "war"
+  ],
+  "summary": "British and colonial forces subdued the Afrikaner republics of South Africa, absorbing them into the Empire and sowing decades of resentment.",
+  "body": "The war began with Boer invasion but turned into a brutal counterinsurgency as British forces burned farms and moved civilians into internment camps — the first widespread use of the term concentration camp. Disease and shortages killed roughly 28,000 Boer internees, most of them children, and at least 20,000 Black African internees.\n\nIt showed that European military superiority was no longer automatic, cost Britain £200 million (immense for the time), and was bitterly divisive at home. The peace preserved Boer identity and property, but the scorched-earth tactics and racial hierarchy would haunt South Africa for a century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Second_Boer_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Second_Boer_War"
+   }
+  ]
+ },
+ {
   "id": "wright-flyer",
   "name": "First powered flight",
   "start": 1903,
@@ -850,6 +1143,46 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Wright_Flyer"
+   }
+  ]
+ },
+ {
+  "id": "suffragette-movement",
+  "name": "Suffragette movement in Britain",
+  "start": 1903,
+  "end": 1914,
+  "lat": 51.5,
+  "lng": -0.1,
+  "priority": 64,
+  "tags": [
+   "politics"
+  ],
+  "summary": "British women, denied the vote, escalated from petitions to property damage and hunger strikes, forcing the question of female enfranchisement onto the political agenda.",
+  "body": "Emmeline Pankhurst and her daughters adopted militant tactics — arson, bombing, slashing paintings — that terrified the establishment and fascinated the press. The campaign was suspended during [World War I](event:ww1) but resumed after, resulting in limited suffrage in 1918 and full suffrage in 1928.\n\nThe movement divided campaigners themselves: constitutional suffragists, far more numerous, argued that militancy set the cause back. But their visibility made the cause impossible to ignore, and their sacrifice — prison, force-feeding — gave moral weight to the claim that democracy without women was a sham.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Suffragette).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Suffragette"
+   }
+  ]
+ },
+ {
+  "id": "russo-japanese-war",
+  "name": "Russo-Japanese War",
+  "start": 1904,
+  "end": 1905,
+  "lat": 38.85,
+  "lng": 121.25,
+  "priority": 72,
+  "tags": [
+   "war"
+  ],
+  "summary": "Japan and Russia fought for control of Korea and Manchuria; Japan's victory proved that an Asian power could defeat a European empire.",
+  "body": "The war was a shock to the European order. Japan's navy destroyed two Russian fleets; its army outmaneuvered Russian conscripts on land. The Treaty of Portsmouth (1905) left Russia humiliated, and defeat helped touch off the revolution of 1905 that shook the tsarist state a decade before [1917](event:russian-revolution).\n\nFor Asia, the message was clear: Western superiority was not inevitable. Aspiring powers from Turkey to China to India took note. Japan itself, emboldened, began its expansion toward [empire](event:meiji).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Russo-Japanese_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Russo-Japanese_War"
    }
   ]
  },
@@ -870,6 +1203,164 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Theory_of_relativity"
+   }
+  ]
+ },
+ {
+  "id": "finland-suffrage",
+  "name": "Finland grants women's suffrage",
+  "start": 1906,
+  "lat": 60.17,
+  "lng": 24.94,
+  "priority": 60,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Finland became the first European nation to grant women full voting rights, a step that few states had taken that foreshadowed a global shift.",
+  "body": "Women had already voted elsewhere — the Wyoming Territory from 1869, New Zealand from 1893 — but Finland was the first country to give women both the vote and the right to stand for election.\n\nThe move was tied to Finland's struggle for independence from Russia. Women's part in the national movement strengthened their claim, and the new single-chamber parliament created in 1906 was elected on universal suffrage; nineteen women took seats in it the following year. Other Nordic countries followed within decades, then Britain and America, though many nations — and some that claimed to be advanced — did not enfranchise women until after [World War II](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Women%27s_suffrage_in_Finland).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Women%27s_suffrage_in_Finland"
+   }
+  ]
+ },
+ {
+  "id": "bosnian-crisis",
+  "name": "Bosnian Crisis",
+  "start": 1908,
+  "end": 1909,
+  "lat": 44.0,
+  "lng": 18.0,
+  "priority": 60,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Austria-Hungary annexed Bosnia-Herzegovina, triggering a crisis with Russia and Serbia that brought Europe close to war six years before [1914](event:ww1).",
+  "body": "The crisis revealed the brittleness of the European order. Austria's move violated the Treaty of Berlin; Serbia wanted Bosnia for itself; Russia claimed to defend Slavic interests; Germany backed Austria. For a moment the powers seemed on the brink of war.\n\nRussia backed down, but the humiliation fuelled Slavic nationalism and Russian desire for revenge. The Balkans had become the flashpoint where ethnic, great-power and religious interests collided — a role it would maintain through [1945](event:ww2) and beyond.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bosnian_crisis_of_1908%E2%80%9309).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Bosnian_crisis_of_1908%E2%80%9309"
+   }
+  ]
+ },
+ {
+  "id": "bleriot-channel",
+  "name": "Blériot's Channel crossing",
+  "start": 1909,
+  "lat": 51.1,
+  "lng": 1.0,
+  "priority": 60,
+  "tags": [
+   "technology",
+   "exploration"
+  ],
+  "summary": "Louis Blériot flew a monoplane across the English Channel, proving that aircraft could make practical journeys and making invasion by air conceivable.",
+  "body": "The [Wright brothers](event:wright-flyer) had flown, but Blériot's 1909 crossing showed that aircraft could go where the aviator chose. It took 36 minutes, but it crossed a threshold — the sea that had protected Britain for a thousand years was no longer an obstacle.\n\nThe implications were military as much as romantic. Within a few years aircraft were being armed, and by [1914](event:ww1) they were flying reconnaissance over the front.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Louis_Blériot).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Louis_Blériot"
+   }
+  ]
+ },
+ {
+  "id": "scott-expedition",
+  "name": "Scott's Antarctic Expedition",
+  "start": 1910,
+  "end": 1913,
+  "lat": -90.0,
+  "lng": 0.0,
+  "priority": 62,
+  "tags": [
+   "exploration"
+  ],
+  "summary": "Robert Falcon Scott led an expedition to the South Pole, reaching it only to find he had been beaten by Amundsen; he and his party died on the return.",
+  "body": "Scott's 1911-1912 journey to the Pole was a race against Roald Amundsen, who used sled dogs and reached the Pole on 14 December 1911, five weeks ahead of him. Scott's traditional British methods — man-hauling sledges in temperatures that dropped below -40 °C — proved fatal. He died just eleven miles from One Ton Depot.\n\nHis final letters, discovered with his body, made him a tragic hero. The expedition combined genuine science (meteorology, geology, biology) with the imperial romance of exploration — a last echo of the [Age of Discovery](event:age-of-discovery) before the world was fully mapped.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Terra_Nova_Expedition).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Terra_Nova_Expedition"
+   }
+  ]
+ },
+ {
+  "id": "chinese-revolution",
+  "name": "Xinhai Revolution ends the Qing dynasty",
+  "start": 1911,
+  "end": 1912,
+  "lat": 30.59,
+  "lng": 114.31,
+  "priority": 76,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The Xinhai Revolution ended more than two and a half centuries of Qing rule and over two thousand years of imperial government, installing a republic that soon fractured under warlords.",
+  "body": "The fall of the Qing dynasty came suddenly — an accidental bomb, a failed cover-up, military mutinies in a dozen cities. The last emperor, a child, abdicated in February 1912. Sun Yat-sen's republic took his place, but lacked the power to govern.\n\nWhat followed was fifteen years of warlord division and chaos, culminating in [Japanese invasion](event:sino-japanese-war) and eventually civil war between Nationalists and Communists. But the revolution had done one thing: ended the assumption that China would always be run by dynasties. The twentieth century would be one of ideological rather than imperial struggle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Xinhai_Revolution).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Xinhai_Revolution"
+   }
+  ]
+ },
+ {
+  "id": "titanic-sinks",
+  "name": "RMS Titanic sinks",
+  "start": 1912,
+  "lat": 41.73,
+  "lng": -49.95,
+  "priority": 64,
+  "tags": [
+   "disaster"
+  ],
+  "summary": "The \"unsinkable\" liner hit an iceberg and went down in the North Atlantic, drowning over a thousand people and shocking the age of confidence.",
+  "body": "The Titanic was the largest ship afloat and embodied the period's faith in technology and engineering. It struck an iceberg at night and sank in under three hours, killing about 1,500 people. There were lifeboats for barely half those aboard, and survival rates fell sharply with class: most women in first class survived, while the majority of third-class passengers did not.\n\nThe disaster revealed the fragility of progress and the class hierarchies of the age. It prompted new regulations on lifeboats and wireless watch, and struck a symbolic blow to the Edwardian assumption that technology had made life fundamentally safe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Titanic).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Titanic"
+   }
+  ]
+ },
+ {
+  "id": "ford-assembly-line",
+  "name": "Ford assembly line",
+  "start": 1913,
+  "lat": 42.41,
+  "lng": -83.1,
+  "priority": 72,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "summary": "Henry Ford introduced the moving assembly line to automobile manufacturing, allowing mass production and making cars affordable for ordinary workers.",
+  "body": "The assembly line cut the time to assemble a Model T from 12 hours to 93 minutes. By the early 1920s the Model T accounted for roughly half the cars on earth, and a worker on Ford's own five-dollar day could afford one.\n\nThe social consequences were enormous: suburbs became possible, commuting became normal, and American mobility and individualism came to define the twentieth century. It also pioneered mass production methods that would be copied worldwide — from Soviet tractor plants to Japanese electronics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assembly_line).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Assembly_line"
+   }
+  ]
+ },
+ {
+  "id": "panama-canal-opens",
+  "name": "Panama Canal opens",
+  "start": 1914,
+  "lat": 9.0,
+  "lng": -79.5,
+  "priority": 68,
+  "tags": [
+   "technology",
+   "economy"
+  ],
+  "summary": "A canal of locks and an artificial lake joined the Atlantic and Pacific, cutting some 13,000 kilometres from the voyage between New York and San Francisco.",
+  "body": "The French had tried a sea-level cut and failed; the Americans succeeded with locks, a dammed lake, and a mosquito-control campaign that finally curbed yellow fever, though malaria and accidents still killed thousands of workers. The first ship transited on August 15, 1914, the same week [World War I](event:ww1) began.\n\nThe canal let the United States move a fleet between two oceans and tightened its grip on the Caribbean. Washington governed the surrounding Canal Zone as its own territory until 1979 and kept control of the waterway until 1999.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Panama_Canal).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Panama_Canal"
    }
   ]
  },
@@ -915,6 +1406,26 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Assassination_of_Archduke_Franz_Ferdinand"
+   }
+  ]
+ },
+ {
+  "id": "easter-rising",
+  "name": "Easter Rising in Dublin",
+  "start": 1916,
+  "lat": 53.35,
+  "lng": -6.26,
+  "priority": 68,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Irish republicans seized buildings in central Dublin and proclaimed a republic; the rising was crushed within a week, but its aftermath reshaped Irish politics.",
+  "body": "The rebellion was crushed in a week, and sixteen rebel leaders were executed by firing squad. But their deaths transformed them into martyrs — Irish public opinion, previously divided on independence, swung decisively against British rule.\n\nSinn Féin swept the 1918 election on that changed mood, and the war that followed produced [the Irish Free State](event:irish-independence) in 1921.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Easter_Rising).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Easter_Rising"
    }
   ]
  },
@@ -1057,6 +1568,65 @@
   ]
  },
  {
+  "id": "prohibition-era",
+  "name": "American Prohibition",
+  "start": 1920,
+  "end": 1933,
+  "lat": 39.8,
+  "lng": -98.6,
+  "priority": 62,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The United States banned the manufacture, sale and transport of alcohol, creating a massive black market and empowering organized crime.",
+  "body": "Prohibition was intended as a moral reform, backed by progressive reformers and churches. Instead, it criminalized millions of ordinary citizens and made millionaires of gangsters. Al Capone's Chicago bootleg empire was built on Prohibition.\n\nThe policy also revealed the limits of law when it lacks popular support. By 1933, even conservative politicians agreed Prohibition had failed — it was repealed by constitutional amendment, the first and only repeal of an amendment to the Constitution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Prohibition_in_the_United_States).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Prohibition_in_the_United_States"
+   }
+  ]
+ },
+ {
+  "id": "irish-independence",
+  "name": "Irish independence",
+  "start": 1921,
+  "lat": 53.35,
+  "lng": -6.26,
+  "priority": 66,
+  "tags": [
+   "politics"
+  ],
+  "summary": "After a two-year war of independence, the Anglo-Irish Treaty created the Irish Free State as a dominion and partitioned the island.",
+  "body": "The war lasted 1919-1921 and was brutal — British auxiliary police burned Irish towns, Irish rebels killed suspected informers. The settlement partitioned the island, with six northern counties remaining in the United Kingdom.\n\nThe Free State was a compromise that satisfied neither republican purists nor Ulster unionists. But it established the principle that the British Empire's grip on its territories was not absolute — a lesson that would reshape the [decolonisation](event:decolonisation) of the twentieth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Irish_War_of_Independence).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Irish_War_of_Independence"
+   }
+  ]
+ },
+ {
+  "id": "insulin",
+  "name": "Discovery of insulin",
+  "start": 1921,
+  "lat": 43.66,
+  "lng": -79.39,
+  "priority": 74,
+  "tags": [
+   "science",
+   "disease"
+  ],
+  "summary": "Frederick Banting and Charles Best extracted insulin from the pancreas, providing the first effective treatment for diabetes and saving millions of lives.",
+  "body": "Before insulin, type 1 diabetes was a death sentence — a slow decline from hyperglycemia and ketoacidosis. Banting's team found that pancreatic extracts could lower blood sugar, and within a year insulin was being mass-produced and injected into diabetics.\n\nThe first patient, a fourteen-year-old boy, went from near-death to recovery. Millions of people who would have died now could live. Insulin remains one of medicine's greatest discoveries, and the discovery that the pancreas controlled blood sugar opened the field of endocrinology.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Insulin).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Insulin"
+   }
+  ]
+ },
+ {
   "id": "ussr-founded",
   "name": "Soviet Union founded",
   "start": 1922,
@@ -1077,6 +1647,124 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Soviet_Union"
+   }
+  ]
+ },
+ {
+  "id": "kanto-earthquake",
+  "name": "Great Kanto earthquake",
+  "start": 1923,
+  "lat": 35.5,
+  "lng": 139.5,
+  "priority": 64,
+  "tags": [
+   "disaster"
+  ],
+  "summary": "A magnitude 7.9 earthquake destroyed Tokyo and Yokohama, killing over 100,000 people and shaking faith in urban progress.",
+  "body": "The earthquake struck at midday, when most cooking stoves were lit. Fires spread unchecked through both cities. Most of the dead were killed by the firestorms rather than by the shaking itself; one whirl of fire in Tokyo's Honjo district alone killed tens of thousands sheltering in an open yard.\n\nThe reconstruction was rapid, and Japan rebuilt Tokyo larger and stronger. In the chaos, false rumours that Koreans were poisoning wells and setting fires led to massacres by vigilante groups in which thousands of Korean residents were killed, and the reconstruction strained Japanese public finances for years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1923_Great_Kant%C5%8D_earthquake).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/1923_Great_Kant%C5%8D_earthquake"
+   }
+  ]
+ },
+ {
+  "id": "scopes-trial",
+  "name": "Scopes Monkey Trial",
+  "start": 1925,
+  "lat": 35.49,
+  "lng": -85.01,
+  "priority": 62,
+  "tags": [
+   "culture",
+   "science"
+  ],
+  "summary": "A Tennessee schoolteacher was prosecuted for teaching evolution, putting [Darwin's theory](event:origin-species) on trial before a national radio audience.",
+  "body": "John Scopes was fined $100 for violating a state law against teaching that humans descended from animals. The trial pitted William Jennings Bryan (prosecuting) against Clarence Darrow (defending), and was broadcast live on radio — the first trial to reach millions.\n\nScopes was convicted, though the verdict was overturned on a technicality. The case revealed a deep fissure in American culture between scientific consensus and religious conviction, a fissure that remains unhealed. [Darwin's theory](event:origin-species) won in the courts, but not in the hearts of millions.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scopes_trial).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Scopes_trial"
+   }
+  ]
+ },
+ {
+  "id": "british-general-strike",
+  "name": "British General Strike",
+  "start": 1926,
+  "lat": 51.5,
+  "lng": -0.1,
+  "priority": 58,
+  "tags": [
+   "politics",
+   "economy"
+  ],
+  "summary": "British coal miners struck over wage cuts, joined by millions of other workers in the only general strike in British history.",
+  "body": "For nine days in May 1926, Britain was partially paralysed — trains, buses and newspapers stopped. The government and middle-class volunteers kept essential services running. The workers' unity fractured; miners returned to worse terms than they had refused before the strike.\n\nThe strike revealed the weakness of Britain's economic position after [World War I](event:ww1) and the deep class divisions of the nation. It also convinced much of the union movement that its future lay in parliamentary politics through the Labour Party rather than in mass industrial action.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1926_United_Kingdom_general_strike).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/1926_United_Kingdom_general_strike"
+   }
+  ]
+ },
+ {
+  "id": "lindbergh-flight",
+  "name": "Lindbergh's transatlantic flight",
+  "start": 1927,
+  "lat": 48.97,
+  "lng": 2.44,
+  "priority": 62,
+  "tags": [
+   "exploration",
+   "technology"
+  ],
+  "summary": "Charles Lindbergh flew the Spirit of St. Louis from New York to Paris in 33 hours, proving that aircraft could cross an ocean safely and thrilling the world.",
+  "body": "Lindbergh was twenty-five, relatively unknown, and flying alone. When he landed at Le Bourget airfield after 33 hours, a crowd of more than a hundred thousand surged onto the field. He became an instant celebrity — newspapers sold millions of copies with his photograph.\n\nThe flight proved that aviation was not just for exhibition and military use — it was becoming an instrument of commerce and human connection. Where [wireless](event:wireless-telegraphy) had freed messages from ships, aircraft now began to free travellers from them: airmail contracts and airline investment followed, and scheduled transatlantic services began within little more than a decade.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charles_Lindbergh).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Charles_Lindbergh"
+   }
+  ]
+ },
+ {
+  "id": "jazz-singer",
+  "name": "The Jazz Singer — first sound film",
+  "start": 1927,
+  "lat": 34.1,
+  "lng": -118.24,
+  "priority": 66,
+  "tags": [
+   "culture",
+   "technology"
+  ],
+  "summary": "The first commercially successful motion picture with synchronized sound transformed cinema overnight from pantomime to dialogue.",
+  "body": "Silent film had been an international art form — a German film could be shown anywhere. But sound tied film to language, and America's dominance of the technology meant English-language cinema came to dominate the world.\n\nActors with melodious voices became valuable; those with poor diction became unemployable overnight. The technology was expensive, requiring theatres to install sound equipment. Within five years silent production had ended, the great silent comedians were struggling to adapt, and cinema had become a medium of dialogue as much as gesture.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Jazz_Singer).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/The_Jazz_Singer"
+   }
+  ]
+ },
+ {
+  "id": "television-invention",
+  "name": "Invention of television",
+  "start": 1927,
+  "lat": 37.78,
+  "lng": -122.42,
+  "priority": 68,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Philo Farnsworth transmitted the first all-electronic television image, the basis of the medium that would shape the second half of the twentieth century.",
+  "body": "Farnsworth, a twenty-one-year-old farm boy from Idaho, transmitted the first electronic TV image — a single horizontal line — on September 7, 1927. Vladimir Zworykin, then at Westinghouse and later RCA, was developing rival camera and display tubes over the same years, and the competing claims led to a long patent fight that Farnsworth largely won.\n\nElectronic television was far superior to mechanical alternatives, and by the late 1930s it was becoming commercial. [World War II](event:ww2) delayed mass adoption, but by 1950 television was becoming a presence in American homes. It would reshape politics, culture and warfare in the century that followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_television).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_television"
    }
   ]
  },
@@ -1216,6 +1904,82 @@
   ]
  },
  {
+  "id": "japan-manchuria",
+  "name": "Japanese invasion of Manchuria",
+  "start": 1931,
+  "lat": 41.8,
+  "lng": 123.4,
+  "priority": 68,
+  "tags": [
+   "war"
+  ],
+  "summary": "Japanese military forces seized Manchuria from China, the first major aggression by a revisionist power in the post-[World War I](event:ww1) era.",
+  "body": "The League of Nations condemned the invasion but took no action. Emboldened, Japan withdrew from the League and began rearming openly. The Manchurian conquest set a pattern: aggression would be met with protest, not force.\n\nJapan's success inspired similar moves by Mussolini in Abyssinia (1935) and Hitler in the Rhineland (1936). The world's democracies, divided and weak, lacked will to enforce the rules they had created. The result was a slide toward [World War II](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Invasion_of_Manchuria).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Invasion_of_Manchuria"
+   }
+  ]
+ },
+ {
+  "id": "hitler-chancellor",
+  "name": "Hitler appointed Chancellor of Germany",
+  "start": 1933,
+  "lat": 52.52,
+  "lng": 13.4,
+  "priority": 78,
+  "tags": [
+   "politics"
+  ],
+  "summary": "President Hindenburg appointed Adolf Hitler Chancellor, believing he could control the Nazi leader and end Germany's political paralysis.",
+  "body": "The Nazis had taken 37% of the vote in July 1932 and fallen back to 33% in November — the largest party in the Reichstag, but far from a majority. Conservatives around Hindenburg brokered the appointment believing they could use and contain Hitler.\n\nWithin two months the Reichstag fire decree had suspended civil liberties and the [Enabling Act](event:enabling-act) had handed him the power to legislate alone. Within six, opposition parties were banned, thousands of opponents were in the first camps, and Germany was a one-party state.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Machtergreifung).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Machtergreifung"
+   }
+  ]
+ },
+ {
+  "id": "enabling-act",
+  "name": "Enabling Act in Nazi Germany",
+  "start": 1933,
+  "lat": 52.52,
+  "lng": 13.4,
+  "priority": 76,
+  "tags": [
+   "politics"
+  ],
+  "summary": "The Reichstag voted to grant Hitler the power to make laws without parliament, effectively ending democracy in Germany and enabling the Holocaust.",
+  "body": "The vote was 444-94. The Social Democrats voted against; the Communist deputies had already been arrested or driven into hiding and could not vote at all. The Centre Party and the conservative right voted in favour, believing they could limit how the powers were used — a catastrophic misjudgement. Hitler used the powers to ban parties, purge the civil service and build the machinery of totalitarianism.\n\nThe Enabling Act was the legal death of Weimar democracy. Within a year, Germany had one party, one leader, and no mechanism for peaceful change. [World War II](event:ww2) and the [Holocaust](event:holocaust) followed from this vote.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Enabling_Act_of_1933).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Enabling_Act_of_1933"
+   }
+  ]
+ },
+ {
+  "id": "abyssinia-invasion",
+  "name": "Italian invasion of Abyssinia",
+  "start": 1935,
+  "lat": 9.0,
+  "lng": 40.0,
+  "priority": 66,
+  "tags": [
+   "war"
+  ],
+  "summary": "Mussolini's forces invaded Ethiopia, one of only two African states that had kept their independence, and used chemical weapons against its army and civilians.",
+  "body": "The League of Nations imposed sanctions, but they were ineffective and incomplete — oil, essential to Italy's war machine, was not embargoed. Italy used mustard gas against Ethiopian soldiers and civilians, the first large-scale use of chemical weapons since [World War I](event:ww1).\n\nItaly's aggression, unopposed, showed that the League was toothless. Hitler watched carefully: he would invade the Rhineland the next year. The path to [World War II](event:ww2) was paved by these acts of revisionist aggression left unchecked.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Second_Italo-Ethiopian_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Second_Italo-Ethiopian_War"
+   }
+  ]
+ },
+ {
   "id": "spanish-civil-war",
   "name": "Spanish Civil War",
   "start": 1936,
@@ -1233,6 +1997,45 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Spanish_Civil_War"
+   }
+  ]
+ },
+ {
+  "id": "sino-japanese-war",
+  "name": "Second Sino-Japanese War",
+  "start": 1937,
+  "end": 1945,
+  "lat": 39.9,
+  "lng": 116.4,
+  "priority": 74,
+  "tags": [
+   "war"
+  ],
+  "summary": "Japan launched a full-scale invasion of China, occupying much of the country in an eight-year war that killed millions and later merged into [World War II](event:ww2).",
+  "body": "The war began with an incident at Marco Polo Bridge and escalated to occupation of Shanghai, Nanjing and most coastal China. Japanese forces committed mass atrocities against civilians and prisoners; at Nanjing in 1937 estimates of those killed range from tens of thousands to 300,000.\n\nThe war lasted eight years and killed an estimated fifteen to twenty million Chinese, most of them civilians, and merge into [World War II](event:ww2) when Japan attacked the United States in 1941. China's resistance, nominally unified under Chiang Kai-shek but actually fragmented between Nationalists and Communists, would prove crucial to the eventual defeat of Japan.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Second_Sino-Japanese_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Second_Sino-Japanese_War"
+   }
+  ]
+ },
+ {
+  "id": "nuclear-fission",
+  "name": "Discovery of nuclear fission",
+  "start": 1938,
+  "lat": 52.45,
+  "lng": 13.29,
+  "priority": 80,
+  "tags": [
+   "science"
+  ],
+  "summary": "Otto Hahn and Fritz Strassmann discovered that uranium nuclei could split, releasing enormous energy and opening the nuclear age.",
+  "body": "The experiments were done in Berlin, but the theoretical explanation came from Lise Meitner and Otto Frisch, who calculated that a splitting uranium nucleus would release some 200 million electron volts — millions of times the energy of any chemical reaction between the same atoms.\n\nSplitting a heavy nucleus had been thought impossible, but the chemical evidence for barium among the products left no other explanation. Within months, physicists worldwide realised that a chain reaction was possible — and that a bomb was conceivable. Einstein's letter to Roosevelt warning of Nazi atomic weapons followed, and the race for the [atomic bomb](event:trinity) began.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nuclear_fission).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Nuclear_fission"
    }
   ]
  },
@@ -1402,6 +2205,30 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/The_Holocaust"
+   }
+  ]
+ },
+ {
+  "id": "quit-india",
+  "name": "Quit India Movement",
+  "start": 1942,
+  "lat": 18.96,
+  "lng": 72.83,
+  "priority": 64,
+  "tags": [
+   "politics"
+  ],
+  "parent": "british-raj",
+  "summary": "Gandhi's final major campaign for Indian independence demanded that Britain leave India immediately, galvanising the nation and hastening the end of the Raj.",
+  "body": "Part of [British Raj](event:british-raj). The British jailed Gandhi and thousands of other Congress leaders, but the movement — \"Do or Die\" was Gandhi's slogan — could not be suppressed by imprisonment alone.\n\n[World War II](event:ww2) had weakened Britain's grip, and the movement's moral force, rooted in non-violent resistance and decades of struggle, proved irresistible. Within five years of Quit India, the [British Raj](event:british-raj) ended and [India had won independence](event:indian-independence).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Quit_India_Movement).",
+  "links": [
+   {
+    "label": "British Raj",
+    "event": "british-raj"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Quit_India_Movement"
    }
   ]
  },

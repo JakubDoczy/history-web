@@ -20,6 +20,32 @@
   ]
  },
  {
+  "id": "justinian-wars",
+  "name": "Justinian's reconquest wars",
+  "start": 535,
+  "end": 554,
+  "lat": 41.89,
+  "lng": 12.5,
+  "priority": 62,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "parent": "justinian",
+  "summary": "Justinian sent armies to reconquer the Roman west from the Vandal and Gothic kingdoms, recovering North Africa, Italy and part of southern Spain at great cost.",
+  "body": "Part of [Reign of Justinian](event:justinian). The Italian campaign alone lasted nearly twenty years and left the peninsula devastated; the [plague](event:justinian-plague) and renewed war with Persia drained the treasury, and most of the western gains were lost within a generation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gothic_War_(535%E2%80%93554)).",
+  "links": [
+   {
+    "label": "Reign of Justinian",
+    "event": "justinian"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Gothic_War_(535%E2%80%93554)"
+   }
+  ]
+ },
+ {
   "id": "hagia-sophia",
   "name": "Hagia Sophia completed",
   "start": 537,
@@ -303,6 +329,32 @@
   ]
  },
  {
+  "id": "harun-al-rashid",
+  "name": "Harun al-Rashid's reign",
+  "start": 786,
+  "end": 809,
+  "lat": 33.34,
+  "lng": 44.4,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "parent": "islamic-golden-age",
+  "summary": "The Abbasid caliph presided over Baghdad at its height as a commercial and intellectual centre, patronising scholarship and exchanging embassies with distant powers.",
+  "body": "Part of [Islamic Golden Age](event:islamic-golden-age). Harun's court sponsored the translation of Greek and Persian works that his successors would gather into the House of Wisdom. The *Thousand and One Nights* later cast his reign as a legendary age of marvels.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Harun_al-Rashid).",
+  "links": [
+   {
+    "label": "Islamic Golden Age",
+    "event": "islamic-golden-age"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Harun_al-Rashid"
+   }
+  ]
+ },
+ {
   "id": "islamic-golden-age",
   "name": "Islamic Golden Age",
   "start": 786,
@@ -365,6 +417,27 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Lindisfarne"
+   }
+  ]
+ },
+ {
+  "id": "heian-period",
+  "name": "Heian Period in Japan",
+  "start": 794,
+  "end": 1185,
+  "lat": 35.01,
+  "lng": 135.77,
+  "priority": 64,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "summary": "An age of refined aristocratic culture in Japan, producing some of the world's earliest novels and poetry, before the rise of the samurai.",
+  "body": "The Fujiwara regents ruled from Kyoto; the court produced *The Tale of Genji*, Japan's first great novel, and refined calligraphy and landscape art.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Heian_period).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Heian_period"
    }
   ]
  },
@@ -458,6 +531,122 @@
   ]
  },
  {
+  "id": "fatimid-caliphate",
+  "name": "Fatimid Caliphate",
+  "start": 909,
+  "end": 1171,
+  "lat": 30.05,
+  "lng": 31.24,
+  "priority": 64,
+  "tags": [
+   "politics",
+   "religion"
+  ],
+  "summary": "A rival Shiite caliphate ruling North Africa and Egypt, competing with the Abbasids for religious authority and territorial dominance.",
+  "body": "Founded in Ifriqiya and ruling from Cairo after 969, the Fatimids built a Shia counter-caliphate to the Sunni Abbasids and drew wealth from Red Sea trade. Saladin ended the dynasty in 1171 and returned Egypt to Abbasid allegiance.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fatimid_Caliphate).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Fatimid_Caliphate"
+   }
+  ]
+ },
+ {
+  "id": "song-dynasty",
+  "name": "Song Dynasty",
+  "start": 960,
+  "end": 1279,
+  "lat": 34.8,
+  "lng": 114.31,
+  "priority": 78,
+  "tags": [
+   "politics",
+   "culture",
+   "science"
+  ],
+  "summary": "A high point of Chinese civilisation: landscape painting and poetry, printing and paper money, gunpowder weapons and a booming maritime commerce.",
+  "body": "The Northern Song ruled from Kaifeng until the Jurchen conquest of 1127 pushed the court south to Hangzhou. Advances in irrigation, printing, credit and shipbuilding supported dense cities, while Neo-Confucian philosophy reshaped Chinese thought.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Song_dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Song_dynasty"
+   }
+  ]
+ },
+ {
+  "id": "avicenna",
+  "name": "Avicenna and medieval medicine",
+  "start": 980,
+  "end": 1037,
+  "lat": 34.8,
+  "lng": 48.51,
+  "priority": 52,
+  "tags": [
+   "science",
+   "culture"
+  ],
+  "parent": "islamic-golden-age",
+  "summary": "The Persian polymath wrote the *Canon of Medicine*, a medical text that was the standard in both Islamic and Christian worlds for half a millennium.",
+  "body": "Part of [Islamic Golden Age](event:islamic-golden-age). Born near Bukhara and dying at Hamadan, Avicenna drew Greek, Indian and Islamic medicine into one system; the *Canon* was still taught in European universities in the 1600s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Avicenna).",
+  "links": [
+   {
+    "label": "Islamic Golden Age",
+    "event": "islamic-golden-age"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Avicenna"
+   }
+  ]
+ },
+ {
+  "id": "neo-confucianism",
+  "name": "Neo-Confucianism in Song China",
+  "start": 1000,
+  "end": 1400,
+  "lat": 26.08,
+  "lng": 119.3,
+  "priority": 56,
+  "tags": [
+   "culture",
+   "religion"
+  ],
+  "parent": "song-dynasty",
+  "summary": "Philosophers blended Confucian ethics with Buddhist and Daoist metaphysics, creating an ideology that shaped East Asian thought for centuries.",
+  "body": "Part of [Song Dynasty](event:song-dynasty). Zhu Xi synthesised these traditions into a unified philosophy of cosmic principle (*li*) that became the orthodox teaching throughout the Confucian world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neo-Confucianism).",
+  "links": [
+   {
+    "label": "Song Dynasty",
+    "event": "song-dynasty"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Neo-Confucianism"
+   }
+  ]
+ },
+ {
+  "id": "chimor",
+  "name": "Chimú Empire",
+  "start": 1000,
+  "end": 1470,
+  "lat": -8.27,
+  "lng": -79.03,
+  "priority": 56,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "A pre-Inca Peruvian empire famous for textiles, metalwork and a sophisticated road system that the Inca would inherit.",
+  "body": "The Chimú were masters of silver and gold work; their capital Chan Chan was the largest city in pre-Columbian South America. The Inca absorbed their technology and aesthetics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chimor).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Chimor"
+   }
+  ]
+ },
+ {
   "id": "vinland",
   "name": "Norse reach North America",
   "start": 1000,
@@ -482,6 +671,48 @@
   ]
  },
  {
+  "id": "seljuk-empire",
+  "name": "Seljuk Empire",
+  "start": 1038,
+  "end": 1194,
+  "lat": 32.65,
+  "lng": 51.67,
+  "priority": 66,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Nomadic Turks from Central Asia conquered much of the Islamic world and Anatolia, becoming patrons of Persian culture and precipitators of the Crusades.",
+  "body": "At their height the Seljuk sultans ruled from Anatolia to Central Asia, governing through Persian bureaucrats from Isfahan while keeping the Abbasid caliph in Baghdad as a figurehead. Their victory at [Manzikert](event:manzikert) alarmed Byzantium, whose appeal for help helped prompt [the Crusades](event:crusades).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Seljuk_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Seljuk_Empire"
+   }
+  ]
+ },
+ {
+  "id": "cahokia",
+  "name": "Cahokia mound city",
+  "start": 1050,
+  "end": 1350,
+  "lat": 38.66,
+  "lng": -90.06,
+  "priority": 58,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "In the Mississippi valley near present-day St. Louis, a Mississippian city rose and fell, leaving massive earthen mounds and mysteries.",
+  "body": "At its peak around 1100 CE, Cahokia may have held 10,000–20,000 residents, comparable to the largest European cities of the day. Its gradual abandonment is not fully explained; climate stress, resource depletion and political fragmentation have all been proposed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cahokia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cahokia"
+   }
+  ]
+ },
+ {
   "id": "great-schism",
   "name": "East–West Schism",
   "start": 1054,
@@ -497,6 +728,32 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/East–West_Schism"
+   }
+  ]
+ },
+ {
+  "id": "al-ghazali",
+  "name": "Al-Ghazali and Islamic theology",
+  "start": 1058,
+  "end": 1111,
+  "lat": 36.31,
+  "lng": 59.6,
+  "priority": 54,
+  "tags": [
+   "religion",
+   "culture"
+  ],
+  "parent": "islamic-golden-age",
+  "summary": "The Persian theologian absorbed Greek logic into Islamic scholarship while attacking the metaphysics of the philosophers, reshaping Sunni thought for centuries.",
+  "body": "Part of [Islamic Golden Age](event:islamic-golden-age). His *Incoherence of the Philosophers* challenged Avicennan metaphysics, while his synthesis of law, theology and Sufism became mainstream Sunni teaching. The autobiography describing his crisis of doubt is a classic of spiritual literature.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Al-Ghazali).",
+  "links": [
+   {
+    "label": "Islamic Golden Age",
+    "event": "islamic-golden-age"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Al-Ghazali"
    }
   ]
  },
@@ -517,6 +774,50 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Norman_Conquest"
+   }
+  ]
+ },
+ {
+  "id": "manzikert",
+  "name": "Battle of Manzikert",
+  "start": 1071,
+  "lat": 39.14,
+  "lng": 42.54,
+  "priority": 68,
+  "tags": [
+   "war"
+  ],
+  "summary": "The Byzantine emperor was defeated by the Seljuk Turks, allowing them to settle Anatolia and eventually found an empire.",
+  "body": "The defeat opened the Anatolian plateau to Turkish settlement and began the slow displacement of the Greeks — a process that culminated in the [fall of Constantinople](event:fall-constantinople) nearly four centuries later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Manzikert).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Manzikert"
+   }
+  ]
+ },
+ {
+  "id": "domesday-book",
+  "name": "Domesday Book",
+  "start": 1086,
+  "lat": 51.06,
+  "lng": -1.31,
+  "priority": 54,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "parent": "hastings",
+  "summary": "William I's vast survey of England, recording land and taxes for every village — the most detailed census of any medieval kingdom.",
+  "body": "Part of [Norman conquest of England](event:hastings). Commissioners recorded holdings, ploughs and tenants shire by shire; the returns let William assess what he had conquered and tax it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Domesday_Book).",
+  "links": [
+   {
+    "label": "Norman conquest of England",
+    "event": "hastings"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Domesday_Book"
    }
   ]
  },
@@ -588,6 +889,48 @@
   ]
  },
  {
+  "id": "great-zimbabwe",
+  "name": "Great Zimbabwe",
+  "start": 1100,
+  "end": 1450,
+  "lat": -20.27,
+  "lng": 30.93,
+  "priority": 60,
+  "tags": [
+   "politics",
+   "economy"
+  ],
+  "summary": "A Bantu city-state built monumental stone walls and controlled gold and ivory trade with the Indian Ocean world.",
+  "body": "Its stone enclosures were built without mortar by Shona builders, and gold and ivory passed from here to Swahili ports on the Indian Ocean. The reasons for its decline are debated: exhausted soils and pasture, shifting trade routes and political fragmentation are all proposed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Zimbabwe).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Great_Zimbabwe"
+   }
+  ]
+ },
+ {
+  "id": "genoa-venice",
+  "name": "Venetian–Genoese rivalry",
+  "start": 1100,
+  "end": 1400,
+  "lat": 44.41,
+  "lng": 8.93,
+  "priority": 54,
+  "tags": [
+   "economy",
+   "war"
+  ],
+  "summary": "Two Italian maritime republics fought for control of Mediterranean and Black Sea trade, developing banking, double-entry accounting and marine insurance along the way.",
+  "body": "Genoese and Venetian galleys competed for the routes to Alexandria, the Levant and the Black Sea, fighting four wars between 1256 and 1381. Their commercial techniques, from bills of exchange to insurance contracts, outlasted the rivalry itself.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Venetian%E2%80%93Genoese_wars).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Venetian%E2%80%93Genoese_wars"
+   }
+  ]
+ },
+ {
   "id": "angkor-wat",
   "name": "Angkor Wat built",
   "start": 1113,
@@ -605,6 +948,148 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Angkor_Wat"
+   }
+  ]
+ },
+ {
+  "id": "knights-templar",
+  "name": "Knights Templar",
+  "start": 1119,
+  "end": 1312,
+  "lat": 31.78,
+  "lng": 35.22,
+  "priority": 60,
+  "tags": [
+   "war",
+   "religion",
+   "economy"
+  ],
+  "parent": "crusades",
+  "summary": "A military-monastic order founded to protect pilgrims and wage crusade; they became bankers and landholders across Christendom.",
+  "body": "Part of [The Crusades](event:crusades). Founded to guard pilgrims to Jerusalem, the Templars grew into landholders and lenders across Christendom. Philip IV of France, deeply in their debt, had the French brothers arrested in 1307; Pope Clement V dissolved the order in 1312.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Knights_Templar).",
+  "links": [
+   {
+    "label": "The Crusades",
+    "event": "crusades"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Knights_Templar"
+   }
+  ]
+ },
+ {
+  "id": "ethiopia-expansion",
+  "name": "Zagwe dynasty in Ethiopia",
+  "start": 1137,
+  "end": 1270,
+  "lat": 12.03,
+  "lng": 39.04,
+  "priority": 58,
+  "tags": [
+   "politics",
+   "religion"
+  ],
+  "summary": "After Aksum's decline, Christian rule shifted to the Ethiopian highlands under the Zagwe kings, who cut the rock-hewn churches of Lalibela.",
+  "body": "The Zagwe, and after 1270 the Solomonic dynasty, held a Christian kingdom in the highlands while Islam spread along the coast and lowlands. The Ethiopian Orthodox church that resulted has survived to the present day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zagwe_dynasty).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Zagwe_dynasty"
+   }
+  ]
+ },
+ {
+  "id": "saladin",
+  "name": "Saladin and the crusader wars",
+  "start": 1169,
+  "end": 1193,
+  "lat": 31.78,
+  "lng": 35.22,
+  "priority": 66,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "parent": "crusades",
+  "summary": "The Kurdish general unified the Islamic world against the crusaders, retaking Jerusalem and establishing a new dynasty.",
+  "body": "Part of [The Crusades](event:crusades). Saladin's defeat of the Crusaders at Hattin in 1187 and the recovery of Jerusalem made him a legendary figure in both Islamic and Western tradition.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Saladin).",
+  "links": [
+   {
+    "label": "The Crusades",
+    "event": "crusades"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Saladin"
+   }
+  ]
+ },
+ {
+  "id": "kamakura-shogunate",
+  "name": "Kamakura shogunate",
+  "start": 1185,
+  "end": 1333,
+  "lat": 35.3,
+  "lng": 139.55,
+  "priority": 62,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "Military rule by the shoguns began; the samurai code and Zen Buddhism took root, transforming Japanese culture.",
+  "body": "Minamoto no Yoritomo established a warrior government at Kamakura while the emperor remained in Kyoto. Warrior families became the ruling class, Zen Buddhism took root, and the shogunate twice repelled Mongol invasions before falling in 1333.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kamakura_shogunate).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Kamakura_shogunate"
+   }
+  ]
+ },
+ {
+  "id": "khmer-decline",
+  "name": "Decline of the Khmer Empire",
+  "start": 1200,
+  "end": 1431,
+  "lat": 13.41,
+  "lng": 103.87,
+  "priority": 52,
+  "tags": [
+   "politics",
+   "climate"
+  ],
+  "parent": "angkor-wat",
+  "summary": "The Khmer empire that built Angkor gradually abandoned it, amid drought, war with Ayutthaya and a shift of power downriver.",
+  "body": "Tree-ring records show severe droughts alternating with heavy monsoons in the 14th and 15th centuries, straining the waterworks that fed [Angkor](event:angkor-wat). After the Siamese sack of 1431 the Khmer court moved toward Phnom Penh, and monks kept the temples.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Khmer_Empire).",
+  "links": [
+   {
+    "label": "Angkor Wat",
+    "event": "angkor-wat"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Khmer_Empire"
+   }
+  ]
+ },
+ {
+  "id": "scholasticism",
+  "name": "Scholasticism peaks",
+  "start": 1200,
+  "end": 1400,
+  "lat": 48.85,
+  "lng": 2.35,
+  "priority": 58,
+  "tags": [
+   "culture",
+   "science"
+  ],
+  "summary": "Medieval philosophers at universities used logic to reconcile faith and reason, culminating in the great systems of Aquinas and Duns Scotus.",
+  "body": "Working in the new universities, Aquinas, Albertus Magnus and Duns Scotus applied Aristotelian logic to Christian doctrine. The disputation method they refined shaped European teaching long after their metaphysics fell out of favour.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scholasticism).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Scholasticism"
    }
   ]
  },
@@ -749,6 +1234,69 @@
   ]
  },
  {
+  "id": "dominicans",
+  "name": "Order of Preachers founded",
+  "start": 1216,
+  "lat": 43.6,
+  "lng": 1.44,
+  "priority": 52,
+  "tags": [
+   "religion",
+   "culture"
+  ],
+  "summary": "The Dominican friars were founded to preach against heresy and became a major intellectual force in the medieval Church.",
+  "body": "Dominic founded the order at Toulouse to preach against the Cathars; it grew into the leading teaching order of the medieval church, with Aquinas among its members. Dominicans also staffed much of the medieval Inquisition.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dominican_Order).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dominican_Order"
+   }
+  ]
+ },
+ {
+  "id": "mali-empire",
+  "name": "Mali Empire",
+  "start": 1230,
+  "end": 1600,
+  "lat": 12.0,
+  "lng": -8.0,
+  "priority": 70,
+  "tags": [
+   "politics",
+   "economy",
+   "culture"
+  ],
+  "summary": "West African kingdom that controlled the trans-Saharan gold trade, making Timbuktu a centre of Islamic learning.",
+  "body": "Sundiata Keita united the Mandé chiefdoms in the 13th century, and the empire grew rich on the gold of Bambuk and Bure and the salt of the Sahara. [Mansa Musa's pilgrimage](event:mansa-musa) put Mali on European maps, and Timbuktu became a centre of Islamic scholarship before Songhai took its place.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mali_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mali_Empire"
+   }
+  ]
+ },
+ {
+  "id": "sukhothai",
+  "name": "Sukhothai Kingdom",
+  "start": 1238,
+  "end": 1438,
+  "lat": 17.01,
+  "lng": 99.8,
+  "priority": 56,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "A Thai kingdom in the north produced a distinctive art style and pioneered Thai writing, which survives today.",
+  "body": "Sukhothai's bronze Buddhas and celadon ware are among Southeast Asia's finest, and an inscription attributed to King Ramkhamhaeng is the earliest known Thai script. The kingdom was absorbed by Ayutthaya in the 15th century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sukhothai_Kingdom).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Sukhothai_Kingdom"
+   }
+  ]
+ },
+ {
   "id": "baghdad-1258",
   "name": "Mongol sack of Baghdad",
   "start": 1258,
@@ -847,6 +1395,27 @@
   ]
  },
  {
+  "id": "majapahit",
+  "name": "Majapahit Empire",
+  "start": 1293,
+  "end": 1527,
+  "lat": -7.55,
+  "lng": 112.38,
+  "priority": 62,
+  "tags": [
+   "politics",
+   "economy"
+  ],
+  "summary": "A Javanese maritime power dominated much of the Indonesian archipelago, drawing tribute and trade from ports across the Java Sea.",
+  "body": "At its height under Hayam Wuruk and the minister Gajah Mada, Majapahit claimed authority over ports from Sumatra to the Moluccas. Its literature, law and Hindu-Buddhist art shaped Javanese culture long after the empire fragmented.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Majapahit).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Majapahit"
+   }
+  ]
+ },
+ {
   "id": "ottoman-empire",
   "name": "Ottoman Empire",
   "start": 1299,
@@ -908,6 +1477,30 @@
   ]
  },
  {
+  "id": "tenochtitlan-founded",
+  "name": "Tenochtitlan founded",
+  "start": 1325,
+  "lat": 19.43,
+  "lng": -99.13,
+  "priority": 62,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "The Aztecs built their capital on an island in Lake Texcoco, constructing one of the largest cities in the world.",
+  "body": "Mexica tradition holds that the city was founded where an eagle perched on a cactus, the sign promised by their god. Built on an island in Lake Texcoco and extended with causeways and chinampas, it became the capital of the [Aztec Empire](event:aztec-empire) and, by 1500, one of the largest cities in the world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tenochtitlan).",
+  "links": [
+   {
+    "label": "Aztec Empire",
+    "event": "aztec-empire"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tenochtitlan"
+   }
+  ]
+ },
+ {
   "id": "hundred-years-war",
   "name": "Hundred Years' War",
   "start": 1337,
@@ -925,6 +1518,32 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hundred_Years%27_War"
+   }
+  ]
+ },
+ {
+  "id": "alhambra",
+  "name": "Alhambra Palace",
+  "start": 1338,
+  "end": 1390,
+  "lat": 37.17,
+  "lng": -3.59,
+  "priority": 56,
+  "tags": [
+   "culture",
+   "religion"
+  ],
+  "parent": "reconquista",
+  "summary": "The last Muslim emirs of Granada built a palace of extraordinary beauty, blending Islamic and Spanish architectural traditions.",
+  "body": "Part of [The Reconquista](event:reconquista). The Alhambra's stucco work, calligraphy and water features represent the peak of Islamic art in medieval Europe before its conquest in 1492.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Alhambra).",
+  "links": [
+   {
+    "label": "The Reconquista",
+    "event": "reconquista"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Alhambra"
    }
   ]
  },
@@ -1024,6 +1643,27 @@
   ]
  },
  {
+  "id": "burgundy-duchy",
+  "name": "Duchy of Burgundy at its height",
+  "start": 1363,
+  "end": 1477,
+  "lat": 47.38,
+  "lng": 4.8,
+  "priority": 52,
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "A wealthy principality between France and the Holy Roman Empire, Burgundy became a centre of art, music and courtly culture.",
+  "body": "The dukes of Burgundy were patrons of the Early Flemish painters and musicians. The duchy fell to France when its last duke died without a male heir.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Duchy_of_Burgundy).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Duchy_of_Burgundy"
+   }
+  ]
+ },
+ {
   "id": "ming-dynasty",
   "name": "Ming dynasty",
   "start": 1368,
@@ -1041,6 +1681,48 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Ming_dynasty"
+   }
+  ]
+ },
+ {
+  "id": "korea-movable-type",
+  "name": "Metal movable type in Korea",
+  "start": 1377,
+  "lat": 37.97,
+  "lng": 126.55,
+  "priority": 54,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "summary": "Korean foundries cast movable metal type; the Jikji of 1377 is the oldest surviving book printed with it, decades before Gutenberg.",
+  "body": "Woodblock printing came from China, but Goryeo craftsmen cast type in bronze. Records describe metal-type printing as early as 1234, and the surviving *Jikji* was printed at Cheongju in 1377. Joseon foundries continued the technique, though it never displaced woodblocks for long print runs.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Jikji).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Jikji"
+   }
+  ]
+ },
+ {
+  "id": "medici-banking",
+  "name": "Medici banking and political power",
+  "start": 1397,
+  "end": 1494,
+  "lat": 43.77,
+  "lng": 11.26,
+  "priority": 58,
+  "tags": [
+   "economy",
+   "politics",
+   "culture"
+  ],
+  "summary": "The Medici family's banking innovations and patronage of the arts made them the de facto rulers of Florence and arbiters of Renaissance taste.",
+  "body": "Cosimo and later Lorenzo the Magnificent turned banking wealth into political control of Florence and into patronage: Brunelleschi and Donatello worked for the early Medici, Botticelli and the young Michelangelo for Lorenzo. The bank itself collapsed shortly before the family's expulsion in 1494.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/House_of_Medici).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/House_of_Medici"
    }
   ]
  },
@@ -1090,6 +1772,32 @@
   ]
  },
  {
+  "id": "forbidden-city",
+  "name": "Forbidden City built",
+  "start": 1406,
+  "end": 1420,
+  "lat": 39.92,
+  "lng": 116.4,
+  "priority": 62,
+  "tags": [
+   "culture",
+   "politics"
+  ],
+  "parent": "ming-dynasty",
+  "summary": "The Ming emperor built a massive palace complex at the heart of Beijing, its layout mirroring cosmic order and containing nearly 1,000 buildings.",
+  "body": "Part of [Ming dynasty](event:ming-dynasty). The Forbidden City was closed to commoners for five centuries and is now a museum of imperial life.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Forbidden_City).",
+  "links": [
+   {
+    "label": "Ming dynasty",
+    "event": "ming-dynasty"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Forbidden_City"
+   }
+  ]
+ },
+ {
   "id": "agincourt",
   "name": "Battle of Agincourt",
   "start": 1415,
@@ -1130,6 +1838,32 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Age_of_Discovery"
+   }
+  ]
+ },
+ {
+  "id": "henry-navigator",
+  "name": "Prince Henry the Navigator",
+  "start": 1419,
+  "end": 1460,
+  "lat": 38.71,
+  "lng": -9.14,
+  "priority": 64,
+  "tags": [
+   "exploration",
+   "politics"
+  ],
+  "parent": "age-of-discovery",
+  "summary": "The Portuguese prince sponsored voyages down the Atlantic coast of Africa and the settlement of Madeira and the Azores.",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). Henry's captains passed Cape Bojador in 1434 and reached Sierra Leone by his death, bringing back gold, and enslaved Africans whose trade Portugal would expand for centuries. The caravel and improved navigation developed under his patronage made the later routes to India possible.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Prince_Henry_the_Navigator).",
+  "links": [
+   {
+    "label": "Age of Discovery",
+    "event": "age-of-discovery"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Prince_Henry_the_Navigator"
    }
   ]
  },
@@ -1220,6 +1954,32 @@
   ]
  },
  {
+  "id": "nicholas-v",
+  "name": "Pope Nicholas V and the early Renaissance",
+  "start": 1447,
+  "end": 1455,
+  "lat": 41.9,
+  "lng": 12.46,
+  "priority": 56,
+  "tags": [
+   "culture",
+   "religion"
+  ],
+  "parent": "renaissance",
+  "summary": "The pope patronised humanists, collected manuscripts and began rebuilding St. Peter's Basilica, making Rome a centre of the Renaissance.",
+  "body": "Part of [The Renaissance](event:renaissance). Nicholas bought and copied Greek and Latin manuscripts on a scale no one had attempted, founding the collection that became the Vatican Library, and began the rebuilding of St Peter's.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pope_Nicholas_V).",
+  "links": [
+   {
+    "label": "The Renaissance",
+    "event": "renaissance"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Pope_Nicholas_V"
+   }
+  ]
+ },
+ {
   "id": "fall-constantinople",
   "name": "Fall of Constantinople",
   "start": 1453,
@@ -1237,6 +1997,52 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fall_of_Constantinople"
+   }
+  ]
+ },
+ {
+  "id": "gutenberg-42-line",
+  "name": "Gutenberg Bible",
+  "start": 1455,
+  "lat": 50.0,
+  "lng": 8.27,
+  "priority": 68,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "parent": "printing-press",
+  "summary": "The first major book printed with movable type was a Latin Bible, made in Mainz in an edition of about 180 copies.",
+  "body": "Part of [Gutenberg's printing press](event:printing-press). The 42-line Bible demonstrated that printing was economically viable and could match handwritten books in quality.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gutenberg_Bible).",
+  "links": [
+   {
+    "label": "Gutenberg's printing press",
+    "event": "printing-press"
+   },
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Gutenberg_Bible"
+   }
+  ]
+ },
+ {
+  "id": "songhai-empire",
+  "name": "Songhai Empire",
+  "start": 1464,
+  "end": 1591,
+  "lat": 16.27,
+  "lng": -0.04,
+  "priority": 62,
+  "tags": [
+   "politics",
+   "economy"
+  ],
+  "summary": "The successor to Mali, Songhai became the largest empire in medieval West Africa before being conquered by Morocco.",
+  "body": "Sunni Ali took Timbuktu and Djenné from the declining Mali, and Askia Muhammad extended the empire to its greatest reach. Its defeat by a Moroccan expedition armed with firearms in 1591 broke the last of the great Sahelian empires.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Songhai_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Songhai_Empire"
    }
   ]
  },
@@ -1331,6 +2137,26 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Columbian_exchange"
+   }
+  ]
+ },
+ {
+  "id": "tordesillas-treaty",
+  "name": "Treaty of Tordesillas",
+  "start": 1494,
+  "lat": 41.6,
+  "lng": -5.4,
+  "priority": 68,
+  "tags": [
+   "politics",
+   "exploration"
+  ],
+  "summary": "Spain and Portugal drew a line across the world, dividing newly discovered lands between them.",
+  "body": "Negotiated directly between the two crowns to revise an earlier papal bull, the treaty drew a meridian 370 leagues west of the Cape Verde islands: land found east of it fell to Portugal, west of it to Spain. The line later gave Portugal its claim to Brazil.\n\nNo other European power accepted the division for long, and none of the peoples living in the lands concerned were consulted.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Treaty_of_Tordesillas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Treaty_of_Tordesillas"
    }
   ]
  },
