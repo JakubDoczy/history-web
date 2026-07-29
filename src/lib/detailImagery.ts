@@ -37,13 +37,22 @@ export interface Bbox {
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
 
 /**
- * Rectangle to request: centred on the view, a little larger than it, and
- * widened in longitude to compensate for meridian convergence so it covers a
- * roughly square patch of ground.
+ * Rectangle to request: centred on the view, slightly larger than it, shaped to
+ * the screen's aspect ratio, and widened in longitude for meridian convergence.
+ *
+ * Matching the screen's shape matters: a square patch of ground on a portrait
+ * phone at high latitude fetches roughly twice the area that is ever visible.
  */
-export function viewBbox(lat: number, lng: number, altitude: number, margin = 1.25): Bbox {
+export function viewBbox(
+  lat: number,
+  lng: number,
+  altitude: number,
+  aspect = 1,
+  margin = 1.15,
+): Bbox {
   const latSpan = clamp(visibleSpanDeg(altitude) * margin, 0.05, 120)
-  const lngSpan = clamp(latSpan / Math.max(Math.cos((lat * Math.PI) / 180), 0.15), 0.05, 300)
+  const groundWidth = latSpan * clamp(aspect, 0.35, 3)
+  const lngSpan = clamp(groundWidth / Math.max(Math.cos((lat * Math.PI) / 180), 0.15), 0.05, 300)
   const minLat = clamp(lat - latSpan / 2, -90, 90)
   const maxLat = clamp(lat + latSpan / 2, -90, 90)
   const minLng = clamp(lng - lngSpan / 2, -180, 180)
@@ -60,22 +69,27 @@ export const bboxToUvRect = (b: Bbox): [number, number, number, number] => [
 ]
 
 /**
- * Pixel size for a bbox, capped three ways: by the screen (asking for detail
- * nobody can see is waste), by the source's own resolution (asking a 500 m map
- * for more than 222 px per degree returns upsampled blur, slowly), and by a
- * hard ceiling. The source cap is what keeps close-up requests small and fast.
+ * Pixel size for a bbox.
+ *
+ * `screenPx` must be in *device* pixels: the globe renders at the device pixel
+ * ratio, so sizing against CSS pixels under-requests by 2–3× on a phone and the
+ * result is soft however good the source is. Capped by the source's own
+ * resolution — asking a 500 m map for more than 222 px per degree returns
+ * upsampled blur, slowly — and by a hard ceiling.
  */
 export function imageSize(
   b: Bbox,
-  viewportPx: number,
-  maxPx = 2560,
+  screenPx: number,
+  maxPx = 2048,
   pxPerDeg = BASE_SOURCE.pxPerDeg,
 ): { width: number; height: number } {
   const lngSpan = Math.max(b.maxLng - b.minLng, 1e-6)
   const latSpan = Math.max(b.maxLat - b.minLat, 1e-6)
-  const wanted = Math.min(viewportPx * 2, lngSpan * pxPerDeg)
-  const width = clamp(Math.round(wanted), 384, maxPx)
-  const height = clamp(Math.round((width * latSpan) / lngSpan), 192, maxPx)
+  // the patch spans a little more than the screen, so match its height and let
+  // width follow the rectangle's own shape
+  const heightWanted = Math.min(screenPx * 1.15, latSpan * pxPerDeg)
+  const height = clamp(Math.round(heightWanted), 192, maxPx)
+  const width = clamp(Math.round((height * lngSpan) / latSpan), 192, maxPx)
   return { width, height }
 }
 
@@ -175,10 +189,10 @@ export class DetailImagery {
   private disabled = false
 
   constructor(opts: DetailImageryOptions = {}) {
-    this.maxPx = opts.maxPx ?? 2560
+    this.maxPx = opts.maxPx ?? 2048
   }
 
-  update(lat: number, lng: number, altitude: number, viewportPx = 900) {
+  update(lat: number, lng: number, altitude: number, screenPx = 900, aspect = 1) {
     if (this.disabled) return
     const span = visibleSpanDeg(altitude)
 
@@ -194,7 +208,7 @@ export class DetailImagery {
       return
     }
 
-    const bbox = viewBbox(lat, lng, altitude)
+    const bbox = viewBbox(lat, lng, altitude, aspect)
 
     // the imagery we already hold may still cover the view — show it again
     // rather than paying for the same request twice
@@ -211,31 +225,30 @@ export class DetailImagery {
 
     // wait for the camera to settle before spending a request
     clearTimeout(this.settle)
-    this.settle = setTimeout(() => this.load(bbox, viewportPx), 280)
+    this.settle = setTimeout(() => this.load(bbox, screenPx), 280)
   }
 
-  private load(bbox: Bbox, viewportPx: number) {
+  /**
+   * One request, not two. The whole-globe base texture is already on screen, so
+   * fetching a Blue Marble patch *and then* a sharp one doubled the traffic and
+   * made the view visibly change colour mid-load. The sharp source is asked for
+   * directly; Blue Marble is only used once the sharp one has proved
+   * unreachable.
+   */
+  private load(bbox: Bbox, screenPx: number) {
     const id = ++this.requestId
     this.status = 'loading'
+    const src = this.sharpDisabled ? BASE_SOURCE : SHARP_SOURCE
+    const { width, height } = imageSize(bbox, screenPx, this.maxPx, src.pxPerDeg)
 
-    const sizeFor = (src: ImagerySource) =>
-      imageSize(bbox, viewportPx, this.maxPx, src.pxPerDeg)
-
-    // stage one: the source that always works
-    const base = sizeFor(BASE_SOURCE)
-    this.fetch(BASE_SOURCE, bbox, base.width, base.height, id, {
-      ok: () => {
-        // stage two: replace it with something far sharper, if we can
-        if (this.sharpDisabled) return
-        const sharp = sizeFor(SHARP_SOURCE)
-        this.fetch(SHARP_SOURCE, bbox, sharp.width, sharp.height, id, {
-          fail: () => {
-            this.sharpStrikes++
-            if (this.sharpStrikes >= 2) this.sharpDisabled = true
-          },
-        })
-      },
+    this.fetch(src, bbox, width, height, id, {
       fail: () => {
+        if (src === SHARP_SOURCE) {
+          this.sharpStrikes++
+          if (this.sharpStrikes >= 2) this.sharpDisabled = true
+          this.load(bbox, screenPx) // fall back immediately, don't leave it bare
+          return
+        }
         this.strikes++
         if (this.strikes >= 3) {
           this.disabled = true

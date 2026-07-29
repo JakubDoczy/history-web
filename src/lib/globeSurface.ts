@@ -97,11 +97,14 @@ void main() {
   if (uDetailMix > 0.0) {
     vec2 d = (vUv - uDetailRect.xy) / uDetailRect.zw;
     vec2 inside = step(vec2(0.0), d) * step(d, vec2(1.0));
-    vec2 f = smoothstep(vec2(0.0), vec2(0.07), d) * (1.0 - smoothstep(vec2(0.93), vec2(1.0), d));
+    // a wide feather, and never a full replacement: the sharp source is a
+    // different sensor with a different palette, and blending most of the way
+    // keeps its detail while holding the base map's colour
+    vec2 f = smoothstep(vec2(0.0), vec2(0.14), d) * (1.0 - smoothstep(vec2(0.86), vec2(1.0), d));
     // the patch carries its own alpha: any tile that failed to load stays
     // transparent, so the base map shows through instead of a black hole
     vec4 det = textureLod(uDetail, clamp(d, 0.0, 1.0), 0.0);
-    albedo = mix(albedo, det.rgb, inside.x * inside.y * f.x * f.y * uDetailMix * det.a);
+    albedo = mix(albedo, det.rgb, inside.x * inside.y * f.x * f.y * uDetailMix * det.a * 0.88);
   }
 
   vec3 surface = albedo * lambert;

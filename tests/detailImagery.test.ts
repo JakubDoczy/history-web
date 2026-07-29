@@ -35,6 +35,14 @@ describe('viewBbox', () => {
     expect(arctic.maxLng - arctic.minLng).toBeGreaterThan(equator.maxLng - equator.minLng)
   })
 
+  it('follows the screen shape, so a portrait view fetches less width', () => {
+    const portrait = viewBbox(60, 10, 0.02, 0.5)
+    const landscape = viewBbox(60, 10, 0.02, 1.8)
+    expect(portrait.maxLng - portrait.minLng).toBeLessThan(landscape.maxLng - landscape.minLng)
+    // and the vertical extent is unchanged by aspect
+    expect(portrait.maxLat - portrait.minLat).toBeCloseTo(landscape.maxLat - landscape.minLat, 6)
+  })
+
   it('never leaves valid geographic bounds', () => {
     for (const [lat, lng] of [[89.9, 179.9], [-89.9, -179.9], [90, 180], [-90, -180]] as const) {
       const b = viewBbox(lat, lng, 0.3)
@@ -90,10 +98,24 @@ describe('imageSize', () => {
   it('never asks a source for more detail than it holds', () => {
     // a tight view of a 500 m source: more pixels would only be upsampled blur
     const b = viewBbox(0, 0, 0.002)
-    const { width } = imageSize(b, 4000, 2560, 222)
-    const lngSpan = b.maxLng - b.minLng
-    expect(width).toBeLessThanOrEqual(Math.ceil(lngSpan * 222) + 384)
-    expect(width).toBeLessThan(2560) // and so stays quick to fetch
+    const { height } = imageSize(b, 4000, 2048, 222)
+    const latSpan = b.maxLat - b.minLat
+    expect(height).toBeLessThanOrEqual(Math.ceil(latSpan * 222) + 192)
+    expect(height).toBeLessThan(2048) // and so stays quick to fetch
+  })
+
+  it('lets a sharper source out-resolve the base one once close in', () => {
+    // far out both are limited by the screen and tie; close in, Blue Marble's
+    // own 500 m ceiling bites first and the 10 m source pulls ahead
+    const close = viewBbox(45, 10, 0.0015)
+    const base = imageSize(close, 2400, 2048, BASE_SOURCE.pxPerDeg)
+    const sharp = imageSize(close, 2400, 2048, SHARP_SOURCE.pxPerDeg)
+    expect(sharp.height).toBeGreaterThan(base.height)
+
+    const far = viewBbox(45, 10, 0.05)
+    expect(imageSize(far, 2400, 2048, SHARP_SOURCE.pxPerDeg).height).toBe(
+      imageSize(far, 2400, 2048, BASE_SOURCE.pxPerDeg).height,
+    )
   })
 })
 

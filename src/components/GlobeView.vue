@@ -137,7 +137,11 @@ onMounted(() => {
     view.viewportPx = el.value?.clientHeight ?? 900
     surface!.setFlatLight(near)
     if (detailAllowed()) {
-      detail!.update(pov.lat, pov.lng, pov.altitude, view.viewportPx)
+      // device pixels, not CSS pixels: the globe renders at the device ratio
+      const dpr = Math.min(window.devicePixelRatio || 1, 3)
+      const w = el.value?.clientWidth ?? 900
+      const h = el.value?.clientHeight ?? 900
+      detail!.update(pov.lat, pov.lng, pov.altitude, h * dpr, w / h)
       surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix)
     } else {
       surface!.setDetail(null, detail!.rect, 0)
