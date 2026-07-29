@@ -10,6 +10,7 @@ import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { AtmosphereLayer } from '../lib/skyLayer'
+import { DetailTiles, visibleSpanDeg } from '../lib/detailTiles'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
@@ -25,6 +26,7 @@ let globe: GlobeInstance | undefined
 let surface: GlobeSurface | undefined
 let celestial: CelestialLayer | undefined
 let atmosphere: AtmosphereLayer | undefined
+let detail: DetailTiles | undefined
 let resizeObs: ResizeObserver | undefined
 let raf = 0
 const stops: (() => void)[] = []
@@ -100,6 +102,33 @@ onMounted(() => {
   const radius = globe.getGlobeRadius()
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
+  detail = new DetailTiles({ grid: window.innerWidth < 820 ? 2 : 3 })
+
+  // let the camera come far closer than the default, so streamed detail pays off
+  globe.controls().minDistance = radius * 1.0006
+
+  /** 0 far out, 1 close in — drives detail streaming and retires the sky effects. */
+  const closeness = (altitude: number) => {
+    const span = visibleSpanDeg(altitude)
+    return Math.max(0, Math.min(1, (40 - span) / 30))
+  }
+
+  const applyPov = () => {
+    const pov = globe!.pointOfView()
+    const near = closeness(pov.altitude)
+    surface!.setFlatLight(near)
+    if (settings.detail) {
+      detail!.update(pov.lat, pov.lng, pov.altitude)
+      surface!.setDetail(detail!.texture, detail!.rect, detail!.mix)
+    } else {
+      surface!.setDetail(null, detail!.rect, 0)
+    }
+    // clouds and haze read as wrong once the view is a few hundred km across
+    surface!.setClouds(settings.clouds && near < 0.95, (time.currentTime > -12000 ? 1 : 0) * (1 - near))
+    atmosphere!.visible = settings.atmosphere && near < 0.9
+  }
+
+  globe.onZoom(applyPov)
 
   const coords = (lat: number, lng: number, alt: number) => globe!.getCoords(lat, lng, alt)
   const sunDir = () => {
@@ -114,6 +143,13 @@ onMounted(() => {
   const t0 = performance.now()
   const tick = () => {
     if (!still) surface!.setCloudDrift((performance.now() - t0) / 1000)
+    if (settings.detail && time.currentTime > -12000) {
+      const pov = globe!.pointOfView()
+      detail!.update(pov.lat, pov.lng, pov.altitude)
+      surface!.setDetail(detail!.texture, detail!.rect, detail!.mix)
+    } else {
+      surface!.setDetail(null, detail!.rect, 0)
+    }
     raf = requestAnimationFrame(tick)
   }
   tick()
@@ -124,10 +160,13 @@ onMounted(() => {
     watchEffect(() => surface!.setEra(textureBlend(PALEO_FRAMES, time.currentTime))),
     watchEffect(() => surface!.setCityLights(cityLightsFactor(time.currentTime))),
     // clouds are anachronistic detail in deep time, and would hide the plate drift
-    watchEffect(() =>
-      surface!.setClouds(settings.clouds, time.currentTime > -12000 ? 1 : 0),
-    ),
-    watchEffect(() => (atmosphere!.visible = settings.atmosphere)),
+    watchEffect(() => {
+      void settings.clouds
+      void settings.atmosphere
+      void settings.detail
+      void time.currentTime
+      applyPov()
+    }),
     watchEffect(() => {
       const dir = sunDir()
       surface!.setSun(dir)
@@ -145,6 +184,7 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(raf)
   stops.forEach((s) => s())
   surface?.dispose()
+  detail?.dispose()
   celestial?.dispose()
   atmosphere?.dispose()
   resizeObs?.disconnect()

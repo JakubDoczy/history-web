@@ -46,6 +46,25 @@ const hour = () => {
         <input type="checkbox" :checked="settings.atmosphere" @change="settings.toggle('atmosphere')" />
         <span>Atmospheric glow</span>
       </label>
+      <p class="hint">Both fade out as you zoom in close.</p>
+    </section>
+
+    <section>
+      <span class="eyebrow">Imagery</span>
+      <label class="row">
+        <input type="checkbox" :checked="settings.detail" @change="settings.toggle('detail')" />
+        <span>Stream high-detail imagery</span>
+      </label>
+      <p class="hint">Loads sharper NASA tiles for the area you zoom into.</p>
+    </section>
+
+    <section>
+      <span class="eyebrow">Imagery</span>
+      <label class="row">
+        <input type="checkbox" :checked="settings.detail" @change="settings.toggle('detail')" />
+        <span>Stream high-resolution detail when zoomed in</span>
+      </label>
+      <p class="hint">Satellite tiles from NASA GIBS. Uses network data.</p>
     </section>
 
     <section>

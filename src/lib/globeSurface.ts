@@ -5,6 +5,7 @@ import {
   TextureLoader,
   Vector2,
   Vector3,
+  Vector4,
   RepeatWrapping,
   type Texture,
   type WebGLRenderer,
@@ -47,6 +48,9 @@ uniform float uEraMix;        // 0 = A, 1 = B
 uniform sampler2D uNight;     // city lights
 uniform sampler2D uRelief;    // topography, used as a height field
 uniform sampler2D uClouds;    // cloud coverage mask
+uniform sampler2D uDetail;    // high-resolution patch over the viewed region
+uniform vec4 uDetailRect;     // u0, v0, du, dv of that patch
+uniform float uDetailMix;
 uniform vec3 uSunDir;
 uniform float uLights;        // electrification, 0..1
 uniform float uCloudRot;      // cloud drift, in UV units
@@ -54,6 +58,10 @@ uniform float uCloudAlpha;    // 0 hides clouds
 uniform float uCloudShadow;
 uniform float uRelief_;       // relief strength
 uniform vec2 uTexel;          // 1 / relief texture size
+uniform sampler2D uDetail;    // streamed high-resolution patch
+uniform vec4 uDetailRect;     // u0, v0, du, dv of that patch
+uniform float uDetailMix;
+uniform float uFlatLight;     // 1 = ignore the terminator (close-up imagery is already lit)
 
 const float PI = 3.14159265;
 
@@ -80,7 +88,18 @@ void main() {
   float lambert = clamp(cosSun * 0.65 + 0.45, 0.0, 1.3);
 
   // --- surface: crossfade between two era textures (both are the modern map today) ---
-  vec3 surface = mix(texture(uEraA, vUv).rgb, texture(uEraB, vUv).rgb, uEraMix) * lambert;
+  vec3 albedo = mix(texture(uEraA, vUv).rgb, texture(uEraB, vUv).rgb, uEraMix);
+
+  // --- high-resolution patch, feathered at its edges so the join is invisible ---
+  if (uDetailMix > 0.0) {
+    vec2 d = (vUv - uDetailRect.xy) / uDetailRect.zw;
+    if (d.x > 0.0 && d.x < 1.0 && d.y > 0.0 && d.y < 1.0) {
+      vec2 f = smoothstep(vec2(0.0), vec2(0.07), d) * (1.0 - smoothstep(vec2(0.93), vec2(1.0), d));
+      albedo = mix(albedo, texture(uDetail, d).rgb, f.x * f.y * uDetailMix);
+    }
+  }
+
+  vec3 surface = albedo * lambert;
 
   // --- cloud shadows: follow the sun ray up to cloud altitude and sample there ---
   float cloudUvX = fract(vUv.x + uCloudRot);
@@ -150,6 +169,9 @@ export class GlobeSurface {
         uNight: { value: night },
         uRelief: { value: relief },
         uClouds: { value: clouds },
+        uDetail: { value: null },
+        uDetailRect: { value: new Vector4(0, 0, 1, 1) },
+        uDetailMix: { value: 0 },
         uSunDir: { value: new Vector3(1, 0, 0) },
         uLights: { value: 1 },
         uCloudRot: { value: 0 },
@@ -157,6 +179,7 @@ export class GlobeSurface {
         uCloudShadow: { value: 0.5 },
         uRelief_: { value: 0.7 },
         uTexel: { value: new Vector2(1 / 4096, 1 / 2048) },
+        uFlatLight: { value: 0 },
       },
     })
   }
@@ -195,6 +218,22 @@ export class GlobeSurface {
 
   setCloudDrift(seconds: number) {
     this.material.uniforms.uCloudRot.value = (seconds * 0.0016) % 1
+  }
+
+  /** Point the shader at the streamed detail patch (null clears it). */
+  setDetail(map: Texture | null, rect: [number, number, number, number], mix: number) {
+    const u = this.material.uniforms
+    u.uDetail.value = map
+    u.uDetailRect.value.set(...rect)
+    u.uDetailMix.value = map ? mix : 0
+  }
+
+  /**
+   * How far to suppress the terminator. Close up, the imagery carries its own
+   * lighting and a day/night boundary crossing the view just looks wrong.
+   */
+  setFlatLight(v: number) {
+    this.material.uniforms.uFlatLight.value = v
   }
 
   setClouds(visible: boolean, opacity = 1) {
