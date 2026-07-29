@@ -37,6 +37,18 @@ const hour = () => {
     </section>
 
     <section>
+      <span class="eyebrow">Atmosphere</span>
+      <label class="row">
+        <input type="checkbox" :checked="settings.clouds" @change="settings.toggle('clouds')" />
+        <span>Cloud cover</span>
+      </label>
+      <label class="row">
+        <input type="checkbox" :checked="settings.atmosphere" @change="settings.toggle('atmosphere')" />
+        <span>Atmospheric glow</span>
+      </label>
+    </section>
+
+    <section>
       <span class="eyebrow">Nation borders</span>
       <label class="row">
         <input type="checkbox" :checked="nations.showExtremes" @change="nations.toggleExtremes()" />

@@ -11,6 +11,7 @@ import type { Ring } from '../lib/nations'
 import { PaleoLayer } from '../lib/paleoLayer'
 import { DayNightLayer } from '../lib/dayNightLayer'
 import { CelestialLayer } from '../lib/celestialLayer'
+import { CloudLayer, AtmosphereLayer } from '../lib/skyLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE } from '../data/paleoTextures'
@@ -25,6 +26,9 @@ let globe: GlobeInstance | undefined
 let paleo: PaleoLayer | undefined
 let dayNight: DayNightLayer | undefined
 let celestial: CelestialLayer | undefined
+let clouds: CloudLayer | undefined
+let atmosphere: AtmosphereLayer | undefined
+let raf = 0
 let resizeObs: ResizeObserver | undefined
 const stops: (() => void)[] = []
 
@@ -89,6 +93,16 @@ onMounted(() => {
   dayNight = new DayNightLayer(globe.scene(), radius, MODERN_TEXTURE, NIGHT_TEXTURE)
   paleo = new PaleoLayer(globe.scene(), radius, MODERN_TEXTURE)
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
+  clouds = new CloudLayer(globe.scene(), radius, `${base}textures/clouds.png`, `${base}textures/clouds_bump.jpg`)
+  atmosphere = new AtmosphereLayer(globe.scene(), radius)
+
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const t0 = performance.now()
+  const tick = () => {
+    if (!still) clouds!.drift((performance.now() - t0) / 1000)
+    raf = requestAnimationFrame(tick)
+  }
+  tick()
 
   const coords = (lat: number, lng: number, alt: number) => globe!.getCoords(lat, lng, alt)
   const sunDir = () => {
@@ -109,7 +123,10 @@ onMounted(() => {
       dayNight!.setSunDirection(dir)
       dirLight?.position.copy(dir.clone().multiplyScalar(radius * 4)) // paleo eras lit by the same sun
       celestial!.setHour(settings.sunHour, coords)
+      atmosphere!.setSunDirection(dir)
     }),
+    watchEffect(() => (clouds!.visible = settings.clouds)),
+    watchEffect(() => (atmosphere!.visible = settings.atmosphere)),
   )
 
   resizeObs = new ResizeObserver(() => globe?.width(dom.clientWidth).height(dom.clientHeight))
@@ -117,7 +134,10 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  cancelAnimationFrame(raf)
   stops.forEach((s) => s())
+  clouds?.dispose()
+  atmosphere?.dispose()
   paleo?.dispose()
   dayNight?.dispose()
   celestial?.dispose()
