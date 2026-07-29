@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { kmPerPixel, niceScale, formatDistance, EARTH_RADIUS_KM } from '../src/lib/scale'
+import { kmPerPixel, niceScale, formatDistance, cloudFadeFor, EARTH_RADIUS_KM } from '../src/lib/scale'
 
 describe('kmPerPixel', () => {
   it('scales linearly with altitude', () => {
@@ -48,4 +48,25 @@ describe('formatDistance', () => {
     [1, '1 km'],
     [2000, '2,000 km'],
   ])('%s → %s', (km, s) => expect(formatDistance(km)).toBe(s))
+})
+
+
+describe('cloudFadeFor', () => {
+  it('shows clouds fully when the whole disc is in view', () => {
+    expect(cloudFadeFor(147)).toBe(1) // default framing
+    expect(cloudFadeFor(100)).toBe(1)
+  })
+  it('retires them before the surface fills the screen', () => {
+    expect(cloudFadeFor(55)).toBe(0)
+    expect(cloudFadeFor(20)).toBe(0)
+  })
+  it('fades smoothly in between, never outside 0..1', () => {
+    const mid = cloudFadeFor(77)
+    expect(mid).toBeGreaterThan(0)
+    expect(mid).toBeLessThan(1)
+    for (const span of [0, 10, 55, 77, 100, 180]) {
+      expect(cloudFadeFor(span)).toBeGreaterThanOrEqual(0)
+      expect(cloudFadeFor(span)).toBeLessThanOrEqual(1)
+    }
+  })
 })

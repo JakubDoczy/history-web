@@ -83,15 +83,13 @@ const movedEnough = (a: Bbox | undefined, b: Bbox) => {
 }
 
 /**
- * Imagery is fetched in two stages.
+ * Imagery comes from a single, well-registered global source.
  *
- * The base source always works and is what the view falls back to. The sharp
- * source is Landsat at 30 m — about sixteen times finer — composited server-side
- * over Blue Marble so its ocean gaps stay filled. It is requested *after* the
- * base has already been shown, so if it 404s (its coverage is patchy, and GIBS
- * returns 404 rather than a blank image where a layer has no data) the view is
- * merely less sharp, never broken. An earlier version put the sharp source
- * first and a bad date took the whole feature down with it.
+ * A Landsat 30 m composite was tried here — sixteen times finer on paper — but
+ * WELD is a land-only mosaic with patchy coverage and visible registration
+ * problems, and it looked plainly wrong against Blue Marble. Resolution is not
+ * worth much if the picture is in the wrong place, so this stays on the clean
+ * 500 m basemap until a source is found that is both sharper *and* correct.
  */
 export interface ImagerySource {
   layers: string
@@ -104,17 +102,8 @@ export const BASE_SOURCE: ImagerySource = {
   layers: 'BlueMarble_ShadedRelief_Bathymetry',
 }
 
-/** WELD global composites only exist for Dec 2008 – Nov 2011. */
-export const SHARP_SOURCE: ImagerySource = {
-  label: 'Landsat 30 m',
-  layers:
-    'BlueMarble_ShadedRelief_Bathymetry,Landsat_WELD_CorrectedReflectance_TrueColor_Global_Annual',
-  time: '2010-01-01',
-}
-
 export interface DetailImageryOptions {
   maxPx?: number
-  sharpen?: boolean
 }
 
 export class DetailImagery {
@@ -126,18 +115,14 @@ export class DetailImagery {
   onReady?: () => void
 
   private maxPx: number
-  private sharpen: boolean
   private current?: Bbox
   private requestId = 0
   private settle?: ReturnType<typeof setTimeout>
   private strikes = 0
-  private sharpStrikes = 0
-  private sharpDisabled = false
   private disabled = false
 
   constructor(opts: DetailImageryOptions = {}) {
     this.maxPx = opts.maxPx ?? 3072
-    this.sharpen = opts.sharpen ?? true
   }
 
   private url(src: ImagerySource, b: Bbox, width: number, height: number) {
@@ -155,7 +140,15 @@ export class DetailImagery {
   update(lat: number, lng: number, altitude: number, viewportPx = 900) {
     if (this.disabled) return
     if (visibleSpanDeg(altitude) > 45) {
-      this.mix = 0 // zoomed out: the base map is sharp enough
+      // zoomed out: the base map is sharp enough. Report it, or the panel keeps
+      // claiming imagery is loaded for an area no longer in view.
+      if (this.mix !== 0 || this.status === 'ready') {
+        this.mix = 0
+        this.status = 'idle'
+        this.sourceLabel = '—'
+        this.current = undefined
+        this.onReady?.()
+      }
       return
     }
     const bbox = viewBbox(lat, lng, altitude)
@@ -171,18 +164,7 @@ export class DetailImagery {
     const { width, height } = imageSize(bbox, viewportPx, this.maxPx)
     this.status = 'loading'
 
-    // stage one: the source that always works
     this.fetch(BASE_SOURCE, bbox, width, height, id, {
-      ok: () => {
-        // stage two: try to replace it with something sharper
-        if (!this.sharpen || this.sharpDisabled) return
-        this.fetch(SHARP_SOURCE, bbox, width, height, id, {
-          fail: () => {
-            this.sharpStrikes++
-            if (this.sharpStrikes >= 2) this.sharpDisabled = true
-          },
-        })
-      },
       fail: () => {
         this.strikes++
         if (this.strikes >= 3) {

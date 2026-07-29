@@ -12,6 +12,7 @@ import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { AtmosphereLayer } from '../lib/skyLayer'
 import { DetailImagery, visibleSpanDeg, minAltitudeFor, IMAGERY_ERA_FROM } from '../lib/detailImagery'
+import { cloudFadeFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
@@ -130,6 +131,8 @@ onMounted(() => {
     globe!.controls().minDistance = radius * (1 + minAltitudeFor(time.currentTime, settings.detail))
     const near = closeness(pov.altitude)
     view.altitude = pov.altitude
+    view.detailStatus = detail!.status
+    view.detailSource = detail!.sourceLabel
     view.viewportPx = el.value?.clientHeight ?? 900
     surface!.setFlatLight(near)
     if (detailAllowed()) {
@@ -138,8 +141,9 @@ onMounted(() => {
     } else {
       surface!.setDetail(null, detail!.rect, 0)
     }
-    // clouds and haze read as wrong once the view is a few hundred km across
-    surface!.setClouds(settings.clouds && near < 0.95, (time.currentTime > -12000 ? 1 : 0) * (1 - near))
+    // clouds retire well before the ground fills the screen; haze lingers longer
+    const cloudy = cloudFadeFor(visibleSpanDeg(pov.altitude))
+    surface!.setClouds(settings.clouds && cloudy > 0.01, (time.currentTime > -12000 ? 1 : 0) * cloudy)
     atmosphere!.visible = settings.atmosphere && near < 0.9
   }
 

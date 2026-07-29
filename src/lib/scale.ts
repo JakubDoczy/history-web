@@ -21,3 +21,13 @@ export function niceScale(kmPerPx: number, maxPx = 130): { km: number; px: numbe
 /** Renders as metres below 1 km, and with thousands separators above. */
 export const formatDistance = (km: number): string =>
   km < 1 ? `${Math.round(km * 1000)} m` : `${km.toLocaleString('en-US')} km`
+
+
+/**
+ * How present the cloud layer should be at a given altitude: full when the
+ * whole disc is in view, gone well before the surface fills the screen. Clouds
+ * sell the planet seen from orbit and spoil it seen from close up, where they
+ * simply hide the ground you zoomed in to look at.
+ */
+export const cloudFadeFor = (visibleSpanDeg: number): number =>
+  Math.max(0, Math.min(1, (visibleSpanDeg - 55) / 45))

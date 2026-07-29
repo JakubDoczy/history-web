@@ -56,6 +56,7 @@ uniform float uLights;        // electrification, 0..1
 uniform float uCloudRot;      // cloud drift, in UV units
 uniform float uCloudAlpha;    // 0 hides clouds
 uniform float uCloudShadow;
+uniform float uCloudH;      // cloud deck height, in globe radii
 uniform float uRelief_;       // relief strength
 uniform vec2 uTexel;          // 1 / relief texture size
 uniform float uFlatLight;     // 1 = ignore the terminator (close-up imagery is already lit)
@@ -105,13 +106,22 @@ void main() {
 
   vec3 surface = albedo * lambert;
 
-  // --- cloud shadows: follow the sun ray up to cloud altitude and sample there ---
-  float cloudUvX = fract(vUv.x + uCloudRot);
+  vec3 viewDir = normalize(cameraPosition - vWorldPos);
+
+  // --- parallax: the deck sits above the ground, so it slides against it as
+  // the globe turns. Following the view ray up to cloud height is what makes
+  // the layer read as floating rather than painted on. ---
+  vec3 liftedView = normalize(n + viewDir * (uCloudH / max(dot(n, viewDir), 0.25)));
+  vec2 pduv = dirToUv(liftedView) - dirToUv(n);
+  pduv.x -= (abs(pduv.x) > 0.5) ? sign(pduv.x) : 0.0;
+  vec2 cloudUv = vec2(fract(vUv.x + pduv.x + uCloudRot), clamp(vUv.y + pduv.y, 0.0, 1.0));
+
+  // --- cloud shadows: follow the sun ray up to the same height and sample there ---
   if (uCloudShadow > 0.0 && cosGeo > 0.03) {
-    vec3 lifted = normalize(n + uSunDir * (0.02 / max(cosGeo, 0.18)));
+    vec3 lifted = normalize(n + uSunDir * (uCloudH / max(cosGeo, 0.18)));
     vec2 duv = dirToUv(lifted) - dirToUv(n);
     duv.x -= (abs(duv.x) > 0.5) ? sign(duv.x) : 0.0;   // cross the seam cleanly
-    float occ = texture(uClouds, vec2(fract(cloudUvX + duv.x), clamp(vUv.y + duv.y, 0.0, 1.0))).r;
+    float occ = texture(uClouds, vec2(fract(vUv.x + duv.x + uCloudRot), clamp(vUv.y + duv.y, 0.0, 1.0))).r;
     surface *= 1.0 - occ * uCloudShadow * daylight;
   }
 
@@ -125,16 +135,18 @@ void main() {
   vec3 color = mix(night, surface, daylight);
 
   // --- clouds, composited as the thin film they are ---
-  float cover = texture(uClouds, vec2(cloudUvX, vUv.y)).r * uCloudAlpha;
+  float cover = texture(uClouds, cloudUv).r * uCloudAlpha;
   if (cover > 0.002) {
     vec3 lit = mix(vec3(0.06, 0.08, 0.13), vec3(1.0, 0.995, 0.98), daylight);
     lit += vec3(0.30, 0.12, 0.02) * smoothstep(0.30, 0.0, abs(cosGeo)) * daylight;
-    color = mix(color, lit, clamp(cover * (0.18 + 0.82 * daylight), 0.0, 1.0));
+    // thin cloud is translucent and thick cloud is not, so lean on the mask's
+    // own gradient rather than pushing everything to full opacity
+    float opacity = clamp(cover * cover * (0.35 + 1.15 * cover), 0.0, 1.0);
+    color = mix(color, lit, opacity * (0.18 + 0.82 * daylight));
   }
 
   // --- warm terminator band and blue limb ---
   color += vec3(0.22, 0.08, 0.0) * smoothstep(0.25, 0.0, abs(cosGeo)) * daylight;
-  vec3 viewDir = normalize(cameraPosition - vWorldPos);
   float rim = pow(1.0 - max(dot(viewDir, n), 0.0), 3.0);
   color += vec3(0.2, 0.45, 1.0) * rim * (0.25 + 0.55 * daylight);
 
@@ -181,6 +193,7 @@ export class GlobeSurface {
         uCloudRot: { value: 0 },
         uCloudAlpha: { value: 1 },
         uCloudShadow: { value: 0.5 },
+        uCloudH: { value: 0.012 },
         uRelief_: { value: 0.7 },
         uTexel: { value: new Vector2(1 / 4096, 1 / 2048) },
         uFlatLight: { value: 0 },

@@ -100,25 +100,12 @@ describe('zoom limits', () => {
   })
 })
 
-import { BASE_SOURCE, SHARP_SOURCE } from '../src/lib/detailImagery'
+import { BASE_SOURCE } from '../src/lib/detailImagery'
 
-describe('imagery sources', () => {
-  it('keeps the fallback simple: one layer, no date to get wrong', () => {
+describe('imagery source', () => {
+  it('is a single well-registered layer with no date to get wrong', () => {
     expect(BASE_SOURCE.layers).not.toContain(',')
     expect(BASE_SOURCE.time).toBeUndefined()
-  })
-
-  it('draws Landsat over a base layer so its ocean gaps stay filled', () => {
-    // WELD is land-only; WMS composites a comma-separated list bottom-to-top
-    const [under, over] = SHARP_SOURCE.layers.split(',')
-    expect(under).toContain('BlueMarble')
-    expect(over).toContain('Landsat')
-  })
-
-  it('requests a date inside the published WELD coverage', () => {
-    // global composites exist for 1 Dec 2008 - 1 Nov 2011
-    const t = new Date(SHARP_SOURCE.time!)
-    expect(t.getTime()).toBeGreaterThanOrEqual(new Date('2008-12-01').getTime())
-    expect(t.getTime()).toBeLessThanOrEqual(new Date('2011-11-01').getTime())
+    expect(BASE_SOURCE.label).toMatch(/Blue Marble/)
   })
 })
