@@ -77,7 +77,7 @@ const era = computed(() => eraAt(time.currentTime))
   padding: calc(var(--s3) + var(--safe-t)) calc(var(--s4) + var(--safe-r)) var(--s3)
     calc(var(--s4) + var(--safe-l));
   pointer-events: none;
-  z-index: 9;
+  z-index: var(--z-topbar);
 }
 /* a whisper of scrim so the wordmark survives a bright limb of the globe */
 .bar::before {

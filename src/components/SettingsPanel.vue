@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useEventStore } from '../stores/events'
 import { useNationStore } from '../stores/nations'
-import { useSettingsStore } from '../stores/settings'
+import { useSettingsStore, MAX_EVENTS } from '../stores/settings'
 import { useUiStore } from '../stores/ui'
 import { useViewStore } from '../stores/view'
 
@@ -93,10 +93,18 @@ const imageryLine = () => {
               {{ t }}
             </button>
           </div>
-          <label class="slider-row"
-            ><span>Most shown at once</span><strong>{{ events.maxVisible }}</strong></label
+          <label class="slider-row" for="max-events"
+            ><span>Events on globe</span><strong class="tnum">{{ settings.maxEvents }}</strong></label
           >
-          <input v-model.number="events.maxVisible" type="range" min="10" max="400" step="10" />
+          <input
+            id="max-events"
+            v-model.number="settings.maxEvents"
+            type="range"
+            :min="MAX_EVENTS.min"
+            :max="MAX_EVENTS.max"
+            :step="MAX_EVENTS.step"
+          />
+          <p class="hint">The highest-priority events in the window; the rest are hidden.</p>
           <button
             v-if="events.filter.tags?.length || events.filter.parent"
             class="link"
@@ -318,7 +326,7 @@ const imageryLine = () => {
   display: flex;
   flex-direction: column;
   padding: 0;
-  z-index: 8;
+  z-index: var(--z-settings);
   overflow: hidden;
 }
 .head {

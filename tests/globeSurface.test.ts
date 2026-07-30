@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { GlobeSurface } from '../src/lib/globeSurface'
+import { GlobeSurface, enhancedLuma, ENHANCED_GRADE } from '../src/lib/globeSurface'
+import { readFileSync } from 'node:fs'
 import type { WebGLRenderer } from 'three'
 
 /**
@@ -106,5 +107,76 @@ describe('GlobeSurface', () => {
       expect(u.uNight.value).not.toBe(u.uEraA.value) // a different map, untouched
       expect(surface.texture(URLS.day)).toBe(u.uEraA.value) // and the cache agrees
     })
+  })
+})
+
+/**
+ * The enhanced grade. The shader is not runnable here, so the TS mirror of the
+ * curve is what these check — and a source assertion keeps the two in step.
+ */
+describe('enhanced tone curve', () => {
+  const luma = enhancedLuma
+  // measured off the bundled basemap, in linear light
+  const EUROPE = [0.012, 0.024, 0.035, 0.047, 0.064]
+  const DEEP_OCEAN = [0.003, 0.008, 0.015]
+  const DESERT = [0.16, 0.28, 0.35, 0.39, 0.47]
+
+  const spread = (xs: number[]) => {
+    const g = xs.map((x) => Math.pow(luma(x), 1 / 2.2))
+    return g[g.length - 1] - g[0]
+  }
+
+  it('is monotonic, so no two shades ever swap order', () => {
+    let last = -1
+    for (let l = 0; l <= 1.0001; l += 0.002) {
+      const v = luma(l)
+      expect(v).toBeGreaterThan(last)
+      last = v
+    }
+  })
+
+  it('pulls Europe apart: the temperate band gets far more grey levels', () => {
+    const before = Math.pow(EUROPE[4], 1 / 2.2) - Math.pow(EUROPE[0], 1 / 2.2)
+    expect(spread(EUROPE) / before).toBeGreaterThan(1.5)
+  })
+
+  it('lifts the temperate midtone well clear of black', () => {
+    expect(luma(0.035)).toBeGreaterThan(0.035 * 2)
+  })
+
+  it('drives the darkest water further down rather than lifting it', () => {
+    expect(luma(DEEP_OCEAN[0])).toBeLessThan(DEEP_OCEAN[0])
+  })
+
+  it('holds most of the grade back from water, or the sea would rise with the land', () => {
+    // open ocean overlaps Europe's luminance band, so the curve alone would
+    // brighten it too and erase the coastline the grade exists to reveal
+    expect(luma(DEEP_OCEAN[1])).toBeGreaterThan(DEEP_OCEAN[1]) // curve alone lifts it
+    expect(ENHANCED_GRADE.waterHold).toBeGreaterThan(0.5) // the blueness mask undoes that
+    expect(ENHANCED_GRADE.waterHold).toBeLessThanOrEqual(1)
+  })
+
+  it('does not blow out the desert, and keeps its detail', () => {
+    expect(luma(DESERT[DESERT.length - 1])).toBeLessThan(1)
+    expect(spread(DESERT)).toBeGreaterThan(0.05) // still separable, just compressed
+  })
+
+  it('compresses highlights harder than it stretches midtones', () => {
+    const mid = (luma(0.06) - luma(0.03)) / 0.03
+    const high = (luma(0.5) - luma(0.4)) / 0.1
+    expect(mid).toBeGreaterThan(high)
+  })
+
+  it('leaves black at black and white at white', () => {
+    expect(luma(0)).toBe(0)
+    expect(luma(1)).toBeCloseTo(1, 6)
+  })
+
+  it('is the same curve the shader runs', () => {
+    const src = readFileSync('src/lib/globeSurface.ts', 'utf8')
+    // the GLSL interpolates these constants, so a change here cannot silently
+    // leave the shader on the old grade
+    expect(src).toMatch(/pow\(max\(lumA, 0\.0\), \$\{f\(1 \/ G\.gamma\)\}\)/)
+    expect(src).toMatch(/albedo = mix\(albedo, graded, uBoost \* \(1\.0 - \$\{f\(G\.waterHold\)\}/)
   })
 })

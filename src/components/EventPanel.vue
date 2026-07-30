@@ -111,7 +111,7 @@ function follow(link: { event?: string; url?: string }) {
   width: min(370px, calc(100vw - 2 * var(--s4)));
   max-height: calc(100dvh - var(--rail-clear) - 78px - var(--safe-t));
   padding: var(--s5) var(--s5) var(--s5);
-  z-index: 5;
+  z-index: var(--z-event-panel);
   animation: panel-in 0.26s var(--ease);
 }
 @keyframes panel-in {

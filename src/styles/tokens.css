@@ -47,6 +47,26 @@
   --r-lg: 14px;
   --r-pill: 999px;
 
+  /*
+   * The one z-scale. Everything that stacks reads from here — no bare numbers
+   * in components, so a new layer can be placed by reading this list.
+   *
+   * The globe's CSS2D pin overlay is the reason this exists: CSS2DRenderer
+   * writes its own per-element z-index (0..100, depth-sorted) onto every pin,
+   * and its container is not a stacking context by default, so pins leaked into
+   * the root stack and painted over the panels. Giving that container a
+   * z-index (--z-globe-overlay) traps those 0..100 values inside it, below
+   * everything here.
+   */
+  --z-globe-overlay: 1; /* globe.gl CSS2D pin layer (contains its own 0..100) */
+  --z-scalebar: 2;
+  --z-timeline: 3;
+  --z-event-panel: 5;
+  --z-backdrop: 6; /* click-away shim under the pop-over panels */
+  --z-search: 7;
+  --z-settings: 8;
+  --z-topbar: 9;
+
   --rail: 92px; /* timeline height */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --fast: 0.14s var(--ease);

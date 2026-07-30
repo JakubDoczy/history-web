@@ -41,7 +41,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .backdrop {
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: var(--z-backdrop);
 }
 @media (max-width: 640px) {
   /* on a small screen the open panel is the subject; dim what's behind it */

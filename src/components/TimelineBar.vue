@@ -143,7 +143,7 @@ function onWheel(e: WheelEvent) {
   touch-action: none;
   overflow: hidden;
   user-select: none;
-  z-index: 3;
+  z-index: var(--z-timeline);
 }
 .rail:active {
   cursor: grabbing;

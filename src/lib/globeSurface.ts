@@ -34,6 +34,69 @@ void main() {
 }
 `
 
+/**
+ * The enhanced-mode tone curve.
+ *
+ * The old grade was a plain smoothstep S-curve on the albedo, which pushes
+ * everything under 0.5 *down*. Two things were wrong with that. The curve
+ * darkened exactly the range that needed opening up, and it ran on the *linear*
+ * albedo — the colour maps are sRGB, so three decades of interesting terrain
+ * are squeezed into the bottom few percent there. Measured on the basemap,
+ * central European land is 0.012–0.064 linear; the Sahara is 0.16–0.47. Europe
+ * had nowhere to go but muddy.
+ *
+ * So the remap happens in a perceptual (≈ gamma 2.2) space, where those same
+ * pixels read 0.15–0.30 and the desert reads 0.44–0.71, and it is piecewise:
+ *  - below `lo`: deep ocean, scaled down, so water stays black-blue
+ *  - `lo`..`hi`: the land band, stretched across a much wider output range with
+ *    a gamma under 1, which lifts the shadow end hardest — that is where the
+ *    grey-level separation between forest, field and coastline comes from
+ *  - above `hi`: highlights, compressed, so deserts and ice keep their detail
+ *    instead of clipping to flat orange and white
+ *
+ * The numbers live here rather than inline in the GLSL so the shader and the TS
+ * mirror the tests check cannot drift apart.
+ */
+export const ENHANCED_GRADE = {
+  /** Encoding gamma the curve is expressed in. */
+  gamma: 2.2,
+  lo: 0.09,
+  hi: 0.44,
+  outLo: 0.05,
+  outHi: 0.66,
+  /** Curve shape inside the band; under 1 = lifted shadows, steep dark end. */
+  bandGamma: 0.72,
+  /** Chroma multiplier applied around the new luminance. */
+  saturation: 1.2,
+  /**
+   * How much of the grade to withhold from water. Open ocean shares Europe's
+   * luminance band, so lifting the land lifts the sea with it and the coastline
+   * one is trying to reveal disappears again. Water is the one thing on this
+   * map that is reliably more blue than it is anything else, so a blueness mask
+   * holds it back and the seas stay deep.
+   */
+  waterHold: 0.8,
+} as const
+
+/**
+ * TS mirror of the GLSL curve: linear luminance in, graded linear luminance
+ * out. Kept in step with the shader by the constants above.
+ */
+export function enhancedLuma(linear: number): number {
+  const { gamma, lo, hi, outLo, outHi, bandGamma } = ENHANCED_GRADE
+  const p = Math.pow(Math.max(linear, 0), 1 / gamma)
+  const out =
+    p < lo
+      ? (p / lo) * outLo
+      : p > hi
+        ? outHi + ((p - hi) / (1 - hi)) * (1 - outHi)
+        : outLo + (outHi - outLo) * Math.pow((p - lo) / (hi - lo), bandGamma)
+  return Math.pow(out, gamma)
+}
+
+const G = ENHANCED_GRADE
+const f = (n: number) => n.toFixed(4)
+
 const fragment = /* glsl */ `
 precision highp float;
 
@@ -126,14 +189,25 @@ void main() {
     albedo = mix(albedo, matched, inside.x * inside.y * f.x * f.y * uDetailMix * det.a);
   }
 
-  // Enhanced grades the albedo itself: a saturation lift plus a smoothstep
-  // S-curve. Graded before lighting so coastlines, vegetation and desert
-  // separate clearly without blowing out the lit side. Applied after the
+  // Enhanced grades the albedo itself: a luminance remap (see ENHANCED_GRADE)
+  // plus a chroma lift. Graded before lighting so coastlines, vegetation and
+  // desert separate clearly without blowing out the lit side. Applied after the
   // detail patch so the streamed imagery gets the same treatment.
   float lumA = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
-  vec3 graded = mix(vec3(lumA), albedo, 1.35);
-  graded = clamp(graded * graded * (3.0 - 2.0 * graded), 0.0, 1.0);
-  albedo = mix(albedo, graded, 0.5 * uBoost);
+  float p = pow(max(lumA, 0.0), ${f(1 / G.gamma)});   // into perceptual space
+  float below = (p / ${f(G.lo)}) * ${f(G.outLo)};
+  float band = ${f(G.outLo)} + ${f(G.outHi - G.outLo)} *
+    pow(clamp((p - ${f(G.lo)}) / ${f(G.hi - G.lo)}, 0.0, 1.0), ${f(G.bandGamma)});
+  float above = ${f(G.outHi)} + (p - ${f(G.hi)}) * ${f((1 - G.outHi) / (1 - G.hi))};
+  // step(), not if(): the branch would be non-uniform, and this is cheaper
+  float pG = mix(mix(below, band, step(${f(G.lo)}, p)), above, step(${f(G.hi)}, p));
+  float lumG = pow(max(pG, 0.0), ${f(G.gamma)});      // and back to linear
+  // rescale the colour to the new luminance, then push chroma around it — the
+  // hue survives, only the contrast and the vividness change
+  vec3 graded = albedo * (lumG / max(lumA, 0.0008));
+  graded = clamp(mix(vec3(lumG), graded, ${f(G.saturation)}), 0.0, 1.6);
+  float water = smoothstep(0.0, 0.02, albedo.b - max(albedo.r, albedo.g));
+  albedo = mix(albedo, graded, uBoost * (1.0 - ${f(G.waterHold)} * water));
 
   vec3 surface = albedo * lambert;
 

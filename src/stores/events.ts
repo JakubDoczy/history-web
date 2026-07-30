@@ -2,7 +2,9 @@ import { defineStore } from 'pinia'
 import { EventIndex, type HistoricalEvent, type EventFilter } from '../lib/events'
 import { chunksFor, mergeEvents, type EventManifest } from '../lib/eventChunks'
 import { TAGS } from '../lib/tags'
+import { spanChangedEnough } from '../lib/eventClusters'
 import { useTimeStore } from './time'
+import { useSettingsStore } from './settings'
 
 // The index lives outside reactive state: it is rebuilt wholesale on merge and
 // queried thousands of times per scrub, so wrapping it in proxies buys nothing.
@@ -19,13 +21,17 @@ export const useEventStore = defineStore('events', {
     requested: new Set<string>(),
     filter: {} as EventFilter,
     selectedId: undefined as string | undefined,
-    maxVisible: 100,
+    /** The cluster the user has opened, if any (see lib/eventClusters.ts). */
+    expandedClusterId: undefined as string | undefined,
+    /** Visible span when that cluster was opened — the fan is only valid near it. */
+    expandedSpan: 0,
   }),
   getters: {
     visible(state): HistoricalEvent[] {
       const { range } = useTimeStore()
+      const { maxEvents } = useSettingsStore()
       void state.revision // getter caches by revision, not by array identity
-      return index.query(range.start, range.end, state.filter, state.maxVisible)
+      return index.query(range.start, range.end, state.filter, maxEvents)
     },
     selected: (s) => s.all.find((e) => e.id === s.selectedId),
     allTags: () => [...TAGS],
@@ -76,6 +82,24 @@ export const useEventStore = defineStore('events', {
     },
     select(id?: string) {
       this.selectedId = id
+      // picking a member answers the question the cluster was asking, so it
+      // closes; the selected event keeps its own pin either way.
+      this.expandedClusterId = undefined
+    },
+    expandCluster(id: string, spanDeg: number) {
+      this.expandedClusterId = id
+      this.expandedSpan = spanDeg
+    },
+    collapseClusters() {
+      this.expandedClusterId = undefined
+    },
+    /**
+     * Zoom moved. A fan laid out for one span is nonsense at another — and the
+     * clustering itself has re-run by then — so a big enough change closes it.
+     */
+    noteSpan(spanDeg: number) {
+      if (this.expandedClusterId && spanChangedEnough(this.expandedSpan, spanDeg))
+        this.expandedClusterId = undefined
     },
     toggleTag(tag: string) {
       const tags = this.filter.tags ?? []

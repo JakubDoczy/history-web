@@ -76,7 +76,7 @@ function pick(id: string) {
   right: calc(var(--s4) + var(--safe-r));
   width: min(320px, calc(100vw - 2 * var(--s4)));
   padding: var(--s2);
-  z-index: 7;
+  z-index: var(--z-search);
   display: flex;
   flex-direction: column;
   max-height: calc(100dvh - var(--rail-clear) - 88px);

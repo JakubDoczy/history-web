@@ -24,7 +24,7 @@ const bar = computed(() => niceScale(kmPerPixel(view.altitude, view.fov, view.vi
   justify-items: start;
   pointer-events: none;
   user-select: none;
-  z-index: 2;
+  z-index: var(--z-scalebar);
 }
 span {
   font-family: var(--cond);

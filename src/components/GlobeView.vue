@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, useTemplateRef, watchEffect } from 'vue'
+import { computed, onMounted, onBeforeUnmount, useTemplateRef, watchEffect } from 'vue'
 import Globe, { type GlobeInstance } from 'globe.gl'
 import { AmbientLight, DirectionalLight, PerspectiveCamera, Vector3 } from 'three'
 import { useEventStore } from '../stores/events'
@@ -16,7 +16,14 @@ import { cloudFadeFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
-import { pinElement } from '../lib/eventPins'
+import { pinElement, clusterElement } from '../lib/eventPins'
+import {
+  clusterEvents,
+  clusterSpanBucket,
+  layoutPins,
+  type ClusterLeg,
+  type PinDatum,
+} from '../lib/eventClusters'
 import { primaryTag, tagColor } from '../lib/tags'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE, RELIEF_TEXTURE, SKY_TEXTURE } from '../data/paleoTextures'
 
@@ -39,8 +46,24 @@ const stops: (() => void)[] = []
 type EventAreaEntry = { kind: 'area'; event: HistoricalEvent; ring: Ring }
 type PolyEntry = BorderEntry | EventAreaEntry
 
-const asEvent = (d: object) => d as HistoricalEvent
+const asPin = (d: object) => d as PinDatum
+const asLeg = (d: object) => d as ClusterLeg
 const asPoly = (d: object) => d as PolyEntry
+
+/**
+ * Clustering runs off a *quantised* span: zoom fires continuously, and
+ * regrouping (which rebuilds every pin element) on each frame would both cost
+ * and flicker. See lib/eventClusters.ts.
+ */
+const clusterSpan = computed(() => clusterSpanBucket(visibleSpanDeg(view.altitude)))
+const groups = computed(() => clusterEvents(events.visible, clusterSpan.value))
+const layout = computed(() =>
+  layoutPins(groups.value, {
+    expandedId: events.expandedClusterId,
+    selectedId: events.selectedId,
+    visibleSpanDeg: clusterSpan.value,
+  }),
+)
 const closed = (ring: Ring) => [...ring, ring[0]]
 
 // Only the selected event's area draws as a polygon: overlapping region fills
@@ -58,20 +81,36 @@ onMounted(() => {
     .backgroundImageUrl(SKY_TEXTURE)
     .width(dom.clientWidth)
     .height(dom.clientHeight)
-    // events layer: HTML pins, coloured by the event's primary tag. Area
-    // events get the hollow-square pin; their polygon only draws when selected.
-    .htmlLat((d) => asEvent(d).lat)
-    .htmlLng((d) => asEvent(d).lng)
+    // events layer: HTML pins, coloured by the event's primary tag. Area events
+    // get the footprint pin; their polygon only draws when selected. Co-located
+    // events arrive here already collapsed into cluster badges.
+    .htmlLat((d) => asPin(d).lat)
+    .htmlLng((d) => asPin(d).lng)
     .htmlAltitude(0.006)
     .htmlTransitionDuration(0)
     .htmlElement((d) => {
-      const e = asEvent(d)
-      return pinElement(e, events.selectedId === e.id, () => events.select(e.id))
+      const p = asPin(d)
+      if (p.kind === 'cluster')
+        return clusterElement(p.members, () => events.expandCluster(p.id, clusterSpan.value))
+      return pinElement(p.event, events.selectedId === p.event.id, () => events.select(p.event.id))
     })
     .htmlElementVisibilityModifier((el, visible) => {
       el.style.opacity = visible ? '1' : '0'
       el.style.pointerEvents = visible ? 'auto' : 'none'
     })
+    // arcs layer: the legs of an expanded cluster, anchor out to each member,
+    // so a fanned pin still reads as belonging to the spot it came from
+    .arcStartLat((d) => asLeg(d).startLat)
+    .arcStartLng((d) => asLeg(d).startLng)
+    .arcEndLat((d) => asLeg(d).endLat)
+    .arcEndLng((d) => asLeg(d).endLng)
+    .arcColor((d: object) => {
+      const c = tagColor(primaryTag(asLeg(d).event))
+      return [c + '10', c + 'cc'] // fades in from the anchor so the badge stays clean
+    })
+    .arcAltitude(0.004)
+    .arcStroke(0.24)
+    .arcsTransitionDuration(180)
     // polygons layer: nation borders + the selected event's area
     .polygonGeoJsonGeometry((d) => ({
       type: 'Polygon',
@@ -99,6 +138,8 @@ onMounted(() => {
       if (p.kind === 'area') events.select(p.event.id)
     })
     .polygonsTransitionDuration(300)
+    // clicking bare globe dismisses an open cluster
+    .onGlobeClick(() => events.collapseClusters())
 
   // one material for the planet: era textures, day/night, city lights, clouds
   surface = new GlobeSurface(
@@ -116,6 +157,17 @@ onMounted(() => {
   // from the streamed Sentinel-2 patch instead.
 
   globe.controls().autoRotateSpeed = 0.5
+  // dev-only handle so a browser console (or a screenshot script) can drive the
+  // camera to an exact point of view; never exists in a production build
+  if (import.meta.env.DEV) (window as unknown as { __globe?: GlobeInstance }).__globe = globe
+
+  // CSS2DRenderer stamps a depth-sorted z-index (0..100) on every pin, and its
+  // container carries no z-index of its own — so those values used to compete
+  // in the root stacking context and paint pins over the panels. Naming the
+  // container gives it a z-index from the app's scale (tokens.css), which turns
+  // it into a stacking context and traps the 0..100 inside. It is the only
+  // class-less div globe.gl puts in the scene container.
+  dom.querySelector('.scene-container > div:not([class])')?.classList.add('globe-css2d')
 
   const radius = globe.getGlobeRadius()
   const cam = globe.camera()
@@ -182,6 +234,7 @@ onMounted(() => {
     }
     const near = closeness(pov.altitude)
     view.altitude = pov.altitude
+    events.noteSpan(visibleSpanDeg(pov.altitude))
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel
     view.viewportPx = el.value?.clientHeight ?? 900
@@ -222,8 +275,9 @@ onMounted(() => {
     // which would leave selection styling stale. <=100 pins, so rebuilding is cheap.
     watchEffect(() => {
       void events.selectedId
-      globe!.htmlElementsData(events.visible.map((e) => ({ ...e })))
+      globe!.htmlElementsData(layout.value.pins.map((p) => ({ ...p })))
     }),
+    watchEffect(() => globe!.arcsData(layout.value.legs.map((l) => ({ ...l })))),
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
     watchEffect(() => (globe!.controls().autoRotate = settings.autoRotate)),
     watchEffect(() => surface!.setRelief(settings.relief ? 0.7 : 0)),
@@ -282,9 +336,17 @@ onBeforeUnmount(() => {
 /* Pins are created imperatively by the globe's HTML layer, so unscoped.
    CSS2DRenderer centres the wrapper on the coordinate; shifting the SVG up by
    half its height puts the pin's tip on the spot instead. */
+/* the globe's HTML pin layer, pinned below every panel — see tokens.css */
+.globe-css2d {
+  z-index: var(--z-globe-overlay);
+}
+
 .event-pin svg {
   display: block;
-  transform: translateY(-50%);
+  /* --pin-shift lifts the artwork so the pin's *tip* (not the box centre) lands
+     on the coordinate; area pins carry extra box below the tip, cluster badges
+     are centred and set it to 0. */
+  transform: translateY(var(--pin-shift, -50%));
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
   transition: opacity var(--fast, 0.15s ease);
 }
@@ -293,5 +355,25 @@ onBeforeUnmount(() => {
 }
 .event-pin:hover svg {
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)) brightness(1.15);
+}
+/* the footprint breathes, so an area pin is legible as one even while still */
+.event-pin--area .pin-footprint {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pin-footprint 2.6s var(--ease, ease) infinite;
+}
+@keyframes pin-footprint {
+  0%,
+  100% {
+    transform: scale(0.86);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+.event-pin--cluster svg {
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
 }
 </style>

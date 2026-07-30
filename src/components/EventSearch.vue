@@ -44,7 +44,7 @@ function pick(id: string) {
   left: 50%;
   transform: translateX(-50%);
   width: min(300px, 70vw);
-  z-index: 6;
+  z-index: var(--z-search);
 }
 input {
   width: 100%;
