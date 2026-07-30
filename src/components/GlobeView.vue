@@ -116,22 +116,27 @@ onMounted(() => {
       type: 'Polygon',
       coordinates: [closed(asPoly(d).ring)] as unknown as number[],
     }))
+    // Borders read as a drawn line, not a wash of colour. The cap is fully
+    // transparent on purpose: caps are lit Lambert meshes, so on the night side
+    // of the terminator even a 13% tint renders as a dark sheet that blots out
+    // the map (strokes are unlit lines and stay crisp everywhere). The
+    // invisible cap still catches hover/click for the label.
     .polygonCapColor((d) => {
       const p = asPoly(d)
       if (p.kind === 'area') return tagColor(primaryTag(p.event)) + '38'
-      return p.kind === 'full' ? p.nation.color + '50' : 'rgba(0,0,0,0)'
+      return 'rgba(0,0,0,0)'
     })
     .polygonSideColor(() => 'rgba(0,0,0,0)')
     .polygonStrokeColor((d) => {
       const p = asPoly(d)
       if (p.kind === 'area') return tagColor(primaryTag(p.event))
-      return p.kind === 'full' ? p.nation.color : p.kind === 'max' ? p.nation.color + 'aa' : '#ffffffaa'
+      return p.kind === 'full' ? p.nation.color : p.kind === 'max' ? p.nation.color + '90' : '#ffffff70'
     })
-    .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.012 : asPoly(d).kind === 'full' ? 0.008 : 0.005))
+    // Borders sit almost on the surface, and always under the event pins (0.006).
+    .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.012 : asPoly(d).kind === 'full' ? 0.004 : 0.0035))
     .polygonLabel((d) => {
       const p = asPoly(d)
-      if (p.kind === 'area') return p.event.name
-      return p.kind === 'full' ? p.nation.name : `${p.nation.name} (${p.kind} extent in view)`
+      return p.kind === 'area' ? p.event.name : p.label
     })
     .onPolygonClick((d) => {
       const p = asPoly(d)

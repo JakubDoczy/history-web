@@ -2,7 +2,7 @@
 import { computed, onMounted, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { useTimeStore } from '../stores/time'
 import { formatYear, toWarp, fromWarp, type Year } from '../lib/time'
-import { bandsFor } from '../lib/eras'
+import { bandsFor, spanEraLabel } from '../lib/eras'
 
 const time = useTimeStore()
 const el = useTemplateRef('el')
@@ -45,6 +45,49 @@ const strata = computed(() =>
   }),
 )
 
+/** The highlighted selection band, in pixels. */
+const sel = computed(() => {
+  const x0 = toX(time.selection.start)
+  const x1 = toX(time.selection.end)
+  return { x0, x1, w: Math.max(0, x1 - x0) }
+})
+
+/** The readout stands down when the cursor's flag would sit on top of it. */
+const selLabelShown = computed(
+  () => sel.value.w > 108 && Math.abs(toX(time.currentTime) - (sel.value.x0 + sel.value.x1) / 2) > 74,
+)
+
+/** One readout for the band: the years, plus the era(s) they cover when there is room. */
+const selLabel = computed(() => {
+  const years = `${formatYear(time.selection.start)} – ${formatYear(time.selection.end)}`
+  return sel.value.w > 250
+    ? `${spanEraLabel(time.selection.start, time.selection.end)} · ${years}`
+    : years
+})
+
+/** Pointer x within the rail. Not offsetX: bands and handles are event targets
+ *  of their own, and offsetX would then be measured from the wrong box. */
+const localX = (e: PointerEvent | WheelEvent) => e.clientX - el.value!.getBoundingClientRect().left
+
+// --- selection handles: they own their pointer, so the rail never sees a pan ---
+const dragEdge = ref<'start' | 'end' | null>(null)
+let anchor: Year = 0 // the edge that stays put; a drag past it simply swaps the two
+
+function onHandleDown(edge: 'start' | 'end', e: PointerEvent) {
+  dragEdge.value = edge
+  anchor = edge === 'start' ? time.selection.end : time.selection.start
+  ;(e.currentTarget as Element).setPointerCapture(e.pointerId)
+}
+function onHandleMove(e: PointerEvent) {
+  if (!dragEdge.value) return
+  time.setSelection(anchor, toT(localX(e)))
+}
+function onHandleUp(e: PointerEvent) {
+  if (!dragEdge.value) return
+  dragEdge.value = null
+  ;(e.currentTarget as Element).releasePointerCapture(e.pointerId)
+}
+
 // --- interactions: drag = pan, pinch/wheel = zoom, click = set time ---
 const pointers = new Map<number, number>()
 let dragged = false
@@ -54,32 +97,32 @@ const dist = () => {
 }
 
 function onPointerDown(e: PointerEvent) {
-  pointers.set(e.pointerId, e.offsetX)
+  pointers.set(e.pointerId, localX(e))
   dragged = false
   el.value!.setPointerCapture(e.pointerId)
 }
 function onPointerMove(e: PointerEvent) {
   if (!pointers.has(e.pointerId)) return
   if (pointers.size === 1) {
-    const dx = e.offsetX - pointers.get(e.pointerId)!
+    const dx = localX(e) - pointers.get(e.pointerId)!
     if (Math.abs(dx) > 2) dragged = true
     time.pan(-dx / width.value)
   } else if (pointers.size === 2) {
     dragged = true
     const before = dist()
-    pointers.set(e.pointerId, e.offsetX)
+    pointers.set(e.pointerId, localX(e))
     const [a, b] = [...pointers.values()]
     time.zoom(before / dist(), (a + b) / 2 / width.value)
     return
   }
-  pointers.set(e.pointerId, e.offsetX)
+  pointers.set(e.pointerId, localX(e))
 }
 function onPointerUp(e: PointerEvent) {
   pointers.delete(e.pointerId)
-  if (!dragged && pointers.size === 0) time.setTime(toT(e.offsetX))
+  if (!dragged && pointers.size === 0) time.setTime(toT(localX(e)))
 }
 function onWheel(e: WheelEvent) {
-  time.zoom(e.deltaY > 0 ? 1.2 : 1 / 1.2, e.offsetX / width.value)
+  time.zoom(e.deltaY > 0 ? 1.2 : 1 / 1.2, localX(e) / width.value)
 }
 </script>
 
@@ -112,6 +155,30 @@ function onWheel(e: WheelEvent) {
       <div v-for="t in ticks" :key="t" class="tick" :style="{ left: toX(t) + 'px' }">
         <span class="tnum">{{ formatYear(t) }}</span>
       </div>
+    </div>
+
+    <!-- selection: the display filter. Patina, so it never reads as the ember cursor.
+         The scrims outside it do most of the work — the band reads as the lit part. -->
+    <div class="scrim" :style="{ left: '0px', width: Math.max(0, sel.x0) + 'px' }" />
+    <div class="scrim" :style="{ left: sel.x1 + 'px', right: '0px' }" />
+    <div class="sel" :style="{ left: sel.x0 + 'px', width: sel.w + 'px' }">
+      <span v-if="selLabelShown" class="sel-label tnum">{{ selLabel }}</span>
+    </div>
+    <div
+      v-for="edge in (['start', 'end'] as const)"
+      :key="edge"
+      class="handle"
+      :class="[edge, { dragging: dragEdge === edge }]"
+      role="slider"
+      :aria-label="`Selection ${edge}`"
+      :aria-valuenow="time.selection[edge]"
+      :style="{ left: (edge === 'start' ? sel.x0 : sel.x1) + 'px' }"
+      @pointerdown.stop="onHandleDown(edge, $event)"
+      @pointermove.stop="onHandleMove"
+      @pointerup.stop="onHandleUp"
+      @pointercancel.stop="onHandleUp"
+    >
+      <span class="grip" />
     </div>
 
     <div
@@ -220,6 +287,95 @@ function onWheel(e: WheelEvent) {
   letter-spacing: 0.06em;
   color: var(--frost-dim);
   white-space: nowrap;
+}
+
+/* --- selection band + handles --- */
+.scrim {
+  position: absolute;
+  top: 0;
+  bottom: var(--safe-b);
+  background: rgba(6, 10, 18, 0.55);
+  pointer-events: none; /* scrims and band are readouts; only the handles take input */
+}
+.sel {
+  position: absolute;
+  top: var(--band-h);
+  bottom: var(--safe-b);
+  background: linear-gradient(180deg, rgba(111, 179, 168, 0.22), rgba(111, 179, 168, 0.06));
+  box-shadow: inset 0 1px 0 rgba(111, 179, 168, 0.28);
+  pointer-events: none;
+}
+/* the readout sits in the empty lane between the tick numbers and the cursor flag */
+.sel-label {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--cond);
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--patina);
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(6, 10, 18, 0.9);
+}
+
+.handle {
+  position: absolute;
+  top: 0;
+  bottom: var(--safe-b);
+  width: 40px; /* touch target; the visible grip inside is a hairline */
+  display: grid;
+  align-items: center;
+  cursor: ew-resize;
+  touch-action: none;
+}
+/* Each target reaches outward from its edge rather than straddling it, so the
+   two never overlap — a selection squeezed to its minimum width still has two
+   separately grabbable handles on a touch screen. */
+.handle.start {
+  margin-left: -34px;
+  justify-items: end;
+}
+.handle.end {
+  margin-left: -6px;
+  justify-items: start;
+}
+.grip {
+  position: relative;
+  width: 3px;
+  height: 100%;
+  background: var(--patina);
+  box-shadow: 0 0 8px rgba(111, 179, 168, 0.45);
+  transition: background-color var(--fast);
+}
+/* a stubby cap top and bottom reads as something you can take hold of */
+.grip::before,
+.grip::after {
+  content: '';
+  position: absolute;
+  left: -3px;
+  width: 9px;
+  height: 12px;
+  background: var(--patina);
+  border-radius: 2px;
+}
+.grip::before {
+  top: 0;
+}
+.grip::after {
+  bottom: 0;
+}
+.handle:hover .grip,
+.handle.dragging .grip {
+  background: #9fe0d4;
+}
+.handle:hover .grip::before,
+.handle:hover .grip::after,
+.handle.dragging .grip::before,
+.handle.dragging .grip::after {
+  background: #9fe0d4;
 }
 
 .cursor {

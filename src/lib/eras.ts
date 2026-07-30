@@ -44,6 +44,17 @@ const within = (e: Era, t: Year) => t >= e.start && t < e.end
 export const eraAt = (t: Year): Era | undefined =>
   HISTORICAL.find((e) => within(e, t)) ?? GEOLOGIC.find((e) => within(e, t))
 
+/** Historical eras a span touches, in order. */
+export const erasOverlapping = (start: Year, end: Year): Era[] =>
+  HISTORICAL.filter((e) => e.start < end && e.end > start)
+
+/** Name for a span: one era, a run of them, or deep time when it predates the table. */
+export function spanEraLabel(start: Year, end: Year): string {
+  const hit = erasOverlapping(Math.min(start, end), Math.max(start, end))
+  if (!hit.length) return 'Deep time'
+  return hit.length === 1 ? hit[0].name : `${hit[0].name} – ${hit[hit.length - 1].name}`
+}
+
 /** Bands to draw for a window: human periods when zoomed in, geology otherwise. */
 export const bandsFor = (start: Year, end: Year): Era[] => {
   const scale = end - start <= 20_000 ? HISTORICAL : GEOLOGIC

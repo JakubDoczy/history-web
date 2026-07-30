@@ -1,13 +1,40 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
 import { formatYear } from '../lib/time'
-import { eraAt } from '../lib/eras'
+import { HISTORICAL, erasOverlapping, spanEraLabel, type Era } from '../lib/eras'
 
 const time = useTimeStore()
 const ui = useUiStore()
-const era = computed(() => eraAt(time.currentTime))
+
+// The chip names the *selection* — that is what the globe is showing — and
+// opens a picker that sets the selection to a whole era.
+const touched = computed(() => erasOverlapping(time.selection.start, time.selection.end))
+const era = computed(() => touched.value[0])
+const label = computed(() => spanEraLabel(time.selection.start, time.selection.end))
+const isCurrent = (e: Era) => touched.value.includes(e)
+
+const open = ref(false)
+function pick(e: Era) {
+  time.selectEra(e)
+  open.value = false
+}
+// click-away and Escape, captured on the document so a globe drag also dismisses
+const onDocDown = (e: PointerEvent) => {
+  if (!(e.target as Element).closest?.('.era-picker')) open.value = false
+}
+const onKey = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') open.value = false
+}
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocDown, true)
+  document.addEventListener('keydown', onKey)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocDown, true)
+  document.removeEventListener('keydown', onKey)
+})
 </script>
 
 <template>
@@ -15,10 +42,43 @@ const era = computed(() => eraAt(time.currentTime))
     <div class="mark">
       <span class="title">History</span>
       <span class="rule" />
-      <span class="era">
-        <i class="dot" :style="{ background: era?.color }" />
-        <span class="era-name">{{ era?.name ?? 'Deep time' }}</span>
-      </span>
+      <div class="era-picker">
+        <button
+          class="era"
+          :class="{ on: open }"
+          aria-haspopup="listbox"
+          :aria-expanded="open"
+          aria-label="Selected era"
+          @click="open = !open"
+        >
+          <i class="dot" :style="{ background: era?.color }" />
+          <span class="era-name">{{ label }}</span>
+          <!-- a phone has no room for a range of eras; the first one names it well enough -->
+          <span class="era-name short">{{ era?.name ?? 'Deep time' }}</span>
+          <svg class="caret" width="9" height="9" viewBox="0 0 10 10" aria-hidden="true">
+            <path d="M2 4l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" />
+          </svg>
+        </button>
+        <Transition name="pop">
+          <ul v-if="open" class="menu sheet" role="listbox">
+            <li v-for="e in HISTORICAL" :key="e.name">
+              <button
+                class="opt"
+                role="option"
+                :aria-selected="isCurrent(e)"
+                :class="{ sel: isCurrent(e) }"
+                @click="pick(e)"
+              >
+                <i class="dot" :style="{ background: e.color }" />
+                <span class="opt-name">{{ e.name }}</span>
+                <span class="opt-span tnum">
+                  {{ formatYear(e.start) }} – {{ formatYear(e.end) }}
+                </span>
+              </button>
+            </li>
+          </ul>
+        </Transition>
+      </div>
     </div>
 
     <div class="right">
@@ -111,16 +171,94 @@ const era = computed(() => eraAt(time.currentTime))
   background: var(--line);
   flex: none;
 }
+.era-picker {
+  position: relative;
+  min-width: 0;
+}
 .era {
   display: flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
+  max-width: 250px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: transparent;
   font-family: var(--cond);
   font-size: var(--t-xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--frost-dim);
+  cursor: pointer;
+  transition:
+    border-color var(--fast),
+    color var(--fast),
+    background-color var(--fast);
+}
+.era:hover {
+  border-color: var(--line);
+  background: rgba(13, 20, 32, 0.7);
+  color: var(--frost);
+}
+.era.on {
+  border-color: var(--brass-line);
+  background: var(--brass-soft);
+  color: var(--brass);
+}
+.caret {
+  flex: none;
+  opacity: 0.7;
+}
+.era.on .caret {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  margin: 0;
+  padding: var(--s1);
+  list-style: none;
+  min-width: 224px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  width: 100%;
+  padding: 7px var(--s2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--frost);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--fast);
+}
+.opt:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.opt.sel {
+  color: var(--brass);
+}
+.opt-name {
+  font-family: var(--cond);
+  font-size: var(--t-sm);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  flex: 1;
+  white-space: nowrap;
+}
+.opt-span {
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  color: var(--muted);
+  white-space: nowrap;
 }
 .dot {
   width: 7px;
@@ -135,6 +273,9 @@ const era = computed(() => eraAt(time.currentTime))
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.era-name.short {
+  display: none;
 }
 
 .right {
@@ -160,9 +301,32 @@ const era = computed(() => eraAt(time.currentTime))
     font-size: var(--t-md);
     letter-spacing: 0.16em;
   }
-  .rule,
-  .era {
+  .rule {
     display: none;
+  }
+  /* the picker stays — it is the fastest way to move around on a phone */
+  .era-name {
+    display: none;
+  }
+  .era-name.short {
+    display: block;
+  }
+  /* no room for the caret next to the year stamp; the framed chip reads as a control */
+  .caret {
+    display: none;
+  }
+  .era {
+    height: 34px;
+    max-width: 126px;
+    font-size: var(--t-micro);
+    letter-spacing: 0.05em;
+    border-color: var(--line);
+  }
+  .menu {
+    min-width: 208px;
+  }
+  .opt {
+    padding: 10px var(--s2);
   }
   /* comfortable touch targets */
   .right :deep(.icon-btn) {

@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { eraAt, bandsFor, GEOLOGIC, HISTORICAL } from '../src/lib/eras'
+import {
+  eraAt,
+  bandsFor,
+  erasOverlapping,
+  spanEraLabel,
+  GEOLOGIC,
+  HISTORICAL,
+} from '../src/lib/eras'
 
 describe('era tables', () => {
   it.each([
@@ -34,5 +41,26 @@ describe('bandsFor', () => {
   })
   it('returns only bands overlapping the window', () => {
     expect(bandsFor(1600, 1700)).toEqual([HISTORICAL.find((e) => e.name === 'Early Modern')])
+  })
+})
+
+describe('erasOverlapping / spanEraLabel', () => {
+  it('names a span that is exactly one era', () => {
+    expect(spanEraLabel(500, 1500)).toBe('Medieval')
+    expect(erasOverlapping(500, 1500).map((e) => e.name)).toEqual(['Medieval'])
+  })
+  it('names a run of eras by its ends', () => {
+    expect(spanEraLabel(500, 1945)).toBe('Medieval – Industrial')
+    expect(erasOverlapping(500, 1945).map((e) => e.name)).toEqual([
+      'Medieval',
+      'Early Modern',
+      'Industrial',
+    ])
+  })
+  it('reads a backwards span the same way', () => {
+    expect(spanEraLabel(1945, 500)).toBe('Medieval – Industrial')
+  })
+  it('falls back to deep time before the human table', () => {
+    expect(spanEraLabel(-250e6, -4e6)).toBe('Deep time')
   })
 })

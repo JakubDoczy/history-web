@@ -27,11 +27,15 @@ export const useEventStore = defineStore('events', {
     expandedSpan: 0,
   }),
   getters: {
+    /**
+     * The globe shows the *selection*, not the whole visible window: the rail is
+     * a map of time, and the highlighted band on it is what you asked to see.
+     */
     visible(state): HistoricalEvent[] {
-      const { range } = useTimeStore()
+      const { selection } = useTimeStore()
       const { maxEvents } = useSettingsStore()
       void state.revision // getter caches by revision, not by array identity
-      return index.query(range.start, range.end, state.filter, maxEvents)
+      return index.query(selection.start, selection.end, state.filter, maxEvents)
     },
     selected: (s) => s.all.find((e) => e.id === s.selectedId),
     allTags: () => [...TAGS],

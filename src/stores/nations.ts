@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia'
-import { activeKeyframe, extremes, type Nation, type Ring } from '../lib/nations'
+import {
+  activeKeyframe,
+  extremes,
+  nationLabel,
+  visibleNations,
+  type Nation,
+  type Ring,
+} from '../lib/nations'
 import { useTimeStore } from './time'
 import rawNations from '../data/nations.json'
 
@@ -10,6 +17,8 @@ export interface BorderEntry {
   nation: Nation
   kind: 'full' | 'max' | 'min'
   ring: Ring
+  /** What the globe shows on hover: name plus the polity's span. */
+  label: string
 }
 
 export const useNationStore = defineStore('nations', {
@@ -18,18 +27,29 @@ export const useNationStore = defineStore('nations', {
     showExtremes: false,
   }),
   getters: {
-    /** Border polygons for the current time & window, respecting timeline LOD. */
+    /** The polities notable at the current time (already capped and size-sorted). */
+    current(state): Nation[] {
+      const { currentTime } = useTimeStore()
+      return visibleNations(state.all, currentTime)
+    },
+    /**
+     * One entry per ring, because the globe's polygon layer draws one ring at a
+     * time — a polity with islands or two continents contributes several.
+     */
     borders(state): BorderEntry[] {
       const { currentTime, range, span } = useTimeStore()
       if (span > OVERLAY_MAX_SPAN) return []
-      return state.all.flatMap((nation) => {
+      return this.current.flatMap((nation) => {
         const out: BorderEntry[] = []
+        const label = nationLabel(nation)
         const full = activeKeyframe(nation, currentTime)
-        if (full) out.push({ nation, kind: 'full', ring: full.ring })
+        for (const ring of full?.rings ?? []) out.push({ nation, kind: 'full', ring, label })
         if (state.showExtremes) {
           const { max, min } = extremes(nation, range.start, range.end)
-          if (max && max.ring !== full?.ring) out.push({ nation, kind: 'max', ring: max.ring })
-          if (min && min !== max && min.ring !== full?.ring) out.push({ nation, kind: 'min', ring: min.ring })
+          if (max && max !== full)
+            for (const ring of max.rings) out.push({ nation, kind: 'max', ring, label: `${label} — largest extent in view` })
+          if (min && min !== max && min !== full)
+            for (const ring of min.rings) out.push({ nation, kind: 'min', ring, label: `${label} — smallest extent in view` })
         }
         return out
       })
