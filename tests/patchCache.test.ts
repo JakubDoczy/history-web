@@ -157,9 +157,37 @@ describe('compositePlan', () => {
   it('keeps the patches that still overlap, coarsest first', () => {
     const plan = compositePlan(
       [
-        patch(box(0, 0, 10, 10), 900, 100),
+        patch(box(0, 0, 5, 5), 900, 100), // sharp, but only a quarter of the view
         patch(box(-20, -20, 20, 20), 60, 90),
         patch(box(80, 80, 89, 89), 1200, 99), // the camera jumped away from this
+      ],
+      target,
+      100,
+    )
+    expect(plan.map((p) => p.pxPerDeg)).toEqual([60, 900])
+  })
+
+  it('drops a patch that a sharper one covers completely', () => {
+    // A zoom-in leaves concentric rectangles in the cache. Stacked, each join is
+    // a hard rectangular edge with no feather — a small image over a larger copy
+    // over a larger copy — and not one pixel of the lower layers survives.
+    const plan = compositePlan(
+      [
+        patch(box(-20, -20, 20, 20), 60, 90),
+        patch(box(-5, -5, 15, 15), 300, 95),
+        patch(box(0, 0, 10, 10), 900, 100),
+      ],
+      target,
+      100,
+    )
+    expect(plan.map((p) => p.pxPerDeg)).toEqual([900])
+  })
+
+  it('keeps a coarse patch that covers ground the sharp one does not', () => {
+    const plan = compositePlan(
+      [
+        patch(box(-20, -20, 20, 20), 60, 90),
+        patch(box(0, 0, 10, 6), 900, 100), // stops short of the north edge
       ],
       target,
       100,
@@ -192,9 +220,9 @@ describe('compositePlan', () => {
     // it is a hard straight line with a palette step across it.
     const plan = compositePlan(
       [
-        patch(box(0, 0, 10, 10), 900, 100, 'sentinel'),
+        patch(box(0, 0, 5, 10), 900, 100, 'sentinel'), // southern half
         patch(box(0, 0, 10, 10), 60, 90, 'bluemarble'),
-        patch(box(0, 0, 5, 5), 900, 95, 'sentinel'),
+        patch(box(5, 0, 10, 10), 900, 95, 'sentinel'), // northern half
       ],
       target,
       100,

@@ -146,6 +146,41 @@ export function dominantSource<T>(
 }
 
 /**
+ * Does `outer` cover every part of `inner` that this view can actually see?
+ *
+ * Only the part inside `target` matters: a patch may extend far beyond the
+ * canvas, and what happens off the canvas cannot be drawn over.
+ */
+const hides = (outer: Bbox, inner: Bbox, target: Bbox): boolean => {
+  const seen = rectIntersection(target, inner)
+  if (!seen) return true
+  return (
+    outer.minLat <= seen.minLat &&
+    outer.maxLat >= seen.maxLat &&
+    outer.minLng <= seen.minLng &&
+    outer.maxLng >= seen.maxLng
+  )
+}
+
+/**
+ * Drop every patch that something drawn after it covers completely.
+ *
+ * A zoom-in leaves the cache holding a set of *concentric* rectangles: each
+ * wheel notch asks for a smaller box centred on the same point, and all four
+ * arrive. Drawn coarsest-first they stack — a big soft one, a smaller sharper
+ * one on top of it, a smaller sharper one on top of that — and because the join
+ * between two patches inside a composite has no feather, every step is a visible
+ * rectangular edge. That is the "small image over a larger copy over a larger
+ * copy" the field report describes, and none of those lower layers contributes a
+ * single pixel that survives to the screen.
+ */
+export function visiblePlan<T>(ordered: CachedPatch<T>[], target: Bbox): CachedPatch<T>[] {
+  return ordered.filter(
+    (p, i) => !ordered.some((q, j) => j > i && hides(q.bbox, p.bbox, target)),
+  )
+}
+
+/**
  * Which cached patches are worth drawing for a view, in the order to draw them.
  *
  * A patch that has expired, that misses the view entirely (the camera jumped),
@@ -161,7 +196,7 @@ export function compositePlan<T>(
 ): CachedPatch<T>[] {
   const live = patches.filter((p) => now - p.at <= ttlMs && coverage(target, p.bbox) > 0.002)
   const source = dominantSource(live, target)
-  return drawOrder(live.filter((p) => p.source === source))
+  return visiblePlan(drawOrder(live.filter((p) => p.source === source)), target)
 }
 
 /**

@@ -256,9 +256,13 @@ onMounted(() => {
   // from the streamed Sentinel-2 patch instead.
 
   globe.controls().autoRotateSpeed = 0.5
-  // dev-only handle so a browser console (or a screenshot script) can drive the
-  // camera to an exact point of view; never exists in a production build
-  if (import.meta.env.DEV) (window as unknown as { __globe?: GlobeInstance }).__globe = globe
+  // dev-only handles so a browser console (or a screenshot script) can drive the
+  // camera to an exact point of view and inspect what the streamer is doing;
+  // never exist in a production build
+  if (import.meta.env.DEV) {
+    const w = window as unknown as { __globe?: GlobeInstance; __detail?: DetailImagery }
+    w.__globe = globe
+  }
 
   // CSS2DRenderer stamps a depth-sorted z-index (0..100) on every pin, and its
   // container carries no z-index of its own — so those values used to compete
@@ -283,6 +287,9 @@ onMounted(() => {
       deviceMemoryGb: (navigator as { deviceMemory?: number }).deviceMemory,
     }),
   })
+  if (import.meta.env.DEV) {
+    ;(window as unknown as { __detail?: DetailImagery }).__detail = detail
+  }
   // the patch only reaches the shader if the loader tells us it arrived
   detail.onReady = () => {
     // a load can resolve after imagery was switched off or the time scrubbed

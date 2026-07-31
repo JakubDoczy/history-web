@@ -23,9 +23,10 @@ import {
   clampBboxSpan,
   pickSource,
   requestScreenPx,
-  upscaledSize,
-  COMPOSITE_UPSCALE_MAX,
+  compositeCanvasSize,
+  snapCompositeSize,
   RESAMPLE_MAX_PX,
+  type Bbox,
 } from '../src/lib/detailImagery'
 
 describe('viewBbox', () => {
@@ -259,48 +260,68 @@ describe('pickSource', () => {
   })
 })
 
-describe('upscaledSize', () => {
-  const call = (nat: [number, number], screen: [number, number], maxPx = MAX_PATCH_PX) =>
-    upscaledSize(
-      { width: nat[0], height: nat[1] },
-      { width: screen[0], height: screen[1] },
-      maxPx,
-    )
+describe('compositeCanvasSize', () => {
+  const call = (px: number, aspect: number, maxPx = MAX_PATCH_PX) =>
+    compositeCanvasSize(px, aspect, maxPx)
 
-  it('never shrinks: a patch finer than the screen is drawn at its own size', () => {
-    expect(call([2000, 2000], [800, 800])).toEqual({ width: 2000, height: 2000 })
+  it('covers the screen and the margin the patch is fetched with', () => {
+    const { height } = call(1000, 1)
+    expect(height).toBeGreaterThanOrEqual(1000 * PATCH_MARGIN)
   })
 
-  it('enlarges toward the screen when the patch is coarser than it', () => {
-    expect(call([600, 400], [1200, 800])).toEqual({ width: 1200, height: 800 })
+  it('follows the screen shape', () => {
+    expect(call(1000, 2).width).toBeGreaterThan(call(1000, 1).width)
+    expect(call(1000, 2).height).toBe(call(1000, 1).height)
   })
 
-  it('stops at the upscale ceiling, past which there is nothing to reconstruct', () => {
-    const out = call([200, 200], [4000, 4000])
-    expect(out.height).toBe(200 * COMPOSITE_UPSCALE_MAX)
+  it('honours the ceiling on both axes', () => {
+    const out = call(6000, 3, 2048)
+    expect(out.width).toBeLessThanOrEqual(2048)
+    expect(out.height).toBeLessThanOrEqual(2048)
   })
 
-  it('keeps the enlargement inside the resampler budget', () => {
-    const out = call([1000, 1000], [4096, 4096])
-    expect(out.width * out.height).toBeLessThanOrEqual(RESAMPLE_MAX_PX * 1.01)
-    expect(out.width).toBeGreaterThan(1000) // but still enlarged as far as it can be
+  it('is a function of the screen alone', () => {
+    // The whole point: a canvas whose size follows the view cannot be uploaded
+    // into its own GL storage twice running, and every change is a fresh
+    // allocation, upload and mip chain on the main thread. The camera is not a
+    // parameter here, and a fixed viewport therefore has exactly one answer.
+    const sizes = new Set<string>()
+    for (let i = 0; i < 50; i++) {
+      const s = call(1040, 1.4623)
+      sizes.add(`${s.width}x${s.height}`)
+    }
+    expect(sizes.size).toBe(1)
   })
 
-  it('never shrinks a patch that is already past the budget on its own', () => {
-    // the cap bounds the *enlargement*; a naturally large composite is drawn at
-    // its own size and simply skips the resampler
-    const out = call([2000, 2000], [4096, 4096])
-    expect(out).toEqual({ width: 2000, height: 2000 })
+  it('gives one size for motion and one for rest, where the ceiling bites', () => {
+    // a dense phone screen, which is where the in-motion ceiling is the point
+    const at = (cap: number) => {
+      const s = call(2532, 0.46, cap)
+      return `${s.width}x${s.height}`
+    }
+    expect(new Set([at(MOTION_MAX_PX), at(MAX_PATCH_PX)]).size).toBe(2)
+    // and on a screen small enough that neither ceiling binds, one size for both
+    const small = (cap: number) => {
+      const s = call(700, 1.4, cap)
+      return `${s.width}x${s.height}`
+    }
+    expect(new Set([small(MOTION_MAX_PX), small(MAX_PATCH_PX)]).size).toBe(1)
   })
 
-  it('honours the texture ceiling', () => {
-    const out = call([3000, 3000], [8000, 8000], 4096)
-    expect(Math.max(out.width, out.height)).toBeLessThanOrEqual(4096)
+})
+
+describe('snapCompositeSize', () => {
+  it('never returns less than asked for, until the ceiling says so', () => {
+    for (const px of [100, 513, 1000, 1400, 3000]) {
+      expect(snapCompositeSize(px, MAX_PATCH_PX)).toBeGreaterThanOrEqual(px)
+    }
+    expect(snapCompositeSize(9000, 2048)).toBe(2048)
   })
 
-  it('keeps the aspect ratio, so degrees-per-pixel stays square', () => {
-    const out = call([600, 400], [3000, 2000])
-    expect(out.width / out.height).toBeCloseTo(1.5, 3)
+  it('collapses a zoom\'s worth of drifting sizes onto a handful of steps', () => {
+    // measured on a continuous zoom-in: 1462, 1430, 1417, 1413, 1406, 1400...
+    const drift = [1462, 1430, 1417, 1413, 1406, 1400, 1395, 1390, 1386]
+    expect(new Set(drift.map((n) => snapCompositeSize(n, MAX_PATCH_PX))).size).toBe(2)
   })
 })
 
@@ -848,19 +869,37 @@ describe('cached patch compositing', () => {
 
   it('layers several cached patches, sharpest last', () => {
     const d = new DetailImagery()
-    land(d, 45, 10)
+    land(d, 45, 10) // west
     vi.advanceTimersByTime(SETTLE_MS * 2)
-    land(d, 45, 10 + PAN)
+    land(d, 45, 10 + 2 * PAN) // east
     // the canvas is reused between composites, so clear the record rather than
     // the instance
     const canvas = FakeCanvas.made[0]
     canvas.ops.length = 0
 
-    d.update(45, 10 + 2 * PAN, CLOSE, 900, 1)
+    d.update(45, 10 + PAN, CLOSE, 900, 1) // back to the middle: both still show
     expect(canvas.ops).toHaveLength(2)
     // both patches are at the same zoom, so the tie-break is age: the newest
     // one — the one nearest the new view — must be drawn on top
     expect(canvas.ops[1].x).toBeGreaterThan(canvas.ops[0].x)
+  })
+
+  it('draws only the newest patch when a zoom leaves them nested', () => {
+    // Each wheel notch asks for a smaller box around the same point, and now
+    // that late patches are kept they all arrive. Stacked concentrically they
+    // are a small image over a larger copy over a larger copy, joined by hard
+    // rectangular edges no feather touches.
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    vi.advanceTimersByTime(SETTLE_MS * 2)
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10, CLOSE * 0.6, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    const canvas = FakeCanvas.made[0]
+    canvas.ops.length = 0
+    FakeImage.last!.onload!()
+    expect(canvas.ops).toHaveLength(1)
   })
 
   it('does not composite a patch the camera has jumped away from', () => {
@@ -1089,6 +1128,98 @@ describe('cached patch compositing', () => {
     for (let i = 0; i < 8; i++) d.update(45, 10 + PAN, CLOSE, 900, 1)
     expect(canvas.cleared).toBe(1)
     expect(canvas.ops).toHaveLength(1)
+  })
+
+  it('never hands the shader a rectangle its pixels were not drawn for', () => {
+    // Content, rectangle and mip level are written by publish() together. If a
+    // rectangle can be updated while the texture still holds the previous
+    // composite, the shader stretches the old pixels across the new box — the
+    // nesting reported from the field.
+    const d = new DetailImagery()
+    const drawnFor = () => {
+      const c = FakeCanvas.made[0]
+      return c && c.ops.length ? c : undefined
+    }
+    const check = () => {
+      if (!d.texture || !drawnFor()) return
+      // the rect the shader holds must be the uv rect of the bbox the canvas
+      // was cut to, to the precision the composite key is keyed on
+      expect(d.rect.map((n) => +n.toFixed(6))).toEqual(
+        bboxToUvRect(lastTarget!).map((n) => +n.toFixed(6)),
+      )
+    }
+    let lastTarget: Bbox | undefined
+    for (const [lat, lng, alt] of [
+      [45, 10, 0.06], [45, 10, 0.05], [45.02, 10.03, 0.04], [45.02, 10.03, 0.02],
+    ] as const) {
+      for (let i = 0; i < 30; i++) {
+        lastTarget = viewBbox(lat, lng, alt, 1)
+        d.update(lat, lng, alt, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.last!.onload!()
+      check()
+    }
+    d.dispose()
+  })
+
+  it('does not reuse the texture object when the canvas has been resized', () => {
+    // three allocates immutable storage on a texture's first upload and never
+    // again, so re-flagging a texture whose canvas has changed shape uploads the
+    // new image into the old allocation: silently into the top-left corner, with
+    // the previous composite left in the rest.
+    const d = new DetailImagery({ maxPx: 4096 })
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10, CLOSE, 3000, 1)
+      vi.advanceTimersByTime(16)
+    }
+    FakeImage.last!.onload!()
+    const canvas = FakeCanvas.made[0]
+    const first = { tex: d.texture, w: canvas.width, h: canvas.height }
+    // move, so the composite is cut at the smaller in-motion ceiling
+    d.update(45, 10 + PAN, CLOSE, 3000, 1)
+    expect(canvas.width).not.toBe(first.w)
+    expect(d.texture).not.toBe(first.tex) // a fresh texture, so GL reallocates
+    // ...and the texture object is kept where the shape has not changed, which
+    // is what the snapped size ladder makes the common case
+    const held = d.texture
+    const shape = canvas.width
+    d.update(45, 10 + PAN * 1.6, CLOSE, 3000, 1)
+    expect(canvas.width).toBe(shape)
+    expect(d.texture).toBe(held)
+    d.dispose()
+  })
+
+  it('keeps one canvas shape for a whole zoom', () => {
+    // A canvas that changes shape cannot be re-uploaded into its existing GL
+    // storage, so every change is an allocation, a full upload and a mip chain
+    // on the main thread. Measured before this: twelve reallocations across one
+    // scripted sequence, and ten to twenty seconds of blocking time.
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const canvas = FakeCanvas.made[0]
+    const shapes = new Set<string>()
+    for (let alt = CLOSE * 3; alt > CLOSE; alt *= 0.97) {
+      for (let i = 0; i < 4; i++) {
+        d.update(45, 10, alt, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      shapes.add(`${canvas.width}x${canvas.height}`)
+    }
+    // two, and only two: the in-motion size and the resting one. Before this it
+    // was one per composite.
+    expect(shapes.size).toBeLessThanOrEqual(2)
+    d.dispose()
+  })
+
+  it('never draws the composite canvas into itself', () => {
+    // a canvas drawn into itself nests a copy of the last generation each time
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const canvas = FakeCanvas.made[0]
+    canvas.ops.length = 0
+    d.update(45, 10 + PAN, CLOSE, 900, 1)
+    expect(canvas.ops.every((o) => o.image !== canvas)).toBe(true)
   })
 
   it('works without a canvas at all, as it must in a stale browser', () => {

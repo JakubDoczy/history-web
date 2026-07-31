@@ -182,6 +182,71 @@ export const MAX_PATCH_PX = 4096
 export const MOTION_MAX_PX = 2048
 
 /**
+ * How much of the screen's own density a composite is given while the camera is
+ * moving.
+ *
+ * An absolute ceiling only helps a screen large enough to reach it: on a
+ * 760x520 window at devicePixelRatio 2 the composite is 1920x1408 and the
+ * 2048 ceiling never binds, so every frame of a zoom still uploaded 10.8 MB.
+ * A fraction bites on every screen, and halving each axis is a quarter of the
+ * bytes for a picture that is replaced within a frame or two.
+ */
+export const MOTION_SCALE = 0.5
+
+/**
+ * Granularity of a composite canvas's size.
+ *
+ * The size a zoom asks for drifts by a pixel or two per frame — 1462, 1430,
+ * 1417, 1413, 1406 — and every distinct size is a fresh GL allocation and a
+ * fresh mip chain, on the main thread, several times a second. Snapping to a
+ * ladder turns a whole zoom into one allocation.
+ *
+ * The canvas need not match the target rectangle's aspect for the geometry to
+ * be right: `placeOnCanvas` and `bboxToUvRect` are both expressed in the target
+ * bbox, so snapping the two axes independently changes only how square the
+ * texels are, which the shader already accounts for through uDetailSize.
+ */
+export const COMPOSITE_SIZE_STEP = 128
+
+/** Snap a composite axis up to the ladder, without passing the ceiling. */
+export const snapCompositeSize = (px: number, maxPx: number, step = COMPOSITE_SIZE_STEP): number =>
+  Math.max(step, Math.min(maxPx, Math.ceil(px / step) * step))
+
+/**
+ * How large the composite canvas is — a function of the screen and the ceiling,
+ * and of nothing else.
+ *
+ * It used to be derived from the target rectangle and from how much resolution
+ * the cached imagery actually held, which is the economical answer and the wrong
+ * one. Both inputs change continuously as the camera moves, so the canvas
+ * changed size on almost every composite, and a texture whose image changes
+ * shape cannot be re-uploaded into its existing GL storage — every one of those
+ * is a fresh allocation, a fresh upload and a fresh mip chain on the main
+ * thread. Measured across the scripted sequence: twelve reallocations for
+ * fifteen composites, and 10–20 seconds of blocking time.
+ *
+ * Sizing to the screen instead gives exactly two sizes for a session — one for
+ * motion, one for rest — so the texture is allocated twice and re-uploaded in
+ * place thereafter. At wide zoom the canvas then holds more pixels than the
+ * imagery in it contains, which costs memory and cannot cost quality: the
+ * shader's mip level is derived from the texture's own width, so a canvas drawn
+ * larger than its source is described honestly.
+ *
+ * The canvas need not share the target rectangle's aspect for the geometry to
+ * be right — `placeOnCanvas` and `bboxToUvRect` are both expressed in the target
+ * bbox — so both axes snap independently and only the texel shape changes.
+ */
+export function compositeCanvasSize(
+  screenPx: number,
+  aspect: number,
+  maxPx: number,
+): { width: number; height: number } {
+  const height = snapCompositeSize(screenPx * PATCH_MARGIN, maxPx)
+  const width = snapCompositeSize(screenPx * PATCH_MARGIN * clamp(aspect, 0.35, 3), maxPx)
+  return { width, height }
+}
+
+/**
  * What this device should be asked to hold for one patch.
  *
  * The 4096 ceiling is a statement about GL limits, not about whether uploading
@@ -218,19 +283,6 @@ export const RESAMPLE_MAX_PX = 2_000_000
 /** Below this magnification, Lanczos-3 and bilinear are the same picture. */
 export const RESAMPLE_MIN_SCALE = 1.25
 
-/**
- * How far past a held patch's own resolution the composite canvas may be sized.
- *
- * The canvas used to be capped at exactly the sharpest cached patch's density,
- * which sounds right — no canvas can invent detail — and meant the CPU never
- * magnified anything: every bit of magnification was left to the GPU, whose
- * only filter is bilinear. That is the soft, faceted texture you see while a
- * fresh patch is on its way. Sizing the canvas toward the screen instead lets
- * Lanczos-3 do the enlargement, and the GPU then has little or nothing left to
- * stretch. Three times is where the extra texture memory stops paying for
- * itself; past it the reconstruction has no more information to work with.
- */
-export const COMPOSITE_UPSCALE_MAX = 3
 
 /**
  * Pixel size for a bbox.
@@ -276,35 +328,6 @@ export function imageSize(
   return { width: clamp(Math.round(width), 64, maxPx), height: clamp(Math.round(height), 64, maxPx) }
 }
 
-/**
- * Canvas size for a composite: the held imagery's own size, enlarged toward the
- * screen's but no further than the resampler is worth running.
- *
- * Both bounds matter. Enlarging past what the screen shows is pure cost, and
- * enlarging past COMPOSITE_UPSCALE_MAX buys nothing a reconstruction filter can
- * honour; RESAMPLE_MAX_PX then keeps a single composite inside about a tenth of
- * a second even on a slow machine.
- */
-export function upscaledSize(
-  natural: { width: number; height: number },
-  screen: { width: number; height: number },
-  maxPx = MAX_PATCH_PX,
-): { width: number; height: number } {
-  const area = Math.max(natural.width * natural.height, 1)
-  const scale = Math.max(
-    1,
-    Math.min(
-      screen.height / Math.max(natural.height, 1),
-      COMPOSITE_UPSCALE_MAX,
-      Math.sqrt(RESAMPLE_MAX_PX / area),
-      maxPx / Math.max(natural.width, natural.height),
-    ),
-  )
-  return {
-    width: Math.min(maxPx, Math.round(natural.width * scale)),
-    height: Math.min(maxPx, Math.round(natural.height * scale)),
-  }
-}
 
 /**
  * Pixels per degree of latitude a request will actually deliver — the number to
@@ -658,6 +681,10 @@ export class DetailImagery {
   private lastComposite?: { target: Bbox; screenPx: number }
   /** What the last composite actually drew; an identical one is not redrawn. */
   private lastDraw = ''
+  /** Pixel size of the image last handed to the shader; see publish(). */
+  private published?: { w: number; h: number }
+  /** The screen the composite canvas is cut for; see compositeCanvasSize. */
+  private viewport = { px: 900, aspect: 1 }
   /** Bumped when a Lanczos upscale lands, so the same plan is drawn again. */
   private upscaleEpoch = 0
   /** Attribution text by source label, so the panel can describe what is shown. */
@@ -705,6 +732,8 @@ export class DetailImagery {
     // a clamped box covers less of the screen, so it needs proportionally fewer
     // pixels to match the screen's density — see requestScreenPx
     const requestPx = requestScreenPx(bbox, altitude, screenPx, fovDeg)
+    // the composite canvas is cut to the screen, not to the request
+    this.viewport = { px: screenPx, aspect }
     // Remembered before any of the early returns below, because a patch can
     // arrive at any moment and it must be cut to the view the camera is looking
     // at *now*. Taking it from the last rectangle that happened to be
@@ -762,6 +791,17 @@ export class DetailImagery {
     c.width = width
     c.height = height
     const ctx = c.getContext('2d')
+    if (ctx) {
+      // Bilinear, explicitly. Skia's default for a magnifying drawImage is a
+      // high-quality resample, and the composite magnifies whenever the canvas
+      // is cut to the screen and the imagery in it is coarser than that — which
+      // is most of the zoom range. Measured, that one flag is the difference
+      // between a composite costing tens of milliseconds and costing seconds.
+      // Nothing is lost: this draw is the deliberately cheap one, and the sharp
+      // version arrives from the Lanczos resampler already at its final size,
+      // where the smoothing setting no longer applies.
+      ctx.imageSmoothingQuality = 'low'
+    }
     return ctx ? { canvas: c, ctx } : undefined
   }
 
@@ -793,7 +833,7 @@ export class DetailImagery {
    *    from a wider view can be five times the canvas in each direction, and
    *    resampling the whole of it would be twenty-five times the work for the
    *    same picture — cropping first is what keeps the cost bounded by the
-   *    canvas, which upscaledSize already holds inside RESAMPLE_MAX_PX
+   *    canvas, and RESAMPLE_MAX_PX then bounds what is left
    *  - once per (patch, size), cached on the patch, because a drag
    *    recomposites repeatedly against the same imagery
    *  - and *never in this call*: the filter runs elsewhere (see
@@ -915,13 +955,13 @@ export class DetailImagery {
     // own density: it is a texture upload of its entire area, and at full size
     // that is tens of megabytes several times a second — see MOTION_MAX_PX.
     const cap = sharpen ? this.maxPx : Math.min(this.maxPx, MOTION_MAX_PX)
-    // Two sizes: what the imagery we hold actually contains, and what the
-    // screen would like. The canvas is sized between them — see
-    // COMPOSITE_UPSCALE_MAX — so the enlargement happens here, through a proper
-    // filter, instead of on the GPU through a tent.
-    const natural = imageSize(target, screenPx, cap, sharpest.pxPerDeg)
-    const screen = imageSize(target, screenPx, cap, Number.MAX_SAFE_INTEGER)
-    const { width, height } = upscaledSize(natural, screen, cap)
+    // The screen and the ceiling decide this, and nothing that moves with the
+    // camera — see compositeCanvasSize.
+    const { width, height } = compositeCanvasSize(
+      this.viewport.px * (sharpen ? 1 : MOTION_SCALE),
+      this.viewport.aspect,
+      cap,
+    )
 
     // Redrawing the same patches, at the same size, onto the same rectangle
     // produces the same canvas — and publishing it re-uploads every one of its
@@ -948,6 +988,11 @@ export class DetailImagery {
     if (!surf) return false
     surf.ctx.clearRect(0, 0, width, height)
     for (const p of plan) {
+      // A canvas drawn into itself is undefined at best and a feedback loop at
+      // worst — each generation nesting a copy of the last. Nothing puts the
+      // composite into the cache today; this makes that a property of the code
+      // rather than of the reader's memory.
+      if (p.image === surf.canvas) continue
       const { x, y, w, h } = placeOnCanvas(target, p.bbox, width, height)
       this.drawPatch(surf.ctx, p, x, y, w, h, width, height, sharpen)
     }
@@ -1075,13 +1120,28 @@ export class DetailImagery {
 
   /** The one place a texture reaches the shader, whether patch or composite. */
   private publish(source: CanvasImageSource, bbox: Bbox, meta: PatchMeta) {
+    const size = DetailImagery.naturalSize(source)
     // The composite canvas is reused between draws, so most publishes hand the
     // shader the same image object again. Re-flagging that texture re-uploads
     // the pixels without reallocating the GL texture or re-deriving its
     // parameters, which a fresh Texture per composite made the driver do on
     // every frame of a zoom.
+    //
+    // But only while the pixels are the same shape. three allocates immutable
+    // storage with texStorage2D on a texture's *first* upload and never again,
+    // so re-flagging a texture whose canvas has since been resized uploads the
+    // new image into the old allocation with texSubImage2D — which, when the new
+    // canvas is smaller, silently lands it in the top-left corner and leaves the
+    // rest of the texture holding the previous composite. No GL error is raised.
+    // The shader then stretches that mixture across the current rectangle, and
+    // since the previous composite had the one before it in *its* corner, the
+    // result is a small image over a larger copy over a larger copy: exactly the
+    // nesting reported from the field. Measured on a continuous zoom, 27 of 28
+    // composite uploads went into storage cut for a different size.
     const previous = this.texture
-    if (previous && previous.image === source) {
+    const sameShape =
+      !!size && !!this.published && this.published.w === size.w && this.published.h === size.h
+    if (previous && previous.image === source && sameShape) {
       previous.needsUpdate = true
     } else {
       const next = new Texture(source as HTMLImageElement)
@@ -1095,12 +1155,15 @@ export class DetailImagery {
       this.texture = next
       previous?.dispose()
     }
+    this.published = size
+    // Content, rectangle and mip level move together, in this order, in one
+    // call: whatever the shader is handed, the rectangle it is stretched across
+    // and the level that matches the base map all describe the same pixels.
     this.rect = bboxToUvRect(bbox)
     this.composited = bbox
     // Derived here, from the image the shader is about to be handed, because
     // that is the only size the mip chain it will sample is built from. See
     // detailLod.
-    const size = DetailImagery.naturalSize(source)
     this.lod = detailLod(size?.w ?? 1, bbox.maxLng - bbox.minLng)
     this.groundRes = meta.groundRes
     this.mix = 1
