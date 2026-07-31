@@ -7,7 +7,13 @@ import {
   minAltitudeFor,
   IMAGERY_ERA_FROM,
   MIN_ALTITUDE_DETAIL,
-  MIN_ALTITUDE_PLAIN,
+  MIN_ALTITUDE_PRE_ERA,
+  PRE_ERA_VIEW_KM,
+  MAX_PATCH_PX,
+  PATCH_MARGIN,
+  requestedPxPerDeg,
+  viewSpanDeg,
+  DEFAULT_FOV,
   PATCH_ON_BELOW,
   PATCH_OFF_ABOVE,
 } from '../src/lib/detailImagery'
@@ -104,18 +110,17 @@ describe('imageSize', () => {
     expect(height).toBeLessThan(2048) // and so stays quick to fetch
   })
 
-  it('lets a sharper source out-resolve the base one once close in', () => {
-    // far out both are limited by the screen and tie; close in, Blue Marble's
-    // own 500 m ceiling bites first and the 10 m source pulls ahead
-    const close = viewBbox(45, 10, 0.0015)
-    const base = imageSize(close, 2400, 2048, BASE_SOURCE.pxPerDeg)
-    const sharp = imageSize(close, 2400, 2048, SHARP_SOURCE.pxPerDeg)
-    expect(sharp.height).toBeGreaterThan(base.height)
-
-    const far = viewBbox(45, 10, 0.05)
-    expect(imageSize(far, 2400, 2048, SHARP_SOURCE.pxPerDeg).height).toBe(
-      imageSize(far, 2400, 2048, BASE_SOURCE.pxPerDeg).height,
-    )
+  it('lets the sharper source out-resolve the base one wherever a patch shows', () => {
+    // Now that the patch is cut to the frame rather than to the horizon, the
+    // rectangle is small enough that Blue Marble's 500 m ceiling bites across
+    // the whole range a patch is shown in, and the 10 m source always pulls
+    // ahead. It used to tie with it at the far end.
+    for (const alt of [0.0015, 0.02, 0.05]) {
+      const b = viewBbox(45, 10, alt)
+      const base = imageSize(b, 2400, MAX_PATCH_PX, BASE_SOURCE.pxPerDeg)
+      const sharp = imageSize(b, 2400, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
+      expect(sharp.height).toBeGreaterThan(base.height)
+    }
   })
 })
 
@@ -127,13 +132,16 @@ describe('patch visibility thresholds', () => {
 })
 
 describe('zoom limits', () => {
-  it('allows close zoom only within the satellite era', () => {
+  it('caps how close the camera may come before the satellite era', () => {
     expect(minAltitudeFor(2000, true)).toBe(MIN_ALTITUDE_DETAIL)
     expect(minAltitudeFor(IMAGERY_ERA_FROM, true)).toBe(MIN_ALTITUDE_DETAIL)
     for (const year of [1929, 1800, -250e6]) {
-      expect(minAltitudeFor(year, true)).toBe(MIN_ALTITUDE_PLAIN)
+      expect(minAltitudeFor(year, true)).toBe(MIN_ALTITUDE_PRE_ERA)
     }
-    expect(minAltitudeFor(2020, false)).toBe(MIN_ALTITUDE_PLAIN)
+    // with streaming off there is no modern imagery to be anachronistic, so
+    // the era stops mattering at all
+    expect(minAltitudeFor(1800, false)).toBe(MIN_ALTITUDE_DETAIL)
+    expect(minAltitudeFor(2020, false)).toBe(MIN_ALTITUDE_DETAIL)
   })
   it('reports a shrinking view as altitude falls', () => {
     expect(visibleSpanDeg(0.01)).toBeLessThan(visibleSpanDeg(1))
@@ -220,7 +228,7 @@ describe('detailLod', () => {
   })
 })
 
-import { altitudeForViewKm } from '../src/lib/detailImagery'
+import { altitudeForViewKm, altitudeForFrameKm } from '../src/lib/detailImagery'
 
 describe('altitudeForViewKm', () => {
   it('round-trips against the visible-span calculation', () => {
@@ -239,11 +247,25 @@ describe('era-dependent zoom floors', () => {
     const span = visibleSpanDeg(minAltitudeFor(2000, true))
     expect(span * 111.32).toBeCloseTo(100, 0)
   })
-  it('holds earlier periods to a ~300 km view, where modern features are illegible', () => {
+  it('caps earlier periods at a 20 km frame, where modern building does not read', () => {
     for (const year of [1929, 1600, -3000]) {
-      const span = visibleSpanDeg(minAltitudeFor(year, true))
-      expect(span * 111.32).toBeCloseTo(300, 0)
+      const span = viewSpanDeg(minAltitudeFor(year, true))
+      expect(span * 111.32).toBeCloseTo(PRE_ERA_VIEW_KM, 1)
     }
+  })
+
+  it('holds the camera further out before 1930 than after it', () => {
+    // the cap is only a cap if it bites — measured on the horizon rather than
+    // on the frame, a "20 km view" sits 7.8 m above the ground, nearer than
+    // the satellite-era floor and showing nothing at all
+    expect(minAltitudeFor(1800, true)).toBeGreaterThan(minAltitudeFor(1950, true))
+    expect(viewSpanDeg(MIN_ALTITUDE_PRE_ERA)).toBeGreaterThan(
+      viewSpanDeg(MIN_ALTITUDE_DETAIL) * 20,
+    )
+  })
+
+  it('still streams at the pre-1930 cap, rather than capping past the patch', () => {
+    expect(visibleSpanDeg(MIN_ALTITUDE_PRE_ERA)).toBeLessThan(PATCH_ON_BELOW)
   })
 })
 
@@ -374,5 +396,285 @@ describe('DetailImagery streaming', () => {
     FakeImage.last!.onerror!()
     FakeImage.last!.onerror!()
     expect(FakeImage.requests[2]).toContain(BASE_SOURCE.endpoint)
+  })
+})
+
+describe('requested resolution', () => {
+  /**
+   * The complaint this answers: patches looked softer than the zoom warranted.
+   * The screen asks for `screenPx` device pixels down its height and sees
+   * `visibleSpanDeg` degrees of ground, so anything below that ratio is visibly
+   * upsampled. The only excuses are the source's own native resolution and the
+   * hard texture ceiling.
+   */
+  const ALTITUDES = [0.4, 0.2, 0.08, 0.03, 0.01, 0.004, 0.001, MIN_ALTITUDE_DETAIL]
+  const SCREENS = [900, 1600, 2880] // laptop, desktop, retina laptop at dpr 2
+
+  it('meets the screen density at every altitude, unless a real limit stops it', () => {
+    for (const alt of ALTITUDES) {
+      if (visibleSpanDeg(alt) > PATCH_ON_BELOW) continue
+      for (const screenPx of SCREENS) {
+        for (const aspect of [1, 1.6]) {
+          const b = viewBbox(20, 10, alt, aspect)
+          const size = imageSize(b, screenPx, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
+          const got = requestedPxPerDeg(b, size)
+          const wanted = screenPx / viewSpanDeg(alt)
+          const atCeiling = Math.max(size.width, size.height) >= MAX_PATCH_PX - 1
+          const atSourceLimit = got >= SHARP_SOURCE.pxPerDeg * 0.99
+          // the only excuses are the texture ceiling and the source's own
+          // native resolution; anything else is a request we simply under-asked
+          expect(got >= wanted * 0.999 || atCeiling || atSourceLimit).toBe(true)
+        }
+      }
+    }
+  })
+
+  it('was short of the screen at the old 1536 ceiling, which is why it looked soft', () => {
+    const b = viewBbox(0, 10, 0.01)
+    const screenPxPerDeg = 1600 / viewSpanDeg(0.01)
+    const old = imageSize(b, 1600, 1536, SHARP_SOURCE.pxPerDeg)
+    expect(requestedPxPerDeg(b, old)).toBeLessThan(screenPxPerDeg * 0.9)
+    const now = imageSize(b, 1600, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
+    expect(requestedPxPerDeg(b, now)).toBeGreaterThanOrEqual(screenPxPerDeg * 0.999)
+  })
+
+  it('still refuses to out-ask a source past its native resolution', () => {
+    for (const alt of [0.05, 0.02, 0.008]) {
+      const b = viewBbox(0, 0, alt)
+      const size = imageSize(b, 4000, MAX_PATCH_PX, BASE_SOURCE.pxPerDeg)
+      // below a few hundred pixels the request is not worth shrinking further,
+      // so the floor is allowed to win; above it, the source's ceiling rules
+      const atFloor = size.height <= 192
+      expect(atFloor || requestedPxPerDeg(b, size) <= BASE_SOURCE.pxPerDeg * 1.01).toBe(true)
+    }
+    const wide = viewBbox(0, 0, 0.05)
+    expect(imageSize(wide, 4000, MAX_PATCH_PX, BASE_SOURCE.pxPerDeg).height).toBeLessThan(
+      imageSize(wide, 4000, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg).height,
+    )
+  })
+
+  it('keeps degrees-per-pixel square even when the ceiling bites', () => {
+    // a wide bbox used to clamp width alone, which stretched the sampling
+    const b = viewBbox(70, 0, 0.05, 2.5)
+    const { width, height } = imageSize(b, 6000, 1024, SHARP_SOURCE.pxPerDeg)
+    expect(Math.max(width, height)).toBeLessThanOrEqual(1024)
+    const perPxX = (b.maxLng - b.minLng) / width
+    const perPxY = (b.maxLat - b.minLat) / height
+    expect(perPxY / perPxX).toBeCloseTo(1, 1)
+  })
+})
+
+describe('streaming era model', () => {
+  it('streams in every era that uses the modern basemap', () => {
+    // the year no longer gates whether imagery exists — only how close the
+    // camera may come to it
+    const d = new DetailImagery()
+    expect(minAltitudeFor(1500, true)).toBe(MIN_ALTITUDE_PRE_ERA)
+    expect(visibleSpanDeg(MIN_ALTITUDE_PRE_ERA)).toBeLessThan(PATCH_ON_BELOW)
+    d.dispose()
+  })
+
+  it('leaves the satellite era own floor exactly where it was', () => {
+    expect(visibleSpanDeg(MIN_ALTITUDE_DETAIL) * 111.32).toBeCloseTo(100, 0)
+  })
+})
+
+/** A canvas that records what was drawn on it, since node has none. */
+class FakeCanvas {
+  static made: FakeCanvas[] = []
+  width = 0
+  height = 0
+  ops: { image: unknown; x: number; y: number; w: number; h: number }[] = []
+  cleared = 0
+  constructor() {
+    FakeCanvas.made.push(this)
+  }
+  getContext() {
+    return {
+      clearRect: () => this.cleared++,
+      drawImage: (image: unknown, x: number, y: number, w: number, h: number) =>
+        this.ops.push({ image, x, y, w, h }),
+    }
+  }
+}
+
+describe('cached patch compositing', () => {
+  const CLOSE = 0.02
+  /** A pan of ~27% of the patch width: past the refetch threshold, well inside it. */
+  const PAN = (() => {
+    const b = viewBbox(45, 10, CLOSE, 1)
+    return (b.maxLng - b.minLng) * 0.27
+  })()
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.requests = []
+    FakeImage.last = undefined
+    FakeCanvas.made = []
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  /** Settle, fetch and land one patch at the given point. */
+  const land = (d: DetailImagery, lat: number, lng: number) => {
+    for (let i = 0; i < 30; i++) {
+      d.update(lat, lng, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    FakeImage.last!.onload!()
+  }
+
+  it('redraws the patch it holds onto the new view before asking for anything', () => {
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const rectBefore = [...d.rect]
+    const requestsBefore = FakeImage.requests.length
+
+    d.update(45, 10 + PAN, CLOSE, 900, 1) // a pan of ~27% of the patch width
+    const canvas = FakeCanvas.made[0]
+    expect(canvas).toBeDefined()
+    expect(canvas.ops).toHaveLength(1) // the one patch we own
+    expect(canvas.cleared).toBe(1) // and nothing stale left under it
+    // the patch is now to the *west* of the view, so it is drawn left of centre
+    expect(canvas.ops[0].x).toBeLessThan(0)
+    expect(canvas.ops[0].y).toBeCloseTo(0, 6) // same latitude: no vertical shift
+    // the texture now covers the new view, and it cost no request to do it
+    expect(d.rect).not.toEqual(rectBefore)
+    expect(d.mix).toBe(1)
+    expect(FakeImage.requests).toHaveLength(requestsBefore)
+  })
+
+  it('still issues the fresh request after the camera settles', () => {
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    d.update(45, 10 + PAN, CLOSE, 900, 1)
+    expect(FakeImage.requests).toHaveLength(1) // composited, not fetched
+    vi.advanceTimersByTime(SETTLE_MS + 32)
+    expect(FakeImage.requests).toHaveLength(2) // and then fetched
+  })
+
+  it('layers several cached patches, sharpest last', () => {
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    vi.advanceTimersByTime(SETTLE_MS * 2)
+    land(d, 45, 10 + PAN)
+    // the canvas is reused between composites, so clear the record rather than
+    // the instance
+    const canvas = FakeCanvas.made[0]
+    canvas.ops.length = 0
+
+    d.update(45, 10 + 2 * PAN, CLOSE, 900, 1)
+    expect(canvas.ops).toHaveLength(2)
+    // both patches are at the same zoom, so the tie-break is age: the newest
+    // one — the one nearest the new view — must be drawn on top
+    expect(canvas.ops[1].x).toBeGreaterThan(canvas.ops[0].x)
+  })
+
+  it('does not composite a patch the camera has jumped away from', () => {
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const before = FakeCanvas.made[0]?.ops.length ?? 0
+    d.update(-40, -170, CLOSE, 900, 1) // the other side of the world
+    expect(FakeCanvas.made[0]?.ops.length ?? 0).toBe(before) // nothing to draw
+  })
+
+  it('works without a canvas at all, as it must in a stale browser', () => {
+    vi.stubGlobal('document', undefined)
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    expect(() => d.update(45, 10 + PAN, CLOSE, 900, 1)).not.toThrow()
+    vi.advanceTimersByTime(SETTLE_MS + 32)
+    expect(FakeImage.requests).toHaveLength(2) // the fetch path is untouched
+  })
+})
+
+describe('viewSpanDeg', () => {
+  it('is the horizon once the planet no longer fills the frame', () => {
+    for (const alt of [1.5, 2.2, 5]) {
+      expect(viewSpanDeg(alt)).toBeCloseTo(visibleSpanDeg(alt), 9)
+    }
+  })
+
+  it('is far smaller than the horizon close in, which is the whole point', () => {
+    // at 0.02 radii the horizon is ~2500 km of ground and a 50 deg lens frames
+    // ~117 km of it; sizing the patch to the horizon spent the pixel budget on
+    // ground nobody could see
+    expect(visibleSpanDeg(0.02) * 111.32).toBeGreaterThan(2000)
+    expect(viewSpanDeg(0.02) * 111.32).toBeGreaterThan(100)
+    expect(viewSpanDeg(0.02) * 111.32).toBeLessThan(140)
+    expect(visibleSpanDeg(0.02) / viewSpanDeg(0.02)).toBeGreaterThan(15)
+  })
+
+  it('never claims to see more than the horizon allows', () => {
+    for (const alt of [0.001, 0.01, 0.1, 0.5, 1, 3]) {
+      expect(viewSpanDeg(alt)).toBeLessThanOrEqual(visibleSpanDeg(alt) + 1e-9)
+    }
+  })
+
+  it('grows with altitude and with a wider lens', () => {
+    let last = 0
+    for (const alt of [0.001, 0.01, 0.05, 0.2, 1]) {
+      const s = viewSpanDeg(alt)
+      expect(s).toBeGreaterThan(last)
+      last = s
+    }
+    expect(viewSpanDeg(0.02, 80)).toBeGreaterThan(viewSpanDeg(0.02, 30))
+  })
+
+  it('is close to flat-earth geometry when the camera is low', () => {
+    // a sanity check against a completely different calculation: at 0.02 radii
+    // the camera is 127 km up and a 50 deg lens sees 2 * 127 * tan(25 deg)
+    const km = 2 * 0.02 * 6371 * Math.tan(((DEFAULT_FOV / 2) * Math.PI) / 180)
+    expect(viewSpanDeg(0.02) * 111.32).toBeCloseTo(km, -1)
+  })
+
+  it('cuts the patch to the frame, so the bbox shrinks with it', () => {
+    const b = viewBbox(0, 0, 0.02)
+    expect(b.maxLat - b.minLat).toBeCloseTo(viewSpanDeg(0.02) * PATCH_MARGIN, 6)
+  })
+})
+
+describe('altitudeForFrameKm', () => {
+  it('round-trips against the frame-span calculation', () => {
+    for (const km of [1, 20, 100, 500]) {
+      expect(viewSpanDeg(altitudeForFrameKm(km)) * 111.32).toBeCloseTo(km, 1)
+    }
+  })
+
+  it('is far higher than the same span measured on the horizon', () => {
+    // the distinction the pre-1930 cap turns on: a 20 km horizon is 7.8 m up
+    expect(altitudeForFrameKm(20)).toBeGreaterThan(altitudeForViewKm(20) * 100)
+    expect(altitudeForViewKm(20) * 6371).toBeLessThan(0.05) // km, i.e. metres up
+    expect(altitudeForFrameKm(20) * 6371).toBeGreaterThan(10) // km
+  })
+
+  it('needs a higher camera for a wider frame, and a lower one for a wider lens', () => {
+    expect(altitudeForFrameKm(100)).toBeGreaterThan(altitudeForFrameKm(20))
+    expect(altitudeForFrameKm(20, 80)).toBeLessThan(altitudeForFrameKm(20, 30))
+  })
+})
+
+describe('bbox shape at the closest zoom', () => {
+  it('keeps the screen shape at the satellite-era floor', () => {
+    // the longitude clamp used to floor at 0.05 deg, which at a ~180 m frame
+    // stretched the rectangle to nineteen times its width
+    const aspect = 1200 / 900
+    const b = viewBbox(46, 8, MIN_ALTITUDE_DETAIL, aspect)
+    const latSpan = b.maxLat - b.minLat
+    const lngSpan = b.maxLng - b.minLng
+    const groundRatio = (lngSpan * Math.cos((46 * Math.PI) / 180)) / latSpan
+    expect(groundRatio).toBeCloseTo(aspect, 2)
+  })
+
+  it('asks for a roughly square-sampled image there, not a letterbox', () => {
+    const b = viewBbox(46, 8, MIN_ALTITUDE_DETAIL, 1200 / 900)
+    const { width, height } = imageSize(b, 900, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
+    const perPxX = (b.maxLng - b.minLng) / width
+    const perPxY = (b.maxLat - b.minLat) / height
+    expect(perPxY / perPxX).toBeCloseTo(1, 1)
   })
 })

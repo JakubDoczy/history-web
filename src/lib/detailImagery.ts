@@ -1,4 +1,5 @@
 import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 'three'
+import { compositePlan, placeOnCanvas, pruneCache, type CachedPatch } from './patchCache'
 
 /**
  * High-resolution imagery for the region being looked at, fetched from NASA GIBS
@@ -13,8 +14,21 @@ import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 
  * wrong.
  */
 
-/** Modern imagery shows modern cities; before this year it is an anachronism. */
+/**
+ * The year modern imagery stops being an anachronism.
+ *
+ * It used to gate *streaming*: before 1930 no patch was fetched at all, and a
+ * separate zoom floor held the camera 300 km up so the reason would not show.
+ * That was the wrong lever. Sharper coastlines, rivers, ice and desert are as
+ * true in 1500 as in 2000 — what dates the imagery is only the scale at which
+ * roads and reservoirs become legible. So imagery now streams in every era that
+ * uses the modern basemap, and the year decides how *close* the camera may come
+ * instead.
+ */
 export const IMAGERY_ERA_FROM = 1930
+
+/** globe.gl's perspective camera, unless the component tells us otherwise. */
+export const DEFAULT_FOV = 50
 
 /** Camera altitude, in globe radii, at which the view spans a given ground width. */
 export const altitudeForViewKm = (km: number): number => {
@@ -24,15 +38,41 @@ export const altitudeForViewKm = (km: number): number => {
 
 /** Closest approach once modern imagery is appropriate: a ~100 km view. */
 export const MIN_ALTITUDE_DETAIL = altitudeForViewKm(100)
-/**
- * Closest approach before the satellite era. Zooming further would show modern
- * cities, fields and reservoirs in a period that had none; at a ~300 km view
- * those are not legible, so history stays honest without feeling locked out.
- */
-export const MIN_ALTITUDE_PLAIN = altitudeForViewKm(300)
 
+/** Ground span, across the frame, of the closest view allowed before 1930. */
+export const PRE_ERA_VIEW_KM = 20
+
+/**
+ * Camera altitude at which the *frame* spans a given ground width — the inverse
+ * of viewSpanDeg.
+ *
+ * Not the same question as altitudeForViewKm, and the difference is not
+ * academic. A 20 km *horizon* is reached 7.8 m above the ground, where the
+ * frame is a few metres wide and the globe mesh fills nothing; a 20 km *frame*
+ * is 22.7 km up. The horizon measure is right for "how much of the planet is in
+ * principle in front of me" and wrong for every question about what is on
+ * screen, which is what a zoom cap is.
+ */
+export const altitudeForFrameKm = (km: number, fovDeg = DEFAULT_FOV): number => {
+  const half = (km / 2 / 111.32) * (Math.PI / 180)
+  const theta = ((fovDeg / 2) * Math.PI) / 180
+  return Math.sin(half + theta) / Math.sin(theta) - 1
+}
+
+/**
+ * The pre-1930 zoom cap: close enough that terrain, coast, river and ice read
+ * properly, not so close that a modern city fills the screen in a century that
+ * had none. At 20 km across a 1000 px window that is ~20 m per pixel, where a
+ * city is a grey smudge and a motorway is a hairline.
+ */
+export const MIN_ALTITUDE_PRE_ERA = altitudeForFrameKm(PRE_ERA_VIEW_KM)
+
+/**
+ * How close the camera may come. Inverted from the old rule: the era no longer
+ * decides whether imagery exists, only how far in it may be inspected.
+ */
 export const minAltitudeFor = (year: number, detailEnabled: boolean): number =>
-  detailEnabled && year >= IMAGERY_ERA_FROM ? MIN_ALTITUDE_DETAIL : MIN_ALTITUDE_PLAIN
+  detailEnabled && year < IMAGERY_ERA_FROM ? MIN_ALTITUDE_PRE_ERA : MIN_ALTITUDE_DETAIL
 
 /**
  * Angular width of the visible cap, in degrees, for an altitude in globe radii.
@@ -42,6 +82,39 @@ export const minAltitudeFor = (year: number, detailEnabled: boolean): number =>
  */
 export const visibleSpanDeg = (altitude: number) =>
   2 * Math.acos(Math.min(1, 1 / (1 + Math.max(altitude, 1e-9)))) * (180 / Math.PI)
+
+/**
+ * Ground span actually inside the frame, in degrees.
+ *
+ * This is the single biggest reason streamed patches looked soft, and it is not
+ * a resolution cap at all — it is the rectangle. `visibleSpanDeg` is the
+ * *horizon*: everything the camera could see if the lens were infinitely wide.
+ * Close in the two diverge violently. At 0.02 radii the horizon is 22.7° of
+ * ground — 2500 km — while a 50° lens frames 1.05°, about 117 km. Sizing the
+ * patch to the horizon fetched twenty times more ground than was on screen and
+ * then spent the whole pixel budget on it, so the part anybody could see came
+ * back at ~2.8 km per pixel instead of ~130 m.
+ *
+ * Geometry: the camera sits at d = 1 + altitude from the centre and the frame
+ * edge leaves it at θ = fov/2 from the axis through the centre. In the triangle
+ * centre-camera-ground the sine rule gives the angle at the centre as
+ * asin(d sin θ) − θ. When d sin θ ≥ 1 the edge ray misses the planet entirely
+ * and the horizon is the limit again, which is the far-out case.
+ */
+export const viewSpanDeg = (altitude: number, fovDeg = DEFAULT_FOV): number => {
+  const d = 1 + Math.max(altitude, 1e-9)
+  const theta = ((fovDeg / 2) * Math.PI) / 180
+  const s = d * Math.sin(theta)
+  if (s >= 1) return visibleSpanDeg(altitude) // the frame is wider than the planet
+  return 2 * (Math.asin(s) - theta) * (180 / Math.PI)
+}
+
+/**
+ * How much larger than the frame to fetch. Some margin is needed or the patch's
+ * feathered edge eats into the view, and the cache has nothing to hand back
+ * when the camera turns.
+ */
+export const PATCH_MARGIN = 1.25
 
 export interface Bbox {
   minLat: number
@@ -64,11 +137,16 @@ export function viewBbox(
   lng: number,
   altitude: number,
   aspect = 1,
-  margin = 1.15,
+  margin = PATCH_MARGIN,
+  fovDeg = DEFAULT_FOV,
 ): Bbox {
-  const latSpan = clamp(visibleSpanDeg(altitude) * margin, 0.05, 120)
+  // Both lower bounds used to be 0.05° (~5.5 km). At the satellite-era floor
+  // the frame is ~180 m, so the longitude clamp alone stretched the rectangle
+  // to nineteen times its proper width: the request came back 1920x192, sampled
+  // ten times more finely across than down, of ground mostly off screen.
+  const latSpan = clamp(viewSpanDeg(altitude, fovDeg) * margin, 0.001, 120)
   const groundWidth = latSpan * clamp(aspect, 0.35, 3)
-  const lngSpan = clamp(groundWidth / Math.max(Math.cos((lat * Math.PI) / 180), 0.15), 0.05, 300)
+  const lngSpan = clamp(groundWidth / Math.max(Math.cos((lat * Math.PI) / 180), 0.15), 0.001, 300)
   const minLat = clamp(lat - latSpan / 2, -90, 90)
   const maxLat = clamp(lat + latSpan / 2, -90, 90)
   const minLng = clamp(lng - lngSpan / 2, -180, 180)
@@ -84,6 +162,9 @@ export const bboxToUvRect = (b: Bbox): [number, number, number, number] => [
   (b.maxLat - b.minLat) / 180,
 ]
 
+/** Hard ceiling per axis. 4096 is the smallest max-texture-size in the field. */
+export const MAX_PATCH_PX = 4096
+
 /**
  * Pixel size for a bbox.
  *
@@ -92,22 +173,49 @@ export const bboxToUvRect = (b: Bbox): [number, number, number, number] => [
  * result is soft however good the source is. Capped by the source's own
  * resolution — asking a 500 m map for more than 222 px per degree returns
  * upsampled blur, slowly — and by a hard ceiling.
+ *
+ * The ceiling used to be 1536, which was the real reason patches looked soft:
+ * a 1440-tall window at devicePixelRatio 2 asks for 2880 device pixels down the
+ * screen, and the patch came back at just over half that however close the
+ * camera was and however fine the source. The two caps that are *principled* —
+ * the screen's own density and the source's native resolution — are the ones
+ * that should bite.
+ *
+ * Both axes are scaled together when the ceiling bites, so degrees-per-pixel
+ * stays the same across the image; letting width clamp on its own would stretch
+ * the sampling on one axis only.
  */
 export function imageSize(
   b: Bbox,
   screenPx: number,
-  maxPx = 2048,
+  maxPx = MAX_PATCH_PX,
   pxPerDeg = BASE_SOURCE.pxPerDeg,
 ): { width: number; height: number } {
   const lngSpan = Math.max(b.maxLng - b.minLng, 1e-6)
   const latSpan = Math.max(b.maxLat - b.minLat, 1e-6)
-  // the patch spans a little more than the screen, so match its height and let
-  // width follow the rectangle's own shape
-  const heightWanted = Math.min(screenPx * 1.15, latSpan * pxPerDeg)
-  const height = clamp(Math.round(heightWanted), 192, maxPx)
-  const width = clamp(Math.round((height * lngSpan) / latSpan), 192, maxPx)
-  return { width, height }
+  // The bbox spans PATCH_MARGIN times the frame in latitude, and `screenPx` is
+  // the frame's height in device pixels — so this is exactly the screen's own
+  // pixel density, never less, until the source or the ceiling says otherwise.
+  // The margin has to be the same one viewBbox used, or the two silently
+  // disagree and the request comes back short.
+  const heightWanted = Math.min(screenPx * PATCH_MARGIN, latSpan * pxPerDeg)
+  let height = Math.max(heightWanted, 192)
+  let width = Math.max((height * lngSpan) / latSpan, 192)
+  const over = Math.max(width, height) / maxPx
+  if (over > 1) {
+    height /= over
+    width /= over
+  }
+  return { width: clamp(Math.round(width), 64, maxPx), height: clamp(Math.round(height), 64, maxPx) }
 }
+
+/**
+ * Pixels per degree of latitude a request will actually deliver — the number to
+ * compare against the screen's own density when asking whether a patch is as
+ * sharp as the zoom warrants.
+ */
+export const requestedPxPerDeg = (b: Bbox, size: { height: number }) =>
+  size.height / Math.max(b.maxLat - b.minLat, 1e-9)
 
 /**
  * Has the view left the patch we hold (or asked for) by enough to be worth a
@@ -222,6 +330,8 @@ export interface DetailImageryOptions {
 interface PatchMeta {
   lod: number
   groundRes: number
+  /** Effective resolution, used to order the cache's draw stack. */
+  pxPerDeg: number
 }
 
 export class DetailImagery {
@@ -251,13 +361,27 @@ export class DetailImagery {
   /** Provenance of the texture we hold, kept across a hide so it can be restored. */
   private heldLabel = ''
   private heldAttribution = ''
+  /** The last few patches that arrived, newest first — see lib/patchCache.ts. */
+  private cache: CachedPatch<CanvasImageSource>[] = []
+  /** The rectangle the texture we currently hold covers, composite or not. */
+  private composited?: Bbox
+  private canvas?: HTMLCanvasElement
 
   constructor(opts: DetailImageryOptions = {}) {
-    this.maxPx = opts.maxPx ?? 1536
+    this.maxPx = opts.maxPx ?? MAX_PATCH_PX
   }
 
-  update(lat: number, lng: number, altitude: number, screenPx = 900, aspect = 1) {
+  update(
+    lat: number,
+    lng: number,
+    altitude: number,
+    screenPx = 900,
+    aspect = 1,
+    fovDeg = DEFAULT_FOV,
+  ) {
     if (this.disabled) return
+    // the show/hide thresholds stay on the horizon span, which is the number
+    // the rest of the app (clustering, cloud fade) has always used
     const span = visibleSpanDeg(altitude)
 
     // hysteresis: once shown, the patch survives until well past the threshold
@@ -275,7 +399,7 @@ export class DetailImagery {
       return
     }
 
-    const bbox = viewBbox(lat, lng, altitude, aspect)
+    const bbox = viewBbox(lat, lng, altitude, aspect, PATCH_MARGIN, fovDeg)
 
     // the imagery we already hold may still cover the view — show it again
     // rather than paying for the same request twice
@@ -299,11 +423,55 @@ export class DetailImagery {
     // so the 280 ms never elapsed and no patch was ever fetched at all.
     if (this.pending && !movedEnough(this.pending, bbox)) return
     this.pending = bbox
+    // Redraw what we already own onto the new view *now*, before the settle
+    // timer has even started. The centre of the screen usually has not moved,
+    // so it stays exactly as sharp as it was and only the newly exposed edge
+    // falls back to the basemap. Costs one canvas blit and no request, so the
+    // settle and hysteresis rules below are untouched.
+    this.recomposite(bbox, screenPx)
     clearTimeout(this.settle)
     this.settle = setTimeout(() => {
       this.settle = undefined
       this.load(bbox, screenPx)
     }, SETTLE_MS)
+  }
+
+  /** A canvas, or undefined where there is no DOM (tests, SSR). */
+  private surface(width: number, height: number) {
+    if (typeof document === 'undefined') return undefined
+    const c = this.canvas ?? document.createElement('canvas')
+    this.canvas = c
+    c.width = width
+    c.height = height
+    const ctx = c.getContext('2d')
+    return ctx ? { canvas: c, ctx } : undefined
+  }
+
+  /**
+   * Draw every cached patch that still overlaps `target` onto one canvas cut to
+   * `target`, coarsest first, and hand that to the shader as the single detail
+   * texture. The shader contract does not change: one texture, one rectangle.
+   */
+  private recomposite(target: Bbox, screenPx: number): boolean {
+    const plan = compositePlan(this.cache, target, Date.now())
+    if (!plan.length) return false
+    const sharpest = plan[plan.length - 1]
+    const { width, height } = imageSize(target, screenPx, this.maxPx, sharpest.pxPerDeg)
+    const surf = this.surface(width, height)
+    if (!surf) return false
+    surf.ctx.clearRect(0, 0, width, height)
+    for (const p of plan) {
+      const { x, y, w, h } = placeOnCanvas(target, p.bbox, width, height)
+      surf.ctx.drawImage(p.image, x, y, w, h)
+    }
+    this.publish(surf.canvas, target, {
+      lod: detailLod(width, target.maxLng - target.minLng),
+      // the composite is only as good as the patches in it, and its edges are
+      // the basemap, so the resolution we quote stays the one we actually have
+      groundRes: this.groundRes,
+      pxPerDeg: sharpest.pxPerDeg,
+    })
+    return true
   }
 
   private cancelQueued() {
@@ -330,9 +498,10 @@ export class DetailImagery {
     // on screen. Publishing them here made the shader sharpen the patch it still
     // held at the incoming patch's mip level, and the panel quote a resolution
     // for imagery nobody could see yet.
-    const meta = {
+    const meta: PatchMeta = {
       lod: detailLod(width, bbox.maxLng - bbox.minLng),
       groundRes: ((bbox.maxLat - bbox.minLat) * 111_320) / height,
+      pxPerDeg: width / Math.max(bbox.maxLng - bbox.minLng, 1e-9),
     }
 
     this.fetch(src, bbox, width, height, id, meta, {
@@ -384,7 +553,24 @@ export class DetailImagery {
     label: string,
     attribution = '',
   ) {
-    const next = new Texture(img)
+    // A freshly fetched patch covers the whole view on its own, so it is shown
+    // directly rather than composited onto itself. It joins the cache for the
+    // *next* move, which is the only time compositing has anything to add.
+    this.cache = pruneCache(
+      [{ bbox, pxPerDeg: meta.pxPerDeg, at: Date.now(), image: img }, ...this.cache],
+      bbox,
+      Date.now(),
+    )
+    this.current = bbox
+    this.sourceLabel = this.heldLabel = label
+    this.attribution = this.heldAttribution = attribution
+    this.strikes = 0
+    this.publish(img, bbox, meta)
+  }
+
+  /** The one place a texture reaches the shader, whether patch or composite. */
+  private publish(source: CanvasImageSource, bbox: Bbox, meta: PatchMeta) {
+    const next = new Texture(source as HTMLImageElement)
     next.colorSpace = SRGBColorSpace
     // mipmaps are needed: the shader samples a deliberately blurred copy of the
     // patch to separate its fine detail from its overall colour
@@ -396,21 +582,19 @@ export class DetailImagery {
     const previous = this.texture
     this.texture = next
     this.rect = bboxToUvRect(bbox)
-    this.current = bbox
+    this.composited = bbox
     this.lod = meta.lod
     this.groundRes = meta.groundRes
     this.mix = 1
     this.shown = true
     this.status = 'ready'
-    this.sourceLabel = this.heldLabel = label
-    this.attribution = this.heldAttribution = attribution
-    this.strikes = 0
     previous?.dispose()
     this.onReady?.()
   }
 
   dispose() {
     this.cancelQueued()
+    this.cache = []
     this.texture?.dispose()
   }
 }

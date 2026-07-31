@@ -69,13 +69,60 @@ export const ENHANCED_GRADE = {
   /** Chroma multiplier applied around the new luminance. */
   saturation: 1.2,
   /**
-   * How much of the grade to withhold from water. Open ocean shares Europe's
-   * luminance band, so lifting the land lifts the sea with it and the coastline
-   * one is trying to reveal disappears again. Water is the one thing on this
-   * map that is reliably more blue than it is anything else, so a blueness mask
-   * holds it back and the seas stay deep.
+   * How much of the *land* grade to withhold from water. Open ocean shares
+   * Europe's luminance band, so grading the sea with the same curve lifts it
+   * along with the land and the coastline one is trying to reveal disappears
+   * again. Water is the one thing on this map that is reliably more blue than
+   * it is anything else, so a blueness mask holds the land curve back.
    */
-  waterHold: 0.8,
+  waterHold: 0.75,
+  /**
+   * The blueness mask, as a *ratio* of blue excess to luminance.
+   *
+   * It used to be an absolute difference — smoothstep(0, 0.02, b - max(r, g))
+   * — which is the reason the mid-Pacific rendered black. Deep ocean is so
+   * dark in linear light that its channels are only thousandths apart, so the
+   * absolute test scored the abyss at 0.16: the water everybody was complaining
+   * about was the water the water mask barely recognised, and it took nearly
+   * the full land curve, which scales it *down*. Dividing by luminance first
+   * makes the test scale-free, so the abyss and the shelf are both read as
+   * water.
+   */
+  waterLo: 0.05,
+  waterHi: 0.35,
+  /**
+   * What water gets *instead* of the land curve: a plain multiplier.
+   *
+   * Withholding the grade used to mean withholding everything, and the curve's
+   * bottom segment scales deep water *down* — the mid-Pacific rendered at a
+   * blue channel of ~22/255, i.e. black with a rim of atmosphere. A multiplier
+   * is the right shape for water because it touches all three channels
+   * equally: the sea comes up without shifting hue, so it brightens toward a
+   * lighter blue rather than toward cyan or grey. It stays well under the
+   * land's lift, so ocean is still plainly darker than any coast it meets.
+   *
+   * This is the slope at black, not a flat multiplier — see `waterCeiling`.
+   */
+  waterGain: 8,
+  /**
+   * Where the water lift levels off, in linear luminance.
+   *
+   * A bare multiplier is right for the abyss and wrong for bright shallows: at
+   * the gain the mid-Pacific needs, sunlit coastal water would overtake the
+   * forest beside it and the coastline would vanish from the other direction.
+   * So water runs through `ceiling * (1 - exp(-gain * l / ceiling))`: slope
+   * `gain` where the sea was black, asymptotic to `ceiling` where it was
+   * already bright. A hard clamp would do the same job at the ends and flatten
+   * every bathymetric shade in between into one tone; this keeps them ordered.
+   */
+  waterCeiling: 0.045,
+  /** Overall exposure lift in enhanced mode, applied everywhere including night. */
+  exposure: 0.1,
+  /**
+   * Extra exposure on the *lit* side only. Gated on `daylight`, so the night
+   * side keeps exactly the lift it had and space is never touched at all.
+   */
+  dayExposure: 0.15,
 } as const
 
 /**
@@ -92,6 +139,33 @@ export function enhancedLuma(linear: number): number {
         ? outHi + ((p - hi) / (1 - hi)) * (1 - outHi)
         : outLo + (outHi - outLo) * Math.pow((p - lo) / (hi - lo), bandGamma)
   return Math.pow(out, gamma)
+}
+
+/**
+ * TS mirror of the water branch: what a fully-blue pixel's luminance becomes.
+ *
+ * The gain is a per-channel multiplier, so it scales luminance by exactly the
+ * same factor — which is why this can be written on luminance alone.
+ */
+const smoothstep = (a: number, b: number, x: number) => {
+  const t = Math.max(0, Math.min(1, (x - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
+
+/**
+ * TS mirror of the blueness mask: 1 where a linear-light colour is water, 0
+ * where it is land, cloud or ice.
+ */
+export function waterMask(r: number, g: number, b: number): number {
+  const { waterLo, waterHi } = ENHANCED_GRADE
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  return smoothstep(waterLo, waterHi, (b - Math.max(r, g)) / Math.max(lum, 0.0008))
+}
+
+export function enhancedWaterLuma(linear: number): number {
+  const { waterHold, waterGain, waterCeiling: c } = ENHANCED_GRADE
+  const sea = c * (1 - Math.exp((-waterGain * Math.max(linear, 0)) / c))
+  return enhancedLuma(linear) * (1 - waterHold) + sea * waterHold
 }
 
 const G = ENHANCED_GRADE
@@ -206,8 +280,22 @@ void main() {
   // hue survives, only the contrast and the vividness change
   vec3 graded = albedo * (lumG / max(lumA, 0.0008));
   graded = clamp(mix(vec3(lumG), graded, ${f(G.saturation)}), 0.0, 1.6);
-  float water = smoothstep(0.0, 0.02, albedo.b - max(albedo.r, albedo.g));
-  albedo = mix(albedo, graded, uBoost * (1.0 - ${f(G.waterHold)} * water));
+  // Water takes a hue-preserving gain in place of the land curve: the curve's
+  // bottom segment scales deep ocean *down*, and simply withholding it left the
+  // open sea black. Multiplying every channel by the same number lifts the
+  // water without moving its hue, so it reads as lighter blue, not cyan.
+  // blueness as a ratio, not a difference: deep ocean's channels are only
+  // thousandths apart in linear light, so an absolute test scored the abyss at
+  // 0.16 and handed the blackest water to the land curve, which darkens it
+  float blueness = (albedo.b - max(albedo.r, albedo.g)) / max(lumA, 0.0008);
+  float water = smoothstep(${f(G.waterLo)}, ${f(G.waterHi)}, blueness);
+  // the lift levels off toward a ceiling, so bright shallows cannot overtake
+  // the land they meet; scaling the colour by a scalar keeps the hue exactly
+  float seaLum = ${f(G.waterCeiling)} *
+    (1.0 - exp(-${f(G.waterGain)} * lumA / ${f(G.waterCeiling)}));
+  vec3 sea = albedo * (seaLum / max(lumA, 0.0008));
+  vec3 target = mix(graded, sea, ${f(G.waterHold)} * water);
+  albedo = mix(albedo, target, uBoost);
 
   vec3 surface = albedo * lambert;
 
@@ -255,7 +343,11 @@ void main() {
   float rim = pow(1.0 - max(dot(viewDir, n), 0.0), 3.0);
   color += vec3(0.2, 0.45, 1.0) * rim * (0.25 + 0.55 * daylight);
 
-  color *= 1.0 + 0.10 * uBoost; // gentle overall exposure lift for the enhanced look
+  // Exposure lift for the enhanced look. The day term is gated on daylight,
+  // so the night side keeps exactly the exposure it had — brightening it
+  // further would wash out the city lights it exists to show — and space,
+  // which this shader never draws, cannot be touched either way.
+  color *= 1.0 + uBoost * (${f(G.exposure)} + ${f(G.dayExposure)} * daylight);
 
   fragColor = vec4(color, 1.0);
 }

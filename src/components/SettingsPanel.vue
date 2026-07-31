@@ -144,7 +144,8 @@ const imageryLine = () => {
           </label>
           <p class="hint status" :class="view.detailStatus"><i class="led" />{{ imageryLine() }}</p>
           <p class="hint">
-            Available from 1930 onward — earlier, satellite imagery would show modern cities.
+            Streams in every era. Before 1930 the zoom stops at a 20 km view, so modern
+            cities never fill the screen in a century that had none.
           </p>
           <label class="row">
             <input type="checkbox" :checked="settings.relief" @change="settings.toggle('relief')" />

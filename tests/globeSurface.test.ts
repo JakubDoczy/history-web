@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { GlobeSurface, enhancedLuma, ENHANCED_GRADE } from '../src/lib/globeSurface'
+import {
+  GlobeSurface,
+  enhancedLuma,
+  enhancedWaterLuma,
+  waterMask,
+  ENHANCED_GRADE,
+} from '../src/lib/globeSurface'
 import { readFileSync } from 'node:fs'
 import type { WebGLRenderer } from 'three'
 
@@ -144,16 +150,89 @@ describe('enhanced tone curve', () => {
     expect(luma(0.035)).toBeGreaterThan(0.035 * 2)
   })
 
-  it('drives the darkest water further down rather than lifting it', () => {
+  it('drives the darkest water further down when the land curve is applied to it', () => {
+    // which is exactly why water does not get the land curve — see below
     expect(luma(DEEP_OCEAN[0])).toBeLessThan(DEEP_OCEAN[0])
   })
 
-  it('holds most of the grade back from water, or the sea would rise with the land', () => {
+  it('holds the land curve back from water, or the sea would rise with the land', () => {
     // open ocean overlaps Europe's luminance band, so the curve alone would
     // brighten it too and erase the coastline the grade exists to reveal
     expect(luma(DEEP_OCEAN[1])).toBeGreaterThan(DEEP_OCEAN[1]) // curve alone lifts it
-    expect(ENHANCED_GRADE.waterHold).toBeGreaterThan(0.5) // the blueness mask undoes that
+    expect(ENHANCED_GRADE.waterHold).toBeGreaterThan(0.5) // the blueness mask holds it back
     expect(ENHANCED_GRADE.waterHold).toBeLessThanOrEqual(1)
+  })
+
+  it('recognises the darkest ocean as water, not as land', () => {
+    // the absolute test this replaced scored the abyss at 0.16, so the very
+    // water that rendered black took nearly the full land curve
+    expect(waterMask(0.0006, 0.0003, 0.0057)).toBeCloseTo(1, 3) // mid-Pacific
+    expect(waterMask(0.002, 0.004, 0.012)).toBeCloseTo(1, 3) // deep ocean
+    expect(waterMask(0.01, 0.02, 0.05)).toBeCloseTo(1, 3) // shelf
+  })
+
+  it('does not mistake land, cloud or ice for water', () => {
+    expect(waterMask(0.35, 0.22, 0.09)).toBe(0) // desert
+    expect(waterMask(0.02, 0.03, 0.012)).toBe(0) // forest
+    expect(waterMask(0.9, 0.92, 0.95)).toBeLessThan(0.1) // cloud: barely blue
+    expect(waterMask(0.8, 0.85, 0.9)).toBeLessThan(0.2) // ice
+  })
+
+  it('lifts every shade of water instead of leaving it where it was', () => {
+    // the complaint this exists to answer: the mid-Pacific rendered black,
+    // because withholding the land curve meant water got no treatment at all
+    for (const l of DEEP_OCEAN) {
+      expect(enhancedWaterLuma(l)).toBeGreaterThan(l * 1.5)
+    }
+  })
+
+  it('keeps water plainly darker than the land beside it', () => {
+    // a coastline is only legible if the sea stays the darker side of it
+    for (const l of [...DEEP_OCEAN, 0.024, 0.035]) {
+      expect(enhancedWaterLuma(l)).toBeLessThan(luma(l * 3)) // land of any nearby shade
+    }
+    expect(enhancedWaterLuma(0.035)).toBeLessThan(luma(0.035))
+  })
+
+  it('lifts water by a plain multiplier, so its hue cannot drift', () => {
+    // a per-channel gain scales luminance by the same factor it scales each
+    // channel: blue stays blue, rather than sliding toward cyan or grey
+    const ratios = [0.003, 0.01, 0.03].map((l) => enhancedWaterLuma(l) / l)
+    for (const r of ratios) expect(r).toBeLessThan(ENHANCED_GRADE.waterGain)
+    expect(ENHANCED_GRADE.waterGain).toBeGreaterThan(1)
+    // the gain is strongest exactly where the sea was blackest
+    expect(ratios[0]).toBeGreaterThan(ratios[2])
+  })
+
+  it('levels the lifted water off, so bright shallows cannot outshine the coast', () => {
+    // the lift is a slope at black, not a multiplier: by the time water is as
+    // bright as land it has stopped rising and land has not
+    for (const l of [0.05, 0.1, 0.3]) {
+      expect(enhancedWaterLuma(l)).toBeLessThan(luma(l) * 0.7)
+    }
+    // and it can never exceed the ceiling by more than the held-back land share
+    for (const l of [0.05, 0.2, 1]) {
+      const ceiling = ENHANCED_GRADE.waterCeiling * ENHANCED_GRADE.waterHold
+      expect(enhancedWaterLuma(l)).toBeLessThanOrEqual(
+        ceiling + (1 - ENHANCED_GRADE.waterHold) * luma(l) + 1e-9,
+      )
+    }
+  })
+
+  it('is monotonic on the water branch too', () => {
+    let last = -1
+    for (let l = 0; l <= 0.5; l += 0.001) {
+      const v = enhancedWaterLuma(l)
+      expect(v).toBeGreaterThan(last)
+      last = v
+    }
+  })
+
+  it('lifts the day side more than the night side, and the night side not at all', () => {
+    // "brighter" must not mean "the dark side goes grey": the extra exposure is
+    // multiplied by `daylight`, which is 0 well inside the night hemisphere
+    expect(ENHANCED_GRADE.dayExposure).toBeGreaterThan(0)
+    expect(ENHANCED_GRADE.exposure).toBe(0.1) // unchanged: what the night side had
   })
 
   it('does not blow out the desert, and keeps its detail', () => {
@@ -177,6 +256,14 @@ describe('enhanced tone curve', () => {
     // the GLSL interpolates these constants, so a change here cannot silently
     // leave the shader on the old grade
     expect(src).toMatch(/pow\(max\(lumA, 0\.0\), \$\{f\(1 \/ G\.gamma\)\}\)/)
-    expect(src).toMatch(/albedo = mix\(albedo, graded, uBoost \* \(1\.0 - \$\{f\(G\.waterHold\)\}/)
+    expect(src).toMatch(/smoothstep\(\$\{f\(G\.waterLo\)\}, \$\{f\(G\.waterHi\)\}, blueness\)/)
+    expect(src).toMatch(/exp\(-\$\{f\(G\.waterGain\)\} \* lumA \/ \$\{f\(G\.waterCeiling\)\}\)/)
+    expect(src).toMatch(/vec3 sea = albedo \* \(seaLum \/ max\(lumA, 0\.0008\)\)/)
+    expect(src).toMatch(/mix\(graded, sea, \$\{f\(G\.waterHold\)\} \* water\)/)
+    // the day-side lift must stay multiplied by `daylight`, or the night side
+    // and the terminator brighten with it
+    expect(src).toMatch(
+      /color \*= 1\.0 \+ uBoost \* \(\$\{f\(G\.exposure\)\} \+ \$\{f\(G\.dayExposure\)\} \* daylight\)/,
+    )
   })
 })

@@ -11,7 +11,7 @@ import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { AtmosphereLayer } from '../lib/skyLayer'
-import { DetailImagery, visibleSpanDeg, minAltitudeFor, IMAGERY_ERA_FROM } from '../lib/detailImagery'
+import { DetailImagery, visibleSpanDeg, minAltitudeFor } from '../lib/detailImagery'
 import { cloudFadeFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
@@ -193,9 +193,13 @@ onMounted(() => {
   }
 
   /**
-   * Streaming applies to every era that uses the modern basemap; how *close* the
-   * camera may come is what varies by period, since modern features only become
-   * legible at high zoom.
+   * Streaming applies to every era that uses the modern basemap — coastline,
+   * river, ice and desert are no less true in 1500 than today. Deep time is the
+   * one exclusion: those eras draw a paleo map, and a Sentinel-2 patch of the
+   * modern Atlantic over a Pangaean coastline would be nonsense.
+   *
+   * How *close* the camera may come is what varies by period instead; see
+   * minAltitudeFor.
    */
   const detailAllowed = () => settings.detail && time.currentTime > -12000
 
@@ -213,7 +217,9 @@ onMounted(() => {
     const dpr = Math.min(window.devicePixelRatio || 1, 3)
     const w = el.value?.clientWidth ?? 900
     const h = el.value?.clientHeight ?? 900
-    detail!.update(pov.lat, pov.lng, pov.altitude, h * dpr, w / h)
+    // the camera's own fov, so the patch is cut to the frame rather than to the
+    // horizon — close in those differ by more than an order of magnitude
+    detail!.update(pov.lat, pov.lng, pov.altitude, h * dpr, w / h, view.fov)
     surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
   }
 
