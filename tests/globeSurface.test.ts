@@ -6,6 +6,7 @@ import {
   waterMask,
   ENHANCED_GRADE,
 } from '../src/lib/globeSurface'
+import { MAP_FADE_MS } from '../src/lib/mapFade'
 import { readFileSync } from 'node:fs'
 import type { WebGLRenderer } from 'three'
 
@@ -35,7 +36,9 @@ class StubImage {
 }
 
 const URLS = { day: '/day.jpg', night: '/night.jpg', relief: '/relief.png', clouds: '/clouds.jpg' }
-const renderer = { capabilities: { getMaxAnisotropy: () => 4 } } as unknown as WebGLRenderer
+const renderer = {
+  capabilities: { getMaxAnisotropy: () => 4, maxTextureSize: 8192 },
+} as unknown as WebGLRenderer
 const imageFor = (url: string) => StubImage.made.find((i) => i.src === url)!
 
 describe('GlobeSurface', () => {
@@ -56,6 +59,7 @@ describe('GlobeSurface', () => {
     // took the finite difference over half a texel and halved every slope
     const surface = new GlobeSurface(URLS, renderer)
     imageFor(URLS.day).arrive(4096, 2048)
+    surface.loadRest()
     imageFor(URLS.relief).arrive(2048, 1024)
     const texel = surface.material.uniforms.uTexel.value
     expect(texel.x).toBeCloseTo(1 / 2048, 9)
@@ -64,6 +68,7 @@ describe('GlobeSurface', () => {
 
   it('keeps the relief step square, whatever the height field size', () => {
     const surface = new GlobeSurface(URLS, renderer)
+    surface.loadRest()
     imageFor(URLS.relief).arrive(8192, 4096)
     const texel = surface.material.uniforms.uTexel.value
     expect(texel.y / texel.x).toBeCloseTo(2, 6) // an equirectangular map is 2:1
@@ -265,5 +270,98 @@ describe('enhanced tone curve', () => {
     expect(src).toMatch(
       /color \*= 1\.0 \+ uBoost \* \(\$\{f\(G\.exposure\)\} \+ \$\{f\(G\.dayExposure\)\} \* daylight\)/,
     )
+  })
+})
+
+describe('deferred maps', () => {
+  beforeEach(() => {
+    StubImage.made = []
+    vi.stubGlobal('document', {
+      createElementNS: () => {
+        const img = new StubImage()
+        StubImage.made.push(img)
+        return img
+      },
+    })
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('asks for nothing but the day map before the globe is up', () => {
+    // 1.1 MB of download and 75 MB of texture upload that first paint does not
+    // need, in front of the one map it does
+    new GlobeSurface(URLS, renderer)
+    expect(StubImage.made.map((i) => i.src)).toEqual([URLS.day])
+  })
+
+  it('renders sensibly with the deferred maps absent', () => {
+    // an unbound sampler reads as transparent black, which has to mean "no
+    // lights, no terrain, no cloud" rather than "a black planet"
+    const surface = new GlobeSurface(URLS, renderer)
+    const u = surface.material.uniforms
+    expect(u.uNight.value).toBeNull()
+    expect(u.uRelief.value).toBeNull()
+    expect(u.uClouds.value).toBeNull()
+    // and the night side must not multiply an unbound sampler into the picture
+    expect(u.uNightMix.value).toBe(0)
+    expect(surface.material.fragmentShader).toMatch(/texture\(uNight, vUv\)\.rgb \* uNightMix/)
+  })
+
+  it('signals the day map, once, as soon as it decodes', () => {
+    const surface = new GlobeSurface(URLS, renderer)
+    let calls = 0
+    surface.onDayReady = () => calls++
+    imageFor(URLS.day).arrive(4096, 2048)
+    imageFor(URLS.day).arrive(4096, 2048)
+    expect(calls).toBe(1)
+  })
+
+  it('requests the rest only when asked', () => {
+    const surface = new GlobeSurface(URLS, renderer)
+    imageFor(URLS.day).arrive(4096, 2048)
+    expect(StubImage.made).toHaveLength(1)
+    surface.loadRest()
+    expect(StubImage.made.map((i) => i.src).sort()).toEqual(
+      [URLS.clouds, URLS.day, URLS.night, URLS.relief].sort(),
+    )
+  })
+
+  it('fades each map in rather than switching it on', () => {
+    // a height field appearing in one frame turns flat ground into lit terrain
+    // instantly, which reads as a fault rather than as an arrival
+    const surface = new GlobeSurface(URLS, renderer)
+    surface.setRelief(0.7)
+    surface.setClouds(true, 1, true)
+    surface.loadRest()
+    const u = surface.material.uniforms
+    expect(u.uRelief_.value).toBe(0)
+    expect(u.uCloudAlpha.value).toBe(0)
+
+    imageFor(URLS.relief).arrive(2048, 1024)
+    imageFor(URLS.clouds).arrive(4096, 2048)
+    imageFor(URLS.night).arrive(4096, 2048)
+    surface.advance(MAP_FADE_MS / 3)
+    expect(u.uRelief_.value).toBeGreaterThan(0)
+    expect(u.uRelief_.value).toBeLessThan(0.7)
+    expect(u.uNightMix.value).toBeGreaterThan(0)
+    expect(u.uNightMix.value).toBeLessThan(1)
+
+    surface.advance(MAP_FADE_MS)
+    expect(u.uRelief_.value).toBeCloseTo(0.7, 6)
+    expect(u.uNightMix.value).toBe(1)
+    expect(u.uCloudAlpha.value).toBeCloseTo(1, 6)
+  })
+
+  it('keeps honouring the settings after a map has faded in', () => {
+    const surface = new GlobeSurface(URLS, renderer)
+    surface.loadRest()
+    imageFor(URLS.relief).arrive(2048, 1024)
+    imageFor(URLS.clouds).arrive(4096, 2048)
+    surface.advance(MAP_FADE_MS * 2)
+    surface.setRelief(0)
+    expect(surface.material.uniforms.uRelief_.value).toBe(0)
+    surface.setClouds(false)
+    expect(surface.material.uniforms.uCloudAlpha.value).toBe(0)
+    surface.setClouds(true, 0.5, true)
+    expect(surface.material.uniforms.uCloudAlpha.value).toBeCloseTo(0.5, 6)
   })
 })

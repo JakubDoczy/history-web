@@ -23,6 +23,42 @@ export interface Crop {
   h: number
 }
 
+/** A resampled copy: which source rectangle it holds, and at what size. */
+export interface Upscale {
+  crop: Crop
+  w: number
+  h: number
+}
+
+/**
+ * May a resampled copy be drawn for this geometry?
+ *
+ * Only if it is a picture of exactly this source rectangle at exactly this
+ * size. A copy holds one crop rendered at one size; drawn into any other
+ * destination it lands scaled and offset from the ground it belongs to — a
+ * sharp ghost sitting over the correctly placed imagery, which is what a zoom
+ * looked like from the field: "stretched and deformed".
+ *
+ * The rule used to allow 5% of drift on the destination and on three of the
+ * crop's four numbers — the crop's *height* was not compared at all, so a copy
+ * of a short strip could be stretched down a tall one without anything
+ * noticing. The slack bought nothing real: the resampler is only asked to run
+ * once the camera is still, and a still camera does not change the geometry.
+ * Whole pixels, because that is the resolution the crop is taken at.
+ */
+export const upscaleFits = (held: Upscale | undefined, want: Upscale): held is Upscale => {
+  if (!held) return false
+  const same = (a: number, b: number) => Math.round(a) === Math.round(b)
+  return (
+    same(held.w, want.w) &&
+    same(held.h, want.h) &&
+    same(held.crop.x, want.crop.x) &&
+    same(held.crop.y, want.crop.y) &&
+    same(held.crop.w, want.crop.w) &&
+    same(held.crop.h, want.crop.h)
+  )
+}
+
 export interface PatchResampler {
   /** The visible crop of `image`, Lanczos-3'd to dw x dh, or undefined. */
   run(image: CanvasImageSource, crop: Crop, dw: number, dh: number): Promise<CanvasImageSource | undefined>

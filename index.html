@@ -10,9 +10,137 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap"
       rel="stylesheet"
     />
+    <!--
+      The loading state is inline, in the document, on purpose.
+
+      Everything else here waits on a module graph that ends in three.js and a
+      1.4 MB basemap, and until that resolves the page is a black void — on a
+      cold connection, for most of the first second. Markup and styles that
+      arrive in the HTML itself paint on the browser's first frame, before a byte
+      of JavaScript has been parsed, which is the only way a loading state can be
+      honest about when loading started.
+
+      It is dismissed by the globe rather than by a timer: see window.__globeReady.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #06070c;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 22px;
+        /* Flat, not a gradient. It is the same near-black the globe sits in, so
+           the handover is still a fade between two versions of one picture — and
+           a solid fill is a colour the compositor can repeat, where a
+           viewport-sized radial has to be re-rasterised every time the layer is
+           invalidated, which an animation inside it does on every frame. */
+        background: #07080e;
+        color: #97a2b6;
+        font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        z-index: 9999;
+        opacity: 1;
+        transition: opacity 500ms ease;
+      }
+      #boot.boot--done {
+        opacity: 0;
+        pointer-events: none;
+      }
+      /* a thin arc sweeping a fixed circle, with a meridian breathing across it:
+         a globe turning, drawn with two pseudo-elements and no image */
+      .boot-globe {
+        width: 88px;
+        height: 88px;
+        position: relative;
+      }
+      .boot-globe::before,
+      .boot-globe::after,
+      .boot-globe span {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+      }
+      .boot-globe::before {
+        border: 1px solid rgba(150, 170, 210, 0.26);
+      }
+      /* Both animated elements are promoted and isolated on purpose. A loader
+         that repaints the viewport every frame competes for the main thread with
+         the very thing it is waiting for: measured, an unpromoted version of
+         this pushed the longest task before the globe's first frame from 0.6 s
+         to 2.6 s, and the globe arrived nearly two seconds later. Animating only
+         transforms, on their own layers, costs the compositor and nothing else. */
+      .boot-globe::after {
+        border: 1px solid transparent;
+        border-top-color: #6ee7d7;
+        border-right-color: rgba(110, 231, 215, 0.3);
+        animation: boot-spin 1.6s linear infinite;
+        will-change: transform;
+        contain: strict;
+      }
+      .boot-globe span {
+        border: 1px solid rgba(150, 170, 210, 0.2);
+        transform: scaleX(0.4);
+        animation: boot-meridian 3.2s ease-in-out infinite;
+        will-change: transform;
+        contain: strict;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes boot-meridian {
+        0%,
+        100% {
+          transform: scaleX(0.4);
+        }
+        50% {
+          transform: scaleX(0.96);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-globe::after,
+        .boot-globe span {
+          animation: none;
+        }
+        .boot-globe::after {
+          border-right-color: transparent;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot" role="status" aria-live="polite">
+      <div class="boot-globe"><span></span></div>
+      <div>Loading Earth…</div>
+    </div>
     <div id="app"></div>
+    <script>
+      // Called by the globe once it has actually drawn a frame with the day map
+      // on it — not on a timer and not on DOMContentLoaded, so the loader is on
+      // screen for exactly as long as there is nothing behind it to look at.
+      window.__globeReady = function () {
+        var el = document.getElementById('boot')
+        if (!el || el.classList.contains('boot--done')) return
+        el.classList.add('boot--done')
+        setTimeout(function () {
+          el.remove()
+        }, 700)
+      }
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

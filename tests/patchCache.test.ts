@@ -8,7 +8,9 @@ import {
   placeOnCanvas,
   compositePlan,
   dominantSource,
-  visiblePlan,
+  usefulPlan,
+  uniqueContribution,
+  MIN_UNIQUE_COVERAGE,
   pruneCache,
   PATCH_KEEP,
   PATCH_TTL_MS,
@@ -310,7 +312,7 @@ describe('dominantSource', () => {
   })
 })
 
-describe('visiblePlan', () => {
+describe('usefulPlan', () => {
   const target = box(0, 0, 10, 10)
 
   it('drops the concentric layers a zoom leaves behind', () => {
@@ -319,7 +321,7 @@ describe('visiblePlan', () => {
     // smaller sharper one on it, a smaller sharper one on that — and the joins
     // inside a composite have no feather, so every step is a visible edge:
     // "a small image over a larger copy over a larger copy".
-    const plan = visiblePlan(
+    const plan = usefulPlan(
       drawOrder([
         patch(box(-10, -10, 20, 20), 100, 1),
         patch(box(-2, -2, 12, 12), 400, 2),
@@ -331,11 +333,73 @@ describe('visiblePlan', () => {
   })
 
   it('keeps a coarse patch that reaches ground the sharp one does not', () => {
-    const plan = visiblePlan(
+    const plan = usefulPlan(
       drawOrder([patch(box(-5, -5, 15, 15), 100, 1), patch(box(2, 2, 8, 8), 900, 2)]),
       target,
     )
     expect(plan.map((p) => p.pxPerDeg)).toEqual([100, 900])
+  })
+
+  it('collapses the stack a zoom-OUT leaves, where nothing is fully hidden', () => {
+    // The case the "completely buried" rule could not see. Zooming out, the
+    // sharpest patch is the *smallest*: it sits as an island inside the others,
+    // so every one of them survives and contributes a ring of ground a fraction
+    // of a degree wide with a hard rectangular edge all the way round it.
+    const wide = box(0, 0, 40, 40)
+    const plan = usefulPlan(
+      drawOrder([
+        patch(box(18, 18, 22, 22), 323, 1),
+        patch(box(18.4, 18.4, 21.6, 21.6), 379, 2),
+        patch(box(18.8, 18.8, 21.2, 21.2), 452, 3),
+      ]),
+      wide,
+    )
+    expect(plan.map((p) => p.pxPerDeg)).toEqual([452])
+  })
+
+  it('never drops the sharpest patch, however little of the view it covers', () => {
+    // at wide zoom it is the only thing between a sharp centre and no patch
+    const wide = box(0, 0, 90, 90)
+    const only = patch(box(44, 44, 46, 46), 900, 1)
+    expect(usefulPlan(drawOrder([only]), wide)).toEqual([only])
+  })
+
+  it('keeps patches that each hold their own part of a pan', () => {
+    const plan = usefulPlan(
+      drawOrder([patch(box(0, 0, 10, 5), 900, 1), patch(box(0, 5, 10, 10), 900, 2)]),
+      target,
+    )
+    expect(plan).toHaveLength(2)
+  })
+})
+
+describe('uniqueContribution', () => {
+  const target = box(0, 0, 10, 10)
+
+  it('is the whole coverage when nothing is drawn over it', () => {
+    expect(uniqueContribution(patch(box(0, 0, 10, 5), 60, 0), [], target)).toBeCloseTo(0.5, 6)
+  })
+
+  it('is zero when a later patch buries it', () => {
+    expect(
+      uniqueContribution(patch(box(2, 2, 8, 8), 60, 0), [patch(box(0, 0, 10, 10), 900, 1)], target),
+    ).toBeCloseTo(0, 6)
+  })
+
+  it('is the ring a concentric patch adds', () => {
+    const outer = patch(box(0, 0, 10, 10), 60, 0)
+    const inner = patch(box(1, 1, 9, 9), 900, 1)
+    // 100% of the view minus the 64% the inner one covers
+    expect(uniqueContribution(outer, [inner], target)).toBeCloseTo(1 - 0.64, 6)
+  })
+
+  it('never claims a patch adds less than it does', () => {
+    // the approximation takes the largest single overlap, not the union, so it
+    // may over-state what a patch adds and can never drop one that mattered
+    const p = patch(box(0, 0, 10, 10), 60, 0)
+    const halves = [patch(box(0, 0, 10, 5), 900, 1), patch(box(0, 5, 10, 10), 900, 2)]
+    expect(uniqueContribution(p, halves, target)).toBeGreaterThanOrEqual(0)
+    expect(MIN_UNIQUE_COVERAGE).toBeGreaterThan(0)
   })
 })
 

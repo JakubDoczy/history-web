@@ -17,6 +17,7 @@ import {
 import type { TextureBlend } from './paleo'
 import { PALETTE_GAMMA, type Palette } from './palette'
 import { CLOUD_UPSCALE, cloudUpscaleWorthIt } from './cloudUpscale'
+import { fadeTowards } from './mapFade'
 import type { CloudUpscaleRequest, CloudUpscaleResponse } from './cloudUpscale.worker'
 
 /**
@@ -190,6 +191,7 @@ uniform sampler2D uEraA;      // surface texture, era A
 uniform sampler2D uEraB;      // surface texture, era B
 uniform float uEraMix;        // 0 = A, 1 = B
 uniform sampler2D uNight;     // city lights
+uniform float uNightMix;      // 0 until the night map has landed, then ramps in
 uniform sampler2D uRelief;    // topography, used as a height field
 uniform sampler2D uClouds;    // cloud coverage mask
 uniform sampler2D uDetail;    // streamed high-resolution patch over the viewed region
@@ -438,7 +440,10 @@ void main() {
   }
 
   // --- night side: city lights revealed from the brightest cores outward ---
-  vec3 rawNight = texture(uNight, vUv).rgb;
+  // uNightMix is 0 until the map arrives, so the night side is the day
+  // albedo darkened and nothing else — which is what it looks like anyway on
+  // the half of the planet with no cities on it.
+  vec3 rawNight = texture(uNight, vUv).rgb * uNightMix;
   float lum = dot(rawNight, vec3(0.333));
   float thresh = 1.15 - uLights * 1.25;
   float reveal = smoothstep(thresh - 0.18, thresh + 0.18, lum);
@@ -487,22 +492,29 @@ export class GlobeSurface {
   private cache = new Map<string, Texture>()
   private maxAniso: number
   private maxTexture: number
+  private urls!: GlobeSurfaceUrls
+  /** Fires when the day map is decoded, which is when a globe can be shown. */
+  onDayReady?: () => void
+  private dayReady = false
+  /** Ramps 0 to 1 as each deferred map arrives; see lib/mapFade.ts. */
+  private fade = { night: 0, relief: 0, clouds: 0 }
+  private landed = { night: false, relief: false, clouds: false }
+  /** The settings these ramps are applied to, held so a frame can re-apply them. */
+  private reliefStrength = 0.7
+  private cloudSetting = { visible: false, opacity: 1, shadows: true }
+  /** Set while the camera is moving, so the cloud upscale can wait for a lull. */
+  private busy = false
 
   constructor(urls: GlobeSurfaceUrls, renderer: WebGLRenderer) {
     this.maxAniso = renderer.capabilities.getMaxAnisotropy()
     this.maxTexture = renderer.capabilities.maxTextureSize
-    const day = this.texture(urls.day)
-    const night = this.texture(urls.night)
-    // The relief map is not the same size as the colour maps (2048×1024 against
-    // 4096×2048), so its texel step has to come from the image itself. Stepping
-    // by the colour map's texel takes the finite difference over half a texel
-    // and halves every slope — terrain that is lit, but only half as much as the
-    // strength setting says.
-    const relief = this.texture(urls.relief, 'data', (t) => this.setReliefTexel(t))
-    const clouds = this.texture(urls.clouds, 'data', (t) => {
-      this.setCloudTexel(t)
-      this.upscaleClouds(urls.clouds, t)
-    })
+    this.urls = urls
+    // The one map the first frame cannot do without. The other three are
+    // requested by `loadRest`, once there is a globe on screen to add them to —
+    // see lib/mapFade.ts. An unbound sampler reads as transparent black in
+    // three, which is exactly the right absence for all three of them: no city
+    // lights, a flat height field, and no cloud cover.
+    const day = this.texture(urls.day, 'color', () => this.dayLoaded())
 
     this.material = new ShaderMaterial({
       glslVersion: GLSL3,
@@ -512,9 +524,10 @@ export class GlobeSurface {
         uEraA: { value: day },
         uEraB: { value: day },
         uEraMix: { value: 0 },
-        uNight: { value: night },
-        uRelief: { value: relief },
-        uClouds: { value: clouds },
+        uNight: { value: null },
+        uNightMix: { value: 0 },
+        uRelief: { value: null },
+        uClouds: { value: null },
         uDetail: { value: null },
         uDetailRect: { value: new Vector4(0, 0, 1, 1) },
         uDetailMix: { value: 0 },
@@ -556,6 +569,64 @@ export class GlobeSurface {
     return t
   }
 
+  /** The day map is on the GPU: there is a globe to look at. */
+  private dayLoaded() {
+    if (this.dayReady) return
+    this.dayReady = true
+    this.onDayReady?.()
+  }
+
+  /**
+   * Request the maps the first frame did without.
+   *
+   * Called once the globe has actually drawn, so these three downloads and
+   * their uploads compete with nothing: the basemap has the network to itself
+   * until there is something on screen, and the 75 MB of texture upload they
+   * add lands in frames a user is already looking at rather than in the gap
+   * before the first one.
+   */
+  loadRest() {
+    const urls = this.urls
+    const u = this.material.uniforms
+    u.uNight.value = this.texture(urls.night, 'color', () => (this.landed.night = true))
+    // The relief map is not the same size as the colour maps (2048×1024 against
+    // 4096×2048), so its texel step has to come from the image itself. Stepping
+    // by the colour map's texel takes the finite difference over half a texel
+    // and halves every slope — terrain that is lit, but only half as much as the
+    // strength setting says.
+    u.uRelief.value = this.texture(urls.relief, 'data', (t) => {
+      this.setReliefTexel(t)
+      this.landed.relief = true
+    })
+    u.uClouds.value = this.texture(urls.clouds, 'data', (t) => {
+      this.setCloudTexel(t)
+      this.landed.clouds = true
+      this.upscaleClouds(urls.clouds, t)
+    })
+  }
+
+  /**
+   * Advance the arrival ramps by one frame.
+   *
+   * Driven from the render loop rather than from a timer so a backgrounded tab
+   * does not fade three maps in while nobody is watching and then present the
+   * result as a jump.
+   */
+  advance(dtMs: number) {
+    const u = this.material.uniforms
+    this.fade.night = fadeTowards(this.fade.night, this.landed.night ? 1 : 0, dtMs)
+    this.fade.relief = fadeTowards(this.fade.relief, this.landed.relief ? 1 : 0, dtMs)
+    this.fade.clouds = fadeTowards(this.fade.clouds, this.landed.clouds ? 1 : 0, dtMs)
+    u.uNightMix.value = this.fade.night
+    u.uRelief_.value = this.reliefStrength * this.fade.relief
+    this.applyClouds()
+  }
+
+  /** Whether the camera is moving; the cloud upscale waits for it to stop. */
+  setBusy(busy: boolean) {
+    this.busy = busy
+  }
+
   /** The unsharp radius follows the *source* mask, so the upscale cannot move it. */
   private setCloudTexel(t: Texture) {
     const img = t.image as { width?: number; height?: number } | undefined
@@ -579,6 +650,39 @@ export class GlobeSurface {
     }
     const memory = (navigator as { deviceMemory?: number }).deviceMemory
     if (!cloudUpscaleWorthIt(memory, this.maxTexture)) return
+    // Wait for a lull. This is a 33 MB texture upload and a worker's worth of
+    // Lanczos over 33 megapixels, spent to soften the edges of a layer that
+    // fades out entirely as the camera closes in — so it may have whatever the
+    // browser has left over and nothing more. `whenIdle` also declines while the
+    // camera is moving, which is the other time the main thread has a queue.
+    this.whenIdle(() => this.runCloudUpscale(url, t, img))
+  }
+
+  /**
+   * Run `job` when the browser is idle *and* the camera is still.
+   *
+   * requestIdleCallback alone is not enough: a zoom keeps the main thread busy
+   * with composites and texture uploads, and "idle" between two of those is
+   * still the middle of an interaction. The timeout is the guarantee that the
+   * work happens at all on a page that never goes quiet, and the re-check is
+   * what keeps it from landing mid-gesture.
+   */
+  private whenIdle(job: () => void, timeoutMs = 3000) {
+    const idle = (window as unknown as {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number
+    }).requestIdleCallback
+    const attempt = (tries: number) => {
+      const run = () => {
+        if (this.busy && tries > 0) return attempt(tries - 1)
+        job()
+      }
+      if (idle) idle(run, { timeout: timeoutMs })
+      else setTimeout(run, 200)
+    }
+    attempt(6)
+  }
+
+  private runCloudUpscale(url: string, t: Texture, img: CanvasImageSource & { width?: number; height?: number }) {
     let worker: Worker
     try {
       worker = new Worker(new URL('./cloudUpscale.worker.ts', import.meta.url), {
@@ -711,9 +815,17 @@ export class GlobeSurface {
   }
 
   setClouds(visible: boolean, opacity = 1, shadows = true) {
+    this.cloudSetting = { visible, opacity, shadows }
+    this.applyClouds()
+  }
+
+  /** The cloud settings, scaled by however far the mask has faded in. */
+  private applyClouds() {
+    const { visible, opacity, shadows } = this.cloudSetting
+    const f = this.fade.clouds
     const u = this.material.uniforms
-    u.uCloudAlpha.value = visible ? opacity : 0
-    u.uCloudShadow.value = visible && shadows ? 0.5 * opacity : 0
+    u.uCloudAlpha.value = visible ? opacity * f : 0
+    u.uCloudShadow.value = visible && shadows ? 0.5 * opacity * f : 0
   }
 
   /** 0 = realistic lighting, 1 = enhanced (brighter day side, lifted night side). */
@@ -727,7 +839,8 @@ export class GlobeSurface {
   }
 
   setRelief(strength: number) {
-    this.material.uniforms.uRelief_.value = strength
+    this.reliefStrength = strength
+    this.material.uniforms.uRelief_.value = strength * this.fade.relief
   }
 
   dispose() {

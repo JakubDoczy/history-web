@@ -1412,3 +1412,224 @@ describe('patchPixelCap', () => {
 })
 
 
+
+/**
+ * Invariants the reported zoom artefact broke. Each one is a property that has
+ * to hold on every frame, not a scenario — a single frame where one of these
+ * fails is a stretched or nested patch on screen.
+ */
+describe('composite atomicity', () => {
+  const CLOSE = 0.02
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.requests = []
+    FakeImage.last = undefined
+    FakeCanvas.made = []
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  const settle = (d: DetailImagery, lat: number, lng: number, alt: number) => {
+    for (let i = 0; i < 30; i++) {
+      d.update(lat, lng, alt, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+  }
+
+  it('publishes a rectangle that describes the pixels it just drew', () => {
+    // The shader stretches whatever texture it holds across uDetailRect. If the
+    // rectangle moves without the pixels moving with it, the imagery is drawn
+    // over ground it does not belong to — stretched, and out of register with
+    // the base map under it.
+    const d = new DetailImagery()
+    for (const alt of [0.05, 0.04, 0.03, 0.02]) {
+      settle(d, 45, 10, alt)
+      FakeImage.last!.onload!()
+      const wanted = viewBbox(45, 10, alt, 1)
+      const [u0, v0, du, dv] = d.rect
+      expect(u0 * 360 - 180).toBeCloseTo(wanted.minLng, 3)
+      expect(v0 * 180 - 90).toBeCloseTo(wanted.minLat, 3)
+      expect(du * 360).toBeCloseTo(wanted.maxLng - wanted.minLng, 3)
+      expect(dv * 180).toBeCloseTo(wanted.maxLat - wanted.minLat, 3)
+    }
+    d.dispose()
+  })
+
+  it('never lets a skipped redraw leave the rectangle pointing at old pixels', () => {
+    // The composite is deliberately not redrawn when it would produce the same
+    // canvas. That is only safe while "the same canvas" includes the rectangle
+    // it was cut to: a skip that let the rectangle move would stretch the pixels
+    // that were already there across the new one.
+    const d = new DetailImagery()
+    settle(d, 45, 10, CLOSE)
+    FakeImage.last!.onload!()
+    const canvas = FakeCanvas.made[0]
+
+    const seen = new Map<string, string>()
+    for (let i = 0; i < 12; i++) {
+      d.update(45, 10 + i * 0.02, CLOSE, 900, 1)
+      const rect = d.rect.map((n) => n.toFixed(6)).join(',')
+      const pixels = canvas.ops.map((o) => `${o.x.toFixed(2)}:${o.y.toFixed(2)}:${o.w.toFixed(2)}`).join('|')
+      // one rectangle can only ever go with one arrangement of pixels
+      const held = seen.get(rect)
+      if (held !== undefined) expect(pixels).toBe(held)
+      seen.set(rect, pixels)
+    }
+    d.dispose()
+  })
+
+  it('never draws the composite canvas into itself', () => {
+    // Source and destination being the same canvas is undefined at best and a
+    // feedback loop at worst, each generation nesting a copy of the last.
+    const d = new DetailImagery()
+    settle(d, 45, 10, CLOSE)
+    FakeImage.last!.onload!()
+    const canvas = FakeCanvas.made[0]
+    for (let i = 0; i < 8; i++) {
+      d.update(45, 10 + i * 0.05, CLOSE, 900, 1)
+      vi.advanceTimersByTime(40)
+    }
+    expect(canvas.ops.every((o) => o.image !== canvas)).toBe(true)
+    d.dispose()
+  })
+
+  it('reuses a sharpened copy only at the geometry it was computed for', async () => {
+    // A Lanczos copy is a picture of one source rectangle at one size. Drawn
+    // into a destination that does not match, it lands scaled and offset from
+    // the ground it belongs to: a sharp ghost over the correctly placed
+    // imagery. The reuse test used to allow 5% of drift and ignored the crop's
+    // height entirely.
+    const asked: { crop: { x: number; y: number; w: number; h: number }; dw: number; dh: number }[] = []
+    const canvases: Record<string, unknown> = {}
+    const d = new DetailImagery({
+      resampler: {
+        run: async (_image, crop, dw, dh) => {
+          asked.push({ crop: { ...crop }, dw, dh })
+          const c = { width: dw, height: dh, tag: `${Math.round(crop.x)},${Math.round(crop.y)},${Math.round(crop.w)},${Math.round(crop.h)}@${dw}x${dh}` }
+          canvases[c.tag] = c
+          return c as unknown as CanvasImageSource
+        },
+        dispose: () => {},
+      },
+    })
+    settle(d, 45, 10, 0.09)
+    Object.assign(FakeImage.last!, { naturalWidth: 800, naturalHeight: 600 })
+    FakeImage.last!.onload!()
+    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+
+    const canvas = FakeCanvas.made[0]
+    // walk the camera in, so the wanted crop and destination drift continuously
+    for (let i = 0; i < 14; i++) {
+      d.update(45, 10, 0.09 - i * 0.004, 900, 1)
+      await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    }
+    // every draw of a resampled copy must be at the size that copy was made for
+    let drawn = 0
+    for (const op of canvas.ops) {
+      const c = op.image as { width?: number; height?: number; tag?: string } | undefined
+      if (!c?.tag) continue
+      drawn++
+      expect(Math.round(op.w)).toBe(c.width)
+      expect(Math.round(op.h)).toBe(c.height)
+    }
+    // and the check must not pass by never exercising the path
+    expect(drawn).toBeGreaterThan(0)
+    d.dispose()
+  })
+})
+
+import { PATCH_KEEP } from '../src/lib/patchCache'
+
+describe('cached imagery is released, not just dropped', () => {
+  const CLOSE = 0.02
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.requests = []
+    FakeImage.last = undefined
+    FakeCanvas.made = []
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  /** An ImageBitmap, as far as `instanceof` and `close()` are concerned. */
+  class FakeBitmap {
+    static made: FakeBitmap[] = []
+    closed = false
+    constructor(public width: number, public height: number, public tag: string) {
+      FakeBitmap.made.push(this)
+    }
+    close() {
+      this.closed = true
+    }
+  }
+
+  it('closes exactly the bitmaps of the patches it evicted', async () => {
+    FakeBitmap.made = []
+    vi.stubGlobal('ImageBitmap', FakeBitmap)
+    const made = new Map<unknown, FakeBitmap>()
+    const d = new DetailImagery({
+      resampler: {
+        run: async (image) => {
+          const b = new FakeBitmap(64, 64, String(made.size))
+          made.set(image, b)
+          return b as unknown as CanvasImageSource
+        },
+        dispose: () => {},
+      },
+    })
+
+    // land more patches than the cache keeps, each with a sharpened copy
+    const images: unknown[] = []
+    for (let i = 0; i < PATCH_KEEP + 3; i++) {
+      for (let f = 0; f < 30; f++) {
+        d.update(45, 10 + i * 0.9, CLOSE, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      const img = FakeImage.last!
+      Object.assign(img, { naturalWidth: 400, naturalHeight: 300 })
+      images.push(img)
+      img.onload!()
+      await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    }
+
+    // whatever the cache no longer holds must have had its bitmap closed, and
+    // whatever it still holds must not
+    const held = new Set((d as unknown as { cache: { image: unknown }[] }).cache.map((p) => p.image))
+    for (const [image, bitmap] of made) {
+      expect(bitmap.closed).toBe(!held.has(image))
+    }
+    expect([...made.values()].some((b) => b.closed)).toBe(true) // eviction did happen
+    d.dispose()
+  })
+
+  it('closes what it still holds when it is disposed', async () => {
+    FakeBitmap.made = []
+    vi.stubGlobal('ImageBitmap', FakeBitmap)
+    const d = new DetailImagery({
+      resampler: {
+        run: async () => new FakeBitmap(64, 64, 'x') as unknown as CanvasImageSource,
+        dispose: () => {},
+      },
+    })
+    for (let f = 0; f < 30; f++) {
+      d.update(45, 10, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    Object.assign(FakeImage.last!, { naturalWidth: 400, naturalHeight: 300 })
+    FakeImage.last!.onload!()
+    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    expect(FakeBitmap.made.length).toBeGreaterThan(0)
+    d.dispose()
+    expect(FakeBitmap.made.every((b) => b.closed)).toBe(true)
+  })
+})

@@ -422,15 +422,44 @@ onMounted(() => {
 
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const t0 = performance.now()
+  let lastFrame = t0
+  // The day map has decoded; the next frame is the first with a planet on it.
+  // The loader is dismissed a frame after that, so the fade starts from a
+  // rendered globe rather than from an empty canvas — see index.html.
+  let dayReady = false
+  let framesSinceReady = 0
+  surface.onDayReady = () => (dayReady = true)
+  /** How long the camera must be still before deferred work may run. */
+  const STILL_MS = 400
+  let movedAt = performance.now()
+
   const tick = () => {
-    if (!still) surface!.setCloudDrift((performance.now() - t0) / 1000)
+    const now = performance.now()
+    const dt = now - lastFrame
+    lastFrame = now
+    if (!still) surface!.setCloudDrift((now - t0) / 1000)
+    // the arrival ramps for the maps that were not needed for first paint
+    surface!.advance(dt)
     // streaming is a function of where the camera is, so a still camera has
     // nothing to re-derive; the settle timer inside DetailImagery is already
     // armed and lands the sharp patch on its own
     const pov = globe!.pointOfView()
     if (povMoved(lastSync, pov)) {
       lastSync = { ...pov }
+      movedAt = now
       syncDetail(pov)
+    }
+    // deferred work waits for a still camera as well as an idle browser
+    surface!.setBusy(now - movedAt < STILL_MS)
+
+    if (dayReady && framesSinceReady < 2) {
+      framesSinceReady++
+      if (framesSinceReady === 2) {
+        ;(window as unknown as { __globeReady?: () => void }).__globeReady?.()
+        // and only now the maps the first frame did without: they have the
+        // network and the main thread to themselves from here on
+        surface!.loadRest()
+      }
     }
     raf = requestAnimationFrame(tick)
   }

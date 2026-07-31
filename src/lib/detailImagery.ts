@@ -1,6 +1,11 @@
 import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 'three'
 import { compositePlan, placeOnCanvas, pruneCache, type CachedPatch } from './patchCache'
-import { createPatchResampler, type Crop, type PatchResampler } from './patchResample'
+import {
+  createPatchResampler,
+  upscaleFits,
+  type Crop,
+  type PatchResampler,
+} from './patchResample'
 
 /**
  * High-resolution imagery for the region being looked at, fetched from NASA GIBS
@@ -881,16 +886,9 @@ export class DetailImagery {
       h: (vh / h) * nat.h,
     }
 
+    // Reuse only what was computed for exactly this geometry — see upscaleFits.
     const held = this.upscaled.get(p.image)
-    const close = (a: number, b: number) => Math.abs(a - b) <= Math.max(b, 1) * 0.05
-    if (
-      held &&
-      close(held.w, vw) &&
-      close(held.h, vh) &&
-      close(held.crop.x, crop.x) &&
-      close(held.crop.y, crop.y) &&
-      close(held.crop.w, crop.w)
-    ) {
+    if (upscaleFits(held, { crop, w: vw, h: vh })) {
       return { canvas: held.canvas, x: vx, y: vy, w: vw, h: vh }
     }
 
@@ -930,6 +928,26 @@ export class DetailImagery {
   /** An ImageBitmap holds real memory until closed; a canvas needs nothing. */
   private release(canvas?: CanvasImageSource) {
     if (typeof ImageBitmap !== 'undefined' && canvas instanceof ImageBitmap) canvas.close()
+  }
+
+  /**
+   * Close the sharpened copies belonging to patches that just left the cache.
+   *
+   * The copies hang off a WeakMap keyed by the patch's image, so dropping the
+   * patch does make them collectable — but an ImageBitmap holds memory the
+   * collector does not account for, and "collectable" is not "closed". A
+   * megapixel-scale bitmap per evicted patch, released whenever the GC feels
+   * like it, is exactly the kind of drift that shows up as a device running out
+   * of texture memory an hour into a session and never in a profile.
+   */
+  private evict(before: CachedPatch<CanvasImageSource>[]) {
+    const kept = new Set(this.cache.map((p) => p.image))
+    for (const p of before) {
+      if (kept.has(p.image)) continue
+      this.release(this.upscaled.get(p.image)?.canvas)
+      this.upscaled.delete(p.image)
+      this.upscaling.delete(p.image)
+    }
   }
 
   /**
@@ -1089,6 +1107,7 @@ export class DetailImagery {
   private adopt(img: HTMLImageElement, bbox: Bbox, meta: PatchMeta, src: ImagerySource) {
     const now = Date.now()
     this.attributions.set(src.label, src.attribution ?? '')
+    const before = this.cache
     this.cache = pruneCache(
       [
         {
@@ -1104,6 +1123,7 @@ export class DetailImagery {
       bbox,
       now,
     )
+    this.evict(before)
     this.current = bbox
     this.strikes = 0
     // `groundRes` is not set here. It describes the imagery *on screen*, and an
@@ -1183,7 +1203,9 @@ export class DetailImagery {
 
   dispose() {
     this.cancelQueued()
+    const held = this.cache
     this.cache = []
+    this.evict(held)
     this.resampler.dispose()
     this.texture?.dispose()
   }
