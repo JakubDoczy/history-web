@@ -14,8 +14,18 @@ import {
   requestedPxPerDeg,
   viewSpanDeg,
   DEFAULT_FOV,
-  PATCH_ON_BELOW,
-  PATCH_OFF_ABOVE,
+  DETAIL_ON_TEXELS,
+  DETAIL_OFF_TEXELS,
+  degPerScreenPx,
+  baseTexelsPerScreenPx,
+  detailWanted,
+  planetFillsFrame,
+  clampBboxSpan,
+  pickSource,
+  requestScreenPx,
+  upscaledSize,
+  COMPOSITE_UPSCALE_MAX,
+  RESAMPLE_MAX_PX,
 } from '../src/lib/detailImagery'
 
 describe('viewBbox', () => {
@@ -126,8 +136,199 @@ describe('imageSize', () => {
 
 describe('patch visibility thresholds', () => {
   it('uses hysteresis so hovering near the threshold cannot flicker', () => {
-    expect(PATCH_OFF_ABOVE).toBeGreaterThan(PATCH_ON_BELOW)
-    expect(PATCH_OFF_ABOVE - PATCH_ON_BELOW).toBeGreaterThanOrEqual(10)
+    expect(DETAIL_OFF_TEXELS).toBeGreaterThan(DETAIL_ON_TEXELS)
+    // the same altitude can be "keep showing" and "do not start", which is the
+    // whole point; a single threshold flickers on a trackpad. Measured on a
+    // small viewport, where the texel test is what binds — see below.
+    const screenPx = 600
+    let alt = 0.001
+    while (detailWanted(alt, screenPx, DEFAULT_FOV, false) && alt < 10) alt *= 1.01
+    expect(detailWanted(alt, screenPx, DEFAULT_FOV, true)).toBe(true)
+  })
+
+  it('turns on exactly where the base map stops keeping up with the screen', () => {
+    const screenPx = 600
+    // sweep altitudes and find the switch-on point, then check the base map is
+    // delivering about one texel per pixel there
+    let alt = 3
+    while (!detailWanted(alt, screenPx) && alt > 1e-6) alt *= 0.99
+    expect(baseTexelsPerScreenPx(alt, screenPx)).toBeCloseTo(DETAIL_ON_TEXELS, 1)
+  })
+
+  it('closes the dead zone the old fixed-span gate left open', () => {
+    // the old rule: stream once the horizon span drops under 42 degrees
+    const OLD_ON_BELOW = 42
+    const screenPx = 1800
+    let worst = Infinity
+    let found = 0
+    for (let alt = 1.2; alt > 0.05; alt *= 0.97) {
+      const oldWouldStream = visibleSpanDeg(alt) < OLD_ON_BELOW
+      if (oldWouldStream) continue
+      const texels = baseTexelsPerScreenPx(alt, screenPx)
+      if (texels >= DETAIL_ON_TEXELS) continue
+      // under-resolved, and the old gate had not fired: the dead zone
+      found++
+      worst = Math.min(worst, texels)
+      expect(detailWanted(alt, screenPx)).toBe(true)
+    }
+    expect(found).toBeGreaterThan(20)
+    // and at its far end the base map was down to a few percent of a texel per
+    // pixel — a 20x magnification of a world map, with nothing on its way
+    expect(worst).toBeLessThan(0.06)
+  })
+
+  it('is geometry-bound, not texel-bound, on any large screen', () => {
+    // worth stating because it is not obvious: a 4096-wide world map is already
+    // down to half a texel per device pixel at the moment the globe stops
+    // fitting inside the lens, so on a desktop the *only* thing holding
+    // streaming back at wide zoom is that there is no sensible box to ask for
+    expect(baseTexelsPerScreenPx(1.366, 1800)).toBeLessThan(0.5)
+    expect(planetFillsFrame(1.36)).toBe(true)
+    expect(detailWanted(1.36, 1800)).toBe(true)
+  })
+
+  it('leaves the whole planet alone: no patch when the globe fits in the lens', () => {
+    expect(planetFillsFrame(2.5)).toBe(false)
+    expect(planetFillsFrame(0.5)).toBe(true)
+    expect(detailWanted(2.5, 1800)).toBe(false)
+    expect(detailWanted(4, 4000)).toBe(false)
+  })
+})
+
+describe('degPerScreenPx', () => {
+  it('is proportional to altitude and inverse to the pixel count', () => {
+    expect(degPerScreenPx(0.2, 900)).toBeCloseTo(degPerScreenPx(0.1, 900) * 2, 9)
+    expect(degPerScreenPx(0.1, 1800)).toBeCloseTo(degPerScreenPx(0.1, 900) / 2, 9)
+  })
+
+  it('agrees with the frame span in the limit, where the two must meet', () => {
+    // very close in, the frame is small enough that the sphere is locally flat
+    // and span/screenPx is the same measurement by another route
+    const alt = 1e-4
+    expect(degPerScreenPx(alt, 1000) * 1000).toBeCloseTo(viewSpanDeg(alt), 6)
+  })
+
+  it('widens with the lens', () => {
+    expect(degPerScreenPx(0.1, 900, 80)).toBeGreaterThan(degPerScreenPx(0.1, 900, 30))
+  })
+})
+
+describe('clampBboxSpan', () => {
+  const box = { minLat: 0, maxLat: 40, minLng: -30, maxLng: 50 }
+
+  it('leaves a rectangle inside the limit exactly as it was', () => {
+    expect(clampBboxSpan(box, 100)).toBe(box)
+  })
+
+  it('shrinks about the centre, keeping the shape', () => {
+    const c = clampBboxSpan(box, 40)
+    expect((c.minLat + c.maxLat) / 2).toBeCloseTo(20, 9)
+    expect((c.minLng + c.maxLng) / 2).toBeCloseTo(10, 9)
+    expect(Math.max(c.maxLat - c.minLat, c.maxLng - c.minLng)).toBeCloseTo(40, 9)
+    const before = (box.maxLng - box.minLng) / (box.maxLat - box.minLat)
+    expect((c.maxLng - c.minLng) / (c.maxLat - c.minLat)).toBeCloseTo(before, 9)
+  })
+
+  it('never leaves valid geographic bounds', () => {
+    const c = clampBboxSpan({ minLat: -90, maxLat: 90, minLng: -180, maxLng: 180 }, 30)
+    expect(c.minLat).toBeGreaterThanOrEqual(-90)
+    expect(c.maxLng).toBeLessThanOrEqual(180)
+  })
+})
+
+describe('pickSource', () => {
+  it('sends wide boxes to the source that can render them', () => {
+    expect(pickSource(30)).toBe(BASE_SOURCE)
+    expect(pickSource(SHARP_SOURCE.maxSpanDeg + 0.1)).toBe(BASE_SOURCE)
+  })
+
+  it('uses the sharp source wherever it is usable', () => {
+    expect(pickSource(1)).toBe(SHARP_SOURCE)
+    expect(pickSource(SHARP_SOURCE.maxSpanDeg)).toBe(SHARP_SOURCE)
+  })
+
+  it('respects a sharp source that has already failed', () => {
+    expect(pickSource(1, true)).toBe(BASE_SOURCE)
+  })
+
+  it('still beats the world texture handsomely at the base source max span', () => {
+    // the point of streaming at mid zoom at all: 4096 px over 60 degrees is
+    // several times the 4096-wide world map's density
+    const px = Math.min(MAX_PATCH_PX, BASE_SOURCE.maxSpanDeg * BASE_SOURCE.pxPerDeg)
+    expect(px / BASE_SOURCE.maxSpanDeg).toBeGreaterThan(BASE_TEXTURE_PX_PER_DEG * 5)
+  })
+})
+
+describe('upscaledSize', () => {
+  const call = (nat: [number, number], screen: [number, number], maxPx = MAX_PATCH_PX) =>
+    upscaledSize(
+      { width: nat[0], height: nat[1] },
+      { width: screen[0], height: screen[1] },
+      maxPx,
+    )
+
+  it('never shrinks: a patch finer than the screen is drawn at its own size', () => {
+    expect(call([2000, 2000], [800, 800])).toEqual({ width: 2000, height: 2000 })
+  })
+
+  it('enlarges toward the screen when the patch is coarser than it', () => {
+    expect(call([600, 400], [1200, 800])).toEqual({ width: 1200, height: 800 })
+  })
+
+  it('stops at the upscale ceiling, past which there is nothing to reconstruct', () => {
+    const out = call([200, 200], [4000, 4000])
+    expect(out.height).toBe(200 * COMPOSITE_UPSCALE_MAX)
+  })
+
+  it('keeps the enlargement inside the resampler budget', () => {
+    const out = call([1000, 1000], [4096, 4096])
+    expect(out.width * out.height).toBeLessThanOrEqual(RESAMPLE_MAX_PX * 1.01)
+    expect(out.width).toBeGreaterThan(1000) // but still enlarged as far as it can be
+  })
+
+  it('never shrinks a patch that is already past the budget on its own', () => {
+    // the cap bounds the *enlargement*; a naturally large composite is drawn at
+    // its own size and simply skips the resampler
+    const out = call([2000, 2000], [4096, 4096])
+    expect(out).toEqual({ width: 2000, height: 2000 })
+  })
+
+  it('honours the texture ceiling', () => {
+    const out = call([3000, 3000], [8000, 8000], 4096)
+    expect(Math.max(out.width, out.height)).toBeLessThanOrEqual(4096)
+  })
+
+  it('keeps the aspect ratio, so degrees-per-pixel stays square', () => {
+    const out = call([600, 400], [3000, 2000])
+    expect(out.width / out.height).toBeCloseTo(1.5, 3)
+  })
+})
+
+describe('requestScreenPx', () => {
+  it('is the frame height in device pixels close in, where that is right', () => {
+    for (const alt of [0.02, 0.004, 0.0005]) {
+      const frame = viewBbox(20, 10, alt)
+      expect(requestScreenPx(frame, alt, 1800)).toBeCloseTo(1800, -1)
+    }
+  })
+
+  it('scales with the latitude span the request actually covers', () => {
+    const alt = 0.02
+    const frame = viewBbox(20, 10, alt)
+    const cut = clampBboxSpan(frame, (frame.maxLat - frame.minLat) / 2)
+    const ratio = (cut.maxLat - cut.minLat) / (frame.maxLat - frame.minLat)
+    expect(requestScreenPx(cut, alt, 1800) / requestScreenPx(frame, alt, 1800)).toBeCloseTo(ratio, 9)
+  })
+
+  it('sizes wide requests on the centre density, not the frame average', () => {
+    // at wide zoom the limb is foreshortened to nothing, so the frame's average
+    // px/deg is far below what the middle of the screen actually resolves;
+    // sizing on the average returned patches coarser than the base map
+    const alt = 1.2
+    const frame = viewBbox(20, 10, alt)
+    const box = clampBboxSpan(frame, BASE_SOURCE.maxSpanDeg)
+    const size = imageSize(box, requestScreenPx(box, alt, 1800), MAX_PATCH_PX, BASE_SOURCE.pxPerDeg)
+    expect(requestedPxPerDeg(box, size)).toBeGreaterThan(BASE_TEXTURE_PX_PER_DEG)
   })
 })
 
@@ -247,7 +448,7 @@ describe('era-dependent zoom floors', () => {
     const span = visibleSpanDeg(minAltitudeFor(2000, true))
     expect(span * 111.32).toBeCloseTo(100, 0)
   })
-  it('caps earlier periods at a 20 km frame, where modern building does not read', () => {
+  it('caps earlier periods at a 100 km frame, where modern building does not read', () => {
     for (const year of [1929, 1600, -3000]) {
       const span = viewSpanDeg(minAltitudeFor(year, true))
       expect(span * 111.32).toBeCloseTo(PRE_ERA_VIEW_KM, 1)
@@ -256,7 +457,7 @@ describe('era-dependent zoom floors', () => {
 
   it('holds the camera further out before 1930 than after it', () => {
     // the cap is only a cap if it bites — measured on the horizon rather than
-    // on the frame, a "20 km view" sits 7.8 m above the ground, nearer than
+    // on the frame, a "100 km view" sits 200 m above the ground, nearer than
     // the satellite-era floor and showing nothing at all
     expect(minAltitudeFor(1800, true)).toBeGreaterThan(minAltitudeFor(1950, true))
     expect(viewSpanDeg(MIN_ALTITUDE_PRE_ERA)).toBeGreaterThan(
@@ -265,7 +466,15 @@ describe('era-dependent zoom floors', () => {
   })
 
   it('still streams at the pre-1930 cap, rather than capping past the patch', () => {
-    expect(visibleSpanDeg(MIN_ALTITUDE_PRE_ERA)).toBeLessThan(PATCH_ON_BELOW)
+    for (const screenPx of [900, 1800, 2880]) {
+      expect(detailWanted(MIN_ALTITUDE_PRE_ERA, screenPx)).toBe(true)
+    }
+  })
+
+  it('frames 100 km at the pre-1930 cap — a regional map, not a street map', () => {
+    expect(PRE_ERA_VIEW_KM).toBe(100)
+    const metresPerPx = (PRE_ERA_VIEW_KM * 1000) / 1000 // across a 1000 px window
+    expect(metresPerPx).toBeCloseTo(100, 6)
   })
 })
 
@@ -319,7 +528,9 @@ class FakeImage {
 
 describe('DetailImagery streaming', () => {
   const CLOSE = 0.02 // ~23 deg span: patch territory
-  const FAR = 0.5 // ~96 deg span: past the hysteresis ceiling
+  // world view: the globe sits inside the lens, so there is no rectangle worth
+  // asking for however coarse the base map looks
+  const FAR = 2.5
 
   beforeEach(() => {
     vi.useFakeTimers()
@@ -389,6 +600,54 @@ describe('DetailImagery streaming', () => {
     expect(d.attribution).toBe(SHARP_SOURCE.attribution)
   })
 
+  it('streams at mid zoom, where it used to show a magnified world map', () => {
+    // altitude 0.3: a 17 deg frame. The old gate (horizon span under 42 deg)
+    // did not fire until 0.071, so this whole range showed the 4096 base map
+    // magnified ten times with nothing on its way.
+    const d = new DetailImagery()
+    frames(d, 30, 45, 10, 0.3)
+    expect(FakeImage.requests).toHaveLength(1)
+    // and it asks the source that can actually render a box that wide
+    expect(FakeImage.requests[0]).toContain(BASE_SOURCE.endpoint)
+    d.dispose()
+  })
+
+  it('never asks a source for a wider box than it will serve', () => {
+    for (const alt of [1.2, 0.8, 0.4, 0.3, 0.1, 0.02, 0.002]) {
+      FakeImage.requests = []
+      const d = new DetailImagery()
+      frames(d, 30, 20, 10, alt)
+      expect(FakeImage.requests).toHaveLength(1)
+      const url = new URL(FakeImage.requests[0])
+      const [a, b, c, e] = (url.searchParams.get('bbox') ?? '').split(',').map(Number)
+      const sharp = url.href.includes(SHARP_SOURCE.endpoint)
+      // 1.3.0 is lat,lng and 1.1.1 is lng,lat, so compare both spans
+      const span = Math.max(Math.abs(c - a), Math.abs(e - b))
+      expect(span).toBeLessThanOrEqual(
+        (sharp ? SHARP_SOURCE.maxSpanDeg : BASE_SOURCE.maxSpanDeg) + 1e-6,
+      )
+      d.dispose()
+    }
+  })
+
+  it('sizes a clamped request to the screen, not to the frame it was cut from', () => {
+    // a box clamped to a fraction of the frame covers that fraction of the
+    // screen; asking for the full frame's pixel count would oversample by
+    // exactly the amount it was clamped by, and cost the same multiple
+    const d = new DetailImagery()
+    frames(d, 30, 20, 10, 1.2) // ~110 deg frame, clamped to the base source's 60
+    const url = new URL(FakeImage.requests[0])
+    const width = Number(url.searchParams.get('width'))
+    const height = Number(url.searchParams.get('height'))
+    expect(Math.max(width, height)).toBeLessThanOrEqual(MAX_PATCH_PX)
+    const [minLat, , maxLat] = (url.searchParams.get('bbox') ?? '').split(',').map(Number)
+    // finer than the world texture it is replacing — only just, at a frame
+    // this wide, which is exactly what "the base map has just stopped keeping
+    // up" means; the margin grows fast as the camera descends
+    expect(height / (maxLat - minLat)).toBeGreaterThan(BASE_TEXTURE_PX_PER_DEG)
+    d.dispose()
+  })
+
   it('falls back to the base source after the sharp one fails twice', () => {
     const d = new DetailImagery()
     frames(d, 30)
@@ -412,8 +671,8 @@ describe('requested resolution', () => {
 
   it('meets the screen density at every altitude, unless a real limit stops it', () => {
     for (const alt of ALTITUDES) {
-      if (visibleSpanDeg(alt) > PATCH_ON_BELOW) continue
       for (const screenPx of SCREENS) {
+        if (!detailWanted(alt, screenPx)) continue
         for (const aspect of [1, 1.6]) {
           const b = viewBbox(20, 10, alt, aspect)
           const size = imageSize(b, screenPx, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
@@ -470,7 +729,7 @@ describe('streaming era model', () => {
     // camera may come to it
     const d = new DetailImagery()
     expect(minAltitudeFor(1500, true)).toBe(MIN_ALTITUDE_PRE_ERA)
-    expect(visibleSpanDeg(MIN_ALTITUDE_PRE_ERA)).toBeLessThan(PATCH_ON_BELOW)
+    expect(detailWanted(MIN_ALTITUDE_PRE_ERA, 900)).toBe(true)
     d.dispose()
   })
 
@@ -580,6 +839,66 @@ describe('cached patch compositing', () => {
     const before = FakeCanvas.made[0]?.ops.length ?? 0
     d.update(-40, -170, CLOSE, 900, 1) // the other side of the world
     expect(FakeCanvas.made[0]?.ops.length ?? 0).toBe(before) // nothing to draw
+  })
+
+  it('resamples a magnified patch rather than letting drawImage stretch it', () => {
+    // A canvas that can actually read and write pixels, which the stub above
+    // deliberately cannot: the resampler is skipped without readback, and the
+    // point of this test is that it is *not* skipped when readback exists.
+    class PixelCanvas {
+      static made: PixelCanvas[] = []
+      width = 0
+      height = 0
+      ops: { image: unknown; w: number; h: number }[] = []
+      put = 0
+      constructor() {
+        PixelCanvas.made.push(this)
+      }
+      getContext() {
+        return {
+          clearRect: () => {},
+          drawImage: (image: unknown, _x = 0, _y = 0, w = 0, h = 0) =>
+            this.ops.push({ image, w, h }),
+          getImageData: (_x: number, _y: number, w: number, h: number) => ({
+            data: new Uint8ClampedArray(w * h * 4),
+            width: w,
+            height: h,
+          }),
+          putImageData: () => this.put++,
+        }
+      }
+    }
+    vi.stubGlobal('document', { createElement: () => new PixelCanvas() })
+    vi.stubGlobal('ImageData', class {
+      constructor(
+        public data: Uint8ClampedArray,
+        public width: number,
+        public height: number,
+      ) {}
+    })
+
+    const d = new DetailImagery()
+    // land a patch at a wide view, so what we hold is coarse...
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10, 0.09, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    const img = FakeImage.last!
+    // the browser fills these in; the composite needs them to know the scale
+    Object.assign(img, { naturalWidth: 600, naturalHeight: 400 })
+    img.onload!()
+
+    // ...then descend, so the composite canvas is finer than the patch in it
+    PixelCanvas.made.length = 0
+    d.update(45, 10, 0.02, 900, 1)
+
+    const composite = PixelCanvas.made.find((c) => c.ops.length)
+    expect(composite).toBeDefined()
+    // what was drawn is a canvas we produced, not the raw image: the patch went
+    // through the resampler on its way in
+    expect(composite!.ops[0].image).toBeInstanceOf(PixelCanvas)
+    expect(PixelCanvas.made.some((c) => c.put > 0)).toBe(true)
+    d.dispose()
   })
 
   it('works without a canvas at all, as it must in a stale browser', () => {

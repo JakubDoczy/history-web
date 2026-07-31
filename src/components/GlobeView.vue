@@ -293,6 +293,7 @@ onMounted(() => {
     watchEffect(() => (globe!.controls().autoRotate = settings.autoRotate)),
     watchEffect(() => surface!.setRelief(settings.relief ? 0.7 : 0)),
     watchEffect(() => surface!.setVisuals(settings.visuals === 'enhanced' ? 1 : 0)),
+    watchEffect(() => surface!.setPalette(settings.palette)),
     watchEffect(() => surface!.setEra(textureBlend(PALEO_FRAMES, time.currentTime))),
     watchEffect(() => surface!.setCityLights(cityLightsFactor(time.currentTime))),
     // clouds are anachronistic detail in deep time, and would hide the plate drift

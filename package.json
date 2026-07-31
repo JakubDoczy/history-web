@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "build:wasm": "node scripts/build-lanczos-wasm.mjs",
     "preview": "vite preview",
     "test": "vitest run"
   },

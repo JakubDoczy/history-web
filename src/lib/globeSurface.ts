@@ -11,6 +11,7 @@ import {
   type WebGLRenderer,
 } from 'three'
 import type { TextureBlend } from './paleo'
+import { PALETTE_GAMMA, type Palette } from './palette'
 
 /**
  * One material for the whole planet surface.
@@ -200,6 +201,7 @@ uniform float uRelief_;       // relief strength
 uniform vec2 uTexel;          // 1 / relief texture size
 uniform float uFlatLight;     // 1 = ignore the terminator (close-up imagery is already lit)
 uniform float uBoost;         // 0 = realistic lighting, 1 = enhanced (brighter, lifted shadows)
+uniform vec3 uPalette;        // experimental grade: saturation, grayscale, contrast
 
 const float PI = 3.14159265;
 
@@ -296,6 +298,22 @@ void main() {
   vec3 sea = albedo * (seaLum / max(lumA, 0.0008));
   vec3 target = mix(graded, sea, ${f(G.waterHold)} * water);
   albedo = mix(albedo, target, uBoost);
+
+  // --- palette lab: saturation, grayscale, contrast, after the grade above ---
+  // Outside the uBoost mix on purpose, so the controls behave identically in
+  // both visual styles: the style decides what the map looks like, this decides
+  // what is then done to it. Neutral values (1, 0, 1) are an exact identity,
+  // which is why this can sit in the hot path unconditionally.
+  {
+    float pl = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
+    vec3 sat = mix(vec3(pl), albedo, uPalette.x);
+    vec3 grey = mix(sat, vec3(pl), uPalette.y);
+    // contrast pivots on mid grey in perceptual space; in linear light the same
+    // pivot sits far above every land tone on this map and crushes the lot
+    vec3 perceptual = pow(max(grey, 0.0), vec3(${f(1 / PALETTE_GAMMA)}));
+    vec3 pushed = (perceptual - 0.5) * uPalette.z + 0.5;
+    albedo = pow(max(pushed, 0.0), vec3(${f(PALETTE_GAMMA)}));
+  }
 
   vec3 surface = albedo * lambert;
 
@@ -405,6 +423,7 @@ export class GlobeSurface {
         uTexel: { value: new Vector2(1 / 2048, 1 / 1024) },
         uFlatLight: { value: 0 },
         uBoost: { value: 1 },
+        uPalette: { value: new Vector3(1, 0, 1) },
       },
     })
   }
@@ -512,6 +531,11 @@ export class GlobeSurface {
   /** 0 = realistic lighting, 1 = enhanced (brighter day side, lifted night side). */
   setVisuals(boost: number) {
     this.material.uniforms.uBoost.value = boost
+  }
+
+  /** The experimental palette controls; (1, 0, 1) is a no-op. */
+  setPalette(p: Palette) {
+    this.material.uniforms.uPalette.value.set(p.saturation, p.grayscale, p.contrast)
   }
 
   setRelief(strength: number) {

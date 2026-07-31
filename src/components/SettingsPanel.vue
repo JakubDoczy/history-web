@@ -5,6 +5,7 @@ import { useNationStore } from '../stores/nations'
 import { useSettingsStore, MAX_EVENTS } from '../stores/settings'
 import { useUiStore } from '../stores/ui'
 import { useViewStore } from '../stores/view'
+import { PALETTE_PRESETS, PALETTE_RANGE, PALETTE_CUSTOM, presetById } from '../lib/palette'
 
 const events = useEventStore()
 const nations = useNationStore()
@@ -25,6 +26,17 @@ const clock = () => {
 }
 
 const metres = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`)
+
+/** The palette lab's three controls, so the markup is one loop rather than three. */
+const PALETTE_CONTROLS = [
+  { key: 'saturation', label: 'Saturation' },
+  { key: 'grayscale', label: 'Grayscale' },
+  { key: 'contrast', label: 'Contrast' },
+] as const
+
+const paletteNote = () =>
+  presetById(settings.palettePreset)?.note ??
+  'Custom — nudged off a preset. Pick one above to go back.'
 
 const imageryLine = () => {
   if (!settings.detail) return 'Off — showing the base map only.'
@@ -144,7 +156,7 @@ const imageryLine = () => {
           </label>
           <p class="hint status" :class="view.detailStatus"><i class="led" />{{ imageryLine() }}</p>
           <p class="hint">
-            Streams in every era. Before 1930 the zoom stops at a 20 km view, so modern
+            Streams in every era. Before 1930 the zoom stops at a 100 km view, so modern
             cities never fill the screen in a century that had none.
           </p>
           <label class="row">
@@ -295,6 +307,51 @@ const imageryLine = () => {
             </p>
           </div>
 
+          <div class="group lab">
+            <span class="eyebrow"
+              >Palette lab <em class="tag">experimental</em></span
+            >
+            <div class="chips">
+              <button
+                v-for="p in PALETTE_PRESETS"
+                :key="p.id"
+                :class="{ on: settings.palettePreset === p.id }"
+                :aria-pressed="settings.palettePreset === p.id"
+                @click="settings.applyPalettePreset(p.id)"
+              >
+                {{ p.label }}
+              </button>
+              <button v-if="settings.palettePreset === PALETTE_CUSTOM" class="on" disabled>
+                Custom
+              </button>
+            </div>
+            <p class="hint">{{ paletteNote() }}</p>
+
+            <template v-for="c in PALETTE_CONTROLS" :key="c.key">
+              <label class="slider-row" :for="`palette-${c.key}`"
+                ><span>{{ c.label }}</span
+                ><strong class="tnum">{{ settings.palette[c.key].toFixed(2) }}</strong></label
+              >
+              <input
+                :id="`palette-${c.key}`"
+                type="range"
+                :min="PALETTE_RANGE[c.key].min"
+                :max="PALETTE_RANGE[c.key].max"
+                :step="PALETTE_RANGE[c.key].step"
+                :value="settings.palette[c.key]"
+                @input="
+                  settings.setPalette({
+                    [c.key]: Number(($event.target as HTMLInputElement).value),
+                  })
+                "
+              />
+            </template>
+            <p class="hint">
+              Applied after the visual style, in both styles. A preset may switch the style
+              too.
+            </p>
+          </div>
+
           <label class="row">
             <input
               type="checkbox"
@@ -427,6 +484,27 @@ section:last-child {
 .group {
   display: grid;
   gap: var(--s2);
+}
+/* the lab is temporary and should look it: a rule and a badge, not a redesign */
+.lab {
+  border-top: 1px dashed var(--line);
+  padding-top: var(--s3);
+}
+.tag {
+  font-family: var(--cond);
+  font-style: normal;
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ember, var(--brass));
+  border: 1px solid currentColor;
+  border-radius: var(--r-pill);
+  padding: 1px 6px;
+  margin-left: 6px;
+  opacity: 0.85;
+}
+.chips button[disabled] {
+  cursor: default;
 }
 .hint {
   margin: 0;
