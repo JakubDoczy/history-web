@@ -32,3 +32,32 @@ export function textureBlend(frames: TextureKeyframe[], t: Year): TextureBlend {
   const dt = b.time - a.time
   return { from: a.url, to: b.url, f: dt > 0 ? (t - a.time) / dt : 0 }
 }
+
+/**
+ * How much of the *last* frame — the real modern basemap — the blend is showing.
+ *
+ * The globe's relief map is the modern height field, so lighting a Pangaean
+ * coastline with it puts the Andes in the middle of Panthalassa. Deep-time
+ * frames carry their own hillshade, baked from the reconstruction's own
+ * elevations, and fade the shader's relief out by this factor instead.
+ */
+export function modernShare(frames: TextureKeyframe[], t: Year): number {
+  const modern = frames[frames.length - 1].url
+  const { from, to, f } = textureBlend(frames, t)
+  return (from === modern ? 1 - f : 0) + (to === modern ? f : 0)
+}
+
+/** Credit for the deep-time frames; see scripts/gen_paleo_v4.py for the source. */
+export const PALEO_CREDIT =
+  'Paleogeography: PALEOMAP PaleoDEMs — Scotese & Wright (2018), CC BY 4.0'
+
+const MODERN_CREDIT = 'Imagery: NASA GIBS / Worldview'
+
+/**
+ * The imagery credit line: whatever the streamed layer requires while one is
+ * shown, otherwise whichever basemap the globe is actually drawing.
+ */
+export function imageryCredit(frames: TextureKeyframe[], t: Year, streamed: string): string {
+  if (streamed) return streamed
+  return modernShare(frames, t) < 1 ? PALEO_CREDIT : MODERN_CREDIT
+}

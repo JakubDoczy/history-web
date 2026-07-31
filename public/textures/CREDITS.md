@@ -4,8 +4,16 @@
   [three-globe](https://github.com/vasturiano/three-globe) (MIT), itself based on
   NASA Visible Earth imagery (public domain). Converted here to a single-channel
   JPEG mask.
-- `paleo/*.jpg`, `moon.jpg` — generated procedurally by `scripts/gen_paleo_v3.py`
-  and `scripts/gen_moon.py` in this repository.
+- `paleo/*.jpg` — **PALEOMAP PaleoDEMs**, Scotese, C.R. & Wright, N.M. (2018),
+  *PALEOMAP Paleodigital Elevation Models (PaleoDEMs) for the Phanerozoic*,
+  Zenodo DOI [10.5281/zenodo.5460860](https://doi.org/10.5281/zenodo.5460860),
+  licensed **CC BY 4.0**. Attribution is required and is shown in the app's
+  settings panel whenever a deep-time frame is on screen. Each frame is one of
+  the 109 reconstructions, rendered to this project's palette by
+  `scripts/gen_paleo_v4.py` (hypsometric tint, hillshade off the reconstructed
+  elevations, shelf seas, and ice caps from the age's climate state). No
+  geography in them is invented or interpolated.
+- `moon.jpg` — generated procedurally by `scripts/gen_moon.py` in this repository.
 
 ## Streamed imagery
 

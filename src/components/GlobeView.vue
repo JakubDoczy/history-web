@@ -14,7 +14,7 @@ import { AtmosphereLayer } from '../lib/skyLayer'
 import { DetailImagery, visibleSpanDeg, minAltitudeFor, patchPixelCap } from '../lib/detailImagery'
 import { cloudFadeFor, cloudSharpenFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
-import { textureBlend } from '../lib/paleo'
+import { textureBlend, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { pinElement, clusterElement, pinStateKey } from '../lib/eventPins'
 import {
@@ -260,8 +260,15 @@ onMounted(() => {
   // camera to an exact point of view and inspect what the streamer is doing;
   // never exist in a production build
   if (import.meta.env.DEV) {
-    const w = window as unknown as { __globe?: GlobeInstance; __detail?: DetailImagery }
+    const w = window as unknown as {
+      __globe?: GlobeInstance
+      __detail?: DetailImagery
+      __setTime?: (t: number) => void
+    }
     w.__globe = globe
+    // the paleo frames can only be checked against a reference map at a stated
+    // age, which means a screenshot script has to be able to name one
+    w.__setTime = (t: number) => time.focusTime(t)
   }
 
   // CSS2DRenderer stamps a depth-sorted z-index (0..100) on every pin, and its
@@ -477,7 +484,13 @@ onMounted(() => {
     watchEffect(() => globe!.arcsData(stableLegs(layout.value.legs))),
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
     watchEffect(() => (globe!.controls().autoRotate = settings.autoRotate)),
-    watchEffect(() => surface!.setRelief(settings.relief ? 0.7 : 0)),
+    // The relief map is the modern height field; deep-time frames carry their own
+    // baked hillshade, so it fades out exactly as they fade in.
+    watchEffect(() =>
+      surface!.setRelief(
+        settings.relief ? 0.7 * modernShare(PALEO_FRAMES, time.currentTime) : 0,
+      ),
+    ),
     watchEffect(() => surface!.setVisuals(settings.visuals === 'enhanced' ? 1 : 0)),
     watchEffect(() => surface!.setPalette(settings.palette)),
     watchEffect(() => surface!.setEra(textureBlend(PALEO_FRAMES, time.currentTime))),

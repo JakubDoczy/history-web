@@ -4,12 +4,16 @@ import { useEventStore } from '../stores/events'
 import { useSettingsStore, MAX_EVENTS } from '../stores/settings'
 import { useUiStore } from '../stores/ui'
 import { useViewStore } from '../stores/view'
+import { useTimeStore } from '../stores/time'
 import { PALETTE_RANGE } from '../lib/palette'
+import { imageryCredit } from '../lib/paleo'
+import { PALEO_FRAMES } from '../data/paleoTextures'
 
 const events = useEventStore()
 const settings = useSettingsStore()
 const ui = useUiStore()
 const view = useViewStore()
+const time = useTimeStore()
 
 type Section = 'events' | 'imagery' | 'sky' | 'light' | 'display'
 const open = ref<Section | null>('imagery')
@@ -158,7 +162,7 @@ const imageryLine = () => {
             <span>Terrain relief shading</span>
           </label>
           <p class="hint credit">
-            {{ view.detailAttribution || 'Imagery: NASA GIBS / Worldview' }}
+            {{ imageryCredit(PALEO_FRAMES, time.currentTime, view.detailAttribution) }}
           </p>
         </div>
       </section>
