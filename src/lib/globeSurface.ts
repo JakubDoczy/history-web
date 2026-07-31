@@ -16,7 +16,7 @@ import {
 } from 'three'
 import type { TextureBlend } from './paleo'
 import { PALETTE_GAMMA, type Palette } from './palette'
-import { CLOUD_UPSCALE } from './cloudUpscale'
+import { CLOUD_UPSCALE, cloudUpscaleWorthIt } from './cloudUpscale'
 import type { CloudUpscaleRequest, CloudUpscaleResponse } from './cloudUpscale.worker'
 
 /**
@@ -196,7 +196,7 @@ uniform sampler2D uDetail;    // streamed high-resolution patch over the viewed 
 uniform vec4 uDetailRect;     // u0, v0, du, dv of that patch
 uniform float uDetailMix;
 uniform float uDetailLod;    // mip level whose blur matches the base map
-uniform float uDetailTint;   // how much of the sharp source's own colour to keep
+uniform vec2 uDetailSize;    // the patch texture's size in texels
 uniform vec3 uSunDir;
 uniform float uLights;        // electrification, 0..1
 uniform float uCloudRot;      // cloud drift, in UV units
@@ -273,37 +273,87 @@ void main() {
   // uDetailMix is uniform across the draw, so branching on it is safe. Branching
   // on the per-pixel test is not: sampling a texture inside non-uniform control
   // flow leaves the derivatives undefined, which several mobile GPUs render as
-  // flicker or dropouts. So the patch is sampled unconditionally with an
-  // explicit LOD, and the region test becomes a weight instead of a branch.
+  // flicker or dropouts. So the patch is sampled unconditionally, at mip levels
+  // computed rather than inferred, and the region test becomes a weight instead
+  // of a branch.
+  //
+  // What comes out of this block is a single number: how much brighter or
+  // darker than the base map the patch says this piece of ground is. It is
+  // applied at the very end, after the grade — see below.
+  float detailGain = 1.0;
   if (uDetailMix > 0.0) {
     vec2 d = (vUv - uDetailRect.xy) / uDetailRect.zw;
     vec2 inside = step(vec2(0.0), d) * step(d, vec2(1.0));
-    // a wide feather, and never a full replacement: the sharp source is a
-    // different sensor with a different palette, and blending most of the way
-    // keeps its detail while holding the base map's colour
     vec2 f = smoothstep(vec2(0.0), vec2(0.08), d) * (1.0 - smoothstep(vec2(0.92), vec2(1.0), d));
-    // the patch carries its own alpha: any tile that failed to load stays
-    // transparent, so the base map shows through instead of a black hole
     vec2 dc = clamp(d, 0.0, 1.0);
-    vec4 det = textureLod(uDetail, dc, 0.0);
-    // a blurred copy of the patch, matched to the base map's own sharpness
-    vec3 detLow = textureLod(uDetail, dc, uDetailLod).rgb;
 
-    // Colour matching: dividing the patch by its blurred self leaves only the
-    // structure the base map is missing. Multiplying that onto the base map's
-    // colour adopts Sentinel-2's detail while keeping NASA's palette, so the
-    // two cannot disagree on hue no matter how the sensors differ.
-    const vec3 guard = vec3(0.05);
-    vec3 matched = albedo * (det.rgb + guard) / (detLow + guard);
-    matched = clamp(mix(matched, det.rgb, uDetailTint), 0.0, 1.5);
+    // Three explicit mip levels, all derived from one number: how many patch
+    // texels this pixel covers.
+    //
+    // Sampling the sharp tap at mip 0 unconditionally — which is what this used
+    // to do — is right only while the patch is being magnified. As soon as the
+    // patch is denser than the screen (every zoom-out, and any composite drawn
+    // larger than the view), mip 0 is an aliased point sample of a minified
+    // texture, and dividing one aliased sample by a blurred one turned bright
+    // features into dark smears: measured, the patch made the picture *less*
+    // detailed than no patch at all at wide zoom, and 7/255 darker.
+    vec2 texels = max(abs(dFdx(d)), abs(dFdy(d))) * uDetailSize;
+    float lodPix = max(0.0, log2(max(max(texels.x, texels.y), 1e-6)));
+    // never let the blurred tap be sharper than the sharp one: where the patch
+    // is minified past the base map's own scale the two levels meet, the ratio
+    // below becomes exactly 1, and the patch fades to a no-op instead of
+    // fighting the base map for the same frequency band
+    float lodLo = max(uDetailLod, lodPix);
+    vec4 det = textureLod(uDetail, dc, lodPix);
+    vec4 low = textureLod(uDetail, dc, lodLo);
+    // A composite canvas is transparent wherever no cached patch reached, and
+    // the mip chain averages that transparent black into the colour — which
+    // showed as a bright halo just inside the edge of a partly-covered
+    // composite. Straight (un-premultiplied) alpha makes the fix exact:
+    // mean(rgb) / mean(a) is the mean over covered texels alone.
+    vec3 hi = det.rgb / max(det.a, 0.004);
+    vec3 lo = low.rgb / max(low.a, 0.004);
 
-    albedo = mix(albedo, matched, inside.x * inside.y * f.x * f.y * uDetailMix * det.a);
+    // Colour matching, unconditional and on luminance alone.
+    //
+    // The patch contributes *structure*: how much brighter or darker the ground
+    // is than the base map knows. The base map contributes the colour. Taking
+    // the ratio per channel — the earlier form — transferred the sharp sensor's
+    // chroma as well, so Sentinel-2's greener, higher-contrast palette leaked
+    // through as hue shifts of up to 20/255 along coastlines and snow lines.
+    // One scalar cannot move a hue: it scales all three channels together, so
+    // the base map's colour survives by construction rather than by tuning.
+    //
+    // The limits are what "stability beats maximal sharpness" buys: a gain of
+    // 2.5x is a real reading over a snow line or a coast, and it is also enough
+    // to drive the graded highlights past white and leave the patch looking
+    // blown rather than sharp. Under a stop either way, ordinary ground (0.8 to
+    // 1.3) is untouched and only the extremes are held back.
+    const vec3 luma = vec3(0.2126, 0.7152, 0.0722);
+    float k = clamp((dot(hi, luma) + 0.004) / (dot(lo, luma) + 0.004), 0.55, 1.8);
+
+    // Coverage, softened. The alpha at the sharp tap alone is a one-texel step
+    // at the boundary between covered and uncovered parts of a composite — a
+    // hard edge across the middle of the patch. A tap a couple of mips up turns
+    // it into a ramp as wide as the feather at the rectangle edge, so the join
+    // reads the same wherever it falls.
+    float cover = smoothstep(0.15, 0.85, textureLod(uDetail, dc, clamp(lodPix + 1.0, 1.0, 4.0)).a);
+    detailGain = mix(1.0, k, inside.x * inside.y * f.x * f.y * uDetailMix * cover);
   }
 
   // Enhanced grades the albedo itself: a luminance remap (see ENHANCED_GRADE)
   // plus a chroma lift. Graded before lighting so coastlines, vegetation and
-  // desert separate clearly without blowing out the lit side. Applied after the
-  // detail patch so the streamed imagery gets the same treatment.
+  // desert separate clearly without blowing out the lit side.
+  //
+  // The grade runs on the *base map's* colour, before the patch's structure is
+  // applied — the reverse of the order this used to be in, and the reason a
+  // patch used to darken the ground it covered. The curve is strongly concave
+  // through the land band, so pushing a zero-mean modulation through it comes
+  // out with a negative mean: measured, 7/255 of darkening inside the patch and
+  // a visible brightness step at its edge, growing with however much detail the
+  // patch had to add. Multiplying afterwards instead leaves the mean exactly
+  // where the base map put it, and the patch's own contrast reaches the screen
+  // as the sensor recorded it rather than as the curve reshaped it.
   float lumA = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
   float p = pow(max(lumA, 0.0), ${f(1 / G.gamma)});   // into perceptual space
   float below = (p / ${f(G.lo)}) * ${f(G.outLo)};
@@ -349,6 +399,22 @@ void main() {
     vec3 pushed = (perceptual - 0.5) * uPalette.z + 0.5;
     albedo = pow(max(pushed, 0.0), vec3(${f(PALETTE_GAMMA)}));
   }
+
+  // The streamed patch, at last: a plain gain on the finished colour. Nothing
+  // downstream of this reshapes it, so what the patch says about the ground is
+  // what reaches the screen — and because it is a single multiplier, it cannot
+  // move the hue the grade and the palette just settled on.
+  //
+  // Darkening is unconditional; brightening is not. The grade compresses
+  // highlights on purpose, so that snow, ice and desert keep their shape
+  // instead of clipping to flat white, and a gain applied on top of that pushes
+  // them over anyway — which is what a patch over the Alps looked like: sharper
+  // and glaring. Headroom falls to nothing as the graded colour approaches
+  // white, so the patch keeps every bit of its structure where there is room
+  // for it and stops competing with the ceiling where there is not.
+  float head = clamp((1.0 - dot(albedo, vec3(0.2126, 0.7152, 0.0722))) / 0.45, 0.0, 1.0);
+  float gain = min(detailGain, 1.0) * mix(1.0, max(detailGain, 1.0), head);
+  albedo = clamp(albedo * gain, 0.0, 1.6);
 
   vec3 surface = albedo * lambert;
 
@@ -420,9 +486,11 @@ export class GlobeSurface {
   private loader = new TextureLoader()
   private cache = new Map<string, Texture>()
   private maxAniso: number
+  private maxTexture: number
 
   constructor(urls: GlobeSurfaceUrls, renderer: WebGLRenderer) {
     this.maxAniso = renderer.capabilities.getMaxAnisotropy()
+    this.maxTexture = renderer.capabilities.maxTextureSize
     const day = this.texture(urls.day)
     const night = this.texture(urls.night)
     // The relief map is not the same size as the colour maps (2048×1024 against
@@ -451,7 +519,7 @@ export class GlobeSurface {
         uDetailRect: { value: new Vector4(0, 0, 1, 1) },
         uDetailMix: { value: 0 },
         uDetailLod: { value: 4 },
-        uDetailTint: { value: 0.12 },
+        uDetailSize: { value: new Vector2(1024, 1024) },
         uSunDir: { value: new Vector3(1, 0, 0) },
         uLights: { value: 1 },
         uCloudRot: { value: 0 },
@@ -509,6 +577,8 @@ export class GlobeSurface {
     if (!img?.width || typeof Worker === 'undefined' || typeof createImageBitmap !== 'function') {
       return
     }
+    const memory = (navigator as { deviceMemory?: number }).deviceMemory
+    if (!cloudUpscaleWorthIt(memory, this.maxTexture)) return
     let worker: Worker
     try {
       worker = new Worker(new URL('./cloudUpscale.worker.ts', import.meta.url), {
@@ -604,7 +674,14 @@ export class GlobeSurface {
     this.material.uniforms.uCloudRot.value = (seconds * 0.0016) % 1
   }
 
-  /** Point the shader at the streamed detail patch (null clears it). */
+  /**
+   * Point the shader at the streamed detail patch (null clears it).
+   *
+   * The texture's own size goes with it: the shader needs it to work out how
+   * many patch texels each screen pixel covers, which is what decides every mip
+   * level it samples. Reading it here, from the texture actually being bound,
+   * is the only place it cannot disagree with what is on the GPU.
+   */
   setDetail(
     map: Texture | null,
     rect: [number, number, number, number],
@@ -616,6 +693,8 @@ export class GlobeSurface {
     u.uDetailRect.value.set(...rect)
     u.uDetailMix.value = map ? mix : 0
     u.uDetailLod.value = lod
+    const img = map?.image as { width?: number; height?: number } | undefined
+    if (img?.width && img?.height) u.uDetailSize.value.set(img.width, img.height)
   }
 
   /**

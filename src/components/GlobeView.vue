@@ -11,7 +11,7 @@ import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { AtmosphereLayer } from '../lib/skyLayer'
-import { DetailImagery, visibleSpanDeg, minAltitudeFor } from '../lib/detailImagery'
+import { DetailImagery, visibleSpanDeg, minAltitudeFor, patchPixelCap } from '../lib/detailImagery'
 import { cloudFadeFor, cloudSharpenFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
@@ -273,7 +273,16 @@ onMounted(() => {
   if (cam instanceof PerspectiveCamera) view.fov = cam.fov
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
-  detail = new DetailImagery()
+  // A patch at the 4096 ceiling is a 33 MB texture upload, and the composite is
+  // re-uploaded whenever the view moves — so what the device can afford, not
+  // what GL permits, is the right ceiling. See patchPixelCap.
+  detail = new DetailImagery({
+    maxPx: patchPixelCap({
+      maxTextureSize: globe.renderer().capabilities.maxTextureSize,
+      devicePixelRatio: window.devicePixelRatio,
+      deviceMemoryGb: (navigator as { deviceMemory?: number }).deviceMemory,
+    }),
+  })
   // the patch only reaches the shader if the loader tells us it arrived
   detail.onReady = () => {
     // a load can resolve after imagery was switched off or the time scrubbed

@@ -7,6 +7,7 @@ import {
   drawOrder,
   placeOnCanvas,
   compositePlan,
+  dominantSource,
   pruneCache,
   PATCH_KEEP,
   PATCH_TTL_MS,
@@ -21,11 +22,17 @@ const box = (minLat: number, minLng: number, maxLat: number, maxLng: number): Bb
   maxLng,
 })
 
-const patch = (bbox: Bbox, pxPerDeg: number, at: number): CachedPatch<string> => ({
+const patch = (
+  bbox: Bbox,
+  pxPerDeg: number,
+  at: number,
+  source = 'one',
+): CachedPatch<string> => ({
   bbox,
+  source,
   pxPerDeg,
   at,
-  image: `${pxPerDeg}@${at}`,
+  image: `${source}:${pxPerDeg}@${at}`,
 })
 
 describe('rectIntersection', () => {
@@ -177,6 +184,73 @@ describe('compositePlan', () => {
 
   it('is empty when nothing has been fetched yet', () => {
     expect(compositePlan([], target, 0)).toEqual([])
+  })
+
+  it('never draws two sources onto one canvas', () => {
+    // The composite is a single texture with a single feathered rectangle, so
+    // where two sensors meet inside it there is nothing to blend the join with:
+    // it is a hard straight line with a palette step across it.
+    const plan = compositePlan(
+      [
+        patch(box(0, 0, 10, 10), 900, 100, 'sentinel'),
+        patch(box(0, 0, 10, 10), 60, 90, 'bluemarble'),
+        patch(box(0, 0, 5, 5), 900, 95, 'sentinel'),
+      ],
+      target,
+      100,
+    )
+    expect(new Set(plan.map((p) => p.source)).size).toBe(1)
+    expect(plan).toHaveLength(2)
+  })
+})
+
+describe('dominantSource', () => {
+  const target = box(0, 0, 10, 10)
+
+  it('prefers the sharper source when both cover the view', () => {
+    expect(
+      dominantSource([
+        patch(box(-5, -5, 15, 15), 60, 0, 'bluemarble'),
+        patch(box(0, 0, 10, 10), 900, 1, 'sentinel'),
+      ], target),
+    ).toBe('sentinel')
+  })
+
+  it('prefers the source that covers the view over a sharper island in it', () => {
+    // zoomed out: the wide 500 m patch is the whole picture and the 10 m patch
+    // is a postage stamp. Taking "sharpest" here would drop the imagery that
+    // covers the screen in favour of one that covers 1% of it.
+    expect(
+      dominantSource([
+        patch(box(0, 0, 10, 10), 60, 0, 'bluemarble'),
+        patch(box(4.5, 4.5, 5.5, 5.5), 900, 1, 'sentinel'),
+      ], target),
+    ).toBe('bluemarble')
+  })
+
+  it('adds up several patches of the same source', () => {
+    expect(
+      dominantSource([
+        patch(box(0, 0, 10, 5), 60, 0, 'halves'),
+        patch(box(0, 5, 10, 10), 60, 1, 'halves'),
+        patch(box(0, 0, 10, 6), 900, 2, 'sharp'),
+      ], target),
+    ).toBe('halves')
+  })
+
+  it('ignores patches that miss the view, and is undefined with nothing to draw', () => {
+    expect(dominantSource([patch(box(80, 80, 89, 89), 900, 0, 'far')], target)).toBeUndefined()
+    expect(dominantSource([], target)).toBeUndefined()
+  })
+
+  it('does not flip sensor on a rounding difference in coverage', () => {
+    // both cover essentially all of it; the tolerance is what stops the
+    // composite alternating between sensors as the camera drifts a hair
+    const a = dominantSource([
+      patch(box(-0.001, 0, 10, 10), 60, 0, 'coarse'),
+      patch(box(0, 0, 10, 10), 900, 1, 'sharp'),
+    ], target)
+    expect(a).toBe('sharp')
   })
 })
 

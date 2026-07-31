@@ -169,6 +169,43 @@ export const bboxToUvRect = (b: Bbox): [number, number, number, number] => [
 export const MAX_PATCH_PX = 4096
 
 /**
+ * Ceiling for a composite drawn while the camera is moving.
+ *
+ * Every composite is a texture upload of its whole area, and at the full
+ * ceiling that is 30 MB on a dense phone screen — paid several times a second
+ * during a zoom, for pictures that each survive a couple of frames. Halving the
+ * axis quarters the bytes, and what it costs is resolution in an image that is
+ * already being replaced faster than the eye can resolve it. The full-size
+ * composite is drawn the moment the camera stops, which is when anyone can
+ * actually look at it.
+ */
+export const MOTION_MAX_PX = 2048
+
+/**
+ * What this device should be asked to hold for one patch.
+ *
+ * The 4096 ceiling is a statement about GL limits, not about whether uploading
+ * 33 MB of texture per composite is a reasonable thing to do to a phone. Two
+ * things bound it in practice: the driver's own maximum, and how much memory
+ * the device has to lose — a patch at the ceiling costs its own bytes plus a
+ * third again for mips, and it is competing with an 8192-wide cloud mask and
+ * three 4096 base maps.
+ *
+ * `deviceMemory` is coarse (and absent on Safari), so a very dense screen with
+ * no memory hint is assumed to be a phone rather than a workstation: that is
+ * the way round where guessing wrong is cheap — a slightly softer patch — while
+ * the other way is a stall the user feels.
+ */
+export function patchPixelCap(
+  opts: { maxTextureSize?: number; devicePixelRatio?: number; deviceMemoryGb?: number } = {},
+): number {
+  const limit = Math.min(opts.maxTextureSize ?? MAX_PATCH_PX, MAX_PATCH_PX)
+  const memory = opts.deviceMemoryGb ?? ((opts.devicePixelRatio ?? 1) >= 2.5 ? 4 : 8)
+  const budget = memory <= 2 ? 1536 : memory <= 4 ? 2048 : memory <= 8 ? 3072 : MAX_PATCH_PX
+  return Math.max(512, Math.min(limit, budget))
+}
+
+/**
  * Bounds on the Lanczos-3 upscale of a held patch (see DetailImagery.magnified).
  *
  * Measured in Chromium on the build machine, the compiled kernel runs about
@@ -384,8 +421,22 @@ export const BASE_TEXTURE_PX_PER_DEG = 4096 / 360
  * Mip level of the patch whose blur matches the base map's own sharpness.
  *
  * Dividing the patch by this blurred copy isolates exactly the detail the base
- * map lacks; multiplying that back onto the base map's colour transfers
+ * map lacks; multiplying that back onto the base map's luminance transfers
  * Sentinel-2's structure while keeping NASA's palette.
+ *
+ * `imageWidthPx` is the width of the *texture handed to the shader*, not of the
+ * imagery inside it. That distinction is the whole point: a mip index addresses
+ * a texture's own grid, so a composite canvas drawn at three times its source's
+ * density needs a level 1.6 higher to reach the same ground scale, however
+ * little real detail it contains. Deriving it from the source's size instead
+ * left the blurred tap sharper than the base map, and the patch then fought the
+ * base map for a frequency band they both already had.
+ *
+ * The floor is 0, not 1. A patch no finer than the base map has nothing to
+ * contribute, and at level 0 the two taps are the same sample, the ratio is
+ * exactly 1, and the patch quietly becomes a no-op — which is the honest
+ * answer. Forcing it to 1 instead handed the shader a blurred tap *coarser*
+ * than the base map, and the difference between them was transferred twice.
  */
 export const detailLod = (
   imageWidthPx: number,
@@ -393,7 +444,7 @@ export const detailLod = (
   basePxPerDeg = BASE_TEXTURE_PX_PER_DEG,
 ): number => {
   const ratio = imageWidthPx / Math.max(lngSpanDeg, 1e-6) / basePxPerDeg
-  return clamp(Math.log2(Math.max(ratio, 1)), 1, 7)
+  return clamp(Math.log2(Math.max(ratio, 1)), 0, 7)
 }
 
 /**
@@ -532,9 +583,15 @@ export interface DetailImageryOptions {
   resampler?: PatchResampler
 }
 
-/** Metrics that only become true when the image they describe is on screen. */
+/**
+ * Metrics that only become true when the image they describe is on screen.
+ *
+ * The mip level used to live here too, computed from the request's own width
+ * and carried along until something published it. It belongs to the *texture*,
+ * not to the request, so it is derived in `publish` instead — the one place
+ * that knows which image the shader is about to be handed.
+ */
 interface PatchMeta {
-  lod: number
   groundRes: number
   /** Effective resolution, used to order the cache's draw stack. */
   pxPerDeg: number
@@ -557,7 +614,24 @@ export class DetailImagery {
   private current?: Bbox
   /** The rectangle a queued or in-flight request is for; distinct from `current`. */
   private pending?: Bbox
-  private requestId = 0
+  /**
+   * Bumped when everything in flight stops being relevant — the camera left the
+   * streaming range, imagery was switched off, the component went away.
+   *
+   * It used to be bumped by every *new* request as well, so an image was
+   * discarded the moment a later one had been asked for. With a real network
+   * that meant a zoom threw away everything it fetched: each wheel notch issued
+   * a request, and each request was superseded by the next one 700 ms later
+   * while the first was still 1–2 s from arriving. Measured against the mocked
+   * services, a fourteen-second zoom fetched 31 megapixels of imagery and put
+   * exactly one patch on screen — the rest was bandwidth spent to be deleted,
+   * and the user watched a soft base map the whole way in.
+   *
+   * A late patch is not wrong, only partial: it covers the ground it covers,
+   * and the composite draws it exactly where it belongs under anything sharper.
+   * So arrival order no longer decides anything; geometry does.
+   */
+  private generation = 0
   private settle?: ReturnType<typeof setTimeout>
   private strikes = 0
   private sharpStrikes = 0
@@ -582,6 +656,12 @@ export class DetailImagery {
   private resampler: PatchResampler
   /** What the last composite was cut to, so a late upscale can redraw it. */
   private lastComposite?: { target: Bbox; screenPx: number }
+  /** What the last composite actually drew; an identical one is not redrawn. */
+  private lastDraw = ''
+  /** Bumped when a Lanczos upscale lands, so the same plan is drawn again. */
+  private upscaleEpoch = 0
+  /** Attribution text by source label, so the panel can describe what is shown. */
+  private attributions = new Map<string, string>()
 
   constructor(opts: DetailImageryOptions = {}) {
     this.maxPx = opts.maxPx ?? MAX_PATCH_PX
@@ -625,6 +705,14 @@ export class DetailImagery {
     // a clamped box covers less of the screen, so it needs proportionally fewer
     // pixels to match the screen's density — see requestScreenPx
     const requestPx = requestScreenPx(bbox, altitude, screenPx, fovDeg)
+    // Remembered before any of the early returns below, because a patch can
+    // arrive at any moment and it must be cut to the view the camera is looking
+    // at *now*. Taking it from the last rectangle that happened to be
+    // recomposited meant an arrival during the fast path below was drawn onto a
+    // view several zoom steps old: geographically correct, but a patch — and a
+    // feathered edge — smaller than the frame, appearing to shrink while the
+    // camera stood still.
+    this.lastComposite = { target: bbox, screenPx: requestPx }
 
     // the imagery we already hold may still cover the view — show it again
     // rather than paying for the same request twice
@@ -794,6 +882,7 @@ export class DetailImagery {
         if (!canvas) return
         this.release(this.upscaled.get(image)?.canvas)
         this.upscaled.set(image, { canvas, w: dw, h: dh, crop })
+        this.upscaleEpoch++ // the same plan now draws different pixels
         const last = this.lastComposite
         // Redraw only what is on screen now. recomposite() will find this
         // upscale in the cache and draw it, so there is no loop.
@@ -815,19 +904,46 @@ export class DetailImagery {
    * texture. The shader contract does not change: one texture, one rectangle.
    */
   private recomposite(target: Bbox, screenPx: number, sharpen = false): boolean {
+    // remembered before anything can bail out: a patch that arrives later needs
+    // to know which view to draw itself onto, even if there is nothing to
+    // composite at this instant
+    this.lastComposite = { target, screenPx }
     const plan = compositePlan(this.cache, target, Date.now())
     if (!plan.length) return false
-    // remembered so a resample that lands after the camera has moved on
-    // redraws the view that is actually on screen
-    this.lastComposite = { target, screenPx }
     const sharpest = plan[plan.length - 1]
+    // While the camera is moving the composite is capped well below the screen's
+    // own density: it is a texture upload of its entire area, and at full size
+    // that is tens of megabytes several times a second — see MOTION_MAX_PX.
+    const cap = sharpen ? this.maxPx : Math.min(this.maxPx, MOTION_MAX_PX)
     // Two sizes: what the imagery we hold actually contains, and what the
     // screen would like. The canvas is sized between them — see
     // COMPOSITE_UPSCALE_MAX — so the enlargement happens here, through a proper
     // filter, instead of on the GPU through a tent.
-    const natural = imageSize(target, screenPx, this.maxPx, sharpest.pxPerDeg)
-    const screen = imageSize(target, screenPx, this.maxPx, Number.MAX_SAFE_INTEGER)
-    const { width, height } = upscaledSize(natural, screen, this.maxPx)
+    const natural = imageSize(target, screenPx, cap, sharpest.pxPerDeg)
+    const screen = imageSize(target, screenPx, cap, Number.MAX_SAFE_INTEGER)
+    const { width, height } = upscaledSize(natural, screen, cap)
+
+    // Redrawing the same patches, at the same size, onto the same rectangle
+    // produces the same canvas — and publishing it re-uploads every one of its
+    // pixels to the GPU. update() runs on every frame the view moves, so this
+    // is the difference between one upload per distinct picture and one per
+    // frame.
+    const key = [
+      width,
+      height,
+      // the sharpening pass draws the same plan at the same size and is still
+      // not the same picture — it is the pass that asks for the Lanczos copies
+      sharpen ? 'sharp' : 'fast',
+      this.upscaleEpoch,
+      target.minLat.toFixed(5),
+      target.minLng.toFixed(5),
+      target.maxLat.toFixed(5),
+      target.maxLng.toFixed(5),
+      ...plan.map((p) => p.at),
+    ].join('|')
+    if (key === this.lastDraw && this.texture) return true
+    this.lastDraw = key
+
     const surf = this.surface(width, height)
     if (!surf) return false
     surf.ctx.clearRect(0, 0, width, height)
@@ -835,11 +951,11 @@ export class DetailImagery {
       const { x, y, w, h } = placeOnCanvas(target, p.bbox, width, height)
       this.drawPatch(surf.ctx, p, x, y, w, h, width, height, sharpen)
     }
+    // the panel describes what is on screen, which is the source the composite
+    // actually drew — not whichever request happened to return last
+    this.sourceLabel = this.heldLabel = sharpest.source
+    this.attribution = this.heldAttribution = this.attributions.get(sharpest.source) ?? ''
     this.publish(surf.canvas, target, {
-      // from the natural size, not the canvas: the shader uses this to pick the
-      // mip whose blur matches the base map, and an upscaled canvas holds no
-      // more real detail than the patch it was made from
-      lod: detailLod(natural.width, target.maxLng - target.minLng),
       // the composite is only as good as the patches in it, and its edges are
       // the basemap, so the resolution we quote stays the one we actually have
       groundRes: this.groundRes,
@@ -853,7 +969,7 @@ export class DetailImagery {
     clearTimeout(this.settle)
     this.settle = undefined
     this.pending = undefined
-    this.requestId++ // in-flight images resolve into a superseded id and are dropped
+    this.generation++ // in-flight images resolve into a dead generation and are dropped
   }
 
   /**
@@ -864,20 +980,18 @@ export class DetailImagery {
    * unreachable.
    */
   private load(bbox: Bbox, screenPx: number, src: ImagerySource) {
-    const id = ++this.requestId
+    const gen = this.generation
     this.status = 'loading'
     const { width, height } = imageSize(bbox, screenPx, this.maxPx, src.pxPerDeg)
     // These describe the image being requested, so they are only true once it is
-    // on screen. Publishing them here made the shader sharpen the patch it still
-    // held at the incoming patch's mip level, and the panel quote a resolution
-    // for imagery nobody could see yet.
+    // on screen. Publishing them here made the panel quote a resolution for
+    // imagery nobody could see yet.
     const meta: PatchMeta = {
-      lod: detailLod(width, bbox.maxLng - bbox.minLng),
       groundRes: ((bbox.maxLat - bbox.minLat) * 111_320) / height,
       pxPerDeg: width / Math.max(bbox.maxLng - bbox.minLng, 1e-9),
     }
 
-    this.fetch(src, bbox, width, height, id, meta, {
+    this.fetch(src, bbox, width, height, gen, meta, {
       fail: () => {
         if (src === SHARP_SOURCE) {
           this.sharpStrikes++
@@ -903,45 +1017,60 @@ export class DetailImagery {
     bbox: Bbox,
     width: number,
     height: number,
-    id: number,
+    gen: number,
     meta: PatchMeta,
     handlers: { ok?: () => void; fail?: () => void },
   ) {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
-      if (id !== this.requestId) return // a newer view has superseded this one
-      this.adopt(img, bbox, meta, src.label, src.attribution)
+      if (gen !== this.generation) return // streaming was cancelled under it
+      this.adopt(img, bbox, meta, src)
       handlers.ok?.()
     }
     img.onerror = () => {
-      if (id !== this.requestId) return
+      if (gen !== this.generation) return
       handlers.fail?.()
     }
     img.src = wmsUrl(src, bbox, width, height)
   }
 
-  /** Image, rectangle and metrics are taken up together, so they cannot disagree. */
-  private adopt(
-    img: HTMLImageElement,
-    bbox: Bbox,
-    meta: PatchMeta,
-    label: string,
-    attribution = '',
-  ) {
-    // A freshly fetched patch covers the whole view on its own, so it is shown
-    // directly rather than composited onto itself. It joins the cache for the
-    // *next* move, which is the only time compositing has anything to add.
+  /**
+   * Take up an arriving patch. Image, rectangle and metrics go together, so
+   * they cannot disagree.
+   *
+   * A patch reaches the shader by exactly one route: into the cache, then out
+   * through the composite. It used to have a second route — a fresh patch was
+   * published directly, on the grounds that it covers the whole view on its own
+   * — and the two routes disagreed about which rectangle they were for. The
+   * direct one published the *request's* box, the composite published the
+   * *current view's* box, and since the feather is measured against whichever
+   * rectangle was published, the edge of the imagery moved every time the two
+   * alternated. One route means one rectangle and one feather.
+   */
+  private adopt(img: HTMLImageElement, bbox: Bbox, meta: PatchMeta, src: ImagerySource) {
+    const now = Date.now()
+    this.attributions.set(src.label, src.attribution ?? '')
     this.cache = pruneCache(
-      [{ bbox, pxPerDeg: meta.pxPerDeg, at: Date.now(), image: img }, ...this.cache],
+      [{ bbox, source: src.label, pxPerDeg: meta.pxPerDeg, at: now, image: img }, ...this.cache],
       bbox,
-      Date.now(),
+      now,
     )
     this.current = bbox
-    this.sourceLabel = this.heldLabel = label
-    this.attribution = this.heldAttribution = attribution
+    this.groundRes = meta.groundRes
     this.strikes = 0
-    this.publish(img, bbox, meta)
+    const view = this.lastComposite
+    // Sharpen only if the camera is actually still. An armed settle timer means
+    // it is not: patches now land mid-zoom (see `generation`), and a Lanczos
+    // pass spent on a picture the next frame replaces is the stall this was
+    // moved off the main thread to avoid. Falling back to publishing the image
+    // directly covers the one case the composite cannot: no DOM, so no canvas.
+    const still = this.settle === undefined
+    if (!view || !this.recomposite(view.target, view.screenPx, still)) {
+      this.sourceLabel = this.heldLabel = src.label
+      this.attribution = this.heldAttribution = src.attribution ?? ''
+      this.publish(img, bbox, meta)
+    }
   }
 
   /** The one place a texture reaches the shader, whether patch or composite. */
@@ -968,7 +1097,11 @@ export class DetailImagery {
     }
     this.rect = bboxToUvRect(bbox)
     this.composited = bbox
-    this.lod = meta.lod
+    // Derived here, from the image the shader is about to be handed, because
+    // that is the only size the mip chain it will sample is built from. See
+    // detailLod.
+    const size = DetailImagery.naturalSize(source)
+    this.lod = detailLod(size?.w ?? 1, bbox.maxLng - bbox.minLng)
     this.groundRes = meta.groundRes
     this.mix = 1
     this.shown = true

@@ -22,6 +22,23 @@ import type { PixelBuffer } from './lanczos'
  */
 export const CLOUD_UPSCALE = 2
 
+/**
+ * Whether that upscale is worth its cost on this device.
+ *
+ * It is not free, and the bill lands in one piece: 8192×4096 single-channel is
+ * a 33 MB texture upload plus its mip chain, on the main thread, measured as
+ * the single longest stall in the app. On a machine with room to spare that is
+ * a one-off price for permanently smoother cloud edges. On a 4 GB phone it is a
+ * third of a frame budget's worth of jank *and* 45 MB of texture memory that
+ * the streamed imagery patch then has to compete for — to sharpen a layer that
+ * fades out entirely as the camera closes in.
+ *
+ * So the rule is the plain one: skip it unless the device has both the texture
+ * limit to hold the result and memory it will not miss.
+ */
+export const cloudUpscaleWorthIt = (deviceMemoryGb?: number, maxTextureSize = 8192): boolean =>
+  maxTextureSize >= 8192 && (deviceMemoryGb ?? 8) > 4
+
 export interface MaskBuffer {
   /** One byte per texel, row-major. */
   data: Uint8Array

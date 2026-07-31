@@ -23,6 +23,17 @@ export const PATCH_KEEP = 4
 
 export interface CachedPatch<T> {
   bbox: Bbox
+  /**
+   * Which imagery source produced it.
+   *
+   * Two sources that disagree about colour must never end up on the same
+   * canvas: Sentinel-2 is a different sensor from Blue Marble, greener and
+   * darker, and where the two met inside a composite the join was a hard
+   * straight line with a palette step across it — the "patch versus patch seam"
+   * no amount of edge feathering can help, because the feather is at the
+   * *rectangle's* edge and this seam is in the middle of it.
+   */
+  source: string
   /** Effective resolution of the fetched image, in pixels per degree of longitude. */
   pxPerDeg: number
   /** When it arrived, on the same clock as the `now` passed to these functions. */
@@ -92,11 +103,55 @@ export function placeOnCanvas(
 }
 
 /**
+ * The one source worth compositing for a view: whichever covers most of it,
+ * and the sharper one when two cover it equally well.
+ *
+ * Both halves of that rule earn their place. Zoomed in, a Sentinel-2 patch and
+ * an older Blue Marble patch both cover the whole frame, and the sharp one is
+ * obviously the one to keep. Zoomed out, the wide Blue Marble patch covers
+ * everything and the Sentinel-2 patch is a postage stamp in the middle — taking
+ * "sharpest" there would throw away the imagery that covers the screen in
+ * favour of one that covers 3% of it.
+ *
+ * The tolerance matters: coverage is rarely exactly equal, and without it a
+ * source that covered 0.999 of the view would beat one that covered 1.0 by a
+ * rounding error and the composite would flip between sensors as the camera
+ * drifted.
+ */
+export function dominantSource<T>(
+  patches: CachedPatch<T>[],
+  target: Bbox,
+  tolerance = 0.05,
+): string | undefined {
+  const bySource = new Map<string, { covered: number; pxPerDeg: number }>()
+  for (const p of patches) {
+    const c = coverage(target, p.bbox)
+    if (c <= 0) continue
+    const held = bySource.get(p.source) ?? { covered: 0, pxPerDeg: 0 }
+    held.covered = Math.min(1, held.covered + c)
+    held.pxPerDeg = Math.max(held.pxPerDeg, p.pxPerDeg)
+    bySource.set(p.source, held)
+  }
+  let best: { source: string; covered: number; pxPerDeg: number } | undefined
+  for (const [source, s] of bySource) {
+    if (
+      !best ||
+      s.covered > best.covered + tolerance ||
+      (s.covered > best.covered - tolerance && s.pxPerDeg > best.pxPerDeg)
+    ) {
+      best = { source, ...s }
+    }
+  }
+  return best?.source
+}
+
+/**
  * Which cached patches are worth drawing for a view, in the order to draw them.
  *
  * A patch that has expired, that misses the view entirely (the camera jumped),
  * or that contributes a sliver too thin to notice is dropped — each one costs a
- * draw call and a chance of a visible seam.
+ * draw call and a chance of a visible seam. So is every patch from a source
+ * other than the dominant one: see `dominantSource` and `CachedPatch.source`.
  */
 export function compositePlan<T>(
   patches: CachedPatch<T>[],
@@ -104,9 +159,9 @@ export function compositePlan<T>(
   now: number,
   ttlMs = PATCH_TTL_MS,
 ): CachedPatch<T>[] {
-  return drawOrder(
-    patches.filter((p) => now - p.at <= ttlMs && coverage(target, p.bbox) > 0.002),
-  )
+  const live = patches.filter((p) => now - p.at <= ttlMs && coverage(target, p.bbox) > 0.002)
+  const source = dominantSource(live, target)
+  return drawOrder(live.filter((p) => p.source === source))
 }
 
 /**

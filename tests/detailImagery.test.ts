@@ -422,10 +422,22 @@ describe('detailLod', () => {
   it('stays inside a usable mip range', () => {
     for (const [w, span] of [[128, 90], [4096, 0.5], [256, 0.01], [2048, 120]] as const) {
       const l = detailLod(w, span)
-      expect(l).toBeGreaterThanOrEqual(1)
+      expect(l).toBeGreaterThanOrEqual(0)
       expect(l).toBeLessThanOrEqual(7)
       expect(Number.isFinite(l)).toBe(true)
     }
+  })
+
+  it('is 0 for a patch the base map already out-resolves', () => {
+    // At level 0 the shader's two taps are the same sample, so the ratio is
+    // exactly 1 and the patch changes nothing. Forcing a floor of 1 instead
+    // handed it a tap *blurrier* than the base map, and the band between them —
+    // which the base map already carries — was applied a second time: measured
+    // at wide zoom, 7/255 of darkening and less apparent detail than no patch.
+    expect(detailLod(BASE_TEXTURE_PX_PER_DEG * 60, 60)).toBe(0)
+    expect(detailLod(BASE_TEXTURE_PX_PER_DEG * 0.5 * 60, 60)).toBe(0)
+    // and 1 exactly where it is twice as fine, which is where it starts to help
+    expect(detailLod(BASE_TEXTURE_PX_PER_DEG * 2 * 60, 60)).toBeCloseTo(1, 6)
   })
 })
 
@@ -787,14 +799,32 @@ describe('cached patch compositing', () => {
     FakeImage.last!.onload!()
   }
 
+  it('composites a patch the moment it arrives, rather than showing it raw', () => {
+    // One route to the shader, not two. A patch used to be published directly
+    // on arrival and composited on every later move, so the rectangle the
+    // shader feathered against changed from the request's box to the view's box
+    // and back — and the edge of the imagery moved with it.
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const canvas = FakeCanvas.made[0]
+    expect(canvas).toBeDefined()
+    expect(canvas.ops).toHaveLength(1)
+    expect(canvas.ops[0].image).toBe(FakeImage.last)
+    expect(d.mix).toBe(1)
+  })
+
   it('redraws the patch it holds onto the new view before asking for anything', () => {
     const d = new DetailImagery()
     land(d, 45, 10)
     const rectBefore = [...d.rect]
     const requestsBefore = FakeImage.requests.length
+    // the canvas is reused between composites, so clear the record rather than
+    // the instance
+    const canvas = FakeCanvas.made[0]
+    canvas.ops.length = 0
+    canvas.cleared = 0
 
     d.update(45, 10 + PAN, CLOSE, 900, 1) // a pan of ~27% of the patch width
-    const canvas = FakeCanvas.made[0]
     expect(canvas).toBeDefined()
     expect(canvas.ops).toHaveLength(1) // the one patch we own
     expect(canvas.cleared).toBe(1) // and nothing stale left under it
@@ -888,25 +918,32 @@ describe('cached patch compositing', () => {
     Object.assign(img, { naturalWidth: 600, naturalHeight: 400 })
     img.onload!()
 
-    // ...then descend, so the composite canvas is finer than the patch in it
-    PixelCanvas.made.length = 0
+    // ...then descend, so the composite canvas is finer than the patch in it.
+    // The composite canvas is created on arrival and reused, so the record is
+    // cleared rather than the instance.
+    const canvas = PixelCanvas.made.find((c) => c.ops.length)!
+    expect(canvas).toBeDefined()
+    canvas.ops.length = 0
     d.update(45, 10, 0.02, 900, 1)
 
     // The zoom's own composite is bilinear: the raw image, straight onto the
     // canvas, and not one pixel filtered on the way. That is what keeps the
     // zoom handler inside a frame.
-    const immediate = PixelCanvas.made.find((c) => c.ops.length)
-    expect(immediate).toBeDefined()
-    expect(immediate!.ops[0].image).toBe(img)
+    expect(canvas.ops).not.toHaveLength(0)
+    expect(canvas.ops[0].image).toBe(img)
     expect(PixelCanvas.made.every((c) => c.put === 0)).toBe(true)
 
-    // ...and it stays bilinear for as long as the camera is moving: a resample
-    // per frame would only be thrown away by the next one
+    // ...and no frame of a zoom filters anything inside the update call. The
+    // resample the *arrival* asked for does land during these frames — that is
+    // the whole point of deferring it — so the invariant is measured across
+    // each call rather than over the loop.
+    const puts = () => PixelCanvas.made.reduce((s, c) => s + c.put, 0)
     for (let i = 0; i < 10; i++) {
+      const before = puts()
       d.update(45, 10, 0.02 - i * 0.0005, 900, 1)
+      expect(puts()).toBe(before)
       await vi.advanceTimersByTimeAsync(16)
     }
-    expect(PixelCanvas.made.every((c) => c.put === 0)).toBe(true)
 
     // Then the camera settles, the resample runs off this task, and the
     // composite is redrawn with it — the same picture as before, only later.
@@ -936,17 +973,122 @@ describe('cached patch compositing', () => {
     }
     Object.assign(FakeImage.last!, { naturalWidth: 600, naturalHeight: 400 })
     FakeImage.last!.onload!()
+    // the camera was standing still when it landed, so this one is sharpened
+    const onArrival = calls
+    expect(onArrival).toBe(1)
     // a continuous zoom: the wanted size changes every frame, and none of them
     // is worth filtering because the next frame replaces it
     for (let i = 0; i < 20; i++) {
       d.update(45, 10, 0.05 - i * 0.0015, 900, 1)
+      await vi.advanceTimersByTimeAsync(16)
+    }
+    expect(calls).toBe(onArrival)
+    // one pass once the camera stops, not one per frame
+    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    expect(calls).toBe(onArrival + 1)
+    d.dispose()
+  })
+
+  it('keeps a patch that arrives after a later request went out', () => {
+    // A zoom issues a request per notch, and with a real network each one is
+    // still 1-2 s away when the next goes out. Discarding an image because
+    // something newer had been *asked for* meant a zoom threw away everything
+    // it fetched and showed the bare base map the whole way in.
+    const d = new DetailImagery()
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10, CLOSE, 900, 1)
       vi.advanceTimersByTime(16)
     }
-    expect(calls).toBe(0)
-    // one pass once the camera stops, not one per frame
+    const first = FakeImage.last!
+    // the camera moves on and a second request goes out while the first is
+    // still in flight
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10 + 2 * PAN, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    expect(FakeImage.requests).toHaveLength(2)
+    expect(FakeImage.last).not.toBe(first)
+
+    first.onload!() // the older one lands last, and is still worth having
+    expect(d.mix).toBe(1)
+    // and it is drawn where it belongs — west of the current view, not over it
+    const canvas = FakeCanvas.made[0]
+    expect(canvas.ops).toHaveLength(1)
+    expect(canvas.ops[0].image).toBe(first)
+    expect(canvas.ops[0].x).toBeLessThan(0)
+  })
+
+  it('cuts a late patch to the view the camera is looking at now', () => {
+    // The fast path — "what we hold still covers this view" — does not
+    // recomposite, so the last *composited* rectangle can be several zoom steps
+    // old. Cutting an arrival to that instead of to the live view drew a patch
+    // smaller than the frame, and its feathered edge appeared to shrink while
+    // the camera stood still.
+    const d = new DetailImagery()
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10, 0.05, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    const inFlight = FakeImage.last!
+    // zoom in a little — not far enough to refetch, so update() takes the fast
+    // path and never recomposites
+    d.update(45, 10, 0.045, 900, 1)
+    const wanted = viewBbox(45, 10, 0.045, 1)
+    inFlight.onload!()
+    const [, , du] = d.rect
+    expect(du * 360).toBeCloseTo(wanted.maxLng - wanted.minLng, 3)
+  })
+
+  it('still drops an image once streaming has been cancelled under it', () => {
+    // zooming back out is not "something newer is coming", it is "nobody is
+    // looking at this any more"
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10 + 2 * PAN, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    const pending = FakeImage.last!
+    d.update(45, 10, 2.5, 900, 1) // out to a world view: streaming stops
+    const canvas = FakeCanvas.made[0]
+    canvas.ops.length = 0
+    pending.onload!()
+    expect(canvas.ops).toHaveLength(0)
+    expect(d.mix).toBe(0)
+  })
+
+  it('draws a smaller composite while moving than it does at rest', () => {
+    // every composite is a texture upload of its whole area, and during a zoom
+    // it is replaced within a frame or two — see MOTION_MAX_PX
+    // a dense screen, so the ceiling is what binds rather than the source
+    const SCREEN = 3000
+    const d = new DetailImagery({ maxPx: 4096 })
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10, CLOSE, SCREEN, 1)
+      vi.advanceTimersByTime(16)
+    }
+    FakeImage.last!.onload!()
+    const canvas = FakeCanvas.made[0]
+    expect(Math.max(canvas.width, canvas.height)).toBeGreaterThan(MOTION_MAX_PX)
+
+    d.update(45, 10 + PAN, CLOSE, SCREEN, 1)
+    const moving = Math.max(canvas.width, canvas.height)
+    expect(moving).toBeLessThanOrEqual(MOTION_MAX_PX)
     vi.advanceTimersByTime(SETTLE_MS + 32)
-    expect(calls).toBe(1)
-    d.dispose()
+    expect(Math.max(canvas.width, canvas.height)).toBeGreaterThan(moving)
+  })
+
+  it('does not redraw the same composite twice', () => {
+    // publishing re-uploads every pixel of the canvas, and update() runs on
+    // every frame the view moves
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const canvas = FakeCanvas.made[0]
+    canvas.ops.length = 0
+    canvas.cleared = 0
+    for (let i = 0; i < 8; i++) d.update(45, 10 + PAN, CLOSE, 900, 1)
+    expect(canvas.cleared).toBe(1)
+    expect(canvas.ops).toHaveLength(1)
   })
 
   it('works without a canvas at all, as it must in a stale browser', () => {
@@ -1043,5 +1185,52 @@ describe('bbox shape at the closest zoom', () => {
     const perPxX = (b.maxLng - b.minLng) / width
     const perPxY = (b.maxLat - b.minLat) / height
     expect(perPxY / perPxX).toBeCloseTo(1, 1)
+  })
+})
+
+import { patchPixelCap, MOTION_MAX_PX } from '../src/lib/detailImagery'
+
+describe('patchPixelCap', () => {
+  it('never exceeds the GL limit or the hard ceiling', () => {
+    expect(patchPixelCap({ maxTextureSize: 2048, deviceMemoryGb: 32 })).toBe(2048)
+    expect(patchPixelCap({ maxTextureSize: 16384, deviceMemoryGb: 32 })).toBe(MAX_PATCH_PX)
+  })
+
+  it('shrinks the ceiling on a device with little memory to lose', () => {
+    const big = patchPixelCap({ deviceMemoryGb: 16 })
+    const small = patchPixelCap({ deviceMemoryGb: 2 })
+    expect(small).toBeLessThan(big)
+    // and the saving is what matters: bytes go as the square
+    expect(small * small * 4).toBeLessThan(big * big * 4 * 0.2)
+  })
+
+  it('reads a dense screen with no memory hint as a phone, not a workstation', () => {
+    // guessing wrong this way costs a slightly softer patch; the other way is a
+    // 30 MB upload on a device that cannot absorb it
+    expect(patchPixelCap({ devicePixelRatio: 3 })).toBeLessThan(
+      patchPixelCap({ devicePixelRatio: 1 }),
+    )
+  })
+
+  it('is monotonic in memory and always usable', () => {
+    let last = 0
+    for (const gb of [1, 2, 4, 8, 16]) {
+      const cap = patchPixelCap({ deviceMemoryGb: gb })
+      expect(cap).toBeGreaterThanOrEqual(last)
+      expect(cap).toBeGreaterThanOrEqual(512)
+      last = cap
+    }
+  })
+
+  it('leaves the explicit hint in charge of a dense screen', () => {
+    expect(patchPixelCap({ devicePixelRatio: 3, deviceMemoryGb: 16 })).toBe(MAX_PATCH_PX)
+  })
+})
+
+describe('MOTION_MAX_PX', () => {
+  it('is a real saving over the resting ceiling', () => {
+    expect(MOTION_MAX_PX).toBeLessThan(MAX_PATCH_PX)
+    // the upload is an area, so this is the number that reaches the bus
+    expect((MOTION_MAX_PX / MAX_PATCH_PX) ** 2).toBeLessThanOrEqual(0.25)
   })
 })

@@ -115,3 +115,23 @@ describe('the cloud mask sharpen in the shader', () => {
     expect(shadow.slice(0, 120)).not.toContain('cloudMask(')
   })
 })
+
+import { cloudUpscaleWorthIt } from '../src/lib/cloudUpscale'
+
+describe('cloudUpscaleWorthIt', () => {
+  it('is skipped where the result would not fit', () => {
+    expect(cloudUpscaleWorthIt(16, 4096)).toBe(false)
+  })
+
+  it('is skipped on a device with little memory to lose', () => {
+    // 8192x4096 single-channel is a 33 MB upload plus its mips, measured as the
+    // longest single main-thread stall in the app
+    expect(cloudUpscaleWorthIt(4)).toBe(false)
+    expect(cloudUpscaleWorthIt(2)).toBe(false)
+  })
+
+  it('runs where there is room for it', () => {
+    expect(cloudUpscaleWorthIt(8)).toBe(true)
+    expect(cloudUpscaleWorthIt(undefined)).toBe(true) // no hint: assume a desktop
+  })
+})
