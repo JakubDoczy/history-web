@@ -1,18 +1,16 @@
 import type { VisualStyle } from '../stores/settings'
 
 /**
- * A temporary grading bench for choosing the final palette.
+ * The globe's colour grade: three controls the viewer can move.
  *
- * Three controls, applied to the surface colour *after* the enhanced grade and
- * before lighting, so they work identically in both visual styles: the enhanced
- * curve decides what the map looks like, and these decide what is then done to
- * it. They are deliberately the smallest set that can describe a look — how
- * vivid, how monochrome, how punchy — rather than a full colour pipeline; the
- * point is to pick one preset and delete the rest.
+ * They are applied to the surface colour *after* the enhanced grade and before
+ * lighting, so they work identically in both visual styles: the enhanced curve
+ * decides what the map looks like, and these decide what is then done to it.
+ * Deliberately the smallest set that can describe a look — how vivid, how
+ * monochrome, how punchy — rather than a full colour pipeline.
  *
- * All three are neutral at their defaults and the neutral triple is an exact
- * identity (see `applyPalette`), so shipping with the lab untouched changes
- * nothing about how the globe renders today.
+ * The neutral triple (1, 0, 1) is an exact identity (see `applyPalette`), which
+ * is why the stage can sit unconditionally in the shader's hot path.
  */
 export interface Palette {
   /** 0 = grey, 1 = untouched, 2 = twice the chroma. */
@@ -71,109 +69,22 @@ export function applyPalette(c: RGB, p: Palette): RGB {
   return out
 }
 
-export interface PalettePreset extends Palette {
-  id: string
-  label: string
-  /** Presets may set the base look too — a palette sits on top of one. */
-  visuals: VisualStyle
-  /** One line, shown under the picker. */
-  note: string
-}
+/**
+ * The grade the globe ships with in the enhanced style.
+ *
+ * These are the values that won the preset bench (the "Muted atlas" candidate):
+ * colour steps back a little so pins, borders and labels lead, and the slightly
+ * soft contrast keeps the terminator band from blocking up. See
+ * `defaultPaletteFor` for why the realistic style does not get them.
+ */
+export const DEFAULT_PALETTE: Palette = { saturation: 0.75, grayscale: 0.1, contrast: 0.95 }
 
 /**
- * The candidates, chosen by looking at world and Europe-closeup renders of each
- * rather than by picking round numbers (see /tmp/shots5/preset-*.png).
+ * The palette a visual style starts from.
  *
- * They are meant to be distinct at a glance, not to span the space evenly:
- * three of them are variations on "more punch", because that is the axis the
- * globe actually needs a decision on, and the other three exist to show what
- * the alternatives cost.
+ * Enhanced is a deliberately non-photographic look, so it carries the graded
+ * default; realistic exists to show physical lighting, and grading it would
+ * defeat the point — it starts neutral, which is an exact identity.
  */
-export const PALETTE_PRESETS: PalettePreset[] = [
-  {
-    id: 'current',
-    label: 'Current',
-    ...NEUTRAL_PALETTE,
-    visuals: 'enhanced',
-    note: 'What ships today — the enhanced grade, untouched.',
-  },
-  {
-    id: 'vivid',
-    label: 'Vivid',
-    saturation: 1.35,
-    grayscale: 0,
-    contrast: 1.05,
-    visuals: 'enhanced',
-    note: 'Chroma-led. Oceans read blue, vegetation green, deserts gold.',
-  },
-  {
-    id: 'natural',
-    label: 'Natural',
-    saturation: 0.95,
-    grayscale: 0,
-    contrast: 1.05,
-    visuals: 'realistic',
-    note: 'Physical lighting with a touch of shape — the photographic option.',
-  },
-  {
-    id: 'crisp',
-    label: 'Crisp',
-    saturation: 1,
-    grayscale: 0.15,
-    contrast: 1.3,
-    visuals: 'enhanced',
-    note: 'Contrast-led, colour pulled back: coastlines and terrain edges snap.',
-  },
-  {
-    id: 'muted',
-    label: 'Muted atlas',
-    saturation: 0.75,
-    grayscale: 0.1,
-    contrast: 0.95,
-    visuals: 'enhanced',
-    note: 'Printed-atlas restraint: colour steps back so pins and borders lead.',
-  },
-  {
-    id: 'ink',
-    label: 'Ink',
-    saturation: 0.6,
-    grayscale: 0.85,
-    contrast: 1.2,
-    visuals: 'enhanced',
-    note: 'Near-monochrome engraving. Every coloured overlay reads at once.',
-  },
-  {
-    id: 'warm',
-    label: 'Warm',
-    saturation: 1.2,
-    grayscale: 0,
-    contrast: 0.9,
-    visuals: 'enhanced',
-    note: 'Softer curve, richer chroma — the map leans to its ochres and golds.',
-  },
-]
-
-export const PALETTE_CUSTOM = 'custom'
-
-const near = (a: number, b: number) => Math.abs(a - b) < 1e-6
-
-/**
- * Which preset a state corresponds to, or 'custom'.
- *
- * Used to move the indicator when a slider moves — and, because it is a lookup
- * rather than a flag, a slider dragged back onto a preset's values lights that
- * preset up again instead of staying stuck on 'custom'.
- */
-export function matchPreset(p: Palette, visuals: VisualStyle): string {
-  const hit = PALETTE_PRESETS.find(
-    (q) =>
-      q.visuals === visuals &&
-      near(q.saturation, p.saturation) &&
-      near(q.grayscale, p.grayscale) &&
-      near(q.contrast, p.contrast),
-  )
-  return hit ? hit.id : PALETTE_CUSTOM
-}
-
-export const presetById = (id: string): PalettePreset | undefined =>
-  PALETTE_PRESETS.find((p) => p.id === id)
+export const defaultPaletteFor = (visuals: VisualStyle): Palette =>
+  visuals === 'enhanced' ? { ...DEFAULT_PALETTE } : { ...NEUTRAL_PALETTE }

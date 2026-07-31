@@ -12,7 +12,7 @@ import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { AtmosphereLayer } from '../lib/skyLayer'
 import { DetailImagery, visibleSpanDeg, minAltitudeFor } from '../lib/detailImagery'
-import { cloudFadeFor } from '../lib/scale'
+import { cloudFadeFor, cloudSharpenFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
@@ -130,10 +130,10 @@ onMounted(() => {
     .polygonStrokeColor((d) => {
       const p = asPoly(d)
       if (p.kind === 'area') return tagColor(primaryTag(p.event))
-      return p.kind === 'full' ? p.nation.color : p.kind === 'max' ? p.nation.color + '90' : '#ffffff70'
+      return p.nation.color
     })
     // Borders sit almost on the surface, and always under the event pins (0.006).
-    .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.012 : asPoly(d).kind === 'full' ? 0.004 : 0.0035))
+    .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.012 : 0.004))
     .polygonLabel((d) => {
       const p = asPoly(d)
       return p.kind === 'area' ? p.event.name : p.label
@@ -244,15 +244,17 @@ onMounted(() => {
       }
     }
     const near = closeness(pov.altitude)
+    const span = visibleSpanDeg(pov.altitude)
     view.altitude = pov.altitude
-    events.noteSpan(visibleSpanDeg(pov.altitude))
+    events.noteSpan(span)
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel
     view.viewportPx = el.value?.clientHeight ?? 900
     surface!.setFlatLight(near)
     syncDetail(pov)
     // clouds retire well before the ground fills the screen; haze lingers longer
-    const cloudy = cloudFadeFor(visibleSpanDeg(pov.altitude))
+    const cloudy = cloudFadeFor(span)
+    surface!.setCloudSharpen(cloudy > 0.01 ? cloudSharpenFor(span) : 0)
     surface!.setClouds(
       settings.clouds && cloudy > 0.01,
       (time.currentTime > -12000 ? 1 : 0) * cloudy,

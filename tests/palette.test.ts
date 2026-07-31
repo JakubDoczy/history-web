@@ -3,12 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { readFileSync } from 'node:fs'
 import {
   applyPalette,
-  matchPreset,
-  presetById,
   NEUTRAL_PALETTE,
-  PALETTE_PRESETS,
+  DEFAULT_PALETTE,
   PALETTE_RANGE,
-  PALETTE_CUSTOM,
   PALETTE_GAMMA,
   type RGB,
 } from '../src/lib/palette'
@@ -110,71 +107,6 @@ describe('applyPalette', () => {
   })
 })
 
-describe('presets', () => {
-  it('offers enough of them to choose from', () => {
-    expect(PALETTE_PRESETS.length).toBeGreaterThanOrEqual(6)
-  })
-
-  it('has unique ids and labels', () => {
-    expect(new Set(PALETTE_PRESETS.map((p) => p.id)).size).toBe(PALETTE_PRESETS.length)
-    expect(new Set(PALETTE_PRESETS.map((p) => p.label)).size).toBe(PALETTE_PRESETS.length)
-    expect(PALETTE_PRESETS.every((p) => p.id !== PALETTE_CUSTOM)).toBe(true)
-  })
-
-  it('keeps every value inside its slider, on a step the slider can reach', () => {
-    for (const p of PALETTE_PRESETS) {
-      for (const key of ['saturation', 'grayscale', 'contrast'] as const) {
-        const r = PALETTE_RANGE[key]
-        expect(p[key]).toBeGreaterThanOrEqual(r.min)
-        expect(p[key]).toBeLessThanOrEqual(r.max)
-        // a preset the sliders cannot express would show as 'custom' the moment
-        // anything else was touched
-        expect(Math.abs(Math.round((p[key] - r.min) / r.step) * r.step - (p[key] - r.min))).toBeLessThan(1e-6)
-      }
-    }
-  })
-
-  it('starts from the shipping look, which must be an exact no-op', () => {
-    const first = PALETTE_PRESETS[0]
-    expect(first.id).toBe('current')
-    expect(first.visuals).toBe('enhanced')
-    expect({
-      saturation: first.saturation,
-      grayscale: first.grayscale,
-      contrast: first.contrast,
-    }).toEqual(NEUTRAL_PALETTE)
-  })
-
-  it('is genuinely six different pictures, not six sets of numbers', () => {
-    // each preset must move a sample colour somewhere the others do not
-    const seen = new Set(
-      PALETTE_PRESETS.map((p) =>
-        applyPalette(SAMPLES[1], p)
-          .map((v) => v.toFixed(4))
-          .join() + p.visuals,
-      ),
-    )
-    expect(seen.size).toBe(PALETTE_PRESETS.length)
-  })
-})
-
-describe('matchPreset', () => {
-  it('recognises each preset from its values', () => {
-    for (const p of PALETTE_PRESETS) expect(matchPreset(p, p.visuals)).toBe(p.id)
-  })
-
-  it('reports custom once a value is nudged', () => {
-    const p = PALETTE_PRESETS[1]
-    expect(matchPreset({ ...p, saturation: p.saturation + 0.05 }, p.visuals)).toBe(PALETTE_CUSTOM)
-  })
-
-  it('reports custom when the base style no longer matches', () => {
-    const natural = presetById('natural')!
-    expect(natural.visuals).toBe('realistic')
-    expect(matchPreset(natural, 'enhanced')).toBe(PALETTE_CUSTOM)
-  })
-})
-
 describe('the shader mirrors the TypeScript', () => {
   const glsl = readFileSync('src/lib/globeSurface.ts', 'utf8')
 
@@ -197,47 +129,62 @@ describe('the shader mirrors the TypeScript', () => {
 describe('settings store palette', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('starts neutral, on the shipping preset', () => {
+  it('starts on the enhanced default, not neutral', () => {
     const s = useSettingsStore()
-    expect(s.palette).toEqual(NEUTRAL_PALETTE)
-    expect(s.palettePreset).toBe('current')
+    expect(s.visuals).toBe('enhanced')
+    expect(s.palette).toEqual(DEFAULT_PALETTE)
   })
 
-  it('switches the indicator to custom when a slider moves', () => {
+  it('moves one control and leaves the others alone', () => {
     const s = useSettingsStore()
     s.setPalette({ saturation: 1.45 })
-    expect(s.palettePreset).toBe(PALETTE_CUSTOM)
     expect(s.palette.saturation).toBe(1.45)
-    expect(s.palette.contrast).toBe(1) // and leaves the others alone
+    expect(s.palette.contrast).toBe(DEFAULT_PALETTE.contrast)
   })
 
-  it('lights a preset up again when the sliders land back on it', () => {
+  it('resets to the current style default', () => {
     const s = useSettingsStore()
-    const vivid = presetById('vivid')!
-    s.setPalette({ saturation: vivid.saturation })
-    s.setPalette({ contrast: vivid.contrast })
-    expect(s.palettePreset).toBe('vivid')
+    s.setPalette({ saturation: 1.45, grayscale: 0.5 })
+    s.resetPalette()
+    expect(s.palette).toEqual(DEFAULT_PALETTE)
   })
 
-  it('adopts a preset whole, base style included', () => {
+  it('neutralises the palette when the style goes realistic', () => {
     const s = useSettingsStore()
-    s.applyPalettePreset('natural')
-    expect(s.visuals).toBe('realistic')
-    expect(s.palette.saturation).toBe(presetById('natural')!.saturation)
-    expect(s.palettePreset).toBe('natural')
+    s.setVisuals('realistic')
+    expect(s.palette).toEqual(NEUTRAL_PALETTE)
+    s.resetPalette()
+    expect(s.palette).toEqual(NEUTRAL_PALETTE) // reset follows the style too
   })
 
-  it('ignores an id it does not know rather than clearing the palette', () => {
+  it('re-applies the default when the style goes back to enhanced', () => {
     const s = useSettingsStore()
-    s.applyPalettePreset('vivid')
-    s.applyPalettePreset('nonsense')
-    expect(s.palettePreset).toBe('vivid')
-  })
-
-  it('drops off a preset when the base style is changed underneath it', () => {
-    const s = useSettingsStore()
-    s.applyPalettePreset('natural') // realistic
+    s.setVisuals('realistic')
     s.setVisuals('enhanced')
-    expect(s.palettePreset).toBe(PALETTE_CUSTOM)
+    expect(s.palette).toEqual(DEFAULT_PALETTE)
+  })
+
+  it('lets slider edits stand until the next style switch, then discards them', () => {
+    const s = useSettingsStore()
+    s.setPalette({ contrast: 1.4 })
+    expect(s.palette.contrast).toBe(1.4)
+    s.setVisuals('enhanced') // even switching to the style already showing
+    expect(s.palette).toEqual(DEFAULT_PALETTE)
+  })
+
+  it('keeps the default inside the sliders, on a step they can reach', () => {
+    for (const key of ['saturation', 'grayscale', 'contrast'] as const) {
+      const r = PALETTE_RANGE[key]
+      expect(DEFAULT_PALETTE[key]).toBeGreaterThanOrEqual(r.min)
+      expect(DEFAULT_PALETTE[key]).toBeLessThanOrEqual(r.max)
+      const off = DEFAULT_PALETTE[key] - r.min
+      expect(Math.abs(Math.round(off / r.step) * r.step - off)).toBeLessThan(1e-6)
+    }
+  })
+
+  it('is a real grade, not a disguised no-op', () => {
+    expect(applyPalette(SAMPLES[1], DEFAULT_PALETTE)).not.toEqual(
+      applyPalette(SAMPLES[1], NEUTRAL_PALETTE),
+    )
   })
 })

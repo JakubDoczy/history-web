@@ -31,3 +31,20 @@ export const formatDistance = (km: number): string =>
  */
 export const cloudFadeFor = (visibleSpanDeg: number): number =>
   Math.max(0, Math.min(1, (visibleSpanDeg - 55) / 45))
+
+/** Strongest unsharp the cloud mask is ever given. Subtle by design: past this
+ * the mask's own JPEG blocking starts to come back up with the detail. */
+export const CLOUD_SHARPEN_MAX = 0.55
+
+/**
+ * How hard to sharpen the cloud mask at a given altitude.
+ *
+ * The band that matters is the one where clouds are still drawn but the mask is
+ * being magnified — roughly 100° of visible arc down to the 55° where
+ * `cloudFadeFor` has retired them. Off entirely from 120° up, where a texel is
+ * smaller than a pixel and sharpening would only alias; full by 60°, just
+ * before the clouds themselves go. The globe's `closeness` signal is no use
+ * here: it is still zero at 40°, long after the last cloud has faded out.
+ */
+export const cloudSharpenFor = (visibleSpanDeg: number): number =>
+  CLOUD_SHARPEN_MAX * Math.max(0, Math.min(1, (120 - visibleSpanDeg) / 60))

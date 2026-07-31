@@ -1,11 +1,5 @@
 import { defineStore } from 'pinia'
-import {
-  NEUTRAL_PALETTE,
-  PALETTE_PRESETS,
-  matchPreset,
-  presetById,
-  type Palette,
-} from '../lib/palette'
+import { defaultPaletteFor, type Palette } from '../lib/palette'
 
 export type ToggleKey =
   | 'clouds'
@@ -33,13 +27,11 @@ export const useSettingsStore = defineStore('settings', {
     /** 'enhanced' brightens the day side and lifts the night side; 'realistic' keeps physical lighting. */
     visuals: 'enhanced' as VisualStyle,
     /**
-     * Experimental colour grading, applied after the enhanced curve. Neutral by
-     * default, and the neutral triple is an exact identity — see lib/palette.ts
-     * — so this ships switched off in every sense but the UI.
+     * Colour grading, applied after the enhanced curve, in both styles.
+     * Defaults to whatever the current visual style starts from — see
+     * `setVisuals` for what happens when the style changes under it.
      */
-    palette: { ...NEUTRAL_PALETTE } as Palette,
-    /** Which preset the current palette corresponds to, or 'custom'. */
-    palettePreset: PALETTE_PRESETS[0].id,
+    palette: defaultPaletteFor('enhanced') as Palette,
     clouds: true,
     cloudShadows: true,
     atmosphere: true,
@@ -52,30 +44,30 @@ export const useSettingsStore = defineStore('settings', {
     toggle(key: ToggleKey) {
       this[key] = !this[key]
     },
+    /**
+     * Change the base look, and reset the palette to that style's default.
+     *
+     * The chosen rule, spelled out because it is a judgement call rather than
+     * an obvious one: the graded default belongs to the enhanced style, so
+     * switching *to* enhanced applies it and switching to realistic returns the
+     * triple to neutral. Slider moves override that until the next style
+     * switch — a style switch is always a clean slate. The alternative,
+     * remembering per-style edits, means the same button does different things
+     * depending on history, which is worse to explain than the odd lost tweak.
+     */
     setVisuals(style: VisualStyle) {
       this.visuals = style
-      // a preset can carry a base style, so changing the base can move the
-      // indicator off it — the picker must not claim a preset it is not on
-      this.palettePreset = matchPreset(this.palette, this.visuals)
+      this.palette = defaultPaletteFor(style)
     },
 
-    /** Move one palette control; the preset indicator follows the values. */
+    /** Move one palette control. Overrides the style default until it changes. */
     setPalette(patch: Partial<Palette>) {
       this.palette = { ...this.palette, ...patch }
-      this.palettePreset = matchPreset(this.palette, this.visuals)
     },
 
-    /** Adopt a preset whole: its three values and the base style it sits on. */
-    applyPalettePreset(id: string) {
-      const preset = presetById(id)
-      if (!preset) return
-      this.palette = {
-        saturation: preset.saturation,
-        grayscale: preset.grayscale,
-        contrast: preset.contrast,
-      }
-      this.visuals = preset.visuals
-      this.palettePreset = preset.id
+    /** Back to the current style's default triple. */
+    resetPalette() {
+      this.palette = defaultPaletteFor(this.visuals)
     },
   },
 })

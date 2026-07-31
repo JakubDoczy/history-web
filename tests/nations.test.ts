@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   activeKeyframe,
-  extremes,
   isNotable,
   keyframeArea,
   nationLabel,
@@ -103,26 +102,6 @@ describe('visibleNations', () => {
 describe('nationLabel', () => {
   it('names the polity and its span', () => {
     expect(nationLabel(rome)).toBe('Roman Empire (510 BCE – 476)')
-  })
-})
-
-describe('extremes', () => {
-  it('picks largest and smallest keyframe active in the window', () => {
-    const { max, min } = extremes(rome, -150, 200)
-    expect(max?.time).toBe(117)
-    expect(min?.time).toBe(-270) // still in force at window start
-  })
-  it('window fully inside one keyframe → max === min', () => {
-    const { max, min } = extremes(rome, 150, 200)
-    expect(max).toBe(min)
-    expect(max?.time).toBe(117)
-  })
-  it('sees the first keyframe from the start of existence', () => {
-    expect(extremes(rome, -509, -400).max?.time).toBe(-270)
-  })
-  it('empty outside existence', () => {
-    expect(extremes(rome, 1000, 2000)).toEqual({})
-    expect(extremes(rome, -2000, -1000)).toEqual({})
   })
 })
 

@@ -1,5 +1,9 @@
 import {
+  DataTexture,
   GLSL3,
+  LinearFilter,
+  LinearMipmapLinearFilter,
+  RedFormat,
   ShaderMaterial,
   SRGBColorSpace,
   Texture,
@@ -12,6 +16,8 @@ import {
 } from 'three'
 import type { TextureBlend } from './paleo'
 import { PALETTE_GAMMA, type Palette } from './palette'
+import { CLOUD_UPSCALE } from './cloudUpscale'
+import type { CloudUpscaleRequest, CloudUpscaleResponse } from './cloudUpscale.worker'
 
 /**
  * One material for the whole planet surface.
@@ -197,6 +203,8 @@ uniform float uCloudRot;      // cloud drift, in UV units
 uniform float uCloudAlpha;    // 0 hides clouds
 uniform float uCloudShadow;
 uniform float uCloudH;      // cloud deck height, in globe radii
+uniform float uCloudSharp;    // unsharp amount for the cloud mask, 0 = off
+uniform vec2 uCloudTexel;     // 1 / cloud *source* size, the sharpen radius
 uniform float uRelief_;       // relief strength
 uniform vec2 uTexel;          // 1 / relief texture size
 uniform float uFlatLight;     // 1 = ignore the terminator (close-up imagery is already lit)
@@ -204,6 +212,33 @@ uniform float uBoost;         // 0 = realistic lighting, 1 = enhanced (brighter,
 uniform vec3 uPalette;        // experimental grade: saturation, grayscale, contrast
 
 const float PI = 3.14159265;
+
+/**
+ * The cloud mask, high-frequency band restored as the camera closes in.
+ *
+ * The mask is upscaled 2x on load (lib/cloudUpscale.ts), which removes the
+ * texel facets but leaves the result soft — Lanczos reconstructs detail, it
+ * does not add contrast to it. Four extra taps give a cheap blur of the same
+ * texture; c + k * (c - blur) is an unsharp mask, and puts the edge acutance
+ * back without a second map. Isotropic on purpose: two taps along one axis
+ * sharpens cloud edges facing that axis and leaves the rest soft, which reads
+ * as smearing.
+ *
+ * The radius is the *source* texel, not the upscaled one, so the band being
+ * lifted is the same whether or not the upscale has landed yet — the swap is
+ * then invisible except for being sharper. The offsets may leave 0..1 in u;
+ * the texture repeats, so the antimeridian needs no special case, and v clamps
+ * at the poles like every other sample here.
+ */
+float cloudMask(vec2 uv) {
+  float c = texture(uClouds, uv).r;
+  if (uCloudSharp <= 0.0) return c;
+  vec2 d = uCloudTexel * 1.5;
+  float blur = 0.25 * (
+    texture(uClouds, uv + vec2(d.x, 0.0)).r + texture(uClouds, uv - vec2(d.x, 0.0)).r +
+    texture(uClouds, uv + vec2(0.0, d.y)).r + texture(uClouds, uv - vec2(0.0, d.y)).r);
+  return clamp(c + uCloudSharp * (c - blur), 0.0, 1.0);
+}
 
 vec2 dirToUv(vec3 d) {
   vec3 l = vec3(d.z, d.y, -d.x);
@@ -299,7 +334,7 @@ void main() {
   vec3 target = mix(graded, sea, ${f(G.waterHold)} * water);
   albedo = mix(albedo, target, uBoost);
 
-  // --- palette lab: saturation, grayscale, contrast, after the grade above ---
+  // --- palette: saturation, grayscale, contrast, after the grade above ---
   // Outside the uBoost mix on purpose, so the controls behave identically in
   // both visual styles: the style decides what the map looks like, this decides
   // what is then done to it. Neutral values (1, 0, 1) are an exact identity,
@@ -346,7 +381,9 @@ void main() {
   vec3 color = mix(night, surface, daylight);
 
   // --- clouds, composited as the thin film they are ---
-  float cover = texture(uClouds, cloudUv).r * uCloudAlpha;
+  // shadows keep the plain tap: they are a soft projection onto the ground and
+  // sharpening them would only cost four taps to make a blur look edgy
+  float cover = (uCloudAlpha > 0.0 ? cloudMask(cloudUv) : 0.0) * uCloudAlpha;
   if (cover > 0.002) {
     vec3 lit = mix(vec3(0.06, 0.08, 0.13), vec3(1.0, 0.995, 0.98), daylight);
     lit += vec3(0.30, 0.12, 0.02) * smoothstep(0.30, 0.0, abs(cosGeo)) * daylight;
@@ -394,7 +431,10 @@ export class GlobeSurface {
     // and halves every slope — terrain that is lit, but only half as much as the
     // strength setting says.
     const relief = this.texture(urls.relief, 'data', (t) => this.setReliefTexel(t))
-    const clouds = this.texture(urls.clouds, 'data')
+    const clouds = this.texture(urls.clouds, 'data', (t) => {
+      this.setCloudTexel(t)
+      this.upscaleClouds(urls.clouds, t)
+    })
 
     this.material = new ShaderMaterial({
       glslVersion: GLSL3,
@@ -418,6 +458,9 @@ export class GlobeSurface {
         uCloudAlpha: { value: 1 },
         uCloudShadow: { value: 0.5 },
         uCloudH: { value: 0.012 },
+        uCloudSharp: { value: 0 },
+        // the bundled mask's size; replaced by the loaded image's own
+        uCloudTexel: { value: new Vector2(1 / 4096, 1 / 2048) },
         uRelief_: { value: 0.7 },
         // the bundled relief map's size; replaced by the loaded image's own
         uTexel: { value: new Vector2(1 / 2048, 1 / 1024) },
@@ -443,6 +486,67 @@ export class GlobeSurface {
       this.cache.set(url, t)
     }
     return t
+  }
+
+  /** The unsharp radius follows the *source* mask, so the upscale cannot move it. */
+  private setCloudTexel(t: Texture) {
+    const img = t.image as { width?: number; height?: number } | undefined
+    if (!this.material || !img?.width || !img?.height) return
+    this.material.uniforms.uCloudTexel.value.set(1 / img.width, 1 / img.height)
+  }
+
+  /**
+   * Swap the loaded cloud mask for a Lanczos-3 upscale of itself, off-thread.
+   *
+   * Strictly an improvement on something already on screen: the raw texture is
+   * live from the moment it decodes, this lands whenever it lands, and every
+   * way it can fail — no worker, no OffscreenCanvas, a tainted bitmap, a
+   * resample that runs out of memory — leaves that raw texture exactly where it
+   * was. Nothing waits on it.
+   */
+  private upscaleClouds(url: string, t: Texture) {
+    const img = t.image as CanvasImageSource & { width?: number; height?: number }
+    if (!img?.width || typeof Worker === 'undefined' || typeof createImageBitmap !== 'function') {
+      return
+    }
+    let worker: Worker
+    try {
+      worker = new Worker(new URL('./cloudUpscale.worker.ts', import.meta.url), {
+        type: 'module',
+      })
+    } catch {
+      return
+    }
+    worker.onmessage = (e: MessageEvent<CloudUpscaleResponse | null>) => {
+      worker.terminate()
+      const out = e.data
+      if (!out || this.material.uniforms.uClouds.value !== t) return
+      // R8 rather than RGBA8: the shader reads `.r`, and at 8192x4096 that is
+      // 32 MB of texture memory instead of 128 MB. The worker has already
+      // reversed the rows, so DataTexture's flipY = false is the right one.
+      const sharper = new DataTexture(out.data, out.width, out.height, RedFormat)
+      sharper.wrapS = RepeatWrapping
+      sharper.anisotropy = this.maxAniso
+      sharper.magFilter = LinearFilter
+      sharper.minFilter = LinearMipmapLinearFilter
+      sharper.generateMipmaps = true
+      sharper.needsUpdate = true
+      this.material.uniforms.uClouds.value = sharper
+      this.cache.set(url, sharper)
+      t.dispose()
+      if (import.meta.env?.DEV) {
+        console.info(
+          `clouds: ${img.width}x${img.height} -> ${out.width}x${out.height} in ${out.ms.toFixed(0)} ms`,
+        )
+      }
+    }
+    worker.onerror = () => worker.terminate()
+    createImageBitmap(img)
+      .then((bitmap) => {
+        const req: CloudUpscaleRequest = { bitmap, scale: CLOUD_UPSCALE }
+        worker.postMessage(req, [bitmap])
+      })
+      .catch(() => worker.terminate())
   }
 
   /** Match the finite-difference step to the height field actually loaded. */
@@ -520,6 +624,11 @@ export class GlobeSurface {
    */
   setFlatLight(v: number) {
     this.material.uniforms.uFlatLight.value = v
+  }
+
+  /** Unsharp amount for the cloud mask; 0 skips the extra taps entirely. */
+  setCloudSharpen(k: number) {
+    this.material.uniforms.uCloudSharp.value = k
   }
 
   setClouds(visible: boolean, opacity = 1, shadows = true) {

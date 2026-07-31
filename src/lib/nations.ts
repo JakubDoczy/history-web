@@ -100,19 +100,4 @@ export function visibleNations(nations: Nation[], t: Year, limit = MAX_VISIBLE):
 export const nationLabel = (n: Nation): string =>
   `${n.name} (${formatYear(n.from)} – ${formatYear(n.to)})`
 
-/**
- * Largest and smallest extent among keyframes active at any point in [start, end].
- * First-pass approximation: extremes are picked among snapshots, not true unions
- * or intersections. Kept so the store can offer max/min modes again.
- */
-export function extremes(n: Nation, start: Year, end: Year): { max?: NationKeyframe; min?: NationKeyframe } {
-  if (end < n.from || start > n.to) return {}
-  const active = n.keyframes.filter((k, i) => {
-    const from = i === 0 ? n.from : k.time // the first keyframe holds backwards
-    const until = Math.min(n.keyframes[i + 1]?.time ?? Infinity, n.to)
-    return from <= end && until >= start
-  })
-  if (!active.length) return {}
-  const byArea = [...active].sort((a, b) => keyframeArea(a) - keyframeArea(b))
-  return { min: byArea[0], max: byArea[byArea.length - 1] }
-}
+

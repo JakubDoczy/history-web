@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { kmPerPixel, niceScale, formatDistance, cloudFadeFor, EARTH_RADIUS_KM } from '../src/lib/scale'
+import {
+  kmPerPixel,
+  niceScale,
+  formatDistance,
+  cloudFadeFor,
+  cloudSharpenFor,
+  CLOUD_SHARPEN_MAX,
+  EARTH_RADIUS_KM,
+} from '../src/lib/scale'
 
 describe('kmPerPixel', () => {
   it('scales linearly with altitude', () => {
@@ -68,5 +76,36 @@ describe('cloudFadeFor', () => {
       expect(cloudFadeFor(span)).toBeGreaterThanOrEqual(0)
       expect(cloudFadeFor(span)).toBeLessThanOrEqual(1)
     }
+  })
+})
+
+describe('cloudSharpenFor', () => {
+  it('is off when a cloud texel is smaller than a pixel', () => {
+    expect(cloudSharpenFor(147)).toBe(0) // default framing
+    expect(cloudSharpenFor(120)).toBe(0)
+  })
+
+  it('is at full strength before the clouds have finished fading out', () => {
+    expect(cloudSharpenFor(60)).toBe(CLOUD_SHARPEN_MAX)
+    expect(cloudSharpenFor(55)).toBe(CLOUD_SHARPEN_MAX)
+  })
+
+  it('covers the band where clouds are still drawn and being magnified', () => {
+    // anywhere cloudFadeFor still shows clouds below 120°, something is sharpened
+    for (const span of [100, 90, 80, 70, 60]) {
+      expect(cloudFadeFor(span)).toBeGreaterThan(0)
+      expect(cloudSharpenFor(span)).toBeGreaterThan(0)
+    }
+  })
+
+  it('rises monotonically as the camera closes in, and stays subtle', () => {
+    let previous = -1
+    for (let span = 200; span >= 1; span -= 1) {
+      const k = cloudSharpenFor(span)
+      expect(k).toBeGreaterThanOrEqual(previous)
+      expect(k).toBeLessThanOrEqual(CLOUD_SHARPEN_MAX)
+      previous = k
+    }
+    expect(CLOUD_SHARPEN_MAX).toBeLessThan(1) // an unsharp this big rings visibly
   })
 })

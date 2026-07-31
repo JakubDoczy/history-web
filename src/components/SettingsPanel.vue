@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useEventStore } from '../stores/events'
-import { useNationStore } from '../stores/nations'
 import { useSettingsStore, MAX_EVENTS } from '../stores/settings'
 import { useUiStore } from '../stores/ui'
 import { useViewStore } from '../stores/view'
-import { PALETTE_PRESETS, PALETTE_RANGE, PALETTE_CUSTOM, presetById } from '../lib/palette'
+import { PALETTE_RANGE } from '../lib/palette'
 
 const events = useEventStore()
-const nations = useNationStore()
 const settings = useSettingsStore()
 const ui = useUiStore()
 const view = useViewStore()
@@ -27,16 +25,12 @@ const clock = () => {
 
 const metres = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`)
 
-/** The palette lab's three controls, so the markup is one loop rather than three. */
+/** The three palette controls, so the markup is one loop rather than three. */
 const PALETTE_CONTROLS = [
   { key: 'saturation', label: 'Saturation' },
   { key: 'grayscale', label: 'Grayscale' },
   { key: 'contrast', label: 'Contrast' },
 ] as const
-
-const paletteNote = () =>
-  presetById(settings.palettePreset)?.note ??
-  'Custom — nudged off a preset. Pick one above to go back.'
 
 const imageryLine = () => {
   if (!settings.detail) return 'Off — showing the base map only.'
@@ -307,25 +301,13 @@ const imageryLine = () => {
             </p>
           </div>
 
-          <div class="group lab">
-            <span class="eyebrow"
-              >Palette lab <em class="tag">experimental</em></span
-            >
-            <div class="chips">
-              <button
-                v-for="p in PALETTE_PRESETS"
-                :key="p.id"
-                :class="{ on: settings.palettePreset === p.id }"
-                :aria-pressed="settings.palettePreset === p.id"
-                @click="settings.applyPalettePreset(p.id)"
-              >
-                {{ p.label }}
-              </button>
-              <button v-if="settings.palettePreset === PALETTE_CUSTOM" class="on" disabled>
-                Custom
+          <div class="group palette">
+            <div class="group-head">
+              <span class="eyebrow">Palette</span>
+              <button class="reset" type="button" @click="settings.resetPalette()">
+                Reset
               </button>
             </div>
-            <p class="hint">{{ paletteNote() }}</p>
 
             <template v-for="c in PALETTE_CONTROLS" :key="c.key">
               <label class="slider-row" :for="`palette-${c.key}`"
@@ -347,8 +329,8 @@ const imageryLine = () => {
               />
             </template>
             <p class="hint">
-              Applied after the visual style, in both styles. A preset may switch the style
-              too.
+              Applied after the visual style, in both styles. Switching the style above
+              restores its defaults.
             </p>
           </div>
 
@@ -359,14 +341,6 @@ const imageryLine = () => {
               @change="settings.toggle('scaleBar')"
             />
             <span>Scale bar</span>
-          </label>
-          <label class="row">
-            <input
-              type="checkbox"
-              :checked="nations.showExtremes"
-              @change="nations.toggleExtremes()"
-            />
-            <span>Nation borders: largest and smallest extent</span>
           </label>
         </div>
       </section>
@@ -485,26 +459,31 @@ section:last-child {
   display: grid;
   gap: var(--s2);
 }
-/* the lab is temporary and should look it: a rule and a badge, not a redesign */
-.lab {
-  border-top: 1px dashed var(--line);
+/* the palette sliders are their own block within Display */
+.palette {
+  border-top: 1px solid var(--line);
   padding-top: var(--s3);
 }
-.tag {
+.group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+}
+/* a quiet text button: the sliders are the control, this is only an escape hatch */
+.reset {
   font-family: var(--cond);
-  font-style: normal;
   font-size: var(--t-micro);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ember, var(--brass));
-  border: 1px solid currentColor;
-  border-radius: var(--r-pill);
-  padding: 1px 6px;
-  margin-left: 6px;
-  opacity: 0.85;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  cursor: pointer;
 }
-.chips button[disabled] {
-  cursor: default;
+.reset:hover {
+  color: var(--brass);
 }
 .hint {
   margin: 0;
