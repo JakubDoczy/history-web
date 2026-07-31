@@ -13,6 +13,25 @@ let index = new EventIndex([])
 
 const DATA = `${import.meta.env.BASE_URL}data/events/`
 
+/**
+ * A JSON fetch that fails by returning undefined rather than by throwing, and
+ * that treats an HTTP error as a failure.
+ *
+ * `fetch` resolves for 404 and 500 alike, so the only thing that used to notice
+ * a missing file was `JSON.parse` choking on an error page — which meant a
+ * server that answered "not found" in JSON would have had its error object
+ * merged into the event list.
+ */
+async function fetchJson<T>(url: string): Promise<T | undefined> {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return undefined
+    return (await res.json()) as T
+  } catch {
+    return undefined
+  }
+}
+
 export const useEventStore = defineStore('events', {
   state: () => ({
     all: [] as HistoricalEvent[],
@@ -53,14 +72,28 @@ export const useEventStore = defineStore('events', {
   actions: {
     /** Fetch the manifest and the always-loaded spine; then prefetch the rest when idle. */
     async init() {
-      this.manifest = (await (await fetch(DATA + 'manifest.json')).json()) as EventManifest
+      // The manifest is the root of the whole dataset: without it there is no
+      // spine, no chunk list, and nothing ever asks again. It used to be one
+      // unguarded await, so a 404 or a dropped connection rejected out of
+      // `onMounted` and left an app with no events at all and no way back.
+      // A handful of tries with a widening gap covers the case this actually
+      // fails in — a cold CDN or a phone changing network — and giving up
+      // quietly still leaves everything that does not depend on it working.
+      for (let attempt = 0; attempt < 4 && !this.manifest; attempt++) {
+        if (attempt) await new Promise((r) => setTimeout(r, 100 * 2 ** attempt))
+        this.manifest = (await fetchJson<EventManifest>(DATA + 'manifest.json')) ?? null
+      }
+      if (!this.manifest?.spine) return
       await this.load(this.manifest.spine)
       const t = useTimeStore()
       this.ensure(t.range.start, t.range.end)
       // Background prefetch keeps search and event-to-event links whole without
       // gating anything on it. One chunk at a time; failures just leave that
       // chunk to the window-driven path.
-      const idle = window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 4000))
+      // globalThis, not window: this action is ordinary async code and gets run
+      // by tests and by anything else without a DOM, where reaching for
+      // `window` throws and takes the spine down with it.
+      const idle = globalThis.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 4000))
       idle(async () => {
         for (const c of this.manifest?.chunks ?? []) await this.load(c.file)
       })
@@ -74,11 +107,12 @@ export const useEventStore = defineStore('events', {
     async load(file: string) {
       if (this.requested.has(file)) return
       this.requested.add(file)
-      try {
-        this.adopt((await (await fetch(DATA + file)).json()) as HistoricalEvent[])
-      } catch {
-        this.requested.delete(file) // transient failure — retry on the next window move
-      }
+      const events = await fetchJson<HistoricalEvent[]>(DATA + file)
+      // A chunk file is an array. Anything else — an error document, a partial
+      // write, a proxy's login page — is not data, and merging it would put
+      // objects with no id or date into the index.
+      if (Array.isArray(events)) this.adopt(events)
+      else this.requested.delete(file) // transient failure — retry on the next window move
     },
     /** Make sure the chunks covering a time window are loaded (or loading). */
     ensure(start: number, end: number) {

@@ -70,3 +70,61 @@ describe('event store', () => {
     })
   })
 })
+
+describe('event data loading, when the network misbehaves', () => {
+  const withFetch = async (impl: (url: string) => Promise<Response>) => {
+    const original = globalThis.fetch
+    globalThis.fetch = ((url: string) => impl(String(url))) as typeof fetch
+    setActivePinia(createPinia())
+    const store = useEventStore()
+    try {
+      await store.init()
+      return store
+    } finally {
+      globalThis.fetch = original
+    }
+  }
+  const json = (body: unknown) =>
+    Promise.resolve({ ok: true, json: () => Promise.resolve(body) } as Response)
+  const notFound = () => Promise.resolve({ ok: false, status: 404, json: () => Promise.reject() } as unknown as Response)
+
+  it('survives a manifest that never arrives', async () => {
+    // one unguarded await used to reject out of onMounted, leaving an app with
+    // no events at all and nothing that would ever ask again
+    const store = await withFetch(() => Promise.reject(new Error('offline')))
+    expect(store.manifest).toBeNull()
+    expect(store.all).toEqual([])
+  })
+
+  it('retries the manifest before giving up', async () => {
+    let calls = 0
+    const store = await withFetch((url) => {
+      if (url.endsWith('manifest.json')) {
+        calls++
+        return calls < 3 ? notFound() : json({ spine: 'spine.json', chunks: [] })
+      }
+      return json([{ id: 'a', name: 'A', start: 0, end: 0, lat: 0, lng: 0, tags: [], priority: 1 }])
+    })
+    expect(calls).toBe(3)
+    expect(store.all).toHaveLength(1)
+  })
+
+  it('treats an HTTP error as a failure rather than as data', async () => {
+    // fetch resolves for 404 and 500 alike, so a server that answers "not
+    // found" in JSON would have had its error object merged into the index
+    const store = await withFetch((url) =>
+      url.endsWith('manifest.json')
+        ? json({ spine: 'spine.json', chunks: [] })
+        : Promise.resolve({ ok: false, json: () => Promise.resolve({ error: 'nope' }) } as Response),
+    )
+    expect(store.all).toEqual([])
+    expect(store.requested.has('spine.json')).toBe(false) // and it will be asked for again
+  })
+
+  it('refuses a chunk that is not an array of events', async () => {
+    const store = await withFetch((url) =>
+      url.endsWith('manifest.json') ? json({ spine: 'spine.json', chunks: [] }) : json({ error: 'nope' }),
+    )
+    expect(store.all).toEqual([])
+  })
+})

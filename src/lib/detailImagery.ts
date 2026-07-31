@@ -169,29 +169,23 @@ export const bboxToUvRect = (b: Bbox): [number, number, number, number] => [
 export const MAX_PATCH_PX = 4096
 
 /**
- * Ceiling for a composite drawn while the camera is moving.
+ * The composite canvas is one size, and never shrinks under a moving camera.
  *
- * Every composite is a texture upload of its whole area, and at the full
- * ceiling that is 30 MB on a dense phone screen — paid several times a second
- * during a zoom, for pictures that each survive a couple of frames. Halving the
- * axis quarters the bytes, and what it costs is resolution in an image that is
- * already being replaced faster than the eye can resolve it. The full-size
- * composite is drawn the moment the camera stops, which is when anyone can
- * actually look at it.
- */
-export const MOTION_MAX_PX = 2048
-
-/**
- * How much of the screen's own density a composite is given while the camera is
- * moving.
+ * There used to be two: a half-scale one while the camera moved and a
+ * full-scale one at rest, on the reasoning that a picture replaced within a
+ * frame or two need not be sharp. The reasoning is sound and the behaviour is
+ * not. A wheel zoom is a burst of small movements with pauses between them, and
+ * the settle timer fires in every pause — so the canvas halved and doubled
+ * several times a second, and each doubling is imagery visibly snapping back
+ * into focus. That is the "replaced by lower and then back by higher" half of
+ * the field report, and it is worse than the cost it was avoiding: the display
+ * rule is that effective resolution must not go backward over ground the camera
+ * is already looking at, and a canvas that shrinks breaks it everywhere at once.
  *
- * An absolute ceiling only helps a screen large enough to reach it: on a
- * 760x520 window at devicePixelRatio 2 the composite is 1920x1408 and the
- * 2048 ceiling never binds, so every frame of a zoom still uploaded 10.8 MB.
- * A fraction bites on every screen, and halving each axis is a quarter of the
- * bytes for a picture that is replaced within a frame or two.
+ * What is left of the saving is the part that costs nothing to look at: the
+ * size ladder (COMPOSITE_SIZE_STEP) and the redraw dedupe mean one allocation
+ * and one upload per distinct picture, rather than one per frame.
  */
-export const MOTION_SCALE = 0.5
 
 /**
  * Granularity of a composite canvas's size.
@@ -951,16 +945,14 @@ export class DetailImagery {
     const plan = compositePlan(this.cache, target, Date.now())
     if (!plan.length) return false
     const sharpest = plan[plan.length - 1]
-    // While the camera is moving the composite is capped well below the screen's
-    // own density: it is a texture upload of its entire area, and at full size
-    // that is tens of megabytes several times a second — see MOTION_MAX_PX.
-    const cap = sharpen ? this.maxPx : Math.min(this.maxPx, MOTION_MAX_PX)
-    // The screen and the ceiling decide this, and nothing that moves with the
-    // camera — see compositeCanvasSize.
+    // The screen and the device ceiling decide this, and nothing that moves
+    // with the camera. One size means one GL allocation for the session and no
+    // resolution that can pump up and down as the camera starts and stops — see
+    // the note above compositeCanvasSize.
     const { width, height } = compositeCanvasSize(
-      this.viewport.px * (sharpen ? 1 : MOTION_SCALE),
+      this.viewport.px,
       this.viewport.aspect,
-      cap,
+      this.maxPx,
     )
 
     // Redrawing the same patches, at the same size, onto the same rectangle
@@ -1001,9 +993,10 @@ export class DetailImagery {
     this.sourceLabel = this.heldLabel = sharpest.source
     this.attribution = this.heldAttribution = this.attributions.get(sharpest.source) ?? ''
     this.publish(surf.canvas, target, {
-      // the composite is only as good as the patches in it, and its edges are
-      // the basemap, so the resolution we quote stays the one we actually have
-      groundRes: this.groundRes,
+      // the sharpest imagery actually drawn, not whichever request returned
+      // last: this is what the scale panel quotes, and what tells anyone
+      // watching whether the picture just got better or worse
+      groundRes: sharpest.groundRes,
       pxPerDeg: sharpest.pxPerDeg,
     })
     return true
@@ -1097,13 +1090,29 @@ export class DetailImagery {
     const now = Date.now()
     this.attributions.set(src.label, src.attribution ?? '')
     this.cache = pruneCache(
-      [{ bbox, source: src.label, pxPerDeg: meta.pxPerDeg, at: now, image: img }, ...this.cache],
+      [
+        {
+          bbox,
+          source: src.label,
+          pxPerDeg: meta.pxPerDeg,
+          groundRes: meta.groundRes,
+          at: now,
+          image: img,
+        },
+        ...this.cache,
+      ],
       bbox,
       now,
     )
     this.current = bbox
-    this.groundRes = meta.groundRes
     this.strikes = 0
+    // `groundRes` is not set here. It describes the imagery *on screen*, and an
+    // arrival does not always reach the screen: when the composite below
+    // dedupes — same patches, same size, same rectangle — nothing is
+    // republished, and writing the arrival's resolution anyway made the scale
+    // panel quote a coarser number than the picture it was standing next to.
+    // `publish` is the only writer, so the number and the pixels change
+    // together or not at all.
     const view = this.lastComposite
     // Sharpen only if the camera is actually still. An armed settle timer means
     // it is not: patches now land mid-zoom (see `generation`), and a Lanczos

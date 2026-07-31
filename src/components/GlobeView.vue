@@ -287,6 +287,11 @@ onMounted(() => {
       deviceMemoryGb: (navigator as { deviceMemory?: number }).deviceMemory,
     }),
   })
+  // dev-only handle, alongside __globe: the streaming pipeline's failures are
+  // all "what is on screen now versus a moment ago" questions, and without a
+  // way to read the loader's own state a screenshot cannot tell a patch that
+  // got sharper from one that got blurrier. Never exists in a production build.
+  if (import.meta.env.DEV) (window as unknown as { __detail?: DetailImagery }).__detail = detail
   if (import.meta.env.DEV) {
     ;(window as unknown as { __detail?: DetailImagery }).__detail = detail
   }

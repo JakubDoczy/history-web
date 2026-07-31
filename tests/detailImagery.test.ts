@@ -293,19 +293,14 @@ describe('compositeCanvasSize', () => {
     expect(sizes.size).toBe(1)
   })
 
-  it('gives one size for motion and one for rest, where the ceiling bites', () => {
-    // a dense phone screen, which is where the in-motion ceiling is the point
-    const at = (cap: number) => {
-      const s = call(2532, 0.46, cap)
-      return `${s.width}x${s.height}`
+  it('gives one size for a screen, whatever the camera is doing', () => {
+    // There is no longer a motion size and a rest size. A wheel zoom pauses
+    // between notches and the settle timer fires in each pause, so two sizes
+    // meant the canvas halving and doubling several times a second — imagery
+    // visibly snapping in and out of focus while the user turned the wheel.
+    for (const [px, aspect] of [[2532, 0.46], [700, 1.4], [1040, 1.9]] as const) {
+      expect(call(px, aspect, MAX_PATCH_PX)).toEqual(call(px, aspect, MAX_PATCH_PX))
     }
-    expect(new Set([at(MOTION_MAX_PX), at(MAX_PATCH_PX)]).size).toBe(2)
-    // and on a screen small enough that neither ceiling binds, one size for both
-    const small = (cap: number) => {
-      const s = call(700, 1.4, cap)
-      return `${s.width}x${s.height}`
-    }
-    expect(new Set([small(MOTION_MAX_PX), small(MAX_PATCH_PX)]).size).toBe(1)
   })
 
 })
@@ -1096,10 +1091,11 @@ describe('cached patch compositing', () => {
     expect(d.mix).toBe(0)
   })
 
-  it('draws a smaller composite while moving than it does at rest', () => {
-    // every composite is a texture upload of its whole area, and during a zoom
-    // it is replaced within a frame or two — see MOTION_MAX_PX
-    // a dense screen, so the ceiling is what binds rather than the source
+  it('never shrinks the composite because the camera moved', () => {
+    // The display rule: effective resolution must not go backward over ground
+    // the camera is already looking at. A canvas that halves while the camera
+    // moves and doubles when it stops breaks that everywhere at once, several
+    // times a second, for as long as the wheel is turning.
     const SCREEN = 3000
     const d = new DetailImagery({ maxPx: 4096 })
     for (let i = 0; i < 30; i++) {
@@ -1108,13 +1104,69 @@ describe('cached patch compositing', () => {
     }
     FakeImage.last!.onload!()
     const canvas = FakeCanvas.made[0]
-    expect(Math.max(canvas.width, canvas.height)).toBeGreaterThan(MOTION_MAX_PX)
+    const atRest = Math.max(canvas.width, canvas.height)
+    expect(atRest).toBeGreaterThan(0)
 
     d.update(45, 10 + PAN, CLOSE, SCREEN, 1)
-    const moving = Math.max(canvas.width, canvas.height)
-    expect(moving).toBeLessThanOrEqual(MOTION_MAX_PX)
+    expect(Math.max(canvas.width, canvas.height)).toBe(atRest)
     vi.advanceTimersByTime(SETTLE_MS + 32)
-    expect(Math.max(canvas.width, canvas.height)).toBeGreaterThan(moving)
+    expect(Math.max(canvas.width, canvas.height)).toBe(atRest)
+  })
+
+  it('never composites the canvas into itself', () => {
+    // A canvas drawn into itself is undefined at best and a feedback loop at
+    // worst, each generation nesting a copy of the last. Nothing puts the
+    // composite into the cache today, so this is a guard against a future
+    // change making it possible — checked by putting the destination in the
+    // cache by hand and confirming it is not drawn.
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const canvas = FakeCanvas.made[0]
+    const cache = (d as unknown as { cache: { image: unknown }[] }).cache
+    cache.unshift({ ...cache[0], image: canvas })
+    canvas.ops.length = 0
+    d.update(45, 10 + PAN, CLOSE, 900, 1)
+    expect(canvas.ops.some((o) => o.image === canvas)).toBe(false)
+  })
+
+  it('changes the rectangle only in the same call that redraws the pixels', () => {
+    // Content, rectangle and mip level describe one picture. If the rectangle
+    // moves to a new view while the texture still holds the previous
+    // composite's pixels, the shader stretches the old picture over the new
+    // ground — which is the other half of the stretch-and-nest report.
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const canvas = FakeCanvas.made[0]
+    const seen: { rect: number[]; ops: number }[] = []
+    for (const step of [0.4, 0.9, 1.5, 2.2]) {
+      canvas.ops.length = 0
+      d.update(45, 10 + PAN * step, CLOSE, 900, 1)
+      seen.push({ rect: [...d.rect], ops: canvas.ops.length })
+    }
+    // every frame that moved the rectangle also redrew the canvas
+    for (let i = 1; i < seen.length; i++) {
+      const moved = seen[i].rect.some((v, k) => v !== seen[i - 1].rect[k])
+      if (moved) expect(seen[i].ops).toBeGreaterThan(0)
+    }
+  })
+
+  it('quotes the resolution of the imagery on screen, not of the last arrival', () => {
+    // The scale panel reads this. An arrival that the composite dedupes away —
+    // same patches, same size, same rectangle — never reaches the screen, and
+    // quoting its resolution anyway is how a still picture came to be described
+    // as getting coarser and then finer again.
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const sharp = d.groundRes
+    expect(sharp).toBeGreaterThan(0)
+    // a second, coarser patch for the same view arrives and changes nothing
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10 + PAN, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    const before = d.groundRes
+    d.update(45, 10 + PAN, CLOSE, 900, 1)
+    expect(d.groundRes).toBe(before)
   })
 
   it('does not redraw the same composite twice', () => {
@@ -1176,15 +1228,16 @@ describe('cached patch compositing', () => {
     FakeImage.last!.onload!()
     const canvas = FakeCanvas.made[0]
     const first = { tex: d.texture, w: canvas.width, h: canvas.height }
-    // move, so the composite is cut at the smaller in-motion ceiling
-    d.update(45, 10 + PAN, CLOSE, 3000, 1)
+    // the window is resized, which is the one thing that still changes the
+    // composite's shape now that a moving camera does not
+    d.update(45, 10 + PAN, CLOSE, 1200, 1)
     expect(canvas.width).not.toBe(first.w)
     expect(d.texture).not.toBe(first.tex) // a fresh texture, so GL reallocates
     // ...and the texture object is kept where the shape has not changed, which
     // is what the snapped size ladder makes the common case
     const held = d.texture
     const shape = canvas.width
-    d.update(45, 10 + PAN * 1.6, CLOSE, 3000, 1)
+    d.update(45, 10 + PAN * 1.6, CLOSE, 1200, 1)
     expect(canvas.width).toBe(shape)
     expect(d.texture).toBe(held)
     d.dispose()
@@ -1319,7 +1372,7 @@ describe('bbox shape at the closest zoom', () => {
   })
 })
 
-import { patchPixelCap, MOTION_MAX_PX } from '../src/lib/detailImagery'
+import { patchPixelCap } from '../src/lib/detailImagery'
 
 describe('patchPixelCap', () => {
   it('never exceeds the GL limit or the hard ceiling', () => {
@@ -1358,10 +1411,4 @@ describe('patchPixelCap', () => {
   })
 })
 
-describe('MOTION_MAX_PX', () => {
-  it('is a real saving over the resting ceiling', () => {
-    expect(MOTION_MAX_PX).toBeLessThan(MAX_PATCH_PX)
-    // the upload is an area, so this is the number that reaches the bus
-    expect((MOTION_MAX_PX / MAX_PATCH_PX) ** 2).toBeLessThanOrEqual(0.25)
-  })
-})
+

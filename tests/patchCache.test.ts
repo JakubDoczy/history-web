@@ -8,6 +8,7 @@ import {
   placeOnCanvas,
   compositePlan,
   dominantSource,
+  visiblePlan,
   pruneCache,
   PATCH_KEEP,
   PATCH_TTL_MS,
@@ -195,14 +196,27 @@ describe('compositePlan', () => {
     expect(plan.map((p) => p.pxPerDeg)).toEqual([60, 900])
   })
 
-  it('drops patches older than the time to live', () => {
+  it('drops patches older than the time to live, once something fresh is as sharp', () => {
+    const plan = compositePlan(
+      [patch(target, 900, 0), patch(target, 900, PATCH_TTL_MS)],
+      target,
+      PATCH_TTL_MS + 1,
+    )
+    expect(plan).toHaveLength(1)
+    expect(plan[0].at).toBe(PATCH_TTL_MS)
+  })
+
+  it('keeps an expired patch that is still the sharpest thing covering the view', () => {
+    // A clock must never be the reason the picture gets blurrier. The imagery
+    // has not changed — these are static basemaps — so dropping the only sharp
+    // patch on screen in favour of a fresh coarse one is a pure regression.
     const plan = compositePlan(
       [patch(target, 900, 0), patch(target, 400, PATCH_TTL_MS)],
       target,
       PATCH_TTL_MS + 1,
     )
-    expect(plan).toHaveLength(1)
-    expect(plan[0].pxPerDeg).toBe(400)
+    expect(plan.map((p) => p.pxPerDeg)).toContain(900)
+    expect(plan[plan.length - 1].pxPerDeg).toBe(900) // and it is what gets drawn on top
   })
 
   it('drops slivers too thin to be worth a draw call', () => {
@@ -257,13 +271,27 @@ describe('dominantSource', () => {
   })
 
   it('adds up several patches of the same source', () => {
+    // two halves of the view from one source beat a sharp patch that reaches
+    // only a corner of it
     expect(
       dominantSource([
         patch(box(0, 0, 10, 5), 60, 0, 'halves'),
         patch(box(0, 5, 10, 10), 60, 1, 'halves'),
-        patch(box(0, 0, 10, 6), 900, 2, 'sharp'),
+        patch(box(0, 0, 10, 2), 900, 2, 'sharp'),
       ], target),
     ).toBe('halves')
+  })
+
+  it('keeps the sharp source through a pan that leaves a strip uncovered', () => {
+    // The old rule maximised coverage, so 90% sharp lost to 100% coarse and the
+    // whole view — including the ground the sharp patch still covered — dropped
+    // to the 500 m source. Coverage is a floor to clear, not a prize.
+    expect(
+      dominantSource([
+        patch(box(0, 0, 10, 10), 60, 1, 'coarse'),
+        patch(box(0, 0, 9, 10), 900, 2, 'sharp'),
+      ], target),
+    ).toBe('sharp')
   })
 
   it('ignores patches that miss the view, and is undefined with nothing to draw', () => {
@@ -282,14 +310,81 @@ describe('dominantSource', () => {
   })
 })
 
+describe('visiblePlan', () => {
+  const target = box(0, 0, 10, 10)
+
+  it('drops the concentric layers a zoom leaves behind', () => {
+    // Each wheel notch asks for a smaller box around the same point and they
+    // all arrive. Stacked coarsest-first that is a big soft rectangle, a
+    // smaller sharper one on it, a smaller sharper one on that — and the joins
+    // inside a composite have no feather, so every step is a visible edge:
+    // "a small image over a larger copy over a larger copy".
+    const plan = visiblePlan(
+      drawOrder([
+        patch(box(-10, -10, 20, 20), 100, 1),
+        patch(box(-2, -2, 12, 12), 400, 2),
+        patch(box(-1, -1, 11, 11), 900, 3),
+      ]),
+      target,
+    )
+    expect(plan.map((p) => p.pxPerDeg)).toEqual([900])
+  })
+
+  it('keeps a coarse patch that reaches ground the sharp one does not', () => {
+    const plan = visiblePlan(
+      drawOrder([patch(box(-5, -5, 15, 15), 100, 1), patch(box(2, 2, 8, 8), 900, 2)]),
+      target,
+    )
+    expect(plan.map((p) => p.pxPerDeg)).toEqual([100, 900])
+  })
+})
+
 describe('pruneCache', () => {
   const target = box(0, 0, 10, 10)
 
-  it('keeps only the newest few', () => {
-    const many = Array.from({ length: 9 }, (_, i) => patch(target, 500, i))
+  it('keeps the newest few when they are all equally useful', () => {
+    // same rectangle, same resolution: nothing tells them apart but age, and a
+    // patch that contains an earlier one entirely cannot need it
+    const many = Array.from({ length: 9 }, (_, i) => patch(box(0, 0, 10, 10 - i * 0.01), 60, i))
     const kept = pruneCache(many, target, 10)
     expect(kept).toHaveLength(PATCH_KEEP)
     expect(kept[0].at).toBe(8) // newest first
+  })
+
+  it('never evicts a sharper patch to make room for a coarser newer one', () => {
+    // This is the flip-flop. During a zoom the requests go out coarse to sharp
+    // and arrive in whatever order the network allows, so keeping "the newest
+    // four" regularly threw away the sharpest imagery on screen because a wider,
+    // coarser patch from earlier in the same zoom happened to land last.
+    const sharp = patch(box(4, 4, 6, 6), 4000, 0)
+    const coarse = Array.from({ length: 6 }, (_, i) => patch(box(-i, -i, 10 + i, 10 + i), 100 + i, i + 1))
+    const kept = pruneCache([...coarse, sharp], target, 10)
+    expect(kept).toContain(sharp)
+    expect(kept[0]).toBe(sharp) // and it is ranked first, so it survives every later arrival
+  })
+
+  it('bounds what it holds in bytes, not just in entries', () => {
+    // Four entries is not a bound: an entry is a decoded image at up to the
+    // device's texture ceiling, which is 67 MB on a desktop.
+    const huge = (i: number) => patch(box(0, 0, 40, 40), 2000 - i, i) // ~25 GB each
+    const many = [huge(0), huge(1), huge(2), huge(3)]
+    const kept = pruneCache(many, target, 10)
+    expect(kept).toHaveLength(1) // the sharpest, and nothing else fits
+    expect(kept[0].pxPerDeg).toBe(2000)
+    // and the sharpest is kept even when it alone exceeds the budget: refusing
+    // it would leave the view with nothing at all
+    expect(pruneCache([huge(0)], target, 10)).toHaveLength(1)
+  })
+
+  it('keeps several patches when they fit', () => {
+    const small = (i: number) => patch(box(-i, -i, 10 + i, 10 + i), 40 - i, i)
+    expect(pruneCache([small(0), small(1), small(2)], target, 10)).toHaveLength(3)
+  })
+
+  it('drops a patch a sharper one contains outright', () => {
+    const wide = patch(box(0, 0, 10, 10), 900, 5)
+    const inner = patch(box(2, 2, 8, 8), 300, 6) // newer, coarser, entirely inside
+    expect(pruneCache([wide, inner], target, 10)).toEqual([wide])
   })
 
   it('forgets patches the camera has jumped away from', () => {
@@ -302,8 +397,18 @@ describe('pruneCache', () => {
     expect(kept[0].bbox).toEqual(target)
   })
 
-  it('forgets expired patches even when they still overlap', () => {
+  it('forgets expired patches once something fresh is as sharp', () => {
+    const kept = pruneCache(
+      [patch(target, 500, 0), patch(target, 500, PATCH_TTL_MS)],
+      target,
+      PATCH_TTL_MS + 1,
+    )
+    expect(kept).toHaveLength(1)
+    expect(kept[0].at).toBe(PATCH_TTL_MS)
+  })
+
+  it('holds an expired patch that is still the only sharp imagery for the view', () => {
     const kept = pruneCache([patch(target, 500, 0)], target, PATCH_TTL_MS + 1)
-    expect(kept).toEqual([])
+    expect(kept).toHaveLength(1)
   })
 })
