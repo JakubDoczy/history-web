@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { EventIndex, type HistoricalEvent, type EventFilter } from '../lib/events'
 import { chunksFor, mergeEvents, type EventManifest } from '../lib/eventChunks'
 import { TAGS } from '../lib/tags'
-import { spanChangedEnough } from '../lib/eventClusters'
+import { FAN_COLLAPSE_FACTOR, spanChangedEnough } from '../lib/eventClusters'
 import { useTimeStore } from './time'
 import { useSettingsStore } from './settings'
 
@@ -98,11 +98,12 @@ export const useEventStore = defineStore('events', {
       this.expandedClusterId = undefined
     },
     /**
-     * Zoom moved. A fan laid out for one span is nonsense at another — and the
-     * clustering itself has re-run by then — so a big enough change closes it.
+     * Zoom moved. The fan itself follows the camera now (it is laid out in
+     * screen pixels from the live frame), so only a change big enough to have
+     * re-run the clustering closes it — see FAN_COLLAPSE_FACTOR.
      */
     noteSpan(spanDeg: number) {
-      if (this.expandedClusterId && spanChangedEnough(this.expandedSpan, spanDeg))
+      if (this.expandedClusterId && spanChangedEnough(this.expandedSpan, spanDeg, FAN_COLLAPSE_FACTOR))
         this.expandedClusterId = undefined
     },
     toggleTag(tag: string) {

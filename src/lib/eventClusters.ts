@@ -1,3 +1,4 @@
+import { degPerScreenPx } from './detailImagery'
 import type { HistoricalEvent } from './events'
 
 /**
@@ -97,21 +98,107 @@ export function clusterEvents(events: HistoricalEvent[], visibleSpanDeg: number)
 }
 
 /**
- * Where an expanded cluster's members sit: evenly around the anchor, at a
- * radius proportional to the visible span so the fan looks the same size on
- * screen at any zoom. Longitude is divided by cos(lat) so the ring stays round
- * instead of squashing toward the poles.
+ * The fan is measured on the *screen*, not on the globe.
+ *
+ * It used to be a fraction of `visibleSpanDeg` — the horizon, everything the
+ * camera could see if the lens were infinitely wide. Close in that is one to
+ * two orders of magnitude wider than the frame (at 0.02 radii: 22.7° of horizon
+ * against 1.05° of frame), so a fan sized off it threw its members hundreds of
+ * screens away. What a fan wants is a fixed number of pixels: far enough for
+ * the pins not to overlap, near enough to stay in view.
+ *
+ * So the radius is stated in CSS pixels and converted to degrees through the
+ * frame the camera actually shows (viewSpanDeg / viewport height). Zoom while
+ * the fan is open and the ring keeps the same size on screen.
  */
-export const FAN_SPAN_FRACTION = 0.038
+export const FAN_MIN_PX = 56
+export const FAN_MAX_PX = 72
+/** Members beyond this count stop widening the ring; it is capped anyway. */
+export const FAN_GROWTH_COUNT = 12
+/** The ring may never take more than this much of the viewport's short side. */
+export const FAN_MAX_VIEWPORT_FRACTION = 0.15
 
+/** The live camera, in the two units the fan needs to talk in. */
+export interface FanView {
+  /**
+   * Ground degrees per CSS pixel at the centre of the screen — the camera's own
+   * scale there (see detailImagery.degPerScreenPx).
+   *
+   * The centre's scale rather than the frame's average, because that average is
+   * a bad conversion anywhere near it: a sphere foreshortens hard toward the
+   * limb, so at world view the middle of the screen resolves several times finer
+   * than the frame as a whole, and a fan sized on the average would be that many
+   * times too wide.
+   */
+  degPerPx: number
+  /** Frame height in CSS px. */
+  heightPx: number
+  /** Frame width in CSS px, for the short-side cap. */
+  widthPx: number
+}
+
+/**
+ * How far above the surface the pins are drawn, in globe radii — the layer's
+ * `htmlAltitude`. 0.006 is 38 km, nothing at all next to a camera 16 000 km up
+ * and a third of the way to one 110 km up.
+ */
+export const PIN_ALTITUDE = 0.006
+
+/**
+ * The fan's view for a camera.
+ *
+ * The scale that matters is the one in the *pin plane*, not on the ground:
+ * everything a fan draws floats at PIN_ALTITUDE, and a plane a third nearer the
+ * camera is magnified by a third. Measured in the browser, ignoring this made
+ * the ring 14% too wide at a 300 km view and 53% too wide at a 110 km one —
+ * the closer the camera, the worse, which is exactly the complaint.
+ *
+ * Below the pin plane there is no sensible answer (the pins are behind the
+ * camera), so the lower bound keeps the arithmetic finite rather than pretending
+ * to be right.
+ */
+export function fanViewFor(camera: {
+  altitude: number
+  fovDeg: number
+  widthPx: number
+  heightPx: number
+}): FanView {
+  const above = Math.max(camera.altitude - PIN_ALTITUDE, camera.altitude * 0.1, 0)
+  return {
+    degPerPx: degPerScreenPx(above, camera.heightPx, camera.fovDeg),
+    widthPx: camera.widthPx,
+    heightPx: camera.heightPx,
+  }
+}
+
+/**
+ * Ring radius in CSS pixels: 56 px for a small cluster growing to 72 px at a
+ * dozen members, then hard-capped so the fan cannot leave the viewport however
+ * many members or however odd the window shape.
+ */
+export function fanRadiusPx(count: number, view: FanView): number {
+  const t = Math.min(1, Math.max(0, (count - 3) / (FAN_GROWTH_COUNT - 3)))
+  const wanted = FAN_MIN_PX + (FAN_MAX_PX - FAN_MIN_PX) * t
+  const shortSide = Math.max(1, Math.min(view.widthPx, view.heightPx))
+  return Math.max(1, Math.min(wanted, shortSide * FAN_MAX_VIEWPORT_FRACTION))
+}
+
+/** The same radius in degrees of arc, at the scale currently on screen. */
+export function fanRadiusDeg(count: number, view: FanView): number {
+  return fanRadiusPx(count, view) * Math.max(view.degPerPx, 0)
+}
+
+/**
+ * Where an expanded cluster's members sit: evenly around the anchor, at the
+ * screen-sized radius above. Longitude is divided by cos(lat) so the ring stays
+ * round instead of squashing toward the poles.
+ */
 export function fanPositions(
   centre: { lat: number; lng: number },
   count: number,
-  visibleSpanDeg: number,
+  view: FanView,
 ): { lat: number; lng: number }[] {
-  const r = Math.max(0.0008, visibleSpanDeg * FAN_SPAN_FRACTION)
-  // more than a handful and one ring gets crowded; widen it rather than overlap
-  const radius = r * (count > 6 ? count / 6 : 1)
+  const radius = fanRadiusDeg(count, view)
   return Array.from({ length: count }, (_, i) => {
     // start at the top and go clockwise; the first (highest-priority) member
     // therefore always sits directly above the anchor
@@ -121,6 +208,18 @@ export function fanPositions(
     return { lat, lng: wrapLngDeg(centre.lng + (Math.cos(a) * radius) / cos) }
   })
 }
+
+/**
+ * Thickness of a leg, in CSS pixels.
+ *
+ * The arcs layer takes angular degrees, which has the same failure the fan
+ * radius had: a fixed 0.24° is a hairline across the Atlantic and a 26 km
+ * ribbon over a city, wide enough at close zoom to swallow the pins it connects.
+ * So it is stated in pixels and converted through the same view.
+ */
+export const LEG_STROKE_PX = 1.6
+
+export const legStrokeDeg = (view: FanView) => Math.max(1e-9, LEG_STROKE_PX * view.degPerPx)
 
 /** A pin to draw: either one event or a collapsed cluster badge. */
 export type PinDatum =
@@ -151,7 +250,7 @@ export interface PinLayout {
  */
 export function layoutPins(
   groups: ClusterResult,
-  opts: { expandedId?: string; selectedId?: string; visibleSpanDeg: number },
+  opts: { expandedId?: string; selectedId?: string; fan: FanView },
 ): PinLayout {
   const pins: PinDatum[] = []
   const legs: ClusterLeg[] = []
@@ -172,7 +271,7 @@ export function layoutPins(
 
   for (const g of groups.clusters) {
     if (g.id === opts.expandedId) {
-      const spots = fanPositions(g, g.members.length, opts.visibleSpanDeg)
+      const spots = fanPositions(g, g.members.length, opts.fan)
       g.members.forEach((e, i) => {
         pins.push(asPin(e, spots[i], true))
         legs.push({
@@ -204,6 +303,17 @@ export function layoutPins(
  */
 export const clusterSpanBucket = (visibleSpanDeg: number) =>
   2 ** (Math.round(Math.log2(Math.max(1e-6, visibleSpanDeg)) * 2) / 2)
+
+/**
+ * How far the span may drift before an open cluster closes itself.
+ *
+ * Wider than it used to be, and deliberately: the fan is now laid out from the
+ * live frame, so it stays the right size on screen through a zoom and there is
+ * nothing to rescue. What still justifies closing it is that the *clustering*
+ * has re-run by then — past an octave or so the members are no longer one spot,
+ * and a fan of a group that no longer exists is a lie.
+ */
+export const FAN_COLLAPSE_FACTOR = 2.2
 
 /** Has the view moved enough that an open cluster no longer makes sense? */
 export const spanChangedEnough = (before: number, after: number, factor = 1.3) => {

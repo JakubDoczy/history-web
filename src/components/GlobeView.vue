@@ -16,12 +16,15 @@ import { cloudFadeFor, cloudSharpenFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { textureBlend } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
-import { pinElement, clusterElement } from '../lib/eventPins'
+import { pinElement, clusterElement, pinStateKey } from '../lib/eventPins'
 import {
   clusterEvents,
   clusterSpanBucket,
+  fanViewFor,
   layoutPins,
+  legStrokeDeg,
   type ClusterLeg,
+  type FanView,
   type PinDatum,
 } from '../lib/eventClusters'
 import { primaryTag, tagColor } from '../lib/tags'
@@ -57,14 +60,93 @@ const asPoly = (d: object) => d as PolyEntry
  */
 const clusterSpan = computed(() => clusterSpanBucket(visibleSpanDeg(view.altitude)))
 const groups = computed(() => clusterEvents(events.visible, clusterSpan.value))
+
+/** The frame the camera actually shows — what a fan is measured against. */
+const liveFan = (): FanView =>
+  // CSS pixels, not device pixels: the fan is measured against the pins, and a
+  // pin is 24 CSS px wide whatever the display's ratio
+  fanViewFor({
+    altitude: view.altitude,
+    fovDeg: view.fov,
+    widthPx: view.viewportWidthPx,
+    heightPx: view.viewportPx,
+  })
+/** Stands in when nothing is fanned; layoutPins never reads it then. */
+const NO_FAN: FanView = { degPerPx: 0, heightPx: 1, widthPx: 1 }
+
 const layout = computed(() =>
   layoutPins(groups.value, {
     expandedId: events.expandedClusterId,
     selectedId: events.selectedId,
-    visibleSpanDeg: clusterSpan.value,
+    // The live view is read *only* while a cluster is open. Vue tracks
+    // dependencies per run, so with nothing fanned this computed does not
+    // depend on the altitude at all and a zoom cannot invalidate the layout —
+    // which is what keeps a plain zoom from rebuilding every pin.
+    fan: events.expandedClusterId ? liveFan() : NO_FAN,
   }),
 )
 const closed = (ring: Ring) => [...ring, ring[0]]
+
+/**
+ * Pin identity, held across layouts.
+ *
+ * The globe's HTML layer joins data by *object identity*: a datum it has seen
+ * before keeps its element and is merely repositioned, a new one is built from
+ * scratch. Handing it a fresh `{...p}` every time — which is what this used to
+ * do — therefore rebuilt every pin element on every layout change, and a zoom
+ * changes the layout several times on its way in. Reusing one object per pin
+ * state (see pinStateKey) means a zoom that leaves the same events on screen
+ * rebuilds nothing; the elements are cached by the same key for the case where
+ * the globe does ask again.
+ */
+type KeyedPin = PinDatum & { key: string }
+const pinData = new Map<string, KeyedPin>()
+const pinEls = new Map<string, HTMLElement>()
+
+const stablePins = (pins: PinDatum[], selectedId?: string): KeyedPin[] => {
+  const live = new Set<string>()
+  const out = pins.map((p) => {
+    const key = pinStateKey(p, selectedId)
+    live.add(key)
+    const held = pinData.get(key)
+    if (held) {
+      // Same pin, new layout: copy the fresh datum's fields onto the object the
+      // layer already knows, so it moves that one instead of building another.
+      // Everything is copied, not just the position — a datum that keeps its
+      // identity must not keep stale fields (`fanned` went stale when a member
+      // left its cluster, and the next reader of it would have been wrong).
+      Object.assign(held as PinDatum, p)
+      return held
+    }
+    const fresh = { ...p, key } as KeyedPin
+    pinData.set(key, fresh)
+    return fresh
+  })
+  for (const key of [...pinData.keys()])
+    if (!live.has(key)) {
+      pinData.delete(key)
+      pinEls.delete(key)
+    }
+  return out
+}
+
+const legData = new Map<string, ClusterLeg>()
+const stableLegs = (legs: ClusterLeg[]): ClusterLeg[] => {
+  const live = new Set(legs.map((l) => l.id))
+  for (const id of [...legData.keys()]) if (!live.has(id)) legData.delete(id)
+  return legs.map((l) => {
+    const held = legData.get(l.id)
+    if (!held) {
+      legData.set(l.id, { ...l })
+      return legData.get(l.id)!
+    }
+    held.endLat = l.endLat
+    held.endLng = l.endLng
+    held.startLat = l.startLat
+    held.startLng = l.startLng
+    return held
+  })
+}
 
 // Only the selected event's area draws as a polygon: overlapping region fills
 // used to smother the planet. Unselected area events are pins like the rest.
@@ -90,9 +172,19 @@ onMounted(() => {
     .htmlTransitionDuration(0)
     .htmlElement((d) => {
       const p = asPin(d)
-      if (p.kind === 'cluster')
-        return clusterElement(p.members, () => events.expandCluster(p.id, clusterSpan.value))
-      return pinElement(p.event, events.selectedId === p.event.id, () => events.select(p.event.id))
+      const key = (d as KeyedPin).key ?? pinStateKey(p, events.selectedId)
+      const held = pinEls.get(key)
+      if (held) return held
+      const el =
+        p.kind === 'cluster'
+          ? clusterElement(p.members, () =>
+              // the live span, not the quantised one: it is compared against
+              // the live span on the next zoom
+              events.expandCluster(p.id, visibleSpanDeg(view.altitude)),
+            )
+          : pinElement(p.event, events.selectedId === p.event.id, () => events.select(p.event.id))
+      pinEls.set(key, el)
+      return el
     })
     .htmlElementVisibilityModifier((el, visible) => {
       el.style.opacity = visible ? '1' : '0'
@@ -109,7 +201,9 @@ onMounted(() => {
       return [c + '10', c + 'cc'] // fades in from the anchor so the badge stays clean
     })
     .arcAltitude(0.004)
-    .arcStroke(0.24)
+    // the legs are measured on screen like the fan they belong to; the layer is
+    // only ever re-digested while a fan is open, which is when this changes
+    .arcStroke(() => legStrokeDeg(liveFan()))
     .arcsTransitionDuration(180)
     // polygons layer: nation borders + the selected event's area
     .polygonGeoJsonGeometry((d) => ({
@@ -229,8 +323,26 @@ onMounted(() => {
     return Math.max(0, Math.min(1, (40 - span) / 30))
   }
 
-  const applyPov = () => {
+  type Pov = { lat: number; lng: number; altitude: number }
+  /** Has the camera moved enough for any of the work below to differ? */
+  const povMoved = (a: Pov | undefined, b: Pov) =>
+    !a ||
+    Math.abs(a.altitude - b.altitude) > Math.max(b.altitude, 1e-6) * 1e-3 ||
+    Math.abs(a.lat - b.lat) > 1e-4 ||
+    Math.abs(a.lng - b.lng) > 1e-4
+
+  let lastPov: Pov | undefined
+  let lastSync: Pov | undefined
+
+  const applyPov = (force = false) => {
     const pov = globe!.pointOfView()
+    // OrbitControls fires a change event per wheel notch and per pointer move,
+    // several times a frame during a zoom, and everything below — a projection
+    // matrix, store writes that wake Vue, a detail-streaming pass — is only a
+    // function of where the camera is. Doing it once per distinct pov is the
+    // whole difference between a throttled zoom and an interactive one.
+    if (!force && !povMoved(lastPov, pov)) return
+    lastPov = { ...pov }
     // how close the camera may come depends on whether modern imagery is allowed
     globe!.controls().minDistance = radius * (1 + minAltitudeFor(time.currentTime, settings.detail))
     // globe.gl pins near at 0.05, which is what limits how close the camera may
@@ -250,7 +362,9 @@ onMounted(() => {
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel
     view.viewportPx = el.value?.clientHeight ?? 900
+    view.viewportWidthPx = el.value?.clientWidth ?? 900
     surface!.setFlatLight(near)
+    lastSync = { ...pov }
     syncDetail(pov)
     // clouds retire well before the ground fills the screen; haze lingers longer
     const cloudy = cloudFadeFor(span)
@@ -263,7 +377,18 @@ onMounted(() => {
     atmosphere!.visible = settings.atmosphere && near < 0.9
   }
 
-  globe.onZoom(applyPov)
+  // One pass per frame at most: the camera can only be in one place per frame,
+  // so a change event that arrives after another has already been scheduled has
+  // nothing new to say.
+  let povRaf = 0
+  const scheduleApplyPov = () => {
+    if (povRaf) return
+    povRaf = requestAnimationFrame(() => {
+      povRaf = 0
+      applyPov()
+    })
+  }
+  globe.onZoom(scheduleApplyPov)
 
   const coords = (lat: number, lng: number, alt: number) => globe!.getCoords(lat, lng, alt)
   const sunDir = () => {
@@ -278,19 +403,28 @@ onMounted(() => {
   const t0 = performance.now()
   const tick = () => {
     if (!still) surface!.setCloudDrift((performance.now() - t0) / 1000)
-    syncDetail(globe!.pointOfView())
+    // streaming is a function of where the camera is, so a still camera has
+    // nothing to re-derive; the settle timer inside DetailImagery is already
+    // armed and lands the sharp patch on its own
+    const pov = globe!.pointOfView()
+    if (povMoved(lastSync, pov)) {
+      lastSync = { ...pov }
+      syncDetail(pov)
+    }
     raf = requestAnimationFrame(tick)
   }
   tick()
 
   stops.push(
-    // Fresh datum objects on purpose: globe.gl reuses DOM for identical data,
-    // which would leave selection styling stale. <=100 pins, so rebuilding is cheap.
     watchEffect(() => {
-      void events.selectedId
-      globe!.htmlElementsData(layout.value.pins.map((p) => ({ ...p })))
+      // selection is part of a pin's identity, so it must be a dependency here
+      // even though the layout object may be unchanged
+      globe!.htmlElementsData(stablePins(layout.value.pins, events.selectedId))
     }),
-    watchEffect(() => globe!.arcsData(layout.value.legs.map((l) => ({ ...l })))),
+    // Legs get stable identity for the same reason pins do: while a fan is open
+    // a zoom relays it every frame, and a fresh object would restart the arc's
+    // transition each time instead of moving the arc it already has.
+    watchEffect(() => globe!.arcsData(stableLegs(layout.value.legs))),
     watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
     watchEffect(() => (globe!.controls().autoRotate = settings.autoRotate)),
     watchEffect(() => surface!.setRelief(settings.relief ? 0.7 : 0)),
@@ -304,7 +438,7 @@ onMounted(() => {
       void settings.atmosphere
       void settings.detail
       void time.currentTime
-      applyPov()
+      applyPov(true) // a settings change, not a camera move: run it regardless
     }),
     watchEffect(() => {
       const dir = sunDir()
@@ -317,7 +451,7 @@ onMounted(() => {
 
   resizeObs = new ResizeObserver(() => {
     globe?.width(dom.clientWidth).height(dom.clientHeight)
-    applyPov() // the scale bar reads viewportPx; without this it is stale until the next zoom
+    applyPov(true) // the scale bar reads viewportPx; without this it is stale until the next zoom
   })
   resizeObs.observe(dom)
 })

@@ -42,6 +42,15 @@ describe('event store', () => {
       expect(events.expandedClusterId).toBeUndefined()
     })
 
+    it('rides out a zoom the fan can follow, since the fan is sized on screen', () => {
+      const events = useEventStore()
+      events.expandCluster('rome', 40)
+      events.noteSpan(20) // zoomed in 2x: the ring simply redraws smaller
+      expect(events.expandedClusterId).toBe('rome')
+      events.noteSpan(8) // 5x: the clustering itself has moved on
+      expect(events.expandedClusterId).toBeUndefined()
+    })
+
     it('does nothing on zoom when nothing is open', () => {
       const events = useEventStore()
       events.noteSpan(90)

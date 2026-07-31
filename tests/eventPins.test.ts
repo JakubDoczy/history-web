@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import type { HistoricalEvent } from '../src/lib/events'
-import { clusterSize, clusterSvg, pinHeight, pinShiftPercent, pinSvg } from '../src/lib/eventPins'
+import {
+  clusterSize,
+  clusterSvg,
+  pinHeight,
+  pinShiftPercent,
+  pinStateKey,
+  pinSvg,
+} from '../src/lib/eventPins'
+import type { PinDatum } from '../src/lib/eventClusters'
 import { TAG_COLORS } from '../src/lib/tags'
 
 const ev = (o: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
@@ -90,5 +98,36 @@ describe('cluster badge', () => {
 
   it('caps a huge count rather than overflowing the badge', () => {
     expect(clusterSvg(Array.from({ length: 240 }, () => ev()))).toContain('>99+</text>')
+  })
+})
+
+describe('pinStateKey', () => {
+  const a = ev({ id: 'a' })
+  const b = ev({ id: 'b' })
+  const pin = (e: HistoricalEvent, lat = 0, lng = 0, fanned = false): PinDatum => ({
+    kind: 'event', id: e.id, lat, lng, event: e, fanned,
+  })
+  const badge = (id: string, members: HistoricalEvent[]): PinDatum => ({
+    kind: 'cluster', id, lat: 0, lng: 0, members,
+  })
+
+  it('is the same for the same pin in the same state', () => {
+    expect(pinStateKey(pin(a), 'b')).toBe(pinStateKey(pin(a), 'b'))
+  })
+
+  it('ignores position, so a fanned pin moving does not rebuild it', () => {
+    expect(pinStateKey(pin(a, 10, 20), undefined)).toBe(pinStateKey(pin(a, -5, 130, true), undefined))
+  })
+
+  it('changes when selection changes, since the artwork does', () => {
+    expect(pinStateKey(pin(a), 'a')).not.toBe(pinStateKey(pin(a), undefined))
+    // ...but only for the pin that gained or lost it
+    expect(pinStateKey(pin(b), 'a')).toBe(pinStateKey(pin(b), undefined))
+  })
+
+  it('separates events from badges, and badges by what is in them', () => {
+    expect(pinStateKey(badge('a', [a, b]))).not.toBe(pinStateKey(pin(a)))
+    expect(pinStateKey(badge('a', [a, b]))).not.toBe(pinStateKey(badge('a', [a])))
+    expect(pinStateKey(badge('a', [a, b]))).toBe(pinStateKey(badge('a', [a, b])))
   })
 })

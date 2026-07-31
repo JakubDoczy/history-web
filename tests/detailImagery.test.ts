@@ -841,7 +841,7 @@ describe('cached patch compositing', () => {
     expect(FakeCanvas.made[0]?.ops.length ?? 0).toBe(before) // nothing to draw
   })
 
-  it('resamples a magnified patch rather than letting drawImage stretch it', () => {
+  it('resamples a magnified patch, but never inside the caller\'s task', async () => {
     // A canvas that can actually read and write pixels, which the stub above
     // deliberately cannot: the resampler is skipped without readback, and the
     // point of this test is that it is *not* skipped when readback exists.
@@ -892,12 +892,60 @@ describe('cached patch compositing', () => {
     PixelCanvas.made.length = 0
     d.update(45, 10, 0.02, 900, 1)
 
-    const composite = PixelCanvas.made.find((c) => c.ops.length)
-    expect(composite).toBeDefined()
-    // what was drawn is a canvas we produced, not the raw image: the patch went
-    // through the resampler on its way in
-    expect(composite!.ops[0].image).toBeInstanceOf(PixelCanvas)
+    // The zoom's own composite is bilinear: the raw image, straight onto the
+    // canvas, and not one pixel filtered on the way. That is what keeps the
+    // zoom handler inside a frame.
+    const immediate = PixelCanvas.made.find((c) => c.ops.length)
+    expect(immediate).toBeDefined()
+    expect(immediate!.ops[0].image).toBe(img)
+    expect(PixelCanvas.made.every((c) => c.put === 0)).toBe(true)
+
+    // ...and it stays bilinear for as long as the camera is moving: a resample
+    // per frame would only be thrown away by the next one
+    for (let i = 0; i < 10; i++) {
+      d.update(45, 10, 0.02 - i * 0.0005, 900, 1)
+      await vi.advanceTimersByTimeAsync(16)
+    }
+    expect(PixelCanvas.made.every((c) => c.put === 0)).toBe(true)
+
+    // Then the camera settles, the resample runs off this task, and the
+    // composite is redrawn with it — the same picture as before, only later.
+    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
     expect(PixelCanvas.made.some((c) => c.put > 0)).toBe(true)
+    const sharp = PixelCanvas.made
+      .flatMap((c) => c.ops)
+      .filter((o) => o.image instanceof PixelCanvas)
+    expect(sharp.length).toBeGreaterThan(0)
+    d.dispose()
+  })
+
+  it('asks for one resample per patch, however many frames a zoom takes', async () => {
+    let calls = 0
+    const d = new DetailImagery({
+      resampler: {
+        run: async () => {
+          calls++
+          return undefined
+        },
+        dispose: () => {},
+      },
+    })
+    for (let i = 0; i < 30; i++) {
+      d.update(45, 10, 0.09, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    Object.assign(FakeImage.last!, { naturalWidth: 600, naturalHeight: 400 })
+    FakeImage.last!.onload!()
+    // a continuous zoom: the wanted size changes every frame, and none of them
+    // is worth filtering because the next frame replaces it
+    for (let i = 0; i < 20; i++) {
+      d.update(45, 10, 0.05 - i * 0.0015, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    expect(calls).toBe(0)
+    // one pass once the camera stops, not one per frame
+    vi.advanceTimersByTime(SETTLE_MS + 32)
+    expect(calls).toBe(1)
     d.dispose()
   })
 

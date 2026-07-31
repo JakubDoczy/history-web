@@ -1,6 +1,6 @@
 import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 'three'
 import { compositePlan, placeOnCanvas, pruneCache, type CachedPatch } from './patchCache'
-import { resampleRGBA } from './lanczosWasm'
+import { createPatchResampler, type Crop, type PatchResampler } from './patchResample'
 
 /**
  * High-resolution imagery for the region being looked at, fetched from NASA GIBS
@@ -528,6 +528,8 @@ export const SETTLE_MS = 280
 
 export interface DetailImageryOptions {
   maxPx?: number
+  /** Where the Lanczos magnification runs; a worker by default. */
+  resampler?: PatchResampler
 }
 
 /** Metrics that only become true when the image they describe is on screen. */
@@ -573,11 +575,17 @@ export class DetailImagery {
   /** Lanczos upscales, keyed by the image they came from; dies with the patch. */
   private upscaled = new WeakMap<
     CanvasImageSource & object,
-    { canvas: HTMLCanvasElement; w: number; h: number; crop: { x: number; y: number; w: number; h: number } }
+    { canvas: CanvasImageSource; w: number; h: number; crop: Crop }
   >()
+  /** Patches whose upscale is being computed elsewhere; one job each. */
+  private upscaling = new Set<CanvasImageSource>()
+  private resampler: PatchResampler
+  /** What the last composite was cut to, so a late upscale can redraw it. */
+  private lastComposite?: { target: Bbox; screenPx: number }
 
   constructor(opts: DetailImageryOptions = {}) {
     this.maxPx = opts.maxPx ?? MAX_PATCH_PX
+    this.resampler = opts.resampler ?? createPatchResampler()
   }
 
   update(
@@ -649,6 +657,11 @@ export class DetailImagery {
     clearTimeout(this.settle)
     this.settle = setTimeout(() => {
       this.settle = undefined
+      // The camera has stopped. Now — and only now — is it worth magnifying
+      // what we hold properly: during the move the next frame would have
+      // replaced the result anyway, and each resample costs a full-resolution
+      // copy of the patch to hand to the worker.
+      this.recomposite(bbox, requestPx, true)
       this.load(bbox, requestPx, src)
     }, SETTLE_MS)
   }
@@ -695,6 +708,9 @@ export class DetailImagery {
    *    canvas, which upscaledSize already holds inside RESAMPLE_MAX_PX
    *  - once per (patch, size), cached on the patch, because a drag
    *    recomposites repeatedly against the same imagery
+   *  - and *never in this call*: the filter runs elsewhere (see
+   *    lib/patchResample.ts) and this draw takes the bilinear stretch until it
+   *    lands, so a composite costs a blit whether or not it is sharp yet
    */
   private drawPatch(
     ctx: CanvasRenderingContext2D,
@@ -705,8 +721,9 @@ export class DetailImagery {
     h: number,
     canvasW: number,
     canvasH: number,
+    sharpen: boolean,
   ) {
-    const up = this.magnified(p, x, y, w, h, canvasW, canvasH)
+    const up = this.magnified(p, x, y, w, h, canvasW, canvasH, sharpen)
     if (up) ctx.drawImage(up.canvas, up.x, up.y, up.w, up.h)
     else ctx.drawImage(p.image, x, y, w, h)
   }
@@ -720,6 +737,7 @@ export class DetailImagery {
     h: number,
     canvasW: number,
     canvasH: number,
+    sharpen: boolean,
   ): { canvas: CanvasImageSource; x: number; y: number; w: number; h: number } | undefined {
     const nat = DetailImagery.naturalSize(p.image)
     if (!nat || w < 1 || h < 1) return undefined
@@ -754,44 +772,41 @@ export class DetailImagery {
       return { canvas: held.canvas, x: vx, y: vy, w: vw, h: vh }
     }
 
-    const canvas = this.resample(p.image, crop, vw, vh)
-    if (!canvas) return undefined
-    this.upscaled.set(p.image, { canvas, w: vw, h: vh, crop })
-    return { canvas, x: vx, y: vy, w: vw, h: vh }
+    if (sharpen) this.requestUpscale(p.image, crop, vw, vh)
+    return undefined // bilinear stands in until the sharp version arrives
   }
 
-  /** The pixel round-trip: image crop -> ImageData -> Lanczos-3 -> canvas. */
-  private resample(
-    image: CanvasImageSource,
-    crop: { x: number; y: number; w: number; h: number },
-    dw: number,
-    dh: number,
-  ): HTMLCanvasElement | undefined {
-    if (typeof document === 'undefined' || typeof ImageData === 'undefined') return undefined
-    const cw = Math.max(1, Math.round(crop.w))
-    const ch = Math.max(1, Math.round(crop.h))
-    try {
-      const src = document.createElement('canvas')
-      src.width = cw
-      src.height = ch
-      const sctx = src.getContext('2d', { willReadFrequently: true })
-      // a stub canvas (tests) has no pixel readback; fall through to bilinear
-      if (!sctx?.getImageData) return undefined
-      sctx.drawImage(image, crop.x, crop.y, crop.w, crop.h, 0, 0, cw, ch)
-      const out = resampleRGBA(sctx.getImageData(0, 0, cw, ch), dw, dh)
+  /**
+   * Ask for a magnified copy, and redraw once it exists.
+   *
+   * One job per patch at a time: during a zoom the wanted size changes every
+   * frame, and queueing a resample per frame would move the stall rather than
+   * remove it. The job in flight finishes, the redraw it triggers asks for the
+   * size wanted *then*, and the sequence converges as soon as the camera stops.
+   */
+  private requestUpscale(image: CanvasImageSource, crop: Crop, dw: number, dh: number) {
+    if (this.upscaling.has(image)) return
+    this.upscaling.add(image)
+    this.resampler
+      .run(image, crop, dw, dh)
+      .then((canvas) => {
+        this.upscaling.delete(image)
+        if (!canvas) return
+        this.release(this.upscaled.get(image)?.canvas)
+        this.upscaled.set(image, { canvas, w: dw, h: dh, crop })
+        const last = this.lastComposite
+        // Redraw only what is on screen now. recomposite() will find this
+        // upscale in the cache and draw it, so there is no loop.
+        if (last && this.cache.some((p) => p.image === image)) {
+          this.recomposite(last.target, last.screenPx, true)
+        }
+      })
+      .catch(() => this.upscaling.delete(image))
+  }
 
-      const dst = document.createElement('canvas')
-      dst.width = out.width
-      dst.height = out.height
-      const dctx = dst.getContext('2d')
-      if (!dctx?.putImageData) return undefined
-      dctx.putImageData(new ImageData(out.data, out.width, out.height), 0, 0)
-      return dst
-    } catch {
-      // a tainted canvas is the realistic failure here: readback throws, and
-      // the bilinear path is a perfectly good answer
-      return undefined
-    }
+  /** An ImageBitmap holds real memory until closed; a canvas needs nothing. */
+  private release(canvas?: CanvasImageSource) {
+    if (typeof ImageBitmap !== 'undefined' && canvas instanceof ImageBitmap) canvas.close()
   }
 
   /**
@@ -799,9 +814,12 @@ export class DetailImagery {
    * `target`, coarsest first, and hand that to the shader as the single detail
    * texture. The shader contract does not change: one texture, one rectangle.
    */
-  private recomposite(target: Bbox, screenPx: number): boolean {
+  private recomposite(target: Bbox, screenPx: number, sharpen = false): boolean {
     const plan = compositePlan(this.cache, target, Date.now())
     if (!plan.length) return false
+    // remembered so a resample that lands after the camera has moved on
+    // redraws the view that is actually on screen
+    this.lastComposite = { target, screenPx }
     const sharpest = plan[plan.length - 1]
     // Two sizes: what the imagery we hold actually contains, and what the
     // screen would like. The canvas is sized between them — see
@@ -815,7 +833,7 @@ export class DetailImagery {
     surf.ctx.clearRect(0, 0, width, height)
     for (const p of plan) {
       const { x, y, w, h } = placeOnCanvas(target, p.bbox, width, height)
-      this.drawPatch(surf.ctx, p, x, y, w, h, width, height)
+      this.drawPatch(surf.ctx, p, x, y, w, h, width, height, sharpen)
     }
     this.publish(surf.canvas, target, {
       // from the natural size, not the canvas: the shader uses this to pick the
@@ -928,17 +946,26 @@ export class DetailImagery {
 
   /** The one place a texture reaches the shader, whether patch or composite. */
   private publish(source: CanvasImageSource, bbox: Bbox, meta: PatchMeta) {
-    const next = new Texture(source as HTMLImageElement)
-    next.colorSpace = SRGBColorSpace
-    // mipmaps are needed: the shader samples a deliberately blurred copy of the
-    // patch to separate its fine detail from its overall colour
-    next.minFilter = LinearMipmapLinearFilter
-    next.magFilter = LinearFilter
-    next.generateMipmaps = true
-    next.needsUpdate = true
-
+    // The composite canvas is reused between draws, so most publishes hand the
+    // shader the same image object again. Re-flagging that texture re-uploads
+    // the pixels without reallocating the GL texture or re-deriving its
+    // parameters, which a fresh Texture per composite made the driver do on
+    // every frame of a zoom.
     const previous = this.texture
-    this.texture = next
+    if (previous && previous.image === source) {
+      previous.needsUpdate = true
+    } else {
+      const next = new Texture(source as HTMLImageElement)
+      next.colorSpace = SRGBColorSpace
+      // mipmaps are needed: the shader samples a deliberately blurred copy of
+      // the patch to separate its fine detail from its overall colour
+      next.minFilter = LinearMipmapLinearFilter
+      next.magFilter = LinearFilter
+      next.generateMipmaps = true
+      next.needsUpdate = true
+      this.texture = next
+      previous?.dispose()
+    }
     this.rect = bboxToUvRect(bbox)
     this.composited = bbox
     this.lod = meta.lod
@@ -946,13 +973,13 @@ export class DetailImagery {
     this.mix = 1
     this.shown = true
     this.status = 'ready'
-    previous?.dispose()
     this.onReady?.()
   }
 
   dispose() {
     this.cancelQueued()
     this.cache = []
+    this.resampler.dispose()
     this.texture?.dispose()
   }
 }

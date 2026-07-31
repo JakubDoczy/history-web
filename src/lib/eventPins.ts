@@ -1,4 +1,5 @@
 import type { HistoricalEvent } from './events'
+import type { PinDatum } from './eventClusters'
 import { primaryTag, tagColor } from './tags'
 
 /**
@@ -108,6 +109,23 @@ export function clusterSvg(members: HistoricalEvent[]): string {
     `</svg>`
   )
 }
+
+/**
+ * Everything about a pin that decides what its DOM looks like.
+ *
+ * The globe's HTML layer keeps the element it already built for a datum it has
+ * seen before, and rebuilds — reparsing the SVG — for one it has not. Keying on
+ * this string means a pin is rebuilt when, and only when, its artwork would
+ * actually differ: a zoom that leaves the same events on screen touches no DOM
+ * at all, however many times it re-runs the layout.
+ *
+ * Position is deliberately *not* part of the key. A fanned pin moves as the
+ * camera zooms, and moving an element is a transform, not a rebuild.
+ */
+export const pinStateKey = (p: PinDatum, selectedId?: string): string =>
+  p.kind === 'cluster'
+    ? `c:${p.id}:${p.members.map((e) => e.id).join('|')}`
+    : `e:${p.id}:${selectedId === p.id ? 1 : 0}`
 
 /** Shared wiring: pins must not let their click reach the globe underneath. */
 function interactive(el: HTMLElement, onClick: () => void) {
