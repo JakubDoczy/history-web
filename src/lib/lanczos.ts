@@ -59,7 +59,13 @@ export function lanczosWeights(srcLen: number, dstLen: number, a = LANCZOS_A): W
   const ratio = srcLen / dstLen
   const filterScale = Math.max(ratio, 1) // widen only when shrinking
   const support = a * filterScale
-  const taps = Math.max(1, Math.ceil(support * 2) + 1)
+  // ceil(2·support) columns, not one more. The extra column is provably always
+  // zero — `first` is ceil(centre − support), so the last column sits at
+  // (first − centre + taps − 1)/filterScale ≥ support/filterScale = a, and the
+  // kernel is exactly 0 from a outwards. It cost a seventh of every multiply in
+  // the compiled kernel, which does not test weights for zero the way the
+  // reference loop does.
+  const taps = Math.max(1, Math.ceil(support * 2))
   const starts = new Int32Array(dstLen)
   const weights = new Float32Array(dstLen * taps)
   for (let i = 0; i < dstLen; i++) {

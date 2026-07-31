@@ -7,11 +7,12 @@ import { lanczosWeights, resampleLanczos3, type PixelBuffer } from './lanczos'
  * The TypeScript version in ./lanczos.ts is the specification and the thing the
  * tests check; it is also 4487 ms for a 2048x1024 -> 4096x2048 upscale, which
  * is thirty-odd frames of stall. This module runs the same arithmetic in
- * WebAssembly (~90 ms measured) and falls back to the TS whenever the module
- * cannot be instantiated, so the pipeline never depends on it existing.
+ * WebAssembly (~50 ms measured, against ~120 ms before the kernel was
+ * reworked) and falls back to the TS whenever the module cannot be
+ * instantiated, so the pipeline never depends on it existing.
  *
  * The binary is inlined as base64 rather than shipped as a separate asset:
- * 1.7 kB compiled is under the cost of the extra request, and it means the
+ * 2.5 kB compiled is under the cost of the extra request, and it means the
  * resampler has no load order to get wrong — no `await import`, no half-ready
  * state where a patch arrives before the kernel does.
  */
@@ -36,6 +37,7 @@ interface Kernel {
     tapsY: number,
     tmpP: number,
     band: number,
+    scratchP: number,
   ): void
 }
 
@@ -93,15 +95,15 @@ export function lanczosKernel(): Kernel | null {
   return kernel
 }
 
-/**
- * Lanczos-3 resample through the compiled kernel, or `null` if it is not
- * available. Same contract as `resampleLanczos3`.
- */
-export function resampleLanczos3Wasm(
-  src: PixelBuffer,
-  dstW: number,
-  dstH: number,
-): PixelBuffer | null {
+/** Finished pixels, still sitting in the kernel's memory. */
+interface KernelResult {
+  pixels: Uint8Array
+  width: number
+  height: number
+}
+
+/** Run the kernel and leave the answer where it landed, or `null` if it cannot run. */
+function runKernel(src: PixelBuffer, dstW: number, dstH: number): KernelResult | null {
   const k = lanczosKernel()
   if (!k) return null
   const w = Math.max(1, Math.round(dstW))
@@ -114,9 +116,13 @@ export function resampleLanczos3Wasm(
   const srcBytes = src.width * src.height * 4
   const dstBytes = w * h * 4
   const tmpBytes = BAND * src.height * 4 * 4
+  // the widest source span one band can read: a whole row, plus the filter
+  // hanging off both ends. `starts` never goes below -taps nor above srcW.
+  const scratchBytes = (src.width + 2 * x.taps + 4) * 16
   const srcP = k.alloc(srcBytes)
   const dstP = k.alloc(dstBytes)
   const tmpP = k.alloc(tmpBytes)
+  const scratchP = k.alloc(scratchBytes)
   const wxP = k.alloc(x.weights.byteLength)
   const sxP = k.alloc(x.starts.byteLength)
   const wyP = k.alloc(y.weights.byteLength)
@@ -147,12 +153,54 @@ export function resampleLanczos3Wasm(
     dstP, w, h,
     wxP, sxP, x.taps,
     wyP, syP, y.taps,
-    tmpP, BAND,
+    tmpP, BAND, scratchP,
   )
 
-  const data = new Uint8ClampedArray(dstBytes)
-  data.set(new Uint8Array(k.memory.buffer, dstP, dstBytes))
-  return { data, width: w, height: h }
+  return { pixels: new Uint8Array(k.memory.buffer, dstP, dstBytes), width: w, height: h }
+}
+
+/**
+ * Lanczos-3 resample through the compiled kernel, or `null` if it is not
+ * available. Same contract as `resampleLanczos3`.
+ */
+export function resampleLanczos3Wasm(
+  src: PixelBuffer,
+  dstW: number,
+  dstH: number,
+): PixelBuffer | null {
+  const r = runKernel(src, dstW, dstH)
+  if (!r) return null
+  const data = new Uint8ClampedArray(r.pixels.length)
+  data.set(r.pixels)
+  return { data, width: r.width, height: r.height }
+}
+
+/**
+ * Resample, and read the result *where the kernel left it*.
+ *
+ * The copy `resampleLanczos3Wasm` makes is not free at the sizes this app
+ * reaches: allocating and filling a 134 MB `Uint8ClampedArray` for an
+ * 8192x4096 result measured 332 ms in a worker — longer than the filter that
+ * produced it. A caller that is going to walk the pixels anyway (the cloud
+ * mask keeps one channel in four) can walk them here instead and never
+ * materialise the RGBA copy at all.
+ *
+ * `take` is handed a view into the kernel's linear memory and must not keep
+ * it: the next resample overwrites those bytes, and a `memory.grow` detaches
+ * the view outright. Read what you need, return a buffer of your own. Where
+ * the kernel is unavailable `take` gets the TypeScript result's own array
+ * instead, so the contract is the same on both paths.
+ */
+export function resampleRGBAView<T>(
+  src: PixelBuffer,
+  dstW: number,
+  dstH: number,
+  take: (pixels: Uint8Array | Uint8ClampedArray, width: number, height: number) => T,
+): T {
+  const r = runKernel(src, dstW, dstH)
+  if (r) return take(r.pixels, r.width, r.height)
+  const out = resampleLanczos3(src, dstW, dstH)
+  return take(out.data, out.width, out.height)
 }
 
 /**

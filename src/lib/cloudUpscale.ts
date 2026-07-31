@@ -1,4 +1,4 @@
-import { resampleRGBA } from './lanczosWasm'
+import { resampleRGBAView } from './lanczosWasm'
 import type { PixelBuffer } from './lanczos'
 
 /**
@@ -18,7 +18,7 @@ import type { PixelBuffer } from './lanczos'
  * The result is a *mask*: one meaningful channel. It is resampled as RGBA
  * because that is what the shared resampler speaks — the three redundant
  * channels cost time in the worker, not on the GPU, since only the red channel
- * is uploaded.
+ * is uploaded. They are at least never copied: see `upscaleCloudMask`.
  */
 export const CLOUD_UPSCALE = 2
 
@@ -47,45 +47,61 @@ export interface MaskBuffer {
 }
 
 /**
- * Red channel of an RGBA buffer, as a single-channel image.
+ * Red channel of an RGBA buffer, as a single-channel image, optionally
+ * bottom-up.
  *
  * Uploading R8 rather than RGBA8 is a quarter of the texture memory for a map
  * the shader only ever reads `.r` from, and at 8192×4096 that is 32 MB against
  * 128 MB — worth one pass over the buffer.
- */
-export function redChannel(src: PixelBuffer): MaskBuffer {
-  const out = new Uint8Array(src.width * src.height)
-  for (let i = 0; i < out.length; i++) out[i] = src.data[i * 4]
-  return { data: out, width: src.width, height: src.height }
-}
-
-/**
- * Reverse the row order of a mask.
  *
- * The bundled JPEG is uploaded by three's TextureLoader with `flipY` on — the
- * shader's v axis therefore runs bottom-up — while `DataTexture` defaults it
- * off and is documented as ignoring it. Rather than depend on a flag whose
- * behaviour differs per texture class (and whose failure mode is a globe with
- * the southern hemisphere's weather over the north, which is subtle enough to
- * ship), the replacement is flipped here, in one pure function that can be
- * checked.
+ * The row flip is a parameter rather than a second function because it is free
+ * here and was not free as a second pass: reversing the rows afterwards read
+ * and wrote another 33 MB, measured at 26 ms in the worker, to move bytes that
+ * this loop was already touching. Why the flip is needed at all: the bundled
+ * JPEG is uploaded by three's TextureLoader with `flipY` on — the shader's v
+ * axis therefore runs bottom-up — while `DataTexture` defaults it off and is
+ * documented as ignoring it. Rather than depend on a flag whose behaviour
+ * differs per texture class (and whose failure mode is a globe with the
+ * southern hemisphere's weather over the north, which is subtle enough to
+ * ship), the replacement is flipped here, where it can be checked.
  */
-export function flipRows(m: MaskBuffer): MaskBuffer {
-  const out = new Uint8Array(m.data.length)
-  for (let y = 0; y < m.height; y++) {
-    out.set(m.data.subarray(y * m.width, (y + 1) * m.width), (m.height - 1 - y) * m.width)
+export function redChannel(
+  // deliberately structural, not `PixelBuffer`: the caller below hands this a
+  // view into the resampler's own memory, which is a plain Uint8Array
+  src: { data: ArrayLike<number>; width: number; height: number },
+  flip = false,
+): MaskBuffer {
+  const { width, height } = src
+  const out = new Uint8Array(width * height)
+  for (let y = 0; y < height; y++) {
+    let i = y * width * 4
+    let o = (flip ? height - 1 - y : y) * width
+    for (let x = 0; x < width; x++, i += 4, o++) out[o] = src.data[i]
   }
-  return { data: out, width: m.width, height: m.height }
+  return { data: out, width, height }
 }
 
 /**
- * Lanczos-3 the cloud mask up by `scale`, returning single-channel bytes.
+ * Lanczos-3 the cloud mask up by `scale`, returning single-channel bytes —
+ * bottom-up when `flip`, which is what the DataTexture upload wants.
+ *
+ * The three channels this throws away are never copied out of the resampler:
+ * `resampleRGBAView` reads them where the kernel left them. At 8192x4096 the
+ * copy this avoids is 134 MB and measured 332 ms, against ~200 ms for the
+ * filter itself — the buffer shuffling really was the larger half of this
+ * path.
  *
  * Pure, and pure by necessity: this runs in a worker, where the only way to
  * know it did the right thing is to have checked it somewhere else.
  */
-export function upscaleCloudMask(src: PixelBuffer, scale = CLOUD_UPSCALE): MaskBuffer {
+export function upscaleCloudMask(
+  src: PixelBuffer,
+  scale = CLOUD_UPSCALE,
+  flip = false,
+): MaskBuffer {
   const w = Math.max(1, Math.round(src.width * scale))
   const h = Math.max(1, Math.round(src.height * scale))
-  return redChannel(resampleRGBA(src, w, h))
+  return resampleRGBAView(src, w, h, (pixels, width, height) =>
+    redChannel({ data: pixels, width, height }, flip),
+  )
 }

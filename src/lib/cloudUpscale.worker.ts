@@ -1,4 +1,4 @@
-import { flipRows, upscaleCloudMask } from './cloudUpscale'
+import { upscaleCloudMask } from './cloudUpscale'
 
 /**
  * The cloud upscale, off the main thread.
@@ -43,7 +43,7 @@ ctx.onmessage = (e: MessageEvent<CloudUpscaleRequest>) => {
     g2d.drawImage(bitmap, 0, 0)
     const src = g2d.getImageData(0, 0, bitmap.width, bitmap.height)
     const t0 = performance.now()
-    const out = flipRows(upscaleCloudMask(src, scale))
+    const out = upscaleCloudMask(src, scale, true)
     const msg: CloudUpscaleResponse = { ...out, ms: performance.now() - t0 }
     ctx.postMessage(msg, [out.data.buffer as ArrayBuffer])
   } catch {

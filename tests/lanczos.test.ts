@@ -6,7 +6,12 @@ import {
   LANCZOS_A,
   type PixelBuffer,
 } from '../src/lib/lanczos'
-import { resampleLanczos3Wasm, resampleRGBA, lanczosKernel } from '../src/lib/lanczosWasm'
+import {
+  resampleLanczos3Wasm,
+  resampleRGBA,
+  resampleRGBAView,
+  lanczosKernel,
+} from '../src/lib/lanczosWasm'
 
 const buffer = (w: number, h: number, f: (x: number, y: number) => [number, number, number, number]) => {
   const data = new Uint8ClampedArray(w * h * 4)
@@ -201,6 +206,31 @@ describe('the compiled kernel', () => {
         expect(Math.abs(wasm.data[i] - ts.data[i])).toBeLessThanOrEqual(1)
       }
     }
+  })
+
+  it('resampleRGBAView shows the caller exactly what resampleRGBA would have copied', () => {
+    // the cloud mask reads one channel in four straight out of the kernel's
+    // memory rather than paying for a 134 MB copy it would then throw away;
+    // that only holds if the view is the same pixels
+    const src = buffer(37, 29, (x, y) => [(x * 3) % 256, (y * 19) % 256, (x ^ y) % 256, 255])
+    const copied = resampleRGBA(src, 61, 53)
+    const seen = resampleRGBAView(src, 61, 53, (pixels, width, height) => ({
+      bytes: [...pixels],
+      width,
+      height,
+    }))
+    expect([seen.width, seen.height]).toEqual([copied.width, copied.height])
+    expect(seen.bytes).toEqual([...copied.data])
+  })
+
+  it('resampleRGBAView still answers when the kernel is not there', () => {
+    // the view is a view of wasm memory on the compiled path and of a plain
+    // array on the fallback; a caller must not be able to tell
+    const src = buffer(16, 11, (x, y) => [x * 5, y * 9, 40, 255])
+    const ts = resampleLanczos3(src, 33, 21)
+    const seen = resampleRGBAView(src, 33, 21, (p) => [...p])
+    expect(seen.length).toBe(ts.data.length)
+    for (let i = 0; i < ts.data.length; i++) expect(Math.abs(seen[i] - ts.data[i])).toBeLessThanOrEqual(1)
   })
 
   it('resampleRGBA returns the same result whichever path it takes', () => {

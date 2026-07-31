@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { redChannel, upscaleCloudMask, flipRows, CLOUD_UPSCALE } from '../src/lib/cloudUpscale'
+import { redChannel, upscaleCloudMask, CLOUD_UPSCALE } from '../src/lib/cloudUpscale'
 import type { PixelBuffer } from '../src/lib/lanczos'
 
 const buffer = (w: number, h: number, at: (x: number, y: number) => number): PixelBuffer => {
@@ -71,25 +71,44 @@ describe('upscaleCloudMask', () => {
   })
 })
 
-describe('flipRows', () => {
+describe('the row flip', () => {
   it('reverses row order and nothing else', () => {
-    const m = { data: new Uint8Array([1, 2, 3, 4, 5, 6]), width: 3, height: 2 }
-    expect([...flipRows(m).data]).toEqual([4, 5, 6, 1, 2, 3])
+    const src: PixelBuffer = {
+      data: new Uint8ClampedArray([1, 0, 0, 255, 2, 0, 0, 255, 3, 0, 0, 255, 4, 0, 0, 255, 5, 0, 0, 255, 6, 0, 0, 255]),
+      width: 3,
+      height: 2,
+    }
+    expect([...redChannel(src, true).data]).toEqual([4, 5, 6, 1, 2, 3])
   })
 
   it('is its own inverse', () => {
-    const m = upscaleCloudMask(buffer(8, 6, (x, y) => x * 7 + y * 13), 1)
-    expect([...flipRows(flipRows(m)).data]).toEqual([...m.data])
+    const src = buffer(8, 6, (x, y) => x * 7 + y * 13)
+    const straight = upscaleCloudMask(src, 1)
+    const flipped = upscaleCloudMask(src, 1, true)
+    const back = new Uint8Array(flipped.data.length)
+    for (let y = 0; y < flipped.height; y++) {
+      back.set(
+        flipped.data.subarray(y * flipped.width, (y + 1) * flipped.width),
+        (flipped.height - 1 - y) * flipped.width,
+      )
+    }
+    expect([...back]).toEqual([...straight.data])
   })
 
   it('leaves the columns alone, so the antimeridian cannot move', () => {
-    const m = upscaleCloudMask(buffer(8, 6, (x) => x * 30), 1)
-    const flipped = flipRows(m)
+    const src = buffer(8, 6, (x) => x * 30)
+    const m = upscaleCloudMask(src, 1)
+    const flipped = upscaleCloudMask(src, 1, true)
     for (let y = 0; y < m.height; y++) {
       for (let x = 0; x < m.width; x++) {
         expect(flipped.data[y * m.width + x]).toBe(m.data[(m.height - 1 - y) * m.width + x])
       }
     }
+  })
+
+  it('is off by default — the straight mask is not silently upside down', () => {
+    const src = buffer(4, 3, (_x, y) => y * 40)
+    expect([...upscaleCloudMask(src, 1).data]).toEqual([...redChannel(src).data])
   })
 })
 
