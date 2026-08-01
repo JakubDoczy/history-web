@@ -6,6 +6,7 @@ import {
   MINOR_PRIORITY,
   anchorYearOf,
   derivedEventsFor,
+  effectivePriority,
   isConcept,
   isEvent,
   isMinor,
@@ -543,9 +544,14 @@ describe('items — behaviour through the query layer', () => {
     for (const [s, e] of windows) {
       const got = index.query(s, e, {}, 20)
       expect(got.length, `window ${s}..${e} is empty`).toBeGreaterThanOrEqual(3)
-      // returned highest-priority first
+      // Returned best-first — by *effective* priority, which is rank discounted
+      // by how much of the event this window actually holds (see
+      // `coveragePenalty`). Raw priority is no longer the order: a 146-year
+      // trend seen through a decade ranks below the decade's own events.
       for (let i = 1; i < got.length; i++)
-        expect(got[i].priority).toBeLessThanOrEqual(got[i - 1].priority)
+        expect(effectivePriority(got[i], s, e)).toBeLessThanOrEqual(
+          effectivePriority(got[i - 1], s, e),
+        )
     }
   })
 
@@ -634,5 +640,45 @@ describe('item chunks — manifest and spine', () => {
   it('every tag in the vocabulary has a pin colour', async () => {
     const { TAG_COLORS } = await import('../src/lib/tags')
     for (const t of TAGS) expect(TAG_COLORS[t], t).toMatch(/^#[0-9a-f]{6}$/)
+  })
+})
+
+/**
+ * The coverage penalty, against the dataset it was tuned on. These are the
+ * worked examples from `coveragePenalty`'s documentation; if a retune moves the
+ * constants far enough to break them, the doc table needs rewriting too.
+ */
+describe('items — partial coverage against real spans', () => {
+  const index = new EventIndex(items)
+  const ids = (s: number, e: number, cap = 12) => index.query(s, e, {}, cap).map((x) => x.id)
+
+  it('drops a warming trend below the decade it is only 7% about', () => {
+    const nineties = ids(1990, 1999)
+    expect(nineties).toContain('global-warming') // still there — it is important
+    expect(nineties.indexOf('global-warming')).toBeGreaterThan(
+      nineties.indexOf('german-reunification'),
+    )
+    expect(nineties[0]).toBe('soviet-collapse') // raw priority opened on the Cold War
+  })
+
+  it('sinks an event the selection has outlived below one it has not', () => {
+    const nineties = ids(1990, 1999)
+    // both are barely-overlapping long events; the Cold War ended in 1991 and
+    // the warming did not, and that is the whole of the asymmetry
+    expect(nineties.indexOf('cold-war')).toBeGreaterThan(nineties.indexOf('global-warming'))
+    expect(nineties[nineties.length - 1]).toBe('cold-war')
+  })
+
+  it('keeps the war at the head of a single year of it', () => {
+    // 29% coverage and rank 98 still beats D-Day, which is wholly inside 1943–44
+    expect(ids(1943, 1944)[0]).toBe('ww2')
+    expect(effectivePriority(byId.get('ww2') as HistoricalEvent, 1943, 1944)).toBeGreaterThan(81)
+  })
+
+  it('costs an era-spanning empire its lead over a century inside it', () => {
+    const ottoman = byId.get('ottoman-empire') as HistoricalEvent
+    // 1299–1922 against 1200–1300: two years of overlap, and over 600 outside
+    expect(effectivePriority(ottoman, 1200, 1300)).toBeLessThan(60)
+    expect(ids(1200, 1300)[0]).toBe('mongol-conquests')
   })
 })

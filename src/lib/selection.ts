@@ -1,4 +1,4 @@
-import { clamp, toWarp, fromWarp, type Year } from './time'
+import { clamp, toWarp, fromWarp, MIN_TIME, MAX_TIME, type Year } from './time'
 
 /** A closed interval of time. Used for both the visible window and the selection. */
 export interface Span {
@@ -84,4 +84,119 @@ export function windowContaining(span: Span, win: Span, pad = 0.18): Span {
   const b = toWarp(s.end)
   const p = (b - a) * pad || 1 // a zero-width span still deserves some air
   return { start: clamp(fromWarp(a - p)), end: clamp(fromWarp(b + p)) }
+}
+
+/** Air left either side of a fitted span, as a fraction of its displayed width. */
+export const FIT_MARGIN = 0.05
+
+/**
+ * The window that *frames* a span: the span itself plus a margin either side,
+ * and nothing else.
+ *
+ * Unlike `windowContaining` this always moves the view, and it is measured in
+ * warp space, which is the only place the margin means anything — 5% of the
+ * Proterozoic in years would be 98 million of them and would swallow the
+ * Cambrian, while 5% of it on the rail is 5% of the rail. So the picked era
+ * lands on screen at the same size whatever depth of time it lives at.
+ *
+ * Clamped to the ends of time by *saturating*, not by sliding: an era that runs
+ * to the present keeps its left-hand margin and simply has none on the right,
+ * because there is nothing there to show. The bound is written as the bound
+ * itself rather than its warp roundtrip — `fromWarp(toWarp(MIN_TIME))` comes
+ * back 5 µyr short, which is enough to make a window compare unequal to itself
+ * (see stores/time.ts pan).
+ */
+export function windowFitting(span: Span, margin = FIT_MARGIN): Span {
+  const s = orderSpan(span.start, span.end)
+  const a = toWarp(s.start)
+  const b = toWarp(s.end)
+  const p = (b - a) * margin || 1 // a zero-width span still deserves some air
+  const lo = a - p
+  const hi = b + p
+  return {
+    start: lo <= toWarp(MIN_TIME) ? MIN_TIME : clamp(fromWarp(lo)),
+    end: hi >= toWarp(MAX_TIME) ? MAX_TIME : clamp(fromWarp(hi)),
+  }
+}
+
+/** Eased progress for the fit tween: cubic in and out, so the view leaves and
+ *  arrives at rest. Clamped, so a late frame cannot overshoot. */
+export const easeInOut = (t: number): number => {
+  const u = Math.min(1, Math.max(0, t))
+  return u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2
+}
+
+/**
+ * A frame of the fit animation: `from` → `to`, interpolated in warp space so
+ * the zoom is geometric — the view scales at a constant rate rather than
+ * crawling for most of the tween and then leaping, which is what a linear
+ * interpolation of years looks like when the two windows differ by a factor of
+ * a thousand.
+ */
+export function tweenWindow(from: Span, to: Span, t: number): Span {
+  const u = easeInOut(t)
+  // Both ends are exact, not the warp roundtrip of themselves: `fromWarp(toWarp(x))`
+  // comes back 5 µyr off, and the first frame of an animation publishing a
+  // window that differs from the current one by five microseconds of geological
+  // time would re-run the whole downstream pipeline to draw the same picture.
+  if (u <= 0) return { ...from }
+  if (u >= 1) return { ...to }
+  const mix = (x: Year, y: Year) => clamp(fromWarp(toWarp(x) + (toWarp(y) - toWarp(x)) * u))
+  return { start: mix(from.start, to.start), end: mix(from.end, to.end) }
+}
+
+/* ------------------------------------------------- cursor at a band's edge */
+
+/**
+ * How close, in pixels, the cursor has to be to a selection edge before the two
+ * are drawn as one marker.
+ *
+ * The handle's grip is 3 px wide with a 9 px cap, and the cursor is a 1 px line
+ * with a 7 px knob that straddles it — so at coincidence the knob pokes 3 px
+ * *outside* a band whose own glyph sits entirely inside, and the cursor reads
+ * as being past a boundary it is exactly on. Merging is the fix, and the
+ * threshold is the width of that discrepancy: near enough that no one can see
+ * the gap being closed, far enough that a cursor a whole year away at a deep
+ * zoom does not get quietly moved.
+ */
+export const EDGE_MERGE_PX = 4
+
+/**
+ * Which selection edge the cursor should merge with, if either. The nearer edge
+ * wins, so a selection squeezed to its minimum width — both edges within the
+ * threshold — still resolves to one of them rather than to both.
+ */
+export function mergedEdge(
+  cursorX: number,
+  startX: number,
+  endX: number,
+  tol = EDGE_MERGE_PX,
+): 'start' | 'end' | null {
+  const ds = Math.abs(cursorX - startX)
+  const de = Math.abs(cursorX - endX)
+  if (Math.min(ds, de) > tol) return null
+  return ds <= de ? 'start' : 'end'
+}
+
+/** Room the year flag needs beside its marker, in pixels. */
+export const FLAG_PX = 84
+
+/**
+ * Which side of the marker the year flag hangs on.
+ *
+ * Two rules, in order. A merged marker points *into* the band it now belongs to
+ * — a flag hanging outside the selection would undo the merge by making the
+ * glyph look like it straddles the edge again. Then the rail's own ends win
+ * over that preference, because a flag clipped in half is worse than a flag on
+ * the surprising side.
+ */
+export function flagSide(
+  x: number,
+  width: number,
+  merged: 'start' | 'end' | null = null,
+  room = FLAG_PX,
+): 'left' | 'right' {
+  const prefer = merged === 'end' ? 'left' : 'right'
+  if (prefer === 'right') return x > width - room && x >= room ? 'left' : 'right'
+  return x < room && x <= width - room ? 'right' : 'left'
 }

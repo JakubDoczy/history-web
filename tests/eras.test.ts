@@ -158,3 +158,59 @@ describe('erasOverlapping / spanEraLabel', () => {
     expect(spanEraLabel(-250e6, -4e6)).toBe('Deep time')
   })
 })
+
+import { eraOfSubAge, subErasIn } from '../src/lib/eras'
+
+/**
+ * The era menu's second level. The thread of periods is curated to one lane and
+ * does *not* line up with the band above it, so "which era is this in" has to be
+ * a decision rather than a containment test — see `eraOfSubAge`.
+ */
+describe('sub-ages under their era', () => {
+  it('files every sub-age under exactly one era, losing none of them', () => {
+    const filed = HISTORICAL.flatMap(subErasIn)
+    expect(filed.length).toBe(SUB_AGES.length)
+    expect(new Set(filed.map((s) => s.name)).size).toBe(SUB_AGES.length)
+  })
+
+  it('files the ones that straddle an era boundary too', () => {
+    // containment would drop all three of these on the floor
+    expect(eraOfSubAge(SUB_AGES.find((s) => s.name === 'Migration Period')!)?.name).toBe('Classical')
+    expect(eraOfSubAge(SUB_AGES.find((s) => s.name === 'Renaissance')!)?.name).toBe('Medieval')
+    expect(eraOfSubAge(SUB_AGES.find((s) => s.name === 'Neolithic')!)?.name).toBe('Stone Age')
+  })
+
+  it('puts each period in the era it is mostly in', () => {
+    for (const s of SUB_AGES) {
+      const era = eraOfSubAge(s)!
+      const overlap = Math.min(s.end, era.end) - Math.max(s.start, era.start)
+      expect(overlap * 2, s.name).toBeGreaterThan(s.end - s.start)
+    }
+  })
+
+  it('keeps each era s list in time order, and short enough to be a menu', () => {
+    for (const e of HISTORICAL) {
+      const subs = subErasIn(e)
+      for (let i = 1; i < subs.length; i++)
+        expect(subs[i].start, `${e.name}: ${subs[i].name}`).toBeGreaterThanOrEqual(subs[i - 1].start)
+      // one era open at a time is the menu's compactness rule; six rows is the
+      // most any era costs (Industrial), which fits a phone without scrolling
+      expect(subs.length, e.name).toBeLessThanOrEqual(6)
+    }
+  })
+
+  it('leaves an era with no named periods a leaf, rather than an empty level', () => {
+    for (const e of HISTORICAL) expect(Array.isArray(subErasIn(e))).toBe(true)
+    expect(subErasIn({ name: 'Nowhere', start: 3000, end: 3001, color: '#000' })).toEqual([])
+  })
+
+  // The second level exists to be picked from, and picking is `selectEra`,
+  // which fits the window to whatever span it is handed.
+  it('offers spans that are real, ordered and inside the timeline', () => {
+    for (const s of SUB_AGES) {
+      expect(s.end, s.name).toBeGreaterThan(s.start)
+      expect(s.start, s.name).toBeGreaterThanOrEqual(MIN_TIME)
+      expect(s.end, s.name).toBeLessThanOrEqual(MAX_TIME)
+    }
+  })
+})

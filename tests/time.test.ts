@@ -295,10 +295,13 @@ describe('the selection follows the year you pick', () => {
     s.setTime(1990) // opens the band out past 1945 to 1990
     expect(s.selection.end).toBe(1990)
     s.selectEra(medieval)
-    // the era *is* the selection, even though the cursor is now outside it: an
-    // era is a framing, not a jump
+    // the era *is* the selection, outright — the 1990 the cursor asked for does
+    // not widen it, and neither does the 500 that follows
     expect(s.selection).toEqual({ start: 500, end: 1500 })
-    expect(s.currentTime).toBe(1990)
+    // the fit takes the window off 1990 entirely, so the cursor has to come with
+    // it; it lands on the near edge of the era rather than adrift in the margin
+    expect(s.currentTime).toBe(1500)
+    expect(s.selection).toEqual({ start: 500, end: 1500 })
   })
 })
 

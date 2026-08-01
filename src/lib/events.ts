@@ -185,7 +185,116 @@ const passes = (e: HistoricalEvent, filter: EventFilter, byId: Map<string, Item>
   (!filter.tags?.length || e.tags.some((t) => filter.tags!.includes(t))) &&
   (!filter.parent || isUnder(e, filter.parent, byId))
 
-/** Events in the time window, matching filters, top `cap` by priority. */
+/* ------------------------------------------------- partial-coverage penalty */
+
+/**
+ * A year is a unit of time, not an instant: an event dated 1939–1945 occupies
+ * *seven* years, and one dated 1969 occupies one. Both spans below are measured
+ * that way, which is what the dataset's integer years mean and what a reader
+ * sees in the label.
+ *
+ * Without it the intervals are closed for `intersects` and half-open for
+ * coverage, and the two disagree exactly where it hurts: Stalingrad (1942–1943)
+ * against a 1943–1944 selection is an intersection worth zero overlap — the one
+ * year both of them are *about* measures nothing — and the event that best
+ * fits the window takes the heaviest penalty in it.
+ */
+export const YEAR_UNIT = 1
+
+/**
+ * How much of an event the selection actually contains: overlap ÷ event span,
+ * in [0, 1]. A point event spans one unit and, once it intersects at all,
+ * scores 1 — there is nothing partial about being somewhere.
+ *
+ * This is deliberately *not* symmetric with "how much of the selection the
+ * event covers" — the question the culling asks is "is this event about the
+ * years on screen?", and a 146-year warming trend seen through a ten-year
+ * window is only 7% about them.
+ */
+export function coverageOf(evStart: Year, evEnd: Year, start: Year, end: Year): number {
+  const s = Math.min(evStart, evEnd)
+  const e = Math.max(evStart, evEnd)
+  const overlap = Math.min(e, end) - Math.max(s, start) + YEAR_UNIT
+  return Math.max(0, Math.min(1, overlap / (e - s + YEAR_UNIT)))
+}
+
+/**
+ * The curve that turns coverage into a multiplier on priority, and the two
+ * pairs of constants it is read with.
+ *
+ *     factor = floor + (1 − floor) · coverage^k        (k < 1, so concave)
+ *
+ * Concave and floored, both for the same reason: **the ranking list has to be
+ * able to win.** A flat multiply by coverage would let any local event outrank
+ * the Cold War inside the Cold War, which is not what a reader wants; the floor
+ * says "an event never loses more than this fraction of its importance", and
+ * k < 1 means the first sliver of overlap already buys most of what is on
+ * offer. An event ten times longer than the selection (coverage 0.1) keeps 78%
+ * of its rank, so priority 98 still beats priority 70 outright.
+ *
+ * Two cases, because the two kinds of partial overlap do not mean the same
+ * thing:
+ *
+ *  · **ONGOING** — the event runs past the end of the selection. You are
+ *    looking at the middle (or the start) of something still under way: the
+ *    Cold War seen from 1960, global warming seen from the 1990s. It is *about*
+ *    the years on screen, so the penalty is gentle (floor 0.60, k 0.35).
+ *  · **ENDED** — the selection reaches past the event's end, so the thing
+ *    finished inside the window and the rest of the window is aftermath. The
+ *    Cold War against a 1990–1999 selection is one year of overlap and nine
+ *    years of "after". Penalised harder (floor 0.45, k 0.50) — this is the
+ *    asymmetry the product asked for.
+ *
+ * Full containment either way lands on coverage 1 and factor exactly 1: an
+ * event wholly inside the selection is never penalised.
+ *
+ * Tuned against the real dataset (priorities run 52–100):
+ *
+ *   selection    event                        raw  cov     eff   case
+ *   1990–1999    global-warming 1880–2026      90  0.068  68.1  ongoing
+ *   1990–1999    cold-war       1947–1991      94  0.044  53.2  ended
+ *   1990–1999    himalaya-uplift −50 Ma–2026   60  ~0     36.1  ongoing
+ *   1990–1999    german-reunification 1990     78  1      78.0  point
+ *   1943–1944    ww2            1939–1945      98  0.286  84.1  ongoing
+ *   1943–1944    stalingrad     1942–1943      75  0.500  62.9  ended
+ *   1939–1999    ww2            1939–1945      98  1      98.0  whole
+ *   1200–1300    ottoman-empire 1299–1922      83  0.003  54.2  ongoing
+ *
+ * The 1990s case is the one the constants were chosen on: warming should still
+ * make the decade's list (68.1 sits mid-table, above Maastricht at 66) without
+ * outranking the decade's own headline events (reunification 78, apartheid 75),
+ * and the Cold War — over in the first year of the window — should fall to the
+ * bottom rather than lead it. The 1943 case is the other end of the same dial:
+ * the war is only 29% inside that window but is still what 1943 is *about*, and
+ * at 84.1 it stays ahead of D-Day (81), which is wholly inside it.
+ */
+export const COVERAGE_ONGOING = { floor: 0.6, k: 0.35 } as const
+export const COVERAGE_ENDED = { floor: 0.45, k: 0.5 } as const
+
+/** The multiplier itself. Pure; 1 for point events and for full containment. */
+export function coveragePenalty(
+  evStart: Year,
+  evEnd: Year,
+  start: Year,
+  end: Year,
+): number {
+  // A selection with no width (a bare cursor) says nothing about coverage, and
+  // reading one would penalise every spanning event to its floor at once.
+  if (!(end > start)) return 1
+  const coverage = coverageOf(evStart, evEnd, start, end)
+  // "Ended" is decided by the selection reaching the event's end, which also
+  // covers the event-wholly-inside case — where coverage is 1 and the choice of
+  // constants cannot matter.
+  const { floor, k } = end >= Math.max(evStart, evEnd) ? COVERAGE_ENDED : COVERAGE_ONGOING
+  return floor + (1 - floor) * coverage ** k
+}
+
+/** Priority as the culling sees it: rank, discounted by how much of the event
+ *  the selection actually holds. */
+export const effectivePriority = (e: HistoricalEvent, start: Year, end: Year): number =>
+  e.priority * coveragePenalty(e.start, e.end ?? e.start, start, end)
+
+/** Events in the time window, matching filters, top `cap` by effective priority. */
 export function visibleEvents(
   events: HistoricalEvent[],
   start: Year,
@@ -197,8 +306,12 @@ export function visibleEvents(
   return events
     .filter((e) => intersects(e, start, end))
     .filter((e) => passes(e, filter, byId))
-    .sort((a, b) => b.priority - a.priority)
+    .map((e) => ({ e, s: effectivePriority(e, start, end) }))
+    // Raw priority breaks a tie in the discounted score, which keeps this in
+    // step with the index's scan order (see EventIndex.query).
+    .sort((a, b) => b.s - a.s || b.e.priority - a.e.priority)
     .slice(0, cap)
+    .map((x) => x.e)
 }
 
 /**
@@ -207,8 +320,8 @@ export function visibleEvents(
  * It holds every item (so links, search and the panel can reach a person or a
  * concept) but queries only what can be pinned: real events plus the birth and
  * death points derived from each person. Pins are pre-sorted by priority once,
- * so a query is a single scan with early exit after `cap` hits — no per-query
- * sort, and high-priority events are found first.
+ * so a query walks them best-first and can stop as soon as no unseen event can
+ * still make the cut (see `query`).
  */
 export class EventIndex {
   readonly items: Item[]
@@ -240,15 +353,41 @@ export class EventIndex {
       }
   }
 
+  /**
+   * Top `cap` pins in the span, ranked by *effective* priority — rank times the
+   * partial-coverage penalty (see `coveragePenalty`).
+   *
+   * The penalty is per-query, so the pre-sort by raw priority is no longer the
+   * answer; it is still the scan order, and it still bounds the work. Because
+   * the penalty is a multiplier in (0, 1], an event's discounted score can
+   * never exceed its raw priority, so once `cap` hits are in hand and the raw
+   * priority of the item under the scan has fallen to the weakest of them,
+   * nothing further down the list can displace anything — that is an exact
+   * early exit, not a heuristic. `prune` keeps the running set from growing
+   * past 2·cap so the scan stays linear on a corpus where most events match.
+   */
   query(start: Year, end: Year, filter: EventFilter = {}, cap = 100): HistoricalEvent[] {
-    const out: HistoricalEvent[] = []
+    if (cap <= 0) return []
+    const hits: { e: HistoricalEvent; s: number }[] = []
+    let bound = -Infinity // weakest score among the best `cap` seen so far
+    let full = false
+    const prune = () => {
+      // Stable, so equal scores keep scan order — which is priority order, and
+      // then data order. `visibleEvents` sorts to the same total order.
+      hits.sort((a, b) => b.s - a.s)
+      hits.length = Math.min(hits.length, cap)
+      bound = hits[hits.length - 1].s
+      full = true
+    }
     for (const e of this.byPriority) {
+      if (full && e.priority <= bound) break
       if (!intersects(e, start, end)) continue
       if (!passes(e, filter, this.byId)) continue
-      out.push(e)
-      if (out.length >= cap) break
+      hits.push({ e, s: effectivePriority(e, start, end) })
+      if (hits.length >= 2 * cap) prune()
     }
-    return out
+    hits.sort((a, b) => b.s - a.s)
+    return hits.slice(0, cap).map((h) => h.e)
   }
 
   /** The pin carrying an id — a real event, or one derived from a person. */

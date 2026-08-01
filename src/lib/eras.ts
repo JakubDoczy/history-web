@@ -146,3 +146,25 @@ export const subLaneOpen = (start: Year, end: Year): boolean => end - start <= S
  *  stretch, which is why the lane's *presence* is `subLaneOpen`, not this. */
 export const subBandsFor = (start: Year, end: Year): Era[] =>
   subLaneOpen(start, end) ? SUB_AGES.filter((e) => e.start < end && e.end > start) : []
+
+/**
+ * The era a sub-age is filed under: the one holding its midpoint.
+ *
+ * Containment would be the obvious rule and it is the wrong one — the thread
+ * does not respect the boundaries of the band above it. The Migration Period
+ * (375–568) crosses the Classical/Medieval line at 500, the Renaissance
+ * (1300–1517) crosses Medieval/Early Modern at 1500, and under a containment
+ * rule both would belong to no era at all and disappear from the menu. The
+ * midpoint asks the only question the menu cares about — which era is this
+ * mostly in — and, because it is a single point, gives every sub-age exactly
+ * one parent, so nothing is listed twice and nothing is lost.
+ */
+export const eraOfSubAge = (s: Era): Era | undefined => eraAt((s.start + s.end) / 2)
+
+/**
+ * The sub-ages a menu should offer under an era, in order. Empty for an era
+ * with none, which is the signal to leave it a leaf rather than draw an empty
+ * second level.
+ */
+export const subErasIn = (era: Era): Era[] =>
+  SUB_AGES.filter((s) => eraOfSubAge(s)?.name === era.name)

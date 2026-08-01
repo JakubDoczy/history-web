@@ -3,6 +3,7 @@ import { computed, onMounted, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { useTimeStore } from '../stores/time'
 import { formatYear, toWarp, fromWarp, type Year } from '../lib/time'
 import { bandsFor, subBandsFor, subLaneOpen, spanEraLabel } from '../lib/eras'
+import { flagSide, mergedEdge } from '../lib/selection'
 
 const time = useTimeStore()
 const el = useTemplateRef('el')
@@ -66,6 +67,25 @@ const sel = computed(() => {
   return { x0, x1, w: Math.max(0, x1 - x0) }
 })
 
+/**
+ * Cursor and selection edge, merged.
+ *
+ * The handle is a 9 px cap and the cursor a 1 px line with a knob that straddles
+ * it, so a cursor sitting *on* an edge draws two glyphs a few pixels apart and
+ * the ember one appears to be outside the band it is exactly on the boundary of.
+ * Within `EDGE_MERGE_PX` the two become a single marker: the handle takes the
+ * ember, the cursor drops its line and knob, and the flag — the only part that
+ * says which year this is — hangs off the handle, pointing into the band.
+ */
+const merged = computed(() => mergedEdge(toX(time.currentTime), sel.value.x0, sel.value.x1))
+
+/** Where the marker is drawn: snapped onto the edge when merged, so the year
+ *  flag and the handle cannot disagree by the two pixels that started this. */
+const markerX = computed(() =>
+  merged.value === 'start' ? sel.value.x0 : merged.value === 'end' ? sel.value.x1 : toX(time.currentTime),
+)
+const flagFlipped = computed(() => flagSide(markerX.value, width.value, merged.value) === 'left')
+
 /** The readout stands down when the cursor's flag would sit on top of it. */
 const selLabelShown = computed(
   () => sel.value.w > 108 && Math.abs(toX(time.currentTime) - (sel.value.x0 + sel.value.x1) / 2) > 74,
@@ -105,6 +125,17 @@ function onHandleUp(e: PointerEvent) {
 // --- interactions: drag = pan, pinch/wheel = zoom, click = set time ---
 const pointers = new Map<number, number>()
 let dragged = false
+/**
+ * The sub-age band a press landed on, if any — the rail's own pointer capture
+ * means the *up* event is reported against the rail whatever it is over, so the
+ * band has to be remembered from the press.
+ *
+ * A tap on the fine lane selects that period rather than setting the cursor;
+ * a drag from it still pans, which is why this hangs off the existing gesture
+ * instead of the band swallowing the pointer with `.stop`.
+ */
+let pressedSub: string | null = null
+const subByName = computed(() => new Map(subStrata.value.map((s) => [s.name, s])))
 const dist = () => {
   const [a, b] = [...pointers.values()]
   return Math.max(1, Math.abs(b - a))
@@ -113,6 +144,9 @@ const dist = () => {
 function onPointerDown(e: PointerEvent) {
   pointers.set(e.pointerId, localX(e))
   dragged = false
+  pressedSub =
+    ((e.target as Element | null)?.closest?.('.band.sub') as HTMLElement | null)?.dataset.era ??
+    null
   el.value!.setPointerCapture(e.pointerId)
 }
 function onPointerMove(e: PointerEvent) {
@@ -133,7 +167,10 @@ function onPointerMove(e: PointerEvent) {
 }
 function onPointerUp(e: PointerEvent) {
   pointers.delete(e.pointerId)
-  if (!dragged && pointers.size === 0) time.setTime(toT(localX(e)))
+  if (dragged || pointers.size) return
+  const sub = pressedSub && subByName.value.get(pressedSub)
+  if (sub) time.selectEra(sub)
+  else time.setTime(toT(localX(e)))
 }
 function onWheel(e: WheelEvent) {
   time.zoom(e.deltaY > 0 ? 1.2 : 1 / 1.2, localX(e) / width.value)
@@ -172,7 +209,8 @@ function onWheel(e: WheelEvent) {
         v-for="s in subStrata"
         :key="s.name"
         class="band sub"
-        :title="s.name"
+        :title="`${s.name} — tap to select`"
+        :data-era="s.name"
         :style="{ left: s.x + 'px', width: s.w + 'px', background: s.color }"
       >
         <span v-if="s.w > s.name.length * 7 + 14">{{ s.name }}</span>
@@ -187,8 +225,14 @@ function onWheel(e: WheelEvent) {
 
     <!-- selection: the display filter. Patina, so it never reads as the ember cursor.
          The scrims outside it do most of the work — the band reads as the lit part. -->
-    <div class="scrim" :style="{ left: '0px', width: Math.max(0, sel.x0) + 'px' }" />
-    <div class="scrim" :style="{ left: sel.x1 + 'px', right: '0px' }" />
+    <!-- clamped to the rail: during an era fit the band is briefly wider than the
+         window it is being flown into, and an unclamped right-hand scrim at a
+         negative x would cover the whole rail rather than none of it -->
+    <div class="scrim" :style="{ left: '0px', width: Math.min(width, Math.max(0, sel.x0)) + 'px' }" />
+    <div
+      class="scrim"
+      :style="{ left: Math.min(width, Math.max(0, sel.x1)) + 'px', right: '0px' }"
+    />
     <div class="sel" :style="{ left: sel.x0 + 'px', width: sel.w + 'px' }">
       <span v-if="selLabelShown" class="sel-label tnum">{{ selLabel }}</span>
     </div>
@@ -196,7 +240,7 @@ function onWheel(e: WheelEvent) {
       v-for="edge in (['start', 'end'] as const)"
       :key="edge"
       class="handle"
-      :class="[edge, { dragging: dragEdge === edge }]"
+      :class="[edge, { dragging: dragEdge === edge, merged: merged === edge }]"
       role="slider"
       :aria-label="`Selection ${edge}`"
       :aria-valuenow="time.selection[edge]"
@@ -211,8 +255,8 @@ function onWheel(e: WheelEvent) {
 
     <div
       class="cursor"
-      :class="{ flip: toX(time.currentTime) > width - 84 }"
-      :style="{ left: toX(time.currentTime) + 'px' }"
+      :class="{ flip: flagFlipped, merged: !!merged }"
+      :style="{ left: markerX + 'px' }"
     >
       <span class="knob" />
       <span class="flag tnum">{{ formatYear(time.currentTime) }}</span>
@@ -294,6 +338,13 @@ function onWheel(e: WheelEvent) {
 /* flatter than the strata above: the fine lane is a footnote to it, not a rival */
 .band.sub::after {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.2));
+}
+/* the fine lane is a control as well as a label: a tap on a period selects it */
+.band.sub {
+  cursor: pointer;
+}
+.band.sub:hover::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.08));
 }
 .band.sub span {
   font-size: 9px;
@@ -444,6 +495,29 @@ function onWheel(e: WheelEvent) {
   background: #9fe0d4;
 }
 
+/* --- the merged marker ---
+   One glyph, not two: the handle borrows the cursor's ember and its glow, and
+   the cursor gives up everything except the flag — which is the only part that
+   says *which year*, and which now hangs off the handle. Nothing moves by more
+   than the few pixels the two were apart, so the merge reads as the pair
+   snapping together rather than as a mode change. */
+.handle.merged .grip,
+.handle.merged .grip::before,
+.handle.merged .grip::after {
+  background: var(--ember);
+}
+.handle.merged .grip {
+  box-shadow: 0 0 10px rgba(226, 101, 62, 0.7);
+}
+.handle.merged:hover .grip,
+.handle.merged.dragging .grip,
+.handle.merged:hover .grip::before,
+.handle.merged:hover .grip::after,
+.handle.merged.dragging .grip::before,
+.handle.merged.dragging .grip::after {
+  background: #f4a07a;
+}
+
 .cursor {
   position: absolute;
   top: 0;
@@ -452,6 +526,23 @@ function onWheel(e: WheelEvent) {
   background: var(--ember);
   box-shadow: 0 0 10px rgba(226, 101, 62, 0.7);
   pointer-events: none;
+}
+/* merged: the handle is the marker now, so the line and its knob would only be
+   the second glyph again — three pixels wide and just outside the band. */
+.cursor.merged {
+  background: transparent;
+  box-shadow: none;
+}
+.cursor.merged .knob {
+  display: none;
+}
+/* clear of the handle's cap (9px), which the plain cursor does not have to be */
+.cursor.merged .flag {
+  left: 13px;
+}
+.cursor.merged.flip .flag {
+  left: auto;
+  right: 13px;
 }
 .knob {
   position: absolute;

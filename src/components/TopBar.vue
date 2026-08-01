@@ -3,22 +3,62 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
 import { formatYear } from '../lib/time'
-import { HISTORICAL, erasOverlapping, spanEraLabel, type Era } from '../lib/eras'
+import { HISTORICAL, SUB_AGES, erasOverlapping, spanEraLabel, subErasIn, type Era } from '../lib/eras'
 
 const time = useTimeStore()
 const ui = useUiStore()
 
 // The chip names the *selection* — that is what the globe is showing — and
-// opens a picker that sets the selection to a whole era.
+// opens a picker that sets the selection to a whole era, or to one of the
+// named periods inside it.
 const touched = computed(() => erasOverlapping(time.selection.start, time.selection.end))
 const era = computed(() => touched.value[0])
 const label = computed(() => spanEraLabel(time.selection.start, time.selection.end))
 const isCurrent = (e: Era) => touched.value.includes(e)
+/** The selection *is* this sub-age — the second level's version of `isCurrent`. */
+const isCurrentSub = (s: Era) =>
+  time.selection.start === s.start && time.selection.end === s.end
+
+/** The eras, each with the periods filed under it (see eras.ts `subErasIn`). */
+const tree = computed(() => HISTORICAL.map((e) => ({ era: e, subs: subErasIn(e) })))
+
+/**
+ * Which era's periods are showing. One at a time, and never all of them: the
+ * full table is 8 eras and 23 periods, which is a scrolling wall on a phone
+ * — whereas one era opened is at most six extra rows.
+ */
+const expanded = ref<string | null>(null)
+const toggle = (e: Era) => (expanded.value = expanded.value === e.name ? null : e.name)
+
+/**
+ * Hovering an era volunteers its periods — but only where hovering is a gesture
+ * of its own. A touch screen sends compatibility mouse events, so a finger on
+ * its way to the disclosure would "hover" the row open and the tap that follows
+ * would then read as closing it, which is the one interaction that must not
+ * misfire on the device the second level exists for.
+ */
+const hoverOpens = () =>
+  globalThis.matchMedia?.('(hover: hover) and (pointer: fine)').matches ?? false
+function hoverEra(e: Era, subs: Era[]) {
+  if (subs.length && hoverOpens()) expanded.value = e.name
+}
 
 const open = ref(false)
 function pick(e: Era) {
   time.selectEra(e)
   open.value = false
+}
+/**
+ * Opening the menu volunteers the second level for wherever the selection
+ * already is — an era if that is what is selected, and the era *around* the
+ * period if a period is. So the sub-age you are in is one glance away, and
+ * moving to the one next door is one tap.
+ */
+function openMenu() {
+  open.value = !open.value
+  if (open.value)
+    expanded.value =
+      SUB_AGES.some(isCurrentSub) || touched.value.length === 1 ? (era.value?.name ?? null) : null
 }
 // click-away and Escape, captured on the document so a globe drag also dismisses
 const onDocDown = (e: PointerEvent) => {
@@ -49,7 +89,7 @@ onBeforeUnmount(() => {
           aria-haspopup="listbox"
           :aria-expanded="open"
           aria-label="Selected era"
-          @click="open = !open"
+          @click="openMenu"
         >
           <i class="dot" :style="{ background: era?.color }" />
           <span class="era-name">{{ label }}</span>
@@ -61,20 +101,53 @@ onBeforeUnmount(() => {
         </button>
         <Transition name="pop">
           <ul v-if="open" class="menu sheet" role="listbox">
-            <li v-for="e in HISTORICAL" :key="e.name">
-              <button
-                class="opt"
-                role="option"
-                :aria-selected="isCurrent(e)"
-                :class="{ sel: isCurrent(e) }"
-                @click="pick(e)"
-              >
-                <i class="dot" :style="{ background: e.color }" />
-                <span class="opt-name">{{ e.name }}</span>
-                <span class="opt-span tnum">
-                  {{ formatYear(e.start) }} – {{ formatYear(e.end) }}
-                </span>
-              </button>
+            <li v-for="{ era: e, subs } in tree" :key="e.name">
+              <div class="row" @mouseenter="hoverEra(e, subs)">
+                <button
+                  class="opt"
+                  role="option"
+                  :aria-selected="isCurrent(e)"
+                  :class="{ sel: isCurrent(e) }"
+                  @click="pick(e)"
+                >
+                  <i class="dot" :style="{ background: e.color }" />
+                  <span class="opt-name">{{ e.name }}</span>
+                  <span class="opt-span tnum">
+                    {{ formatYear(e.start) }} – {{ formatYear(e.end) }}
+                  </span>
+                </button>
+                <!-- its own control, so a tap on a phone can open the second
+                     level without also selecting the era it belongs to -->
+                <button
+                  v-if="subs.length"
+                  class="twist"
+                  :class="{ on: expanded === e.name }"
+                  :aria-expanded="expanded === e.name"
+                  :aria-label="`Periods within ${e.name}`"
+                  @click.stop="toggle(e)"
+                >
+                  <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true">
+                    <path d="M2 4l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" />
+                  </svg>
+                </button>
+              </div>
+              <ul v-if="expanded === e.name && subs.length" class="subs">
+                <li v-for="s in subs" :key="s.name">
+                  <button
+                    class="opt sub"
+                    role="option"
+                    :aria-selected="isCurrentSub(s)"
+                    :class="{ sel: isCurrentSub(s) }"
+                    @click="pick(s)"
+                  >
+                    <i class="dot small" :style="{ background: s.color }" />
+                    <span class="opt-name">{{ s.name }}</span>
+                    <span class="opt-span tnum">
+                      {{ formatYear(s.start) }} – {{ formatYear(s.end) }}
+                    </span>
+                  </button>
+                </li>
+              </ul>
             </li>
           </ul>
         </Transition>
@@ -226,6 +299,65 @@ onBeforeUnmount(() => {
   max-height: 60vh;
   overflow-y: auto;
 }
+/* an era and its disclosure share a line; the era takes all the room going */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.twist {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color var(--fast),
+    background-color var(--fast),
+    transform var(--fast);
+}
+.twist:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--frost);
+}
+.twist.on {
+  color: var(--brass);
+  transform: rotate(180deg);
+}
+/* the second level: indented under its era, and hung on a rule that says which
+   era it belongs to without needing a word to say so */
+.subs {
+  margin: 0 0 var(--s1) 0;
+  padding: 0 0 0 14px;
+  list-style: none;
+  border-left: 1px solid var(--line);
+  margin-left: 12px;
+}
+.opt.sub {
+  padding: 5px var(--s2);
+}
+.opt.sub .opt-name {
+  font-size: var(--t-xs);
+  letter-spacing: 0.08em;
+  color: var(--frost-dim);
+}
+.opt.sub.sel .opt-name,
+.opt.sub:hover .opt-name {
+  color: var(--frost);
+}
+.opt.sub.sel .opt-name {
+  color: var(--brass);
+}
+.dot.small {
+  width: 5px;
+  height: 5px;
+}
+
 .opt {
   display: flex;
   align-items: center;
@@ -327,6 +459,19 @@ onBeforeUnmount(() => {
   }
   .opt {
     padding: 10px var(--s2);
+  }
+  /* the second level has to stay tappable without turning the sheet into a
+     scroll: 34px rows, and a narrower indent to leave room for the years */
+  .opt.sub {
+    padding: 8px var(--s2);
+  }
+  .subs {
+    margin-left: 8px;
+    padding-left: 10px;
+  }
+  .twist {
+    width: 34px;
+    height: 34px;
   }
   /* comfortable touch targets */
   .right :deep(.icon-btn) {

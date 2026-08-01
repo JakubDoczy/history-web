@@ -253,3 +253,132 @@ describe('EventIndex backlinks', () => {
     expect(index.backlinksTo('relativity').map((i) => i.id)).toEqual(['einstein'])
   })
 })
+
+import {
+  COVERAGE_ENDED,
+  COVERAGE_ONGOING,
+  coverageOf,
+  coveragePenalty,
+  effectivePriority,
+} from '../src/lib/events'
+
+/**
+ * The culling's answer to "this event is barely in the window": discount its
+ * rank by how much of it the selection actually holds. The shape of the curve
+ * matters more than any single number in it, so that is what is pinned here —
+ * the constants are free to be retuned as long as these stay true.
+ */
+describe('partial-coverage penalty', () => {
+  describe('coverage', () => {
+    it('is the fraction of the event the selection holds, counting years as units', () => {
+      expect(coverageOf(1939, 1945, 1939, 1945)).toBe(1) // wholly inside
+      expect(coverageOf(1939, 1945, 1943, 1944)).toBeCloseTo(2 / 7, 12)
+      expect(coverageOf(1880, 2026, 1990, 1999)).toBeCloseTo(10 / 147, 12)
+    })
+
+    // A year is a unit of time, not an instant: an event ending in 1943 and a
+    // selection starting in 1943 share the whole of 1943, and `intersects`
+    // already says so. Half-open arithmetic here would call that zero.
+    it('gives a touching year real width, as intersection does', () => {
+      expect(coverageOf(1942, 1943, 1943, 1944)).toBeCloseTo(0.5, 12)
+      expect(coverageOf(1943, 1943, 1943, 1944)).toBe(1)
+    })
+
+    it('never leaves [0, 1]', () => {
+      expect(coverageOf(1939, 1945, -1e9, 1e9)).toBe(1)
+      expect(coverageOf(1939, 1945, 1800, 1810)).toBe(0)
+    })
+  })
+
+  it('leaves point events alone, wherever the selection reaches', () => {
+    for (const [s, e] of [[1969, 1969], [1900, 2000], [1969, 2026], [-1e9, 1969]] as const)
+      expect(coveragePenalty(1969, 1969, s, e), `${s}..${e}`).toBe(1)
+  })
+
+  it('leaves an event wholly inside the selection alone', () => {
+    expect(coveragePenalty(1939, 1945, 1900, 2000)).toBe(1)
+    expect(coveragePenalty(-335e6, -175e6, -1e9, 2026)).toBe(1)
+  })
+
+  it('rises monotonically with coverage, in both cases', () => {
+    for (const end of [1999, 2100]) {
+      // widening the event around a fixed selection lowers coverage, and must
+      // lower the factor with it — never raise it, never plateau
+      let last = Infinity
+      for (const width of [10, 20, 50, 100, 500, 5000]) {
+        const f = coveragePenalty(1990 - width, 1990 + width, 1990, end)
+        expect(f, `width ${width}, end ${end}`).toBeLessThan(last)
+        last = f
+      }
+    }
+  })
+
+  // The asymmetry the product asked for: an event the selection has outlived is
+  // worth less than one still running, at the same coverage.
+  it('penalises an event that ended inside the selection harder than one still running', () => {
+    for (const c of [0.01, 0.1, 0.3, 0.5, 0.9]) {
+      const ended = COVERAGE_ENDED.floor + (1 - COVERAGE_ENDED.floor) * c ** COVERAGE_ENDED.k
+      const ongoing = COVERAGE_ONGOING.floor + (1 - COVERAGE_ONGOING.floor) * c ** COVERAGE_ONGOING.k
+      expect(ended, `coverage ${c}`).toBeLessThan(ongoing)
+    }
+    // and on real spans: the same 44-year event, seen from inside and from after
+    const inside = coveragePenalty(1947, 1991, 1960, 1965)
+    const after = coveragePenalty(1947, 1991, 1988, 1993)
+    expect(after).toBeLessThan(inside)
+  })
+
+  it('meets at 1: full coverage is not a case distinction', () => {
+    expect(coveragePenalty(1939, 1945, 1939, 1945)).toBe(1)
+    expect(coveragePenalty(1939, 1945, 1930, 1960)).toBe(1)
+  })
+
+  it('says nothing about a selection with no width', () => {
+    expect(coveragePenalty(1880, 2026, 1990, 1990)).toBe(1)
+  })
+
+  // The point of the floor and of k < 1: importance can still win. An era-long
+  // event ten times the selection, ranked far above the local news, must not be
+  // culled out of its own century.
+  it('lets a much better event ten times longer than the selection still lead', () => {
+    const long = ev('long', { start: 1900, end: 2000, priority: 98 })
+    const local = ev('local', { start: 1950, priority: 70 })
+    const [s, e] = [1950, 1960]
+    expect(effectivePriority(long, s, e)).toBeGreaterThan(effectivePriority(local, s, e))
+    // but it does lose ground — the discount is real, not decorative
+    expect(effectivePriority(long, s, e)).toBeLessThan(long.priority * 0.85)
+  })
+
+  it('re-ranks the query, and only where coverage says it should', () => {
+    const data = [
+      ev('warming', { start: 1880, end: 2026, priority: 90 }),
+      ev('cold-war', { start: 1947, end: 1991, priority: 94 }),
+      ev('reunification', { start: 1990, priority: 78 }),
+      ev('maastricht', { start: 1993, priority: 66 }),
+    ]
+    const index = new EventIndex(data)
+    // raw priority would open on the Cold War, which was over in the first year
+    expect(index.query(1990, 1999).map((e) => e.id)).toEqual([
+      'reunification',
+      'warming',
+      'maastricht',
+      'cold-war',
+    ])
+    // and a selection the Cold War is genuinely about still opens on it
+    expect(index.query(1960, 1970)[0].id).toBe('cold-war')
+  })
+
+  it('agrees with the reference implementation when the penalty bites', () => {
+    const data = [
+      ev('a', { start: 1000, end: 2000, priority: 99 }),
+      ev('b', { start: 1500, end: 1520, priority: 60 }),
+      ev('c', { start: 1510, priority: 61 }),
+      ev('d', { start: 1400, end: 1512, priority: 80 }),
+      ev('e', { start: 1511, end: 1513, priority: 61 }),
+    ]
+    const index = new EventIndex(data)
+    for (const cap of [1, 2, 3, 5])
+      expect(index.query(1510, 1515, {}, cap).map((x) => x.id)).toEqual(
+        visibleEvents(data, 1510, 1515, {}, cap).map((x) => x.id),
+      )
+  })
+})
