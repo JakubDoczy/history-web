@@ -7,8 +7,9 @@ import {
   ENHANCED_GRADE,
 } from '../src/lib/globeSurface'
 import { MAP_FADE_MS } from '../src/lib/mapFade'
+import { eraPlan, ERA_WINDOW, type TextureKeyframe } from '../src/lib/paleo'
 import { readFileSync } from 'node:fs'
-import type { WebGLRenderer } from 'three'
+import { RGBAFormat, RedFormat, SRGBColorSpace, type WebGLRenderer } from 'three'
 
 /**
  * three's loaders reach for the DOM, so the surface can only be built here with
@@ -74,6 +75,45 @@ describe('GlobeSurface', () => {
     expect(texel.y / texel.x).toBeCloseTo(2, 6) // an equirectangular map is 2:1
   })
 
+  it('uploads the two data maps as R8, and the colour maps as they are', () => {
+    // the shader reads `.r` from both the height field and the cloud mask, so
+    // three quarters of an RGBA8 upload is memory and mipmap work spent on
+    // channels nothing samples: 42 MB across the two at their shipped sizes
+    const surface = new GlobeSurface(URLS, renderer)
+    surface.loadRest()
+    const u = surface.material.uniforms
+    expect(u.uRelief.value.format).toBe(RedFormat)
+    expect(u.uClouds.value.format).toBe(RedFormat)
+    expect(u.uEraA.value.format).toBe(RGBAFormat)
+    expect(u.uNight.value.format).toBe(RGBAFormat)
+    // and the data maps stay linear; grading a height field crushes its mids
+    expect(u.uRelief.value.colorSpace).not.toBe(SRGBColorSpace)
+    expect(u.uEraA.value.colorSpace).toBe(SRGBColorSpace)
+  })
+
+  it('spends anisotropy on the colour maps only', () => {
+    // 16x on a data map is 16 texel fetches per sample for detail that does not
+    // survive being differenced into a normal or blurred into an alpha
+    const big = {
+      capabilities: { getMaxAnisotropy: () => 16, maxTextureSize: 8192 },
+    } as unknown as WebGLRenderer
+    const surface = new GlobeSurface(URLS, big)
+    surface.loadRest()
+    const u = surface.material.uniforms
+    expect(u.uEraA.value.anisotropy).toBe(4)
+    expect(u.uNight.value.anisotropy).toBe(4)
+    expect(u.uRelief.value.anisotropy).toBe(1)
+    expect(u.uClouds.value.anisotropy).toBe(1)
+  })
+
+  it('never asks for more anisotropy than the driver has', () => {
+    const weak = {
+      capabilities: { getMaxAnisotropy: () => 2, maxTextureSize: 4096 },
+    } as unknown as WebGLRenderer
+    const surface = new GlobeSurface(URLS, weak)
+    expect(surface.material.uniforms.uEraA.value.anisotropy).toBe(2)
+  })
+
   it('carries every uniform the fragment shader declares', () => {
     // a uniform the shader reads but the material never declares silently stays
     // at zero, which is invisible in review and wrong on screen
@@ -81,6 +121,127 @@ describe('GlobeSurface', () => {
     const declared = [...surface.material.fragmentShader.matchAll(/^\s*uniform\s+\w+\s+(\w+)\s*;/gm)]
       .map((m) => m[1])
     for (const name of declared) expect(surface.material.uniforms).toHaveProperty(name)
+  })
+
+  /**
+   * Deep-time frames: 39 of them, 32 MB each with mips. Everything here is a
+   * memory policy — what is bound, what is held, and what is freed.
+   */
+  describe('era frames', () => {
+    const frames: TextureKeyframe[] = Array.from({ length: 8 }, (_, i) => ({
+      time: -400e6 + i * 50e6,
+      url: `/era${i}.jpg`,
+    }))
+    /** ...with the day basemap pinned last, exactly as PALEO_FRAMES does. */
+    const withModern: TextureKeyframe[] = [...frames, { time: -10_000, url: URLS.day }]
+    const at = (t: number, prev?: number) => eraPlan(withModern, t, prev)
+
+    const ready = (surface: GlobeSurface) => {
+      surface // the day map decodes first, as it does in the app
+      imageFor(URLS.day).arrive(4096, 2048)
+    }
+
+    it('never binds a frame that has not decoded', () => {
+      // three renders an undecoded texture as black, so an era jump used to
+      // black the whole planet out for the length of a decode
+      const surface = new GlobeSurface(URLS, renderer)
+      ready(surface)
+      const day = surface.material.uniforms.uEraA.value
+      surface.setEra(at(-300e6))
+      expect(surface.material.uniforms.uEraA.value).toBe(day)
+      expect(surface.material.uniforms.uEraB.value).toBe(day)
+      expect(surface.material.uniforms.uEraMix.value).toBe(0)
+    })
+
+    it('swaps to the real frame the moment it lands', () => {
+      const surface = new GlobeSurface(URLS, renderer)
+      ready(surface)
+      surface.setEra(at(-275e6)) // half way between two keyframes
+      imageFor('/era2.jpg').arrive(4096, 2048)
+      expect(surface.material.uniforms.uEraA.value).toBe(surface.texture('/era2.jpg'))
+      // and the second half of the pair is still held at the first: half of a
+      // crossfade is a frame of the era, the other half would be black
+      expect(surface.material.uniforms.uEraB.value).toBe(surface.texture('/era2.jpg'))
+      expect(surface.material.uniforms.uEraMix.value).toBe(0)
+      imageFor('/era3.jpg').arrive(4096, 2048)
+      expect(surface.material.uniforms.uEraB.value).toBe(surface.texture('/era3.jpg'))
+      expect(surface.material.uniforms.uEraMix.value).toBeCloseTo(0.5, 6)
+    })
+
+    it('holds the last good frame across a jump to an undecoded era', () => {
+      const surface = new GlobeSurface(URLS, renderer)
+      ready(surface)
+      surface.setEra(at(-350e6))
+      imageFor('/era1.jpg').arrive(4096, 2048)
+      const shown = surface.material.uniforms.uEraA.value
+      surface.setEra(at(-175e6, -350e6)) // era picker: a jump, not a scrub
+      expect(surface.material.uniforms.uEraA.value).toBe(shown) // one keyframe stale
+      expect(surface.material.uniforms.uEraMix.value).toBe(0) // and not a blend of it
+      imageFor('/era4.jpg').arrive(4096, 2048)
+      expect(surface.material.uniforms.uEraA.value).not.toBe(shown)
+    })
+
+    it('asks for the next frame in the direction of travel', () => {
+      const surface = new GlobeSurface(URLS, renderer)
+      ready(surface)
+      surface.setEra(at(-275e6, -300e6)) // scrubbing toward the present
+      expect(imageFor('/era2.jpg')).toBeTruthy() // the pair
+      expect(imageFor('/era3.jpg')).toBeTruthy()
+      expect(imageFor('/era4.jpg')).toBeTruthy() // and the one it is heading for
+      // but nothing behind it: the window retains what it has, it does not fetch
+      expect(StubImage.made.some((i) => i.src === '/era1.jpg')).toBe(false)
+    })
+
+    it('frees every frame outside the window as the cursor moves', () => {
+      const surface = new GlobeSurface(URLS, renderer)
+      ready(surface)
+      const freed: string[] = []
+      let prev: number | undefined
+      for (const t of [-400e6, -350e6, -300e6, -250e6, -200e6, -150e6, -100e6, -50e6]) {
+        surface.setEra(at(t, prev))
+        prev = t
+        for (const url of surface.residentEras) {
+          const tex = surface.texture(url)
+          if (!tex.userData.watched) {
+            tex.userData.watched = true
+            tex.addEventListener('dispose', () => freed.push(url))
+          }
+          imageFor(url)?.arrive(4096, 2048)
+        }
+      }
+      // the whole point: residency is bounded by the window, not by how far the
+      // timeline has been dragged
+      expect(surface.residentEras.length).toBeLessThanOrEqual(2 * ERA_WINDOW + 2)
+      expect(freed.length).toBeGreaterThan(0)
+      for (const url of freed) expect(surface.residentEras).not.toContain(url)
+    })
+
+    it('never frees the basemap, even though it is also the last keyframe', () => {
+      // PALEO_FRAMES ends on the modern map, which is the same texture the
+      // globe draws for the whole of recorded history
+      const surface = new GlobeSurface(URLS, renderer)
+      ready(surface)
+      let disposed = false
+      surface.texture(URLS.day).addEventListener('dispose', () => (disposed = true))
+      surface.setEra(at(2026))
+      surface.setEra(at(-400e6, 2026))
+      expect(disposed).toBe(false)
+      expect(surface.texture(URLS.day).image).toBeTruthy()
+    })
+
+    it('never frees what the samplers are bound to', () => {
+      const surface = new GlobeSurface(URLS, renderer)
+      ready(surface)
+      surface.setEra(at(-350e6))
+      imageFor('/era1.jpg').arrive(4096, 2048)
+      let disposed = false
+      surface.texture('/era1.jpg').addEventListener('dispose', () => (disposed = true))
+      // a jump far enough that era1 is outside the new window, while the shader
+      // is still holding it because nothing at the destination has decoded
+      surface.setEra(at(-175e6, -350e6))
+      expect(surface.material.uniforms.uEraA.value).toBe(surface.texture('/era1.jpg'))
+      expect(disposed).toBe(false)
+    })
   })
 
   describe('upgrade', () => {

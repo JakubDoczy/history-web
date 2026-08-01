@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   activeKeyframe,
+  borderRings,
   isNotable,
   keyframeArea,
   nationLabel,
@@ -178,4 +179,55 @@ describe('nations.json', () => {
       expect(vis.length).toBeLessThanOrEqual(8)
     },
   )
+})
+
+/**
+ * Border identity across a timeline tick.
+ *
+ * The globe's polygon layer joins on object identity and re-tessellates on
+ * array identity, so "the same borders" has to mean the same objects — see
+ * lib/nations.ts. These are the assertions that keep it that way.
+ */
+describe('borderRings', () => {
+  it('returns the same objects while the keyframe holds', () => {
+    const a = borderRings(rome, -150)
+    const b = borderRings(rome, -120)
+    expect(b).toBe(a)
+    expect(b[0]).toBe(a[0])
+    expect(b[0].coordinates).toBe(a[0].coordinates)
+  })
+
+  it('returns different objects once the keyframe changes', () => {
+    const a = borderRings(rome, -150) // the -270 keyframe
+    const b = borderRings(rome, -50) // the -100 one
+    expect(b[0]).not.toBe(a[0])
+    expect(b[0].ring).toBe(rome.keyframes[1].rings[0])
+  })
+
+  it('gives one entry per ring, in the keyframe order', () => {
+    const rings = borderRings(rome, 200) // greatest extent: mainland + island
+    expect(rings).toHaveLength(2)
+    expect(rings.map((r) => r.ring)).toEqual(rome.keyframes[2].rings)
+  })
+
+  it('closes each ring exactly once, without touching the stored one', () => {
+    const [entry] = borderRings(rome, -150)
+    const open = rome.keyframes[0].rings[0]
+    expect(entry.coordinates).toHaveLength(1)
+    expect(entry.coordinates[0]).toHaveLength(open.length + 1)
+    expect(entry.coordinates[0][open.length]).toEqual(open[0])
+    expect(open).toHaveLength(4) // the source data is still open
+  })
+
+  it('carries the label and the discriminant the polygon layer needs', () => {
+    const [entry] = borderRings(rome, -150)
+    expect(entry.kind).toBe('full')
+    expect(entry.label).toBe(nationLabel(rome))
+    expect(entry.nation).toBe(rome)
+  })
+
+  it('draws nothing outside the polity existence', () => {
+    expect(borderRings(rome, -900)).toEqual([])
+    expect(borderRings(rome, 900)).toEqual([])
+  })
 })

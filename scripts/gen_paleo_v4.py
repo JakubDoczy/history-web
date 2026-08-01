@@ -50,8 +50,13 @@ Per frame, at 2048x1024 (the size the surface shader wants):
 Re-run from the repo root:  pip install numpy pillow brotli
                             python3 scripts/gen_paleo_v4.py
 Downloads are cached in scripts/.cache/paleo/ (gitignored); pass --no-cache to
-refetch. Writes public/textures/paleo/*.jpg and src/data/paleoFrames.json.
-Roughly 5 MB of source data in, 6 MB of frames out, a couple of minutes.
+refetch. Writes public/textures/paleo/*.webp and src/data/paleoFrames.json.
+Roughly 5 MB of source data in, 3.5 MB of frames out, a couple of minutes.
+
+WebP, not JPEG: at quality 85 these come out within 0.2 dB PSNR of the JPEG 82
+they replaced — measured against this renderer's own output, so the comparison is
+against the truth rather than against another encode — and 36-47% smaller. The
+browser floor here is WebGL2, which every WebP decoder predates.
 """
 
 import argparse
@@ -153,7 +158,7 @@ SNOWLINE_OFFSET = [
     (90.0, 1100), (56.0, 1200), (35.9, 400), (14.9, 0), (0.0, 0),
 ]
 
-# Tuned against public/textures/base/earth-blue-marble.jpg at 0 Ma: the paleo
+# Tuned against public/textures/base/earth-blue-marble.webp at 0 Ma: the paleo
 # frames crossfade into that image, so their palette has to be its neighbour.
 # These sit low on purpose: the globe's "enhanced" visuals lift midtones and
 # push chroma (see the grade in lib/globeSurface.ts), and a ramp that already
@@ -367,7 +372,7 @@ def render(age, dem_slice, cls):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--no-cache', action='store_true', help='refetch source data')
-    ap.add_argument('--quality', type=int, default=82, help='JPEG quality')
+    ap.add_argument('--quality', type=int, default=85, help='WebP quality')
     ap.add_argument('--only', type=float, nargs='*', help='render just these ages (Ma)')
     args = ap.parse_args()
 
@@ -381,13 +386,13 @@ def main():
     ages = sorted(AGES, reverse=True)  # oldest first, so frame order is time order
     if not args.only:
         for f in os.listdir(OUT_DIR):
-            if f.startswith('pf') and f.endswith('.jpg'):
+            if f.startswith('pf') and f.endswith(('.jpg', '.webp')):
                 os.remove(os.path.join(OUT_DIR, f))
 
     frames, total = [], 0
     for i, age in enumerate(ages):
         n = SOURCE_AGES.index(age) + 1
-        name = f'pf{i:02d}.jpg'
+        name = f'pf{i:02d}.webp'
         # 0 Ma is the present, but the frame list ends with the real modern
         # basemap pinned at 10 ka; giving the two the same time would divide by a
         # zero-length interval. Half a frame of slack, invisible at this scale.
@@ -398,7 +403,9 @@ def main():
             continue
         img = render(age, dem[n - 1], load_classes(n, not args.no_cache))
         path = os.path.join(OUT_DIR, name)
-        Image.fromarray(img).save(path, quality=args.quality, optimize=True)
+        # method=6 is libwebp's slowest search; it costs seconds per frame in a
+        # script that is run by hand and saves ~4% on every download forever.
+        Image.fromarray(img).save(path, format='WEBP', quality=args.quality, method=6)
         kb = os.path.getsize(path) / 1024
         total += kb
         print(f'{name}  {age:>6} Ma  (map {n:>3})  {kb:6.0f} KB')

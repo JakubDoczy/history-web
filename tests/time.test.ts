@@ -98,3 +98,132 @@ describe('time store', () => {
     expect(s.range.start).toBeGreaterThanOrEqual(MIN_TIME)
   })
 })
+
+/**
+ * Downstream of these three properties sit the border digest, the event index
+ * and the era plan, and all of them are invalidated by *identity*. So the thing
+ * under test is not the numbers — those were always right — but whether new
+ * objects were published at all.
+ */
+describe('time store: a move that moves nothing publishes nothing', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  /** Identities of everything a downstream watcher keys on. */
+  const snap = (s: ReturnType<typeof useTimeStore>) => ({
+    range: s.range,
+    selection: s.selection,
+    currentTime: s.currentTime,
+  })
+
+  it('panning against the end of time republishes nothing', () => {
+    const s = useTimeStore()
+    s.setRange({ start: MAX_TIME - 100, end: MAX_TIME })
+    const before = snap(s)
+    for (let i = 0; i < 30; i++) s.pan(0.2) // a held drag at the rail's end
+    expect(snap(s)).toEqual(before)
+    expect(s.range).toBe(before.range) // same object, not merely equal
+    expect(s.selection).toBe(before.selection)
+  })
+
+  it('panning against the beginning of time republishes nothing', () => {
+    const s = useTimeStore()
+    s.setRange({ start: MIN_TIME, end: MIN_TIME + 1e6 })
+    const before = snap(s)
+    for (let i = 0; i < 30; i++) s.pan(-0.2)
+    expect(s.range).toBe(before.range)
+    expect(s.selection).toBe(before.selection)
+    expect(s.currentTime).toBe(before.currentTime)
+  })
+
+  it('zooming out at full extent republishes nothing', () => {
+    const s = useTimeStore()
+    s.setRange({ start: MIN_TIME, end: MAX_TIME })
+    const before = snap(s)
+    for (let i = 0; i < 10; i++) s.zoom(4)
+    expect(s.range).toBe(before.range)
+    expect(s.selection).toBe(before.selection)
+  })
+
+  it('setRange to the identical window republishes nothing', () => {
+    const s = useTimeStore()
+    const before = snap(s)
+    s.setRange({ ...s.range }) // same numbers, different object
+    expect(s.range).toBe(before.range)
+    expect(s.selection).toBe(before.selection)
+  })
+
+  it('a selection handle held past the window edge republishes nothing', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1000, end: 2000 })
+    s.setSelection(1200, 1800)
+    const held = s.selection
+    s.setSelection(1200, 2400) // dragged past the end: clamps back to 2000
+    const clamped = s.selection
+    expect(clamped).not.toBe(held)
+    for (let i = 0; i < 20; i++) s.setSelection(1200, 2400 + i * 100)
+    expect(s.selection).toBe(clamped) // ...and never again
+  })
+
+  it('a pan into the bound lands exactly on it, and settles there', () => {
+    const s = useTimeStore()
+    s.setRange({ start: MIN_TIME + 1e6, end: MIN_TIME + 2e6 })
+    s.pan(-10) // overshoot the beginning of time
+    // exactly the bound, not the warp roundtrip of it: 5 µyr of slack here is
+    // enough for a held drag to oscillate between two windows forever
+    expect(s.range.start).toBe(MIN_TIME)
+    const settled = s.range
+    s.pan(-10)
+    s.pan(-0.01)
+    expect(s.range).toBe(settled)
+  })
+
+  it('a pan into the end of time lands exactly on it, and settles there', () => {
+    const s = useTimeStore()
+    s.setRange({ start: MAX_TIME - 2000, end: MAX_TIME - 1000 })
+    s.pan(10)
+    expect(s.range.end).toBe(MAX_TIME)
+    const settled = s.range
+    s.pan(10)
+    expect(s.range).toBe(settled)
+  })
+
+  it('a pan with room to move still moves', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1000, end: 2000 })
+    const before = s.range
+    s.pan(0.25)
+    expect(s.range).not.toBe(before)
+    expect(s.range.start).toBeGreaterThan(1000)
+  })
+
+  it('still publishes when something really does change', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1000, end: 2000 })
+    const before = snap(s)
+    s.setRange({ start: 1001, end: 2000 })
+    expect(s.range).not.toBe(before.range)
+    expect(s.range).toEqual({ start: 1001, end: 2000 })
+  })
+
+  it('publishes when only the selection is squeezed by the move', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1000, end: 2000 })
+    s.setSelection(1100, 1900)
+    const before = snap(s)
+    s.setRange({ start: 1000, end: 1500 }) // same start, selection must clamp
+    expect(s.selection).not.toBe(before.selection)
+    expect(s.selection.end).toBeLessThanOrEqual(1500)
+  })
+
+  it('publishes when only the cursor is squeezed by the move', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1000, end: 2000 })
+    s.setSelection(1000, 2000)
+    s.setTime(1900)
+    s.setRange({ start: 1000, end: 2000 }) // no-op, to settle
+    const before = snap(s)
+    s.setRange({ start: 1000, end: 1800 })
+    expect(s.currentTime).toBe(1800)
+    expect(s.currentTime).not.toBe(before.currentTime)
+  })
+})

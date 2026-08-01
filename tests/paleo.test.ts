@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
+  eraPlan,
+  ERA_WINDOW,
   textureBlend,
   modernShare,
   imageryCredit,
@@ -115,5 +117,96 @@ describe('paleoFrames.json', () => {
   it('reaches the start of the Cambrian and ends at the present', () => {
     expect(frameList[0].ma).toBeGreaterThanOrEqual(538.8)
     expect(frameList[frameList.length - 1].ma).toBe(0)
+  })
+})
+
+/**
+ * The residency window.
+ *
+ * Every deep-time frame is 32 MB on the GPU with its mip chain, and the layer
+ * used to hold every one it had ever shown — 336 MB measured after a scrub
+ * through the Phanerozoic, with exactly one texture ever freed. `eraPlan` is
+ * what makes that bounded: what to keep, and what to warm next.
+ */
+describe('eraPlan', () => {
+  // ten frames, evenly spaced, so window arithmetic is readable
+  const many: TextureKeyframe[] = Array.from({ length: 10 }, (_, i) => ({
+    time: -500e6 + i * 50e6,
+    url: `f${i}`,
+  }))
+  /** The time exactly between frames i and i+1. */
+  const between = (i: number) => (many[i].time + many[i + 1].time) / 2
+
+  it('carries the same crossfade textureBlend does', () => {
+    for (const t of [-4e9, -500e6, between(3), -75e6, 2026]) {
+      const { from, to, f } = eraPlan(many, t)
+      expect({ from, to, f }).toEqual(textureBlend(many, t))
+    }
+  })
+
+  it('keeps the blend pair and two keyframes either side', () => {
+    expect(eraPlan(many, between(4)).keep).toEqual(['f2', 'f3', 'f4', 'f5', 'f6', 'f7'])
+  })
+
+  it('never keeps more than the window, however far it has scrubbed', () => {
+    // the point of the whole exercise: residency is O(1) in timeline length
+    for (let i = 0; i < 9; i++) {
+      expect(eraPlan(many, between(i)).keep.length).toBeLessThanOrEqual(2 * ERA_WINDOW + 2)
+    }
+  })
+
+  it('clamps the window at either end instead of running off it', () => {
+    expect(eraPlan(many, -4e9).keep).toEqual(['f0', 'f1', 'f2'])
+    expect(eraPlan(many, 2026).keep).toEqual(['f7', 'f8', 'f9'])
+  })
+
+  it('always keeps what it is about to draw', () => {
+    for (let i = 0; i < 9; i++) {
+      const plan = eraPlan(many, between(i))
+      expect(plan.keep).toContain(plan.from)
+      expect(plan.keep).toContain(plan.to)
+    }
+  })
+
+  it('warms the next frame ahead of a forward scrub', () => {
+    // moving toward the present: the frame after the pair is the one about to
+    // be needed, and a decode started now is a decode finished by then
+    expect(eraPlan(many, between(4), between(5)).prefetch).toBe('f3') // going back
+    expect(eraPlan(many, between(4), between(3)).prefetch).toBe('f6') // going forward
+  })
+
+  it('guesses forward when there is no previous time', () => {
+    expect(eraPlan(many, between(4)).prefetch).toBe('f6')
+    expect(eraPlan(many, between(4), between(4)).prefetch).toBe('f6')
+  })
+
+  it('has nothing to warm past either end of the timeline', () => {
+    expect(eraPlan(many, -4e9, 2026).prefetch).toBeNull() // clamped at f0, going back
+    expect(eraPlan(many, 2026, -4e9).prefetch).toBeNull() // clamped at f9, going forward
+  })
+
+  it('never prefetches outside what it promises to keep', () => {
+    // a prefetch the eviction pass would drop on the same tick is a download
+    // spent to be thrown away
+    for (const prev of [-4e9, 2026]) {
+      for (let i = 0; i < 9; i++) {
+        const plan = eraPlan(many, between(i), prev)
+        if (plan.prefetch) expect(plan.keep).toContain(plan.prefetch)
+      }
+    }
+  })
+
+  it('holds a single frame with no window at all', () => {
+    const one: TextureKeyframe[] = [{ time: -1e6, url: 'only' }]
+    const plan = eraPlan(one, 0)
+    expect(plan.keep).toEqual(['only'])
+    expect(plan.prefetch).toBeNull()
+  })
+
+  it('deduplicates the real frame list, where the last frame is the day map', () => {
+    // PALEO_FRAMES pins the modern basemap as its last keyframe, and the clamped
+    // end returns it as both `from` and `to`
+    const plan = eraPlan(frames, 2026)
+    expect(new Set(plan.keep).size).toBe(plan.keep.length)
   })
 })

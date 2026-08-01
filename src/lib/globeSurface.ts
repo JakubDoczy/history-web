@@ -14,7 +14,7 @@ import {
   RepeatWrapping,
   type WebGLRenderer,
 } from 'three'
-import type { TextureBlend } from './paleo'
+import type { EraPlan } from './paleo'
 import { PALETTE_GAMMA, type Palette } from './palette'
 import { CLOUD_UPSCALE, cloudUpscaleWorthIt } from './cloudUpscale'
 import { fadeTowards } from './mapFade'
@@ -242,6 +242,18 @@ float cloudMask(vec2 uv) {
   return clamp(c + uCloudSharp * (c - blur), 0.0, 1.0);
 }
 
+/**
+ * Equirectangular UV of a direction — but only ever needed for directions that
+ * are *not* the surface normal.
+ *
+ * For the normal itself the answer is already interpolated across the triangle:
+ * three's SphereGeometry lays u along the same azimuth this function measures,
+ * and three-globe rotates the globe mesh by -90° in y, which lines the two up
+ * to a constant half-turn offset — dirToUv(n) == vec2(fract(vUv.x + 0.5), vUv.y)
+ * exactly, away from the poles. Both call sites subtract it from another
+ * dirToUv, so the offset cancels and the seam wrap that follows is unchanged.
+ * That is two atan/asin pairs per fragment saved, every frame.
+ */
 vec2 dirToUv(vec3 d) {
   vec3 l = vec3(d.z, d.y, -d.x);
   return vec2(atan(l.z, -l.x) / (2.0 * PI) + 0.5, 0.5 + asin(clamp(l.y, -1.0, 1.0)) / PI);
@@ -249,15 +261,25 @@ vec2 dirToUv(vec3 d) {
 
 void main() {
   vec3 n = normalize(vNormalW);
+  // what dirToUv(n) would return; see above
+  vec2 nUv = vec2(fract(vUv.x + 0.5), vUv.y);
 
   // --- relief: perturb the normal from the height field so terrain catches light ---
-  float hL = texture(uRelief, vUv - vec2(uTexel.x, 0.0)).r;
-  float hR = texture(uRelief, vUv + vec2(uTexel.x, 0.0)).r;
-  float hD = texture(uRelief, vUv - vec2(0.0, uTexel.y)).r;
-  float hU = texture(uRelief, vUv + vec2(0.0, uTexel.y)).r;
-  vec3 east = normalize(cross(vec3(0.0, 1.0, 0.0), n));
-  vec3 north = cross(n, east);
-  vec3 nRelief = normalize(n - (east * (hR - hL) + north * (hU - hD)) * uRelief_);
+  // Four dependent taps and a normalize, skipped whole whenever the height field
+  // contributes nothing — which is every deep-time frame (those carry their own
+  // baked hillshade), the relief setting off, and the first 450 ms of every load
+  // while the map fades in. uRelief_ is a uniform, so the branch is uniform
+  // across the draw and the derivatives inside it stay defined.
+  vec3 nRelief = n;
+  if (uRelief_ > 0.0) {
+    float hL = texture(uRelief, vUv - vec2(uTexel.x, 0.0)).r;
+    float hR = texture(uRelief, vUv + vec2(uTexel.x, 0.0)).r;
+    float hD = texture(uRelief, vUv - vec2(0.0, uTexel.y)).r;
+    float hU = texture(uRelief, vUv + vec2(0.0, uTexel.y)).r;
+    vec3 east = normalize(cross(vec3(0.0, 1.0, 0.0), n));
+    vec3 north = cross(n, east);
+    nRelief = normalize(n - (east * (hR - hL) + north * (hU - hD)) * uRelief_);
+  }
 
   float cosSun = dot(nRelief, uSunDir);
   float cosGeo = dot(n, uSunDir);           // geometric terminator, no relief
@@ -433,15 +455,20 @@ void main() {
   // --- parallax: the deck sits above the ground, so it slides against it as
   // the globe turns. Following the view ray up to cloud height is what makes
   // the layer read as floating rather than painted on. ---
-  vec3 liftedView = normalize(n + viewDir * (uCloudH / max(dot(n, viewDir), 0.25)));
-  vec2 pduv = dirToUv(liftedView) - dirToUv(n);
-  pduv.x -= (abs(pduv.x) > 0.5) ? sign(pduv.x) : 0.0;
-  vec2 cloudUv = vec2(fract(vUv.x + pduv.x + uCloudRot), clamp(vUv.y + pduv.y, 0.0, 1.0));
+  // Skipped entirely when no cloud film is drawn — a uniform branch, and clouds
+  // are off for the whole of deep time and for every view closer than ~10°.
+  vec2 cloudUv = vec2(0.0);
+  if (uCloudAlpha > 0.0) {
+    vec3 liftedView = normalize(n + viewDir * (uCloudH / max(dot(n, viewDir), 0.25)));
+    vec2 pduv = dirToUv(liftedView) - nUv;
+    pduv.x -= (abs(pduv.x) > 0.5) ? sign(pduv.x) : 0.0;
+    cloudUv = vec2(fract(vUv.x + pduv.x + uCloudRot), clamp(vUv.y + pduv.y, 0.0, 1.0));
+  }
 
   // --- cloud shadows: follow the sun ray up to the same height and sample there ---
   if (uCloudShadow > 0.0 && cosGeo > 0.03) {
     vec3 lifted = normalize(n + uSunDir * (uCloudH / max(cosGeo, 0.18)));
-    vec2 duv = dirToUv(lifted) - dirToUv(n);
+    vec2 duv = dirToUv(lifted) - nUv;
     duv.x -= (abs(duv.x) > 0.5) ? sign(duv.x) : 0.0;   // cross the seam cleanly
     float occ = texture(uClouds, vec2(fract(vUv.x + duv.x + uCloudRot), clamp(vUv.y + duv.y, 0.0, 1.0))).r;
     surface *= 1.0 - occ * uCloudShadow * daylight;
@@ -451,11 +478,20 @@ void main() {
   // uNightMix is 0 until the map arrives, so the night side is the day
   // albedo darkened and nothing else — which is what it looks like anyway on
   // the half of the planet with no cities on it.
-  vec3 rawNight = texture(uNight, vUv).rgb * uNightMix;
-  float lum = dot(rawNight, vec3(0.333));
-  float thresh = 1.15 - uLights * 1.25;
-  float reveal = smoothstep(thresh - 0.18, thresh + 0.18, lum);
-  vec3 night = surface * vec3(0.05, 0.07, 0.12) * (1.0 + 2.2 * uBoost) + rawNight * 1.6 * reveal;
+  //
+  // Before electrification uLights is 0, and the reveal threshold is set so the
+  // smoothstep clamps to exactly zero there — 1.2 rather than 1.15, because at
+  // 1.15 the window's lower edge sits at 0.97 and the very brightest lit texels
+  // still leaked ~2% through. With the term provably zero the tap can be skipped
+  // outright, which is most of recorded history.
+  vec3 night = surface * vec3(0.05, 0.07, 0.12) * (1.0 + 2.2 * uBoost);
+  if (uLights > 0.0) {
+    vec3 rawNight = texture(uNight, vUv).rgb * uNightMix;
+    float lum = dot(rawNight, vec3(0.333));
+    float thresh = 1.2 - uLights * 1.25;
+    float reveal = smoothstep(thresh - 0.18, thresh + 0.18, lum);
+    night += rawNight * 1.6 * reveal;
+  }
 
   vec3 color = mix(night, surface, daylight);
 
@@ -512,6 +548,20 @@ export class GlobeSurface {
   private cloudSetting = { visible: false, opacity: 1, shadows: true }
   /** Set while the camera is moving, so the cloud upscale can wait for a lull. */
   private busy = false
+  /**
+   * Fires whenever this material's picture changed on its own — a map decoded,
+   * an upscale landed, an era frame arrived. The render loop is frame-on-demand
+   * (see GlobeView), so an arrival nobody asked for still has to ask for a frame.
+   */
+  onDirty?: () => void
+  /** URLs the era layer has asked for; the only ones eviction may consider. */
+  private eraUrls = new Set<string>()
+  /** URLs whose image has actually decoded — the rest would render black. */
+  private decoded = new Set<string>()
+  /** The last era plan, re-applied whenever one of its frames lands. */
+  private eraState?: EraPlan
+  /** The most recent *decoded* era texture, held over undecoded ones. */
+  private lastGood?: Texture
 
   constructor(urls: GlobeSurfaceUrls, renderer: WebGLRenderer) {
     this.maxAniso = renderer.capabilities.getMaxAnisotropy()
@@ -523,6 +573,7 @@ export class GlobeSurface {
     // three, which is exactly the right absence for all three of them: no city
     // lights, a flat height field, and no cloud cover.
     const day = this.texture(urls.day, 'color', () => this.dayLoaded())
+    this.lastGood = day
 
     this.material = new ShaderMaterial({
       glslVersion: GLSL3,
@@ -562,19 +613,39 @@ export class GlobeSurface {
 
   /**
    * Loads once. Colour maps are sRGB; masks and height fields are data and must
-   * stay linear, or their mid-tones get crushed. Anisotropy everywhere, since a
-   * globe is mostly grazing angles.
+   * stay linear, or their mid-tones get crushed.
+   *
+   * Anisotropy used to be the driver's maximum (16 on every desktop GPU) for
+   * every map, which is 16 texel fetches per sample at a grazing angle — and a
+   * globe is mostly grazing angles. It buys something real on the colour maps,
+   * where the pixels at the limb are the ones being read as coastline; 4 is
+   * where that stops being visible. It buys nothing on the two *data* maps: the
+   * relief map is differenced into a normal and the cloud mask is a soft alpha,
+   * and neither carries detail that survives the limb. So data maps drop to 1.
    */
   texture(url: string, kind: 'color' | 'data' = 'color', onLoad?: (t: Texture) => void): Texture {
     let t = this.cache.get(url)
     if (!t) {
-      t = this.loader.load(url, onLoad)
+      t = this.loader.load(url, (tex) => {
+        this.decoded.add(url)
+        onLoad?.(tex)
+      })
       if (kind === 'color') t.colorSpace = SRGBColorSpace
-      t.anisotropy = this.maxAniso
+      // R8 instead of RGBA8 for the data maps: the shader reads `.r` from both,
+      // and the upload is a quarter of the bytes and a quarter of the mipmap
+      // work. WebGL2 is a hard requirement here (the material is GLSL3), and
+      // WebGL2 accepts RED/UNSIGNED_BYTE straight from an <img>.
+      else t.format = RedFormat
+      t.anisotropy = this.anisoFor(kind)
       t.wrapS = RepeatWrapping
       this.cache.set(url, t)
     }
     return t
+  }
+
+  /** Colour maps get enough to keep the limb readable; data maps get none. */
+  private anisoFor(kind: 'color' | 'data'): number {
+    return kind === 'color' ? Math.min(4, this.maxAniso) : 1
   }
 
   /** The day map is on the GPU: there is a globe to look at. */
@@ -614,20 +685,29 @@ export class GlobeSurface {
   }
 
   /**
-   * Advance the arrival ramps by one frame.
+   * Advance the arrival ramps by one frame. Returns true while any of them is
+   * still moving — the render loop only draws frames that differ, so a ramp has
+   * to say so (see GlobeView's `wake`).
    *
    * Driven from the render loop rather than from a timer so a backgrounded tab
    * does not fade three maps in while nobody is watching and then present the
    * result as a jump.
    */
-  advance(dtMs: number) {
+  advance(dtMs: number): boolean {
     const u = this.material.uniforms
+    const before = this.fade.night + this.fade.relief + this.fade.clouds
     this.fade.night = fadeTowards(this.fade.night, this.landed.night ? 1 : 0, dtMs)
     this.fade.relief = fadeTowards(this.fade.relief, this.landed.relief ? 1 : 0, dtMs)
     this.fade.clouds = fadeTowards(this.fade.clouds, this.landed.clouds ? 1 : 0, dtMs)
     u.uNightMix.value = this.fade.night
     u.uRelief_.value = this.reliefStrength * this.fade.relief
     this.applyClouds()
+    return this.fade.night + this.fade.relief + this.fade.clouds !== before
+  }
+
+  /** Whether any cloud film is being drawn — i.e. whether drift is visible. */
+  get cloudsShown(): boolean {
+    return this.material.uniforms.uCloudAlpha.value > 0
   }
 
   /** Whether the camera is moving; the cloud upscale waits for it to stop. */
@@ -708,7 +788,7 @@ export class GlobeSurface {
       // reversed the rows, so DataTexture's flipY = false is the right one.
       const sharper = new DataTexture(out.data, out.width, out.height, RedFormat)
       sharper.wrapS = RepeatWrapping
-      sharper.anisotropy = this.maxAniso
+      sharper.anisotropy = this.anisoFor('data')
       sharper.magFilter = LinearFilter
       sharper.minFilter = LinearMipmapLinearFilter
       sharper.generateMipmaps = true
@@ -751,7 +831,7 @@ export class GlobeSurface {
     img.onload = () => {
       const sharper = new Texture(img)
       sharper.colorSpace = SRGBColorSpace
-      sharper.anisotropy = this.maxAniso
+      sharper.anisotropy = this.anisoFor('color')
       sharper.wrapS = RepeatWrapping
       sharper.needsUpdate = true
       const previous = this.cache.get(url)
@@ -761,17 +841,114 @@ export class GlobeSurface {
           this.material.uniforms[key].value = sharper
         }
       }
+      // the held fallback frame is a fourth reference to the same texture, and
+      // disposing what it points at would make the next era jump hold a corpse
+      if (this.lastGood === previous) this.lastGood = sharper
+      this.decoded.add(url)
       previous?.dispose()
+      this.onDirty?.()
     }
     img.onerror = () => {} // keep what we have
     img.src = betterUrl
   }
 
-  setEra({ from, to, f }: TextureBlend) {
+  /**
+   * Show a moment in deep time, and decide what stays on the GPU.
+   *
+   * Three things happen here, and only the first is obvious:
+   *
+   *  - the blend pair is requested, and the next frame in the direction of
+   *    travel is *started* (see EraPlan.prefetch), so a steady scrub crosses
+   *    each keyframe boundary with the map already decoded;
+   *  - nothing undecoded is ever bound. A texture whose image has not landed
+   *    reads as black in three, so jumping eras used to black the planet out for
+   *    the length of a decode. Holding the previous frame instead is at worst
+   *    one keyframe stale for a few hundred milliseconds, which on a scale where
+   *    a keyframe is ten million years is not a lie worth blacking a globe for;
+   *  - everything outside the window is disposed. 39 paleo frames at 32 MB with
+   *    mips is 1.2 GB if they are merely cached, and a cache is what this was.
+   */
+  setEra(plan: EraPlan) {
+    this.eraState = plan
+    this.requestEra(plan.from)
+    this.requestEra(plan.to)
+    if (plan.prefetch) this.requestEra(plan.prefetch)
+    this.applyEra()
+    this.evictEras(plan.keep)
+  }
+
+  /** An era frame, loading if need be, re-applied to the shader when it lands. */
+  private requestEra(url: string): Texture {
+    this.eraUrls.add(url)
+    return this.texture(url, 'color', () => {
+      this.applyEra()
+      // and sweep again: the frame that just landed may have released the stale
+      // one the shader was holding over it, which the arriving-frame path is the
+      // only chance to free — nothing else runs until the cursor moves again
+      if (this.eraState) this.evictEras(this.eraState.keep)
+      this.onDirty?.()
+    })
+  }
+
+  /**
+   * Bind whichever of the planned pair has actually decoded, holding the last
+   * good frame for the rest. Called again by every frame's own load callback,
+   * so the real pair goes up as soon as it exists.
+   */
+  private applyEra() {
+    const plan = this.eraState
+    if (!plan) return
     const u = this.material.uniforms
-    u.uEraA.value = this.texture(from)
-    u.uEraB.value = this.texture(to)
-    u.uEraMix.value = f
+    const hasFrom = this.decoded.has(plan.from)
+    const hasTo = this.decoded.has(plan.to)
+    if (hasFrom && hasTo) {
+      const a = this.cache.get(plan.from)!
+      const b = this.cache.get(plan.to)!
+      u.uEraA.value = a
+      u.uEraB.value = b
+      u.uEraMix.value = plan.f
+      this.lastGood = plan.f < 0.5 ? a : b
+      return
+    }
+    const held = hasFrom
+      ? this.cache.get(plan.from)!
+      : hasTo
+        ? this.cache.get(plan.to)!
+        : this.lastGood
+    if (!held) return
+    u.uEraA.value = held
+    u.uEraB.value = held
+    u.uEraMix.value = 0
+    this.lastGood = held
+  }
+
+  /**
+   * Drop era frames outside the window.
+   *
+   * Three things are never dropped, however far the cursor has moved: the maps
+   * this surface was constructed with (the last paleo keyframe *is* the day
+   * basemap, and disposing it would take the modern globe with it), whatever the
+   * two era samplers are bound to right now, and the held frame the next
+   * `applyEra` may still need to fall back to.
+   */
+  private evictEras(keep: string[]) {
+    const u = this.material.uniforms
+    const live = new Set(keep)
+    const pinned = new Set<string>(Object.values(this.urls))
+    for (const url of this.eraUrls) {
+      if (live.has(url) || pinned.has(url)) continue
+      const t = this.cache.get(url)
+      if (!t || t === u.uEraA.value || t === u.uEraB.value || t === this.lastGood) continue
+      t.dispose()
+      this.cache.delete(url)
+      this.decoded.delete(url)
+      this.eraUrls.delete(url)
+    }
+  }
+
+  /** Era frames currently on the GPU — the window this class promises to hold. */
+  get residentEras(): string[] {
+    return [...this.eraUrls]
   }
 
   setSun(dir: Vector3) {

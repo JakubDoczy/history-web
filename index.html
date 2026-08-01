@@ -4,12 +4,60 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>History Web</title>
+
+    <!--
+      The day basemap, asked for by the document rather than by the app.
+
+      It is the one file the first frame cannot be drawn without, and until this
+      line existed nothing requested it until the module graph — three.js and all
+      — had been fetched, parsed and run. On a 9 Mbps connection that put the
+      globe on screen ~1.45 s later than it needed to be, for no reason other
+      than discovery order: the bytes were always going to be fetched, just after
+      a round trip that had nothing to do with them.
+
+      This URL must match MODERN_TEXTURE in src/data/paleoTextures.ts. They are
+      the same file by hand, not by construction — a preload that misses is worse
+      than none, because it spends the bandwidth twice. %BASE_URL% is Vite's, and
+      keeps this working under the GitHub Pages sub-path.
+
+      `crossorigin` is not optional and not about origins. three's Loader sets
+      `crossOrigin = 'anonymous'` on every image it creates, and the preload cache
+      is keyed on CORS mode as well as URL — so without it the two requests are
+      different entries and the browser fetches 1.4 MB twice. Measured: it did.
+    -->
+    <link
+      rel="preload"
+      as="image"
+      crossorigin
+      href="%BASE_URL%textures/base/earth-blue-marble.webp"
+    />
+
+    <!--
+      Fonts, off the critical path.
+
+      A stylesheet in <head> blocks the first paint until it has been fetched and
+      parsed — and this one is cross-origin, so that is a DNS lookup, a TLS
+      handshake and two round trips (the CSS, then the font files it names)
+      standing in front of a loading screen that is already fully styled by the
+      inline CSS below. `media="print"` makes it non-matching, which drops it out
+      of the render-blocking set; the onload flips it back to `all` and the text
+      re-renders in IBM Plex when it lands. The app's font stacks all end in
+      system fallbacks, so the interval is a font swap, never invisible text.
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
     <!--
       The loading state is inline, in the document, on purpose.
 

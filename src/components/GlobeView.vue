@@ -10,11 +10,13 @@ import { useViewStore } from '../stores/view'
 import type { HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
+import { RenderPump } from '../lib/renderPump'
+import { firstFrame } from '../lib/firstFrame'
 import { AtmosphereLayer } from '../lib/skyLayer'
 import { DetailImagery, visibleSpanDeg, minAltitudeFor, patchPixelCap } from '../lib/detailImagery'
 import { cloudFadeFor, cloudSharpenFor } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
-import { textureBlend, modernShare } from '../lib/paleo'
+import { eraPlan, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { pinElement, clusterElement, pinStateKey } from '../lib/eventPins'
 import {
@@ -46,8 +48,17 @@ let resizeObs: ResizeObserver | undefined
 let raf = 0
 const stops: (() => void)[] = []
 
-type EventAreaEntry = { kind: 'area'; event: HistoricalEvent; ring: Ring }
+type EventAreaEntry = {
+  kind: 'area'
+  event: HistoricalEvent
+  ring: Ring
+  /** GeoJSON Polygon `coordinates`, closed — held, like the entry itself. */
+  coordinates: Ring[]
+}
 type PolyEntry = BorderEntry | EventAreaEntry
+
+/** What the polygon layer was last given; see the watcher that fills it. */
+let lastPolys: PolyEntry[] = []
 
 const asPin = (d: object) => d as PinDatum
 const asLeg = (d: object) => d as ClusterLeg
@@ -85,7 +96,6 @@ const layout = computed(() =>
     fan: events.expandedClusterId ? liveFan() : NO_FAN,
   }),
 )
-const closed = (ring: Ring) => [...ring, ring[0]]
 
 /**
  * Pin identity, held across layouts.
@@ -150,17 +160,48 @@ const stableLegs = (legs: ClusterLeg[]): ClusterLeg[] => {
 
 // Only the selected event's area draws as a polygon: overlapping region fills
 // used to smother the planet. Unselected area events are pins like the rest.
-const eventAreas = (): EventAreaEntry[] =>
-  events.visible
-    .filter((e) => e.area && e.id === events.selectedId)
-    .map((e) => ({ kind: 'area', event: e, ring: e.area! }))
+//
+// Held by event id for the same reason borders are (see lib/nations.ts): the
+// polygon list is rebuilt whenever anything on it changes, and an entry the
+// layer does not recognise costs a rebuilt mesh and a re-tessellated cap.
+const areaEntries = new Map<string, EventAreaEntry>()
+/**
+ * At most one entry, and it is read from `events.selected` rather than found in
+ * `events.visible`.
+ *
+ * This runs inside the polygon watcher, so whatever it reads is what invalidates
+ * that watcher — and `visible` is the most volatile thing in the app: it is
+ * requeried whenever the selected span, the tag filter or the loaded event count
+ * changes. Dragging a selection handle therefore re-ran the polygon layer's
+ * whole rebuild-and-compare (~30 times across one drag) to discover that the
+ * selected event's footprint had not moved. `selected` changes when the user
+ * selects something, which is the only thing that can change this list.
+ *
+ * It also drops the "and it is inside the visible window" condition, which is
+ * the behaviour EventPanel already has: while the panel is open on an event, its
+ * footprint is drawn, whether or not the timeline window still reaches it.
+ */
+const eventAreas = (): EventAreaEntry[] => {
+  const e = events.selected
+  if (!e?.area) return []
+  const held = areaEntries.get(e.id)
+  if (held) return [held]
+  const ring = e.area
+  const entry: EventAreaEntry = { kind: 'area', event: e, ring, coordinates: [[...ring, ring[0]]] }
+  areaEntries.set(e.id, entry)
+  return [entry]
+}
 
 onMounted(() => {
   const dom = el.value!
   const base = import.meta.env.BASE_URL
 
   globe = new Globe(dom)
-    .backgroundImageUrl(SKY_TEXTURE)
+    // Flat black to start with, and the starfield later — see the first-frame
+    // block in `tick`. Pure black on purpose: it is the colour the sky texture
+    // is 94% made of, so when the stars land they *appear* rather than the field
+    // behind them changing shade.
+    .backgroundColor('#000000')
     .width(dom.clientWidth)
     .height(dom.clientHeight)
     // events layer: HTML pins, coloured by the event's primary tag. Area events
@@ -206,9 +247,12 @@ onMounted(() => {
     .arcStroke(() => legStrokeDeg(liveFan()))
     .arcsTransitionDuration(180)
     // polygons layer: nation borders + the selected event's area
+    // The coordinate array comes from the entry rather than being built here:
+    // three-globe re-tessellates the cap whenever this is a different array
+    // object than last time, whatever the numbers in it say.
     .polygonGeoJsonGeometry((d) => ({
       type: 'Polygon',
-      coordinates: [closed(asPoly(d).ring)] as unknown as number[],
+      coordinates: asPoly(d).coordinates as unknown as number[],
     }))
     // Borders read as a drawn line, not a wash of colour. The cap is fully
     // transparent on purpose: caps are lit Lambert meshes, so on the night side
@@ -220,7 +264,11 @@ onMounted(() => {
       if (p.kind === 'area') return tagColor(primaryTag(p.event)) + '38'
       return 'rgba(0,0,0,0)'
     })
-    .polygonSideColor(() => 'rgba(0,0,0,0)')
+    // No side colour at all, rather than a transparent one: three-globe reads
+    // this as "no sides" and builds the cap alone, which is one fewer mesh and
+    // one fewer wall of triangles per ring for something that was drawn at zero
+    // opacity anyway. The invisible *cap* stays — it is the hover/click target.
+    .polygonSideColor(() => '')
     .polygonStrokeColor((d) => {
       const p = asPoly(d)
       if (p.kind === 'area') return tagColor(primaryTag(p.event))
@@ -312,6 +360,7 @@ onMounted(() => {
     view.detailAttribution = detail!.attribution
     view.detailGroundRes = detail!.groundRes
     surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
+    wake() // a patch that arrived while the globe was parked still has to appear
   }
 
   /**
@@ -385,7 +434,17 @@ onMounted(() => {
     }
     const near = closeness(pov.altitude)
     const span = visibleSpanDeg(pov.altitude)
-    view.altitude = pov.altitude
+    // Quantised, at the same relative epsilon povMoved uses.
+    //
+    // A pure rotation gets here on every frame (lat/lng really did change) and
+    // used to publish the camera's *distance* each time — which OrbitControls
+    // damping leaves wandering in the last few digits. Every one of those writes
+    // re-rendered the scale bar, and the bar's rule has a width transition, so
+    // it restarted a CSS animation sixty times a second to end at the same
+    // width. Below the epsilon the altitude is, for every reader of it, the
+    // altitude it already had.
+    if (Math.abs(view.altitude - pov.altitude) > Math.max(pov.altitude, 1e-6) * 1e-3)
+      view.altitude = pov.altitude
     events.noteSpan(span)
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel
@@ -403,6 +462,7 @@ onMounted(() => {
       settings.cloudShadows,
     )
     atmosphere!.visible = settings.atmosphere && near < 0.9
+    wake()
   }
 
   // One pass per frame at most: the camera can only be in one place per frame,
@@ -427,74 +487,213 @@ onMounted(() => {
   const ambient = globe.lights().find((l): l is AmbientLight => l instanceof AmbientLight)
   if (ambient) ambient.intensity = Math.min(ambient.intensity, 0.7)
 
+  /** Where the era cursor was last frame; the lookahead needs a direction. */
+  let prevEraTime: number | undefined
+
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  /**
+   * Frame-on-demand: the wiring. The policy — cushion, safety tick, when to park
+   * — is in lib/renderPump.ts, and the comment there is the one worth reading.
+   *
+   * What lives here is the list of dirty sources, and it is the part that has to
+   * be complete for any of it to be correct. Every `wake()` below stands for one
+   * way the picture can change:
+   *
+   *   controls 'change'   drag, wheel, pinch, and every damping step after one
+   *   pointer events      the hover raycast runs inside the render loop
+   *   surface.onDirty     a map, an upscale or an era frame decoding
+   *   detail.onReady      a streamed patch arriving
+   *   the watchEffects    pins, arcs, polygons, era, sun, palette, settings
+   *   applyPov / resize   anything that re-derives from the camera or the canvas
+   *   the tick itself     the arrival ramps, cloud drift, autorotation
+   */
+  const stats = { wakes: 0, resumes: 0, pauses: 0, drifts: 0, ticks: 0 }
+  const pump = new RenderPump()
+  pump.onResume = () => {
+    stats.resumes++
+    // resumeAnimation renders synchronously, so a one-frame wake really is one
+    globe!.resumeAnimation()
+  }
+  pump.onPause = () => {
+    stats.pauses++
+    globe!.pauseAnimation()
+  }
+  const wake = (ms?: number) => {
+    stats.wakes++
+    pump.wake(ms)
+  }
+  // dev-only handles: a screenshot script has to be able to tell "nothing is
+  // being drawn" from "something is being drawn that looks identical"
+  if (import.meta.env.DEV) {
+    ;(window as unknown as { __wake?: (n?: number) => void }).__wake = wake
+    ;(window as unknown as { __rendering?: () => boolean }).__rendering = () => pump.running
+    ;(window as unknown as { __frameStats?: () => object }).__frameStats = () => ({
+      ...stats,
+      running: pump.running,
+    })
+  }
+
+  // Every camera move — drag, wheel, pinch, and each damping step on the way to
+  // a stop — dispatches this. It is the single most important dirty source, and
+  // the one the whole scheme depends on.
+  globe.controls().addEventListener('change', () => wake())
+  // The hover raycast lives inside the render loop, so a pointer that moves over
+  // a parked globe has to buy frames for the hover to be found and the tooltip
+  // to be drawn. Leaving buys the frames that clear it again.
+  for (const ev of ['pointermove', 'pointerdown', 'pointerup', 'pointerleave', 'wheel']) {
+    dom.addEventListener(ev, () => wake(), { passive: true })
+  }
+
   const t0 = performance.now()
   let lastFrame = t0
+  let lastDrift = t0
   // The day map has decoded; the next frame is the first with a planet on it.
   // The loader is dismissed a frame after that, so the fade starts from a
   // rendered globe rather than from an empty canvas — see index.html.
   let dayReady = false
   let framesSinceReady = 0
-  surface.onDayReady = () => (dayReady = true)
+  surface.onDayReady = () => {
+    dayReady = true
+    wake()
+  }
+  // a map, an upscale or an era frame landing changes the picture without anyone
+  // asking; so does a streamed patch
+  surface.onDirty = () => wake()
   /** How long the camera must be still before deferred work may run. */
   const STILL_MS = 400
   let movedAt = performance.now()
+
+  /**
+   * Cloud drift, at 20 Hz rather than 60.
+   *
+   * The deck moves 0.0016 UV per second — 0.04 px per frame at any zoom where
+   * the clouds are still visible — so stepping it three times less often is not
+   * something an eye can resolve, and it is the difference between a still globe
+   * costing 20 frames a second and 60. Reduced motion, deep time and a close
+   * approach all switch it off entirely, and then a parked camera draws nothing.
+   */
+  const DRIFT_MS = 50
 
   const tick = () => {
     const now = performance.now()
     const dt = now - lastFrame
     lastFrame = now
-    if (!still) surface!.setCloudDrift((now - t0) / 1000)
-    // the arrival ramps for the maps that were not needed for first paint
-    surface!.advance(dt)
-    // streaming is a function of where the camera is, so a still camera has
-    // nothing to re-derive; the settle timer inside DetailImagery is already
-    // armed and lands the sharp patch on its own
-    const pov = globe!.pointOfView()
-    if (povMoved(lastSync, pov)) {
-      lastSync = { ...pov }
-      movedAt = now
-      syncDetail(pov)
+
+    // the arrival ramps for the maps that were not needed for first paint; they
+    // are the picture changing under their own steam, so they buy frames
+    if (surface!.advance(dt)) wake(0)
+
+    if (!still && surface!.cloudsShown && now - lastDrift >= DRIFT_MS) {
+      lastDrift = now
+      stats.drifts++
+      surface!.setCloudDrift((now - t0) / 1000)
+      wake(0)
+    }
+    // autorotation is driven by OrbitControls.update(), which only runs inside
+    // the loop this is deciding whether to run — so unlike every other animation
+    // here it cannot ask for itself
+    if (settings.autoRotate) wake(0)
+
+    if (pump.running) {
+      // streaming is a function of where the camera is, and the camera cannot
+      // move while the loop is parked; the settle timer inside DetailImagery is
+      // already armed and lands the sharp patch on its own
+      const pov = globe!.pointOfView()
+      if (povMoved(lastSync, pov)) {
+        lastSync = { ...pov }
+        movedAt = now
+        syncDetail(pov)
+      }
     }
     // deferred work waits for a still camera as well as an idle browser
     surface!.setBusy(now - movedAt < STILL_MS)
 
     if (dayReady && framesSinceReady < 2) {
+      wake()
       framesSinceReady++
       if (framesSinceReady === 2) {
         ;(window as unknown as { __globeReady?: () => void }).__globeReady?.()
         // and only now the maps the first frame did without: they have the
         // network and the main thread to themselves from here on
         surface!.loadRest()
+        // The starfield is one of them. globe.gl gives no callback for the
+        // background texture, so nothing can wake the pump exactly when it
+        // lands — but the pump's one-second safety tick bounds the wait, and
+        // the three maps above each wake it as they arrive in the same window.
+        globe!.backgroundImageUrl(SKY_TEXTURE)
+        // ...and the event data, which draws nothing until there is a planet to
+        // put pins on. App.vue is waiting on this. See lib/firstFrame.ts.
+        firstFrame.release()
       }
     }
+
+    // and the decision: keep drawing, or park until something asks again
+    pump.tick()
+    stats.ticks++
     raf = requestAnimationFrame(tick)
   }
   tick()
 
+  // Every one of these is a dirty source: a layer's data changed, or a uniform
+  // did, and the loop may well be parked. `wake` buys enough frames to cover the
+  // d3 transitions the data changes start (arcs 180 ms, polygons 300 ms).
   stops.push(
     watchEffect(() => {
       // selection is part of a pin's identity, so it must be a dependency here
       // even though the layout object may be unchanged
       globe!.htmlElementsData(stablePins(layout.value.pins, events.selectedId))
+      wake()
     }),
     // Legs get stable identity for the same reason pins do: while a fan is open
     // a zoom relays it every frame, and a fresh object would restart the arc's
     // transition each time instead of moving the arc it already has.
-    watchEffect(() => globe!.arcsData(stableLegs(layout.value.legs))),
-    watchEffect(() => globe!.polygonsData([...nations.borders, ...eventAreas()])),
-    watchEffect(() => (globe!.controls().autoRotate = settings.autoRotate)),
+    watchEffect(() => {
+      globe!.arcsData(stableLegs(layout.value.legs))
+      wake()
+    }),
+    // The layer is only handed a new list when the list is actually different.
+    // Memoised entries (lib/nations.ts) mean a timeline tick usually produces
+    // the very same objects in the same order, and re-setting the data then
+    // costs a full data-join over every polygon to conclude nothing moved.
+    watchEffect(() => {
+      const next = [...nations.borders, ...eventAreas()]
+      if (next.length === lastPolys.length && next.every((p, i) => p === lastPolys[i])) return
+      lastPolys = next
+      globe!.polygonsData(next)
+      wake()
+    }),
+    watchEffect(() => {
+      globe!.controls().autoRotate = settings.autoRotate
+      wake()
+    }),
     // The relief map is the modern height field; deep-time frames carry their own
     // baked hillshade, so it fades out exactly as they fade in.
-    watchEffect(() =>
-      surface!.setRelief(
-        settings.relief ? 0.7 * modernShare(PALEO_FRAMES, time.currentTime) : 0,
-      ),
-    ),
-    watchEffect(() => surface!.setVisuals(settings.visuals === 'enhanced' ? 1 : 0)),
-    watchEffect(() => surface!.setPalette(settings.palette)),
-    watchEffect(() => surface!.setEra(textureBlend(PALEO_FRAMES, time.currentTime))),
-    watchEffect(() => surface!.setCityLights(cityLightsFactor(time.currentTime))),
+    watchEffect(() => {
+      surface!.setRelief(settings.relief ? 0.7 * modernShare(PALEO_FRAMES, time.currentTime) : 0)
+      wake()
+    }),
+    watchEffect(() => {
+      surface!.setVisuals(settings.visuals === 'enhanced' ? 1 : 0)
+      wake()
+    }),
+    watchEffect(() => {
+      surface!.setPalette(settings.palette)
+      wake()
+    }),
+    // The plan carries more than the crossfade: which frames stay resident and
+    // which one to warm next, both of which depend on the *direction* the cursor
+    // is moving, so the previous time is part of the input.
+    watchEffect(() => {
+      const t = time.currentTime
+      surface!.setEra(eraPlan(PALEO_FRAMES, t, prevEraTime))
+      prevEraTime = t
+      wake()
+    }),
+    watchEffect(() => {
+      surface!.setCityLights(cityLightsFactor(time.currentTime))
+      wake()
+    }),
     // clouds are anachronistic detail in deep time, and would hide the plate drift
     watchEffect(() => {
       void settings.clouds
@@ -509,12 +708,14 @@ onMounted(() => {
       atmosphere!.setSunDirection(dir)
       dirLight?.position.copy(dir.clone().multiplyScalar(radius * 4))
       celestial!.setHour(settings.sunHour, coords)
+      wake()
     }),
   )
 
   resizeObs = new ResizeObserver(() => {
     globe?.width(dom.clientWidth).height(dom.clientHeight)
     applyPov(true) // the scale bar reads viewportPx; without this it is stale until the next zoom
+    wake()
   })
   resizeObs.observe(dom)
 })

@@ -13,24 +13,89 @@ export interface TextureBlend {
 }
 
 /**
- * Blend between the two texture keyframes surrounding t.
+ * Which two keyframes surround t, by index, and how far between them it sits.
  * Clamps to the first frame in deep past and holds the last frame from its
  * time onward — with the last frame at ~10 ka, the recent past never morphs.
  */
-export function textureBlend(frames: TextureKeyframe[], t: Year): TextureBlend {
-  const first = frames[0]
-  const last = frames[frames.length - 1]
-  if (t <= first.time) return { from: first.url, to: first.url, f: 0 }
-  if (t >= last.time) return { from: last.url, to: last.url, f: 0 }
-  const i = frames.findIndex((k, idx) => t >= k.time && t < frames[idx + 1].time)
-  const a = frames[i]
-  const b = frames[i + 1]
+function span(frames: TextureKeyframe[], t: Year): { a: number; b: number; f: number } {
+  const last = frames.length - 1
+  if (t <= frames[0].time) return { a: 0, b: 0, f: 0 }
+  if (t >= frames[last].time) return { a: last, b: last, f: 0 }
+  // findIndex cannot fail on sorted frames; the clamp is for data that is not
+  const i = Math.max(0, frames.findIndex((k, idx) => t >= k.time && t < frames[idx + 1].time))
   // A zero-length interval is reachable without anyone noticing: the frame list
   // is two lists concatenated (the generated ones, then the pinned modern map),
   // so a generator change can put two frames on the same year. Dividing by that
   // gap yields NaN, and mix() with a NaN factor renders the globe black.
-  const dt = b.time - a.time
-  return { from: a.url, to: b.url, f: dt > 0 ? (t - a.time) / dt : 0 }
+  const dt = frames[i + 1].time - frames[i].time
+  return { a: i, b: i + 1, f: dt > 0 ? (t - frames[i].time) / dt : 0 }
+}
+
+/** Crossfade state at t; see `span`. */
+export function textureBlend(frames: TextureKeyframe[], t: Year): TextureBlend {
+  const { a, b, f } = span(frames, t)
+  return { from: frames[a].url, to: frames[b].url, f }
+}
+
+/**
+ * How many keyframes either side of the blend pair stay resident.
+ *
+ * Every deep-time frame is a 4096x2048 sRGB texture — 32 MB on the GPU with its
+ * mip chain, and there are 39 of them. Loading them and never letting one go
+ * (which is what a plain URL cache does) reaches 336 MB after a scrub across a
+ * couple of eras, on top of everything else the globe holds; the browser starts
+ * evicting the whole context long before the user runs out of timeline.
+ *
+ * Two either side is the smallest window that still absorbs the two things
+ * people actually do: nudging the cursor back and forth across a frame
+ * boundary, and dragging the timeline a frame or two per event. Anything the
+ * window drops costs one decode to get back, and `EraPlan.prefetch` is what
+ * keeps a steady scrub ahead of that decode.
+ */
+export const ERA_WINDOW = 2
+
+/**
+ * What the surface should show, hold, and warm next.
+ *
+ * `keep` is a retention list, not a load list: the two frames being blended
+ * plus `radius` on each side. `prefetch` is the one frame worth *starting* now
+ * — the next one in the direction the cursor is moving — so that a steady
+ * scrub crosses each boundary with the next map already decoded instead of
+ * stalling on it.
+ */
+export interface EraPlan extends TextureBlend {
+  /** URLs that must stay resident. Everything else may be disposed. */
+  keep: string[]
+  /** The next frame in the direction of travel, or null at either end. */
+  prefetch: string | null
+}
+
+export function eraPlan(
+  frames: TextureKeyframe[],
+  t: Year,
+  prevT?: Year,
+  radius = ERA_WINDOW,
+): EraPlan {
+  const { a, b, f } = span(frames, t)
+  const last = frames.length - 1
+  const keep: string[] = []
+  for (let i = Math.max(0, a - radius); i <= Math.min(last, b + radius); i++) {
+    if (!keep.includes(frames[i].url)) keep.push(frames[i].url)
+  }
+  // Forward by default: an unknown direction is the first frame after load, and
+  // the timeline's own home position is inside recorded history, so "toward the
+  // present" is the better guess. A dead-still cursor keeps the last direction's
+  // guess rather than dropping the lookahead, which costs one already-resident
+  // frame's worth of nothing.
+  const back = prevT !== undefined && t < prevT
+  const next = back ? a - 1 : b + 1
+  return {
+    from: frames[a].url,
+    to: frames[b].url,
+    f,
+    keep,
+    prefetch: next >= 0 && next <= last ? frames[next].url : null,
+  }
 }
 
 /**

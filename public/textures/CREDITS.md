@@ -4,7 +4,7 @@
   [three-globe](https://github.com/vasturiano/three-globe) (MIT), itself based on
   NASA Visible Earth imagery (public domain). Converted here to a single-channel
   JPEG mask.
-- `paleo/*.jpg` — **PALEOMAP PaleoDEMs**, Scotese, C.R. & Wright, N.M. (2018),
+- `paleo/*.webp` — **PALEOMAP PaleoDEMs**, Scotese, C.R. & Wright, N.M. (2018),
   *PALEOMAP Paleodigital Elevation Models (PaleoDEMs) for the Phanerozoic*,
   Zenodo DOI [10.5281/zenodo.5460860](https://doi.org/10.5281/zenodo.5460860),
   licensed **CC BY 4.0**. Attribution is required and is shown in the app's

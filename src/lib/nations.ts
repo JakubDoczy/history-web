@@ -82,18 +82,96 @@ export const signedRingArea = (ring: Ring): number =>
 /** Planar shoelace area — an approximation, used only to rank extents. */
 export const ringArea = (ring: Ring): number => Math.abs(signedRingArea(ring))
 
-export const keyframeArea = (k: NationKeyframe): number =>
-  k.rings.reduce((sum, r) => sum + ringArea(r), 0)
+/**
+ * Total planar extent of a keyframe, memoised on the keyframe object.
+ *
+ * The dataset is static, so a keyframe's area is a constant — and the shoelace
+ * runs over every vertex of every ring, which for the British Empire at 1900 is
+ * a few thousand points. It used to be evaluated from inside a sort comparator,
+ * i.e. O(n log n) times per timeline tick, at 60 ticks a second while the
+ * timeline is being dragged.
+ */
+const areaCache = new WeakMap<NationKeyframe, number>()
+export const keyframeArea = (k: NationKeyframe): number => {
+  let a = areaCache.get(k)
+  if (a === undefined) {
+    a = k.rings.reduce((sum, r) => sum + ringArea(r), 0)
+    areaCache.set(k, a)
+  }
+  return a
+}
 
 /**
  * The polities to draw at t: notable ones, largest first, capped. The cap is a
  * backstop for bad data — curation is what actually keeps the globe legible.
+ *
+ * The keyframe lookup and its area are computed once per nation rather than
+ * once per comparison: a comparator is the one place where a `find` over the
+ * keyframes and a shoelace over a few thousand vertices are multiplied by
+ * log n and paid again on the very next tick.
  */
 export function visibleNations(nations: Nation[], t: Year, limit = MAX_VISIBLE): Nation[] {
-  return nations
-    .filter((n) => isNotable(n, t) && activeKeyframe(n, t))
-    .sort((a, b) => keyframeArea(activeKeyframe(b, t)!) - keyframeArea(activeKeyframe(a, t)!))
+  const ranked: { nation: Nation; area: number }[] = []
+  for (const nation of nations) {
+    if (!isNotable(nation, t)) continue
+    const k = activeKeyframe(nation, t)
+    if (k) ranked.push({ nation, area: keyframeArea(k) })
+  }
+  return ranked
+    .sort((a, b) => b.area - a.area)
     .slice(0, limit)
+    .map((r) => r.nation)
+}
+
+/**
+ * One drawable border ring, with an identity that outlives a timeline tick.
+ *
+ * The globe's polygon layer joins its data by object identity, stamps a random
+ * id on anything it has not seen, and rebuilds the whole three.js object —
+ * group, two meshes, three materials — for every id it does not recognise. It
+ * then re-tessellates the cap whenever the coordinate array is a different
+ * *array* than last time, even if the numbers in it are identical. Rebuilding
+ * these objects per tick therefore cost 25 object recreations, 75 material
+ * disposals and ~14 ms of re-tessellation per tick — for borders that had not
+ * moved, because borders only move when the keyframe changes.
+ *
+ * So they are memoised on exactly what they depend on: the polity, the keyframe
+ * in force, and which ring of it. The cache is bounded by the dataset (a couple
+ * of keyframes per polity) and the data is static, so nothing is ever evicted.
+ */
+export interface BorderRing {
+  nation: Nation
+  /** Only one kind of border is drawn; the field keeps the globe's
+   * polygon-entry union discriminated against event areas. */
+  kind: 'full'
+  ring: Ring
+  /** GeoJSON Polygon `coordinates`: the ring, closed. Identity is the point. */
+  coordinates: Ring[]
+  /** What the globe shows on hover: name plus the polity's span. */
+  label: string
+}
+
+const ringCache = new Map<string, BorderRing[]>()
+
+/** The border rings in force at t, as objects stable across ticks. */
+export function borderRings(n: Nation, t: Year): BorderRing[] {
+  const k = activeKeyframe(n, t)
+  if (!k) return []
+  const key = `${n.id}@${k.time}`
+  let entries = ringCache.get(key)
+  if (!entries) {
+    const label = nationLabel(n)
+    entries = k.rings.map((ring) => ({
+      nation: n,
+      kind: 'full' as const,
+      ring,
+      // the renderer wants a closed ring; the data is stored open
+      coordinates: [[...ring, ring[0]]],
+      label,
+    }))
+    ringCache.set(key, entries)
+  }
+  return entries
 }
 
 /** "Roman Empire (509 BCE – 476)" — polygon labels carry the span, not the keyframe. */

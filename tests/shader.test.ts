@@ -119,3 +119,117 @@ describe('detail patch shading', () => {
     expect(glsl).toContain('uCloudAlpha > 0.0 ? cloudMask(cloudUv) : 0.0')
   })
 })
+
+/**
+ * Uniform-gated branches.
+ *
+ * Every one of these skips a texture tap (or four) for a state the globe is in
+ * most of the time: no relief in deep time, no clouds close in or before the
+ * Holocene, no city lights before electrification. They are asserted as text
+ * because there is no GL here, and each is only *safe* because the condition is
+ * a uniform — the same for every fragment in the draw, so the derivatives
+ * inside stay defined.
+ */
+describe('uniform-gated taps', () => {
+  const glsl = shaderBlocks(readFileSync('src/lib/globeSurface.ts', 'utf8')).join('\n')
+
+  /** The body of the block introduced by `header`, by brace matching. */
+  const blockAfter = (src: string, header: string): string => {
+    const start = src.indexOf(header)
+    expect(start, `missing: ${header}`).toBeGreaterThanOrEqual(0)
+    let depth = 0
+    let i = start + header.length - 1
+    for (; i < src.length; i++) {
+      if (src[i] === '{') depth++
+      else if (src[i] === '}' && --depth === 0) break
+    }
+    return src.slice(start, i)
+  }
+
+  it('skips the four relief taps and the normal math when relief is off', () => {
+    // ~19% of the fragment cost, and uRelief_ is 0 for every deep-time frame
+    // (they carry their own hillshade), with the setting off, and for the first
+    // 450 ms of every load while the height field fades in
+    const body = blockAfter(glsl, 'if (uRelief_ > 0.0) {')
+    for (const tap of ['hL', 'hR', 'hD', 'hU']) {
+      expect(body).toContain(`float ${tap} = texture(uRelief`)
+    }
+    expect(body).toContain('nRelief = normalize(')
+    // and with the branch not taken the normal is the plain geometric one
+    expect(glsl).toContain('vec3 nRelief = n;')
+  })
+
+  it('skips the cloud parallax when no cloud film is drawn', () => {
+    const body = blockAfter(glsl, 'if (uCloudAlpha > 0.0) {')
+    expect(body).toContain('liftedView')
+    expect(body).toContain('cloudUv = ')
+  })
+
+  it('skips the night map tap before electrification', () => {
+    const body = blockAfter(glsl, 'if (uLights > 0.0) {')
+    expect(body).toContain('texture(uNight, vUv)')
+  })
+
+  it('leaves the city-light reveal exactly zero at uLights = 0', () => {
+    // otherwise the gate above would change the picture: at the old 1.15 the
+    // smoothstep window opened at 0.97, and the brightest lit texels still
+    // leaked a couple of percent through a term that is meant to be absent
+    const m = glsl.match(/float thresh = ([\d.]+) - uLights \* ([\d.]+);/)
+    expect(m).toBeTruthy()
+    const threshAt0 = Number(m![1])
+    const window = Number(glsl.match(/smoothstep\(thresh - ([\d.]+), thresh \+/)![1])
+    // the map's luminance is dot(rgb, vec3(0.333)), so it cannot exceed ~1
+    expect(threshAt0 - window).toBeGreaterThanOrEqual(1)
+    // and the lit end still reveals: at full electrification the window is open
+    expect(threshAt0 - Number(m![2]) + window).toBeGreaterThan(0)
+  })
+
+  it('never computes dirToUv of the surface normal', () => {
+    // it is vec2(fract(vUv.x + 0.5), vUv.y) by construction — two atan/asin
+    // pairs per fragment for a value the rasteriser already interpolated
+    const code = glsl.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
+    expect(code).not.toMatch(/dirToUv\(\s*n\s*\)/)
+    expect(glsl).toContain('vec2 nUv = vec2(fract(vUv.x + 0.5), vUv.y);')
+  })
+})
+
+/**
+ * The identity the shader now relies on, checked numerically against three's
+ * own sphere parameterisation and three-globe's -90° globe rotation. If either
+ * of those ever changes, the cloud layer would slide off the ground silently;
+ * this fails instead.
+ */
+describe('dirToUv(n) == vec2(fract(vUv.x + 0.5), vUv.y)', () => {
+  /** three's SphereGeometry, phiStart 0, thetaStart 0. */
+  const sphere = (u: number, v: number) => ({
+    // position
+    x: -Math.cos(2 * Math.PI * u) * Math.sin(Math.PI * v),
+    y: Math.cos(Math.PI * v),
+    z: Math.sin(2 * Math.PI * u) * Math.sin(Math.PI * v),
+    // the uv three writes for that vertex
+    uv: [u, 1 - v] as [number, number],
+  })
+  /** three-globe rotates the globe mesh by -PI/2 about y. */
+  const toWorld = (p: { x: number; y: number; z: number }) => ({ x: -p.z, y: p.y, z: p.x })
+  /** the GLSL function, transcribed. */
+  const dirToUv = (d: { x: number; y: number; z: number }): [number, number] => {
+    const l = { x: d.z, y: d.y, z: -d.x }
+    return [
+      Math.atan2(l.z, -l.x) / (2 * Math.PI) + 0.5,
+      0.5 + Math.asin(Math.max(-1, Math.min(1, l.y))) / Math.PI,
+    ]
+  }
+  const fract = (x: number) => x - Math.floor(x)
+
+  it('agrees everywhere off the poles', () => {
+    for (let iu = 0; iu <= 24; iu++) {
+      for (let iv = 1; iv <= 23; iv++) {
+        const [u, v] = [iu / 24, iv / 24]
+        const p = sphere(u, v)
+        const [du, dv] = dirToUv(toWorld(p))
+        expect(fract(du)).toBeCloseTo(fract(p.uv[0] + 0.5), 9)
+        expect(dv).toBeCloseTo(p.uv[1], 9)
+      }
+    }
+  })
+})

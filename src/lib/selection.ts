@@ -13,6 +13,19 @@ export interface Span {
  */
 export const MIN_SEL_FRACTION = 0.02
 
+/**
+ * Same interval, whatever objects it arrives in.
+ *
+ * Every step of the timeline produces a *fresh* `{start, end}`, and the stores
+ * hand those straight to Vue — which compares by identity, so a new object is a
+ * change even when the two numbers in it are the ones already there. That is
+ * exactly what a pan against the ends of time produces: the clamp returns the
+ * present window, in a new object, and the whole downstream pipeline (nation
+ * borders re-digested, the event index re-queried, the surface re-planned) runs
+ * to redraw an identical picture. See stores/time.ts.
+ */
+export const sameSpan = (a: Span, b: Span): boolean => a.start === b.start && a.end === b.end
+
 /** Ordered span: a handle dragged past its partner swaps rather than inverting. */
 export const orderSpan = (a: Year, b: Year): Span =>
   a <= b ? { start: a, end: b } : { start: b, end: a }

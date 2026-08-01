@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { clampSelection, windowContaining, orderSpan, MIN_SEL_FRACTION } from '../src/lib/selection'
+import {
+  clampSelection,
+  windowContaining,
+  orderSpan,
+  sameSpan,
+  MIN_SEL_FRACTION,
+} from '../src/lib/selection'
 import { toWarp, MIN_TIME, MAX_TIME } from '../src/lib/time'
 import { HISTORICAL, spanEraLabel } from '../src/lib/eras'
 import { useTimeStore } from '../src/stores/time'
@@ -12,6 +18,29 @@ const inside = (sel: { start: number; end: number }, win: { start: number; end: 
 
 /** Width in display space, which is where the minimum lives. */
 const warpWidth = (s: { start: number; end: number }) => toWarp(s.end) - toWarp(s.start)
+
+describe('sameSpan', () => {
+  it('is value equality, not identity — which is the whole point of it', () => {
+    const a = { start: 1000, end: 2000 }
+    expect(sameSpan(a, a)).toBe(true)
+    expect(sameSpan(a, { ...a })).toBe(true)
+  })
+
+  it('separates spans that differ at either end', () => {
+    expect(sameSpan({ start: 1000, end: 2000 }, { start: 1001, end: 2000 })).toBe(false)
+    expect(sameSpan({ start: 1000, end: 2000 }, { start: 1000, end: 2001 })).toBe(false)
+  })
+
+  // Exact, not epsilon: the callers snap saturated ends to the bound rather
+  // than leaning on a tolerance here (see stores/time.ts pan).
+  it('does not forgive a floating-point hair', () => {
+    expect(sameSpan({ start: 1000, end: 2000 }, { start: 1000 + 1e-9, end: 2000 })).toBe(false)
+  })
+
+  it('ignores ordering conventions — it compares fields, not intervals', () => {
+    expect(sameSpan({ start: 2000, end: 1000 }, { start: 1000, end: 2000 })).toBe(false)
+  })
+})
 
 describe('orderSpan', () => {
   it('sorts either way round', () => {
