@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   rectIntersection,
-  rectUnion,
   rectArea,
   coverage,
   drawOrder,
@@ -57,14 +56,6 @@ describe('rectIntersection', () => {
     const a = box(-5, -30, 15, 40)
     const b = box(0, 0, 60, 60)
     expect(rectIntersection(a, b)).toEqual(rectIntersection(b, a))
-  })
-})
-
-describe('rectUnion', () => {
-  it('contains both inputs', () => {
-    const u = rectUnion(box(0, 0, 10, 10), box(-5, 20, 3, 25))
-    expect(u).toEqual(box(-5, 0, 10, 25))
-    expect(rectArea(u)).toBeGreaterThanOrEqual(rectArea(box(0, 0, 10, 10)))
   })
 })
 

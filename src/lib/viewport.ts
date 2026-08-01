@@ -1,4 +1,5 @@
 import { visibleSpanDeg, viewSpanDeg, DEFAULT_FOV } from './detailImagery'
+import { halfOctave } from './quantise'
 import type { Cap } from './queryIndex'
 
 /**
@@ -43,8 +44,8 @@ export const SCOPE_MARGIN = 1.3
 export const SCOPE_PAN_STEP = 0.25
 
 /**
- * Radius buckets: half an octave, the same ladder `clusterSpanBucket` uses, and
- * rounded *up* rather than to nearest.
+ * Radius buckets: the shared half-octave ladder (lib/quantise.ts, the same one
+ * `clusterSpanBucket` uses), rounded *up* rather than to nearest.
  *
  * Up, because the radius is a promise: everything within it is considered, and
  * the margin above is sized on the assumption that the bucket never shrinks the
@@ -52,8 +53,7 @@ export const SCOPE_PAN_STEP = 0.25
  * fell out would be the ones at the edge of the screen — the ones the margin
  * exists to protect.
  */
-export const scopeRadiusBucket = (radiusDeg: number) =>
-  2 ** (Math.ceil(Math.log2(Math.max(1e-6, radiusDeg)) * 2) / 2)
+export const scopeRadiusBucket = (radiusDeg: number) => halfOctave(radiusDeg, 'up')
 
 /** Longitude folded into (−180, 180]. */
 const wrapLng = (d: number) => {

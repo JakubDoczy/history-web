@@ -87,16 +87,6 @@ export function rectIntersection(a: Bbox, b: Bbox): Bbox | undefined {
   return { minLat, minLng, maxLat, maxLng }
 }
 
-/** The smallest rectangle containing both. */
-export function rectUnion(a: Bbox, b: Bbox): Bbox {
-  return {
-    minLat: Math.min(a.minLat, b.minLat),
-    minLng: Math.min(a.minLng, b.minLng),
-    maxLat: Math.max(a.maxLat, b.maxLat),
-    maxLng: Math.max(a.maxLng, b.maxLng),
-  }
-}
-
 export const rectArea = (b: Bbox) =>
   Math.max(0, b.maxLat - b.minLat) * Math.max(0, b.maxLng - b.minLng)
 

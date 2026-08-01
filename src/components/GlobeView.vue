@@ -36,6 +36,7 @@ import {
   type PinDatum,
 } from '../lib/eventClusters'
 import { cameraScope, sameScope } from '../lib/viewport'
+import { stableByKey } from '../lib/stableIdentity'
 import type { Tier } from '../lib/eventTiers'
 import { primaryTag, tagColor } from '../lib/tags'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE, RELIEF_TEXTURE, SKY_TEXTURE } from '../data/paleoTextures'
@@ -134,55 +135,28 @@ const tierOf = (p: PinDatum, tiers: ReadonlyMap<string, Tier>): Tier =>
     ? (p.members.reduce<Tier>((best, m) => Math.min(best, tiers.get(m.id) ?? 3) as Tier, 3))
     : (tiers.get(p.event.id) ?? 3)
 
-const stablePins = (
-  pins: PinDatum[],
-  tiers: ReadonlyMap<string, Tier>,
-  selectedId?: string,
-): KeyedPin[] => {
-  const live = new Set<string>()
-  const out = pins.map((p) => {
-    const tier = tierOf(p, tiers)
-    const key = pinStateKey(p, selectedId, tier)
-    live.add(key)
-    const held = pinData.get(key)
-    if (held) {
-      // Same pin, new layout: copy the fresh datum's fields onto the object the
-      // layer already knows, so it moves that one instead of building another.
-      // Everything is copied, not just the position — a datum that keeps its
-      // identity must not keep stale fields (`fanned` went stale when a member
-      // left its cluster, and the next reader of it would have been wrong).
-      Object.assign(held as PinDatum, p)
-      return held
-    }
-    const fresh = { ...p, key, tier } as KeyedPin
-    pinData.set(key, fresh)
-    return fresh
-  })
-  for (const key of [...pinData.keys()])
-    if (!live.has(key)) {
-      pinData.delete(key)
-      pinEls.delete(key)
-    }
-  return out
-}
+const stablePins = (pins: PinDatum[], tiers: ReadonlyMap<string, Tier>, selectedId?: string): KeyedPin[] =>
+  stableByKey<PinDatum, KeyedPin>(
+    pinData,
+    pins,
+    (p) => pinStateKey(p, selectedId, tierOf(p, tiers)),
+    (p, key) => ({ ...p, key, tier: tierOf(p, tiers) }) as KeyedPin,
+    // the elements are cached by the same key; a pin that leaves takes its node
+    (key) => pinEls.delete(key),
+  )
 
 const legData = new Map<string, ClusterLeg>()
-const stableLegs = (legs: ClusterLeg[]): ClusterLeg[] => {
-  const live = new Set(legs.map((l) => l.id))
-  for (const id of [...legData.keys()]) if (!live.has(id)) legData.delete(id)
-  return legs.map((l) => {
-    const held = legData.get(l.id)
-    if (!held) {
-      legData.set(l.id, { ...l })
-      return legData.get(l.id)!
-    }
-    held.endLat = l.endLat
-    held.endLng = l.endLng
-    held.startLat = l.startLat
-    held.startLng = l.startLng
-    return held
-  })
-}
+/**
+ * Legs, held for the reason pins are: while a fan is open, the arc layer must
+ * move its arcs rather than rebuild them.
+ *
+ * This used to refresh the four coordinates by name and leave `event` alone.
+ * Going through the shared helper copies the whole leg, which is the correct
+ * behaviour and not merely the tidier one — a held leg with a stale `event` is
+ * the same bug the pin cache already carries a scar from.
+ */
+const stableLegs = (legs: ClusterLeg[]): ClusterLeg[] =>
+  stableByKey<ClusterLeg, ClusterLeg>(legData, legs, (l) => l.id, (l) => ({ ...l }))
 
 // Only the selected event's area draws as a polygon: overlapping region fills
 // used to smother the planet. Unselected area events are pins like the rest.
@@ -451,12 +425,32 @@ onMounted(() => {
   }
 
   type Pov = { lat: number; lng: number; altitude: number }
+
+  /**
+   * When two camera heights count as the same height.
+   *
+   * Relative, not absolute: a thousandth of the altitude is the same visual
+   * nothing at world view and at street level, where an absolute epsilon would
+   * be either useless far out or a visible step close in.
+   *
+   * One definition, two callers — `povMoved` below and the `view.altitude`
+   * write in the tick. They were the same expression written twice, and they
+   * have to stay equal: the tick's write is what makes a camera the reader sees
+   * as unmoved *stay* unmoved. If one drifted from the other, a rotation would
+   * publish a new altitude that nothing else considered a move.
+   */
+  const ALTITUDE_EPS_REL = 1e-3
+  /** Lat/lng below this are the same point for everything downstream. */
+  const ANGLE_EPS_DEG = 1e-4
+  const sameAltitude = (a: number, b: number) =>
+    Math.abs(a - b) <= Math.max(b, 1e-6) * ALTITUDE_EPS_REL
+
   /** Has the camera moved enough for any of the work below to differ? */
   const povMoved = (a: Pov | undefined, b: Pov) =>
     !a ||
-    Math.abs(a.altitude - b.altitude) > Math.max(b.altitude, 1e-6) * 1e-3 ||
-    Math.abs(a.lat - b.lat) > 1e-4 ||
-    Math.abs(a.lng - b.lng) > 1e-4
+    !sameAltitude(a.altitude, b.altitude) ||
+    Math.abs(a.lat - b.lat) > ANGLE_EPS_DEG ||
+    Math.abs(a.lng - b.lng) > ANGLE_EPS_DEG
 
   let lastPov: Pov | undefined
   let lastSync: Pov | undefined
@@ -529,7 +523,8 @@ onMounted(() => {
     }
     const near = closeness(pov.altitude)
     const span = visibleSpanDeg(pov.altitude)
-    // Quantised, at the same relative epsilon povMoved uses.
+    // Quantised, at the same relative epsilon povMoved uses — literally the
+    // same predicate now (see ALTITUDE_EPS_REL).
     //
     // A pure rotation gets here on every frame (lat/lng really did change) and
     // used to publish the camera's *distance* each time — which OrbitControls
@@ -538,8 +533,7 @@ onMounted(() => {
     // it restarted a CSS animation sixty times a second to end at the same
     // width. Below the epsilon the altitude is, for every reader of it, the
     // altitude it already had.
-    if (Math.abs(view.altitude - pov.altitude) > Math.max(pov.altitude, 1e-6) * 1e-3)
-      view.altitude = pov.altitude
+    if (!sameAltitude(view.altitude, pov.altitude)) view.altitude = pov.altitude
     events.noteSpan(span)
     view.detailStatus = detail!.status
     view.detailSource = detail!.sourceLabel

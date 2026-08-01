@@ -10,7 +10,6 @@ import {
   withThumbWidth,
   chooseWidth,
   pickImage,
-  pickImageUrl,
   imageFromSummary,
   fetchWikiSummary,
   fetchWikiImage,
@@ -281,7 +280,15 @@ const summary = (over: Partial<WikiSummary> = {}): WikiSummary => ({
   ...over,
 })
 
-describe('pickImageUrl', () => {
+/**
+ * These cases assert `pickImage`'s *first-choice URL*. They used to go through a
+ * `pickImageUrl` wrapper in the library; nothing in the app called it, so the
+ * wrapper is gone and the unwrapping happens here instead.
+ */
+const pickImageUrl = (summary: WikiSummary | null | undefined, targetWidth?: number): string | null =>
+  pickImage(summary, targetWidth)?.url ?? null
+
+describe('pickImage: the URL to try first', () => {
   it('upgrades the thumbnail to the requested width', () => {
     expect(pickImageUrl(summary(), 740)).toContain('/740px-')
   })

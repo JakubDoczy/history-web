@@ -288,6 +288,55 @@ export const BIG_RADIUS_DEG = 5
  * costs a traversal per query and an object per node, and event locations are
  * clustered at a scale (cities) far below any cell the camera ever asks about.
  *
+ * ── A quadtree was built and measured against this, and lost. ──────────────
+ *
+ * The reasoning for trying it was sound: B+ trees suit date ranges, not space,
+ * and the grid's resolution *does* stop growing (bands are capped at 64), so at
+ * a hundred times the present dataset one cell over Paris holds a thousand
+ * events. A capacity-splitting quadtree was written to the same interface and
+ * given every advantage the argument above asks for — no per-node objects, no
+ * recursion, five typed arrays, items in one permutation array with each node
+ * owning a contiguous slice, rectangles recomputed on descent, per-node subtree
+ * radius bounds in place of this file's global pad and big-list, and free
+ * arithmetic early-outs before any trigonometry.
+ *
+ * On isolated cap queries it won, and not narrowly — over 25 zoom/place cases
+ * (both poles and the seam included), summed:
+ *
+ *   scale          build           structure        all cap queries
+ *   1x     683     0.08 → 0.16 ms  15 → 23 B/event  0.51 → 0.36 ms   1.4x
+ *   10x    6,830   0.62 → 1.51 ms   8 →  9 B/event  4.35 → 1.51 ms   2.9x
+ *   100x   68,300  5.16 → 18.6 ms  0.33 → 0.50 MB   47.0 → 9.15 ms   5.2x
+ *
+ * And it lost anyway, because that table measures a question the app does not
+ * ask. Almost all of the quadtree's margin is in wide caps, and the app never
+ * hands the space index a wide cap: at world view `cameraScope` publishes no
+ * scope at all, and by continent zoom the planner has chosen `priority`. What
+ * the app actually does is (a) call `candidateCount` on *every* query, whatever
+ * plan it then picks, and (b) run `forEach` only for small caps at close zoom.
+ * A grid answers (a) with closed-form band arithmetic; a tree has to walk. And
+ * the count cannot be approximated to make it cheap — the planner divides by it,
+ * so an inflated count makes the priority scan look better than it is, which it
+ * disproves by overrunning its budget and running the query a second time. That
+ * was measured too: the cheap-count variant was the slowest of the three.
+ *
+ * End-to-end, same machine, alternating runs, `EventIndex.query` over the same
+ * corpus (grid → quadtree; sum of the 25 selection/camera cases, and the two
+ * loops the app actually runs):
+ *
+ *   scale     25 queries        20-step pan (country zoom)
+ *   1x        0.32 → 0.48 ms    0.008 → 0.013 ms/query
+ *   10x       1.82 → 2.42 ms    0.035 → 0.056 ms/query
+ *   100x      7.70 → 10.5 ms    0.026 → 0.045 ms/query   (build 101 → 112 ms)
+ *
+ * The grid is ~35% faster on the query mix and ~1.7x faster on panning, at
+ * every scale tested. So the grid stays, the quadtree is gone, and the fixed
+ * cell size is a known limitation rather than an open question: if it ever does
+ * bite, the thing to fix first is the 64-band cap, not the structure.
+ * `scripts/bench-eventIndex.mjs --spatial` still runs the harness that settled
+ * it — build, memory, and cap queries across zooms and latitudes, every answer
+ * checked against brute force — so the next candidate gets the same treatment.
+ *
  * Cell selection is deliberately conservative: a band is entered whenever it
  * *might* hold a member, and every candidate is then tested exactly. The bound
  * used for the longitude range comes straight from the haversine identity with

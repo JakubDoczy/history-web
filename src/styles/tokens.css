@@ -1,7 +1,6 @@
 :root {
   /* palette: deep-space console with brass instrument accents */
   --void: #060a12;
-  --hull: #0d1420;
   --panel: rgba(14, 21, 33, 0.94);
   --panel-hi: rgba(255, 255, 255, 0.05);
   --line: #223148;
@@ -40,7 +39,6 @@
   --s3: 12px;
   --s4: 16px;
   --s5: 20px;
-  --s6: 28px;
 
   --r-sm: 8px;
   --r-md: 10px;
@@ -212,9 +210,7 @@ button {
 
 /* shared panel transitions, applied from HomeView */
 .pop-enter-active,
-.pop-leave-active,
-.rise-enter-active,
-.rise-leave-active {
+.pop-leave-active {
   transition:
     opacity var(--slow),
     transform var(--slow);
@@ -224,12 +220,6 @@ button {
   opacity: 0;
   transform: translateY(-6px) scale(0.985);
 }
-.rise-enter-from,
-.rise-leave-to {
-  opacity: 0;
-  transform: translateY(8px) scale(0.99);
-}
-
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity var(--slow);

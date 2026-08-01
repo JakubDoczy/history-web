@@ -309,15 +309,6 @@ export function pickImage(
 }
 
 /**
- * Best image URL for a summary at roughly `targetWidth` CSS-or-device pixels, or
- * `null` when the article has no picture. The URL to try first; see `pickImage`
- * for the guaranteed one behind it.
- */
-export function pickImageUrl(summary: WikiSummary | null | undefined, targetWidth = DEFAULT_WIDTH): string | null {
-  return pickImage(summary, targetWidth)?.url ?? null
-}
-
-/**
  * Turn a summary into everything the panel renders, keeping the aspect ratio of
  * the thumbnail so the box can be reserved before the bitmap arrives.
  */

@@ -1,7 +1,10 @@
 # Cloud Cover — Research & Plan
 
 Status: v0.2 · 2026-07-29 — **outcome recorded, see §7**
-Module: `src/clouds/` (self-contained; the globe consumes one interface)
+Module: none. This is a research record, not a description of shipped code — the
+simulation it plans was built, never wired into the render path, and removed at the
+public-release cleanup. What actually ships is the thin lit shell described in §7,
+in `src/lib/globeSurface.ts`. The file layouts below are what was proposed.
 
 ## 1. Why the current implementation looks wrong
 
@@ -156,8 +159,13 @@ filament structure that procedural noise never achieved comes free, because the 
 is made from photographs. Lighting is ours: terminator matched to the ground shader,
 warm band at sunrise/sunset, near-transparent night side.
 
-Phases A/B (the coverage simulation) are **parked, not deleted** — `src/clouds/field.ts`
-and `wind.ts` remain tested and exported, and could later modulate coverage over time
-or drive weather for non-present eras. They are not in the render path.
+Phases A/B (the coverage simulation) were parked rather than deleted for a while —
+`src/clouds/field.ts` and `wind.ts` stayed tested and exported on the theory that they
+could later modulate coverage over time or drive weather for non-present eras. They
+were never wired into the render path, and at the public-release cleanup they were
+**removed**: a year of not being reached for is the answer to "will we need this?",
+and their tests were keeping code warm that no product path ran. The design above is
+the record of how they worked, and git history has the source if the idea returns.
 
-Retired: `cloudShell.ts`, `noise3d.ts`, `shaders/cloud.glsl.ts`, `scripts/gen_clouds.py`.
+Retired: `cloudShell.ts`, `noise3d.ts`, `shaders/cloud.glsl.ts`, `scripts/gen_clouds.py`,
+and (at cleanup) `src/clouds/` entire.

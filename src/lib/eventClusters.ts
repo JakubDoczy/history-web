@@ -1,4 +1,5 @@
 import { degPerScreenPx } from './detailImagery'
+import { halfOctave } from './quantise'
 import type { HistoricalEvent } from './events'
 
 /**
@@ -301,8 +302,7 @@ export function layoutPins(
  * that often is both wasteful and visually noisy. Snapping to half-octave
  * buckets means the grouping only changes at a handful of discrete zoom steps.
  */
-export const clusterSpanBucket = (visibleSpanDeg: number) =>
-  2 ** (Math.round(Math.log2(Math.max(1e-6, visibleSpanDeg)) * 2) / 2)
+export const clusterSpanBucket = (visibleSpanDeg: number) => halfOctave(visibleSpanDeg)
 
 /**
  * How far the span may drift before an open cluster closes itself.

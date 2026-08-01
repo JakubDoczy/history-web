@@ -4,3 +4,6 @@ dist
 .DS_Store
 scripts/.cache
 scripts/__pycache__
+
+# TypeScript incremental build state — a build artifact, not source
+*.tsbuildinfo
