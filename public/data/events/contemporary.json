@@ -61,7 +61,7 @@
    "politics"
   ],
   "parent": "ww2",
-  "summary": "Germany surrendered unconditionally on May 7, ending the war in Europe and concluding the defeat of Nazi tyranny.",
+  "summary": "Germany surrendered unconditionally on May 7, ending the war in Europe and completing the defeat of Nazi Germany.",
   "body": "Part of [World War II](event:ww2). Germany's unconditional surrender was signed at Reims on 7 May and ratified in Berlin the next day. Hitler had killed himself a week earlier as Soviet troops fought through the capital.\n\nUnlike the armistice that ended [the First World War](event:ww1), the surrender left no room to argue that Germany had not been beaten in the field. But victory in Europe was not peace: the continent was divided along the lines the armies had reached, and the wartime alliance dissolved into the [Cold War](event:cold-war) within two years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Victory_in_Europe_Day).",
   "links": [
    {
@@ -109,7 +109,7 @@
   "tags": [
    "politics"
   ],
-  "summary": "Fifty states signed the UN Charter in San Francisco, creating a permanent forum and a Security Council with teeth on paper.",
+  "summary": "Fifty states signed the UN Charter in San Francisco, creating a permanent international forum and a Security Council empowered to authorise the use of force.",
   "body": "The Universal Declaration of Human Rights followed in 1948.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/United_Nations).",
   "links": [
    {
@@ -334,7 +334,7 @@
   ],
   "parent": "cold-war",
   "summary": "The Soviets cut off West Berlin; Allied aircraft supplied the city for eleven months.",
-  "body": "Part of [The Cold War](event:cold-war). The Soviets cut off West Berlin; Allied aircraft supplied the city for eleven months.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Berlin_Blockade).",
+  "body": "Part of [The Cold War](event:cold-war). The Soviet Union blockaded West Berlin from June 1948 to May 1949, cutting the road, rail and canal routes into the western sectors. Allied aircraft, chiefly American and British, supplied the city's 2.2 million residents for eleven months, flying about 278,000 sorties carrying coal, food and other necessities. The blockade was lifted in May 1949 after it failed to force the Western powers out of the city.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Berlin_Blockade).",
   "links": [
    {
     "label": "The Cold War",
@@ -403,7 +403,7 @@
   ],
   "parent": "cold-war",
   "summary": "North Korean, Chinese, American and UN forces fought to a stalemate close to the original border; no peace treaty was ever signed.",
-  "body": "Part of [The Cold War](event:cold-war). North Korean, Chinese, American and UN forces fought to a stalemate close to the original border; no peace treaty was ever signed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Korean_War).",
+  "body": "Part of [The Cold War](event:cold-war). North Korea invaded the south on 25 June 1950, and the United Nations authorised a military response. American, South Korean and other UN forces drove north until Chinese troops entered the war in October and pushed them back. North Korean, Chinese, American and UN forces then fought to a stalemate close to the original border. An armistice signed in July 1953 fixed a demilitarised zone near the 38th parallel; no peace treaty was ever signed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Korean_War).",
   "links": [
    {
     "label": "The Cold War",
@@ -559,7 +559,7 @@
   ],
   "parent": "cold-war",
   "summary": "Hungarians briefly freed themselves from Soviet control; Soviet tanks rolled in and crushed the uprising, killing thousands.",
-  "body": "Part of [The Cold War](event:cold-war). A student demonstration in Budapest grew into a national uprising, and the new government of Imre Nagy declared neutrality and withdrawal from the Warsaw Pact.\n\nSoviet armour returned in early November. Some 2,500 Hungarians were killed, around 200,000 fled the country, and Nagy was executed two years later. The lesson — that Moscow would use force to hold its sphere — stood until the [Solidarity movement](event:solidarity-poland) tested it again.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hungarian_Revolution_of_1956).",
+  "body": "Part of [The Cold War](event:cold-war). A student demonstration in Budapest in October 1956 grew into a national uprising, and the new government of Imre Nagy declared neutrality and withdrawal from the Warsaw Pact.\n\nSoviet armour returned in early November. Some 2,500 Hungarians were killed, around 200,000 fled the country, and Nagy was executed two years later. The suppression showed that Moscow would use force to hold its sphere, a position not seriously tested again until the [Solidarity movement](event:solidarity-poland) emerged in Poland in 1980.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hungarian_Revolution_of_1956).",
   "links": [
    {
     "label": "The Cold War",
@@ -610,7 +610,7 @@
   ],
   "parent": "space-race",
   "summary": "The first artificial satellite beeped overhead every 96 minutes and stunned the United States into action.",
-  "body": "Part of [The Space Race](event:space-race). The first artificial satellite beeped overhead every 96 minutes and stunned the United States into action.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sputnik_1).",
+  "body": "Part of [The Space Race](event:space-race). The Soviet Union launched Sputnik 1 on 4 October 1957. The satellite was a 58-centimetre metal sphere with four external antennas; it passed overhead every 96 minutes, transmitting a simple radio pulse. The launch showed that the Soviet Union could place objects in orbit and, by extension, deliver a warhead by intercontinental missile. In the United States it prompted a sharp increase in funding for science education and for the space programme.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sputnik_1).",
   "links": [
    {
     "label": "The Space Race",
@@ -658,7 +658,7 @@
   ],
   "parent": "cold-war",
   "summary": "East Germany walled off West Berlin overnight to stop the flight of its population.",
-  "body": "Part of [The Cold War](event:cold-war). East Germany walled off West Berlin overnight to stop the flight of its population.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Berlin_Wall).",
+  "body": "Part of [The Cold War](event:cold-war). On the night of 13 August 1961 East Germany sealed the border around West Berlin with barbed wire, replacing it over the following years with a concrete wall and a fortified strip behind it. The barrier was built to stop the flight of the East German population to the West: some 3.5 million people had left between 1949 and 1961. Border guards had orders to shoot those attempting to cross, and at least 140 people died at the wall during its 28 years. It became the most visible symbol of the division of Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Berlin_Wall).",
   "links": [
    {
     "label": "The Cold War",
@@ -682,7 +682,7 @@
   ],
   "parent": "space-race",
   "summary": "The first human in space completed a single orbit aboard Vostok 1 and landed by parachute.",
-  "body": "Part of [The Space Race](event:space-race). The first human in space completed a single orbit aboard Vostok 1 and landed by parachute.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Yuri_Gagarin).",
+  "body": "Part of [The Space Race](event:space-race). On 12 April 1961 Yuri Gagarin, a 27-year-old Soviet air force pilot, became the first human to reach space. Vostok 1 completed a single orbit in about 108 minutes, reaching a maximum altitude of some 327 kilometres. Gagarin ejected from the capsule during the descent and landed by parachute in the Saratov region of southern Russia. The flight was a major success for the Soviet space programme and made him internationally famous.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Yuri_Gagarin).",
   "links": [
    {
     "label": "The Space Race",
@@ -708,7 +708,7 @@
   ],
   "parent": "space-race",
   "summary": "Kennedy's commitment to land a man on the Moon before the decade was out mobilised 400,000 people and 4% of the federal budget.",
-  "body": "Part of [The Space Race](event:space-race). Kennedy's commitment to land a man on the Moon before the decade was out mobilised 400,000 people and 4% of the federal budget.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_program).",
+  "body": "Part of [The Space Race](event:space-race). Kennedy's commitment in May 1961 to land a man on the Moon before the decade was out mobilised 400,000 people and, at its peak, about 4% of the federal budget. Eleven crewed missions flew between 1968 and 1972, six of which landed on the Moon. Three further landings, Apollo 18 to 20, were cancelled on cost grounds, and the programme ended with Apollo 17 in December 1972.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_program).",
   "links": [
    {
     "label": "The Space Race",
@@ -776,7 +776,7 @@
   ],
   "parent": "civil-rights",
   "summary": "A quarter of a million people gathered at the Lincoln Memorial to hear King's \"I Have a Dream\" speech.",
-  "body": "Part of [American civil rights movement](event:civil-rights). A quarter of a million people gathered at the Lincoln Memorial to hear King's \"I Have a Dream\" speech.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/March_on_Washington_for_Jobs_and_Freedom).",
+  "body": "Part of [American civil rights movement](event:civil-rights). On 28 August 1963 a quarter of a million people gathered at the Lincoln Memorial for a march organised by civil rights and labour groups to demand jobs, civil rights legislation and an end to segregation. Martin Luther King Jr delivered his \"I Have a Dream\" speech from the steps of the memorial. The march helped build the pressure that produced the Civil Rights Act the following year.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/March_on_Washington_for_Jobs_and_Freedom).",
   "links": [
    {
     "label": "American civil rights movement",
@@ -819,7 +819,7 @@
   ],
   "parent": "civil-rights",
   "summary": "Federal law outlawed discrimination by race, colour, religion, sex or national origin in employment and public accommodation.",
-  "body": "Part of [American civil rights movement](event:civil-rights). Federal law outlawed discrimination by race, colour, religion, sex or national origin in employment and public accommodation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Civil_Rights_Act_of_1964).",
+  "body": "Part of [American civil rights movement](event:civil-rights). Signed by President Johnson on 2 July 1964, the act outlawed discrimination by race, colour, religion, sex or national origin in employment, and banned segregation in public accommodation such as hotels, restaurants, theatres and transport. It allowed the federal government to withhold funds from public bodies that discriminated, and created the Equal Employment Opportunity Commission to investigate complaints.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Civil_Rights_Act_of_1964).",
   "links": [
    {
     "label": "American civil rights movement",
@@ -844,7 +844,7 @@
   ],
   "parent": "prc-founded",
   "summary": "Mao mobilised students against the party and the \"four olds\"; universities closed, millions were persecuted and much cultural heritage was destroyed.",
-  "body": "Part of [People's Republic of China proclaimed](event:prc-founded). Mao mobilised students against the party and the \"four olds\"; universities closed, millions were persecuted and much cultural heritage was destroyed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cultural_Revolution).",
+  "body": "Part of [People's Republic of China proclaimed](event:prc-founded). Mao Zedong launched the Cultural Revolution in May 1966 against his opponents inside the party and the \"four olds\" — old customs, culture, habits and ideas. Students organised into Red Guard units attacked officials, teachers and anyone judged bourgeois or revisionist; universities closed and schooling was disrupted for years. Estimates of the death toll range from hundreds of thousands to millions, and millions more were purged, imprisoned or sent to the countryside. Temples, monuments, artworks and books were destroyed as part of the campaign against traditional culture. The upheaval ended with Mao's death in 1976.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cultural_Revolution).",
   "links": [
    {
     "label": "People's Republic of China proclaimed",
@@ -888,7 +888,7 @@
    "biology"
   ],
   "summary": "Christiaan Barnard in Cape Town transplanted a donor heart into a patient who survived for 18 days, proving transplantation possible.",
-  "body": "The patient, Louis Washkansky, lived nearly three weeks — long enough for the world to see that organ transplantation could work. The surgery sparked an international transplant race and led to today's routine organ and tissue replacements.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Heart_transplantation).",
+  "body": "On 3 December 1967 Christiaan Barnard and his team at Groote Schuur Hospital in Cape Town carried out the first human-to-human heart transplant. The patient, Louis Washkansky, lived for 18 days: the transplanted heart kept working, but the drugs suppressing his immune system left him unable to fight the pneumonia that killed him. The operation showed that organ transplantation could work and set off an international transplant race. Later advances in tissue matching and immunosuppression made heart transplantation a standard treatment for end-stage heart disease.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Heart_transplantation).",
   "links": [
    {
     "label": "Wikipedia",
@@ -908,7 +908,7 @@
   ],
   "parent": "civil-rights",
   "summary": "King was shot in Memphis while supporting a strike by sanitation workers; riots followed in over a hundred cities.",
-  "body": "Part of [American civil rights movement](event:civil-rights). King was shot in Memphis while supporting a strike by sanitation workers; riots followed in over a hundred cities.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Martin_Luther_King_Jr.).",
+  "body": "Part of [American civil rights movement](event:civil-rights). King was shot dead on 4 April 1968 at the Lorraine Motel in Memphis, Tennessee, where he had come to support a strike by the city's sanitation workers; James Earl Ray later pleaded guilty to the killing. Riots followed in more than a hundred American cities, and Congress passed the Fair Housing Act a week later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Martin_Luther_King_Jr.).",
   "links": [
    {
     "label": "American civil rights movement",
@@ -951,8 +951,8 @@
    "politics",
    "war"
   ],
-  "summary": "Civil rights marches by Northern Ireland’s Catholic minority met violence, and the province slid into three decades of sectarian conflict.",
-  "body": "Rioting in Derry and Belfast in August 1969 brought British troops onto the streets. The Provisional IRA and loyalist paramilitaries fought a long campaign of shootings and bombings against each other, the security forces and civilians.\n\nAround 3,500 people were killed, more than half of them civilians, before [the Good Friday Agreement](event:good-friday-agreement) of 1998 brought the conflict to an end.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Troubles).",
+  "summary": "Civil rights marches by Northern Ireland’s Catholic minority met violence, and the province entered three decades of sectarian conflict.",
+  "body": "Rioting in Derry and Belfast in August 1969 brought British troops onto the streets. The Provisional IRA and loyalist paramilitaries fought a long campaign of shootings and bombings against each other, the security forces and civilians.\n\nAround 3,500 people were killed over the next thirty years, more than half of them civilians, before [the Good Friday Agreement](event:good-friday-agreement) of 1998 brought the conflict to an end.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Troubles).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1020,7 +1020,7 @@
   ],
   "parent": "apollo-program",
   "summary": "An oxygen tank exploded on the way to the Moon; the crew improvised their way home in the lunar module.",
-  "body": "Part of [Apollo programme](event:apollo-program). An oxygen tank exploded on the way to the Moon; the crew improvised their way home in the lunar module.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_13).",
+  "body": "Part of [Apollo programme](event:apollo-program). An oxygen tank in the service module ruptured on 13 April 1970, some 320,000 kilometres from Earth and two days out from the Moon. The crew — James Lovell, Jack Swigert and Fred Haise — abandoned the landing and used the lunar module as a lifeboat, improvising fixes for power, water and carbon dioxide with mission control. They returned safely on 17 April.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_13).",
   "links": [
    {
     "label": "Apollo programme",
@@ -1044,7 +1044,7 @@
   ],
   "parent": "transistor",
   "summary": "Intel put a whole central processing unit on one chip, making computers cheap enough to be everywhere.",
-  "body": "Part of [Invention of the transistor](event:transistor). Intel put a whole central processing unit on one chip, making computers cheap enough to be everywhere.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Microprocessor).",
+  "body": "Part of [Invention of the transistor](event:transistor). Intel's 4004, released in November 1971, put a whole central processing unit on a single chip. Successive designs — the 8008, 8080, 8086 and their descendants — grew steadily more capable while the cost of computation fell, making it cheap enough to put a computer inside consumer appliances, personal computers and, later, mobile phones. The microprocessor became the basic component of modern electronics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Microprocessor).",
   "links": [
    {
     "label": "Invention of the transistor",
@@ -1126,7 +1126,7 @@
    "science"
   ],
   "summary": "Two spacecraft toured the outer planets and are now the most distant human-made objects, in interstellar space.",
-  "body": "Two spacecraft toured the outer planets and are now the most distant human-made objects, in interstellar space.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyager_program).",
+  "body": "Voyager 2 launched on 20 August 1977 and Voyager 1 on 5 September, on a faster trajectory that took it past Jupiter and Saturn first. Both flew by Jupiter and Saturn; Voyager 2 went on to Uranus and Neptune, and remains the only spacecraft to have visited either. They returned the first close observations of the giant planets' atmospheres, magnetic fields and moons, and each carries a gold-plated record of sounds and images from Earth. Both have since crossed into interstellar space — Voyager 1 in 2012 and Voyager 2 in 2018 — and Voyager 1 is the most distant human-made object.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyager_program).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1313,7 +1313,7 @@
    "technology"
   ],
   "summary": "A reactor test went catastrophically wrong, spreading radioactive fallout across Europe and forcing permanent evacuation.",
-  "body": "The accident damaged Soviet credibility at home and abroad and reshaped nuclear policy worldwide.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chernobyl_disaster).",
+  "body": "A botched safety test at the Chernobyl nuclear plant in Soviet Ukraine on 26 April 1986 caused a power surge that destroyed reactor number four and set its graphite core burning. Radioactive material was carried across much of Europe. The surrounding area was evacuated and some 350,000 people were eventually resettled; thyroid cancer rates rose sharply among those exposed as children. Soviet authorities recorded 31 immediate deaths, and estimates of later deaths from radiation vary widely. The accident damaged Soviet credibility at home and abroad, and it reshaped nuclear safety policy worldwide.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chernobyl_disaster).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1546,7 +1546,7 @@
    "economy"
   ],
   "summary": "The European Communities became the European Union, with a common currency to follow in 1999.",
-  "body": "The European Communities became the European Union, with a common currency to follow in 1999.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Maastricht_Treaty).",
+  "body": "Signed on 7 February 1992, the Maastricht Treaty turned the European Communities into the European Union, committed members to economic and monetary union and a common currency, and extended cooperation to foreign policy, justice and home affairs. It came into force on 1 November 1993 after ratification by all twelve member states. The euro followed as an accounting currency in 1999 and as notes and coins in 2002.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Maastricht_Treaty).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1567,7 +1567,7 @@
    "politics"
   ],
   "summary": "Some 800,000 Tutsi and moderate Hutu were murdered in a hundred days while the world looked away.",
-  "body": "Some 800,000 Tutsi and moderate Hutu were murdered in a hundred days while the world looked away.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rwandan_genocide).",
+  "body": "The killing began on 7 April 1994, the day after the aircraft carrying President Juvénal Habyarimana was shot down over Kigali. Hutu militias, army units and local officials killed some 800,000 Tutsi and moderate Hutu in about a hundred days. The UN peacekeeping force in the country, UNAMIR, was left with a narrow mandate and few troops, and foreign governments declined to intervene. The genocide ended when the Tutsi-led Rwandan Patriotic Front took control of the country in July. It has shaped international argument about humanitarian intervention ever since.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rwandan_genocide).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1785,7 +1785,7 @@
    "technology"
   ],
   "summary": "The iPhone put a networked computer with a camera in a pocket, and within a decade most of humanity carried one.",
-  "body": "The iPhone put a networked computer with a camera in a pocket, and within a decade most of humanity carried one.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/IPhone_(1st_generation)).",
+  "body": "Apple released the first iPhone on 29 June 2007. It combined a multi-touch screen, a camera and internet access over Wi-Fi and mobile networks in a pocket-sized device running a version of the Macintosh operating system, OS X. The design set the pattern for the smartphones that followed, and within a decade most of humanity carried one, using it for communication, payment, entertainment and information.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/IPhone_(1st_generation)).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1824,7 +1824,7 @@
    "economy"
   ],
   "summary": "The collapse of the American mortgage market brought down banks worldwide and caused the deepest recession since the 1930s.",
-  "body": "The collapse of the American mortgage market brought down banks worldwide and caused the deepest recession since the 1930s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/2007–2008_financial_crisis).",
+  "body": "Rising defaults in the American subprime mortgage market left banks holding mortgage-backed securities with heavy losses. The failure of Lehman Brothers on 15 September 2008 froze credit markets worldwide, and governments and central banks spent trillions on bank rescues and stimulus to prevent a wider collapse. Global output fell in 2009 and unemployment rose sharply across the developed world, in the deepest recession since the 1930s. The crisis brought tighter financial regulation and a long argument over monetary policy and inequality.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/2007–2008_financial_crisis).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1844,7 +1844,7 @@
    "politics"
   ],
   "summary": "Protests spread from Tunisia across the Arab world, toppling four governments and setting off civil wars in Syria, Libya and Yemen.",
-  "body": "Protests spread from Tunisia across the Arab world, toppling four governments and setting off civil wars in Syria, Libya and Yemen.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Arab_Spring).",
+  "body": "Protests that began in Tunisia in December 2010 spread across the Arab world during 2011, demanding political reform and the removal of long-established rulers. Four governments fell: Tunisia's in January 2011, Egypt's in February, Libya's after an armed uprising and NATO intervention later that year, and Yemen's in early 2012. Protests in Syria turned into a civil war, as did the conflicts in Libya and Yemen. Demonstrations in the Gulf states, Morocco and elsewhere brought limited concessions or none. Early hopes of democratic transition gave way to renewed authoritarian rule and prolonged war.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Arab_Spring).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1903,7 +1903,7 @@
    "science"
   ],
   "summary": "The LHC at CERN found the particle that completes the Standard Model and explains how other particles acquire mass.",
-  "body": "The LHC at CERN found the particle that completes the Standard Model and explains how other particles acquire mass.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Higgs_boson).",
+  "body": "CERN announced on 4 July 2012 that the ATLAS and CMS experiments at the Large Hadron Collider had independently found a new particle matching the Higgs boson, the last particle predicted by the Standard Model to be observed. The boson is the signature of the Higgs field, through which other particles acquire mass; it was proposed in 1964 by Peter Higgs, François Englert and others. Higgs and Englert shared the Nobel Prize in Physics in 2013.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Higgs_boson).",
   "links": [
    {
     "label": "Wikipedia",
@@ -2003,7 +2003,7 @@
    "science"
   ],
   "summary": "LIGO recorded spacetime ripples from two merging black holes, a century after [Einstein](event:relativity) predicted them.",
-  "body": "LIGO recorded spacetime ripples from two merging black holes, a century after [Einstein](event:relativity) predicted them.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_observation_of_gravitational_waves).",
+  "body": "On 14 September 2015 the Laser Interferometer Gravitational-Wave Observatory recorded the merger of two black holes about 1.3 billion light-years away, the first direct detection of gravitational waves. The signal reached LIGO's two detectors, in Louisiana and Washington state, seven milliseconds apart, and confirmed a prediction [Einstein](event:relativity) had made a century earlier. Rainer Weiss, Barry Barish and Kip Thorne received the Nobel Prize in Physics in 2017 for the work that made the detection possible.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_observation_of_gravitational_waves).",
   "links": [
    {
     "label": "Wikipedia",
@@ -2023,7 +2023,7 @@
    "climate"
   ],
   "summary": "Nearly every country agreed to limit warming to well below 2 °C, with national pledges rather than binding quotas.",
-  "body": "It is the main international response to [modern global warming](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paris_Agreement).",
+  "body": "Adopted at the twenty-first UN climate conference on 12 December 2015 and in force from 4 November 2016, the agreement commits its parties to holding warming well below 2 °C above pre-industrial levels and to pursuing a limit of 1.5 °C. Instead of binding quotas it relies on nationally determined contributions, reviewed and revised every five years. It is the main international response to [modern global warming](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paris_Agreement).",
   "links": [
    {
     "label": "Wikipedia",
@@ -2104,7 +2104,7 @@
    "exploration"
   ],
   "summary": "A 6.5-metre infrared telescope launched to a point 1.5 million km from Earth to observe the first galaxies.",
-  "body": "A 6.5-metre infrared telescope launched to a point 1.5 million km from Earth to observe the first galaxies.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/James_Webb_Space_Telescope).",
+  "body": "The James Webb Space Telescope launched on 25 December 2021 on an Ariane 5 from French Guiana and took up station at the Sun–Earth Lagrange point 2, about 1.5 million kilometres from Earth. Built by NASA with the European and Canadian space agencies, it carries a 6.5-metre primary mirror made of eighteen gold-coated beryllium segments and observes in the infrared, which lets it see the earliest galaxies as well as the atmospheres of planets around other stars. It succeeded Hubble as the main space observatory for deep observations.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/James_Webb_Space_Telescope).",
   "links": [
    {
     "label": "Wikipedia",
@@ -2145,7 +2145,7 @@
    "politics"
   ],
   "summary": "Russia launched the largest land war in Europe since 1945, driving millions from their homes and reshaping European security.",
-  "body": "Russia launched the largest land war in Europe since 1945, driving millions from their homes and reshaping European security.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Russian_invasion_of_Ukraine).",
+  "body": "Russia invaded Ukraine on 24 February 2022 with missile strikes and ground offensives on several fronts. Ukraine resisted with its armed forces and a general mobilisation; cities including Mariupol and Kharkiv were heavily damaged. More than six million Ukrainians left the country and millions more were displaced within it. NATO admitted Finland in 2023 and Sweden in 2024, European states raised defence spending, and Western governments supplied Ukraine with large quantities of weapons and money.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Russian_invasion_of_Ukraine).",
   "links": [
    {
     "label": "Wikipedia",
@@ -2165,7 +2165,7 @@
    "biology"
   ],
   "summary": "The UN marked an eightfold increase in human numbers since 1800, with growth now slowing worldwide.",
-  "body": "The UN marked an eightfold increase in human numbers since 1800, with growth now slowing worldwide.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_population).",
+  "body": "The United Nations marked 15 November 2022 as the day world population reached eight billion, roughly an eightfold increase since 1800, when it stood at about one billion. Growth has been slowing since its peak in the late 1960s and now runs below 1% a year. Rates differ sharply by region, with the fastest growth in sub-Saharan Africa and shrinking populations in parts of East Asia and Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_population).",
   "links": [
    {
     "label": "Wikipedia",

@@ -7,7 +7,13 @@ import {
   cloudSharpenFor,
   CLOUD_SHARPEN_MAX,
   EARTH_RADIUS_KM,
+  driftIntervalMs,
+  DRIFT_MS_MIN,
+  DRIFT_MS_MAX,
+  DRIFT_STEP_PX,
+  CLOUD_DRIFT_UV_PER_S,
 } from '../src/lib/scale'
+import { viewSpanDeg } from '../src/lib/detailImagery'
 
 describe('kmPerPixel', () => {
   it('scales linearly with altitude', () => {
@@ -107,5 +113,71 @@ describe('cloudSharpenFor', () => {
       previous = k
     }
     expect(CLOUD_SHARPEN_MAX).toBeLessThan(1) // an unsharp this big rings visibly
+  })
+})
+
+/**
+ * The idle drift rate.
+ *
+ * A still globe with clouds on it is the one thing that keeps this app
+ * rendering when nobody is touching it. The rate used to be a constant 20 Hz;
+ * these pin down the rule that replaced it — a fixed amount of *screen*
+ * movement per step, which is the thing an eye can or cannot resolve.
+ */
+describe('driftIntervalMs', () => {
+  const PX = 900
+
+  it('moves the deck by the stated number of pixels per step', () => {
+    // the definition, restated independently: degrees per second, times pixels
+    // per degree, times the interval, is the step in pixels
+    for (const span of [12, 40, 90, 147]) {
+      const ms = driftIntervalMs(span, PX)
+      if (ms === DRIFT_MS_MIN || ms === DRIFT_MS_MAX) continue // clamped, see below
+      const pxPerSec = CLOUD_DRIFT_UV_PER_S * 360 * (PX / span)
+      expect((pxPerSec * ms) / 1000).toBeCloseTo(DRIFT_STEP_PX, 6)
+    }
+  })
+
+  it('slows down as the view widens', () => {
+    let previous = 0
+    for (const span of [10, 20, 40, 60, 90, 120, 150, 180]) {
+      const ms = driftIntervalMs(span, PX)
+      expect(ms).toBeGreaterThanOrEqual(previous)
+      previous = ms
+    }
+  })
+
+  it('is never faster than the fixed rate it replaced', () => {
+    // the point of the change is to draw *less*; a rule that could ask for more
+    // frames than 20 Hz would be a regression dressed as an optimisation
+    for (let span = 0.5; span <= 200; span += 0.5) {
+      const ms = driftIntervalMs(span, PX)
+      expect(ms).toBeGreaterThanOrEqual(DRIFT_MS_MIN)
+      expect(ms).toBeLessThanOrEqual(DRIFT_MS_MAX)
+    }
+    // and a degenerate viewport cannot produce a zero or negative interval
+    expect(driftIntervalMs(0, PX)).toBe(DRIFT_MS_MIN)
+    expect(driftIntervalMs(90, 0)).toBe(DRIFT_MS_MAX)
+  })
+
+  it('cuts the default view to well under half the old rate', () => {
+    // globe.gl opens at altitude 2.5; this is the view the globe idles at, and
+    // the whole reason the fixed rate was worth revisiting
+    const ms = driftIntervalMs(viewSpanDeg(2.5), PX)
+    expect(ms).toBeGreaterThan(2 * DRIFT_MS_MIN)
+    expect(1000 / ms).toBeLessThan(10) // frames per second, against 20
+  })
+
+  it('leaves the closest views the clouds reach exactly as they were', () => {
+    // clouds fade out by 55° of horizon (cloudFadeFor), which is a framed span
+    // of a few degrees — there the deck really does cross pixels quickly, and
+    // the floor keeps the rate where it is rather than raising it
+    for (const altitude of [0.15, 0.25, 0.4, 0.7]) {
+      // still drawing clouds at all of these...
+      expect(cloudFadeFor(2 * Math.acos(1 / (1 + altitude)) * (180 / Math.PI)))
+        .toBeGreaterThan(0)
+      // ...and the rate there is exactly what it has always been
+      expect(driftIntervalMs(viewSpanDeg(altitude), PX)).toBe(DRIFT_MS_MIN)
+    }
   })
 })

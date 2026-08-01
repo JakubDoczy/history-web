@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventPanel harness</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #060a12;
+      }
+      /* the panel positions itself against the page; give it the room it expects */
+      #app {
+        position: relative;
+        min-height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./harness.ts"></script>
+  </body>
+</html>

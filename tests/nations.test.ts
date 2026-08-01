@@ -182,6 +182,132 @@ describe('nations.json', () => {
 })
 
 /**
+ * Held borders against the calendar.
+ *
+ * Keyframes hold forwards, so a polity whose next keyframe is decades away goes
+ * on being drawn at an extent it no longer had — and the failure is silent,
+ * because every structural invariant above still passes. The dataset once had
+ * France jump straight from Napoleon's 1812 empire to 1900, which drew the
+ * Confederation of the Rhine, the Kingdom of Italy and the Dutch coast as
+ * French for the whole nineteenth century.
+ *
+ * These are the dates where a border actually moved, asserted as "was this city
+ * inside this polity in this year". A missing keyframe fails one of them.
+ */
+describe('borders at a date', () => {
+  const nations = rawNations as Nation[]
+
+  /** Ray cast in the plane; the rings are small enough that this is exact enough. */
+  const inRing = (ring: Ring, lng: number, lat: number): boolean => {
+    let inside = false
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i]
+      const [xj, yj] = ring[j]
+      if (yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside
+    }
+    return inside
+  }
+  const covers = (id: string, t: number, lng: number, lat: number): boolean => {
+    const nation = nations.find((n) => n.id === id)
+    if (!nation) throw new Error(`no nation ${id}`)
+    const k = activeKeyframe(nation, t)
+    return !!k && k.rings.some((ring) => inRing(ring, lng, lat))
+  }
+
+  // [polity, year, place, lng, lat, inside?]
+  const cases: [string, number, string, number, number, boolean][] = [
+    // France: revolution, empire, Vienna, Algeria — not one Napoleonic blob
+    ['france', 1780, 'Paris', 2.35, 48.85, true],
+    ['france', 1780, 'Brussels', 4.35, 50.85, false],
+    ['france', 1750, 'the St Lawrence', -72.5, 47.5, true], // New France, until 1763
+    ['france', 1780, 'the St Lawrence', -72.5, 47.5, false],
+    ['france', 1800, 'Brussels', 4.35, 50.85, true], // annexed 1795
+    ['france', 1800, 'Rome', 12.5, 41.9, false],
+    ['france', 1812, 'Amsterdam', 4.9, 52.37, true], // the empire at its height
+    ['france', 1812, 'Rome', 12.5, 41.9, true],
+    ['france', 1849, 'Paris', 2.35, 48.85, true],
+    ['france', 1849, 'inland Algeria', 3.05, 36.4, true],
+    ['france', 1849, 'Amsterdam', 4.9, 52.37, false], // and not an inch of it after 1815
+    ['france', 1849, 'Rome', 12.5, 41.9, false],
+    ['france', 1849, 'Berlin', 13.4, 52.5, false],
+    ['france', 1849, 'Hanoi', 105.8, 21, false],
+    ['france', 1880, 'Nice', 7.1, 43.9, false], // Savoy and Nice are 1860
+    ['france', 1930, 'Nice', 7.1, 43.9, true],
+    ['france', 1930, 'Hanoi', 105.8, 21, true],
+
+    // Britain: the first empire, its loss, the Raj, the mandates, independence
+    ['britain', 1770, 'Philadelphia', -75.16, 39.95, true],
+    ['britain', 1790, 'Philadelphia', -75.16, 39.95, false],
+    ['britain', 1750, 'Montreal', -73.6, 45.5, false], // French until 1763
+    ['britain', 1790, 'Montreal', -73.6, 45.5, true],
+    ['britain', 1750, 'Sydney', 151.2, -33.87, false], // the First Fleet is 1788
+    ['britain', 1810, 'Sydney', 151.2, -33.87, true],
+    ['britain', 1770, 'the Karoo', 21, -32, false], // the Cape is taken in 1806
+    ['britain', 1830, 'the Karoo', 21, -32, true],
+    ['britain', 1830, 'Delhi', 77.2, 28.6, true],
+    ['britain', 1830, 'Lahore', 74.35, 31.55, false], // the Punjab is annexed in 1849
+    ['britain', 1870, 'Lahore', 74.35, 31.55, true],
+    ['britain', 1890, 'Baghdad', 44.4, 33.3, false], // Ottoman until the mandate
+    ['britain', 1925, 'Baghdad', 44.4, 33.3, true],
+    ['britain', 1930, 'Delhi', 77.2, 28.6, true],
+    ['britain', 1950, 'Delhi', 77.2, 28.6, false], // independence, 1947
+
+    // Ottoman: Hungary won and lost, Greece, Crimea
+    ['ottoman', 1500, 'Budapest', 19.04, 47.5, false],
+    ['ottoman', 1600, 'Budapest', 19.04, 47.5, true], // Mohács 1526, Buda 1541
+    ['ottoman', 1750, 'Budapest', 19.04, 47.5, false], // Karlowitz, 1699
+    ['ottoman', 1500, 'Tripoli', 15, 30.5, false],
+    ['ottoman', 1600, 'Tripoli', 15, 30.5, true], // 1551
+    ['ottoman', 1700, 'Attica', 23.4, 38.2, true],
+    ['ottoman', 1850, 'Attica', 23.4, 38.2, false], // Greek independence, 1830
+    ['ottoman', 1900, 'Attica', 23.4, 38.2, false],
+    ['ottoman', 1700, 'Crimea', 34.5, 45.2, true],
+    ['ottoman', 1850, 'Crimea', 34.5, 45.2, false], // annexed by Russia, 1783
+
+    // the rest of the powers whose extent moves inside a keyframe gap
+    ['usa', 1810, 'St Louis', -90.2, 38.6, false], // drawn from the Purchase of 1803
+    ['usa', 1830, 'St Louis', -90.2, 38.6, true],
+    ['usa', 1830, 'Nevada', -117, 39, false], // the Mexican Cession is 1848
+    ['usa', 1860, 'Nevada', -117, 39, true],
+    ['russia', 1620, 'Yakutsk', 129.7, 62, false],
+    ['russia', 1650, 'Yakutsk', 129.7, 62, true], // Okhotsk is reached in 1639
+    ['russia', 1650, 'Moscow', 37.6, 55.75, true],
+    ['qing', 1660, 'Beijing', 116.4, 39.9, true],
+    ['qing', 1660, 'Urga', 106.9, 47.9, false], // Khalkha Mongolia submits in 1691
+    ['qing', 1750, 'Urga', 106.9, 47.9, true],
+    ['japan', 1890, 'Tokyo', 139.7, 35.68, true],
+    ['japan', 1890, 'Taiwan', 121, 24, false], // Shimonoseki, 1895
+    ['japan', 1900, 'Taiwan', 121, 24, true],
+    ['japan', 1890, 'Seoul', 126.98, 37.57, false], // annexation, 1910
+    ['japan', 1920, 'Seoul', 126.98, 37.57, true],
+    ['germany', 1875, 'Berlin', 13.4, 52.5, true],
+    ['germany', 1875, 'Windhoek', 17.08, -22.57, false], // South West Africa, 1884
+    ['germany', 1900, 'Windhoek', 17.08, -22.57, true],
+    ['spain', 1520, 'Madrid', -3.7, 40.4, true],
+    ['spain', 1520, 'Peru', -74, -12, false], // Pizarro lands in 1532
+    ['spain', 1600, 'Peru', -74, -12, true],
+    ['spain', 1520, 'Manila', 121, 15, false], // 1565
+    ['spain', 1600, 'Manila', 121, 15, true],
+    ['spain', 1600, 'Portugal', -8.5, 39.5, true], // the Iberian Union, 1580-1640
+    ['spain', 1700, 'Portugal', -8.5, 39.5, false],
+    ['portugal', 1520, 'Coimbra', -8.3, 40.2, true],
+    ['portugal', 1520, 'Bahia', -40, -15, false], // the captaincies are settled from 1534
+    ['portugal', 1580, 'Bahia', -40, -15, true],
+    ['portugal', 1520, 'Angola', 14.5, -10, false], // Luanda, 1575
+    ['portugal', 1580, 'Angola', 14.5, -10, true],
+    ['dutch', 1610, 'Amsterdam', 4.9, 52.37, true],
+    ['dutch', 1610, 'Java', 108, -7, false], // Batavia, 1619
+    ['dutch', 1650, 'Java', 108, -7, true],
+    ['dutch', 1610, 'the Cape', 20, -33, false], // 1652
+    ['dutch', 1700, 'the Cape', 20, -33, true],
+  ]
+
+  it.each(cases)('%s at %i: %s', (id, year, _place, lng, lat, inside) => {
+    expect(covers(id, year, lng, lat)).toBe(inside)
+  })
+})
+
+/**
  * Border identity across a timeline tick.
  *
  * The globe's polygon layer joins on object identity and re-tessellates on

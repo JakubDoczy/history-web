@@ -10,8 +10,8 @@
   "tags": [
    "geology"
   ],
-  "summary": "Earth accreted from the solar nebula roughly 4.5 billion years ago, a molten world bombarded by planetesimals.",
-  "body": "Dust and rock orbiting the young Sun accreted into planetesimals and then into the proto-Earth over a few tens of millions of years. The heat of accretion and radioactive decay kept the surface molten, and iron sank to form the core while lighter silicates floated up as the mantle and first crust.\n\nRadiometric dating of meteorites and the oldest terrestrial zircons fixes the age at roughly **4.54 billion years** — the floor of this timeline.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Earth).",
+  "summary": "The Earth formed approximately 4.54 billion years ago by accretion of material from the solar nebula.",
+  "body": "Dust and rock orbiting the young Sun accumulated into planetesimals and then into the proto-Earth over tens of millions of years. Heat from accretion and radioactive decay melted the surface, allowing iron to sink toward the core while lighter silicates rose to form the mantle and early crust.\n\nRadiometric dating of meteorites and the oldest terrestrial zircons establishes the age as approximately **4.54 billion years**.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Earth).",
   "links": [
    {
     "label": "Wikipedia",
@@ -29,8 +29,8 @@
   "tags": [
    "geology"
   ],
-  "summary": "A Mars-sized body, Theia, struck the proto-Earth; debris from the collision coalesced into the Moon.",
-  "body": "The collision melted much of the planet, stripped away a large fraction of the mantle and left Earth with an unusually large satellite and a strong axial tilt.\n\nThe Moon stabilises Earth's obliquity, which has kept the climate comparatively steady over billions of years — a precondition for the [origin of life](event:abiogenesis).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Giant-impact_hypothesis).",
+  "summary": "A Mars-sized body, Theia, collided with the proto-Earth; debris from the impact coalesced into the Moon.",
+  "body": "The collision melted much of the planet and stripped away a large fraction of the mantle, leaving Earth with an unusually large satellite and a pronounced axial tilt.\n\nThe Moon's gravitational effect has stabilised Earth's axial obliquity, maintaining relatively stable climate conditions over billions of years, a requirement for the [origin of life](event:abiogenesis).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Giant-impact_hypothesis).",
   "links": [
    {
     "label": "Wikipedia",
@@ -49,8 +49,8 @@
   "tags": [
    "biology"
   ],
-  "summary": "Self-replicating chemistry appeared, most likely around hydrothermal systems, giving rise to the first cells.",
-  "body": "The earliest widely accepted chemical traces of life are carbon-isotope signatures in rocks around **3.8 billion years** old, with unambiguous microfossils and [stromatolites](event:stromatolites) not long after.\n\nEvery organism alive today descends from a single population, the last universal common ancestor.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abiogenesis).",
+  "summary": "Self-replicating chemical systems emerged, likely around hydrothermal vents, forming the first cellular life.",
+  "body": "The earliest widely accepted evidence for life consists of carbon-isotope signatures in rocks approximately **3.8 billion years old**, followed by microfossils and [stromatolites](event:stromatolites).\n\nAll organisms alive today derive from a single ancestral population, the last universal common ancestor.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abiogenesis).",
   "links": [
    {
     "label": "Wikipedia",
@@ -68,8 +68,8 @@
   "tags": [
    "biology"
   ],
-  "summary": "Cyanobacteria learned to split water with sunlight, releasing free oxygen as waste.",
-  "body": "This single metabolic innovation eventually rebuilt the atmosphere, the oceans and the chemistry of the crust, leading directly to the [Great Oxidation Event](event:great-oxidation).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Photosynthesis).",
+  "summary": "Cyanobacteria evolved the ability to split water molecules using light energy, producing free oxygen as a byproduct.",
+  "body": "This metabolic innovation eventually transformed the atmosphere, oceans, and crustal chemistry, precipitating the [Great Oxidation Event](event:great-oxidation).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Photosynthesis).",
   "links": [
    {
     "label": "Wikipedia",
@@ -90,8 +90,8 @@
    "climate",
    "biology"
   ],
-  "summary": "Free oxygen accumulated in the atmosphere for the first time, poisoning most existing life and rusting the planet.",
-  "body": "Oxygen produced by [cyanobacteria](event:oxygenic-photosynthesis) had for hundreds of millions of years been absorbed by dissolved iron, laying down banded iron formations. Once those sinks were saturated, oxygen escaped into the air.\n\nThe consequences were enormous: an ozone layer formed, methane greenhouse warming collapsed into the [Huronian glaciation](event:huronian-glaciation), and aerobic respiration — far more energetic than fermentation — became possible.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Oxidation_Event).",
+  "summary": "Free oxygen accumulated in the atmosphere for the first time, proving toxic to most existing life and oxidising iron across the planet's surface.",
+  "body": "Oxygen produced by [cyanobacteria](event:oxygenic-photosynthesis) had been absorbed by dissolved iron for hundreds of millions of years, forming banded iron formations. Once these iron sinks became saturated, oxygen began accumulating in the atmosphere.\n\nThis change led to ozone layer formation, collapse of methane-driven greenhouse warming causing the [Huronian glaciation](event:huronian-glaciation), and the emergence of aerobic respiration, which provided greater energy yields than fermentation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Oxidation_Event).",
   "links": [
    {
     "label": "Wikipedia",
@@ -109,8 +109,8 @@
   "tags": [
    "biology"
   ],
-  "summary": "One cell engulfed another and kept it; the result was the complex, compartmented cell with mitochondria.",
-  "body": "Endosymbiosis gave eukaryotes an internal power plant and, with it, the energy budget to support large genomes, large cells and eventually multicellular bodies. Chloroplasts arrived by the same route somewhat later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eukaryote).",
+  "summary": "A cell engulfed another cell, retaining it as an internal organelle; this established the compartmented eukaryotic cell with mitochondria.",
+  "body": "Endosymbiosis provided eukaryotes with enhanced energy production capability, supporting larger genomes, larger cell sizes, and eventually multicellular bodies. Chloroplasts were acquired through a similar process at a later stage.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eukaryote).",
   "links": [
    {
     "label": "Wikipedia",
@@ -130,8 +130,8 @@
    "climate",
    "geology"
   ],
-  "summary": "Glaciers reached the tropics — possibly the whole ocean froze over — in the Cryogenian period.",
-  "body": "The Sturtian and Marinoan glaciations buried much of the planet in ice for tens of millions of years. Volcanic CO2 slowly built up beneath the ice until a runaway greenhouse thawed the world in a geological instant.\n\nThe extreme environmental swings immediately preceded the appearance of the [Ediacaran biota](event:ediacaran) and the [Cambrian explosion](event:cambrian-explosion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Snowball_Earth).",
+  "summary": "Glaciers advanced toward the equator, possibly covering the entire ocean surface, during the Cryogenian period.",
+  "body": "The Sturtian and Marinoan glaciations covered much of the planet in ice for tens of millions of years. Volcanic carbon dioxide accumulated beneath the ice cover until a runaway greenhouse effect rapidly thawed global conditions.\n\nThese extreme climate fluctuations preceded the appearance of the [Ediacaran biota](event:ediacaran) and the [Cambrian explosion](event:cambrian-explosion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Snowball_Earth).",
   "links": [
    {
     "label": "Wikipedia",
@@ -150,8 +150,8 @@
   "tags": [
    "biology"
   ],
-  "summary": "Almost every modern animal body plan appears in the fossil record within a few tens of millions of years.",
-  "body": "Eyes, hard shells, jointed limbs and active predation all show up together; the Burgess Shale of British Columbia and the Chengjiang biota of Yunnan preserve the results in exquisite detail.\n\nThe trigger is debated — rising oxygen after [Snowball Earth](event:snowball-earth), the invention of predation, or genetic innovations in developmental regulation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cambrian_explosion).",
+  "summary": "Nearly all modern animal body plans appeared in the fossil record within a period of tens of millions of years.",
+  "body": "Eyes, hard shells, jointed limbs, and predatory behaviour all appear together in the record. The Burgess Shale of British Columbia and the Chengjiang fauna of Yunnan preserve exceptional detail of this radiation.\n\nProposed causes include rising oxygen levels following [Snowball Earth](event:snowball-earth), the evolution of predation, and innovations in developmental genetic regulation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cambrian_explosion).",
   "links": [
    {
     "label": "Wikipedia",
@@ -170,8 +170,8 @@
   "tags": [
    "geology"
   ],
-  "summary": "Nearly all land assembled into a single supercontinent surrounded by the Panthalassic Ocean.",
-  "body": "Its interior was a vast arid desert, and its coastline was short relative to its area, which stressed shallow-marine life. The break-up beginning in the Jurassic opened the [Atlantic Ocean](event:atlantic-opening) and set the continents on the paths they still follow.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pangaea).",
+  "summary": "Nearly all continental landmasses united into a single supercontinent surrounded by the Panthalassic Ocean.",
+  "body": "The interior landmass was predominantly arid, and its limited coastline-to-area ratio stressed shallow-marine ecosystems. Fragmentation beginning in the Jurassic opened the [Atlantic Ocean](event:atlantic-opening) and initiated the continental dispersal patterns visible today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pangaea).",
   "links": [
    {
     "label": "Wikipedia",
@@ -191,8 +191,8 @@
    "extinction",
    "geology"
   ],
-  "summary": "The Great Dying: about 81% of marine species and 70% of land vertebrates disappeared, the worst crisis life has faced.",
-  "body": "Volcanism of the [Siberian Traps](event:siberian-traps) injected enormous volumes of CO2 and sulphur into the atmosphere, driving warming, ocean acidification and widespread anoxia.\n\nRecovery took some **10 million years**, and the emptied world was the one in which the [first dinosaurs](event:first-dinosaurs) arose.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Permian–Triassic_extinction_event).",
+  "summary": "Approximately 81% of marine species and 70% of land vertebrates went extinct in Earth's most severe biotic crisis.",
+  "body": "Volcanism from the [Siberian Traps](event:siberian-traps) released large volumes of carbon dioxide and sulphur into the atmosphere, causing warming, ocean acidification, and widespread oxygen depletion.\n\nEcological recovery required approximately **10 million years**, and the depleted world that followed was the one in which the [first dinosaurs](event:first-dinosaurs) arose.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Permian–Triassic_extinction_event).",
   "links": [
    {
     "label": "Wikipedia",
@@ -211,8 +211,8 @@
    "extinction",
    "biology"
   ],
-  "summary": "Three quarters of all species, including every non-avian dinosaur, died out in a geological instant.",
-  "body": "The immediate cause was the [Chicxulub impact](event:chicxulub), whose ejecta blanketed the globe in an iridium-rich layer found at the boundary worldwide; the [Deccan Traps](event:deccan-traps) eruptions were already stressing ecosystems.\n\nThe extinction opened the ecological space in which mammals — and eventually [primates](event:hominin-split) — radiated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous–Paleogene_extinction_event).",
+  "summary": "Approximately 75% of all species, including all non-avian dinosaurs, went extinct during a geologically brief interval.",
+  "body": "The [Chicxulub impact](event:chicxulub) was the primary cause, with impact ejecta depositing an iridium-rich layer globally recognised at the boundary; the [Deccan Traps](event:deccan-traps) eruptions were already stressing ecosystems beforehand.\n\nThe extinction created ecological space for mammalian diversification, eventually leading to [primate](event:hominin-split) evolution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous–Paleogene_extinction_event).",
   "links": [
    {
     "label": "Wikipedia",
@@ -258,8 +258,8 @@
    "disaster"
   ],
   "parent": "kpg-extinction",
-  "summary": "A 10-kilometre asteroid struck the Yucatán platform, releasing energy equal to billions of Hiroshima bombs.",
-  "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). The impact excavated a crater 180 km across into sulphur-rich carbonate rock, launching a global cloud of dust and sulphate aerosols that shut down photosynthesis for years.\n\nThe crater was identified from gravity anomalies in the 1970s and confirmed in 1991.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chicxulub_crater).",
+  "summary": "A 10-kilometre-diameter asteroid impacted the Yucatán platform, releasing energy equivalent to billions of Hiroshima bombs.",
+  "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). The impact excavated a crater 180 km across into sulphur-rich carbonate rock, launching a global cloud of dust and sulphate aerosols that shut down photosynthesis for years.\n\nThe crater was identified through gravity data in the 1970s and confirmed in 1991.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chicxulub_crater).",
   "links": [
    {
     "label": "Cretaceous–Paleogene extinction",
@@ -281,8 +281,8 @@
   "tags": [
    "biology"
   ],
-  "summary": "Anatomically modern humans emerged in Africa; the oldest known fossils come from Jebel Irhoud in Morocco.",
-  "body": "Genetic and fossil evidence points to a pan-African origin rather than a single cradle, with populations exchanging genes across the continent for tens of thousands of years before the [dispersal out of Africa](event:out-of-africa).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
+  "summary": "Anatomically modern humans originated in Africa, with the oldest known fossils from Jebel Irhoud, Morocco.",
+  "body": "Genetic and paleontological evidence indicates a pan-African origin rather than a single population center, with gene exchange among African populations over tens of thousands of years preceding the [dispersal out of Africa](event:out-of-africa).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
   "links": [
    {
     "label": "Wikipedia",
@@ -302,8 +302,8 @@
    "exploration",
    "biology"
   ],
-  "summary": "Modern humans expanded out of Africa and, within tens of millennia, reached every habitable continent.",
-  "body": "The descendants of this comparatively small founding population replaced or absorbed all other human groups, interbreeding with [Neanderthals](event:neanderthals) and Denisovans along the way.\n\nBy 65,000 years ago people had crossed to [Australia](event:sahul); by 16,000 they had entered [the Americas](event:americas-peopling).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_human_migrations).",
+  "summary": "Modern humans dispersed from Africa and colonized every habitable continent within tens of thousands of years.",
+  "body": "Descendants of a relatively small founding population supplanted or assimilated all other human groups, with genetic exchange occurring with [Neanderthals](event:neanderthals) and Denisovans.\n\nBy 65,000 years ago humans had reached [Australia](event:sahul); by 16,000 years ago they had colonized [the Americas](event:americas-peopling).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_human_migrations).",
   "links": [
    {
     "label": "Wikipedia",
@@ -324,8 +324,8 @@
    "culture",
    "biology"
   ],
-  "summary": "Farming was invented independently in several regions, beginning with the Fertile Crescent, and permanently changed how humans live.",
-  "body": "Wheat, barley, peas, sheep and goats were domesticated in the hills of the Levant and upper Mesopotamia; rice in the Yangtze valley, maize in Mexico, potatoes in the Andes.\n\nFood surpluses allowed permanent villages, storable wealth, specialists and eventually cities — but also poorer diets, epidemic disease and hierarchy. Everything from [writing](event:writing) to the [Industrial Revolution](event:industrial-revolution) rests on this foundation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neolithic_Revolution).",
+  "summary": "Farming was developed independently in several regions, beginning with the Fertile Crescent, and permanently changed how humans live.",
+  "body": "Wheat, barley, peas, sheep and goats were domesticated in the hills of the Levant and upper Mesopotamia; rice in the Yangtze valley, maize in Mexico, potatoes in the Andes.\n\nFood surpluses supported permanent villages, storable wealth, occupational specialisation and eventually cities. They also brought poorer diets, epidemic disease and social hierarchy. Developments from [writing](event:writing) to the [Industrial Revolution](event:industrial-revolution) rest on this foundation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neolithic_Revolution).",
   "links": [
    {
     "label": "Wikipedia",
@@ -545,8 +545,8 @@
    "religion",
    "politics"
   ],
-  "summary": "Muhammad and his followers migrated from Mecca to Medina, founding the first Muslim community; year one of the Islamic calendar.",
-  "body": "Within a decade the new faith had united the Arabian peninsula, and within a century its armies and merchants had carried it from Spain to the Indus in the [early Muslim conquests](event:islamic-conquests).\n\nIslam is today the second largest religion in the world and shaped law, science and art across three continents.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hijrah).",
+  "summary": "Muhammad and his followers migrated from Mecca to Medina, establishing the first Muslim community; year one of the Islamic calendar.",
+  "body": "Within a decade the new faith had united the Arabian peninsula, and within a century its armies and merchants had carried it from Spain to the Indus in the [early Muslim conquests](event:islamic-conquests).\n\nIslam is today the second largest religion in the world, and shaped law, science and art across three continents.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hijrah).",
   "links": [
    {
     "label": "Wikipedia",
@@ -623,7 +623,7 @@
   ],
   "parent": "hijra",
   "summary": "Arab armies took Persia, Egypt, the Levant, North Africa and Spain within roughly a century.",
-  "body": "Part of [The Hijra and the founding of Islam](event:hijra). The Sasanian empire was destroyed outright and Byzantium lost its richest provinces at [Yarmouk](event:yarmouk). The advance into Western Europe was checked at [Tours](event:tours) in 732.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Muslim_conquests).",
+  "body": "Part of [The Hijra and the founding of Islam](event:hijra). The Sasanian empire was destroyed outright, and Byzantium lost its richest provinces after the defeat at [Yarmouk](event:yarmouk). The advance into Western Europe was checked at [Tours](event:tours) in 732.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Muslim_conquests).",
   "links": [
    {
     "label": "The Hijra and the founding of Islam",
@@ -698,7 +698,7 @@
    "politics"
   ],
   "summary": "The largest contiguous land empire in history was assembled in three generations, from Korea to Hungary.",
-  "body": "[Genghis Khan](event:genghis-khan) united the steppe tribes and turned them into a disciplined army of mounted archers; his sons and grandsons destroyed the Jin, Khwarazmian and Abbasid states — [Baghdad](event:baghdad-1258) in 1258 — and founded the [Yuan dynasty](event:yuan-dynasty) in China.\n\nThe destruction was immense, but the *Pax Mongolica* also made Eurasia briefly safe for travellers like [Marco Polo](event:marco-polo) — and for the [plague](event:black-death).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mongol_conquests).",
+  "body": "[Genghis Khan](event:genghis-khan) united the steppe tribes and turned them into a disciplined army of mounted archers; his sons and grandsons destroyed the Jin, Khwarazmian and Abbasid states — [Baghdad](event:baghdad-1258) in 1258 — and founded the [Yuan dynasty](event:yuan-dynasty) in China.\n\nThe destruction was immense, but the *Pax Mongolica* also made Eurasia briefly safe for travellers such as [Marco Polo](event:marco-polo) — and for the [plague](event:black-death).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mongol_conquests).",
   "links": [
    {
     "label": "Wikipedia",
@@ -769,7 +769,7 @@
    "disaster"
   ],
   "summary": "The deadliest pandemic in recorded history killed an estimated third to half of Europe's population in six years.",
-  "body": "Plague travelled west along [Silk Road](event:silk-road) and Genoese trade routes, reaching Sicily in 1347 and Scandinavia by 1350. Contemporaries had no idea what caused it; the bacterium *Yersinia pestis* was identified only in 1894.\n\nThe survivors inherited a labour shortage that broke serfdom in much of western Europe, raised wages, and shook the authority of the Church — conditions in which the [Renaissance](event:renaissance) took root.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Black_Death).",
+  "body": "Plague travelled west along the [Silk Road](event:silk-road) and Genoese trade routes, reaching Sicily in 1347 and Scandinavia by 1350. Contemporaries did not know what caused it; the bacterium *Yersinia pestis* was identified only in 1894.\n\nThe survivors inherited a labour shortage that broke serfdom in much of western Europe, raised wages, and shook the authority of the Church — conditions in which the [Renaissance](event:renaissance) took root.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Black_Death).",
   "links": [
    {
     "label": "Wikipedia",
@@ -809,7 +809,7 @@
    "exploration"
   ],
   "summary": "European ships opened sea routes to Africa, Asia and the Americas, joining the world's hemispheres into a single system.",
-  "body": "Portuguese caravels worked their way down the African coast for decades before [Dias](event:dias) rounded the Cape and [da Gama](event:da-gama) reached India. [Columbus](event:columbus) sailed west and found a continent nobody in Europe expected; [Magellan's expedition](event:magellan) went all the way round.\n\nWhat followed was the [Columbian Exchange](event:columbian-exchange), the [conquest of the Americas](event:spanish-conquest) and the [Atlantic slave trade](event:slave-trade) — the beginning of a genuinely global economy, built on immense violence.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Discovery).",
+  "body": "Portuguese caravels worked their way down the African coast for decades before [Dias](event:dias) rounded the Cape and [da Gama](event:da-gama) reached India. [Columbus](event:columbus) sailed west and found a continent nobody in Europe expected, and [Magellan's expedition](event:magellan) went all the way round.\n\nWhat followed was the [Columbian Exchange](event:columbian-exchange), the [conquest of the Americas](event:spanish-conquest) and the [Atlantic slave trade](event:slave-trade) — the beginning of a genuinely global economy, built on conquest and forced labour.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Discovery).",
   "links": [
    {
     "label": "Wikipedia",
@@ -828,7 +828,7 @@
    "technology",
    "culture"
   ],
-  "summary": "Movable metal type made books cheap, and made it impossible to suppress an idea once it had spread.",
+  "summary": "Gutenberg's movable metal type made books cheap and made it far harder to suppress an idea once it had spread.",
   "body": "Gutenberg combined a wine-press, oil-based ink and a mould for casting reusable type. By 1500 Europe held perhaps twenty million printed books, more than scribes had produced in the preceding thousand years.\n\nThe press carried the [Reformation](event:reformation), the [Scientific Revolution](event:copernicus) and eventually mass literacy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Printing_press).",
   "links": [
    {
@@ -870,7 +870,7 @@
   ],
   "parent": "age-of-discovery",
   "summary": "Three Spanish ships made landfall in the Bahamas, beginning sustained contact between the Old World and the New.",
-  "body": "Part of [Age of Discovery](event:age-of-discovery). Columbus was looking for Asia and died insisting he had found it. The consequences — [the Columbian Exchange](event:columbian-exchange), the collapse of Indigenous populations under [epidemic disease](event:americas-epidemics), and centuries of colonisation — were world-historical and, for the Americas, catastrophic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus).",
+  "body": "Part of [Age of Discovery](event:age-of-discovery). Columbus was looking for Asia and died insisting he had found it. The consequences — [the Columbian Exchange](event:columbian-exchange), the collapse of Indigenous populations under [epidemic disease](event:americas-epidemics), and centuries of colonisation — reshaped both hemispheres and were catastrophic for the Americas.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus).",
   "links": [
    {
     "label": "Age of Discovery",
@@ -894,8 +894,8 @@
    "religion",
    "politics"
   ],
-  "summary": "Western Christianity split, and with it the political order of Europe.",
-  "body": "Luther's [Ninety-five Theses](event:95-theses) were carried across Germany by the [printing press](event:printing-press) within weeks. Calvin, Zwingli and Henry VIII produced further breaks; the Catholic Church answered with the Council of Trent.\n\nA century of religious war followed, culminating in the [Thirty Years' War](event:thirty-years-war) and the [Peace of Westphalia](event:westphalia), which established the sovereign state as the basic unit of European politics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reformation).",
+  "summary": "Western Christianity split into Catholic and Protestant churches, and the political order of Europe was realigned.",
+  "body": "Luther's [Ninety-five Theses](event:95-theses) were distributed across Germany by the [printing press](event:printing-press) within weeks of 1517. Calvin, Zwingli, and Henry VIII promoted additional theological breaks; the Catholic Church responded with the Council of Trent.\n\nReligious conflicts lasted for over a century, reaching their peak in the [Thirty Years' War](event:thirty-years-war). The [Peace of Westphalia](event:westphalia) concluded the conflict and established the sovereign state as the fundamental unit of European political order.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reformation).",
   "links": [
    {
     "label": "Wikipedia",
@@ -954,8 +954,8 @@
    "politics",
    "disaster"
   ],
-  "summary": "Some 12.5 million Africans were shipped across the Atlantic in chains; nearly two million died on the voyage.",
-  "body": "The trade supplied labour for sugar, tobacco and cotton plantations in Brazil, the Caribbean and North America, and enriched ports from Lisbon to Liverpool. It depopulated regions of West and Central Africa and built the racial hierarchies of the modern Atlantic world.\n\nBritain abolished the trade in 1807 and slavery itself in 1833; Brazil, the largest importer, abolished slavery only in 1888. See also the [American Civil War](event:us-civil-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_slave_trade).",
+  "summary": "Approximately 12.5 million Africans were transported across the Atlantic in enslavement; nearly two million died during transit.",
+  "body": "The trade supplied enslaved labour for sugar, tobacco, and cotton plantations in Brazil, the Caribbean, and North America. European and colonial ports from Lisbon to Liverpool benefited economically. The slave trade depopulated regions of West and Central Africa and contributed to the establishment of racial categories that structured Atlantic colonial societies.\n\nBritain prohibited the slave trade in 1807 and abolished slavery in its territories in 1833; Brazil, which imported the largest number of enslaved people, abolished slavery in 1888. See also the [American Civil War](event:us-civil-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_slave_trade).",
   "links": [
    {
     "label": "Wikipedia",
@@ -974,8 +974,8 @@
   "tags": [
    "science"
   ],
-  "summary": "Europeans replaced inherited authority with mathematics and experiment as the test of what is true about nature.",
-  "body": "It runs from [Copernicus](event:copernicus) and Vesalius through [Galileo](event:galileo), Kepler, Bacon and Descartes to [Newton's *Principia*](event:newton) — after which the same laws were known to govern falling apples and orbiting planets.\n\nThe habit of publishing, checking and repeating results is arguably the revolution's most durable product.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scientific_Revolution).",
+  "summary": "Europeans adopted mathematics and experimental methods as the basis for understanding nature, replacing reliance on inherited authority.",
+  "body": "The Scientific Revolution extended from [Copernicus](event:copernicus) and Vesalius through [Galileo](event:galileo), Kepler, Bacon, and Descartes to [Newton's *Principia*](event:newton). This period established that mathematical laws govern both terrestrial phenomena such as falling objects and celestial phenomena such as planetary motion.\n\nThe systematic practices of publishing findings, subjecting them to scrutiny, and repeating experiments became standard methods in scientific inquiry and have continued to the present.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scientific_Revolution).",
   "links": [
    {
     "label": "Wikipedia",
@@ -996,8 +996,8 @@
    "science",
    "politics"
   ],
-  "summary": "European thinkers argued that reason, evidence and individual rights, not tradition or revelation, should organise society.",
-  "body": "Locke, Voltaire, Hume, Rousseau, Kant, Smith and Diderot were read across a continent-wide republic of letters. Their arguments underwrote the [American](event:american-revolution) and [French](event:french-revolution) revolutions, the abolition of the [slave trade](event:slave-trade), and the idea of progress itself.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Enlightenment).",
+  "summary": "Enlightenment thinkers emphasised reason, empirical evidence, and natural human rights as bases for organising society and government.",
+  "body": "Influential thinkers including Locke, Voltaire, Hume, Rousseau, Kant, Adam Smith, and Diderot contributed to Enlightenment discourse through published works distributed across Europe. Their ideas concerning individual rights, rational governance, and the authority of reason influenced the [American](event:american-revolution) and [French](event:french-revolution) revolutions, advocacy for the abolition of the [slave trade](event:slave-trade), and concepts of social progress.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Enlightenment).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1016,8 +1016,8 @@
    "science"
   ],
   "parent": "scientific-revolution",
-  "summary": "Three laws of motion and universal gravitation explained falling bodies, tides, comets and planetary orbits with one system.",
-  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Newton also invented calculus to do it. The *Principia* is arguably the most influential scientific book ever written, and it made physics the model to which every other science aspired for two hundred years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica).",
+  "summary": "Three laws of motion and universal gravitation explained falling bodies, tides, comets and planetary orbits within a single system.",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Newton published the *Principia* in 1687, setting out three laws of motion and the law of universal gravitation and applying them to falling bodies, the tides, comets and the orbits of the planets. He developed the calculus needed to carry out the work.\n\nThe *Principia* is among the most influential scientific books ever written, and it made physics the model to which the other sciences aspired for two centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica).",
   "links": [
    {
     "label": "The Scientific Revolution",
@@ -1042,7 +1042,7 @@
    "economy"
   ],
   "summary": "Machines powered by coal replaced muscle, and for the first time in history sustained economic growth outran population growth.",
-  "body": "It began with textiles and [steam](event:watt-engine) in Britain, spread to iron, chemicals and [railways](event:railways), and within a century had remade work, cities, class and warfare.\n\nHuman living standards, life expectancy and energy use all bend sharply upward from this point — as does atmospheric CO2, the beginning of [modern climate change](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Industrial_Revolution).",
+  "body": "Beginning in Britain in the late 18th century, the Industrial Revolution mechanised textile production, adopted [steam power](event:watt-engine), expanded iron and chemical manufacture and built [railway](event:railways) networks. These changes spread to Western Europe and North America over the following century.\n\nWithin a hundred years it had remade work, cities, class and warfare. Living standards, life expectancy and energy use all bend sharply upward from this point, as does atmospheric carbon dioxide, the beginning of [modern climate change](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Industrial_Revolution).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1062,8 +1062,8 @@
    "politics",
    "war"
   ],
-  "summary": "Thirteen British colonies declared themselves independent and, with French help, made it stick.",
-  "body": "The [Declaration of Independence](event:declaration-independence) asserted that governments derive their just powers from the consent of the governed; victory at [Yorktown](event:yorktown) secured it, and the [Constitution](event:us-constitution) of 1787 turned it into a working federal republic.\n\nThe example — and the debts France ran up supporting it — helped bring on the [French Revolution](event:french-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/American_Revolution).",
+  "summary": "The American Revolution (1775–1783) resulted in the thirteen British colonies achieving independence and establishing a new nation.",
+  "body": "Disputes between the British Crown and the thirteen colonies over taxation and political autonomy escalated into war in 1775. The Continental Congress adopted the [Declaration of Independence](event:declaration-independence) in 1776, asserting that governments derive their just powers from the consent of the governed. French military and naval support from 1778 helped the Continental forces to victory at [Yorktown](event:yorktown) in 1781.\n\nThe Treaty of Paris of 1783 recognised American independence, and after the Articles of Confederation proved inadequate the [Constitution](event:us-constitution) of 1787 turned the new states into a working federal republic. The example of a successful colonial revolution, and the debts France ran up supporting it, helped bring on the [French Revolution](event:french-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/American_Revolution).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1082,8 +1082,8 @@
   "tags": [
    "politics"
   ],
-  "summary": "The old European order of monarchy, aristocracy and established church was overthrown in its most powerful state.",
-  "body": "From the storming of the [Bastille](event:bastille) and the [Declaration of the Rights of Man](event:rights-of-man) through the [Terror](event:terror) to [Napoleon's coup](event:napoleon-coup), the revolution ran through every political possibility in ten years.\n\nIt exported the vocabulary of modern politics — left and right, nation, citizen, ideology — and its wars remade Europe as the [Napoleonic Wars](event:napoleonic-wars).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/French_Revolution).",
+  "summary": "The French Revolution (1789–1799) transformed French society, replacing monarchy and feudalism with revolutionary institutions, and reshaping European politics.",
+  "body": "The revolution began with the [storming of the Bastille](event:bastille) in 1789 and the [Declaration of the Rights of Man](event:rights-of-man). The National Assembly abolished feudalism and reorganised the church, and the state passed through a constitutional monarchy (1791-1792), the First Republic and the [Terror](event:terror) of 1793-1794 before [Napoleon's coup](event:napoleon-coup) of 1799.\n\nThe revolution exported much of the vocabulary of modern politics, including left and right, nation, citizen and ideology, and its wars remade Europe as the [Napoleonic Wars](event:napoleonic-wars).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/French_Revolution).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1169,8 +1169,8 @@
   "tags": [
    "science"
   ],
-  "summary": "Space and time turned out to be aspects of one flexible geometry, and mass a form of energy.",
-  "body": "Special relativity (1905) fixed the incompatibility between mechanics and electromagnetism; general relativity (1915) recast gravity as the curvature of spacetime, and was confirmed by the bending of starlight in 1919.\n\nGPS, black holes, cosmology and [gravitational waves](event:gravitational-waves) all follow from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
+  "summary": "Einstein's relativity described space and time as aspects of a single flexible geometry, and mass as a form of energy.",
+  "body": "Special relativity (1905) resolved the incompatibility between mechanics and electromagnetism. General relativity (1915) recast gravity as the curvature of spacetime, and was confirmed in 1919 by observations of starlight bending around the sun.\n\nGPS, black holes, cosmology and [gravitational waves](event:gravitational-waves) all follow from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
   "links": [
    {
     "label": "Wikipedia",

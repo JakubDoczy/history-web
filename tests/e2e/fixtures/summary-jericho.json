@@ -1,0 +1,21 @@
+{
+  "type": "standard",
+  "title": "Jericho",
+  "titles": { "canonical": "Jericho", "normalized": "Jericho", "display": "Jericho" },
+  "pageid": 43289,
+  "thumbnail": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Jericho.jpg/320px-Jericho.jpg",
+    "width": 320,
+    "height": 213
+  },
+  "originalimage": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Jericho.jpg",
+    "width": 2000,
+    "height": 1332
+  },
+  "lang": "en",
+  "dir": "ltr",
+  "description": "City in the West Bank",
+  "content_urls": { "desktop": { "page": "https://en.wikipedia.org/wiki/Jericho" } },
+  "extract": "Jericho is a city in the West Bank, one of the oldest continuously inhabited settlements."
+}

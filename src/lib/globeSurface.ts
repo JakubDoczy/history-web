@@ -17,6 +17,7 @@ import {
 import type { EraPlan } from './paleo'
 import { PALETTE_GAMMA, type Palette } from './palette'
 import { CLOUD_UPSCALE, cloudUpscaleWorthIt } from './cloudUpscale'
+import { CLOUD_DRIFT_UV_PER_S } from './scale'
 import { fadeTowards } from './mapFade'
 import type { CloudUpscaleRequest, CloudUpscaleResponse } from './cloudUpscale.worker'
 
@@ -176,8 +177,304 @@ export function enhancedWaterLuma(linear: number): number {
   return enhancedLuma(linear) * (1 - waterHold) + sea * waterHold
 }
 
+/**
+ * City lights: how the night map becomes an emissive term.
+ *
+ * The shipped map (public/textures/base/earth-night.webp, 4096×2048) is a
+ * black-marble composite over a *blue moonlit base* — measured, the mean pixel
+ * is sRGB (4, 23, 39) and open ocean is (6, 24, 46). That base is albedo: it is
+ * the planet seen by moonlight, not something that emits. The lights themselves
+ * are the warm excess on top of it, and they are dim and barely warm in the
+ * asset: the brightest texel anywhere is sRGB (139, 130, 152) and a typical big
+ * city core is (110, 102, 101), i.e. about 8% redder than it is blue.
+ *
+ * Adding the map wholesale — which is what this used to do — therefore adds the
+ * blue base as light, so every city sits on a blue wash that is nearly as
+ * bright as it is; and it scales a near-neutral 0.15-linear core by 1.6 to get
+ * 0.24 linear, which is mid grey. That is exactly the reported symptom: white
+ * or grey specks, not lights.
+ *
+ * So the base is subtracted and the remainder is treated as energy:
+ *
+ *   energy = max(0, r - blueBase * b)
+ *
+ * one subtract, no branch, and it separates cleanly because everything in the
+ * map that is *not* a light is blue-dominant. Measured over the whole asset:
+ * open Pacific 0.0000, Sahara 0.0005, Antarctica 0.0035, Greenland 0.024,
+ * against 0.14 for Europe's cores and 0.16 for the brightest pixel on Earth.
+ * Ice and moonlit desert used to be indistinguishable from a small town under a
+ * luminance test; here they are three orders of magnitude apart.
+ *
+ * The same expression is linear in the texture, so blurring commutes with it:
+ * evaluating it on a high-LOD tap gives exactly the low-passed light energy,
+ * which is the halo, with no second extraction to keep in step.
+ */
+export const NIGHT_LIGHTS = {
+  /**
+   * How much of the blue channel counts as the moonlit base.
+   *
+   * 0.55 rather than 1: a mercury-vapour or LED city is very nearly neutral,
+   * and subtracting all of its blue would erase it along with the ocean. At
+   * 0.55 a neutral light keeps 45% of its energy while the base — whose blue
+   * runs 4-14x its red — is driven to zero with room to spare.
+   */
+  blueBase: 0.55,
+  /** The brightest lights energy in the shipped map; normalises the scale below. */
+  peak: 0.162,
+  /** Encoding gamma the reveal sweeps in; matches ENHANCED_GRADE.gamma. */
+  gamma: 2.2,
+  /**
+   * The electrification reveal: a threshold on the *normalised perceptual*
+   * energy, which is in [0, 1] by construction, swept down as uLights rises.
+   *
+   *   thresh = threshAt0 - span * pow(uLights, curve)
+   *
+   * The old form ran the same numbers against a raw luminance and assumed it
+   * could reach 1. It cannot: the map's peak luminance is 0.215 linear, so the
+   * window did not open until uLights ≈ 0.64 and did not open fully until
+   * ≈ 0.93 — city lights first appeared in 1978 and were only complete in 2013.
+   * 1900, 1930 and 1950 rendered with no lights at all, which is why the era
+   * ramp read as broken. Normalising first is what makes the constants mean
+   * what they say: `threshAt0 - edge >= 1` is provably zero at uLights = 0
+   * (rather than provably-zero-given-an-assumption-about-the-asset), and
+   * `threshAt0 - span + edge <= 0` puts the faintest lit texel in view at
+   * uLights = 1.
+   *
+   * `curve` under 1 is what puts the first sparks on the map early. The era
+   * factor (lib/sun.ts) is very nearly linear in the year, so a linear sweep
+   * spends its first third of travel in a band the map barely reaches: 1900
+   * sits at uLights 0.11 and would show nothing at all, against a documented
+   * intent of "major city cores visible by ~1900-1930". At 0.75 the threshold
+   * has already fallen to 0.93 by 1900 — the dozen brightest cores on Earth and
+   * nothing else — and the rest of the sweep still has room to hand out
+   * suburbs through the 1950s and 60s.
+   */
+  threshAt0: 1.2,
+  span: 1.38,
+  edge: 0.18,
+  curve: 0.75,
+  /** Emissive gain on the sharp tap: peak energy × core lands just past white. */
+  core: 7,
+  /** Emissive gain on the wide tap — the halo. Deliberately a fraction of core. */
+  halo: 1.6,
+  /**
+   * LOD bias for the halo tap. A *bias*, not an absolute level, so the spill is
+   * always ~6 mips wider than whatever the sharp tap resolved to and can never
+   * be undersampled at the limb — an absolute level shimmers there, because the
+   * limb's own LOD is far above it.
+   */
+  haloLod: 2.6,
+  /**
+   * The sodium ramp, in linear light: amber at the outskirts, warm white at the
+   * cores. Low-pressure sodium is what most of the world was lit by when this
+   * imagery was taken, and it is why a black-marble photograph reads amber
+   * rather than white; the cores go pale because they are clipped, not because
+   * they are a different colour, so the ramp ends at warm white and only the
+   * very peak reaches 1 in every channel.
+   */
+  dim: [1, 0.362, 0.078],
+  hot: [1, 0.806, 0.578],
+  /** Where the ramp runs, on the same normalised perceptual scale. */
+  hotLo: 0.35,
+  hotHi: 0.95,
+} as const
+
+/**
+ * TS mirror of the GLSL extraction: a linear-light night-map pixel in, lights
+ * energy out. Zero for anything the map paints with moonlight rather than
+ * sodium.
+ */
+export function lightsEnergy(r: number, b: number): number {
+  return Math.max(0, r - NIGHT_LIGHTS.blueBase * b)
+}
+
+/** TS mirror of the normalised perceptual scale the reveal and the ramp use. */
+export function lightsScale(energy: number): number {
+  const { peak, gamma } = NIGHT_LIGHTS
+  return Math.pow(Math.min(Math.max(energy / peak, 0), 1), 1 / gamma)
+}
+
+/** TS mirror of the era reveal: 0 before electrification, 1 when fully lit. */
+export function lightsReveal(energy: number, uLights: number): number {
+  const { threshAt0, span, edge, curve } = NIGHT_LIGHTS
+  if (uLights <= 0) return 0 // the shader skips the whole block
+  const thresh = threshAt0 - span * Math.pow(uLights, curve)
+  return smoothstep(thresh - edge, thresh + edge, lightsScale(energy))
+}
+
+/**
+ * What makes a 2D coverage mask read as a lit, three-dimensional deck.
+ *
+ * The cloud layer is one greyscale mask composited over the surface, and it was
+ * reported — correctly — as looking painted on. Nothing in the old composite
+ * varied *across* a cloud: every covered pixel got the same white, so the film
+ * carried outline and nothing else. Outline is the one cue a real cloud field
+ * shares with a stencil.
+ *
+ * Three cues are added here, all from the mask itself and all inside the
+ * existing pass:
+ *
+ *  - **Self-shading.** The mask doubles as a height/density proxy — where there
+ *    is more cloud there is more cloud *above*, which is true of this asset
+ *    because it is a coverage composite, not a segmentation. Differencing it
+ *    along the direction of the sun gives the slope of the cloud top, and the
+ *    face whose slope descends toward the sun is the face turned toward it. Two
+ *    taps, and it is the cue that does nearly all the work: puffy clouds read as
+ *    3D because their sunward flanks are brighter than their far flanks.
+ *  - **A silver lining.** The same slope, rectified and confined to the
+ *    terminator band, where a real deck is lit edge-on and its sunward rims go
+ *    hot while its bodies go blue-grey. The old code had a flat warm add over
+ *    the whole band, which tinted cloud and gap alike.
+ *  - **Thickness.** Thin cover is a translucent, faintly blue veil; thick cover
+ *    is an opaque white core. The opacity curve already said something like
+ *    this; the colour did not, so haze and core were the same white at different
+ *    alphas, which is what an alpha-blended stencil looks like.
+ *
+ * And the ground shadow is put on the same footing: it runs through a curve of
+ * the same shape as the film's opacity, so the cloud that reads as thick is the
+ * cloud that casts, and a veil that is barely visible no longer drops a solid
+ * grey patch on the sea.
+ */
+export const CLOUD_DEPTH = {
+  /**
+   * The finite-difference baseline, in *source* mask texels.
+   *
+   * It tracks the screen: `pixelSpan` pixels' worth of mask, so the gradient is
+   * always taken across the frequency band the pixel can actually resolve.
+   * Fixed in texels instead — the obvious version — the gradient is measured
+   * below the mip level being displayed as soon as the mask is minified, which
+   * is the whole-disc view, i.e. exactly the view the clouds exist for; the
+   * result there is noise, and it reads as sparkle.
+   *
+   * `min` is a floor in texels, and it is doing more than guarding a division.
+   * Measured on the shipped mask (4096×2048), the mean absolute central
+   * difference over the pixels the film actually shows — weighted by the
+   * opacity curve below — is 0.12 at a ±1-texel baseline, 0.18 at ±3 and 0.22
+   * at ±6. A one-texel baseline therefore measures the mask's own micro-texture
+   * rather than the shape of a cloud, and the shading it produces sits on the
+   * outermost, most transparent rim, where almost none of it reaches the
+   * screen. Three texels is about 0.26° — a cloud *flank* — and puts the
+   * gradient where the film is already opaque enough to show it.
+   *
+   * `max` is a guard rather than a look: cloudUv is wrapped with fract(), so
+   * the one column of pixels that straddles the wrap reports a UV derivative of
+   * ~1, and without a ceiling those pixels would difference the mask across half
+   * the planet.
+   */
+  pixelSpan: 1.6,
+  minTexels: 4,
+  maxTexels: 20,
+  /**
+   * Mask units per baseline mapped onto the [-1, 1] shading scale.
+   *
+   * With the 0.18 mean above, 3.2 puts a typical flank at 0.58 and saturates
+   * the steepest tenth, while a cloud interior — which differences to under
+   * 0.05 — stays under 0.16 and is left nearly flat. That split is the point:
+   * it is the flanks that carry the form, and flattening the interiors is what
+   * keeps this from reading as noise laid over the cloud.
+   */
+  slope: 3.6,
+  /** How far a sunward face brightens, and a far face darkens. */
+  lit: 0.40,
+  /**
+   * Darkening is more than twice the brightening on purpose. Cloud tops are
+   * already close to white, so there is very little headroom above and a great
+   * deal below; symmetric gains give a film that clips on one side and barely
+   * moves on the other, which reads as glare rather than as shape.
+   */
+  shade: 0.78,
+  /**
+   * How much of the shading survives when the sun is directly overhead.
+   *
+   * The directional term scales with the sine of the sun's zenith angle,
+   * because that is the rate at which a tilted face gains or loses light — at
+   * the subsolar point a bump is lit the same on both flanks and physically
+   * *is* flat. But a cloud field is never quite that flat: neighbouring towers
+   * shade each other whatever the sun is doing. So a fraction of the term is
+   * kept isotropic, which also stops the modelling from switching off in the
+   * middle of the disc at local noon.
+   */
+  ambient: 0.32,
+  /** Silver lining: added on sunward slopes, inside the terminator band. */
+  rim: [0.42, 0.26, 0.10],
+  /** Half-width of that band, in cos(sun zenith). ~18° either side. */
+  rimBand: 0.32,
+  /**
+   * Thin haze and thick core. The haze is deliberately blue rather than grey:
+   * a thin cloud is mostly the sky seen through it plus forward-scattered
+   * light, and rendering it as dim white is what made high cirrus look like
+   * smeared paint.
+   */
+  thin: [0.70, 0.79, 0.95],
+  thick: [1.0, 0.995, 0.98],
+  /** Coverage window over which haze becomes core. */
+  bodyLo: 0.12,
+  bodyHi: 0.62,
+  /**
+   * The ground shadow's thickness curve, `occ * (knee + (1 - knee) * occ)`.
+   *
+   * Same shape as the film's opacity and for the same reason: a linear occlusion
+   * meant a 20% veil — invisible in the film — dropped a 20% grey patch on the
+   * sea, and those orphaned patches are a large part of why the shadows read as
+   * a separate painted layer rather than as the clouds' own.
+   *
+   * Gentler than the film's own curve up to about 0.7 of coverage and steeper
+   * above it, because a shadow integrates through the whole depth of a cloud
+   * while the film only shows its top: a veil still darkens the sea a little,
+   * and a solid deck never casts more than it hides.
+   */
+  shadowKnee: 0.3,
+  /**
+   * Mip bias on the single shadow tap: a penumbra for one instruction.
+   *
+   * Honest about what it is — a real deck 8 km up casts a penumbra of about
+   * 70 m, far under a pixel. What this actually fixes is that the shadow is a
+   * projection of a mask that is itself sampled sharply, so it arrived with
+   * crisper edges than the cloud casting it, and a shadow sharper than its
+   * object is the single most reliable way to make a composite look pasted.
+   */
+  shadowBlur: 1.0,
+  /**
+   * Shadow strength, and how it fades out at the terminator.
+   *
+   * The old gate was `cosGeo > 0.03` — a hard per-pixel cutoff, so the shadows
+   * ended along a line where `daylight` was still 0.52, and (worse) it put a
+   * texture fetch inside non-uniform control flow, where implicit derivatives
+   * are undefined. Both go away by making it a factor instead of a branch.
+   */
+  strength: 0.62,
+  fadeLo: 0.0,
+  fadeHi: 0.12,
+} as const
+
+/**
+ * TS mirror of the self-shading multiplier applied to the cloud's lit colour.
+ *
+ * `slope` is the shader's `cloudSlope` — +1 for a face turned fully toward the
+ * sun, -1 fully away, and it is already clamped there. `tilt` is the sine of
+ * the sun's zenith angle. Returns the factor `lit` is multiplied by, so 1 is
+ * "no modelling at all".
+ */
+export function cloudShading(slope: number, tilt: number, daylight: number): number {
+  const { ambient, lit, shade } = CLOUD_DEPTH
+  const form = slope * (ambient + (1 - ambient) * tilt) * daylight
+  return 1 + form * (form >= 0 ? lit : shade)
+}
+
+/**
+ * TS mirror of the ground shadow's thickness curve: raw mask occlusion in,
+ * the fraction of sunlight it removes out (before strength and daylight).
+ */
+export function cloudShadowDensity(occ: number): number {
+  const k = CLOUD_DEPTH.shadowKnee
+  return occ * (k + (1 - k) * occ)
+}
+
 const G = ENHANCED_GRADE
+const N = NIGHT_LIGHTS
+const C = CLOUD_DEPTH
 const f = (n: number) => n.toFixed(4)
+const v3 = (c: readonly number[]) => `vec3(${c.map(f).join(', ')})`
 
 const fragment = /* glsl */ `
 precision highp float;
@@ -458,39 +755,131 @@ void main() {
   // Skipped entirely when no cloud film is drawn — a uniform branch, and clouds
   // are off for the whole of deep time and for every view closer than ~10°.
   vec2 cloudUv = vec2(0.0);
+  // How the cloud top is tilted where the sun is concerned: +1 is a face turned
+  // fully toward it, -1 a face turned fully away. Zero whenever no film is drawn.
+  float cloudSlope = 0.0;
+  // sin of the sun's zenith angle — how side-on the light is, which is the rate
+  // at which a tilted face gains or loses it
+  float sunTilt = 0.0;
   if (uCloudAlpha > 0.0) {
     vec3 liftedView = normalize(n + viewDir * (uCloudH / max(dot(n, viewDir), 0.25)));
     vec2 pduv = dirToUv(liftedView) - nUv;
     pduv.x -= (abs(pduv.x) > 0.5) ? sign(pduv.x) : 0.0;
     cloudUv = vec2(fract(vUv.x + pduv.x + uCloudRot), clamp(vUv.y + pduv.y, 0.0, 1.0));
+
+    // --- self-shading: the mask read as a height field, differenced toward the sun ---
+    //
+    // The tangent frame is the relief block's, and it is the frame the UV
+    // mapping is defined in: +u runs along cross(Y, n) and +v along
+    // cross(n, east) — that identity is what tests/shader.test.ts pins down.
+    //
+    // Equirectangular UV is not isotropic, so "one texel of arc toward the sun"
+    // is not a unit vector in UV. A step of k source texels is
+    // vec2(east / (2 cosLat), north) * k * uCloudTexel.y: the 2 is the map's 2:1
+    // aspect and the cosine is its longitudinal stretch. Without them the
+    // shading direction rotates with latitude, and Europe ends up lit from a
+    // different side than the Atlantic in the same frame.
+    //
+    // cosLat is floored at 0.05 (~87°) rather than at an epsilon: past that the
+    // parameterisation is degenerate — a v texel spans every longitude — and a
+    // 1/cosLat step would reach around the pole rather than toward the sun.
+    float cosLat = max(sqrt(max(1.0 - n.y * n.y, 0.0)), 0.05);
+    vec3 east = vec3(n.z, 0.0, -n.x) / cosLat;
+    vec3 north = cross(n, east);
+    vec3 sunT = uSunDir - n * cosGeo;             // the sun, projected into the tangent plane
+    sunTilt = length(sunT);
+    // divide-by-max, not a branch: this is uniform control flow and the two taps
+    // below must stay in it. With the sun overhead the step collapses to zero,
+    // the two taps coincide, and the slope is exactly zero — which is also the
+    // physically right answer there.
+    vec3 tHat = sunT / max(sunTilt, 1e-4);
+    // the baseline follows the screen; see CLOUD_DEPTH.pixelSpan for why, and
+    // for what the ceiling is guarding against
+    vec2 fw = fwidth(cloudUv);
+    float steps = clamp(
+      max(fw.x / uCloudTexel.x, fw.y / uCloudTexel.y) * ${f(C.pixelSpan)},
+      ${f(C.minTexels)}, ${f(C.maxTexels)});
+    vec2 sunStep =
+      vec2(dot(tHat, east) / (2.0 * cosLat), dot(tHat, north)) * uCloudTexel.y * steps;
+    // Both taps are explicit-LOD, at the mip whose blur is about half the
+    // differencing baseline — so what is being differenced is the *body* of a
+    // cloud, not the mask's own grain. Taken at level 0 the slope field comes
+    // out as fine filaments that sit on the transparent rim of everything and
+    // read as noise laid over the film; a mip up, it follows the shapes the eye
+    // is already reading as clouds.
+    //
+    // It is also the plain mask rather than cloudMask(): the unsharp there
+    // exists to put acutance back into an *edge*, and running it on both taps
+    // would cost eight more fetches to sharpen the very band this deliberately
+    // discards.
+    float gLod = log2(max(steps, 1.0));
+    float mSun = textureLod(uClouds,
+      vec2(fract(cloudUv.x + sunStep.x), clamp(cloudUv.y + sunStep.y, 0.0, 1.0)), gLod).r;
+    float mAway = textureLod(uClouds,
+      vec2(fract(cloudUv.x - sunStep.x), clamp(cloudUv.y - sunStep.y, 0.0, 1.0)), gLod).r;
+    // descending toward the sun == turned toward the sun; see CLOUD_DEPTH
+    cloudSlope = clamp((mAway - mSun) * ${f(C.slope)}, -1.0, 1.0);
   }
 
   // --- cloud shadows: follow the sun ray up to the same height and sample there ---
-  if (uCloudShadow > 0.0 && cosGeo > 0.03) {
+  // Gated on the uniform alone. The old form also tested cosGeo > 0.03, which
+  // put a texture fetch inside non-uniform control flow — undefined derivatives,
+  // which is a real flicker source on tile GPUs — and ended the shadows along a
+  // hard line where daylight was still above half. The grazing-sun fade below
+  // does the same job as a factor.
+  if (uCloudShadow > 0.0) {
     vec3 lifted = normalize(n + uSunDir * (uCloudH / max(cosGeo, 0.18)));
     vec2 duv = dirToUv(lifted) - nUv;
     duv.x -= (abs(duv.x) > 0.5) ? sign(duv.x) : 0.0;   // cross the seam cleanly
-    float occ = texture(uClouds, vec2(fract(vUv.x + duv.x + uCloudRot), clamp(vUv.y + duv.y, 0.0, 1.0))).r;
-    surface *= 1.0 - occ * uCloudShadow * daylight;
+    // a mip bias, so the shadow is never sharper than the cloud casting it
+    float occ = texture(uClouds,
+      vec2(fract(vUv.x + duv.x + uCloudRot), clamp(vUv.y + duv.y, 0.0, 1.0)),
+      ${f(C.shadowBlur)}).r;
+    // the same thickness curve the film's opacity uses, so what reads as thick
+    // is what casts; and a smooth grazing-sun fade in place of the old cutoff
+    float dense = occ * (${f(C.shadowKnee)} + ${f(1 - C.shadowKnee)} * occ);
+    surface *= 1.0 - dense * uCloudShadow * daylight *
+      smoothstep(${f(C.fadeLo)}, ${f(C.fadeHi)}, cosGeo);
   }
 
-  // --- night side: city lights revealed from the brightest cores outward ---
+  // --- night side: city lights, as an emissive term ---
   // uNightMix is 0 until the map arrives, so the night side is the day
   // albedo darkened and nothing else — which is what it looks like anyway on
   // the half of the planet with no cities on it.
   //
-  // Before electrification uLights is 0, and the reveal threshold is set so the
-  // smoothstep clamps to exactly zero there — 1.2 rather than 1.15, because at
-  // 1.15 the window's lower edge sits at 0.97 and the very brightest lit texels
-  // still leaked ~2% through. With the term provably zero the tap can be skipped
-  // outright, which is most of recorded history.
+  // Everything below is deliberately downstream of the enhanced grade and the
+  // palette: those two describe *albedo*, how the ground reflects sunlight, and
+  // a street lamp does neither. Running the emissive term through them is how a
+  // saturation of 0.75 and a grayscale of 0.10 would end up desaturating a
+  // sodium lamp. See NIGHT_LIGHTS for the extraction and the constants.
+  //
+  // Before electrification uLights is 0, the reveal is then provably zero
+  // (threshAt0 - edge >= 1 against a scale that cannot exceed 1), and the two
+  // taps are skipped outright — which is most of recorded history.
   vec3 night = surface * vec3(0.05, 0.07, 0.12) * (1.0 + 2.2 * uBoost);
   if (uLights > 0.0) {
     vec3 rawNight = texture(uNight, vUv).rgb * uNightMix;
-    float lum = dot(rawNight, vec3(0.333));
-    float thresh = 1.2 - uLights * 1.25;
-    float reveal = smoothstep(thresh - 0.18, thresh + 0.18, lum);
-    night += rawNight * 1.6 * reveal;
+    // the halo: the same map a few mip levels up, which is a blur wide enough
+    // to spill past a city's own footprint. A bias rather than a level, so it
+    // stays that many levels above whatever the sharp tap resolved to and is
+    // never sharper than the pixel — an absolute level aliases at the limb,
+    // where the surface LOD is already well past it. This is the whole of the
+    // bloom: no second pass, no render target, one extra fetch on the night
+    // side only.
+    vec3 wideNight = texture(uNight, vUv, ${f(N.haloLod)}).rgb * uNightMix;
+    // lights, separated from the map's blue moonlit base. Linear in the
+    // texture, so the wide tap's version *is* the low-passed light energy.
+    float eCore = max(0.0, rawNight.r - ${f(N.blueBase)} * rawNight.b);
+    float eHalo = max(0.0, wideNight.r - ${f(N.blueBase)} * wideNight.b);
+    // normalised and perceptual, so the era threshold below sweeps evenly from
+    // "only the largest cores" to "every lit texel" instead of spending most of
+    // its travel above anything the map contains
+    float q = pow(clamp(max(eCore, eHalo) * ${f(1 / N.peak)}, 0.0, 1.0), ${f(1 / N.gamma)});
+    float thresh = ${f(N.threshAt0)} - ${f(N.span)} * pow(uLights, ${f(N.curve)});
+    float reveal = smoothstep(thresh - ${f(N.edge)}, thresh + ${f(N.edge)}, q);
+    // amber at the outskirts, warm white at the cores, white only at the peak
+    vec3 tint = mix(${v3(N.dim)}, ${v3(N.hot)}, smoothstep(${f(N.hotLo)}, ${f(N.hotHi)}, q));
+    night += tint * (eCore * ${f(N.core)} + eHalo * ${f(N.halo)}) * reveal;
   }
 
   vec3 color = mix(night, surface, daylight);
@@ -500,12 +889,25 @@ void main() {
   // sharpening them would only cost four taps to make a blur look edgy
   float cover = (uCloudAlpha > 0.0 ? cloudMask(cloudUv) : 0.0) * uCloudAlpha;
   if (cover > 0.002) {
-    vec3 lit = mix(vec3(0.06, 0.08, 0.13), vec3(1.0, 0.995, 0.98), daylight);
-    lit += vec3(0.30, 0.12, 0.02) * smoothstep(0.30, 0.0, abs(cosGeo)) * daylight;
+    // thickness as colour, not just as alpha: a veil is the sky seen through it
+    // and reads cool, a core is opaque water droplet and reads white
+    vec3 body = mix(${v3(C.thin)}, ${v3(C.thick)},
+      smoothstep(${f(C.bodyLo)}, ${f(C.bodyHi)}, cover));
+    vec3 lit = mix(vec3(0.06, 0.08, 0.13), body, daylight);
+    // self-shading. The directional part scales with how side-on the sun is,
+    // because that is the rate a tilted face gains light; the rest is kept
+    // isotropic so neighbouring towers still shade each other at local noon.
+    float form = cloudSlope * mix(${f(C.ambient)}, 1.0, sunTilt) * daylight;
+    lit *= 1.0 + form * mix(${f(C.shade)}, ${f(C.lit)}, step(0.0, form));
+    // silver lining: the sunward slopes alone, inside the terminator band. The
+    // old warm add ran on the band and nothing else, so it tinted every cloud
+    // there uniformly — including the flanks that are facing away from the sun.
+    lit += ${v3(C.rim)} * max(cloudSlope, 0.0) *
+      smoothstep(${f(C.rimBand)}, 0.0, abs(cosGeo)) * daylight;
     // thin cloud is translucent and thick cloud is not, so lean on the mask's
     // own gradient rather than pushing everything to full opacity
     float opacity = clamp(cover * cover * (0.35 + 1.15 * cover), 0.0, 1.0);
-    color = mix(color, lit, opacity * (0.18 + 0.82 * daylight));
+    color = mix(color, max(lit, vec3(0.0)), opacity * (0.18 + 0.82 * daylight));
   }
 
   // --- warm terminator band and blue limb ---
@@ -596,7 +998,7 @@ export class GlobeSurface {
         uLights: { value: 1 },
         uCloudRot: { value: 0 },
         uCloudAlpha: { value: 1 },
-        uCloudShadow: { value: 0.5 },
+        uCloudShadow: { value: CLOUD_DEPTH.strength },
         uCloudH: { value: 0.012 },
         uCloudSharp: { value: 0 },
         // the bundled mask's size; replaced by the loaded image's own
@@ -960,7 +1362,7 @@ export class GlobeSurface {
   }
 
   setCloudDrift(seconds: number) {
-    this.material.uniforms.uCloudRot.value = (seconds * 0.0016) % 1
+    this.material.uniforms.uCloudRot.value = (seconds * CLOUD_DRIFT_UV_PER_S) % 1
   }
 
   /**
@@ -1010,7 +1412,10 @@ export class GlobeSurface {
     const f = this.fade.clouds
     const u = this.material.uniforms
     u.uCloudAlpha.value = visible ? opacity * f : 0
-    u.uCloudShadow.value = visible && shadows ? 0.5 * opacity * f : 0
+    // CLOUD_DEPTH.strength rather than the old flat 0.5: the shadow now runs
+    // through a thickness curve that costs a thin veil most of its occlusion, so
+    // the same strength on the same sky was a visibly lighter planet
+    u.uCloudShadow.value = visible && shadows ? CLOUD_DEPTH.strength * opacity * f : 0
   }
 
   /** 0 = realistic lighting, 1 = enhanced (brighter day side, lifted night side). */

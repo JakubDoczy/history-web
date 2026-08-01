@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
+import {
+  CLOUD_DEPTH,
+  NIGHT_LIGHTS,
+  cloudShading,
+  cloudShadowDensity,
+} from '../src/lib/globeSurface'
 
 /**
  * Duplicate uniform declarations are a GLSL compile error, and a failed compile
@@ -165,23 +171,45 @@ describe('uniform-gated taps', () => {
     expect(body).toContain('cloudUv = ')
   })
 
-  it('skips the night map tap before electrification', () => {
+  it('skips both night map taps before electrification', () => {
     const body = blockAfter(glsl, 'if (uLights > 0.0) {')
+    // the sharp tap and the wide one that spills the halo around it
     expect(body).toContain('texture(uNight, vUv)')
+    expect(body).toContain('texture(uNight, vUv, ${f(N.haloLod)})')
   })
 
   it('leaves the city-light reveal exactly zero at uLights = 0', () => {
-    // otherwise the gate above would change the picture: at the old 1.15 the
-    // smoothstep window opened at 0.97, and the brightest lit texels still
-    // leaked a couple of percent through a term that is meant to be absent
-    const m = glsl.match(/float thresh = ([\d.]+) - uLights \* ([\d.]+);/)
-    expect(m).toBeTruthy()
-    const threshAt0 = Number(m![1])
-    const window = Number(glsl.match(/smoothstep\(thresh - ([\d.]+), thresh \+/)![1])
-    // the map's luminance is dot(rgb, vec3(0.333)), so it cannot exceed ~1
-    expect(threshAt0 - window).toBeGreaterThanOrEqual(1)
-    // and the lit end still reveals: at full electrification the window is open
-    expect(threshAt0 - Number(m![2]) + window).toBeGreaterThan(0)
+    // otherwise the gate above would change the picture. The guarantee is
+    // structural rather than empirical now: the reveal runs on `q`, which is a
+    // clamped 0..1 scale, so a window that opens above 1 cannot let anything
+    // through whatever the map happens to contain. The previous form ran on the
+    // map's raw luminance and *assumed* it reached 1 — it peaks at 0.215, which
+    // is the bug this pair of assertions failed to catch.
+    expect(glsl).toContain('clamp(max(eCore, eHalo) * ${f(1 / N.peak)}, 0.0, 1.0)')
+    expect(glsl).toContain(
+      'float thresh = ${f(N.threshAt0)} - ${f(N.span)} * pow(uLights, ${f(N.curve)});',
+    )
+    expect(glsl).toContain('smoothstep(thresh - ${f(N.edge)}, thresh + ${f(N.edge)}, q)')
+    expect(NIGHT_LIGHTS.threshAt0 - NIGHT_LIGHTS.edge).toBeGreaterThanOrEqual(1)
+    // and the lit end opens all the way: at full electrification the window's
+    // top edge is at or below zero, so no lit texel is held back
+    expect(NIGHT_LIGHTS.threshAt0 - NIGHT_LIGHTS.span + NIGHT_LIGHTS.edge).toBeLessThan(1e-9)
+  })
+
+  it('keeps the emissive term out of the albedo grade and the palette', () => {
+    // city lights are emission, not reflectance: the enhanced luminance remap
+    // and the user palette (0.75 saturation, 0.10 grayscale in the shipped
+    // default) both describe how ground reflects sunlight, and pushing a sodium
+    // lamp through them is how it comes out grey
+    const grade = glsl.indexOf('float lumA = dot(albedo')
+    const palette = glsl.indexOf('uPalette.z')
+    const lights = glsl.indexOf('if (uLights > 0.0) {')
+    expect(grade).toBeGreaterThan(0)
+    expect(lights).toBeGreaterThan(palette)
+    expect(palette).toBeGreaterThan(grade)
+    // and nothing inside the block reads either of them back
+    const body = blockAfter(glsl, 'if (uLights > 0.0) {')
+    expect(body).not.toMatch(/uPalette|uBoost|albedo/)
   })
 
   it('never computes dirToUv of the surface normal', () => {
@@ -190,6 +218,145 @@ describe('uniform-gated taps', () => {
     const code = glsl.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
     expect(code).not.toMatch(/dirToUv\(\s*n\s*\)/)
     expect(glsl).toContain('vec2 nUv = vec2(fract(vUv.x + 0.5), vUv.y);')
+  })
+})
+
+/**
+ * Cloud depth: the self-shading, the silver lining and the thickness curve.
+ *
+ * The cues themselves can only be judged by eye, so what is pinned here is the
+ * structure that made them safe and the two sign conventions that would be
+ * silently wrong if reversed — a cloud lit from the *wrong* side still looks
+ * like a cloud in a screenshot, which is exactly why it needs a test.
+ */
+describe('cloud depth', () => {
+  const glsl = shaderBlocks(readFileSync('src/lib/globeSurface.ts', 'utf8')).join('\n')
+
+  const blockAfter = (src: string, header: string): string => {
+    const start = src.indexOf(header)
+    expect(start, `missing: ${header}`).toBeGreaterThanOrEqual(0)
+    let depth = 0
+    let i = start + header.length - 1
+    for (; i < src.length; i++) {
+      if (src[i] === '{') depth++
+      else if (src[i] === '}' && --depth === 0) break
+    }
+    return src.slice(start, i)
+  }
+
+  it('takes both gradient taps inside the uniform cloud gate', () => {
+    // not inside `if (cover > 0.002)`, which is a per-pixel test: a texture
+    // fetch under non-uniform control flow has undefined derivatives, and the
+    // whole file's convention is that every optional tap hangs off a uniform
+    const body = blockAfter(glsl, 'if (uCloudAlpha > 0.0) {')
+    expect(body).toContain('float mSun = textureLod(uClouds')
+    expect(body).toContain('float mAway = textureLod(uClouds')
+    expect(body).toContain('cloudSlope = clamp(')
+    // and the composite branch itself samples nothing
+    const film = blockAfter(glsl, 'if (cover > 0.002) {')
+    expect(film).not.toMatch(/texture\w*\(/)
+  })
+
+  it('shades the face whose mask descends toward the sun', () => {
+    // the sign that decides whether clouds are lit from the sun or from the
+    // anti-sun. A bump's sunward flank is the one where coverage *falls* as you
+    // walk toward the sun, so the slope is (away - sunward), not the reverse.
+    expect(glsl).toMatch(/cloudSlope = clamp\(\(mAway - mSun\)/)
+  })
+
+  it('leaves the whole cloud path at its defaults when no film is drawn', () => {
+    // uCloudAlpha == 0 must be bit-identical to the pre-cloud picture: the
+    // parallax block is skipped, so both new varyings keep the values declared
+    // here, and `cover` is exactly 0
+    expect(glsl).toContain('float cloudSlope = 0.0;')
+    expect(glsl).toContain('float sunTilt = 0.0;')
+    expect(glsl).toContain('uCloudAlpha > 0.0 ? cloudMask(cloudUv) : 0.0')
+  })
+
+  it('gates the ground shadow on the uniform alone', () => {
+    // it used to read `if (uCloudShadow > 0.0 && cosGeo > 0.03)` — a per-pixel
+    // condition around a texture fetch, and a hard edge where daylight was
+    // still above half
+    expect(glsl).toContain('if (uCloudShadow > 0.0) {')
+    expect(glsl).not.toMatch(/uCloudShadow > 0\.0 &&/)
+    const body = blockAfter(glsl, 'if (uCloudShadow > 0.0) {')
+    expect(body).toContain('smoothstep(${f(C.fadeLo)}, ${f(C.fadeHi)}, cosGeo)')
+  })
+
+  it('softens the shadow rather than sampling it sharp', () => {
+    // a shadow crisper than the cloud casting it is the single most reliable
+    // way to make the pair look pasted on
+    const body = blockAfter(glsl, 'if (uCloudShadow > 0.0) {')
+    expect(body).toContain('${f(C.shadowBlur)}).r')
+  })
+
+  it('differences the mask a mip up, not at level 0', () => {
+    // at level 0 the slope field is fine filaments sitting on the transparent
+    // rim of everything, which reads as noise over the film
+    expect(glsl).toContain('float gLod = log2(max(steps, 1.0));')
+  })
+
+  it('bounds the differencing baseline at both ends', () => {
+    // the floor puts the gradient on a cloud flank rather than on the mask's
+    // grain; the ceiling is what stops the fract() seam column, whose UV
+    // derivative is ~1, from differencing across half the planet
+    expect(CLOUD_DEPTH.minTexels).toBeGreaterThanOrEqual(2)
+    expect(CLOUD_DEPTH.maxTexels).toBeGreaterThan(CLOUD_DEPTH.minTexels)
+    expect(glsl).toContain('${f(C.minTexels)}, ${f(C.maxTexels)});')
+  })
+
+  it('darkens harder than it brightens', () => {
+    // cloud tops sit near white, so there is far more room below than above;
+    // symmetric gains clip on one side and do nothing on the other
+    expect(CLOUD_DEPTH.shade).toBeGreaterThan(CLOUD_DEPTH.lit * 1.5)
+    expect(cloudShading(1, 1, 1) - 1).toBeLessThan(1 - cloudShading(-1, 1, 1))
+  })
+
+  it('models the sunward face brighter and the far face darker', () => {
+    expect(cloudShading(1, 1, 1)).toBeGreaterThan(1)
+    expect(cloudShading(-1, 1, 1)).toBeLessThan(1)
+    expect(cloudShading(0, 1, 1)).toBe(1)
+    // and nothing at all on the night side, where there is no sun to model by
+    expect(cloudShading(1, 1, 0)).toBe(1)
+    expect(cloudShading(-1, 1, 0)).toBe(1)
+  })
+
+  it('keeps some modelling with the sun overhead, but less', () => {
+    // the directional term scales with the sine of the sun's zenith angle,
+    // which is zero at the subsolar point; the ambient fraction is what stops
+    // the middle of the disc from going flat at local noon
+    const overhead = cloudShading(-1, 0, 1)
+    const sideOn = cloudShading(-1, 1, 1)
+    expect(overhead).toBeLessThan(1)
+    expect(overhead).toBeGreaterThan(sideOn)
+    expect(1 - overhead).toBeCloseTo((1 - sideOn) * CLOUD_DEPTH.ambient, 6)
+  })
+
+  it('makes a thin veil cast far less shadow than a solid deck', () => {
+    // a linear occlusion dropped a 20% grey patch on the sea for cover the film
+    // itself barely showed, and those orphaned patches are most of why the
+    // shadows read as their own painted layer
+    expect(cloudShadowDensity(1)).toBeCloseTo(1, 6)
+    expect(cloudShadowDensity(0)).toBe(0)
+    expect(cloudShadowDensity(0.2)).toBeLessThan(0.2 * 0.6)
+    // Gentler than the film's own opacity through the thin and middle range —
+    // a shadow integrates through the whole depth of a cloud, not just across
+    // its top, so a veil that is nearly invisible edge-on still darkens the sea
+    // a little. The two cross over around 0.7, above which the film saturates
+    // first, which is what keeps a solid deck from casting *more* than it hides.
+    const filmOpacity = (c: number) => Math.min(1, c * c * (0.35 + 1.15 * c))
+    for (const c of [0.2, 0.4, 0.6]) {
+      expect(cloudShadowDensity(c)).toBeGreaterThan(filmOpacity(c))
+    }
+    expect(cloudShadowDensity(0.85)).toBeLessThan(filmOpacity(0.85))
+    // and it is the curve the shader actually runs
+    expect(glsl).toContain('float dense = occ * (${f(C.shadowKnee)} + ${f(1 - C.shadowKnee)} * occ);')
+  })
+
+  it('confines the silver lining to sunward slopes at the terminator', () => {
+    // the old warm add ran on the terminator band alone, so it tinted every
+    // cloud there the same — including the flanks facing away from the sun
+    expect(glsl).toMatch(/max\(cloudSlope, 0\.0\) \*\s*\n?\s*smoothstep\(/)
   })
 })
 

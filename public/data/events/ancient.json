@@ -12,8 +12,8 @@
    "culture",
    "biology"
   ],
-  "summary": "Farming was invented independently in several regions, beginning with the Fertile Crescent, and permanently changed how humans live.",
-  "body": "Wheat, barley, peas, sheep and goats were domesticated in the hills of the Levant and upper Mesopotamia; rice in the Yangtze valley, maize in Mexico, potatoes in the Andes.\n\nFood surpluses allowed permanent villages, storable wealth, specialists and eventually cities — but also poorer diets, epidemic disease and hierarchy. Everything from [writing](event:writing) to the [Industrial Revolution](event:industrial-revolution) rests on this foundation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neolithic_Revolution).",
+  "summary": "Farming was developed independently in several regions, beginning with the Fertile Crescent, and permanently changed how humans live.",
+  "body": "Wheat, barley, peas, sheep and goats were domesticated in the hills of the Levant and upper Mesopotamia; rice in the Yangtze valley, maize in Mexico, potatoes in the Andes.\n\nFood surpluses supported permanent villages, storable wealth, occupational specialisation and eventually cities. They also brought poorer diets, epidemic disease and social hierarchy. Developments from [writing](event:writing) to the [Industrial Revolution](event:industrial-revolution) rest on this foundation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neolithic_Revolution).",
   "links": [
    {
     "label": "Wikipedia",
@@ -86,7 +86,7 @@
   ],
   "parent": "agriculture",
   "summary": "Sheep, goats, pigs and cattle were brought under human management, followed later by the horse.",
-  "body": "Part of [Dawn of agriculture](event:agriculture). Domestic animals supplied meat, milk, wool, traction and manure — and, in close quarters, the zoonotic diseases that would later devastate populations without immunity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Domestication_of_animals).",
+  "body": "Part of [Dawn of agriculture](event:agriculture). Domestic animals supplied meat, milk, wool, traction and manure. Kept in close quarters with people, they were also a source of the zoonotic diseases that later devastated populations without immunity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Domestication_of_animals).",
   "links": [
    {
     "label": "Dawn of agriculture",
@@ -175,7 +175,7 @@
    "technology"
   ],
   "summary": "Alloying copper with tin produced a metal hard enough for tools and weapons, and trade networks to carry the ingredients.",
-  "body": "Tin is rare and rarely found near copper, so bronze required long-distance exchange stretching from Cornwall and Afghanistan to the Mediterranean — a fragility that helped bring on the [Late Bronze Age collapse](event:bronze-age-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bronze_Age).",
+  "body": "Tin is rare and rarely found near copper, so bronze required long-distance exchange stretching from Cornwall and Afghanistan to the Mediterranean. That dependence on distant supply was a fragility that helped bring on the [Late Bronze Age collapse](event:bronze-age-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bronze_Age).",
   "links": [
    {
     "label": "Wikipedia",
@@ -260,7 +260,7 @@
    "politics"
   ],
   "summary": "Mohenjo-daro and Harappa held grid-planned cities with drains, standardised bricks and a script still undeciphered.",
-  "body": "At its height the civilisation covered a larger area than Egypt and Mesopotamia combined, apparently without palaces, royal tombs or obvious armies.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Indus_Valley_Civilisation).",
+  "body": "At its height the civilisation covered a larger area than Egypt and Mesopotamia combined. No palaces, royal tombs or obvious military establishments have been identified in its cities, which sets it apart from other states of the period.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Indus_Valley_Civilisation).",
   "links": [
    {
     "label": "Wikipedia",
@@ -328,7 +328,7 @@
    "war"
   ],
   "summary": "Sargon of Akkad conquered the Sumerian cities and assembled what is often called the first empire.",
-  "body": "It ran on standing armies, appointed governors and a common language of administration — a template later empires would recognise. Drought may have brought it down.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Akkadian_Empire).",
+  "body": "It ran on standing armies, appointed governors and a common language of administration — a template later empires would adopt. The empire collapsed after roughly two centuries; drought has been proposed as a cause.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Akkadian_Empire).",
   "links": [
    {
     "label": "Wikipedia",
@@ -509,7 +509,7 @@
    "culture"
   ],
   "summary": "The Vedas were composed in Sanskrit, laying the foundations of Hindu religion, ritual and social order.",
-  "body": "The Vedas were composed in Sanskrit, laying the foundations of Hindu religion, ritual and social order.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vedic_period).",
+  "body": "The Vedas were composed in Sanskrit during this period, laying the foundations of Hindu religion, ritual and social order. They set out forms of worship, cosmological ideas and social divisions that carried into classical Hinduism.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vedic_period).",
   "links": [
    {
     "label": "Wikipedia",
@@ -744,7 +744,7 @@
    "religion"
   ],
   "summary": "The First Temple was built in Jerusalem, becoming the centre of Israelite worship until its destruction in 587 BCE.",
-  "body": "The First Temple was built in Jerusalem, becoming the centre of Israelite worship until its destruction in 587 BCE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Solomon%27s_Temple).",
+  "body": "According to tradition the Temple was built in Jerusalem under King Solomon to house the Ark of the Covenant. It was the centre of Israelite worship until its destruction by Nebuchadnezzar II of Babylon in 587 BCE. A Second Temple was later raised on the site and stood until its destruction by Rome in 70 CE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Solomon%27s_Temple).",
   "links": [
    {
     "label": "Wikipedia",
@@ -765,7 +765,7 @@
    "war"
   ],
   "summary": "Assyria built the largest empire the world had yet seen, ruling from Nineveh with siege engines, mass deportation and a road system.",
-  "body": "Assyria built the largest empire the world had yet seen, ruling from Nineveh with siege engines, mass deportation and a road system.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neo-Assyrian_Empire).",
+  "body": "Assyria built the largest empire the world had yet seen, ruled from Nineveh and extending at its height from Egypt to the Iranian plateau. Its military power rested on standing armies, siege engines and cavalry, and it held its provinces through appointed governors, a road system and the mass deportation of conquered populations. It fell to a coalition of Medes and Babylonians, who destroyed Nineveh in 612 BCE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neo-Assyrian_Empire).",
   "links": [
    {
     "label": "Wikipedia",
@@ -785,7 +785,7 @@
    "economy"
   ],
   "summary": "Phoenician settlers from Tyre founded the city that would dominate the western Mediterranean until the [Punic Wars](event:punic-wars).",
-  "body": "Phoenician settlers from Tyre founded the city that would dominate the western Mediterranean until the [Punic Wars](event:punic-wars).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Carthage).",
+  "body": "Phoenician settlers from Tyre founded Carthage on the coast of North Africa as a trading colony. It grew into a maritime power controlling the trade routes of the western Mediterranean, and its commercial wealth eventually brought it into conflict with Rome in the [Punic Wars](event:punic-wars).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Carthage).",
   "links": [
    {
     "label": "Wikipedia",
@@ -830,7 +830,7 @@
    "religion"
   ],
   "summary": "The traditional date of the first games at Olympia, which the Greeks used as the origin of their shared chronology.",
-  "body": "The traditional date of the first games at Olympia, which the Greeks used as the origin of their shared chronology.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ancient_Olympic_Games).",
+  "body": "By ancient tradition the first Olympic Games were held in 776 BCE, and Greek writers later used that date as the starting point of a shared chronology. The games were held every four years at the sanctuary of Olympia in the Peloponnese, where athletes from the Greek city-states competed alongside religious observances dedicated to Zeus, and victors were crowned with olive wreaths. The festival continued for nearly twelve centuries, until it was suppressed in the late fourth century CE during the Christianisation of the Roman Empire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ancient_Olympic_Games).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1037,8 +1037,8 @@
    "religion",
    "culture"
   ],
-  "summary": "The Vedas, Upanishads and Puranas crystallise the cosmology, deities and rituals of Hinduism over a millennium.",
-  "body": "The [Vedic period](event:vedic-period) produced the foundation hymns; the Upanishads added philosophical enquiry; the epics and Puranas supplied mythology and devotional worship. By the early centuries CE the framework of dharma, karma and rebirth was well established.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hinduism).",
+  "summary": "The Vedas, Upanishads and Puranas set out the cosmology, deities and rituals of Hinduism over the course of a millennium.",
+  "body": "The [Vedic period](event:vedic-period) produced the foundation hymns; the Upanishads added philosophical enquiry and metaphysical speculation; the epics and Puranas supplied mythology and models of devotional worship. By the early centuries CE the doctrines of dharma (duty and law), karma (action and consequence) and rebirth were well established as central concepts of Hindu thought.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hinduism).",
   "links": [
    {
     "label": "Vedic period in India",
@@ -1124,7 +1124,7 @@
   ],
   "parent": "greco-persian-wars",
   "summary": "An outnumbered Athenian hoplite army defeated the Persian landing force on the plain of Marathon.",
-  "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). An outnumbered Athenian hoplite army defeated the Persian landing force on the plain of Marathon.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Marathon).",
+  "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). An outnumbered Athenian hoplite army engaged the Persian expeditionary force that had landed on the plain of Marathon, north-east of Athens, and defeated it. The outcome prevented an immediate Persian attack on the city, though the war continued for another decade.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Marathon).",
   "links": [
    {
     "label": "Greco-Persian Wars",
@@ -1148,7 +1148,7 @@
   ],
   "parent": "greco-persian-wars",
   "summary": "Leonidas and a small Greek force held the coastal pass for three days against Xerxes' army before being outflanked.",
-  "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). Leonidas and a small Greek force held the coastal pass for three days against Xerxes' army before being outflanked.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Thermopylae).",
+  "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). A small Greek coalition force under Leonidas of Sparta held the narrow coastal pass at Thermopylae for three days against the much larger Persian army led by Xerxes. The Greeks were outflanked when a Persian detachment found a mountain path around the pass; most of the force withdrew, while Leonidas and a rearguard were killed holding the position. The stand delayed the Persian advance into central Greece.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Thermopylae).",
   "links": [
    {
     "label": "Greco-Persian Wars",
@@ -1172,7 +1172,7 @@
   ],
   "parent": "greco-persian-wars",
   "summary": "The Greek fleet destroyed the larger Persian navy in the narrows off Salamis, forcing Xerxes to withdraw.",
-  "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). The Greek fleet destroyed the larger Persian navy in the narrows off Salamis, forcing Xerxes to withdraw.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Salamis).",
+  "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). The Greek fleet, under the direction of Themistocles, engaged the larger Persian navy in the strait between the island of Salamis and the Attic coast, where the narrow water favoured the more manoeuvrable Greek triremes. The Persian fleet was destroyed with heavy losses. Xerxes withdrew with much of his force, and the army he left behind in Greece was defeated at Plataea the following year.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Salamis).",
   "links": [
    {
     "label": "Greco-Persian Wars",
@@ -1219,7 +1219,7 @@
   ],
   "parent": "athenian-democracy",
   "summary": "Athens crowned its Acropolis with a marble temple to Athena, paid for out of the tribute of its empire.",
-  "body": "Part of [Athenian democracy](event:athenian-democracy). Athens crowned its Acropolis with a marble temple to Athena, paid for out of the tribute of its empire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Parthenon).",
+  "body": "Part of [Athenian democracy](event:athenian-democracy). The Parthenon was built on the Acropolis as a temple to Athena Parthenos, the patron deity of the city, with the sculptor Phidias supervising its decoration. It was paid for out of the tribute collected from the members of the Athenian maritime alliance. The building used the Doric order and was decorated with sculptural reliefs and a gold and ivory statue of the goddess.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Parthenon).",
   "links": [
    {
     "label": "Athenian democracy",
@@ -1241,8 +1241,8 @@
   "tags": [
    "culture"
   ],
-  "summary": "The \"Father of History\" wrote the first extended prose enquiry into the past, centred on the Greco-Persian Wars.",
-  "body": "Herodotus travelled widely through the Persian empire and the eastern Mediterranean, collecting stories and questioning witnesses. His account of the [Greco-Persian Wars](event:greco-persian-wars) mixes reporting, hearsay and legend, but it established the idea that the past should be investigated and written as a connected narrative.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Herodotus).",
+  "summary": "Herodotus, later called the \"Father of History\", wrote the first extended prose enquiry into the past, centred on the Greco-Persian Wars.",
+  "body": "Herodotus travelled widely through the Persian empire and the eastern Mediterranean, collecting accounts and questioning witnesses. His *Histories* give the earliest extended narrative of the [Greco-Persian Wars](event:greco-persian-wars). The work mixes reporting, hearsay and legend, but it established the idea that the past should be investigated and written as a connected narrative.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Herodotus).",
   "links": [
    {
     "label": "Greco-Persian Wars",
@@ -1388,7 +1388,7 @@
   ],
   "parent": "alexander-conquests",
   "summary": "Alexander broke the main Persian army under Darius III, opening Mesopotamia and Persia to conquest.",
-  "body": "Part of [Conquests of Alexander the Great](event:alexander-conquests). Alexander broke the main Persian army under Darius III, opening Mesopotamia and Persia to conquest.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Gaugamela).",
+  "body": "Part of [Conquests of Alexander the Great](event:alexander-conquests). The battle was fought on the Mesopotamian plain near the village of Gaugamela and was the last major pitched battle between Alexander's Macedonian army and the Persian forces. Darius III was defeated and fled the field, and organised Persian resistance ended soon afterwards. The victory opened Mesopotamia and the Persian heartland to Alexander.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Gaugamela).",
   "links": [
    {
     "label": "Conquests of Alexander the Great",
@@ -1412,8 +1412,8 @@
    "politics"
   ],
   "parent": "alexander-conquests",
-  "summary": "Alexander laid out a Greek city on the Egyptian coast that became the intellectual capital of the Mediterranean.",
-  "body": "Part of [Conquests of Alexander the Great](event:alexander-conquests). Its [Library and Museum](event:library-alexandria) drew scholars from across the Hellenistic world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Alexandria).",
+  "summary": "Alexander laid out a Greek city on the Egyptian coast that became the leading centre of learning in the Mediterranean.",
+  "body": "Part of [Conquests of Alexander the Great](event:alexander-conquests). Alexandria was laid out as a port and administrative centre, and its position on the Mediterranean made it a hub of trade. Its [Library and Museum](event:library-alexandria) assembled large collections of texts and drew scholars from across the Hellenistic world. After Alexander's death the city became the capital of the Ptolemaic kingdom, and it remained one of the largest cities of the Mediterranean throughout antiquity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Alexandria).",
   "links": [
    {
     "label": "Conquests of Alexander the Great",
@@ -1670,7 +1670,7 @@
   ],
   "parent": "qin-unification",
   "summary": "Frontier walls were linked and repeatedly rebuilt over eighteen centuries; most of what survives is Ming work.",
-  "body": "Part of [Qin unification of China](event:qin-unification). Frontier walls were linked and repeatedly rebuilt over eighteen centuries; most of what survives is Ming work.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Wall_of_China).",
+  "body": "Part of [Qin unification of China](event:qin-unification). Walls built by earlier states were connected into a single defensive system under the Qin, and later dynasties rebuilt and extended it over the following eighteen centuries. The wall served both as a barrier against incursions from the north and as a means of controlling trade and movement across the frontier. Most of what survives today is Ming work, built between 1368 and 1644.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Wall_of_China).",
   "links": [
    {
     "label": "Qin unification of China",
@@ -1693,8 +1693,8 @@
    "war"
   ],
   "parent": "punic-wars",
-  "summary": "Hannibal's double envelopment annihilated a much larger Roman army — still studied in military academies.",
-  "body": "Part of [Punic Wars](event:punic-wars). Hannibal's double envelopment annihilated a much larger Roman army — still studied in military academies.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Cannae).",
+  "summary": "Hannibal's double envelopment destroyed a much larger Roman army in southern Italy.",
+  "body": "Part of [Punic Wars](event:punic-wars). The battle was fought near Cannae in southern Italy during the Second Punic War. Hannibal's outnumbered army used a double envelopment: the centre of his line gave ground while the flanks held and then closed on the Romans from both sides. The Roman army was surrounded and destroyed. Cannae was among the heaviest defeats in Roman military history and is still studied in military academies as a model of envelopment, though it did not prevent Rome's eventual victory in the war.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Cannae).",
   "links": [
    {
     "label": "Punic Wars",
@@ -1718,7 +1718,7 @@
   ],
   "parent": "qin-unification",
   "summary": "Some 8,000 life-sized clay soldiers were buried to guard the first emperor's tomb; farmers rediscovered them in 1974.",
-  "body": "Part of [Qin unification of China](event:qin-unification). Some 8,000 life-sized clay soldiers were buried to guard the first emperor's tomb; farmers rediscovered them in 1974.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Terracotta_Army).",
+  "body": "Part of [Qin unification of China](event:qin-unification). The tomb complex of the first emperor of a unified China held some 8,000 life-sized ceramic soldiers, together with horses and attendants, arranged in formation to guard the burial. Each figure was individually sculpted and painted. Farmers rediscovered the pits in 1974, and the figures have since provided detailed evidence of Qin military organisation, weaponry and sculptural technique.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Terracotta_Army).",
   "links": [
    {
     "label": "Qin unification of China",
@@ -1763,7 +1763,7 @@
   ],
   "parent": "punic-wars",
   "summary": "Scipio Africanus defeated Hannibal in North Africa, ending the Second Punic War.",
-  "body": "Part of [Punic Wars](event:punic-wars). Scipio Africanus defeated Hannibal in North Africa, ending the Second Punic War.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Zama).",
+  "body": "Part of [Punic Wars](event:punic-wars). The battle was fought in North Africa near Zama. Scipio Africanus commanded the Roman army against Hannibal, who had been recalled from Italy to defend Carthaginian territory, and won a decisive victory. Carthage accepted peace terms heavily favourable to Rome, ending the Second Punic War and leaving Rome the dominant power in the western Mediterranean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Zama).",
   "links": [
    {
     "label": "Punic Wars",
@@ -1860,7 +1860,7 @@
   ],
   "parent": "roman-republic-fall",
   "summary": "Eight years of campaigning brought Gaul under Roman rule and gave Caesar the army with which he seized power.",
-  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). Eight years of campaigning brought Gaul under Roman rule and gave Caesar the army with which he seized power.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gallic_Wars).",
+  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). As governor, Caesar campaigned against the Gallic tribes for eight years, in a series of battles and sieges that ended with the suppression of a general Gallic revolt. The conquest brought him wealth, military resources and a loyal army, which he later used to seize power at Rome.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gallic_Wars).",
   "links": [
    {
     "label": "Fall of the Roman Republic",
@@ -1905,8 +1905,8 @@
    "politics"
   ],
   "parent": "roman-republic-fall",
-  "summary": "Bringing a legion into Italy proper was an act of war against the Senate; Caesar did it anyway.",
-  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). Bringing a legion into Italy proper was an act of war against the Senate; Caesar did it anyway.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rubicon).",
+  "summary": "Caesar led his army across the Rubicon into Italy proper, an act of war against the Senate that began the civil war.",
+  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The Rubicon formed the boundary between Cisalpine Gaul and Italy proper, and Roman law forbade a general to bring an armed force across it. Caesar crossed with a legion anyway, an open challenge to the Senate's authority that began the civil war between his forces and those loyal to the Senate and Pompey.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rubicon).",
   "links": [
    {
     "label": "Fall of the Roman Republic",
@@ -1954,7 +1954,7 @@
   ],
   "parent": "roman-republic-fall",
   "summary": "Octavian's fleet defeated Antony and Cleopatra off western Greece; Egypt was annexed the following year.",
-  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). Octavian's fleet defeated Antony and Cleopatra off western Greece; Egypt was annexed the following year.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Actium).",
+  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The naval battle was fought off Actium in western Greece. Octavian's fleet, commanded by Marcus Agrippa, defeated the forces of Mark Antony and Cleopatra VII of Egypt, who withdrew to Egypt after the defeat. Octavian pursued them, and after their deaths the following year he annexed Egypt as a Roman province. The victory left him without a rival in the Roman world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Actium).",
   "links": [
    {
     "label": "Fall of the Roman Republic",
@@ -2019,8 +2019,8 @@
   "tags": [
    "culture"
   ],
-  "summary": "Ovid's epic poem narrated myths of transformation and became one of the most read works of the ancient world.",
-  "body": "The Metamorphoses connected mythical tales through the theme of change and rebirth. Written at the height of [the Augustan age](event:roman-empire), it's brimming with Ovid's wit and was hugely influential on medieval and Renaissance literature.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Metamorphoses).",
+  "summary": "Ovid's epic poem narrated myths of transformation and became one of the most widely read works of the ancient world.",
+  "body": "The Metamorphoses links a large collection of Greek and Roman myths through the theme of change and rebirth. Written at the height of [the Augustan age](event:roman-empire), it is known for its wit, and it circulated widely in antiquity before becoming a major influence on medieval and Renaissance literature and art.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Metamorphoses).",
   "links": [
    {
     "label": "Founding of the Roman Empire",
@@ -2160,7 +2160,7 @@
    "politics"
   ],
   "summary": "A city of over 100,000 people in the Valley of Mexico, laid out along the Avenue of the Dead.",
-  "body": "A city of over 100,000 people in the Valley of Mexico, laid out along the Avenue of the Dead.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Teotihuacan).",
+  "body": "Teotihuacan was laid out along the Avenue of the Dead, lined with pyramids and other monumental architecture. At its height around 450 CE it held a population estimated at between 100,000 and 200,000, which made it one of the largest cities in the world at the time and a centre of trade and religious activity. The ethnic and linguistic identity of its inhabitants is uncertain, though its influence reached across Mesoamerica. The city was abandoned around 550 CE for reasons that remain debated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Teotihuacan).",
   "links": [
    {
     "label": "Wikipedia",
@@ -2302,7 +2302,7 @@
   ],
   "parent": "roman-empire",
   "summary": "Under Trajan the empire reached from Britain to Mesopotamia, ruling perhaps a fifth of humanity.",
-  "body": "Part of [Founding of the Roman Empire](event:roman-empire). Under Trajan the empire reached from Britain to Mesopotamia, ruling perhaps a fifth of humanity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trajan).",
+  "body": "Part of [Founding of the Roman Empire](event:roman-empire). Under Trajan, who ruled from 98 to 117 CE, the empire reached its greatest extent, stretching from Britain in the north-west to Mesopotamia in the south-east. It enclosed the whole of the Mediterranean basin and ruled a population estimated at perhaps a fifth of humanity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trajan).",
   "links": [
    {
     "label": "Founding of the Roman Empire",
@@ -2352,8 +2352,8 @@
    "politics"
   ],
   "parent": "roman-empire",
-  "summary": "The last of the Five Good Emperors wrote personal philosophical meditations on Stoicism while governing the empire.",
-  "body": "Part of [Founding of the Roman Empire](event:roman-empire). His writings, originally private journals, became a classic statement of duty, acceptance and virtue. Marcus Aurelius embodied the ideal of the philosopher-king.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marcus_Aurelius).",
+  "summary": "The last of the Five Good Emperors wrote personal philosophical meditations on Stoicism while ruling from 161 to 180 CE.",
+  "body": "Part of [Founding of the Roman Empire](event:roman-empire). Marcus Aurelius kept a set of private philosophical notes, later compiled as the *Meditations*, dealing with the Stoic themes of duty, acceptance and virtue. The text became a classic statement of those ideas and was widely read in later centuries. Because he combined philosophical writing with imperial rule, later writers treated him as an example of the philosopher-king.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marcus_Aurelius).",
   "links": [
    {
     "label": "Founding of the Roman Empire",
@@ -2412,7 +2412,7 @@
   ],
   "parent": "roman-empire",
   "summary": "An epidemic, probably smallpox, killed millions across the Roman world and thinned its armies.",
-  "body": "Part of [Founding of the Roman Empire](event:roman-empire). An epidemic, probably smallpox, killed millions across the Roman world and thinned its armies.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Antonine_Plague).",
+  "body": "Part of [Founding of the Roman Empire](event:roman-empire). The epidemic spread through the Roman Empire between about 165 and 180 CE, during the reign of Marcus Aurelius. The disease is usually identified as smallpox. Mortality was heaviest in the cities and in the army, and estimates of the total death toll run into the millions. The losses reduced the empire's military manpower and disrupted its economy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Antonine_Plague).",
   "links": [
    {
     "label": "Founding of the Roman Empire",
@@ -2524,7 +2524,7 @@
   ],
   "parent": "constantine",
   "summary": "Bishops from across the empire agreed the Nicene Creed, defining orthodox Christian doctrine.",
-  "body": "Part of [Constantine legalises Christianity](event:constantine). Bishops from across the empire agreed the Nicene Creed, defining orthodox Christian doctrine.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_Council_of_Nicaea).",
+  "body": "Part of [Constantine legalises Christianity](event:constantine). Constantine convened the council at Nicaea in Bithynia to settle theological disputes within the church, chiefly over the nature of Christ. The bishops who attended, drawn from across the empire, agreed the Nicene Creed, a statement of doctrine that defined orthodox belief and set it against the positions the council rejected as heretical. The creed remained the standard definition of orthodoxy in later Christian theology.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_Council_of_Nicaea).",
   "links": [
    {
     "label": "Constantine legalises Christianity",
@@ -2548,7 +2548,7 @@
   ],
   "parent": "constantine",
   "summary": "Constantine refounded Byzantium as a new imperial capital that would outlast Rome itself by a thousand years.",
-  "body": "Part of [Constantine legalises Christianity](event:constantine). Constantine refounded Byzantium as a new imperial capital that would outlast Rome itself by a thousand years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Constantinople).",
+  "body": "Part of [Constantine legalises Christianity](event:constantine). Constantine refounded the Greek city of Byzantium, on the Bosphorus, as a new capital for the Roman Empire and named it Constantinople. The site was fortified and provided with public buildings and churches, and the seat of imperial government was moved there. The city remained the capital of the Eastern Roman (Byzantine) Empire for more than a thousand years after Rome fell in the west, until the Ottoman conquest of 1453.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Constantinople).",
   "links": [
    {
     "label": "Constantine legalises Christianity",
@@ -2614,7 +2614,7 @@
   ],
   "parent": "migration-period",
   "summary": "Alaric's Goths took the city for the first time in eight hundred years, shocking the Roman world.",
-  "body": "Part of [Migration Period](event:migration-period). Alaric's Goths took the city for the first time in eight hundred years, shocking the Roman world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sack_of_Rome_(410)).",
+  "body": "Part of [Migration Period](event:migration-period). Alaric led the Visigoths into Rome and plundered the city. It had not been taken by a foreign enemy in some eight hundred years, and contemporaries across the empire reacted with shock. The sack exposed the military weakness of the Western Roman Empire and preceded the loss of its remaining western provinces.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sack_of_Rome_(410)).",
   "links": [
    {
     "label": "Migration Period",

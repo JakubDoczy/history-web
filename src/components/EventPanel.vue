@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { formatYear } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
+import { fetchWikiImage, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
 
 const events = useEventStore()
 const time = useTimeStore()
@@ -30,6 +31,46 @@ function follow(link: { event?: string; url?: string }) {
   if (link.event) goTo(link.event)
   else if (link.url) window.open(link.url, '_blank')
 }
+
+/* --- lead picture, fetched from Wikipedia when the event carries no image ---
+   Nothing about the picture is stored in our data (see lib/wikiImage.ts); it is
+   looked up from the article link the event already has, on open. */
+const wikiImage = ref<WikiImage | null>(null)
+const wikiShown = ref(false) // set on decode, so the fade only runs on a real picture
+let inflight: AbortController | null = null
+
+/** Roughly the panel's content width, in device pixels. */
+function targetWidth() {
+  const css = Math.min(370, (globalThis.innerWidth || 370) - 32) - 40
+  const dpr = Math.min(globalThis.devicePixelRatio || 1, 2) // 2x is the useful ceiling here
+  return Math.round(Math.max(css, 200) * dpr)
+}
+
+watch(
+  () => events.selected?.id,
+  async (id) => {
+    inflight?.abort() // rapid event → event navigation: the stale request goes
+    inflight = null
+    wikiImage.value = null
+    wikiShown.value = false
+
+    const ev = events.selected
+    if (!id || !ev || ev.image) return // an explicit image in the data always wins
+    const ref = wikiRefForEvent(ev)
+    if (!ref) return
+
+    const ctl = new AbortController()
+    inflight = ctl
+    const img = await fetchWikiImage(ref, { targetWidth: targetWidth(), signal: ctl.signal })
+    // The store may have moved on while this was in flight (a cache hit resolves
+    // in a microtask, so even that needs the guard).
+    if (ctl.signal.aborted || events.selected?.id !== id) return
+    wikiImage.value = img
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => inflight?.abort())
 </script>
 
 <template>
@@ -63,6 +104,23 @@ function follow(link: { event?: string; url?: string }) {
         @error="($event.target as HTMLElement).parentElement!.style.display = 'none'"
       />
       <figcaption v-if="e.image.caption">{{ e.image.caption }}</figcaption>
+    </figure>
+
+    <figure v-else-if="wikiImage" class="wiki" :class="{ shown: wikiShown }" data-test="wiki-figure">
+      <img
+        loading="lazy"
+        decoding="async"
+        :src="wikiImage.url"
+        :width="wikiImage.width"
+        :height="wikiImage.height"
+        :alt="wikiImage.caption ?? e.name"
+        @load="wikiShown = true"
+        @error="wikiImage = null"
+      />
+      <figcaption>
+        <span v-if="wikiImage.caption">{{ wikiImage.caption }} · </span>
+        <a :href="wikiImage.pageUrl" target="_blank" rel="noopener">Wikipedia</a>
+      </figcaption>
     </figure>
 
     <div v-if="e.body" class="body" @click="onBodyClick" v-html="renderRichText(e.body)" />
@@ -185,10 +243,24 @@ figure {
 }
 img {
   width: 100%;
+  /* the intrinsic width/height attributes are presentational hints; without this
+     the height hint survives `width: 100%` and squashes the picture */
+  height: auto;
   border-radius: var(--r-md);
   display: block;
   border: 1px solid var(--line-soft);
   background: rgba(255, 255, 255, 0.03);
+}
+/* The Wikipedia picture arrives after the panel is already on screen: it fades in
+   once decoded, and its intrinsic size is on the element, so the bitmap landing
+   does not move the article a second time. The global
+   prefers-reduced-motion rule in tokens.css turns the fade off. */
+figure.wiki {
+  opacity: 0;
+  transition: opacity var(--slow);
+}
+figure.wiki.shown {
+  opacity: 1;
 }
 figcaption {
   margin-top: 7px;

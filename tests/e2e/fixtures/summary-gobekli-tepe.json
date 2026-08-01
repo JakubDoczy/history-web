@@ -1,0 +1,37 @@
+{
+  "type": "standard",
+  "title": "Göbekli Tepe",
+  "displaytitle": "<i>Göbekli Tepe</i>",
+  "namespace": { "id": 0, "text": "" },
+  "titles": {
+    "canonical": "Göbekli_Tepe",
+    "normalized": "Göbekli Tepe",
+    "display": "<i>Göbekli Tepe</i>"
+  },
+  "pageid": 1131540,
+  "thumbnail": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Gobekli_Tepe.jpg/320px-Gobekli_Tepe.jpg",
+    "width": 320,
+    "height": 213
+  },
+  "originalimage": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Gobekli_Tepe.jpg",
+    "width": 4288,
+    "height": 2848
+  },
+  "lang": "en",
+  "dir": "ltr",
+  "revision": "1234567890",
+  "timestamp": "2026-01-05T12:00:00Z",
+  "description": "Neolithic archaeological site in southeastern Anatolia",
+  "description_source": "local",
+  "content_urls": {
+    "desktop": {
+      "page": "https://en.wikipedia.org/wiki/G%C3%B6bekli_Tepe",
+      "revisions": "https://en.wikipedia.org/wiki/G%C3%B6bekli_Tepe?action=history"
+    },
+    "mobile": { "page": "https://en.m.wikipedia.org/wiki/G%C3%B6bekli_Tepe" }
+  },
+  "extract": "Göbekli Tepe is a Neolithic archaeological site in the Southeastern Anatolia Region of Turkey. The settlement was inhabited from about 9500 to at least 8000 BCE, during the Pre-Pottery Neolithic.",
+  "extract_html": "<p><b>Göbekli Tepe</b> is a Neolithic archaeological site in the Southeastern Anatolia Region of Turkey.</p>"
+}

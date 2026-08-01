@@ -13,8 +13,14 @@ import { GlobeSurface } from '../lib/globeSurface'
 import { RenderPump } from '../lib/renderPump'
 import { firstFrame } from '../lib/firstFrame'
 import { AtmosphereLayer } from '../lib/skyLayer'
-import { DetailImagery, visibleSpanDeg, minAltitudeFor, patchPixelCap } from '../lib/detailImagery'
-import { cloudFadeFor, cloudSharpenFor } from '../lib/scale'
+import {
+  DetailImagery,
+  visibleSpanDeg,
+  viewSpanDeg,
+  minAltitudeFor,
+  patchPixelCap,
+} from '../lib/detailImagery'
+import { cloudFadeFor, cloudSharpenFor, driftIntervalMs, DRIFT_MS_MIN } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { eraPlan, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
@@ -312,11 +318,19 @@ onMounted(() => {
       __globe?: GlobeInstance
       __detail?: DetailImagery
       __setTime?: (t: number) => void
+      __surface?: GlobeSurface
+      __settings?: ReturnType<typeof useSettingsStore>
     }
     w.__globe = globe
     // the paleo frames can only be checked against a reference map at a stated
     // age, which means a screenshot script has to be able to name one
     w.__setTime = (t: number) => time.focusTime(t)
+    // The surface's own knobs, for A/B screenshots. Poking `material.uniforms`
+    // from a console is not equivalent: `advance()` re-applies the cloud
+    // uniforms from the settings every frame, so a uniform written from outside
+    // is gone by the next tick. These are the setters that stick.
+    w.__surface = surface
+    w.__settings = settings
   }
 
   // CSS2DRenderer stamps a depth-sorted z-index (0..100) on every pin, and its
@@ -411,6 +425,46 @@ onMounted(() => {
   let lastPov: Pov | undefined
   let lastSync: Pov | undefined
 
+  /**
+   * Cloud drift, at whatever rate the current zoom makes invisible.
+   *
+   * A globe nobody is touching still redraws for this, and it used to do so at
+   * a flat 20 Hz — a rate chosen for the closest view the clouds survive to and
+   * then spent on every view, including the wide one the globe sits at by
+   * default, where the deck takes nearly three hundred milliseconds to cross a
+   * pixel. `driftIntervalMs` (lib/scale.ts) turns that around: the interval is
+   * whatever moves the deck 0.4 screen pixels, so the *picture* changes by
+   * about the same amount per step at every zoom, instead of the clock ticking
+   * at one rate regardless of what the clock is worth. Measured, that is 8-9
+   * frames a second at the default view against 20, for a per-step change less
+   * than half the one the app already presents at a closer zoom.
+   *
+   * Set from applyPov, which is the only thing that knows where the camera is;
+   * it starts at the floor, which is the rate this used to run at everywhere.
+   * Reduced motion, deep time and a close approach all switch drift off
+   * entirely, and then a parked camera draws nothing at all.
+   *
+   * The alternative that was prototyped and rejected: cache the surface pass in
+   * a render target when the scene is dirty and re-run only the cloud film on
+   * drift ticks. It works, and the fragment saving is real — timed under
+   * SwiftShader at 900x900, a whole frame is 327 ms at the default view and
+   * 576 ms at mid zoom, of which the surface shader is 141 ms and 349 ms, and a
+   * cloud-only pass reading two cached targets came in 27-36% under the full
+   * frame. What sank it was the other side of the ledger. The cache has to hold
+   * the pre-shadow colour separately from the emissive and rim terms for the
+   * ground shadow to stay exact, and those values reach ~2.6 before the output
+   * clamp, so the targets have to be half-float — 83 MB at DPR 2 on a 1440x900
+   * window, on top of a texture budget that already has a device-memory cap
+   * bolted to it (see patchPixelCap). Every dirty frame then pays the surface
+   * shader twice, so anything that moves the camera is 25% *slower*. And the
+   * cache is only correct if every one of resize, DPR change, era crossfade,
+   * patch arrival, palette, visuals, relief, sun, city lights, night-map and
+   * upscale arrival invalidates it — a list whose failure mode is a stale
+   * planet under moving clouds. Spending 56% fewer frames instead costs one
+   * pure function and buys most of the same idle time back.
+   */
+  let driftMs = DRIFT_MS_MIN
+
   const applyPov = (force = false) => {
     const pov = globe!.pointOfView()
     // OrbitControls fires a change event per wheel notch and per pointer move,
@@ -453,6 +507,11 @@ onMounted(() => {
     surface!.setFlatLight(near)
     lastSync = { ...pov }
     syncDetail(pov)
+    // how often the drift is worth stepping at this zoom — see `driftMs`. The
+    // framed span, not the horizon `span` above: close in the two differ by
+    // more than an order of magnitude, and it is the framed one that says how
+    // many pixels a degree of ground is worth.
+    driftMs = driftIntervalMs(viewSpanDeg(pov.altitude, view.fov), view.viewportPx)
     // clouds retire well before the ground fills the screen; haze lingers longer
     const cloudy = cloudFadeFor(span)
     surface!.setCloudSharpen(cloudy > 0.01 ? cloudSharpenFor(span) : 0)
@@ -564,17 +623,6 @@ onMounted(() => {
   const STILL_MS = 400
   let movedAt = performance.now()
 
-  /**
-   * Cloud drift, at 20 Hz rather than 60.
-   *
-   * The deck moves 0.0016 UV per second — 0.04 px per frame at any zoom where
-   * the clouds are still visible — so stepping it three times less often is not
-   * something an eye can resolve, and it is the difference between a still globe
-   * costing 20 frames a second and 60. Reduced motion, deep time and a close
-   * approach all switch it off entirely, and then a parked camera draws nothing.
-   */
-  const DRIFT_MS = 50
-
   const tick = () => {
     const now = performance.now()
     const dt = now - lastFrame
@@ -584,7 +632,7 @@ onMounted(() => {
     // are the picture changing under their own steam, so they buy frames
     if (surface!.advance(dt)) wake(0)
 
-    if (!still && surface!.cloudsShown && now - lastDrift >= DRIFT_MS) {
+    if (!still && surface!.cloudsShown && now - lastDrift >= driftMs) {
       lastDrift = now
       stats.drifts++
       surface!.setCloudDrift((now - t0) / 1000)

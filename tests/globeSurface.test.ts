@@ -5,6 +5,10 @@ import {
   enhancedWaterLuma,
   waterMask,
   ENHANCED_GRADE,
+  NIGHT_LIGHTS,
+  lightsEnergy,
+  lightsScale,
+  lightsReveal,
 } from '../src/lib/globeSurface'
 import { MAP_FADE_MS } from '../src/lib/mapFade'
 import { eraPlan, ERA_WINDOW, type TextureKeyframe } from '../src/lib/paleo'
@@ -524,5 +528,128 @@ describe('deferred maps', () => {
     expect(surface.material.uniforms.uCloudAlpha.value).toBe(0)
     surface.setClouds(true, 0.5, true)
     expect(surface.material.uniforms.uCloudAlpha.value).toBeCloseTo(0.5, 6)
+  })
+})
+
+/**
+ * City lights.
+ *
+ * Every constant below is a *measured* pixel of the map this repo ships
+ * (public/textures/base/earth-night.webp), named by where it sits in that
+ * map's own distribution of light energy. They are what the shader's constants
+ * are tuned against, so a change to either that breaks the relationship fails
+ * here rather than on someone's screen.
+ *
+ *   PACIFIC   sRGB (6, 24, 46)      the blue moonlit base, no lights at all
+ *   SAHARA    sRGB (28, 64, 88)     a much brighter base, still no lights
+ *   ICE_PEAK  energy 0.0035         the brightest non-light anywhere on the map
+ *   SUBURB    sRGB (49, 54, 52)     median of the lit pixels
+ *   CORE      sRGB (113, 107, 102)  99th percentile of the lit pixels
+ *   PEAK      sRGB (131, 107, 97)   the single brightest light on Earth here
+ */
+describe('city lights', () => {
+  /** One sRGB byte to linear light — the space the shader samples the map in. */
+  const s2l = (c: number) => (c <= 10.31475 ? c / 3294.6 : ((c / 255 + 0.055) / 1.055) ** 2.4)
+  /** A measured map pixel, as the shader's extraction reads it. */
+  const energy = (r: number, b: number) => lightsEnergy(s2l(r), s2l(b))
+  const PACIFIC = energy(6, 46)
+  const SAHARA = energy(28, 88)
+  const SUBURB = energy(49, 52)
+  const CORE = energy(113, 102)
+  const PEAK = energy(131, 97)
+  const ICE_PEAK = 0.0035
+
+  it("reads the map's blue moonlit base as no light at all", () => {
+    // this is the reported bug: the base used to be added as emission, so every
+    // city sat on a wash nearly as bright as it was and the lights read grey
+    expect(PACIFIC).toBe(0)
+    expect(SAHARA).toBe(0)
+  })
+
+  it('separates the dimmest light from the brightest non-light by a wide margin', () => {
+    // a luminance test cannot do this: Antarctic ice and Greenland outshine a
+    // small town in this map, which is why the extraction is on colour
+    expect(SUBURB).toBeGreaterThan(ICE_PEAK * 3)
+    expect(CORE).toBeGreaterThan(ICE_PEAK * 20)
+  })
+
+  it('keeps a neutral (LED, mercury vapour) light rather than erasing it', () => {
+    // blueBase = 1 would subtract all of a white lamp's own blue; 0.55 leaves a
+    // neutral source 45% of its energy while still zeroing the base
+    expect(energy(120, 120)).toBeCloseTo((1 - NIGHT_LIGHTS.blueBase) * s2l(120), 6)
+    expect(energy(120, 120)).toBeGreaterThan(ICE_PEAK * 20)
+  })
+
+  it('normalises to the map it actually ships with', () => {
+    // the scale is what makes `threshAt0 - edge >= 1` a real guarantee. If the
+    // map's peak fell far short of `peak`, the reveal would open late again —
+    // exactly the bug that kept every year before 1978 unlit
+    expect(PEAK).toBeGreaterThan(0.9 * NIGHT_LIGHTS.peak)
+    expect(PEAK).toBeLessThanOrEqual(NIGHT_LIGHTS.peak)
+    expect(lightsScale(PEAK)).toBeGreaterThan(0.95)
+    expect(lightsScale(0)).toBe(0)
+  })
+
+  it('shows nothing before electrification', () => {
+    for (const e of [SUBURB, CORE, PEAK]) expect(lightsReveal(e, 0)).toBe(0)
+    // and nothing leaks in just above zero either — 1880 itself must be dark
+    expect(lightsReveal(PEAK, 1e-4)).toBe(0)
+  })
+
+  it('runs a ramp that actually moves across the electric era', () => {
+    // the shipped era factor (lib/sun.ts) evaluated at these years
+    const u = { 1900: 0.112, 1930: 0.279, 1950: 0.446, 1970: 0.657, 2016: 0.925 }
+    // the great cores first...
+    expect(lightsReveal(PEAK, u[1900])).toBeGreaterThan(0.1)
+    expect(lightsReveal(SUBURB, u[1900])).toBe(0)
+    // ...then whole cities...
+    expect(lightsReveal(CORE, u[1930])).toBeGreaterThan(0.4)
+    expect(lightsReveal(CORE, u[1950])).toBeGreaterThan(0.9)
+    expect(lightsReveal(SUBURB, u[1950])).toBeLessThan(0.5)
+    // ...then everything
+    expect(lightsReveal(SUBURB, u[1970])).toBeGreaterThan(0.7)
+    expect(lightsReveal(SUBURB, u[2016])).toBeCloseTo(1, 3)
+    expect(lightsReveal(CORE, u[2016])).toBeCloseTo(1, 3)
+  })
+
+  it('is monotonic in both the year and the brightness', () => {
+    for (const e of [SUBURB, CORE, PEAK]) {
+      let last = -1
+      for (let f = 0.05; f <= 1.0001; f += 0.01) {
+        const v = lightsReveal(e, f)
+        expect(v).toBeGreaterThanOrEqual(last)
+        last = v
+      }
+    }
+    for (const f of [0.3, 0.6, 0.925]) {
+      expect(lightsReveal(CORE, f)).toBeGreaterThanOrEqual(lightsReveal(SUBURB, f))
+    }
+  })
+
+  it('emits warm at every level, and reaches white only at the peak', () => {
+    const { dim, hot, core } = NIGHT_LIGHTS
+    // amber at the outskirts: red is several times blue
+    expect(dim[0] / dim[2]).toBeGreaterThan(5)
+    // warm white at the cores, but still warm — never a neutral grey
+    expect(hot[2]).toBeLessThan(0.8)
+    expect(hot[0]).toBe(1)
+    // and the ramp only ever warms; it must not cool anything down
+    for (let i = 0; i < 3; i++) expect(hot[i]).toBeGreaterThanOrEqual(dim[i])
+    // the brightest light on the map lands just past white in red alone, so the
+    // very peak clips to warm white and nothing below it does
+    expect(PEAK * core * hot[0]).toBeGreaterThan(1)
+    expect(CORE * core * hot[1]).toBeLessThan(1)
+  })
+
+  it('spills less than it shines', () => {
+    // the halo is bloom, not a second copy of the map: if it ever outweighed
+    // the sharp tap the cities would smear into a wash
+    expect(NIGHT_LIGHTS.halo).toBeLessThan(NIGHT_LIGHTS.core / 3)
+    // and it is a LOD *bias*, so the spill is always wider than the pixel and
+    // can never be undersampled at the limb the way a fixed level would be
+    expect(NIGHT_LIGHTS.haloLod).toBeGreaterThanOrEqual(2)
+    expect(readFileSync('src/lib/globeSurface.ts', 'utf8')).toMatch(
+      /texture\(uNight, vUv, \$\{f\(N\.haloLod\)\}\)/,
+    )
   })
 })
