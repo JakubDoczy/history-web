@@ -20,8 +20,15 @@ export const useTimeStore = defineStore('time', {
     selectionSpan: (s) => s.selection.end - s.selection.start,
   },
   actions: {
+    /**
+     * The cursor a user asked for. The selection is what the globe draws, so a
+     * year picked from outside the band would put the cursor on a world with
+     * none of its events on it: the band comes along (see extendSelectionTo).
+     */
     setTime(t: Year) {
-      this.currentTime = clamp(t, this.range.start, this.range.end)
+      const target = clamp(t, this.range.start, this.range.end)
+      this.extendSelectionTo(target)
+      this.currentTime = target
     },
     /** Jump to a time; if it lies outside the window, recenter the window on it. */
     focusTime(t: Year) {
@@ -31,7 +38,32 @@ export const useTimeStore = defineStore('time', {
         const c = toWarp(target)
         this.setRange({ start: clamp(fromWarp(c - half)), end: clamp(fromWarp(c + half)) })
       }
+      // The window first, the band second: clampSelection works against the
+      // window, so extending before the recentre would only be clipped back out.
+      this.extendSelectionTo(target)
       this.currentTime = target
+    },
+    /**
+     * Grow the selection just far enough to hold `t`, by moving the edge `t` is
+     * past — exactly onto it. The far edge does not move and the band is never
+     * recentred: the user asked for a year, not for a different span.
+     *
+     * Only the user-intent entry points call this (setTime, focusTime). The
+     * cursor also moves on its own — setRange drags it in when the window
+     * shrinks under it — and *that* must not touch the selection: the window
+     * pulls the selection, the selection pulls the cursor, and a cursor that
+     * pushed back on the selection would close that ring into a loop.
+     *
+     * A `t` already inside publishes nothing at all, which matters because the
+     * ends of time are absorbing: setTime(MAX_TIME) extends the band to exactly
+     * MAX_TIME once, and every later call finds it already there. (Exactly, not
+     * the warp roundtrip of it — the same slack that made pan() oscillate.)
+     */
+    extendSelectionTo(t: Year) {
+      const { start, end } = this.selection
+      if (t >= start && t <= end) return
+      if (t > end) this.setSelection(start, t)
+      else this.setSelection(t, end)
     },
     /** Zoom in warp (display) space around a focus fraction [0..1] of the window. */
     zoom(factor: number, focus = 0.5) {

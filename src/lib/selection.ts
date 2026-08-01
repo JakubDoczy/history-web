@@ -61,7 +61,16 @@ export function clampSelection(sel: Span, win: Span): Span {
     if (a < w0) [a, b] = [w0, w0 + min]
     if (b > w1) [a, b] = [w1 - min, w1]
   }
-  return { start: clamp(fromWarp(a)), end: clamp(fromWarp(b)) }
+  // An edge that saturated against the window is *exactly* that edge, not the
+  // warp roundtrip of it — the same 5 µyr of slack that made a held pan
+  // oscillate (see stores/time.ts pan) also kept a band pinned to the window
+  // from ever comparing equal to itself, and kept the cursor that had just
+  // extended it reading as still outside. Clamped, because a window may nominally
+  // run past the end of time and the band may not.
+  return {
+    start: a === w0 ? clamp(lo) : clamp(fromWarp(a)),
+    end: b === w1 ? clamp(hi) : clamp(fromWarp(b)),
+  }
 }
 
 /**

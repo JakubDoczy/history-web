@@ -204,4 +204,21 @@ describe('event store visibility follows the selection', () => {
     time.setSelection(-550, 0)
     expect(events.visible.map((e) => e.id)).toEqual(['classical'])
   })
+
+  /** What the product asks for, end to end: jump to a thing and you can see it. */
+  it('makes the jumped-to item visible, because the band grew to reach it', () => {
+    const time = useTimeStore()
+    const events = useEventStore()
+    const ev = (id: string, start: number): HistoricalEvent => ({
+      id, name: id, start, lat: 0, lng: 0, priority: 1, tags: ['war'], summary: '',
+    })
+    events.adopt([ev('classical', -300), ev('medieval', 1200), ev('modern', 2000)])
+    expect(events.visible.map((e) => e.id)).toEqual(['medieval'])
+
+    time.setTime(events.focusYear('modern')!) // a search / panel jump forward
+    expect(events.visible.map((e) => e.id)).toEqual(['medieval', 'modern'])
+
+    time.setTime(events.focusYear('classical')!) // ...and back past the other edge
+    expect(events.visible.map((e) => e.id)).toEqual(['classical', 'medieval', 'modern'])
+  })
 })

@@ -3,7 +3,7 @@ import { computed, ref, onMounted, useTemplateRef } from 'vue'
 import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
-import { formatYear } from '../lib/time'
+import { clamp, formatYear } from '../lib/time'
 import { kindOf, type Item } from '../lib/events'
 
 const events = useEventStore()
@@ -25,9 +25,12 @@ function pick(id: string) {
   if (year !== undefined) {
     if (year < time.range.start || year > time.range.end) {
       const pad = Math.max(50, Math.abs(year) * 0.05)
-      time.range = { start: year - pad, end: year + pad }
+      // setRange, not a raw assignment: the window has to drag the selection and
+      // the cursor in with it, or the band is left behind off-screen for the
+      // tick before setTime extends it back.
+      time.setRange({ start: clamp(year - pad), end: clamp(year + pad) })
     }
-    time.setTime(year)
+    time.setTime(year) // ...and the band grows to reach the year (stores/time.ts)
   }
   events.select(id)
   query.value = ''

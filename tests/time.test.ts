@@ -175,6 +175,134 @@ describe('time store', () => {
 })
 
 /**
+ * The band is the display filter: only what it covers reaches the globe. So a
+ * year picked from outside it would leave the cursor on an empty world, and the
+ * band has to come along — by the nearer edge, exactly, and no further.
+ */
+describe('the selection follows the year you pick', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  /** A window and band with room on both sides to grow into. */
+  const framed = () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1000, end: 2000 })
+    s.setSelection(1300, 1600)
+    s.setTime(1400)
+    return s
+  }
+
+  it('leaves the band alone for a year already inside it', () => {
+    const s = framed()
+    const before = s.selection
+    s.setTime(1550)
+    expect(s.currentTime).toBe(1550)
+    expect(s.selection).toBe(before) // the same object, so nothing downstream re-runs
+    s.setTime(1300) // exactly on an edge is inside
+    s.setTime(1600)
+    expect(s.selection).toBe(before)
+  })
+
+  it('extends the end exactly, and does not touch the start', () => {
+    const s = framed()
+    s.setTime(1750)
+    expect(s.selection).toEqual({ start: 1300, end: 1750 })
+    expect(s.currentTime).toBe(1750)
+  })
+
+  it('extends the start exactly, and does not touch the end', () => {
+    const s = framed()
+    s.setTime(1100)
+    expect(s.selection).toEqual({ start: 1100, end: 1600 })
+    expect(s.currentTime).toBe(1100)
+  })
+
+  it('never recentres the band — the far edge is where it was', () => {
+    const s = framed()
+    s.setTime(1990)
+    expect(s.selection.start).toBe(1300)
+    s.setTime(1010)
+    expect(s.selection.end).toBe(1990)
+  })
+
+  it('drags the edge along, monotonically, as the cursor scrubs past it', () => {
+    const s = framed()
+    let last = s.selection.end
+    for (let y = 1600; y <= 1900; y += 20) {
+      s.setTime(y)
+      expect(s.selection.end).toBe(Math.max(1600, y)) // the edge is *on* the cursor
+      expect(s.selection.end).toBeGreaterThanOrEqual(last)
+      expect(s.selection.start).toBe(1300)
+      last = s.selection.end
+    }
+    // scrubbing back into the band does not shrink what the scrub opened up
+    const opened = s.selection
+    s.setTime(1500)
+    expect(s.selection).toBe(opened)
+  })
+
+  it('jumps outside the window: the window recentres and the band reaches the year', () => {
+    const s = useTimeStore()
+    s.focusTime(-250e6)
+    expect(s.currentTime).toBe(-250e6)
+    expect(s.range.start).toBeLessThan(-250e6)
+    expect(s.range.end).toBeGreaterThan(-250e6)
+    // inside *both*: the recentre happens first, or the clamp would clip the
+    // extension straight back out again
+    expect(s.selection.start).toBe(-250e6)
+    expect(s.selection.end).toBeGreaterThan(-250e6)
+    expect(s.selection.start).toBeGreaterThanOrEqual(s.range.start)
+    expect(s.selection.end).toBeLessThanOrEqual(s.range.end)
+  })
+
+  it('does not extend when the cursor is moved by a clamp rather than by a user', () => {
+    const s = useTimeStore()
+    // a cursor sitting outside the band (only reachable programmatically now)
+    s.range = { start: 1000, end: 2000 }
+    s.selection = { start: 1000, end: 1200 }
+    s.currentTime = 1800
+    s.setRange({ start: 1000, end: 1500 }) // the window shrinks and pulls the cursor
+    expect(s.currentTime).toBe(1500)
+    // ...and the band does not chase it back. (Value, not identity: setRange
+    // republishes all three together when any one of them moves.)
+    expect(s.selection).toEqual({ start: 1000, end: 1200 })
+  })
+
+  it('settles at the end of time instead of oscillating there', () => {
+    const s = useTimeStore()
+    s.setRange({ start: MAX_TIME - 100, end: MAX_TIME })
+    s.setTime(MAX_TIME)
+    expect(s.selection.end).toBe(MAX_TIME) // exactly, not the warp roundtrip of it
+    const settled = s.selection
+    for (let i = 0; i < 20; i++) s.setTime(9999) // held against the present
+    expect(s.selection).toBe(settled)
+    expect(s.currentTime).toBe(MAX_TIME)
+  })
+
+  it('settles at the beginning of time instead of oscillating there', () => {
+    const s = useTimeStore()
+    s.setRange({ start: MIN_TIME, end: MIN_TIME + 1e6 })
+    s.setTime(MIN_TIME)
+    expect(s.selection.start).toBe(MIN_TIME)
+    const settled = s.selection
+    for (let i = 0; i < 20; i++) s.setTime(-9e9)
+    expect(s.selection).toBe(settled)
+    expect(s.currentTime).toBe(MIN_TIME)
+  })
+
+  it('leaves the era combo setting the band outright', () => {
+    const s = useTimeStore()
+    const medieval = HISTORICAL.find((e) => e.name === 'Medieval')!
+    s.setTime(1990) // opens the band out past 1945 to 1990
+    expect(s.selection.end).toBe(1990)
+    s.selectEra(medieval)
+    // the era *is* the selection, even though the cursor is now outside it: an
+    // era is a framing, not a jump
+    expect(s.selection).toEqual({ start: 500, end: 1500 })
+    expect(s.currentTime).toBe(1990)
+  })
+})
+
+/**
  * Downstream of these three properties sit the border digest, the event index
  * and the era plan, and all of them are invalidated by *identity*. So the thing
  * under test is not the numbers — those were always right — but whether new
