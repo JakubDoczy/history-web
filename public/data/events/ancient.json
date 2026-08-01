@@ -6,7 +6,7 @@
   "end": -6000,
   "lat": 36.5,
   "lng": 40.0,
-  "priority": 95,
+  "priority": 96,
   "tags": [
    "technology",
    "culture",
@@ -28,7 +28,7 @@
   "end": -8000,
   "lat": 37.22,
   "lng": 38.92,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "religion",
    "culture"
@@ -54,7 +54,7 @@
   "end": -8000,
   "lat": 31.87,
   "lng": 35.44,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "culture"
   ],
@@ -105,7 +105,7 @@
   "end": -5700,
   "lat": 37.67,
   "lng": 32.83,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "culture"
   ],
@@ -150,7 +150,7 @@
   "start": -3500,
   "lat": 47.0,
   "lng": 32.0,
-  "priority": 76,
+  "priority": 80,
   "tags": [
    "technology"
   ],
@@ -170,7 +170,7 @@
   "end": -1200,
   "lat": 33.3,
   "lng": 44.4,
-  "priority": 78,
+  "priority": 82,
   "tags": [
    "technology"
   ],
@@ -209,7 +209,7 @@
   "start": -3099,
   "lat": 29.9,
   "lng": 31.2,
-  "priority": 84,
+  "priority": 87,
   "tags": [
    "politics"
   ],
@@ -229,7 +229,7 @@
   "end": -1450,
   "lat": 35.33,
   "lng": 25.13,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "culture",
    "politics"
@@ -254,7 +254,7 @@
   "end": -1900,
   "lat": 27.32,
   "lng": 68.14,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "culture",
    "politics"
@@ -275,7 +275,7 @@
   "end": -2400,
   "lat": 51.18,
   "lng": -1.83,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "religion"
@@ -296,7 +296,7 @@
   "end": -2539,
   "lat": 29.98,
   "lng": 31.13,
-  "priority": 82,
+  "priority": 85,
   "tags": [
    "culture",
    "technology"
@@ -322,7 +322,7 @@
   "end": -2153,
   "lat": 33.1,
   "lng": 44.1,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics",
    "war"
@@ -363,7 +363,7 @@
   "end": -1650,
   "lat": 26.0,
   "lng": 31.0,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "politics",
    "culture"
@@ -383,7 +383,7 @@
   "start": -1753,
   "lat": 32.54,
   "lng": 44.42,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "politics",
    "culture"
@@ -404,7 +404,7 @@
   "end": -1200,
   "lat": 40.02,
   "lng": 34.62,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics",
    "war"
@@ -432,7 +432,7 @@
   "start": -1609,
   "lat": 36.4,
   "lng": 25.4,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "disaster",
    "geology"
@@ -453,7 +453,7 @@
   "end": -1100,
   "lat": 37.73,
   "lng": 22.76,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "culture",
    "politics"
@@ -482,7 +482,7 @@
   "end": -1045,
   "lat": 36.1,
   "lng": 114.35,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics",
    "culture"
@@ -503,7 +503,7 @@
   "end": -500,
   "lat": 29.0,
   "lng": 77.0,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "religion",
    "culture"
@@ -523,7 +523,7 @@
   "start": -1273,
   "lat": 34.57,
   "lng": 36.52,
-  "priority": 52,
+  "priority": 53,
   "tags": [
    "war"
   ],
@@ -543,7 +543,7 @@
   "end": -500,
   "lat": 39.0,
   "lng": 35.0,
-  "priority": 76,
+  "priority": 80,
   "tags": [
    "technology"
   ],
@@ -597,7 +597,7 @@
     32
    ]
   ],
-  "priority": 80,
+  "priority": 84,
   "tags": [
    "war",
    "politics",
@@ -618,7 +618,7 @@
   "start": -1200,
   "lat": 36.1,
   "lng": 114.35,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "culture",
    "technology"
@@ -644,7 +644,7 @@
   "end": -1183,
   "lat": 39.96,
   "lng": 26.24,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "war",
    "culture"
@@ -690,7 +690,7 @@
   "start": -1049,
   "lat": 34.12,
   "lng": 35.65,
-  "priority": 76,
+  "priority": 80,
   "tags": [
    "culture",
    "technology"
@@ -711,7 +711,7 @@
   "end": -255,
   "lat": 34.27,
   "lng": 107.15,
-  "priority": 76,
+  "priority": 80,
   "tags": [
    "politics",
    "culture"
@@ -739,7 +739,7 @@
   "start": -956,
   "lat": 31.78,
   "lng": 35.24,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "religion"
   ],
@@ -759,7 +759,7 @@
   "end": -608,
   "lat": 36.36,
   "lng": 43.15,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "politics",
    "war"
@@ -779,7 +779,7 @@
   "start": -813,
   "lat": 36.85,
   "lng": 10.32,
-  "priority": 58,
+  "priority": 56,
   "tags": [
    "politics",
    "economy"
@@ -799,7 +799,7 @@
   "start": -800,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "culture",
    "technology"
@@ -824,7 +824,7 @@
   "start": -775,
   "lat": 37.64,
   "lng": 21.63,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "religion"
@@ -844,7 +844,7 @@
   "start": -752,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 78,
+  "priority": 82,
   "tags": [
    "politics"
   ],
@@ -864,7 +864,7 @@
   "end": -100,
   "lat": 42.53,
   "lng": 11.53,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "politics"
@@ -885,7 +885,7 @@
   "end": -400,
   "lat": 37.53,
   "lng": 27.28,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "culture",
    "science"
@@ -906,7 +906,7 @@
   "end": 650,
   "lat": 34.0,
   "lng": 52.0,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "religion",
    "culture"
@@ -931,7 +931,7 @@
   "end": -482,
   "lat": 27.47,
   "lng": 83.28,
-  "priority": 88,
+  "priority": 91,
   "tags": [
    "religion"
   ],
@@ -951,7 +951,7 @@
   "end": -478,
   "lat": 35.6,
   "lng": 116.99,
-  "priority": 86,
+  "priority": 88,
   "tags": [
    "culture",
    "religion"
@@ -972,7 +972,7 @@
   "end": -329,
   "lat": 29.94,
   "lng": 52.89,
-  "priority": 84,
+  "priority": 87,
   "tags": [
    "politics"
   ],
@@ -991,7 +991,7 @@
   "start": -508,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "politics",
    "culture"
@@ -1012,12 +1012,12 @@
   "end": -321,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 82,
+  "priority": 85,
   "tags": [
    "politics"
   ],
   "summary": "The reforms of Cleisthenes gave political power to the assembly of citizens, inventing direct democracy.",
-  "body": "Roughly 30,000 adult male citizens could vote; women, resident foreigners and a very large enslaved population could not. Even so, the idea that ordinary people should decide public matters begins here.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Athenian_democracy).",
+  "body": "Roughly 30,000 adult male citizens could vote; women, resident foreigners and a very large enslaved population could not. Even so, the idea that ordinary people should decide public matters — [democracy](item:democracy) — begins here.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Athenian_democracy).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1026,13 +1026,40 @@
   ]
  },
  {
+  "id": "democracy",
+  "kind": "concept",
+  "name": "Democracy",
+  "anchorYear": -507,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Rule by the people: the principle that political authority derives from those subject to it, and the institutions built to make that workable.",
+  "body": "The word is Greek and so is the first working example. The reforms of Cleisthenes in 508 BCE reorganised [Athens](item:athenian-democracy) so that policy was decided by an assembly of citizens and offices were filled largely by lot. It was direct, not representative, and the citizen body excluded women, resident foreigners and a very large enslaved population — perhaps a seventh of the adults present had a vote.\n\nWhat survived antiquity was not the institution but the argument. Roman republicanism, the limits placed on a king by [Magna Carta](item:magna-carta), and the Dutch and English revolutions supplied the vocabulary of consent, representation and the rule of law; the [American](item:us-constitution) and [French](item:rights-of-man) revolutions turned it into written constitutions asserting rights against the state.\n\nThe franchise widened slowly and unevenly — property qualifications, then [women's suffrage](item:finland-suffrage) from 1906, then the [American civil rights](item:civil-rights-act) legislation of the 1960s and the [end of apartheid](item:apartheid-end) in 1994. The count of electoral democracies rose through the twentieth century and has fallen back since about 2010, which is a reminder that the arrangement is maintained rather than achieved.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Democracy).",
+  "related": [
+   "athenian-democracy",
+   "abraham-lincoln",
+   "nelson-mandela"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Democracy"
+   },
+   {
+    "label": "Athenian democracy",
+    "event": "athenian-democracy"
+   }
+  ],
+  "priority": 85
+ },
+ {
   "id": "hinduism-solidifies",
   "name": "Hinduism takes classical form",
   "start": -500,
   "end": 500,
   "lat": 25.3,
   "lng": 83.0,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "religion",
    "culture"
@@ -1057,7 +1084,7 @@
   "end": 200,
   "lat": 31.78,
   "lng": 35.24,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "religion",
    "culture"
@@ -1078,7 +1105,7 @@
   "end": 500,
   "lat": 9.5,
   "lng": 8.0,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "technology",
    "economy"
@@ -1099,7 +1126,7 @@
   "end": -448,
   "lat": 38.5,
   "lng": 23.5,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "war"
   ],
@@ -1118,7 +1145,7 @@
   "start": -489,
   "lat": 38.15,
   "lng": 23.97,
-  "priority": 58,
+  "priority": 56,
   "tags": [
    "war"
   ],
@@ -1142,7 +1169,7 @@
   "start": -479,
   "lat": 38.8,
   "lng": 22.54,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "war"
   ],
@@ -1166,7 +1193,7 @@
   "start": -479,
   "lat": 37.94,
   "lng": 23.53,
-  "priority": 58,
+  "priority": 56,
   "tags": [
    "war"
   ],
@@ -1191,7 +1218,7 @@
   "end": 533,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "politics",
    "culture"
@@ -1212,7 +1239,7 @@
   "end": -431,
   "lat": 37.97,
   "lng": 23.73,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "religion"
@@ -1237,7 +1264,7 @@
   "start": -439,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "culture"
   ],
@@ -1261,7 +1288,7 @@
   "end": -403,
   "lat": 37.5,
   "lng": 22.5,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "war"
   ],
@@ -1280,7 +1307,7 @@
   "start": -400,
   "lat": 17.36,
   "lng": -92.2,
-  "priority": 58,
+  "priority": 56,
   "tags": [
    "science",
    "culture"
@@ -1300,7 +1327,7 @@
   "start": -398,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "culture"
   ],
@@ -1319,7 +1346,7 @@
   "start": -386,
   "lat": 37.97,
   "lng": 23.73,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "culture",
    "science"
@@ -1340,7 +1367,7 @@
   "end": -321,
   "lat": 40.3,
   "lng": 23.4,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "culture",
    "science"
@@ -1361,7 +1388,7 @@
   "end": -322,
   "lat": 33.3,
   "lng": 44.4,
-  "priority": 88,
+  "priority": 91,
   "tags": [
    "war",
    "politics",
@@ -1382,7 +1409,7 @@
   "start": -330,
   "lat": 36.6,
   "lng": 43.3,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "war"
   ],
@@ -1406,7 +1433,7 @@
   "start": -330,
   "lat": 31.2,
   "lng": 29.92,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "politics"
@@ -1432,7 +1459,7 @@
   "end": -184,
   "lat": 25.6,
   "lng": 85.14,
-  "priority": 76,
+  "priority": 80,
   "tags": [
    "politics",
    "religion"
@@ -1453,7 +1480,7 @@
   "end": 400,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "technology",
    "economy"
@@ -1478,7 +1505,7 @@
   "start": -306,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "culture",
    "science"
@@ -1498,7 +1525,7 @@
   "start": -300,
   "lat": 16.95,
   "lng": 33.75,
-  "priority": 52,
+  "priority": 53,
   "tags": [
    "culture",
    "technology"
@@ -1523,7 +1550,7 @@
   "start": -300,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "technology",
    "science"
@@ -1543,7 +1570,7 @@
   "start": -300,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "science"
@@ -1564,7 +1591,7 @@
   "end": 270,
   "lat": 31.2,
   "lng": 29.9,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "culture",
    "science"
@@ -1624,7 +1651,7 @@
     33
    ]
   ],
-  "priority": 76,
+  "priority": 80,
   "tags": [
    "war"
   ],
@@ -1643,7 +1670,7 @@
   "start": -220,
   "lat": 34.38,
   "lng": 109.0,
-  "priority": 88,
+  "priority": 91,
   "tags": [
    "politics"
   ],
@@ -1663,7 +1690,7 @@
   "end": 1644,
   "lat": 40.43,
   "lng": 116.57,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "technology",
    "war"
@@ -1688,7 +1715,7 @@
   "start": -215,
   "lat": 41.3,
   "lng": 16.1,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "war"
   ],
@@ -1712,7 +1739,7 @@
   "start": -209,
   "lat": 34.38,
   "lng": 109.28,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "culture"
   ],
@@ -1737,7 +1764,7 @@
   "end": 220,
   "lat": 34.27,
   "lng": 108.95,
-  "priority": 80,
+  "priority": 84,
   "tags": [
    "politics",
    "culture"
@@ -1757,7 +1784,7 @@
   "start": -201,
   "lat": 36.3,
   "lng": 9.4,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "war"
   ],
@@ -1782,13 +1809,13 @@
   "end": 1450,
   "lat": 40.0,
   "lng": 70.0,
-  "priority": 82,
+  "priority": 85,
   "tags": [
    "economy",
    "exploration"
   ],
   "summary": "Caravan routes linked China, Central Asia, Persia, India and the Mediterranean for some fifteen centuries.",
-  "body": "Silk, spices, paper, gunpowder, religions and — devastatingly — the [Black Death](event:black-death) all travelled these roads. The Han envoy Zhang Qian's mission west is the conventional starting point.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
+  "body": "Silk, spices, paper, gunpowder, religions and — devastatingly — the [Black Death](event:black-death) all travelled these roads. On the network as a whole, see [the Silk Roads](item:silk-roads). The Han envoy Zhang Qian's mission west is the conventional starting point.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1797,13 +1824,41 @@
   ]
  },
  {
+  "id": "silk-roads",
+  "kind": "concept",
+  "name": "The Silk Roads",
+  "anchorYear": -129,
+  "tags": [
+   "economy",
+   "exploration"
+  ],
+  "summary": "The overland and maritime routes that connected China, India, Persia and the Mediterranean, and the exchange of goods, technologies, religions and disease along them.",
+  "body": "The name is a nineteenth-century coinage for something that was never a single road. [The routes](item:silk-road) were a shifting web of caravan stages and sea lanes, worked in relays by merchants who rarely travelled their whole length; a bolt of silk might change hands twenty times between Chang'an and Antioch.\n\nGoods moved in both directions — silk, porcelain and rhubarb west; horses, glass, silver and cotton east — but the more consequential cargo was intangible. [Paper](item:paper-invention) reached Samarkand and then the Islamic world and Europe; [Buddhism](item:spread-buddhism) travelled from India into Central Asia and China; gunpowder, the compass and Indian numerals followed the same channels. The [Han](item:han-dynasty) mission of Zhang Qian in 130 BCE is the conventional starting point, and the *Pax Mongolica* under [Genghis Khan's](item:temujin-genghis-khan) successors its safest period, when [Marco Polo](item:marco-polo) made the journey.\n\nDisease used the roads too: the [Black Death](item:black-death) almost certainly reached Europe along them. The overland trade declined as the Ming turned inward after [Zheng He](item:zheng-he-admiral) and as Portuguese ships opened a sea route to the Indies, but the maritime leg never stopped.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
+  "related": [
+   "silk-road",
+   "temujin-genghis-khan",
+   "zheng-he-admiral"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Silk_Road"
+   },
+   {
+    "label": "Silk Road trade network",
+    "event": "silk-road"
+   }
+  ],
+  "priority": 85
+ },
+ {
   "id": "spread-buddhism",
   "name": "Buddhism spreads along the Silk Road",
   "start": -100,
   "end": 200,
   "lat": 40.0,
   "lng": 70.0,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "religion",
    "exploration"
@@ -1833,7 +1888,7 @@
   "end": 500,
   "lat": -14.72,
   "lng": -75.13,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "religion"
@@ -1848,13 +1903,89 @@
   ]
  },
  {
+  "id": "julius-caesar",
+  "kind": "person",
+  "name": "Julius Caesar",
+  "born": -99,
+  "died": -43,
+  "birthPlace": {
+   "lat": 41.8955,
+   "lng": 12.4823,
+   "label": "Rome"
+  },
+  "deathPlace": {
+   "lat": 41.8955,
+   "lng": 12.4747,
+   "label": "Theatre of Pompey, Rome"
+  },
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Roman general and statesman whose conquest of Gaul, civil war and dictatorship ended the Republic in all but name.",
+  "body": "Caesar came from an old patrician family of no recent distinction. He built a career through popular politics and debt, and in 60 BCE joined Pompey and Crassus in the informal alliance later called the First Triumvirate, which secured him the consulship and then a long command in the north.\n\nThe [conquest of Gaul](item:caesar-gaul) between 58 and 50 BCE brought him wealth, a devoted army and a reputation his rivals could not match; his own account of it is still read. Ordered to give up his command, he [crossed the Rubicon](item:rubicon) in 49 BCE and took Italy in weeks. He defeated Pompey at Pharsalus, campaigned in Egypt — where he installed [Cleopatra](item:cleopatra-vii) on the throne — and returned to be made dictator, eventually for life.\n\nHe reformed the calendar, settled veterans in colonies across the Mediterranean and extended citizenship. On the Ides of March 44 BCE he was [assassinated](item:caesar-assassination) by a conspiracy of senators who hoped to restore the Republic. The wars that followed did the opposite, ending with his heir Octavian as [the first emperor](item:roman-republic-fall).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Julius_Caesar).",
+  "related": [
+   "cleopatra-vii",
+   "caesar-assassination",
+   "roman-republic-fall"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Julius_Caesar"
+   },
+   {
+    "label": "Assassination of Caesar",
+    "event": "caesar-assassination"
+   }
+  ],
+  "priority": 73
+ },
+ {
+  "id": "cleopatra-vii",
+  "kind": "person",
+  "name": "Cleopatra VII",
+  "born": -68,
+  "died": -29,
+  "birthPlace": {
+   "lat": 31.1975,
+   "lng": 29.8925,
+   "label": "Alexandria, Ptolemaic Egypt"
+  },
+  "deathPlace": {
+   "lat": 31.1975,
+   "lng": 29.8925,
+   "label": "Alexandria"
+  },
+  "tags": [
+   "politics"
+  ],
+  "summary": "The last ruler of Ptolemaic Egypt, who kept her kingdom independent for two decades by way of alliances with Rome's most powerful men.",
+  "body": "Cleopatra was a Macedonian Greek by descent, the last of the Ptolemies who had ruled [Egypt](item:alexandria) since the death of Alexander. She came to the throne at eighteen alongside a younger brother, was driven out, and returned with Roman backing after [Julius Caesar](item:julius-caesar) arrived in Alexandria in 48 BCE. She was reportedly the only member of her dynasty to learn Egyptian.\n\nAfter Caesar's [assassination](item:caesar-assassination) she allied with Mark Antony, with whom she had three children and against whom Octavian turned Roman opinion. Their combined fleet was destroyed at [Actium](item:actium) in 31 BCE; both took their own lives the following year, and Egypt became a Roman province governed as the emperor's personal possession.\n\nHer reign closed three thousand years of Egyptian monarchy. Almost everything written about her in antiquity comes from the side that defeated her, and the portrait of a seductress owes more to Augustan propaganda — and later to Shakespeare — than to the shrewd and multilingual administrator the evidence suggests.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cleopatra).",
+  "related": [
+   "julius-caesar",
+   "actium"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cleopatra"
+   },
+   {
+    "label": "Battle of Actium",
+    "event": "actium"
+   }
+  ],
+  "priority": 57
+ },
+ {
   "id": "caesar-gaul",
   "name": "Caesar's conquest of Gaul",
   "start": -57,
   "end": -49,
   "lat": 47.0,
   "lng": 3.0,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "war"
   ],
@@ -1879,7 +2010,7 @@
   "end": -26,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "politics",
    "war"
@@ -1899,7 +2030,7 @@
   "start": -48,
   "lat": 44.1,
   "lng": 12.4,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "war",
    "politics"
@@ -1924,13 +2055,13 @@
   "start": -43,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "politics"
   ],
   "parent": "roman-republic-fall",
   "summary": "Sixty senators stabbed the dictator to death at the Theatre of Pompey on the Ides of March, 44 BCE.",
-  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The plot to save the Republic destroyed it: the resulting civil wars ended with Octavian as sole ruler.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Julius_Caesar).",
+  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The plot to save the Republic destroyed it: the resulting civil wars ended with Octavian as sole ruler.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Julius_[Caesar](item:julius-caesar)).",
   "links": [
    {
     "label": "Fall of the Roman Republic",
@@ -1948,13 +2079,13 @@
   "start": -30,
   "lat": 38.94,
   "lng": 20.74,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "war"
   ],
   "parent": "roman-republic-fall",
   "summary": "Octavian's fleet defeated Antony and Cleopatra off western Greece; Egypt was annexed the following year.",
-  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The naval battle was fought off Actium in western Greece. Octavian's fleet, commanded by Marcus Agrippa, defeated the forces of Mark Antony and Cleopatra VII of Egypt, who withdrew to Egypt after the defeat. Octavian pursued them, and after their deaths the following year he annexed Egypt as a Roman province. The victory left him without a rival in the Roman world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Actium).",
+  "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The naval battle was fought off Actium in western Greece. Octavian's fleet, commanded by Marcus Agrippa, defeated the forces of Mark Antony and [Cleopatra](item:cleopatra-vii) VII of Egypt, who withdrew to Egypt after the defeat. Octavian pursued them, and after their deaths the following year he annexed Egypt as a Roman province. The victory left him without a rival in the Roman world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Actium).",
   "links": [
    {
     "label": "Fall of the Roman Republic",
@@ -1973,7 +2104,7 @@
   "end": -18,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture"
   ],
@@ -1996,7 +2127,7 @@
   "start": -26,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 86,
+  "priority": 88,
   "tags": [
    "politics"
   ],
@@ -2015,7 +2146,7 @@
   "start": 8,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "culture"
   ],
@@ -2058,7 +2189,7 @@
   "end": 80,
   "lat": 41.89,
   "lng": 12.49,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "culture",
    "technology"
@@ -2087,7 +2218,7 @@
   "start": 77,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "science",
    "culture"
@@ -2133,7 +2264,7 @@
     40.63
    ]
   ],
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "disaster",
    "geology"
@@ -2154,7 +2285,7 @@
   "end": 550,
   "lat": 19.69,
   "lng": -98.84,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "culture",
    "politics"
@@ -2175,7 +2306,7 @@
   "end": 800,
   "lat": -8.17,
   "lng": -79.3,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "culture",
    "politics"
@@ -2195,7 +2326,7 @@
   "start": 100,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "technology",
    "economy"
@@ -2221,7 +2352,7 @@
   "end": 300,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "religion",
    "politics"
@@ -2247,7 +2378,7 @@
   "end": 1600,
   "lat": 36.86,
   "lng": -108.87,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "culture",
    "politics"
@@ -2267,7 +2398,7 @@
   "start": 105,
   "lat": 34.62,
   "lng": 112.45,
-  "priority": 78,
+  "priority": 82,
   "tags": [
    "technology",
    "culture"
@@ -2296,7 +2427,7 @@
   "start": 117,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "politics"
   ],
@@ -2320,7 +2451,7 @@
   "start": 126,
   "lat": 41.89,
   "lng": 12.48,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "culture",
    "technology"
@@ -2406,7 +2537,7 @@
     33
    ]
   ],
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "disease"
   ],
@@ -2451,7 +2582,7 @@
   "end": 538,
   "lat": 34.56,
   "lng": 135.49,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "culture",
    "politics"
@@ -2471,7 +2602,7 @@
   "start": 313,
   "lat": 45.8,
   "lng": 8.62,
-  "priority": 82,
+  "priority": 85,
   "tags": [
    "religion",
    "politics"
@@ -2497,7 +2628,7 @@
   "end": 550,
   "lat": 25.6,
   "lng": 85.1,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "politics",
    "culture",
@@ -2518,7 +2649,7 @@
   "start": 325,
   "lat": 40.43,
   "lng": 29.72,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "religion"
   ],
@@ -2542,7 +2673,7 @@
   "start": 330,
   "lat": 41.01,
   "lng": 28.98,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "politics"
   ],
@@ -2588,7 +2719,7 @@
   "end": 405,
   "lat": 31.7,
   "lng": 35.2,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "religion",
    "culture"
@@ -2608,7 +2739,7 @@
   "start": 410,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "war"
   ],
@@ -2633,7 +2764,7 @@
   "end": 628,
   "lat": 26.85,
   "lng": 80.95,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "science"
   ],

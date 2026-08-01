@@ -32,7 +32,7 @@
   "end": 1800,
   "lat": -6.8,
   "lng": 39.3,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "economy",
    "culture"
@@ -53,7 +53,7 @@
   "end": 1736,
   "lat": 32.68,
   "lng": 51.67,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "politics",
    "culture"
@@ -74,13 +74,13 @@
   "end": 1506,
   "lat": 43.77,
   "lng": 11.26,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "culture"
   ],
   "parent": "renaissance",
   "summary": "Leonardo da Vinci's portrait of Lisa Gherardini became one of the world's most recognizable paintings.",
-  "body": "Part of [The Renaissance](event:renaissance). Painted between about 1503 and 1506, the oil portrait measures 77 by 53 centimetres and depicts Lisa Gherardini, the wife of a Florentine merchant. Leonardo's use of sfumato, which softens the transitions between tones, and the sitter's ambiguous expression have been central to the painting's reputation, and it is now among the most widely recognised works of art in the world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mona_Lisa).",
+  "body": "Part of [The Renaissance](event:renaissance). Painted between about 1503 and 1506, the oil portrait measures 77 by 53 centimetres and depicts Lisa Gherardini, the wife of a Florentine merchant. [Leonardo](item:leonardo-da-vinci)'s use of sfumato, which softens the transitions between tones, and the sitter's ambiguous expression have been central to the painting's reputation, and it is now among the most widely recognised works of art in the world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mona_Lisa).",
   "links": [
    {
     "label": "The Renaissance",
@@ -99,7 +99,7 @@
   "end": 1512,
   "lat": 41.9,
   "lng": 12.45,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "culture",
    "religion"
@@ -145,7 +145,7 @@
   "end": 1566,
   "lat": 18.5,
   "lng": -71.5,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "politics",
    "religion"
@@ -166,7 +166,7 @@
   "end": 1648,
   "lat": 51.87,
   "lng": 12.65,
-  "priority": 90,
+  "priority": 92,
   "tags": [
    "religion",
    "politics"
@@ -186,7 +186,7 @@
   "start": 1517,
   "lat": 51.87,
   "lng": 12.65,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "religion"
   ],
@@ -211,7 +211,7 @@
   "end": 1522,
   "lat": -52.5,
   "lng": -70.0,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "exploration"
   ],
@@ -236,7 +236,7 @@
   "end": 1572,
   "lat": 19.43,
   "lng": -99.13,
-  "priority": 82,
+  "priority": 85,
   "tags": [
    "war",
    "exploration"
@@ -303,7 +303,7 @@
     15
    ]
   ],
-  "priority": 84,
+  "priority": 87,
   "tags": [
    "disease",
    "disaster"
@@ -350,7 +350,7 @@
   "start": 1521,
   "lat": 19.43,
   "lng": -99.13,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "war"
   ],
@@ -413,7 +413,7 @@
     -35
    ]
   ],
-  "priority": 88,
+  "priority": 90,
   "tags": [
    "economy",
    "politics",
@@ -435,7 +435,7 @@
   "end": 1857,
   "lat": 27.17,
   "lng": 78.04,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "politics",
    "culture"
@@ -478,7 +478,7 @@
   "end": 1533,
   "lat": -9.53,
   "lng": -77.53,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "war"
   ],
@@ -502,7 +502,7 @@
   "start": 1534,
   "lat": 51.5,
   "lng": -0.1,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "religion",
    "politics"
@@ -528,7 +528,7 @@
   "end": 1687,
   "lat": 51.75,
   "lng": -1.26,
-  "priority": 90,
+  "priority": 92,
   "tags": [
    "science"
   ],
@@ -547,7 +547,7 @@
   "start": 1543,
   "lat": 54.35,
   "lng": 18.65,
-  "priority": 84,
+  "priority": 87,
   "tags": [
    "science"
   ],
@@ -572,7 +572,7 @@
   "end": 1800,
   "lat": -19.59,
   "lng": -65.75,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "economy",
    "politics"
@@ -593,7 +593,7 @@
   "end": 1563,
   "lat": 46.07,
   "lng": 11.12,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "religion"
   ],
@@ -617,7 +617,7 @@
   "start": 1555,
   "lat": 48.36,
   "lng": 10.89,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "religion",
    "politics"
@@ -643,7 +643,7 @@
   "end": 1605,
   "lat": 27.17,
   "lng": 78.04,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "politics",
    "culture"
@@ -663,13 +663,50 @@
   ]
  },
  {
+  "id": "william-shakespeare",
+  "kind": "person",
+  "name": "William Shakespeare",
+  "born": 1564,
+  "died": 1616,
+  "birthPlace": {
+   "lat": 52.1917,
+   "lng": -1.7073,
+   "label": "Stratford-upon-Avon, Warwickshire"
+  },
+  "deathPlace": {
+   "lat": 52.1917,
+   "lng": -1.7073,
+   "label": "Stratford-upon-Avon"
+  },
+  "tags": [
+   "culture"
+  ],
+  "summary": "English playwright, poet and actor whose thirty-odd plays are the most performed and most translated body of work in any language.",
+  "body": "Shakespeare was born at Stratford-upon-Avon, the son of a glover, and married Anne Hathaway at eighteen. By the early 1590s he was in London as an actor and writer, and he became a shareholder in the Lord Chamberlain's Men — later the King's Men — which built the Globe on the south bank of the Thames.\n\n[The plays](item:shakespeare) run from farce to the late romances by way of the English histories and the four great tragedies. Their reputation rests less on their plots, most of them borrowed, than on the invention of characters who appear to think in front of the audience, and on a use of English so productive that a few hundred words entered the language with them.\n\nHe wrote for a commercial theatre and seems not to have troubled about publication; half the plays survive only because two colleagues collected them in the First Folio of 1623, seven years after his death. He retired to Stratford as a prosperous man and is buried in the parish church there.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Shakespeare).",
+  "related": [
+   "shakespeare",
+   "printing"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/William_Shakespeare"
+   },
+   {
+    "label": "Shakespeare's plays",
+    "event": "shakespeare"
+   }
+  ],
+  "priority": 70
+ },
+ {
   "id": "manila-galleon",
   "name": "Manila Galleon trade route",
   "start": 1565,
   "end": 1815,
   "lat": 14.6,
   "lng": 120.97,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "economy",
    "exploration"
@@ -734,7 +771,7 @@
   "start": 1588,
   "lat": 50.5,
   "lng": -1.5,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "war"
   ],
@@ -764,7 +801,7 @@
    "culture"
   ],
   "summary": "William Shakespeare wrote 37 plays for London theatres between approximately 1589 and 1613, establishing works of fundamental importance in English-language literature.",
-  "body": "Shakespeare wrote comedies, tragedies, and histories that were performed at venues including the Globe Theatre. His works, including *Hamlet*, *Macbeth*, *Othello*, and *A Midsummer Night's Dream*, employ complex characterisation and language. The plays dealt with political, personal, and moral themes and were performed for diverse audiences.\n\nAfter his death in 1616, his plays continued to be performed and studied, becoming foundational texts in English literature and education.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Shakespeare).",
+  "body": "[Shakespeare](item:william-shakespeare) wrote comedies, tragedies, and histories that were performed at venues including the Globe Theatre. His works, including *Hamlet*, *Macbeth*, *Othello*, and *A Midsummer Night's Dream*, employ complex characterisation and language. The plays dealt with political, personal, and moral themes and were performed for diverse audiences.\n\nAfter his death in 1616, his plays continued to be performed and studied, becoming foundational texts in English literature and education.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Shakespeare).",
   "links": [
    {
     "label": "Wikipedia",
@@ -778,7 +815,7 @@
   "start": 1598,
   "lat": 47.22,
   "lng": -1.55,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "religion",
    "politics"
@@ -803,7 +840,7 @@
   "start": 1600,
   "lat": 51.51,
   "lng": -0.09,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "economy",
    "politics"
@@ -823,7 +860,7 @@
   "start": 1602,
   "lat": 52.37,
   "lng": 4.9,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "economy",
    "politics"
@@ -844,7 +881,7 @@
   "end": 1868,
   "lat": 35.68,
   "lng": 139.69,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "politics"
   ],
@@ -863,7 +900,7 @@
   "start": 1607,
   "lat": 37.23,
   "lng": -76.51,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "exploration",
    "politics"
@@ -888,7 +925,7 @@
   "start": 1608,
   "lat": 46.81,
   "lng": -71.21,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "exploration",
    "politics"
@@ -914,7 +951,7 @@
   "end": 1619,
   "lat": 50.09,
   "lng": 14.42,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "science"
   ],
@@ -938,7 +975,7 @@
   "start": 1610,
   "lat": 45.41,
   "lng": 11.88,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "science"
   ],
@@ -1001,7 +1038,7 @@
     42
    ]
   ],
-  "priority": 78,
+  "priority": 81,
   "tags": [
    "war",
    "religion"
@@ -1026,7 +1063,7 @@
   "start": 1628,
   "lat": 51.51,
   "lng": -0.09,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "science"
   ],
@@ -1051,7 +1088,7 @@
   "end": 1653,
   "lat": 27.17,
   "lng": 78.04,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "culture"
   ],
@@ -1076,7 +1113,7 @@
   "end": 1651,
   "lat": 52.28,
   "lng": -1.25,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "war",
    "politics"
@@ -1091,13 +1128,51 @@
   ]
  },
  {
+  "id": "isaac-newton",
+  "kind": "person",
+  "name": "Isaac Newton",
+  "born": 1643,
+  "died": 1727,
+  "birthPlace": {
+   "lat": 52.8093,
+   "lng": -0.6297,
+   "label": "Woolsthorpe Manor, Lincolnshire"
+  },
+  "deathPlace": {
+   "lat": 51.5017,
+   "lng": -0.1875,
+   "label": "Kensington, London"
+  },
+  "tags": [
+   "science"
+  ],
+  "summary": "English mathematician and physicist who set out the laws of motion and universal gravitation, and who invented the calculus independently of Leibniz.",
+  "body": "Newton was born at Woolsthorpe in Lincolnshire on Christmas Day 1642 by the calendar then used in England, which is 4 January 1643 by the one used now. He went up to Trinity College, Cambridge, and did much of his most original work in 1665–67, when plague closed the university and he returned home.\n\nThe *[Principia](item:newton)* of 1687 gave three laws of motion and a law of universal gravitation, and showed that the same mathematics governs a falling apple, the tides, comets and the orbits of the planets. It is the central text of the [Scientific Revolution](item:scientific-revolution). To carry out the work he developed what he called fluxions — the [calculus](item:calculus), which Gottfried Wilhelm Leibniz reached independently and published first, provoking a bitter priority dispute.\n\nHe also wrote the *Opticks*, demonstrated that white light is a mixture of colours, built the first reflecting telescope, spent decades on alchemy and biblical chronology, sat in Parliament, and ran the Royal Mint, where he pursued counterfeiters with some enthusiasm. He was President of the Royal Society from 1703 until his death.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Isaac_Newton).",
+  "related": [
+   "calculus",
+   "newton",
+   "scientific-revolution"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Isaac_Newton"
+   },
+   {
+    "label": "Newton's Principia",
+    "event": "newton"
+   }
+  ],
+  "priority": 90
+ },
+ {
   "id": "qing-dynasty",
   "name": "Qing dynasty",
   "start": 1644,
   "end": 1912,
   "lat": 39.92,
   "lng": 116.39,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "politics"
   ],
@@ -1116,7 +1191,7 @@
   "start": 1648,
   "lat": 51.96,
   "lng": 7.63,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "politics"
   ],
@@ -1141,7 +1216,7 @@
   "end": 1707,
   "lat": 28.61,
   "lng": 77.21,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "politics",
    "war"
@@ -1167,7 +1242,7 @@
   "end": 1722,
   "lat": 39.92,
   "lng": 116.39,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "politics",
    "culture"
@@ -1192,7 +1267,7 @@
   "start": 1662,
   "lat": 51.75,
   "lng": -1.26,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "science"
   ],
@@ -1216,7 +1291,7 @@
   "start": 1665,
   "lat": 51.51,
   "lng": -0.1,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "science"
   ],
@@ -1235,12 +1310,39 @@
   ]
  },
  {
+  "id": "calculus",
+  "kind": "concept",
+  "name": "Calculus",
+  "anchorYear": 1666,
+  "tags": [
+   "science"
+  ],
+  "summary": "The mathematics of change: differentiation, which measures rates, and integration, which accumulates them — and the theorem that the two are inverse operations.",
+  "body": "Areas and tangents had been attacked for two thousand years, by Archimedes with exhaustion arguments and by Fermat, Cavalieri and Barrow with methods that worked case by case. What [Newton](item:isaac-newton) and Gottfried Wilhelm Leibniz supplied in the 1660s and 1670s was a general calculus: a notation and a set of rules that made the problems routine, and the fundamental theorem linking the two operations.\n\nNewton developed his fluxions first and used them in the *[Principia](item:newton)*, though he presented the results there in classical geometry. Leibniz published first, and his notation — dx, dy and the integral sign — is the one still in use. The priority dispute between them, and between their national followers, was long and unedifying.\n\nThe foundations were shaky for a century and a half: infinitesimals were quantities that had to be non-zero and then zero, an objection Bishop Berkeley put memorably. Cauchy and Weierstrass replaced them with limits in the nineteenth century. Meanwhile the calculus had become the language of physics and engineering — the [Scientific Revolution's](item:scientific-revolution) most durable instrument, and the basis of every differential equation used to describe a continuous process.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Calculus).",
+  "related": [
+   "isaac-newton",
+   "newton",
+   "scientific-revolution"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Calculus"
+   },
+   {
+    "label": "Isaac Newton",
+    "event": "isaac-newton"
+   }
+  ],
+  "priority": 90
+ },
+ {
   "id": "leeuwenhoek-microscope",
   "name": "Leeuwenhoek's microscopes reveal microorganisms",
   "start": 1674,
   "lat": 52.01,
   "lng": 4.36,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "science",
    "technology"
@@ -1266,7 +1368,7 @@
   "end": 1711,
   "lat": 51.51,
   "lng": -0.1,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "culture"
   ],
@@ -1286,7 +1388,7 @@
   "end": 1725,
   "lat": 55.75,
   "lng": 37.62,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "politics",
    "culture"
@@ -1306,7 +1408,7 @@
   "start": 1683,
   "lat": 48.21,
   "lng": 16.37,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "war"
   ],
@@ -1331,7 +1433,7 @@
   "end": 1750,
   "lat": 51.33,
   "lng": 12.38,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "culture"
   ],
@@ -1351,7 +1453,7 @@
   "end": 1800,
   "lat": 48.86,
   "lng": 2.35,
-  "priority": 86,
+  "priority": 88,
   "tags": [
    "culture",
    "science",
@@ -1372,13 +1474,13 @@
   "start": 1687,
   "lat": 52.21,
   "lng": 0.12,
-  "priority": 88,
+  "priority": 90,
   "tags": [
    "science"
   ],
   "parent": "scientific-revolution",
   "summary": "Three laws of motion and universal gravitation explained falling bodies, tides, comets and planetary orbits within a single system.",
-  "body": "Part of [The Scientific Revolution](event:scientific-revolution). Newton published the *Principia* in 1687, setting out three laws of motion and the law of universal gravitation and applying them to falling bodies, the tides, comets and the orbits of the planets. He developed the calculus needed to carry out the work.\n\nThe *Principia* is among the most influential scientific books ever written, and it made physics the model to which the other sciences aspired for two centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica).",
+  "body": "Part of [The Scientific Revolution](event:scientific-revolution). [Newton](item:isaac-newton) published the *Principia* in 1687, setting out three laws of motion and the law of universal gravitation and applying them to falling bodies, the tides, comets and the orbits of the planets. He developed the calculus needed to carry out the work.\n\nThe *Principia* is among the most influential scientific books ever written, and it made physics the model to which the other sciences aspired for two centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica).",
   "links": [
    {
     "label": "The Scientific Revolution",
@@ -1396,7 +1498,7 @@
   "start": 1688,
   "lat": 51.51,
   "lng": -0.13,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "politics"
   ],
@@ -1416,7 +1518,7 @@
   "end": 1778,
   "lat": 48.87,
   "lng": 2.31,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "culture",
    "politics"
@@ -1441,7 +1543,7 @@
   "start": 1703,
   "lat": 59.93,
   "lng": 30.31,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "politics"
   ],
@@ -1465,7 +1567,7 @@
   "start": 1707,
   "lat": 55.9,
   "lng": -3.2,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "politics"
   ],
@@ -1485,7 +1587,7 @@
   "end": 1735,
   "lat": 39.92,
   "lng": 116.39,
-  "priority": 56,
+  "priority": 53,
   "tags": [
    "politics",
    "culture"
@@ -1511,7 +1613,7 @@
   "end": 1776,
   "lat": 55.95,
   "lng": -3.19,
-  "priority": 56,
+  "priority": 53,
   "tags": [
    "culture"
   ],
@@ -1536,7 +1638,7 @@
   "end": 1790,
   "lat": 52.5,
   "lng": 13.4,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "politics",
    "culture"
@@ -1561,7 +1663,7 @@
   "start": 1748,
   "lat": 44.83,
   "lng": -0.58,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "culture",
    "politics"
@@ -1587,7 +1689,7 @@
   "end": 1772,
   "lat": 48.86,
   "lng": 2.35,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "culture",
    "technology"
@@ -1612,7 +1714,7 @@
   "start": 1752,
   "lat": 22.0,
   "lng": 95.7,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "politics",
    "war"
@@ -1632,7 +1734,7 @@
   "start": 1755,
   "lat": 38.72,
   "lng": -9.14,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "disaster"
   ],
@@ -1652,7 +1754,7 @@
   "end": 1791,
   "lat": 48.21,
   "lng": 16.37,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "culture"
   ],
@@ -1672,7 +1774,7 @@
   "end": 1763,
   "lat": 50.0,
   "lng": 14.0,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "war"
   ],
@@ -1691,7 +1793,7 @@
   "start": 1757,
   "lat": 23.8,
   "lng": 88.25,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "war",
    "politics"
@@ -1732,7 +1834,7 @@
   "start": 1762,
   "lat": 48.9,
   "lng": 2.36,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "culture",
    "politics"
@@ -1757,7 +1859,7 @@
   "start": 1764,
   "lat": 53.58,
   "lng": -2.43,
-  "priority": 56,
+  "priority": 53,
   "tags": [
    "technology"
   ],
@@ -1776,13 +1878,52 @@
   ]
  },
  {
+  "id": "napoleon-bonaparte",
+  "kind": "person",
+  "name": "Napoleon Bonaparte",
+  "born": 1769,
+  "died": 1821,
+  "birthPlace": {
+   "lat": 41.9264,
+   "lng": 8.7369,
+   "label": "Ajaccio, Corsica"
+  },
+  "deathPlace": {
+   "lat": -15.9457,
+   "lng": -5.7089,
+   "label": "Longwood, Saint Helena"
+  },
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "French general who made himself emperor, dominated Europe for a decade, and left behind a legal code still in use across much of the world.",
+  "body": "Born on Corsica a year after France annexed it, Napoleon was trained at French military schools and made his name in the artillery during [the Revolution](item:french-revolution). Command in Italy and an expedition to Egypt built his reputation; in 1799 he [seized power](item:napoleon-coup) in a coup, and in 1804 crowned himself emperor.\n\nAs a commander he moved armies faster than his opponents could react and concentrated force at the decisive point; [Austerlitz](item:austerlitz) in 1805 is the usual textbook example. [The wars](item:napoleonic-wars) that carry his name put most of Europe under French control or influence, but Britain held the sea after [Trafalgar](item:trafalgar), Spain became an unwinnable guerrilla war, and [the invasion of Russia](item:russia-1812) in 1812 destroyed the Grande Armée. He abdicated in 1814, returned for a hundred days, and was beaten at [Waterloo](item:waterloo).\n\nHe died in British custody on Saint Helena. The Napoleonic Code, a centralised administration, the metric system and conscription outlasted him, and the nationalism his campaigns provoked shaped Europe for a century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleon).",
+  "related": [
+   "napoleonic-wars",
+   "french-revolution",
+   "waterloo"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Napoleon"
+   },
+   {
+    "label": "Napoleonic Wars",
+    "event": "napoleonic-wars"
+   }
+  ],
+  "priority": 88
+ },
+ {
   "id": "goethe-literature",
   "name": "Goethe's literary influence",
   "start": 1774,
   "end": 1800,
   "lat": 50.1,
   "lng": 8.68,
-  "priority": 56,
+  "priority": 53,
   "tags": [
    "culture"
   ],
@@ -1802,7 +1943,7 @@
   "end": 1783,
   "lat": 39.95,
   "lng": -75.16,
-  "priority": 86,
+  "priority": 88,
   "tags": [
    "politics",
    "war"
@@ -1822,7 +1963,7 @@
   "start": 1776,
   "lat": 55.95,
   "lng": -3.19,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "economy",
    "culture"
@@ -1847,7 +1988,7 @@
   "start": 1776,
   "lat": 52.48,
   "lng": -1.9,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "technology"
   ],
@@ -1871,7 +2012,7 @@
   "start": 1776,
   "lat": 39.95,
   "lng": -75.15,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "politics"
   ],
@@ -1896,7 +2037,7 @@
   "end": 1802,
   "lat": 16.0,
   "lng": 107.0,
-  "priority": 56,
+  "priority": 53,
   "tags": [
    "war",
    "politics"
@@ -1916,7 +2057,7 @@
   "start": 1781,
   "lat": 37.24,
   "lng": -76.51,
-  "priority": 56,
+  "priority": 53,
   "tags": [
    "war"
   ],
@@ -1959,7 +2100,7 @@
   "start": 1787,
   "lat": 39.95,
   "lng": -75.15,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "politics"
   ],
@@ -1984,7 +2125,7 @@
   "end": 1799,
   "lat": 48.86,
   "lng": 2.35,
-  "priority": 95,
+  "priority": 94,
   "tags": [
    "politics"
   ],
@@ -2003,7 +2144,7 @@
   "start": 1789,
   "lat": 48.85,
   "lng": 2.37,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "politics"
   ],
@@ -2027,7 +2168,7 @@
   "start": 1789,
   "lat": 48.86,
   "lng": 2.32,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "politics"
   ],
@@ -2052,7 +2193,7 @@
   "end": 1804,
   "lat": 18.54,
   "lng": -72.34,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "politics",
    "war"
@@ -2073,7 +2214,7 @@
   "end": 1794,
   "lat": 48.86,
   "lng": 2.34,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "politics",
    "war"
@@ -2098,7 +2239,7 @@
   "start": 1796,
   "lat": 51.72,
   "lng": -2.37,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "science"
   ],
@@ -2117,7 +2258,7 @@
   "start": 1799,
   "lat": 48.86,
   "lng": 2.32,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "politics"
   ],

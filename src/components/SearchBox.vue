@@ -4,6 +4,7 @@ import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
 import { formatYear } from '../lib/time'
+import { kindOf, type Item } from '../lib/events'
 
 const events = useEventStore()
 const time = useTimeStore()
@@ -14,13 +15,20 @@ const results = computed(() => events.search(query.value))
 
 onMounted(() => input.value?.focus())
 
+/** Persons and concepts are labelled; an event is the unmarked case. */
+const badge = (i: Item) => (kindOf(i) === 'event' ? '' : kindOf(i))
+
 function pick(id: string) {
-  const e = events.byId(id)!
-  if (e.start < time.range.start || e.start > time.range.end) {
-    const pad = Math.max(50, Math.abs(e.start) * 0.05)
-    time.range = { start: e.start - pad, end: e.start + pad }
+  // Search reaches items that are not events, so the year to jump to is the
+  // item's anchor — a birth for a life, an anchorYear for an idea.
+  const year = events.focusYear(id)
+  if (year !== undefined) {
+    if (year < time.range.start || year > time.range.end) {
+      const pad = Math.max(50, Math.abs(year) * 0.05)
+      time.range = { start: year - pad, end: year + pad }
+    }
+    time.setTime(year)
   }
-  time.setTime(e.start)
   events.select(id)
   query.value = ''
   ui.close()
@@ -46,8 +54,8 @@ function pick(id: string) {
         ref="input"
         v-model="query"
         type="search"
-        placeholder="Search events"
-        aria-label="Search events"
+        placeholder="Search events, people, ideas"
+        aria-label="Search events, people and ideas"
         @keydown.escape="ui.close()"
         @keydown.enter="results[0] && pick(results[0].id)"
       />
@@ -61,11 +69,12 @@ function pick(id: string) {
         @mousedown.prevent="pick(e.id)"
       >
         <span class="name">{{ e.name }}</span>
-        <span class="year tnum">{{ formatYear(e.start) }}</span>
+        <span v-if="badge(e)" class="kind" data-test="kind-badge">{{ badge(e) }}</span>
+        <span class="year tnum">{{ formatYear(events.focusYear(e.id) ?? 0) }}</span>
       </li>
     </ul>
-    <p v-else-if="query.trim()" class="empty">No events match. Try a name or a tag like “war”.</p>
-    <p v-else class="empty">Type to find an event — then Enter to jump there.</p>
+    <p v-else-if="query.trim()" class="empty">Nothing matches. Try a name or a tag like “war”.</p>
+    <p v-else class="empty">Type to find an event, a person or an idea — then Enter to jump there.</p>
   </div>
 </template>
 
@@ -145,6 +154,10 @@ li {
   align-items: center;
   justify-content: space-between;
   gap: var(--s3);
+  /* a grid item's automatic minimum size is its min-content width, so without
+     this the row grows past the list rather than the name ellipsing — which
+     pushed the year out of the panel once rows carried a kind badge too */
+  min-width: 0;
   padding: 8px 10px;
   border-radius: 7px;
   cursor: pointer;
@@ -153,10 +166,27 @@ li {
     background-color var(--fast),
     color var(--fast);
 }
+/* the name yields first: with a kind badge in the row it is the only part that
+   can give, and `min-width: 0` is what actually lets a flex item shrink below
+   its text (without it the year is pushed out of the panel) */
 .name {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* the kind of thing a row is; events carry no badge, being the common case */
+.kind {
+  flex: none;
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 1px 7px;
 }
 /* the first row is what Enter selects — mark it quietly */
 li.first {

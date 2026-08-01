@@ -6,14 +6,14 @@
   "end": 1815,
   "lat": 48.86,
   "lng": 2.35,
-  "priority": 86,
+  "priority": 88,
   "tags": [
    "war",
    "politics"
   ],
   "parent": "french-revolution",
   "summary": "France under Napoleon fought most of Europe for twelve years and briefly dominated the continent.",
-  "body": "Part of [French Revolution](event:french-revolution). Nelson's victory at [Trafalgar](event:trafalgar) secured British command of the sea; the [invasion of Russia](event:russia-1812) destroyed the Grande Armée; [Waterloo](event:waterloo) ended the adventure.\n\nThe wars spread the Napoleonic Code, conscription and nationalism across Europe, and the peace that followed at Vienna held the great powers back from general war for a century — until [1914](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleonic_Wars).",
+  "body": "Part of [French Revolution](event:french-revolution). [Napoleon's](item:napoleon-bonaparte) empire met its limits at sea: Nelson's victory at [Trafalgar](event:trafalgar) secured British command of the sea; the [invasion of Russia](event:russia-1812) destroyed the Grande Armée; [Waterloo](event:waterloo) ended the adventure.\n\nThe wars spread the Napoleonic Code, conscription and nationalism across Europe, and the peace that followed at Vienna held the great powers back from general war for a century — until [1914](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleonic_Wars).",
   "links": [
    {
     "label": "French Revolution",
@@ -31,7 +31,7 @@
   "start": 1805,
   "lat": 36.18,
   "lng": -6.03,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "war"
   ],
@@ -55,7 +55,7 @@
   "start": 1805,
   "lat": 49.13,
   "lng": 16.76,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "war"
   ],
@@ -72,6 +72,82 @@
     "url": "https://en.wikipedia.org/wiki/Battle_of_Austerlitz"
    }
   ]
+ },
+ {
+  "id": "charles-darwin",
+  "kind": "person",
+  "name": "Charles Darwin",
+  "born": 1809,
+  "died": 1882,
+  "birthPlace": {
+   "lat": 52.7093,
+   "lng": -2.7454,
+   "label": "Shrewsbury, Shropshire"
+  },
+  "deathPlace": {
+   "lat": 51.3311,
+   "lng": 0.0537,
+   "label": "Down House, Kent"
+  },
+  "tags": [
+   "biology",
+   "science"
+  ],
+  "summary": "English naturalist who established that species descend with modification from common ancestors, and proposed natural selection as the mechanism.",
+  "body": "Darwin abandoned medicine at Edinburgh and read for the clergy at Cambridge before sailing as naturalist on HMS *Beagle* in 1831. The five-year voyage took him along the coasts of South America and to the Galápagos, and the fossils, geology and island species he collected there occupied him for the rest of his life.\n\nHe worked out the principle of [natural selection](item:natural-selection) by 1838 but published nothing for twenty years, spending them instead on barnacles, orchids and correspondence. In 1858 Alfred Russel Wallace sent him an essay reaching the same conclusion; their work was read jointly to the Linnean Society, and [*On the Origin of Species*](item:origin-species) followed in 1859.\n\nLater books extended the argument to human ancestry, to sexual selection and to the expression of emotion. Darwin lived quietly at Down House in Kent, in poor health, and is buried in Westminster Abbey. Descent with modification is now the organising principle of biology, and its union with genetics after the [structure of DNA](item:dna-structure) was established has left the core of his argument intact.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charles_Darwin).",
+  "related": [
+   "natural-selection",
+   "origin-species"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Charles_Darwin"
+   },
+   {
+    "label": "On the Origin of Species",
+    "event": "origin-species"
+   }
+  ],
+  "priority": 92
+ },
+ {
+  "id": "abraham-lincoln",
+  "kind": "person",
+  "name": "Abraham Lincoln",
+  "born": 1809,
+  "died": 1865,
+  "birthPlace": {
+   "lat": 37.5316,
+   "lng": -85.7383,
+   "label": "Hodgenville, Kentucky"
+  },
+  "deathPlace": {
+   "lat": 38.8967,
+   "lng": -77.0254,
+   "label": "Washington, D.C."
+  },
+  "tags": [
+   "politics"
+  ],
+  "summary": "Sixteenth president of the United States, who led the Union through the Civil War and made the abolition of slavery its object.",
+  "body": "Lincoln was born in a Kentucky log cabin, had perhaps a year of formal schooling, and taught himself law in Illinois. A Whig legislator and one-term congressman, he returned to politics over the extension of slavery into the territories, lost a Senate race to Stephen Douglas in 1858 after a celebrated series of debates, and was elected president in 1860 on the new Republican ticket.\n\nSeven states seceded before he took office and [war](item:us-civil-war) began within six weeks. He held the border states, blockaded the South, and cycled through commanders until he found Grant. The [Emancipation Proclamation](item:emancipation) of 1863 turned the war for the Union into a war against slavery and opened the army to black soldiers; his address at [Gettysburg](item:gettysburg) that November restated the war as a test of whether government by consent could survive.\n\nRe-elected in 1864, he pressed the Thirteenth Amendment through Congress and argued for a lenient peace. Five days after Lee's surrender he was [shot at Ford's Theatre](item:lincoln-assassination), the first American president to be assassinated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abraham_Lincoln).",
+  "related": [
+   "us-civil-war",
+   "emancipation",
+   "democracy"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Abraham_Lincoln"
+   },
+   {
+    "label": "American Civil War",
+    "event": "us-civil-war"
+   }
+  ],
+  "priority": 86
  },
  {
   "id": "latam-independence",
@@ -126,7 +202,7 @@
     15
    ]
   ],
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "politics",
    "war"
@@ -192,7 +268,7 @@
     45
    ]
   ],
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "war"
   ],
@@ -216,7 +292,7 @@
   "start": 1815,
   "lat": 50.68,
   "lng": 4.41,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "war"
   ],
@@ -240,7 +316,7 @@
   "start": 1815,
   "lat": -8.25,
   "lng": 118.0,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "disaster",
    "geology",
@@ -256,12 +332,50 @@
   ]
  },
  {
+  "id": "ada-lovelace",
+  "kind": "person",
+  "name": "Ada Lovelace",
+  "born": 1815,
+  "died": 1852,
+  "birthPlace": {
+   "lat": 51.5145,
+   "lng": -0.1509,
+   "label": "London"
+  },
+  "deathPlace": {
+   "lat": 51.5205,
+   "lng": -0.1531,
+   "label": "Marylebone, London"
+  },
+  "tags": [
+   "science",
+   "technology"
+  ],
+  "summary": "English mathematician whose notes on Babbage's Analytical Engine describe a machine that could operate on symbols rather than only on numbers.",
+  "body": "Augusta Ada Byron was the daughter of the poet Lord Byron, who left England when she was a month old, and of Anne Isabella Milbanke, who had her tutored in mathematics in the hope of steadying an inherited temperament. She met Charles Babbage at seventeen and became a correspondent on his calculating engines.\n\nIn 1843 she translated an Italian account of the proposed Analytical Engine and appended notes three times the length of the original. They include a step-by-step method for computing Bernoulli numbers on the machine — commonly described as the first published algorithm intended for a computer — and, more strikingly, the observation that a machine manipulating symbols by rule could compose music or work on anything reducible to symbols, not merely arithmetic.\n\nNeither the engine nor the notes had much practical effect: Babbage never built the machine, and the ideas were rediscovered rather than inherited when [electronic computing](item:global-internet) began a century later, in work such as [Turing's](item:alan-turing). She died of cancer at thirty-six.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ada_Lovelace).",
+  "related": [
+   "alan-turing",
+   "industrial-revolution"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ada_Lovelace"
+   },
+   {
+    "label": "Alan Turing",
+    "event": "alan-turing"
+   }
+  ],
+  "priority": 0
+ },
+ {
   "id": "year-without-summer",
   "name": "The Year Without a Summer",
   "start": 1816,
   "lat": 44.0,
   "lng": -72.0,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "climate",
    "disaster"
@@ -286,7 +400,7 @@
   "start": 1830,
   "lat": 53.41,
   "lng": -2.98,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "technology",
    "economy"
@@ -332,7 +446,7 @@
   "start": 1844,
   "lat": 38.89,
   "lng": -77.01,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "technology"
   ],
@@ -410,7 +524,7 @@
     42
    ]
   ],
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "politics"
   ],
@@ -429,7 +543,7 @@
   "start": 1848,
   "lat": 50.85,
   "lng": 4.35,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "politics",
    "culture"
@@ -450,7 +564,7 @@
   "end": 1864,
   "lat": 32.06,
   "lng": 118.8,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "war",
    "religion"
@@ -471,7 +585,7 @@
   "end": 1856,
   "lat": 44.5,
   "lng": 33.5,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "war",
    "politics"
@@ -491,7 +605,7 @@
   "start": 1856,
   "lat": 53.4,
   "lng": -1.5,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "technology",
    "economy"
@@ -517,7 +631,7 @@
   "end": 1858,
   "lat": 26.5,
   "lng": 80.5,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "war",
    "politics"
@@ -542,7 +656,7 @@
   "start": 1858,
   "lat": 51.93,
   "lng": -10.35,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "technology"
   ],
@@ -567,7 +681,7 @@
   "end": 1947,
   "lat": 28.61,
   "lng": 77.21,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "politics"
   ],
@@ -586,13 +700,13 @@
   "start": 1859,
   "lat": 51.26,
   "lng": 0.05,
-  "priority": 90,
+  "priority": 92,
   "tags": [
    "science",
    "biology"
   ],
   "summary": "Natural selection explained the diversity and design of life without a designer.",
-  "body": "Darwin had sat on the idea for twenty years; Alfred Russel Wallace's independent arrival at the same conclusion forced publication. The theory unified all of biology and, with [genetics](event:dna-structure), remains its central organising principle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/On_the_Origin_of_Species).",
+  "body": "[Darwin](item:charles-darwin) had sat on the idea for twenty years; Alfred Russel Wallace's independent arrival at the same conclusion forced publication. The theory unified all of biology and, with [genetics](event:dna-structure), remains its central organising principle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/On_the_Origin_of_Species).",
   "links": [
    {
     "label": "Wikipedia",
@@ -601,18 +715,46 @@
   ]
  },
  {
+  "id": "natural-selection",
+  "kind": "concept",
+  "name": "Evolution by natural selection",
+  "anchorYear": 1859,
+  "tags": [
+   "biology",
+   "science"
+  ],
+  "summary": "The explanation of adaptation without design: heritable variation plus differential survival and reproduction, repeated over generations.",
+  "body": "The argument has three premises and one conclusion. Organisms vary; some of that variation is inherited; more offspring are produced than can survive. It follows that variants which happen to leave more descendants become more common, and that populations change over time in ways that look designed but are not.\n\n[Darwin](item:charles-darwin) and Alfred Russel Wallace arrived at it independently and published jointly in 1858; [*On the Origin of Species*](item:origin-species) set out the evidence the following year. Its weakest point was heredity — Darwin had no mechanism — and it was resolved only when Mendelian genetics was combined with selection in the modern synthesis of the 1930s and 40s, and again by the [structure of DNA](item:dna-structure) and the reading of [whole genomes](item:human-genome).\n\nNatural selection is not the only evolutionary process: drift, migration and mutation all change populations, and much molecular change is effectively neutral. It is, however, the only known process that produces adaptation, and it applies wherever there is heritable variation in reproductive success — including to bacteria acquiring antibiotic resistance and to viruses evolving during an epidemic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Natural_selection).",
+  "related": [
+   "charles-darwin",
+   "origin-species",
+   "germ-theory-of-disease"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Natural_selection"
+   },
+   {
+    "label": "Charles Darwin",
+    "event": "charles-darwin"
+   }
+  ],
+  "priority": 91
+ },
+ {
   "id": "germ-theory",
   "name": "Germ theory of disease",
   "start": 1861,
   "end": 1885,
   "lat": 48.84,
   "lng": 2.34,
-  "priority": 78,
+  "priority": 81,
   "tags": [
    "science"
   ],
   "summary": "Pasteur, Koch and Lister established that specific microorganisms cause specific diseases.",
-  "body": "Antisepsis, pasteurisation, sterile surgery and public sanitation followed; combined with later [antibiotics](event:penicillin) and [vaccination](event:smallpox-vaccine), they roughly doubled human life expectancy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Germ_theory_of_disease).",
+  "body": "[Germ theory](item:germ-theory-of-disease) reshaped practice: antisepsis, pasteurisation, sterile surgery and public sanitation followed; combined with later [antibiotics](event:penicillin) and [vaccination](event:smallpox-vaccine), they roughly doubled human life expectancy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Germ_theory_of_disease).",
   "links": [
    {
     "label": "Wikipedia",
@@ -627,7 +769,7 @@
   "end": 1865,
   "lat": 37.5,
   "lng": -79.0,
-  "priority": 84,
+  "priority": 86,
   "tags": [
    "war",
    "politics"
@@ -642,18 +784,46 @@
   ]
  },
  {
+  "id": "germ-theory-of-disease",
+  "kind": "concept",
+  "name": "Germ theory of disease",
+  "anchorYear": 1861,
+  "tags": [
+   "science",
+   "disease"
+  ],
+  "summary": "The principle that specific microorganisms cause specific diseases, displacing miasma and imbalance as explanations of illness.",
+  "body": "For most of history epidemics were explained by bad air, divine punishment or an imbalance of humours. Microorganisms had been visible since [Leeuwenhoek's microscopes](item:leeuwenhoek-microscope) in the 1670s, but nothing connected them to illness until the nineteenth century.\n\nThe case was assembled piece by piece: John Snow traced a cholera outbreak to a single London water pump in 1854; Pasteur showed that fermentation and putrefaction are the work of living organisms and that heating kills them; Lister applied the inference to surgery with carbolic antisepsis; [Koch](item:germ-theory) isolated the anthrax and tuberculosis bacilli and set out the postulates that establish which organism causes which disease.\n\nThe consequences were larger than any single cure. Sterile surgery, safe water, sewerage and food hygiene cut mortality long before there was much to treat infections with, and the theory made [vaccination](item:smallpox-vaccine) intelligible rather than merely empirical and [antibiotics](item:penicillin) conceivable. Retrospective diagnosis of past epidemics — the [Black Death](item:black-death), the [Plague of Justinian](item:justinian-plague) — rests on it, and so does the century-long rise in life expectancy that followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Germ_theory_of_disease).",
+  "related": [
+   "germ-theory",
+   "natural-selection",
+   "penicillin"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Germ_theory_of_disease"
+   },
+   {
+    "label": "Germ theory of disease",
+    "event": "germ-theory"
+   }
+  ],
+  "priority": 81
+ },
+ {
   "id": "emancipation",
   "name": "Emancipation Proclamation",
   "start": 1863,
   "lat": 38.9,
   "lng": -77.04,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "politics"
   ],
   "parent": "us-civil-war",
   "summary": "Lincoln declared enslaved people in the rebelling states to be free; the Thirteenth Amendment abolished slavery outright in 1865.",
-  "body": "Part of [American Civil War](event:us-civil-war). Lincoln declared enslaved people in the rebelling states to be free; the Thirteenth Amendment abolished slavery outright in 1865.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Emancipation_Proclamation).",
+  "body": "Part of [American Civil War](event:us-civil-war). [Lincoln](item:abraham-lincoln) declared enslaved people in the rebelling states to be free; the Thirteenth Amendment abolished slavery outright in 1865.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Emancipation_Proclamation).",
   "links": [
    {
     "label": "American Civil War",
@@ -671,7 +841,7 @@
   "start": 1863,
   "lat": 39.81,
   "lng": -77.23,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "war"
   ],
@@ -695,7 +865,7 @@
   "start": 1865,
   "lat": 38.9,
   "lng": -77.03,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "politics"
   ],
@@ -714,12 +884,50 @@
   ]
  },
  {
+  "id": "marie-curie",
+  "kind": "person",
+  "name": "Marie Curie",
+  "born": 1867,
+  "died": 1934,
+  "birthPlace": {
+   "lat": 52.2431,
+   "lng": 20.9976,
+   "label": "Warsaw, Congress Poland"
+  },
+  "deathPlace": {
+   "lat": 45.9213,
+   "lng": 6.6994,
+   "label": "Passy, Haute-Savoie"
+  },
+  "tags": [
+   "science"
+  ],
+  "summary": "Polish-French physicist and chemist who discovered polonium and radium, coined the term radioactivity, and remains the only person to win Nobel Prizes in two sciences.",
+  "body": "Born Maria Skłodowska in Warsaw under Russian rule, she was barred as a woman from the university there and studied instead at the clandestine Flying University before leaving for Paris in 1891. At the Sorbonne she took degrees in physics and mathematics, and in 1895 married Pierre Curie.\n\nFollowing Henri Becquerel's discovery that uranium salts emit [radiation of their own accord](item:radioactivity), she measured the effect in every element she could obtain, showed that it came from the atom itself, and named it radioactivity. Processing tonnes of pitchblende by hand, the Curies isolated two new elements in 1898: polonium, named for her homeland, and radium. She shared the 1903 Nobel Prize in Physics with Pierre and Becquerel, and took the 1911 Prize in Chemistry alone.\n\nDuring [the First World War](item:ww1) she equipped mobile radiological units — the *petites Curies* — and trained their operators, bringing [X-ray](item:x-rays) diagnosis to the front. She died of aplastic anaemia, almost certainly caused by her lifelong exposure to radiation; her notebooks remain radioactive.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marie_Curie).",
+  "related": [
+   "radioactivity",
+   "x-rays",
+   "albert-einstein"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Marie_Curie"
+   },
+   {
+    "label": "Discovery of radioactivity",
+    "event": "radioactivity"
+   }
+  ],
+  "priority": 72
+ },
+ {
   "id": "meiji",
   "name": "Meiji Restoration",
   "start": 1868,
   "lat": 35.68,
   "lng": 139.75,
-  "priority": 78,
+  "priority": 81,
   "tags": [
    "politics",
    "technology"
@@ -739,7 +947,7 @@
   "start": 1869,
   "lat": 30.58,
   "lng": 32.27,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "technology",
    "economy"
@@ -759,7 +967,7 @@
   "start": 1869,
   "lat": 41.62,
   "lng": -112.55,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "technology"
   ],
@@ -783,7 +991,7 @@
   "start": 1869,
   "lat": 59.94,
   "lng": 30.31,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "science"
   ],
@@ -797,12 +1005,51 @@
   ]
  },
  {
+  "id": "mohandas-gandhi",
+  "kind": "person",
+  "name": "Mohandas Gandhi",
+  "born": 1869,
+  "died": 1948,
+  "birthPlace": {
+   "lat": 21.6417,
+   "lng": 69.6293,
+   "label": "Porbandar, Gujarat"
+  },
+  "deathPlace": {
+   "lat": 28.6117,
+   "lng": 77.2153,
+   "label": "New Delhi"
+  },
+  "tags": [
+   "politics",
+   "religion"
+  ],
+  "summary": "Leader of the Indian independence movement, who made non-violent mass civil disobedience an instrument of political change.",
+  "body": "Gandhi trained as a barrister in London and spent twenty years in South Africa, where discrimination against Indian residents led him to develop *satyagraha* — a discipline of open, non-violent refusal to comply with unjust law, accepting the penalty rather than evading it.\n\nReturning to India in 1915, he turned the Congress from a body of professionals into a mass movement. He organised peasants and mill workers, launched non-cooperation with [British rule](item:british-raj), and in 1930 walked 385 kilometres to the sea to make salt in defiance of the government monopoly; the [Salt March](item:salt-march) drew tens of thousands into civil disobedience and made the Raj's position visibly untenable. The [Quit India](item:quit-india) movement of 1942 brought him and most of the Congress leadership to prison.\n\nHe campaigned against untouchability and for Hindu-Muslim unity, and regarded [the partition](item:partition) that accompanied [independence](item:indian-independence) in 1947 as a defeat. He was shot in Delhi in January 1948 by a Hindu nationalist who thought him too conciliatory towards Muslims. His methods were studied closely by later movements, among them the [American civil rights campaign](item:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mahatma_Gandhi).",
+  "related": [
+   "salt-march",
+   "indian-independence",
+   "nelson-mandela"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mahatma_Gandhi"
+   },
+   {
+    "label": "Salt March",
+    "event": "salt-march"
+   }
+  ],
+  "priority": 86
+ },
+ {
   "id": "metric-system-1875",
   "name": "Metre Convention standardises metric system",
   "start": 1875,
   "lat": 48.8,
   "lng": 2.35,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "science",
    "technology"
@@ -822,7 +1069,7 @@
   "start": 1876,
   "lat": 42.36,
   "lng": -71.06,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "technology"
   ],
@@ -841,7 +1088,7 @@
   "start": 1877,
   "lat": 40.57,
   "lng": -74.33,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "technology"
   ],
@@ -860,7 +1107,7 @@
   "start": 1879,
   "lat": 40.57,
   "lng": -74.33,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "technology"
   ],
@@ -874,13 +1121,51 @@
   ]
  },
  {
+  "id": "albert-einstein",
+  "kind": "person",
+  "name": "Albert Einstein",
+  "born": 1879,
+  "died": 1955,
+  "birthPlace": {
+   "lat": 48.4011,
+   "lng": 9.9876,
+   "label": "Ulm, Kingdom of Württemberg"
+  },
+  "deathPlace": {
+   "lat": 40.3573,
+   "lng": -74.6672,
+   "label": "Princeton, New Jersey"
+  },
+  "tags": [
+   "science"
+  ],
+  "summary": "Theoretical physicist whose work on relativity, light quanta and statistical mechanics reshaped the physics of space, time, matter and energy.",
+  "body": "Einstein was born at Ulm and educated in Munich, Aarau and Zurich. Unable to find an academic post, he took work at the Swiss patent office in Bern, and in 1905 — his *annus mirabilis* — published four papers in a single year: on the photoelectric effect, on Brownian motion, on the electrodynamics of moving bodies, and on the equivalence of mass and energy.\n\nThe third and fourth of these are [special relativity](item:relativity), which abandoned absolute time in favour of a fixed speed of light. Ten years later general relativity recast gravity as the curvature of spacetime; the bending of starlight measured during the 1919 eclipse made him famous outside physics. The theory's later predictions include black holes and [gravitational waves](item:gravitational-waves), detected a century after he wrote it down. See also the article on [relativity](item:theory-of-relativity).\n\nHe received the 1921 Nobel Prize in Physics for the photoelectric effect rather than for relativity. A Jewish pacifist, he left Germany when [Hitler took power](item:hitler-chancellor) and settled at Princeton, where he spent his last two decades on an unsuccessful search for a unified field theory. In 1939 he signed a letter to President Roosevelt warning that [nuclear fission](item:nuclear-fission) might make a bomb possible — a step he later described as his one great mistake.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Albert_Einstein).",
+  "related": [
+   "theory-of-relativity",
+   "relativity",
+   "marie-curie"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Albert_Einstein"
+   },
+   {
+    "label": "Einstein's theory of relativity",
+    "event": "relativity"
+   }
+  ],
+  "priority": 89
+ },
+ {
   "id": "global-warming",
   "name": "Modern global warming",
   "start": 1880,
   "end": 2026,
   "lat": 0.0,
   "lng": 0.0,
-  "priority": 88,
+  "priority": 90,
   "tags": [
    "climate",
    "disaster"
@@ -955,7 +1240,7 @@
     10
    ]
   ],
-  "priority": 78,
+  "priority": 81,
   "tags": [
    "politics",
    "war"
@@ -975,7 +1260,7 @@
   "start": 1883,
   "lat": -6.1,
   "lng": 105.42,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "disaster",
    "geology"
@@ -995,7 +1280,7 @@
   "start": 1888,
   "lat": 43.2,
   "lng": -77.5,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "technology"
   ],
@@ -1014,7 +1299,7 @@
   "start": 1895,
   "lat": 44.51,
   "lng": 11.31,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "technology"
   ],
@@ -1033,7 +1318,7 @@
   "start": 1895,
   "lat": 49.79,
   "lng": 9.93,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "science"
   ],
@@ -1053,7 +1338,7 @@
   "end": 1898,
   "lat": 20.0,
   "lng": -76.0,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "war",
    "politics"
@@ -1078,7 +1363,7 @@
    "science"
   ],
   "summary": "Henri Becquerel found that uranium salts emit radiation of their own accord, and Marie and Pierre Curie went on to isolate new radioactive elements.",
-  "body": "Becquerel observed that uranium salts emitted radiation without being heated or exposed to light, indicating that the energy came from inside the atom. The Curies followed in 1898 by isolating polonium and radium, showing that some atoms are simply unstable.\n\nRadioactivity opened the study of atomic structure. It provided a new energy source, allowed the dating of rocks and fossils, and showed that the transmutation of elements was real. It led to [nuclear fission](event:nuclear-fission) and the [atomic bomb](event:trinity).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Radioactive_decay).",
+  "body": "Becquerel observed that uranium salts emitted radiation without being heated or exposed to light, indicating that the energy came from inside the atom. The [Curies](item:marie-curie) followed in 1898 by isolating polonium and radium, showing that some atoms are simply unstable.\n\nRadioactivity opened the study of atomic structure. It provided a new energy source, allowed the dating of rocks and fossils, and showed that the transmutation of elements was real. It led to [nuclear fission](event:nuclear-fission) and the [atomic bomb](event:trinity).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Radioactive_decay).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1093,7 +1378,7 @@
   "end": 1901,
   "lat": 39.9,
   "lng": 116.4,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "war",
    "politics"
@@ -1114,7 +1399,7 @@
   "end": 1902,
   "lat": -26.2,
   "lng": 28.0,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "war"
   ],
@@ -1133,7 +1418,7 @@
   "start": 1903,
   "lat": 36.02,
   "lng": -75.67,
-  "priority": 78,
+  "priority": 81,
   "tags": [
    "technology"
   ],
@@ -1153,7 +1438,7 @@
   "end": 1914,
   "lat": 51.5,
   "lng": -0.1,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "politics"
   ],
@@ -1193,12 +1478,12 @@
   "end": 1915,
   "lat": 46.95,
   "lng": 7.44,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "science"
   ],
   "summary": "Einstein's relativity described space and time as aspects of a single flexible geometry, and mass as a form of energy.",
-  "body": "Special relativity (1905) resolved the incompatibility between mechanics and electromagnetism. General relativity (1915) recast gravity as the curvature of spacetime, and was confirmed in 1919 by observations of starlight bending around the sun.\n\nGPS, black holes, cosmology and [gravitational waves](event:gravitational-waves) all follow from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
+  "body": "Special relativity (1905), the work of [Albert Einstein](item:albert-einstein), resolved the incompatibility between mechanics and electromagnetism. General relativity (1915) recast gravity as the curvature of spacetime, and was confirmed in 1919 by observations of starlight bending around the sun.\n\nGPS, black holes, cosmology and [gravitational waves](event:gravitational-waves) all follow from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1207,12 +1492,39 @@
   ]
  },
  {
+  "id": "theory-of-relativity",
+  "kind": "concept",
+  "name": "Relativity",
+  "anchorYear": 1905,
+  "tags": [
+   "science"
+  ],
+  "summary": "The theory that space and time form a single flexible geometry, that the speed of light is the same for every observer, and that gravity is the curvature of that geometry.",
+  "body": "Special relativity, published by [Einstein](item:albert-einstein) in 1905, begins from two propositions: the laws of physics are the same for all observers in uniform motion, and light travels at the same speed for all of them. Absolute simultaneity, absolute length and absolute time do not survive. Moving clocks run slow, moving lengths contract, and mass and energy turn out to be the same quantity in different units.\n\nGeneral relativity followed in 1915. Gravity is not a force acting across space but the curvature of spacetime produced by mass and energy; bodies in free fall follow the straightest available paths through it. The theory predicted the precession of Mercury's orbit, the bending of starlight confirmed in 1919, and the slowing of clocks in a gravitational field that satellite navigation must correct for.\n\nIts stranger predictions took a century to confirm: black holes, the expansion of the universe, and [gravitational waves](item:gravitational-waves), first detected in 2015. Relativity remains untouched by experiment and irreconcilable with quantum mechanics, which is where most of contemporary theoretical physics lives — see the entry on [Einstein's theory of relativity](item:relativity).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
+  "related": [
+   "albert-einstein",
+   "relativity",
+   "gravitational-waves"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Theory_of_relativity"
+   },
+   {
+    "label": "Albert Einstein",
+    "event": "albert-einstein"
+   }
+  ],
+  "priority": 89
+ },
+ {
   "id": "finland-suffrage",
   "name": "Finland grants women's suffrage",
   "start": 1906,
   "lat": 60.17,
   "lng": 24.94,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "politics"
   ],
@@ -1232,7 +1544,7 @@
   "end": 1909,
   "lat": 44.0,
   "lng": 18.0,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "politics"
   ],
@@ -1251,7 +1563,7 @@
   "start": 1909,
   "lat": 51.1,
   "lng": 1.0,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "technology",
    "exploration"
@@ -1272,7 +1584,7 @@
   "end": 1913,
   "lat": -90.0,
   "lng": 0.0,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "exploration"
   ],
@@ -1292,7 +1604,7 @@
   "end": 1912,
   "lat": 30.59,
   "lng": 114.31,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "politics"
   ],
@@ -1311,7 +1623,7 @@
   "start": 1912,
   "lat": 41.73,
   "lng": -49.95,
-  "priority": 64,
+  "priority": 60,
   "tags": [
    "disaster"
   ],
@@ -1323,6 +1635,45 @@
     "url": "https://en.wikipedia.org/wiki/Titanic"
    }
   ]
+ },
+ {
+  "id": "alan-turing",
+  "kind": "person",
+  "name": "Alan Turing",
+  "born": 1912,
+  "died": 1954,
+  "birthPlace": {
+   "lat": 51.5237,
+   "lng": -0.1866,
+   "label": "Maida Vale, London"
+  },
+  "deathPlace": {
+   "lat": 53.3247,
+   "lng": -2.2295,
+   "label": "Wilmslow, Cheshire"
+  },
+  "tags": [
+   "science",
+   "technology"
+  ],
+  "summary": "English mathematician who defined what a computation is, broke German naval ciphers during the Second World War, and framed the question of machine intelligence.",
+  "body": "Turing's 1936 paper on computable numbers answered a problem in mathematical logic by imagining an abstract machine reading and writing symbols on a tape. The Turing machine settled which questions no procedure can decide, and defined the notion of an algorithm that every later computer implements.\n\nAt Bletchley Park during [the Second World War](item:ww2) he designed the bombe, an electromechanical machine that searched Enigma settings, and led the section that broke the naval ciphers directing the U-boat campaign in the Atlantic. The work stayed secret for decades; historians generally credit Bletchley's output with shortening the war.\n\nAfterwards he designed one of the first stored-program computers, wrote on the chemical basis of pattern formation in biology, and in 1950 proposed the imitation game — could a machine's replies be told from a person's? — as a way of replacing the unanswerable question of whether machines think; among the objections he answered there was [Lovelace's](item:ada-lovelace), that a machine can originate nothing. In 1952 he was prosecuted for homosexuality and accepted hormone treatment in place of prison; he died two years later of cyanide poisoning, ruled a suicide. The British government apologised in 2009 and pardoned him in 2013.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Alan_Turing).",
+  "related": [
+   "global-internet",
+   "ada-lovelace",
+   "deep-learning"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Alan_Turing"
+   },
+   {
+    "label": "Second World War",
+    "event": "ww2"
+   }
+  ],
+  "priority": 82
  },
  {
   "id": "ford-assembly-line",
@@ -1350,7 +1701,7 @@
   "start": 1914,
   "lat": 9.0,
   "lng": -79.5,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "technology",
    "economy"
@@ -1371,7 +1722,7 @@
   "end": 1918,
   "lat": 49.7,
   "lng": 3.5,
-  "priority": 95,
+  "priority": 94,
   "tags": [
    "war"
   ],
@@ -1415,7 +1766,7 @@
   "start": 1916,
   "lat": 53.35,
   "lng": -6.26,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "war",
    "politics"
@@ -1435,7 +1786,7 @@
   "start": 1916,
   "lat": 49.2,
   "lng": 5.42,
-  "priority": 58,
+  "priority": 54,
   "tags": [
    "war"
   ],
@@ -1459,7 +1810,7 @@
   "start": 1916,
   "lat": 50.0,
   "lng": 2.7,
-  "priority": 60,
+  "priority": 56,
   "tags": [
    "war"
   ],
@@ -1484,7 +1835,7 @@
   "end": 1923,
   "lat": 59.94,
   "lng": 30.31,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "politics",
    "war"
@@ -1504,7 +1855,7 @@
   "start": 1917,
   "lat": 59.94,
   "lng": 30.31,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "politics"
   ],
@@ -1529,7 +1880,7 @@
   "end": 1920,
   "lat": 39.06,
   "lng": -96.77,
-  "priority": 86,
+  "priority": 88,
   "tags": [
    "disease",
    "disaster"
@@ -1544,12 +1895,50 @@
   ]
  },
  {
+  "id": "nelson-mandela",
+  "kind": "person",
+  "name": "Nelson Mandela",
+  "born": 1918,
+  "died": 2013,
+  "birthPlace": {
+   "lat": -31.9553,
+   "lng": 28.4989,
+   "label": "Mvezo, Eastern Cape"
+  },
+  "deathPlace": {
+   "lat": -26.2041,
+   "lng": 28.0473,
+   "label": "Johannesburg"
+  },
+  "tags": [
+   "politics"
+  ],
+  "summary": "South African lawyer and revolutionary who spent twenty-seven years in prison and then negotiated the end of apartheid as the country's first democratically elected president.",
+  "body": "Mandela was born into the Thembu royal house in the Transkei, trained as a lawyer, and opened the first black law practice in Johannesburg with Oliver Tambo. As apartheid legislation hardened after 1948 he helped build the African National Congress Youth League and organised campaigns of defiance.\n\nAfter the Sharpeville massacre and the banning of the ANC he abandoned strictly non-violent tactics and co-founded its armed wing, arguing that sabotage was the least destructive of the remaining options. He was convicted of sabotage at the Rivonia Trial in 1964 and sentenced to life, spending eighteen years on Robben Island; the speech he gave from the dock, ending with a cause for which he was prepared to die, became the movement's text.\n\nInternational sanctions, internal revolt from the [Soweto uprising](item:soweto-uprising) onwards and a bankrupt policy brought the government to negotiate. Released in 1990, he shared the Nobel Peace Prize with F. W. de Klerk, and in 1994 was elected president in [South Africa's first universal-suffrage election](item:apartheid-end). He served one term, preferring reconciliation and a Truth and Reconciliation Commission to retribution, and stepped down.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nelson_Mandela).",
+  "related": [
+   "apartheid-end",
+   "mohandas-gandhi",
+   "democracy"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Nelson_Mandela"
+   },
+   {
+    "label": "End of apartheid",
+    "event": "apartheid-end"
+   }
+  ],
+  "priority": 75
+ },
+ {
   "id": "versailles",
   "name": "Treaty of Versailles",
   "start": 1919,
   "lat": 48.8,
   "lng": 2.12,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "politics"
   ],
@@ -1574,7 +1963,7 @@
   "end": 1933,
   "lat": 39.8,
   "lng": -98.6,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "politics"
   ],
@@ -1593,7 +1982,7 @@
   "start": 1921,
   "lat": 53.35,
   "lng": -6.26,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "politics"
   ],
@@ -1612,7 +2001,7 @@
   "start": 1921,
   "lat": 43.66,
   "lng": -79.39,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "science",
    "disease"
@@ -1632,7 +2021,7 @@
   "start": 1922,
   "lat": 55.75,
   "lng": 37.62,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "politics"
   ],
@@ -1656,7 +2045,7 @@
   "start": 1923,
   "lat": 35.5,
   "lng": 139.5,
-  "priority": 64,
+  "priority": 60,
   "tags": [
    "disaster"
   ],
@@ -1675,7 +2064,7 @@
   "start": 1925,
   "lat": 35.49,
   "lng": -85.01,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "culture",
    "science"
@@ -1695,7 +2084,7 @@
   "start": 1926,
   "lat": 51.5,
   "lng": -0.1,
-  "priority": 58,
+  "priority": 54,
   "tags": [
    "politics",
    "economy"
@@ -1715,7 +2104,7 @@
   "start": 1927,
   "lat": 48.97,
   "lng": 2.44,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "exploration",
    "technology"
@@ -1735,7 +2124,7 @@
   "start": 1927,
   "lat": 34.1,
   "lng": -118.24,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "culture",
    "technology"
@@ -1755,7 +2144,7 @@
   "start": 1927,
   "lat": 37.78,
   "lng": -122.42,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "technology"
   ],
@@ -1774,7 +2163,7 @@
   "start": 1928,
   "lat": 51.52,
   "lng": -0.17,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "science"
   ],
@@ -1794,7 +2183,7 @@
   "end": 1939,
   "lat": 40.71,
   "lng": -74.01,
-  "priority": 84,
+  "priority": 86,
   "tags": [
    "economy"
   ],
@@ -1813,7 +2202,7 @@
   "start": 1929,
   "lat": 40.71,
   "lng": -74.01,
-  "priority": 70,
+  "priority": 69,
   "tags": [
    "economy"
   ],
@@ -1860,7 +2249,7 @@
     31
    ]
   ],
-  "priority": 58,
+  "priority": 54,
   "tags": [
    "disaster",
    "climate"
@@ -1885,13 +2274,13 @@
   "start": 1930,
   "lat": 20.9,
   "lng": 72.7,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "politics"
   ],
   "parent": "british-raj",
   "summary": "Gandhi walked 385 km to the sea to make salt in defiance of the British monopoly, launching mass civil disobedience.",
-  "body": "Part of [British Raj](event:british-raj). His method of non-violent resistance directly influenced the [American civil rights movement](event:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Salt_March).",
+  "body": "Part of [British Raj](event:british-raj). [Gandhi's](item:mohandas-gandhi) method of non-violent resistance directly influenced the [American civil rights movement](event:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Salt_March).",
   "links": [
    {
     "label": "British Raj",
@@ -1909,7 +2298,7 @@
   "start": 1931,
   "lat": 41.8,
   "lng": 123.4,
-  "priority": 68,
+  "priority": 66,
   "tags": [
    "war"
   ],
@@ -1928,7 +2317,7 @@
   "start": 1933,
   "lat": 52.52,
   "lng": 13.4,
-  "priority": 78,
+  "priority": 81,
   "tags": [
    "politics"
   ],
@@ -1947,7 +2336,7 @@
   "start": 1933,
   "lat": 52.52,
   "lng": 13.4,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "politics"
   ],
@@ -1966,7 +2355,7 @@
   "start": 1935,
   "lat": 9.0,
   "lng": 40.0,
-  "priority": 66,
+  "priority": 63,
   "tags": [
    "war"
   ],
@@ -1986,7 +2375,7 @@
   "end": 1939,
   "lat": 40.42,
   "lng": -3.7,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "war",
    "politics"
@@ -2007,7 +2396,7 @@
   "end": 1945,
   "lat": 39.9,
   "lng": 116.4,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "war"
   ],
@@ -2026,7 +2415,7 @@
   "start": 1938,
   "lat": 52.45,
   "lng": 13.29,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "science"
   ],
@@ -2046,7 +2435,7 @@
   "end": 1945,
   "lat": 52.5,
   "lng": 13.4,
-  "priority": 97,
+  "priority": 98,
   "tags": [
    "war"
   ],
@@ -2069,7 +2458,7 @@
   "start": 1940,
   "lat": 51.5,
   "lng": 0.5,
-  "priority": 58,
+  "priority": 54,
   "tags": [
    "war"
   ],
@@ -2163,7 +2552,7 @@
   "start": 1941,
   "lat": 21.36,
   "lng": -157.95,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "war"
   ],
@@ -2188,7 +2577,7 @@
   "end": 1945,
   "lat": 50.03,
   "lng": 19.2,
-  "priority": 84,
+  "priority": 86,
   "tags": [
    "war",
    "politics",
@@ -2214,7 +2603,7 @@
   "start": 1942,
   "lat": 18.96,
   "lng": 72.83,
-  "priority": 64,
+  "priority": 60,
   "tags": [
    "politics"
   ],
@@ -2239,7 +2628,7 @@
   "end": 1943,
   "lat": 48.7,
   "lng": 44.5,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "war"
   ],
@@ -2263,7 +2652,7 @@
   "start": 1942,
   "lat": 28.2,
   "lng": -177.37,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "war"
   ],
@@ -2287,7 +2676,7 @@
   "start": 1944,
   "lat": 49.34,
   "lng": -0.6,
-  "priority": 78,
+  "priority": 81,
   "tags": [
    "war"
   ],

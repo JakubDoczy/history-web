@@ -1,10 +1,24 @@
 /**
  * Tiny markdown subset → HTML, safe by construction (input is escaped first).
  * Supports: paragraphs (blank line), **bold**, *italic*,
- * [text](https://url) external links, [text](event:id) internal event links.
+ * [text](https://url) external links, [text](item:id) internal links.
+ *
+ * `item:` is the canonical internal scheme — it reaches an event, a person or a
+ * concept alike. `event:` is kept as an alias because several hundred bodies
+ * were written with it and rewriting them would be churn with no reader-visible
+ * effect. Both render to the same `data-event` attribute, which is what the
+ * panel's click handler has always looked for.
  */
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
+
+/** `[text](item:id)` / `[text](event:id)`, capturing the id. */
+const INTERNAL_LINK = /\[(.+?)\]\((?:item|event):([\w-]+)\)/g
+
+/** Every internal link target in a body, in order, duplicates included. */
+export function internalLinkIds(src: string): string[] {
+  return [...src.matchAll(INTERNAL_LINK)].map((m) => m[2])
+}
 
 export function renderRichText(src: string): string {
   return escapeHtml(src.replace(/\\n/g, '\n')) // tolerate literal \n escapes in data
@@ -13,7 +27,7 @@ export function renderRichText(src: string): string {
       p
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/\[(.+?)\]\(event:([\w-]+)\)/g, '<a data-event="$2">$1</a>')
+        .replace(INTERNAL_LINK, '<a data-event="$2">$1</a>')
         // one level of balanced parens allowed in the URL: Wikipedia titles like
         // /wiki/Early_Dynastic_Period_(Egypt) end in ')' and a naive [^\s)]+
         // truncated them mid-title (same fix as in wikiImage.ts)

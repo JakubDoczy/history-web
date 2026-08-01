@@ -9,6 +9,7 @@ export type ToggleKey =
   | 'scaleBar'
   | 'autoRotate'
   | 'relief'
+  | 'showMinorEvents'
 
 export type VisualStyle = 'enhanced' | 'realistic'
 
@@ -24,6 +25,13 @@ export const useSettingsStore = defineStore('settings', {
      * hides so much.
      */
     maxEvents: MAX_EVENTS.default as number,
+    /**
+     * Show the minor tier: everything absent from data/events/ranking.txt,
+     * including the birth and death pins derived from every person. Off by
+     * default — the tier exists so the corpus can hold far more than the map
+     * can usefully show.
+     */
+    showMinorEvents: false,
     /** 'enhanced' brightens the day side and lifts the night side; 'realistic' keeps physical lighting. */
     visuals: 'enhanced' as VisualStyle,
     /**

@@ -5,7 +5,7 @@ import type { Era } from '../lib/eras'
 
 /** Opening view: the classical world through the present, framed on the eras
  *  most events live in. The selection is what the globe actually shows. */
-const HOME_WINDOW: Span = { start: -550, end: 2100 }
+const HOME_WINDOW: Span = { start: -550, end: MAX_TIME }
 const HOME_SELECTION: Span = { start: 500, end: 1945 }
 
 export const useTimeStore = defineStore('time', {

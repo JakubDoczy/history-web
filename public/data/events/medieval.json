@@ -26,7 +26,7 @@
   "end": 554,
   "lat": 41.89,
   "lng": 12.5,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "war",
    "politics"
@@ -51,7 +51,7 @@
   "start": 537,
   "lat": 41.01,
   "lng": 28.98,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "religion"
@@ -119,7 +119,7 @@
     32
    ]
   ],
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "disease"
   ],
@@ -144,7 +144,7 @@
   "end": 907,
   "lat": 34.27,
   "lng": 108.95,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "politics",
    "culture"
@@ -239,7 +239,7 @@
     29
    ]
   ],
-  "priority": 86,
+  "priority": 88,
   "tags": [
    "war",
    "religion",
@@ -265,7 +265,7 @@
   "start": 636,
   "lat": 32.82,
   "lng": 35.9,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "war"
   ],
@@ -310,7 +310,7 @@
   "start": 732,
   "lat": 46.87,
   "lng": 0.55,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "war"
   ],
@@ -335,7 +335,7 @@
   "end": 809,
   "lat": 33.34,
   "lng": 44.4,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "politics",
    "culture"
@@ -361,7 +361,7 @@
   "end": 1258,
   "lat": 33.34,
   "lng": 44.4,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "science",
    "culture"
@@ -382,7 +382,7 @@
   "end": 1066,
   "lat": 60.0,
   "lng": 10.0,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "war",
    "exploration"
@@ -402,7 +402,7 @@
   "start": 793,
   "lat": 55.68,
   "lng": -1.8,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "war"
   ],
@@ -427,7 +427,7 @@
   "end": 1185,
   "lat": 35.01,
   "lng": 135.77,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "culture",
    "politics"
@@ -447,7 +447,7 @@
   "start": 800,
   "lat": 41.9,
   "lng": 12.45,
-  "priority": 78,
+  "priority": 82,
   "tags": [
    "politics",
    "religion"
@@ -467,7 +467,7 @@
   "start": 820,
   "lat": 33.34,
   "lng": 44.4,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "science"
   ],
@@ -491,7 +491,7 @@
   "start": 850,
   "lat": 34.27,
   "lng": 108.95,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "technology",
    "war"
@@ -511,7 +511,7 @@
   "start": 868,
   "lat": 34.27,
   "lng": 108.95,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "technology",
    "culture"
@@ -537,7 +537,7 @@
   "end": 1171,
   "lat": 30.05,
   "lng": 31.24,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "politics",
    "religion"
@@ -558,7 +558,7 @@
   "end": 1279,
   "lat": 34.8,
   "lng": 114.31,
-  "priority": 78,
+  "priority": 81,
   "tags": [
    "politics",
    "culture",
@@ -587,7 +587,7 @@
   ],
   "parent": "islamic-golden-age",
   "summary": "The Persian polymath Avicenna wrote the *Canon of Medicine*, the standard medical text in both the Islamic and Christian worlds for half a millennium.",
-  "body": "Part of [Islamic Golden Age](event:islamic-golden-age). Born near Bukhara and dying at Hamadan, Avicenna drew Greek, Indian and Islamic medicine into a single system; the *Canon* was still taught in European universities in the 1600s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Avicenna).",
+  "body": "Part of [Islamic Golden Age](event:islamic-golden-age). Born near Bukhara and dying at Hamadan, [Avicenna](item:ibn-sina) drew Greek, Indian and Islamic medicine into a single system; the *Canon* was still taught in European universities in the 1600s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Avicenna).",
   "links": [
    {
     "label": "Islamic Golden Age",
@@ -600,13 +600,51 @@
   ]
  },
  {
+  "id": "ibn-sina",
+  "kind": "person",
+  "name": "Ibn Sina",
+  "born": 980,
+  "died": 1037,
+  "birthPlace": {
+   "lat": 39.8547,
+   "lng": 64.3667,
+   "label": "Afshona, near Bukhara"
+  },
+  "deathPlace": {
+   "lat": 34.7992,
+   "lng": 48.5146,
+   "label": "Hamadan, Persia"
+  },
+  "tags": [
+   "science",
+   "culture"
+  ],
+  "summary": "Persian physician and philosopher, known in Europe as Avicenna, whose Canon of Medicine was a standard text for six centuries.",
+  "body": "Ibn Sina was born near Bukhara in the Samanid realm and was, by his own account, teaching physicians by the age of eighteen. He spent his life as a court doctor and administrator in a succession of Persian principalities, writing at night and while travelling, and produced some 240 surviving works.\n\nThe *Canon of Medicine* organised Greek, Indian and Islamic practice into a single system, with clear rules for testing a drug's effect and an insistence that disease has natural causes. Translated into Latin in the twelfth century, it was taught in European universities into the 1600s. His *Book of Healing* did the same for philosophy and natural science, and his arguments about necessary and contingent existence were taken up by Aquinas and by Jewish and Islamic thinkers alike.\n\nHe belongs to the [Islamic Golden Age](item:islamic-golden-age), whose scholars preserved and extended Greek learning while Europe had largely lost it — see also the entry on [Avicenna and medieval medicine](item:avicenna).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Avicenna).",
+  "related": [
+   "avicenna",
+   "islamic-golden-age"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Avicenna"
+   },
+   {
+    "label": "Islamic Golden Age",
+    "event": "islamic-golden-age"
+   }
+  ],
+  "priority": 0
+ },
+ {
   "id": "neo-confucianism",
   "name": "Neo-Confucianism in Song China",
   "start": 1000,
   "end": 1400,
   "lat": 26.08,
   "lng": 119.3,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "culture",
    "religion"
@@ -632,7 +670,7 @@
   "end": 1470,
   "lat": -8.27,
   "lng": -79.03,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "politics",
    "culture"
@@ -652,7 +690,7 @@
   "start": 1000,
   "lat": 51.6,
   "lng": -55.53,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "exploration"
   ],
@@ -677,7 +715,7 @@
   "end": 1194,
   "lat": 32.65,
   "lng": 51.67,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "politics",
    "war"
@@ -698,7 +736,7 @@
   "end": 1350,
   "lat": 38.66,
   "lng": -90.06,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "politics",
    "culture"
@@ -718,7 +756,7 @@
   "start": 1054,
   "lat": 41.01,
   "lng": 28.98,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "religion"
   ],
@@ -738,7 +776,7 @@
   "end": 1111,
   "lat": 36.31,
   "lng": 59.6,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "religion",
    "culture"
@@ -763,7 +801,7 @@
   "start": 1066,
   "lat": 50.91,
   "lng": 0.49,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "war",
    "politics"
@@ -783,7 +821,7 @@
   "start": 1071,
   "lat": 39.14,
   "lng": 42.54,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "war"
   ],
@@ -802,7 +840,7 @@
   "start": 1086,
   "lat": 51.06,
   "lng": -1.31,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "politics",
    "culture"
@@ -827,7 +865,7 @@
   "start": 1088,
   "lat": 44.5,
   "lng": 11.35,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "culture",
    "science"
@@ -848,7 +886,7 @@
   "end": 1291,
   "lat": 31.78,
   "lng": 35.22,
-  "priority": 82,
+  "priority": 85,
   "tags": [
    "war",
    "religion"
@@ -869,7 +907,7 @@
   "end": 1099,
   "lat": 31.78,
   "lng": 35.22,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "war",
    "religion"
@@ -895,7 +933,7 @@
   "end": 1450,
   "lat": -20.27,
   "lng": 30.93,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "politics",
    "economy"
@@ -916,7 +954,7 @@
   "end": 1400,
   "lat": 44.41,
   "lng": 8.93,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "economy",
    "war"
@@ -937,7 +975,7 @@
   "end": 1150,
   "lat": 13.41,
   "lng": 103.87,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "culture",
    "religion"
@@ -958,7 +996,7 @@
   "end": 1312,
   "lat": 31.78,
   "lng": 35.22,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "war",
    "religion",
@@ -985,7 +1023,7 @@
   "end": 1270,
   "lat": 12.03,
   "lng": 39.04,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "politics",
    "religion"
@@ -1000,13 +1038,52 @@
   ]
  },
  {
+  "id": "temujin-genghis-khan",
+  "kind": "person",
+  "name": "Genghis Khan",
+  "born": 1162,
+  "died": 1227,
+  "birthPlace": {
+   "lat": 48.55,
+   "lng": 110.15,
+   "label": "Khentii Mountains, Mongolia"
+  },
+  "deathPlace": {
+   "lat": 35.75,
+   "lng": 106.2,
+   "label": "Liupan Mountains, north-west China"
+  },
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Mongol ruler who united the steppe tribes and founded the largest contiguous land empire in history.",
+  "body": "Born Temüjin, the son of a minor chieftain poisoned when the boy was nine, he grew up in poverty and captivity on the eastern steppe. Through alliance, patronage and a series of steppe wars he united the Mongol and Turkic tribes, and in 1206 an assembly [proclaimed him Genghis Khan](item:genghis-khan), universal ruler.\n\nHe reorganised his followers into decimal units that cut across tribal loyalties, promoted officers on merit, adopted a written script for the Mongol language and issued a body of law, the *yassa*. The armies that resulted took northern China, Central Asia and Persia within two decades; the [campaigns](item:mongol-conquests) were extraordinarily destructive, and the sack of cities that resisted was policy rather than accident.\n\nThe empire he left reached from Korea to the Caspian and, under his successors, from Hungary to the Pacific. Mongol control of the [trade routes across Eurasia](item:silk-roads) moved goods, techniques and — in all likelihood — the plague that became the [Black Death](item:black-death). His burial place is unknown.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
+  "related": [
+   "genghis-khan",
+   "mongol-conquests",
+   "silk-roads"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Genghis_Khan"
+   },
+   {
+    "label": "Mongol conquests",
+    "event": "mongol-conquests"
+   }
+  ],
+  "priority": 93
+ },
+ {
   "id": "saladin",
   "name": "Saladin and the crusader wars",
   "start": 1169,
   "end": 1193,
   "lat": 31.78,
   "lng": 35.22,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "war",
    "religion"
@@ -1032,7 +1109,7 @@
   "end": 1333,
   "lat": 35.3,
   "lng": 139.55,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "politics",
    "culture"
@@ -1079,7 +1156,7 @@
   "end": 1400,
   "lat": 48.85,
   "lng": 2.35,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "culture",
    "science"
@@ -1099,7 +1176,7 @@
   "start": 1204,
   "lat": 41.01,
   "lng": 28.98,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "war",
    "religion"
@@ -1175,7 +1252,7 @@
     45
    ]
   ],
-  "priority": 90,
+  "priority": 93,
   "tags": [
    "war",
    "politics"
@@ -1195,14 +1272,14 @@
   "start": 1206,
   "lat": 47.92,
   "lng": 106.92,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "politics",
    "war"
   ],
   "parent": "mongol-conquests",
   "summary": "Temüjin was proclaimed supreme ruler of the Mongol confederacy at an assembly (kurultai) and took the title Genghis Khan.",
-  "body": "Part of [Mongol conquests](event:mongol-conquests). Having united the Mongol tribes, Temüjin was acclaimed universal ruler at a kurultai on the Onon river and took the title Genghis Khan.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
+  "body": "Part of [Mongol conquests](event:mongol-conquests). Having united the Mongol tribes, [Temüjin](item:temujin-genghis-khan) was acclaimed universal ruler at a kurultai on the Onon river and took the title Genghis Khan.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
   "links": [
    {
     "label": "Mongol conquests",
@@ -1220,7 +1297,7 @@
   "start": 1215,
   "lat": 51.44,
   "lng": -0.56,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "politics"
   ],
@@ -1282,7 +1359,7 @@
   "end": 1438,
   "lat": 17.01,
   "lng": 99.8,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "politics",
    "culture"
@@ -1302,7 +1379,7 @@
   "start": 1258,
   "lat": 33.34,
   "lng": 44.4,
-  "priority": 66,
+  "priority": 64,
   "tags": [
    "war"
   ],
@@ -1327,7 +1404,7 @@
   "end": 1368,
   "lat": 39.9,
   "lng": 116.4,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "politics"
   ],
@@ -1352,7 +1429,7 @@
   "end": 1295,
   "lat": 39.9,
   "lng": 116.4,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "exploration"
   ],
@@ -1401,7 +1478,7 @@
   "end": 1527,
   "lat": -7.55,
   "lng": 112.38,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "politics",
    "economy"
@@ -1422,7 +1499,7 @@
   "end": 1922,
   "lat": 39.93,
   "lng": 32.86,
-  "priority": 80,
+  "priority": 83,
   "tags": [
    "politics",
    "war"
@@ -1462,7 +1539,7 @@
   "start": 1324,
   "lat": 16.77,
   "lng": -3.01,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "economy",
    "religion"
@@ -1482,7 +1559,7 @@
   "start": 1325,
   "lat": 19.43,
   "lng": -99.13,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "politics",
    "culture"
@@ -1507,7 +1584,7 @@
   "end": 1453,
   "lat": 48.0,
   "lng": 1.0,
-  "priority": 76,
+  "priority": 79,
   "tags": [
    "war",
    "politics"
@@ -1528,7 +1605,7 @@
   "end": 1390,
   "lat": 37.17,
   "lng": -3.59,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "culture",
    "religion"
@@ -1604,7 +1681,7 @@
     36
    ]
   ],
-  "priority": 92,
+  "priority": 93,
   "tags": [
    "disease",
    "disaster"
@@ -1670,7 +1747,7 @@
   "end": 1644,
   "lat": 32.06,
   "lng": 118.8,
-  "priority": 74,
+  "priority": 76,
   "tags": [
    "politics",
    "culture"
@@ -1685,12 +1762,49 @@
   ]
  },
  {
+  "id": "zheng-he-admiral",
+  "kind": "person",
+  "name": "Zheng He",
+  "born": 1371,
+  "died": 1433,
+  "birthPlace": {
+   "lat": 24.6797,
+   "lng": 102.6,
+   "label": "Kunyang, Yunnan"
+  },
+  "deathPlace": {
+   "lat": 11.2588,
+   "lng": 75.7804,
+   "label": "at sea, near Calicut"
+  },
+  "tags": [
+   "exploration"
+  ],
+  "summary": "Ming admiral who commanded seven state expeditions across the Indian Ocean, reaching Arabia and the East African coast.",
+  "body": "Born Ma He into a Muslim family in Yunnan, he was captured as a boy during the Ming conquest of the province, castrated, and placed in the household of the prince who became the Yongle Emperor. He rose to command the imperial fleet and was given the name Zheng He.\n\nBetween 1405 and 1433 he led [seven voyages](item:zheng-he) with fleets of up to 300 vessels and 27,000 men — an order of magnitude beyond anything Europe would send to sea for centuries. The purpose was diplomatic rather than territorial: to enrol distant rulers in the tribute system, to carry envoys, and to display the reach of the [Ming](item:ming-dynasty). The fleets touched Java, Sri Lanka, Calicut, Hormuz, Aden and Malindi, and returned with ambassadors, spices and a giraffe.\n\nHe died on the last voyage and was buried at sea. The court, facing costs and a renewed Mongol threat on the northern frontier, abandoned the expeditions and let the records lapse — a withdrawal from the [maritime routes](item:silk-roads) that the Portuguese would enter seventy years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zheng_He).",
+  "related": [
+   "zheng-he",
+   "age-of-discovery"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Zheng_He"
+   },
+   {
+    "label": "Voyages of Zheng He",
+    "event": "zheng-he"
+   }
+  ],
+  "priority": 0
+ },
+ {
   "id": "korea-movable-type",
   "name": "Metal movable type in Korea",
   "start": 1377,
   "lat": 37.97,
   "lng": 126.55,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "technology",
    "culture"
@@ -1711,7 +1825,7 @@
   "end": 1494,
   "lat": 43.77,
   "lng": 11.26,
-  "priority": 58,
+  "priority": 55,
   "tags": [
    "economy",
    "politics",
@@ -1733,7 +1847,7 @@
   "end": 1600,
   "lat": 43.77,
   "lng": 11.26,
-  "priority": 88,
+  "priority": 91,
   "tags": [
    "culture"
   ],
@@ -1745,6 +1859,44 @@
     "url": "https://en.wikipedia.org/wiki/Renaissance"
    }
   ]
+ },
+ {
+  "id": "johannes-gutenberg",
+  "kind": "person",
+  "name": "Johannes Gutenberg",
+  "born": 1400,
+  "died": 1468,
+  "birthPlace": {
+   "lat": 49.9929,
+   "lng": 8.2473,
+   "label": "Mainz"
+  },
+  "deathPlace": {
+   "lat": 49.9929,
+   "lng": 8.2473,
+   "label": "Mainz"
+  },
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "summary": "German goldsmith who assembled movable metal type, oil-based ink and the press into a system for printing books in quantity.",
+  "body": "Little is documented about Gutenberg beyond lawsuits. Born in Mainz to a patrician family, he worked as a goldsmith at Strasbourg, returned to Mainz, and borrowed heavily from Johann Fust to finance a secret enterprise.\n\nThe achievement was not any single component — [block printing](item:woodblock-printing) and [movable type in Korea](item:korea-movable-type) both came earlier — but the combination: a hand mould that cast identical letters in a lead alloy at speed, an oil-based ink that would adhere to metal, and a screw press adapted from wine-making. Together they made [printing](item:printing) an industry rather than a craft.\n\nThe [42-line Bible](item:gutenberg-42-line) of about 1455 proved it worked. Fust foreclosed the same year and took over the workshop, leaving Gutenberg with little; he died in Mainz with a small pension from the archbishop. Within fifty years [the press](item:printing-press) had spread across Europe and printed perhaps twenty million books.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Johannes_Gutenberg).",
+  "related": [
+   "printing",
+   "printing-press"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Johannes_Gutenberg"
+   },
+   {
+    "label": "Gutenberg's printing press",
+    "event": "printing-press"
+   }
+  ],
+  "priority": 0
  },
  {
   "id": "zheng-he",
@@ -1759,7 +1911,7 @@
   ],
   "parent": "ming-dynasty",
   "summary": "Ming treasure fleets of hundreds of ships sailed to India, Arabia and East Africa decades before the Portuguese.",
-  "body": "Part of [Ming dynasty](event:ming-dynasty). The largest ships dwarfed anything then sailing in Europe. After 1433 the voyages were halted and the records suppressed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ming_treasure_voyages).",
+  "body": "Part of [Ming dynasty](event:ming-dynasty). The fleets were commanded by [Zheng He](item:zheng-he-admiral). The largest ships dwarfed anything then sailing in Europe. After 1433 the voyages were halted and the records suppressed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ming_treasure_voyages).",
   "links": [
    {
     "label": "Ming dynasty",
@@ -1778,7 +1930,7 @@
   "end": 1420,
   "lat": 39.92,
   "lng": 116.4,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "culture",
    "politics"
@@ -1803,7 +1955,7 @@
   "start": 1415,
   "lat": 50.46,
   "lng": 2.14,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "war"
   ],
@@ -1848,7 +2000,7 @@
   "end": 1460,
   "lat": 38.71,
   "lng": -9.14,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "exploration",
    "politics"
@@ -1894,7 +2046,7 @@
   "end": 1431,
   "lat": 47.22,
   "lng": 2.42,
-  "priority": 64,
+  "priority": 61,
   "tags": [
    "war",
    "religion"
@@ -1939,13 +2091,13 @@
   "start": 1440,
   "lat": 50.0,
   "lng": 8.27,
-  "priority": 90,
+  "priority": 92,
   "tags": [
    "technology",
    "culture"
   ],
   "summary": "Gutenberg's movable metal type made books cheap and made it far harder to suppress an idea once it had spread.",
-  "body": "Gutenberg combined a wine-press, oil-based ink and a mould for casting reusable type. By 1500 Europe held perhaps twenty million printed books, more than scribes had produced in the preceding thousand years.\n\nThe press carried the [Reformation](event:reformation), the [Scientific Revolution](event:copernicus) and eventually mass literacy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Printing_press).",
+  "body": "[Gutenberg](item:johannes-gutenberg) combined a wine-press, oil-based ink and a mould for casting reusable type. By 1500 Europe held perhaps twenty million printed books, more than scribes had produced in the preceding thousand years.\n\nThe press carried the [Reformation](event:reformation), the [Scientific Revolution](event:copernicus) and eventually mass literacy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Printing_press).",
   "links": [
    {
     "label": "Wikipedia",
@@ -1960,7 +2112,7 @@
   "end": 1455,
   "lat": 41.9,
   "lng": 12.46,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "culture",
    "religion"
@@ -1980,12 +2132,78 @@
   ]
  },
  {
+  "id": "printing",
+  "kind": "concept",
+  "name": "Printing",
+  "anchorYear": 1450,
+  "tags": [
+   "technology",
+   "culture"
+  ],
+  "summary": "The reproduction of text and images by mechanical means, which turned the copying of knowledge from a bottleneck into a commodity.",
+  "body": "Printing is older than the printing press. [Woodblock printing](item:woodblock-printing) was in use in Tang China by the seventh century, and [movable type](item:korea-movable-type) — ceramic under the Song, metal in Goryeo Korea by 1234 — preceded Europe by two centuries. What limited them was the script: a font of Chinese characters runs to thousands of sorts, and a scribe was often the cheaper option.\n\nAn alphabet changes that arithmetic, and [Gutenberg's](item:johannes-gutenberg) combination of a type mould, oil-based ink and the [screw press](item:printing-press) made the copying of a book a matter of hours. The [42-line Bible](item:gutenberg-42-line) demonstrated it; by 1500 some 20 million volumes had been printed in Europe.\n\nThe consequences were less about books than about control. An idea in print could not be suppressed by burning one copy, which is why the [Reformation](item:reformation) spread as it did; standardised texts made the [Scientific Revolution's](item:scientific-revolution) accumulation of results possible; fixed spellings and vernacular Bibles hardened national languages. Every later reproduction technology, down to the network, has followed the same pattern: cheap copying redistributes authority.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_printing).",
+  "related": [
+   "johannes-gutenberg",
+   "printing-press",
+   "reformation"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_printing"
+   },
+   {
+    "label": "Gutenberg's printing press",
+    "event": "printing-press"
+   }
+  ],
+  "priority": 92
+ },
+ {
+  "id": "leonardo-da-vinci",
+  "kind": "person",
+  "name": "Leonardo da Vinci",
+  "born": 1452,
+  "died": 1519,
+  "birthPlace": {
+   "lat": 43.7861,
+   "lng": 10.9256,
+   "label": "Vinci, Republic of Florence"
+  },
+  "deathPlace": {
+   "lat": 47.4128,
+   "lng": 0.9856,
+   "label": "Amboise, France"
+  },
+  "tags": [
+   "culture",
+   "science"
+  ],
+  "summary": "Florentine painter, engineer and anatomist whose notebooks and few finished paintings define the range of the Italian Renaissance.",
+  "body": "Leonardo was the illegitimate son of a notary, apprenticed at about fourteen to Andrea del Verrocchio in Florence. He worked for the Sforza in Milan, for Cesare Borgia as a military engineer, for the Republic of Florence and finally for Francis I of France, who gave him a manor house near Amboise.\n\nHe finished very little. *The Last Supper* and the [*Mona Lisa*](item:mona-lisa) are among perhaps fifteen surviving paintings, and both changed how European artists handled gesture, atmosphere and the modelling of light. The [Renaissance](item:renaissance) produced no better demonstration that painting could be an intellectual discipline.\n\nHis notebooks — some 7,000 surviving pages in mirror writing — range over anatomy from dissection, the flight of birds, water, geology, optics and machines from a diving suit to a helical rotor. Almost none of it was published in his lifetime, so its influence on later science was slight; as a record of one person's curiosity it is unmatched.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Leonardo_da_Vinci).",
+  "related": [
+   "mona-lisa",
+   "renaissance"
+  ],
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Leonardo_da_Vinci"
+   },
+   {
+    "label": "Mona Lisa",
+    "event": "mona-lisa"
+   }
+  ],
+  "priority": 91
+ },
+ {
   "id": "fall-constantinople",
   "name": "Fall of Constantinople",
   "start": 1453,
   "lat": 41.01,
   "lng": 28.98,
-  "priority": 88,
+  "priority": 90,
   "tags": [
    "war",
    "politics",
@@ -2006,7 +2224,7 @@
   "start": 1455,
   "lat": 50.0,
   "lng": 8.27,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "technology",
    "culture"
@@ -2032,7 +2250,7 @@
   "end": 1591,
   "lat": 16.27,
   "lng": -0.04,
-  "priority": 62,
+  "priority": 58,
   "tags": [
    "politics",
    "economy"
@@ -2052,7 +2270,7 @@
   "start": 1488,
   "lat": -34.36,
   "lng": 18.47,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "exploration"
   ],
@@ -2076,7 +2294,7 @@
   "start": 1492,
   "lat": 37.18,
   "lng": -3.6,
-  "priority": 56,
+  "priority": 54,
   "tags": [
    "war",
    "religion"
@@ -2101,7 +2319,7 @@
   "start": 1492,
   "lat": 24.2,
   "lng": -74.5,
-  "priority": 88,
+  "priority": 90,
   "tags": [
    "exploration"
   ],
@@ -2126,7 +2344,7 @@
   "end": 1700,
   "lat": 10.0,
   "lng": -60.0,
-  "priority": 82,
+  "priority": 85,
   "tags": [
    "biology",
    "economy"
@@ -2146,7 +2364,7 @@
   "start": 1494,
   "lat": 41.6,
   "lng": -5.4,
-  "priority": 68,
+  "priority": 67,
   "tags": [
    "politics",
    "exploration"
@@ -2166,7 +2384,7 @@
   "start": 1498,
   "lat": 11.25,
   "lng": 75.78,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "exploration"
   ],

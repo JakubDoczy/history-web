@@ -115,6 +115,19 @@ const imageryLine = () => {
             :step="MAX_EVENTS.step"
           />
           <p class="hint">The highest-priority events in the window; the rest are hidden.</p>
+          <label class="row">
+            <input
+              type="checkbox"
+              :checked="settings.showMinorEvents"
+              @change="settings.toggle('showMinorEvents')"
+            />
+            <span>Show minor events</span>
+          </label>
+          <p class="hint">
+            Everything left off the importance ranking, including the birth and death of
+            everyone with an article. They are last in line for the slots above, so narrow
+            the timeline to make room. Searchable either way.
+          </p>
           <button
             v-if="events.filter.tags?.length || events.filter.parent"
             class="link"

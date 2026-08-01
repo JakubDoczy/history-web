@@ -253,10 +253,9 @@ describe('cloud depth', () => {
     const body = blockAfter(glsl, 'if (uCloudAlpha > 0.0) {')
     expect(body).toContain('vec3 bake = texture(uCloudNrm, cloudUv).rgb;')
     expect(body).toContain('cloudSlope = clamp(')
-    // and both composite branches sample nothing
+    // and the composite branch samples nothing
     const film = blockAfter(glsl, 'if (cover > 0.002) {')
     expect(film).not.toMatch(/texture\w*\(/)
-    expect(blockAfter(glsl, 'if (cirrus > 0.0) {')).not.toMatch(/texture\w*\(/)
   })
 
   it('replaces the two runtime finite differences with one tap', () => {
@@ -266,10 +265,11 @@ describe('cloud depth', () => {
     // that sized them are gone.
     expect(glsl).not.toMatch(/mSun|mAway|fwidth\(cloudUv\)/)
     expect(glsl).not.toMatch(/textureLod\(uClouds/)
-    // one tap of the bake, and one of the mask for the high deck
+    // exactly one tap in the whole gate, and it is the bake: the coverage mask
+    // is read once more further down, by cloudMask(), and nowhere in here
     const body = blockAfter(glsl, 'if (uCloudAlpha > 0.0) {')
     expect(body.match(/texture\(uCloudNrm/g)).toHaveLength(1)
-    expect(body.match(/texture\(uClouds/g)).toHaveLength(1)
+    expect(body).not.toMatch(/texture\(uClouds/)
   })
 
   it('reads the baked gradient as a slope along the ground, not along UV', () => {
@@ -304,13 +304,11 @@ describe('cloud depth', () => {
   it('leaves the whole cloud path at its defaults when no film is drawn', () => {
     // uCloudAlpha == 0 must be bit-identical to the pre-cloud picture: the
     // parallax block is skipped, so every value it would have set keeps the
-    // neutral one declared here, `cover` is exactly 0, and the high deck's
-    // branch is not taken either
+    // neutral one declared here and `cover` is exactly 0
     expect(glsl).toContain('float cloudSlope = 0.0;')
     expect(glsl).toContain('float cloudAO = 1.0;')
-    expect(glsl).toContain('float cirrus = 0.0;')
     expect(glsl).toContain('uCloudAlpha > 0.0 ? cloudMask(cloudUv) : 0.0')
-    // cloudShading with those defaults is exactly 1, and the cirrus mix by 0
+    // cloudShading with those defaults is exactly 1
     expect(cloudShading(0, 1, 1)).toBe(1)
     expect(cloudShading(0, 1, 0)).toBe(1)
   })
@@ -330,16 +328,6 @@ describe('cloud depth', () => {
     // way to make the pair look pasted on
     const body = blockAfter(glsl, 'if (uCloudShadow > 0.0) {')
     expect(body).toContain('${f(C.shadowBlur)}).r')
-  })
-
-  it('keeps the high deck off the poles and on the wrap', () => {
-    // u wraps, so the cirrus layer may be scaled freely in it; v does not, and
-    // scaling latitude would fold the poles into the tropics
-    expect(glsl).toContain('clamp(cloudUv.y + ${f(Ci.offsetV)}, 0.0, 1.0));')
-    expect(glsl).toMatch(/fract\(cloudUv\.x \* \$\{f\(Ci\.scale\)\}/)
-    // and it stays a veil: a fraction of the main deck's opacity
-    expect(CLOUD_DEPTH.cirrus.alpha).toBeLessThan(0.25)
-    expect(CLOUD_DEPTH.cirrus.lo).toBeGreaterThan(0.2) // only the densest parts show
   })
 
   it('darkens harder than it brightens', () => {

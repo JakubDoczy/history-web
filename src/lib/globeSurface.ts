@@ -337,9 +337,6 @@ export function lightsReveal(energy: number, uLights: number): number {
  *    is an opaque white core. The opacity curve already said something like
  *    this; the colour did not, so haze and core were the same white at different
  *    alphas, which is what an alpha-blended stencil looks like.
- *  - **A cirrus deck**, one more tap of the mask already bound, at another
- *    scale and speed and a low alpha. Two layers sliding across each other at
- *    different rates is most of what reads as "atmosphere" rather than "decal".
  *
  * And the ground shadow is put on the same footing: it runs through a curve of
  * the same shape as the film's opacity, so the cloud that reads as thick is the
@@ -408,32 +405,6 @@ export const CLOUD_DEPTH = {
    * between a crown and the gap beside it.
    */
   ao: 0.75,
-  /**
-   * The high deck: the coverage mask again, at another scale, offset and speed.
-   *
-   * One extra tap of a texture already bound, and it buys the thing a single
-   * layer cannot have at any quality — parallax between two decks that are
-   * genuinely at different heights, sliding across each other at different
-   * rates. `scale` under 1 magnifies the mask, which stretches its features
-   * east-west into the long streaks cirrus actually forms; the offsets are
-   * there to decorrelate it from the deck below, and the speed is faster
-   * because the tropopause is.
-   *
-   * The window is high and narrow because only the densest parts of the mask
-   * should show at all: everything below `lo` is sky, and the alpha at the top
-   * is a sixth of the main deck's. What is wanted is a veil noticed on the
-   * limb, not a second weather system.
-   */
-  cirrus: {
-    scale: 0.55,
-    offsetU: 0.37,
-    offsetV: 0.07,
-    speed: 1.9,
-    lo: 0.66,
-    hi: 0.99,
-    alpha: 0.12,
-    tint: [0.88, 0.92, 1.0],
-  },
   /** Silver lining: added on sunward slopes, inside the terminator band. */
   rim: [0.42, 0.26, 0.10],
   /** Half-width of that band, in cos(sun zenith). ~18° either side. */
@@ -530,7 +501,6 @@ export function cloudShadowDensity(occ: number): number {
 const G = ENHANCED_GRADE
 const N = NIGHT_LIGHTS
 const C = CLOUD_DEPTH
-const Ci = CLOUD_DEPTH.cirrus
 const f = (n: number) => n.toFixed(4)
 const v3 = (c: readonly number[]) => `vec3(${c.map(f).join(', ')})`
 
@@ -821,8 +791,6 @@ void main() {
   float cloudSlope = 0.0;
   // Baked sky visibility; 1 is open sky, and 1 is also what "no film" means.
   float cloudAO = 1.0;
-  // The high cirrus deck, composited after the main one.
-  float cirrus = 0.0;
   if (uCloudAlpha > 0.0) {
     vec3 liftedView = normalize(n + viewDir * (uCloudH / max(dot(n, viewDir), 0.25)));
     vec2 pduv = dirToUv(liftedView) - nUv;
@@ -865,17 +833,6 @@ void main() {
     float faceLit = clamp((dot(cloudN, uSunDir) + ${f(C.wrap)}) * ${f(1 / (1 + C.wrap))}, 0.0, 1.0);
     float flatLit = clamp((cosGeo + ${f(C.wrap)}) * ${f(1 / (1 + C.wrap))}, 0.0, 1.0);
     cloudSlope = clamp((faceLit - flatLit) * ${f(C.slope)}, -1.0, 1.0);
-
-    // --- and the high deck: the same mask, magnified, offset and faster ---
-    // One tap of a texture already bound. Two layers at genuinely different
-    // heights sliding past each other at different rates is most of what reads
-    // as atmosphere rather than as a decal; see CLOUD_DEPTH.cirrus. u wraps, so
-    // it is scaled freely; v only takes an offset, because scaling latitude
-    // would fold the poles into the tropics.
-    vec2 cirUv = vec2(
-      fract(cloudUv.x * ${f(Ci.scale)} + uCloudRot * ${f(Ci.speed)} + ${f(Ci.offsetU)}),
-      clamp(cloudUv.y + ${f(Ci.offsetV)}, 0.0, 1.0));
-    cirrus = smoothstep(${f(Ci.lo)}, ${f(Ci.hi)}, texture(uClouds, cirUv).r);
   }
 
   // --- cloud shadows: follow the sun ray up to the same height and sample there ---
@@ -969,14 +926,6 @@ void main() {
     // own gradient rather than pushing everything to full opacity
     float opacity = clamp(cover * cover * (0.35 + 1.15 * cover), 0.0, 1.0);
     color = mix(color, max(lit, vec3(0.0)), opacity * (0.18 + 0.82 * daylight));
-  }
-  // The high deck, over everything the low one did. Flat-shaded on purpose:
-  // cirrus is ice crystals a few hundred metres thick, it has no flanks to
-  // model, and at this alpha any modelling of it would only fight the deck
-  // underneath for the same pixels.
-  if (cirrus > 0.0) {
-    color = mix(color, ${v3(Ci.tint)},
-      cirrus * ${f(Ci.alpha)} * uCloudAlpha * (0.05 + 0.95 * daylight));
   }
 
   // --- warm terminator band and blue limb ---

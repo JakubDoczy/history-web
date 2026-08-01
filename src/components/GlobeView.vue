@@ -7,7 +7,7 @@ import { useNationStore, type BorderEntry } from '../stores/nations'
 import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
 import { useViewStore } from '../stores/view'
-import type { HistoricalEvent } from '../lib/events'
+import { isEvent, type HistoricalEvent } from '../lib/events'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { RenderPump } from '../lib/renderPump'
@@ -188,7 +188,9 @@ const areaEntries = new Map<string, EventAreaEntry>()
  * footprint is drawn, whether or not the timeline window still reaches it.
  */
 const eventAreas = (): EventAreaEntry[] => {
-  const e = events.selected
+  const sel = events.selected
+  // only an event has a footprint; a person or a concept is an article
+  const e = sel && isEvent(sel) ? sel : undefined
   if (!e?.area) return []
   const held = areaEntries.get(e.id)
   if (held) return [held]
@@ -732,6 +734,17 @@ onMounted(() => {
       globe!.controls().autoRotate = settings.autoRotate
       wake()
     }),
+    // A panel asked the globe to look somewhere — a person's birth or death
+    // place. The store bumps a counter rather than clearing the request, so
+    // asking for the same coordinates twice still flies there twice; altitude
+    // is left alone, since the user's zoom is not ours to reset.
+    watchEffect(() => {
+      const target = events.flyTo
+      if (!target) return
+      void target.seq
+      globe!.pointOfView({ lat: target.lat, lng: target.lng }, 900)
+      wake()
+    }),
     // The relief map is the modern height field; deep-time frames carry their own
     // baked hillshade, so it fades out exactly as they fade in.
     watchEffect(() => {
@@ -852,5 +865,12 @@ onBeforeUnmount(() => {
 }
 .event-pin--cluster svg {
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+}
+/* the minor tier: present, but not asking for attention */
+.event-pin--minor svg {
+  opacity: 0.62;
+}
+.event-pin--minor:hover svg {
+  opacity: 1;
 }
 </style>

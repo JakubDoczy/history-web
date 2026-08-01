@@ -1,4 +1,4 @@
-import type { HistoricalEvent } from './events'
+import { isMinor, type HistoricalEvent } from './events'
 import type { PinDatum } from './eventClusters'
 import { primaryTag, tagColor } from './tags'
 
@@ -143,7 +143,13 @@ function interactive(el: HTMLElement, onClick: () => void) {
 export function pinElement(e: HistoricalEvent, selected: boolean, onClick: () => void): HTMLElement {
   const el = document.createElement('div')
   el.className =
-    'event-pin' + (selected ? ' event-pin--selected' : '') + (e.area ? ' event-pin--area' : '')
+    'event-pin' +
+    (selected ? ' event-pin--selected' : '') +
+    (e.area ? ' event-pin--area' : '') +
+    // minor pins are opt-in and there are a lot of them; they keep the smallest
+    // size pinHeight gives them and go translucent, so they read as a layer
+    // underneath the ranked ones rather than as competition for them
+    (isMinor(e) ? ' event-pin--minor' : '')
   el.innerHTML = pinSvg(e, selected)
   el.title = e.name
   el.style.setProperty(

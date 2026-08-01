@@ -4,24 +4,52 @@ import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { formatYear } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
+import { isConcept, isEvent, isPerson, kindOf, type Item, type Place } from '../lib/events'
 import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
 
 const events = useEventStore()
 const time = useTimeStore()
 
+/* The panel renders an ITEM, not only an event: an event, a life or an idea,
+   with the same typography and the same link behaviour. What differs is the
+   header (a date range, a lifespan with place chips, or nothing) and which
+   sections have anything to show. */
 const e = computed(() => events.selected!)
-const when = computed(() =>
-  e.value.end
-    ? `${formatYear(e.value.start)} – ${formatYear(e.value.end)}`
-    : formatYear(e.value.start),
+const person = computed(() => (isPerson(e.value) ? e.value : null))
+const event = computed(() => (isEvent(e.value) ? e.value : null))
+const kindLabel = computed(() => ({ event: '', person: 'Person', concept: 'Concept' })[kindOf(e.value)])
+
+/** The line under the title: a span, a lifespan, or the year an idea is anchored at. */
+const when = computed(() => {
+  const p = person.value
+  if (p) return p.died === undefined ? `b. ${formatYear(p.born)}` : `${formatYear(p.born)} – ${formatYear(p.died)}`
+  if (isConcept(e.value)) return ''
+  const ev = event.value!
+  return ev.end ? `${formatYear(ev.start)} – ${formatYear(ev.end)}` : formatYear(ev.start)
+})
+
+const children = computed(() => (event.value ? events.childrenOf(event.value.id) : []))
+/** Everything this article links to, and everything that links back to it. */
+const linked = computed(() => events.linkedTo(e.value.id))
+const readMore = computed(() =>
+  (e.value.related ?? []).map((id) => events.byId(id)).filter((i): i is Item => !!i),
 )
-const children = computed(() => events.childrenOf(e.value.id))
+
+const places = computed(() => {
+  const p = person.value
+  if (!p) return [] as { label: string; place: Place }[]
+  const out: { label: string; place: Place }[] = []
+  if (p.birthPlace) out.push({ label: p.birthPlace.label ?? 'Born here', place: p.birthPlace })
+  if (p.deathPlace) out.push({ label: p.deathPlace.label ?? 'Died here', place: p.deathPlace })
+  return out
+})
 
 function goTo(id: string) {
   const target = events.byId(id)
   if (!target) return
   events.select(id)
-  time.setTime(target.start)
+  const year = events.focusYear(id)
+  if (year !== undefined) time.setTime(year)
 }
 function onBodyClick(ev: MouseEvent) {
   const id = (ev.target as HTMLElement).dataset?.event
@@ -30,6 +58,14 @@ function onBodyClick(ev: MouseEvent) {
 function follow(link: { event?: string; url?: string }) {
   if (link.event) goTo(link.event)
   else if (link.url) window.open(link.url, '_blank')
+}
+/**
+ * A birth or death place chip: put the globe over it and the timeline on the
+ * year, so the map answers "where was this" without a search.
+ */
+function goToPlace(place: Place, year: number) {
+  events.lookAt(place.lat, place.lng)
+  time.setTime(year)
 }
 
 /* --- lead picture, fetched from Wikipedia when the event carries no image ---
@@ -85,7 +121,7 @@ watch(
     if (!id || !ev || ev.image) return // an explicit image in the data always wins
     const ref = wikiRefForEvent(ev)
     if (!ref) {
-      wikiDebug('event carries no Wikipedia article link', id)
+      wikiDebug('item carries no Wikipedia article link', id)
       return
     }
 
@@ -119,12 +155,27 @@ onBeforeUnmount(() => inflight?.abort())
       </svg>
     </button>
 
-    <nav v-if="e.parent" class="crumb">
-      <a @click="goTo(e.parent!)">{{ events.byId(e.parent!)?.name }}</a>
+    <nav v-if="event?.parent" class="crumb">
+      <a @click="goTo(event!.parent!)">{{ events.byId(event!.parent!)?.name }}</a>
     </nav>
 
     <h2>{{ e.name }}</h2>
-    <p class="when tnum">{{ when }}</p>
+    <p class="when tnum">
+      <span v-if="kindLabel" class="kind">{{ kindLabel }}</span>
+      <span v-if="when">{{ when }}</span>
+    </p>
+
+    <!-- a life's two fixed points, as buttons: they move the globe and the clock -->
+    <p v-if="places.length" class="places">
+      <button
+        v-for="(p, i) in places"
+        :key="p.label"
+        data-test="place-chip"
+        @click="goToPlace(p.place, i === 0 ? person!.born : (person!.died ?? person!.born))"
+      >
+        {{ i === 0 ? 'Born' : 'Died' }} · {{ p.label }}
+      </button>
+    </p>
 
     <figure v-if="e.image">
       <img
@@ -169,9 +220,22 @@ onBeforeUnmount(() => inflight?.abort())
       </ul>
     </div>
 
-    <div v-if="e.links?.length" class="block">
+    <!-- The article's neighbourhood, assembled rather than hand-listed: what this
+         body links to, and what links back at it. -->
+    <div v-if="linked.length" class="block" data-test="linked">
+      <span class="eyebrow">Linked</span>
+      <ul>
+        <li v-for="l in linked" :key="l.id">
+          <a @click="goTo(l.id)">{{ l.name }}</a>
+          <span class="year tnum">{{ kindOf(l) === 'event' ? formatYear(events.focusYear(l.id) ?? 0) : kindOf(l) }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div v-if="e.links?.length || readMore.length" class="block">
       <span class="eyebrow">Read more</span>
       <p class="links">
+        <a v-for="r in readMore" :key="r.id" @click.prevent="goTo(r.id)">{{ r.name }}</a>
         <a v-for="l in e.links" :key="l.label" @click.prevent="follow(l)">{{ l.label }}</a>
       </p>
     </div>
@@ -183,9 +247,9 @@ onBeforeUnmount(() => inflight?.abort())
     </div>
 
     <button
-      v-if="e.parent || children.length"
+      v-if="event && (event.parent || children.length)"
       class="family"
-      @click="events.setParentFilter(e.parent ?? e.id)"
+      @click="events.setParentFilter(event.parent ?? event.id)"
     >
       Show only this event family
     </button>
@@ -267,6 +331,50 @@ h2 {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--brass);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+}
+/* what kind of article this is — quiet, since most of them are events */
+.kind {
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 1px 8px;
+  font-size: var(--t-xs);
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+/* a life's birth and death places: chips that fly the globe there */
+.places {
+  margin: var(--s3) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.places button {
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--frost-dim, var(--muted));
+  padding: 4px 11px;
+  cursor: pointer;
+  transition:
+    color var(--fast),
+    border-color var(--fast),
+    background-color var(--fast);
+}
+.places button:hover {
+  color: var(--patina);
+  border-color: var(--patina-line);
+  background: rgba(255, 255, 255, 0.04);
+}
+.places button:active {
+  transform: scale(0.96);
 }
 
 figure {

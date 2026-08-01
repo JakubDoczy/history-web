@@ -1,6 +1,16 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { formatYear, clamp, toWarp, fromWarp, MIN_TIME, MAX_TIME } from '../src/lib/time'
+import {
+  formatYear,
+  clamp,
+  toWarp,
+  fromWarp,
+  presentYear,
+  PRESENT,
+  MIN_TIME,
+  MAX_TIME,
+} from '../src/lib/time'
+import { HISTORICAL } from '../src/lib/eras'
 import { useTimeStore } from '../src/stores/time'
 
 describe('formatYear', () => {
@@ -19,6 +29,71 @@ describe('clamp', () => {
     expect(clamp(-9e9)).toBe(MIN_TIME)
     expect(clamp(99999)).toBe(MAX_TIME)
     expect(clamp(1500)).toBe(1500)
+  })
+})
+
+/** The rail ends now. Not at a round number in the future — at the current year. */
+describe('the end of time is the present', () => {
+  it('is read from the clock, once, at module load', () => {
+    expect(MAX_TIME).toBe(PRESENT)
+    expect(PRESENT).toBe(new Date().getFullYear())
+    // injectable, so this is a property of the clock and not of a literal
+    expect(presentYear(new Date(2031, 5, 14))).toBe(2031)
+    expect(presentYear(new Date(1969, 6, 20))).toBe(1969)
+  })
+
+  it('admits nothing from the future', () => {
+    expect(clamp(MAX_TIME + 1)).toBe(MAX_TIME)
+    expect(clamp(3000)).toBe(MAX_TIME)
+    // warp saturates there too: every future year maps to the end of the rail
+    expect(toWarp(MAX_TIME)).toBe(0)
+    expect(toWarp(MAX_TIME + 500)).toBe(toWarp(MAX_TIME))
+    expect(fromWarp(0)).toBe(MAX_TIME)
+  })
+
+  it('leaves the last historical era ending today, not in 2100', () => {
+    const contemporary = HISTORICAL[HISTORICAL.length - 1]
+    expect(contemporary.name).toBe('Contemporary')
+    expect(contemporary.end).toBe(MAX_TIME)
+  })
+})
+
+describe('time store stops at the present', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('opens on a window that ends now', () => {
+    expect(useTimeStore().range.end).toBe(MAX_TIME)
+  })
+
+  it('cannot scrub, focus or select past it', () => {
+    const s = useTimeStore()
+    s.setTime(9999)
+    expect(s.currentTime).toBe(MAX_TIME)
+    s.focusTime(4000)
+    expect(s.currentTime).toBe(MAX_TIME)
+    expect(s.range.end).toBeLessThanOrEqual(MAX_TIME)
+    s.setSelection(1900, 9999)
+    expect(s.selection.end).toBeLessThanOrEqual(MAX_TIME)
+  })
+
+  it('cannot pan or zoom past it, from any window', () => {
+    const s = useTimeStore()
+    for (const start of [MIN_TIME, -10_000, 1900, MAX_TIME - 50]) {
+      s.setRange({ start, end: Math.min(MAX_TIME, start + 100) })
+      for (let i = 0; i < 20; i++) s.pan(0.7)
+      expect(s.range.end).toBeLessThanOrEqual(MAX_TIME)
+      s.zoom(0.5, 1) // zoom in hard against the right-hand edge
+      expect(s.range.end).toBeLessThanOrEqual(MAX_TIME)
+      expect(s.currentTime).toBeLessThanOrEqual(MAX_TIME)
+      expect(s.selection.end).toBeLessThanOrEqual(MAX_TIME)
+    }
+  })
+
+  it('frames the Contemporary era right up to today when picked from the era combo', () => {
+    const s = useTimeStore()
+    s.selectEra(HISTORICAL[HISTORICAL.length - 1])
+    expect(s.selection).toEqual({ start: 1945, end: MAX_TIME })
+    expect(s.range.end).toBe(MAX_TIME)
   })
 })
 

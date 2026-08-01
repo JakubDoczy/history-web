@@ -2,7 +2,7 @@
 import { computed, onMounted, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { useTimeStore } from '../stores/time'
 import { formatYear, toWarp, fromWarp, type Year } from '../lib/time'
-import { bandsFor, spanEraLabel } from '../lib/eras'
+import { bandsFor, subBandsFor, subLaneOpen, spanEraLabel } from '../lib/eras'
 
 const time = useTimeStore()
 const el = useTemplateRef('el')
@@ -36,14 +36,28 @@ const ticks = computed(() => {
   return out
 })
 
-/** Era strata clipped to the visible window. */
-const strata = computed(() =>
-  bandsFor(time.range.start, time.range.end).map((e) => {
+/** Era bands clipped to the visible window, in pixels. */
+const clipped = (bands: ReturnType<typeof bandsFor>) =>
+  bands.map((e) => {
     const x0 = Math.max(0, toX(e.start))
     const x1 = Math.min(width.value, toX(e.end))
     return { ...e, x: x0, w: Math.max(0, x1 - x0) }
-  }),
-)
+  })
+
+/** Era strata clipped to the visible window. */
+const strata = computed(() => clipped(bandsFor(time.range.start, time.range.end)))
+
+/**
+ * The fine lane: named sub-periods, present only when zoomed in far enough.
+ * It is a *second* row rather than a replacement for the strata above it,
+ * because the sub-age thread has gaps in it — an unnamed century would leave
+ * the rail with no era band at all, and the point of the strip is that you can
+ * always read where you are.
+ */
+const subStrata = computed(() => clipped(subBandsFor(time.range.start, time.range.end)))
+
+/** Whether the lane gets its row. Zoom decides, not content: see subLaneOpen. */
+const subLane = computed(() => subLaneOpen(time.range.start, time.range.end))
 
 /** The highlighted selection band, in pixels. */
 const sel = computed(() => {
@@ -130,6 +144,7 @@ function onWheel(e: WheelEvent) {
   <div
     ref="el"
     class="rail"
+    :class="{ subs: subLane }"
     aria-label="Timeline — drag to pan, scroll or pinch to zoom"
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
@@ -147,6 +162,19 @@ function onWheel(e: WheelEvent) {
         :style="{ left: s.x + 'px', width: s.w + 'px', background: s.color }"
       >
         <!-- only label a band wide enough for the whole word; a clipped era name is worse than none -->
+        <span v-if="s.w > s.name.length * 7 + 14">{{ s.name }}</span>
+      </div>
+    </div>
+
+    <!-- sub-ages: the fine lane, only present when the window is narrow enough -->
+    <div v-if="subLane" class="sub-strata">
+      <div
+        v-for="s in subStrata"
+        :key="s.name"
+        class="band sub"
+        :title="s.name"
+        :style="{ left: s.x + 'px', width: s.w + 'px', background: s.color }"
+      >
         <span v-if="s.w > s.name.length * 7 + 14">{{ s.name }}</span>
       </div>
     </div>
@@ -195,6 +223,7 @@ function onWheel(e: WheelEvent) {
 <style scoped>
 .rail {
   --band-h: 22px;
+  --sub-h: 0px;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -214,6 +243,13 @@ function onWheel(e: WheelEvent) {
 }
 .rail:active {
   cursor: grabbing;
+}
+/* The fine lane costs 14px, and the rail cannot grow — panels above it are laid
+   out against --rail. The main band gives up 6px of its height for it; the rest
+   comes out of the ruler, which has the slack. */
+.rail.subs {
+  --band-h: 16px;
+  --sub-h: 14px;
 }
 
 .strata {
@@ -241,6 +277,31 @@ function onWheel(e: WheelEvent) {
   inset: 0;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.28));
 }
+/* the fine lane: its own strip under the strata, dark where no period is named */
+.sub-strata {
+  position: absolute;
+  top: var(--band-h);
+  left: 0;
+  right: 0;
+  height: var(--sub-h);
+  background: rgba(6, 10, 18, 0.6);
+  box-shadow: 0 1px 0 rgba(6, 10, 18, 0.9);
+}
+.band.sub {
+  border-right: 0;
+  box-shadow: inset -1px 0 0 rgba(6, 10, 18, 0.5);
+}
+/* flatter than the strata above: the fine lane is a footnote to it, not a rival */
+.band.sub::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.2));
+}
+.band.sub span {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0 4px;
+}
+
 .band span {
   position: relative;
   font-family: var(--cond);
@@ -256,7 +317,7 @@ function onWheel(e: WheelEvent) {
 
 .ruler {
   position: absolute;
-  top: var(--band-h);
+  top: calc(var(--band-h) + var(--sub-h));
   bottom: var(--safe-b);
   left: 0;
   right: 0;
@@ -299,7 +360,7 @@ function onWheel(e: WheelEvent) {
 }
 .sel {
   position: absolute;
-  top: var(--band-h);
+  top: calc(var(--band-h) + var(--sub-h));
   bottom: var(--safe-b);
   background: linear-gradient(180deg, rgba(111, 179, 168, 0.22), rgba(111, 179, 168, 0.06));
   box-shadow: inset 0 1px 0 rgba(111, 179, 168, 0.28);
@@ -319,6 +380,11 @@ function onWheel(e: WheelEvent) {
   color: var(--patina);
   white-space: nowrap;
   text-shadow: 0 1px 3px rgba(6, 10, 18, 0.9);
+}
+/* the lane pushes the selection band down; the readout stays where it was, in
+   the gap between the tick numbers and the cursor flag — the only space for it */
+.rail.subs .sel-label {
+  top: 18px;
 }
 
 .handle {

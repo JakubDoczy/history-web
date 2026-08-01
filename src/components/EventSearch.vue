@@ -8,19 +8,14 @@ const events = useEventStore()
 const time = useTimeStore()
 const query = ref('')
 
-const matches = computed(() => {
-  const q = query.value.trim().toLowerCase()
-  if (q.length < 2) return []
-  return events.all
-    .filter((e) => e.name.toLowerCase().includes(q))
-    .sort((a, b) => b.priority - a.priority)
-    .slice(0, 8)
-})
+const matches = computed(() =>
+  query.value.trim().length < 2 ? [] : events.search(query.value),
+)
 
 function pick(id: string) {
-  const e = events.byId(id)!
   events.select(id)
-  time.focusTime(e.start)
+  const year = events.focusYear(id)
+  if (year !== undefined) time.focusTime(year)
   query.value = ''
 }
 </script>
@@ -31,7 +26,7 @@ function pick(id: string) {
     <ul v-if="matches.length">
       <li v-for="e in matches" :key="e.id" @click="pick(e.id)">
         <span class="name">{{ e.name }}</span>
-        <small class="tnum">{{ formatYear(e.start) }}</small>
+        <small class="tnum">{{ formatYear(events.focusYear(e.id) ?? 0) }}</small>
       </li>
     </ul>
   </div>

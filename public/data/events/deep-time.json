@@ -25,7 +25,7 @@
   "start": -4450000000,
   "lat": 0,
   "lng": 0,
-  "priority": 98,
+  "priority": 99,
   "tags": [
    "geology"
   ],
@@ -44,7 +44,7 @@
   "start": -4400000000,
   "lat": -26.1,
   "lng": 117.0,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "geology"
   ],
@@ -64,7 +64,7 @@
   "end": -3800000000,
   "lat": 0,
   "lng": 0,
-  "priority": 78,
+  "priority": 82,
   "tags": [
    "geology"
   ],
@@ -84,7 +84,7 @@
   "end": -3400000000,
   "lat": -32.0,
   "lng": 116.0,
-  "priority": 97,
+  "priority": 98,
   "tags": [
    "biology"
   ],
@@ -103,7 +103,7 @@
   "start": -3800000000,
   "lat": 0,
   "lng": 0,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "geology"
   ],
@@ -146,7 +146,7 @@
   "start": -3000000000,
   "lat": -21.0,
   "lng": 119.5,
-  "priority": 62,
+  "priority": 60,
   "tags": [
    "biology"
   ],
@@ -165,7 +165,7 @@
   "start": -2700000000,
   "lat": -21.0,
   "lng": 119.5,
-  "priority": 86,
+  "priority": 89,
   "tags": [
    "biology"
   ],
@@ -209,7 +209,7 @@
   "end": -2050000000,
   "lat": 0,
   "lng": 0,
-  "priority": 96,
+  "priority": 98,
   "tags": [
    "geology",
    "climate",
@@ -231,7 +231,7 @@
   "end": -2100000000,
   "lat": 46.5,
   "lng": -81.0,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "climate",
    "geology"
@@ -256,7 +256,7 @@
   "start": -1800000000,
   "lat": 0,
   "lng": 0,
-  "priority": 88,
+  "priority": 91,
   "tags": [
    "biology"
   ],
@@ -275,7 +275,7 @@
   "start": -1500000000,
   "lat": 0,
   "lng": 0,
-  "priority": 65,
+  "priority": 62,
   "tags": [
    "biology"
   ],
@@ -319,7 +319,7 @@
   "end": -900000000,
   "lat": 0,
   "lng": 0,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "biology"
   ],
@@ -339,7 +339,7 @@
   "end": -750000000,
   "lat": 0,
   "lng": 0,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "geology"
   ],
@@ -359,7 +359,7 @@
   "end": -720000000,
   "lat": 0,
   "lng": 0,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "climate",
    "biology"
@@ -380,7 +380,7 @@
   "end": -635000000,
   "lat": 0,
   "lng": 0,
-  "priority": 95,
+  "priority": 96,
   "tags": [
    "climate",
    "geology"
@@ -401,7 +401,7 @@
   "end": -539000000,
   "lat": -31.3,
   "lng": 138.6,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "biology"
   ],
@@ -421,7 +421,7 @@
   "end": -515000000,
   "lat": 51.4,
   "lng": -116.5,
-  "priority": 96,
+  "priority": 97,
   "tags": [
    "biology"
   ],
@@ -441,7 +441,7 @@
   "end": -505000000,
   "lat": 24.7,
   "lng": 102.9,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "biology"
   ],
@@ -465,7 +465,7 @@
   "start": -508000000,
   "lat": 51.4,
   "lng": -116.5,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "biology"
   ],
@@ -490,7 +490,7 @@
   "end": -445000000,
   "lat": 0,
   "lng": 0,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "biology"
   ],
@@ -510,7 +510,7 @@
   "end": -440000000,
   "lat": -23.7,
   "lng": 133.9,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "biology"
   ],
@@ -530,7 +530,7 @@
   "end": -420000000,
   "lat": 52.0,
   "lng": -3.5,
-  "priority": 84,
+  "priority": 87,
   "tags": [
    "biology"
   ],
@@ -550,7 +550,7 @@
   "end": -443000000,
   "lat": 0,
   "lng": 0,
-  "priority": 80,
+  "priority": 84,
   "tags": [
    "extinction",
    "biology"
@@ -571,7 +571,7 @@
   "end": -420000000,
   "lat": 57.3,
   "lng": -2.6,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "biology"
   ],
@@ -591,7 +591,7 @@
   "end": -372000000,
   "lat": 48.1,
   "lng": -66.4,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "biology"
   ],
@@ -610,7 +610,7 @@
   "start": -375000000,
   "lat": 79.0,
   "lng": -84.0,
-  "priority": 80,
+  "priority": 84,
   "tags": [
    "biology"
   ],
@@ -630,7 +630,7 @@
   "end": -359000000,
   "lat": 0,
   "lng": 0,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "extinction",
    "biology"
@@ -651,7 +651,7 @@
   "end": -299000000,
   "lat": 50.0,
   "lng": -1.0,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "biology",
    "geology"
@@ -672,7 +672,7 @@
   "end": -175000000,
   "lat": 0,
   "lng": 10,
-  "priority": 90,
+  "priority": 93,
   "tags": [
    "geology"
   ],
@@ -716,7 +716,7 @@
   "end": -260000000,
   "lat": 33.0,
   "lng": -99.0,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "biology"
   ],
@@ -736,7 +736,7 @@
   "end": -251500000,
   "lat": 0,
   "lng": 0,
-  "priority": 96,
+  "priority": 97,
   "tags": [
    "extinction",
    "geology"
@@ -787,7 +787,7 @@
     50
    ]
   ],
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "geology",
    "disaster"
@@ -813,7 +813,7 @@
   "end": -90000000,
   "lat": 50.7,
   "lng": -2.9,
-  "priority": 62,
+  "priority": 60,
   "tags": [
    "biology"
   ],
@@ -832,7 +832,7 @@
   "start": -233000000,
   "lat": -29.0,
   "lng": -67.0,
-  "priority": 80,
+  "priority": 84,
   "tags": [
    "biology"
   ],
@@ -852,7 +852,7 @@
   "end": -200000000,
   "lat": 51.4,
   "lng": -3.2,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "biology"
   ],
@@ -871,7 +871,7 @@
   "start": -201400000,
   "lat": 0,
   "lng": -30.0,
-  "priority": 74,
+  "priority": 77,
   "tags": [
    "extinction",
    "geology"
@@ -892,7 +892,7 @@
   "end": 2026,
   "lat": 30.0,
   "lng": -40.0,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "geology"
   ],
@@ -976,7 +976,7 @@
   "end": -70000000,
   "lat": 0,
   "lng": 0,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "biology"
   ],
@@ -996,7 +996,7 @@
   "end": -66000000,
   "lat": 0,
   "lng": 0,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "climate",
    "geology"
@@ -1017,7 +1017,7 @@
   "end": -66000000,
   "lat": 43.0,
   "lng": -100.0,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "geology",
    "biology"
@@ -1038,7 +1038,7 @@
   "end": -66000000,
   "lat": 44.0,
   "lng": 103.0,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "biology"
   ],
@@ -1084,7 +1084,7 @@
     13
    ]
   ],
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "geology",
    "disaster"
@@ -1104,7 +1104,7 @@
   "start": -66000000,
   "lat": 21.4,
   "lng": -89.5,
-  "priority": 96,
+  "priority": 97,
   "tags": [
    "extinction",
    "biology"
@@ -1150,7 +1150,7 @@
     18
    ]
   ],
-  "priority": 90,
+  "priority": 93,
   "tags": [
    "geology",
    "disaster"
@@ -1176,7 +1176,7 @@
   "end": -56000000,
   "lat": 44.5,
   "lng": -108.5,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "biology"
   ],
@@ -1201,7 +1201,7 @@
   "end": -55800000,
   "lat": 0,
   "lng": 0,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "climate"
   ],
@@ -1221,7 +1221,7 @@
   "end": -50000000,
   "lat": 0,
   "lng": 0,
-  "priority": 62,
+  "priority": 60,
   "tags": [
    "climate"
   ],
@@ -1241,7 +1241,7 @@
   "end": 2026,
   "lat": 28.0,
   "lng": 86.9,
-  "priority": 62,
+  "priority": 60,
   "tags": [
    "geology"
   ],
@@ -1261,7 +1261,7 @@
   "end": -34000000,
   "lat": 33.0,
   "lng": 72.0,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "biology"
   ],
@@ -1280,7 +1280,7 @@
   "start": -34000000,
   "lat": -82.0,
   "lng": 20.0,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "climate",
    "geology"
@@ -1327,7 +1327,7 @@
   "end": -5000000,
   "lat": 0.0,
   "lng": 0.0,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "biology",
    "climate"
@@ -1348,7 +1348,7 @@
   "end": -6000000,
   "lat": 7.5,
   "lng": 17.0,
-  "priority": 78,
+  "priority": 82,
   "tags": [
    "biology"
   ],
@@ -1368,7 +1368,7 @@
   "end": -5330000,
   "lat": 38.0,
   "lng": 15.0,
-  "priority": 62,
+  "priority": 60,
   "tags": [
    "geology"
   ],
@@ -1388,7 +1388,7 @@
   "end": -2600000,
   "lat": -2.7,
   "lng": 36.2,
-  "priority": 84,
+  "priority": 87,
   "tags": [
    "technology"
   ],
@@ -1407,7 +1407,7 @@
   "start": -3200000,
   "lat": 11.1,
   "lng": 40.6,
-  "priority": 78,
+  "priority": 82,
   "tags": [
    "biology"
   ],
@@ -1432,7 +1432,7 @@
   "end": -11700,
   "lat": 60.0,
   "lng": -45.0,
-  "priority": 80,
+  "priority": 84,
   "tags": [
    "climate",
    "geology"
@@ -1453,7 +1453,7 @@
   "end": -110000,
   "lat": -2.0,
   "lng": 36.0,
-  "priority": 78,
+  "priority": 82,
   "tags": [
    "biology",
    "exploration"
@@ -1474,7 +1474,7 @@
   "end": -300000,
   "lat": 4.1,
   "lng": 35.9,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "technology"
   ],
@@ -1498,7 +1498,7 @@
   "start": -1000000,
   "lat": -28.4,
   "lng": 24.3,
-  "priority": 82,
+  "priority": 85,
   "tags": [
    "technology"
   ],
@@ -1517,7 +1517,7 @@
   "start": -315000,
   "lat": 31.9,
   "lng": -8.7,
-  "priority": 95,
+  "priority": 96,
   "tags": [
    "biology"
   ],
@@ -1537,7 +1537,7 @@
   "end": -30000,
   "lat": 51.4,
   "lng": 84.7,
-  "priority": 60,
+  "priority": 57,
   "tags": [
    "biology"
   ],
@@ -1557,7 +1557,7 @@
   "end": -100000,
   "lat": 5.4,
   "lng": 35.9,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "biology"
   ],
@@ -1582,7 +1582,7 @@
   "end": -50000,
   "lat": -8.53,
   "lng": 120.44,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "biology"
   ],
@@ -1601,7 +1601,7 @@
   "start": -74000,
   "lat": 2.7,
   "lng": 98.9,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "disaster",
    "geology"
@@ -1622,7 +1622,7 @@
   "end": -50000,
   "lat": 12.8,
   "lng": 43.3,
-  "priority": 93,
+  "priority": 94,
   "tags": [
    "exploration",
    "biology"
@@ -1642,7 +1642,7 @@
   "start": -65000,
   "lat": -12.4,
   "lng": 132.9,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "exploration"
   ],
@@ -1667,7 +1667,7 @@
   "end": -10000,
   "lat": 65.0,
   "lng": 140.0,
-  "priority": 64,
+  "priority": 62,
   "tags": [
    "biology"
   ],
@@ -1686,7 +1686,7 @@
   "start": -40000,
   "lat": 36.1,
   "lng": -5.3,
-  "priority": 72,
+  "priority": 74,
   "tags": [
    "biology"
   ],
@@ -1711,7 +1711,7 @@
   "end": -12000,
   "lat": 45.0,
   "lng": 1.2,
-  "priority": 76,
+  "priority": 80,
   "tags": [
    "culture"
   ],
@@ -1731,7 +1731,7 @@
   "end": -19000,
   "lat": 55.0,
   "lng": -40.0,
-  "priority": 76,
+  "priority": 80,
   "tags": [
    "climate"
   ],
@@ -1751,7 +1751,7 @@
   "end": -13000,
   "lat": 65.0,
   "lng": -165.0,
-  "priority": 80,
+  "priority": 84,
   "tags": [
    "exploration"
   ],
@@ -1775,7 +1775,7 @@
   "start": -15000,
   "lat": 50.0,
   "lng": 10.0,
-  "priority": 62,
+  "priority": 59,
   "tags": [
    "biology",
    "technology"
@@ -1796,7 +1796,7 @@
   "end": -11700,
   "lat": 60.0,
   "lng": -30.0,
-  "priority": 66,
+  "priority": 65,
   "tags": [
    "climate"
   ],
@@ -1815,7 +1815,7 @@
   "start": -11700,
   "lat": 72.0,
   "lng": -38.0,
-  "priority": 80,
+  "priority": 84,
   "tags": [
    "climate",
    "geology"

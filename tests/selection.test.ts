@@ -110,7 +110,7 @@ describe('clampSelection', () => {
 
   it('clamps years beyond the end of time (warp saturates there)', () => {
     const sel = clampSelection({ start: 467, end: 2776 }, win)
-    expect(sel.end).toBeCloseTo(2100, 6)
+    expect(sel.end).toBeCloseTo(MAX_TIME, 6) // the present, not the window's nominal end
     expect(sel.start).toBeCloseTo(467, 6)
   })
 
@@ -144,7 +144,7 @@ describe('time store selection', () => {
 
   it('opens on the documented default framing', () => {
     const s = useTimeStore()
-    expect(s.range).toEqual({ start: -550, end: 2100 })
+    expect(s.range).toEqual({ start: -550, end: MAX_TIME })
     expect(s.selection).toEqual({ start: 500, end: 1945 })
   })
 
@@ -171,7 +171,7 @@ describe('time store selection', () => {
     const s = useTimeStore()
     const medieval = HISTORICAL.find((e) => e.name === 'Medieval')!
     s.selectEra(medieval)
-    expect(s.range).toEqual({ start: -550, end: 2100 }) // already visible: window untouched
+    expect(s.range).toEqual({ start: -550, end: MAX_TIME }) // already visible: window untouched
     // exact, so the era label round-trips: 499.9999 would read as Classical too
     expect(s.selection).toEqual({ start: 500, end: 1500 })
     expect(spanEraLabel(s.selection.start, s.selection.end)).toBe('Medieval')

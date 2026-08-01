@@ -128,3 +128,77 @@ describe('event data loading, when the network misbehaves', () => {
     expect(store.all).toEqual([])
   })
 })
+
+import type { Item, Person } from '../src/lib/events'
+
+const einstein: Person = {
+  id: 'einstein', kind: 'person', name: 'Albert Einstein', born: 1879, died: 1955,
+  birthPlace: { lat: 48.4, lng: 9.99, label: 'Ulm' },
+  deathPlace: { lat: 40.36, lng: -74.67, label: 'Princeton' },
+  priority: 88, tags: ['science'], summary: 'physicist',
+  body: 'wrote [relativity](item:relativity)',
+}
+
+describe('the store as an item store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().currentTime = 1900
+  })
+
+  const seed = (): Item[] => [
+    einstein,
+    { id: 'relativity', name: 'Relativity', start: 1905, lat: 0, lng: 0, priority: 88, tags: ['science'], summary: '', body: 'by [Einstein](item:einstein)' },
+    { id: 'idea', kind: 'concept', name: 'Relativity, the idea', anchorYear: 1905, priority: 70, tags: ['science'], summary: '' },
+  ]
+
+  it('opens the life behind a derived birth pin, while the pin keeps the highlight', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    events.select('einstein--birth')
+    expect(events.selectedId).toBe('einstein--birth') // the globe still knows which pin
+    expect(events.selected?.id).toBe('einstein') // the panel shows the life
+  })
+
+  it('keeps derived pins off the globe until the setting asks for them', () => {
+    const events = useEventStore()
+    const settings = useSettingsStore()
+    const time = useTimeStore()
+    time.selection = { start: 1870, end: 1890 }
+    events.adopt(seed())
+    expect(events.visible.map((e) => e.id)).toEqual([])
+    settings.showMinorEvents = true
+    expect(events.visible.map((e) => e.id)).toEqual(['einstein--birth'])
+  })
+
+  it('answers where to put the timeline for any kind of item', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    expect(events.focusYear('relativity')).toBe(1905) // an event starts
+    expect(events.focusYear('einstein')).toBe(1879) // a life is born
+    expect(events.focusYear('idea')).toBe(1905) // an idea is anchored
+    expect(events.focusYear('einstein--death')).toBe(1955) // a derived pin is its own year
+    expect(events.focusYear('nope')).toBeUndefined()
+  })
+
+  it('collects an article neighbourhood from links in both directions', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    expect(events.linkedTo('einstein').map((i) => i.id)).toEqual(['relativity'])
+    expect(events.linkedTo('relativity').map((i) => i.id)).toEqual(['einstein'])
+  })
+
+  it('searches every kind, and finds a person by name', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    expect(events.search('einstein').map((i) => i.id)).toEqual(['einstein'])
+    expect(events.search('relativity').map((i) => i.id)).toEqual(['relativity', 'idea'])
+  })
+
+  it('records a fly-to request per ask, so the same place can be asked for twice', () => {
+    const events = useEventStore()
+    events.lookAt(48.4, 9.99)
+    expect(events.flyTo).toEqual({ lat: 48.4, lng: 9.99, seq: 1 })
+    events.lookAt(48.4, 9.99)
+    expect(events.flyTo?.seq).toBe(2)
+  })
+})

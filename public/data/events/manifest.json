@@ -11,31 +11,31 @@
    "file": "ancient.json",
    "from": -10000,
    "to": 1644,
-   "count": 113
+   "count": 117
   },
   {
    "file": "medieval.json",
    "from": 527,
    "to": 1922,
-   "count": 88
+   "count": 94
   },
   {
    "file": "early-modern.json",
    "from": 1500,
    "to": 1912,
-   "count": 88
+   "count": 92
   },
   {
    "file": "modern.json",
    "from": 1803,
    "to": 2026,
-   "count": 96
+   "count": 107
   },
   {
    "file": "contemporary.json",
    "from": 1945,
    "to": 2026,
-   "count": 99
+   "count": 100
   }
  ]
 }
