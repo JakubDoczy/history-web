@@ -4,7 +4,7 @@ import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { formatYear } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
-import { fetchWikiImage, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
+import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
 
 const events = useEventStore()
 const time = useTimeStore()
@@ -37,7 +37,33 @@ function follow(link: { event?: string; url?: string }) {
    looked up from the article link the event already has, on open. */
 const wikiImage = ref<WikiImage | null>(null)
 const wikiShown = ref(false) // set on decode, so the fade only runs on a real picture
+/**
+ * A wider rendering of the thumbnail is a guess about Wikimedia's thumbnailer
+ * (see lib/wikiImage.ts). When the guess 404s we drop to the URL the API
+ * actually promised rather than to no picture at all.
+ */
+const wikiFellBack = ref(false)
+const wikiSrc = computed(() =>
+  wikiFellBack.value ? wikiImage.value?.fallbackUrl : wikiImage.value?.url,
+)
 let inflight: AbortController | null = null
+
+function onImageError() {
+  const img = wikiImage.value
+  if (img?.fallbackUrl && !wikiFellBack.value) {
+    wikiDebug('rendered thumbnail failed; falling back to the size the API gave', img.url)
+    wikiFellBack.value = true
+    return
+  }
+  wikiDebug('picture failed to load', wikiSrc.value)
+  wikiImage.value = null
+}
+
+/** A picture already in the browser cache can be complete before `load` binds. */
+function onImageMounted(el: Element) {
+  const img = el as HTMLImageElement
+  if (img.complete && img.naturalWidth > 0) wikiShown.value = true
+}
 
 /** Roughly the panel's content width, in device pixels. */
 function targetWidth() {
@@ -53,11 +79,15 @@ watch(
     inflight = null
     wikiImage.value = null
     wikiShown.value = false
+    wikiFellBack.value = false
 
     const ev = events.selected
     if (!id || !ev || ev.image) return // an explicit image in the data always wins
     const ref = wikiRefForEvent(ev)
-    if (!ref) return
+    if (!ref) {
+      wikiDebug('event carries no Wikipedia article link', id)
+      return
+    }
 
     const ctl = new AbortController()
     inflight = ctl
@@ -110,12 +140,13 @@ onBeforeUnmount(() => inflight?.abort())
       <img
         loading="lazy"
         decoding="async"
-        :src="wikiImage.url"
+        :src="wikiSrc"
         :width="wikiImage.width"
         :height="wikiImage.height"
         :alt="wikiImage.caption ?? e.name"
         @load="wikiShown = true"
-        @error="wikiImage = null"
+        @error="onImageError"
+        @vue:mounted="onImageMounted($event.el as Element)"
       />
       <figcaption>
         <span v-if="wikiImage.caption">{{ wikiImage.caption }} · </span>

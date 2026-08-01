@@ -1,33 +1,49 @@
 /**
  * Integration check for the Wikipedia lead picture in EventPanel.
  *
- * This sandbox has no route to wikipedia.org, so the summary endpoint and the
- * Wikimedia thumbnail are both served by Playwright route mocks from
- * `fixtures/`. What is proved here is everything on our side of the wire: that a
- * real browser running the real component asks the right URL, renders the
- * picture with its caption and attribution, reserves the box, falls back
- * silently on 404 and on transport failure, never doubles up on an event that
- * already has an image, and aborts a stale request when the user moves on.
+ * This sandbox has no route to wikipedia.org, so `en.wikipedia.org` and
+ * `upload.wikimedia.org` are answered by a real HTTPS origin on loopback,
+ * mapped in with Chromium's host resolver — not by Playwright's request
+ * interception, which cannot reproduce a redirect (it does not re-intercept
+ * one) and short-circuits the CORS machinery this feature depends on.
  *
- * Live-API behaviour (CORS headers, real payload shapes, the widths the
- * thumbnailer actually honours) still needs a run against the real endpoint in a
- * networked browser.
+ * The stand-in answers the *live* contract rather than what the code happens to
+ * expect — that distinction is the whole point, because the first version of
+ * this feature passed a mock that answered 200 to every URL it was handed and
+ * shipped broken:
+ *
+ *   · the summary endpoint 302s when the article link is a redirect
+ *     (`Aqueduct_(Roman)` → `Roman aqueduct`), and the browser has to follow it;
+ *   · an article can have no thumbnail at all (`HIV/AIDS`);
+ *   · a thumbnail can be a PNG rendering of an SVG;
+ *   · upload.wikimedia.org serves the 320 px rendering the summary names, and
+ *     is entitled to 404 any other width we ask it to render;
+ *   · and the transport can simply fail.
+ *
+ * Needs `openssl` on PATH once, to mint the loopback certificate.
  *
  * Run:  node tests/e2e/wikiImage.e2e.mjs
  * Env:  CHROME_PATH        Chromium/Chrome executable (defaults to the puppeteer cache)
  *       PLAYWRIGHT_MODULE  path to the playwright package, if not resolvable
+ *       SHOT_DIR           where screenshots land (defaults to tests/e2e/shots)
  */
 import { createServer } from 'vite'
-import { readFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, existsSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
+import { createServer as createHttps } from 'node:https'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..', '..')
-const shots = join(here, 'shots')
+const shots = process.env.SHOT_DIR ?? join(here, 'shots')
 mkdirSync(shots, { recursive: true })
 
-const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ?? 'playwright')
+// Playwright is CommonJS; imported by file path Node cannot always detect its
+// named exports, so fall back to the default (the whole module.exports object).
+const pw = await import(process.env.PLAYWRIGHT_MODULE ?? 'playwright')
+const { chromium } = pw.chromium ? pw : pw.default
 const CHROME =
   process.env.CHROME_PATH ??
   '/home/claude/.cache/puppeteer/chrome/linux-148.0.7778.97/chrome-linux64/chrome'
@@ -61,7 +77,12 @@ const ok = (cond, what) => {
 const SUMMARIES = {
   'G%C3%B6bekli_Tepe': 'summary-gobekli-tepe.json',
   Jericho: 'summary-jericho.json',
+  Roman_aqueduct: 'summary-roman-aqueduct.json',
+  'HIV%2FAIDS': 'summary-hiv-aids.json',
+  United_Nations: 'summary-united-nations.json',
 }
+/** Article link → the title the endpoint redirects it to, as the live one does. */
+const REDIRECTS = { 'Aqueduct_(Roman)': 'Roman_aqueduct' }
 const NOT_FOUND = new Set(['Definitely_Not_A_Page'])
 const NETWORK_ERROR = new Set(['Network_Failure_Page'])
 
@@ -74,42 +95,121 @@ const server = await createServer({
 await server.listen()
 const base = `http://localhost:${server.config.server.port}/history-web/tests/e2e/harness.html`
 
-const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
-const context = await browser.newContext({ viewport: { width: 900, height: 900 }, deviceScaleFactor: 1 })
+/* ------------------------------------------------------- the Wikimedia stand-in
+ *
+ * Playwright's `route.fulfill` cannot serve this alone: a redirect it fulfils is
+ * *not* re-intercepted, and a redirect is the one thing that has to be exercised
+ * here. So the two Wikimedia hosts are answered by a real HTTPS origin on
+ * loopback, mapped in by Chromium's host resolver. Everything the browser does
+ * with them is then genuinely its own: the CORS check, the pre-flight decision,
+ * following the 302, refusing to follow it when the request was pre-flighted.
+ */
+const MOCK_PORT = 5443
+const certDir = join(tmpdir(), 'history-web-e2e-tls')
+const KEY = join(certDir, 'key.pem')
+const CERT = join(certDir, 'cert.pem')
+if (!existsSync(KEY) || !existsSync(CERT)) {
+  mkdirSync(certDir, { recursive: true })
+  execFileSync('openssl', [
+    'req', '-x509', '-newkey', 'rsa:2048', '-keyout', KEY, '-out', CERT,
+    '-days', '3650', '-nodes', '-subj', '/CN=wikimedia.test',
+    '-addext', 'subjectAltName=DNS:en.wikipedia.org,DNS:upload.wikimedia.org',
+  ], { stdio: 'ignore' })
+}
 
 let summaryRequests = []
 let failedRequests = []
 let summaryDelayMs = 0
+let imageRequests = []
+let preflights = []
+/**
+ * The thumbnailer. `'any'` renders whatever width is asked for; `'only-320'` is
+ * the pessimistic real world, where the one rendering the summary named exists
+ * and every other width 404s.
+ */
+let thumbPolicy = 'any'
 
-await context.route('**/api/rest_v1/page/summary/**', async (route) => {
-  const title = route.request().url().split('/summary/')[1]
+// `no-store` on everything: otherwise Chromium serves the second run of a URL —
+// redirect included — out of its own cache, and a test that is about what goes
+// over the wire stops seeing the wire.
+const CORS = { 'access-control-allow-origin': '*', 'cache-control': 'no-store' }
+
+const wikimedia = createHttps({ key: readFileSync(KEY), cert: readFileSync(CERT) }, async (req, res) => {
+  const host = (req.headers.host ?? '').split(':')[0]
+
+  // A correct pre-flight answer, so that when a pre-flighted request fails it
+  // can only be for the reason this test is about: the redirect behind it.
+  if (req.method === 'OPTIONS') {
+    preflights.push(host + req.url)
+    res.writeHead(204, {
+      ...CORS,
+      'access-control-allow-methods': 'GET, HEAD, OPTIONS',
+      'access-control-allow-headers': '*',
+      'access-control-max-age': '0',
+    })
+    return res.end()
+  }
+
+  if (host === 'upload.wikimedia.org') {
+    imageRequests.push(`https://${host}${req.url}`)
+    if (thumbPolicy === 'only-320' && !req.url.includes('/320px-')) {
+      res.writeHead(404, { ...CORS, 'content-type': 'text/html' })
+      return res.end('Error creating thumbnail: source too small')
+    }
+    const png = fixture('thumbnail.png')
+    res.writeHead(200, { ...CORS, 'content-type': 'image/png', 'content-length': png.length })
+    return res.end(png)
+  }
+
+  const match = /^\/api\/rest_v1\/page\/summary\/(.+)$/.exec(req.url)
+  if (!match) {
+    res.writeHead(404, CORS)
+    return res.end('{}')
+  }
+  const title = match[1]
   summaryRequests.push(title)
   if (summaryDelayMs) await new Promise((r) => setTimeout(r, summaryDelayMs))
-  try {
-    if (NETWORK_ERROR.has(title)) return await route.abort('failed')
-    if (NOT_FOUND.has(title) || !SUMMARIES[title])
-      return await route.fulfill({
-        status: 404,
-        contentType: 'application/json',
-        body: JSON.stringify({ type: 'not_found', title: 'Not found.' }),
-      })
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      headers: { 'access-control-allow-origin': '*' },
-      body: fixture(SUMMARIES[title]),
-    })
-  } catch {
-    /* the page aborted this request while we were sleeping — that is the point of test 6 */
-  }
-})
+  if (req.destroyed || res.destroyed) return // the page moved on: test 6
 
-await context.route('**upload.wikimedia.org/**', (route) =>
-  route.fulfill({ status: 200, contentType: 'image/png', body: fixture('thumbnail.png') }),
-)
-await context.route('**/placeholder-own.png', (route) =>
-  route.fulfill({ status: 200, contentType: 'image/png', body: fixture('own-image.png') }),
-)
+  if (NETWORK_ERROR.has(title)) return req.destroy() // the transport gives up
+  if (REDIRECTS[title]) {
+    // 302, exactly as the live endpoint answers for a redirect article.
+    res.writeHead(302, {
+      ...CORS,
+      location: `https://en.wikipedia.org/api/rest_v1/page/summary/${REDIRECTS[title]}`,
+    })
+    return res.end()
+  }
+  if (NOT_FOUND.has(title) || !SUMMARIES[title]) {
+    res.writeHead(404, { ...CORS, 'content-type': 'application/json' })
+    return res.end(JSON.stringify({ type: 'not_found', title: 'Not found.' }))
+  }
+  const body = fixture(SUMMARIES[title])
+  res.writeHead(200, {
+    ...CORS,
+    // the live profile parameter and all
+    'content-type':
+      'application/json; charset=utf-8; profile="https://www.mediawiki.org/wiki/Specs/Summary/1.5.0"',
+    'content-length': body.length,
+  })
+  res.end(body)
+})
+await new Promise((r) => wikimedia.listen(MOCK_PORT, '127.0.0.1', r))
+
+const browser = await chromium.launch({
+  executablePath: CHROME,
+  args: [
+    '--no-sandbox',
+    // the sandbox exports a proxy; these two hosts must not go through it
+    '--no-proxy-server',
+    `--host-resolver-rules=MAP en.wikipedia.org 127.0.0.1:${MOCK_PORT},MAP upload.wikimedia.org 127.0.0.1:${MOCK_PORT}`,
+  ],
+})
+const context = await browser.newContext({
+  viewport: { width: 900, height: 900 },
+  deviceScaleFactor: 1,
+  ignoreHTTPSErrors: true, // the stand-in origin is self-signed
+})
 
 const page = await context.newPage()
 page.on('requestfailed', (r) => failedRequests.push(r.url()))
@@ -128,6 +228,9 @@ const reset = async () => {
   })
   summaryRequests = []
   failedRequests = []
+  imageRequests = []
+  preflights = []
+  thumbPolicy = 'any'
 }
 const settled = async () => {
   await wikiFigure.waitFor({ state: 'visible', timeout: 6000 })
@@ -254,7 +357,7 @@ const own = await page.evaluate(() => ({
 await check('renders exactly one figure', () => eq(own.figures, 1, 'figure count'))
 await check('and it is the dataset one', () => {
   eq(own.wiki, 0, 'wiki figure count')
-  eq(own.src, '/placeholder-own.png', 'image src')
+  ok(own.src.endsWith('own-image.png'), `image src was ${own.src}`)
 })
 await check('never asks Wikipedia for it', () => eq(summaryRequests.length, 0, 'summary requests'))
 
@@ -330,10 +433,171 @@ await check('no transition runs', () => eq(rmState.transition, '0s', 'transition
 await check('and the picture is fully visible', () => eq(rmState.opacity, '1', 'opacity'))
 await rm.close()
 
+/* --------------------------------------------------- 9. a redirect article */
+
+console.log('\n9. the endpoint 302s a redirect article, and the picture still arrives')
+await reset()
+await select('redirected')
+await settled()
+await page.screenshot({ path: join(shots, '07-redirect-302.png') })
+const red = await page.evaluate(() => {
+  const fig = document.querySelector('[data-test="wiki-figure"]')
+  return {
+    src: fig.querySelector('img').getAttribute('src'),
+    natural: fig.querySelector('img').naturalWidth,
+    caption: fig.querySelector('figcaption').textContent.trim(),
+    href: fig.querySelector('figcaption a').getAttribute('href'),
+  }
+})
+await check('followed the redirect to the target article', () => {
+  eq(summaryRequests.length, 2, 'summary requests')
+  eq(summaryRequests[0], 'Aqueduct_(Roman)', 'first request')
+  eq(summaryRequests[1], 'Roman_aqueduct', 'redirected request')
+})
+await check('renders the target article picture', () => {
+  ok(red.src.includes('Pont_du_Gard'), `src was ${red.src}`)
+  ok(red.natural > 0, 'the picture did not load')
+})
+await check('attributes to the article the redirect landed on', () =>
+  eq(red.href, 'https://en.wikipedia.org/wiki/Roman_aqueduct', 'attribution href'),
+)
+await check('captions from the target summary', () =>
+  ok(red.caption.includes('Water-supply structures'), `caption was ${red.caption}`),
+)
+
+/* ------------------------------------------------- 10. an article with none */
+
+console.log('\n10. an article with no lead image renders no figure and no error')
+await reset()
+await select('no-picture')
+await page.waitForTimeout(600)
+await page.screenshot({ path: join(shots, '08-no-thumbnail.png') })
+await check('asked, with the slash in the title encoded', () => {
+  eq(summaryRequests.length, 1, 'summary requests')
+  eq(summaryRequests[0], 'HIV%2FAIDS', 'requested title')
+})
+await check('renders no figure', async () => eq(await anyFigure.count(), 0, 'figure count'))
+await check('asks upload.wikimedia.org for nothing', () => eq(imageRequests.length, 0, 'image requests'))
+await check('still renders the article body', async () =>
+  ok((await page.locator('article .body').innerText()).length > 10, 'body missing'),
+)
+
+/* ------------------------------------------------------ 11. an SVG lead image */
+
+console.log('\n11. an SVG lead image renders through its PNG thumbnail')
+await reset()
+await select('svg-lead')
+await settled()
+await page.screenshot({ path: join(shots, '09-svg-thumbnail.png') })
+const svg = await page.evaluate(() => {
+  const img = document.querySelector('[data-test="wiki-figure"] img')
+  return { src: img.getAttribute('src'), natural: img.naturalWidth }
+})
+await check('renders the PNG rendering, not the .svg file', () => {
+  ok(svg.src.endsWith('.svg.png'), `src was ${svg.src}`)
+  ok(svg.natural > 0, 'the picture did not load')
+})
+await check('never asks for more than the SVG declares', () => {
+  const m = /\/(\d+)px-/.exec(svg.src)
+  ok(m, `no NNNpx- segment in ${svg.src}`)
+  ok(Number(m[1]) <= 1200, `asked for ${m[1]}px of a 1200px original`)
+})
+
+/* ------------------------------------- 12. the thumbnailer refuses our width */
+
+console.log('\n12. a 404 on the re-rendered width falls back to the promised one')
+await reset()
+thumbPolicy = 'only-320'
+// A fresh document: this article's wider rendering is already in the first
+// page's memory cache, and a cached bitmap would never reach the thumbnailer.
+const fallbackPage = await context.newPage()
+await fallbackPage.goto(base + '?event=redirected', { waitUntil: 'networkidle' })
+await fallbackPage.locator('[data-test="wiki-figure"]').waitFor({ state: 'visible', timeout: 8000 })
+await fallbackPage.waitForTimeout(600)
+await fallbackPage.screenshot({ path: join(shots, '10-thumb-404-fallback.png') })
+const fell = await fallbackPage.evaluate(() => {
+  const img = document.querySelector('[data-test="wiki-figure"] img')
+  return { src: img.getAttribute('src'), natural: img.naturalWidth }
+})
+await check('tried the wider rendering first', () =>
+  ok(
+    imageRequests.some((u) => !u.includes('/320px-')),
+    `image requests: ${JSON.stringify(imageRequests)}`,
+  ),
+)
+await check('then used the width the summary actually promised', () => {
+  ok(fell.src.includes('/320px-'), `src was ${fell.src}`)
+  ok(fell.natural > 0, 'the picture did not load')
+})
+await check('the figure is on screen, not hidden by the failure', async () =>
+  eq(await fallbackPage.locator('[data-test="wiki-figure"]').count(), 1, 'figure count'),
+)
+await fallbackPage.close()
+
+/* ---------------------------------- 13. a network failure is not remembered */
+
+console.log('\n13. a failed request is retried on the next open, not cached as "no picture"')
+await reset()
+await select('offline')
+await page.waitForTimeout(500)
+// Chromium re-tries an idempotent GET once when the connection is dropped, so
+// what matters is that the *second open* produced traffic at all.
+const firstTry = summaryRequests.filter((t) => t === 'Network_Failure_Page').length
+await select('gobekli-tepe')
+await settled()
+await select('offline')
+await page.waitForTimeout(500)
+const afterSecond = summaryRequests.filter((t) => t === 'Network_Failure_Page').length
+await check('the first attempt reached the network and failed', () => ok(firstTry >= 1, 'no request made'))
+await check('and the second open asked again rather than replaying a cached "no"', () =>
+  ok(afterSecond > firstTry, `asked ${firstTry} times, then ${afterSecond}`),
+)
+
+/* ------------------------------------- 14. why the request carries no headers */
+
+console.log('\n14. the app never triggers a CORS pre-flight')
+await reset()
+await select('redirected')
+await settled()
+const appPreflights = preflights.length
+await check('the app asks for a redirect article without a single OPTIONS', () =>
+  eq(appPreflights, 0, 'pre-flights caused by the app'),
+)
+
+// What one request header would cost, measured rather than assumed. On this
+// Chromium a pre-flighted request does follow the redirect — by pre-flighting
+// again at the target: two extra round trips per article, on browsers new
+// enough to have the fix at all. Wikimedia's own docs still warn that older
+// ones fail the request outright.
+await reset()
+const cors = await page.evaluate(async () => {
+  const url = 'https://en.wikipedia.org/api/rest_v1/page/summary/Aqueduct_(Roman)'
+  const attempt = async (init) => {
+    try {
+      const r = await fetch(url, { mode: 'cors', credentials: 'omit', redirect: 'follow', ...init })
+      return { status: r.status, url: r.url }
+    } catch (e) {
+      return { error: String(e) }
+    }
+  }
+  const bare = await attempt({})
+  const bareCost = 'measured below'
+  const withHeader = await attempt({ headers: { 'api-user-agent': 'history-web' } })
+  return { bare, bareCost, withHeader }
+})
+await check('a bare GET follows the 302 to the target article', () => {
+  eq(cors.bare.status, 200, 'status')
+  ok(cors.bare.url.endsWith('/Roman_aqueduct'), `landed on ${cors.bare.url}`)
+})
+await check('one custom header adds a pre-flight on both sides of the redirect', () =>
+  ok(preflights.length >= 2, `expected ≥2 OPTIONS, saw ${preflights.length}: ${JSON.stringify(preflights)}`),
+)
+
 /* ------------------------------------------------------------------ wrap up */
 
 await browser.close()
 await server.close()
+wikimedia.close()
 
 console.log(`\nscreenshots: ${shots}`)
 console.log(`${passed} checks passed, ${failures.length} failed`)

@@ -14,7 +14,13 @@ export function renderRichText(src: string): string {
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
         .replace(/\[(.+?)\]\(event:([\w-]+)\)/g, '<a data-event="$2">$1</a>')
-        .replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>'),
+        // one level of balanced parens allowed in the URL: Wikipedia titles like
+        // /wiki/Early_Dynastic_Period_(Egypt) end in ')' and a naive [^\s)]+
+        // truncated them mid-title (same fix as in wikiImage.ts)
+        .replace(
+          /\[(.+?)\]\((https?:(?:[^\s()]|\([^\s()]*\))+)\)/g,
+          '<a href="$2" target="_blank" rel="noopener">$1</a>',
+        ),
     )
     .map((p) => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`)
     .join('')

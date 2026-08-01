@@ -40,7 +40,13 @@ class StubImage {
   }
 }
 
-const URLS = { day: '/day.jpg', night: '/night.jpg', relief: '/relief.png', clouds: '/clouds.jpg' }
+const URLS = {
+  day: '/day.jpg',
+  night: '/night.jpg',
+  relief: '/relief.png',
+  clouds: '/clouds.jpg',
+  cloudNrm: '/clouds-nrm.webp',
+}
 const renderer = {
   capabilities: { getMaxAnisotropy: () => 4, maxTextureSize: 8192 },
 } as unknown as WebGLRenderer
@@ -486,7 +492,7 @@ describe('deferred maps', () => {
     expect(StubImage.made).toHaveLength(1)
     surface.loadRest()
     expect(StubImage.made.map((i) => i.src).sort()).toEqual(
-      [URLS.clouds, URLS.day, URLS.night, URLS.relief].sort(),
+      [URLS.clouds, URLS.cloudNrm, URLS.day, URLS.night, URLS.relief].sort(),
     )
   })
 

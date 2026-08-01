@@ -20,7 +20,7 @@ import {
   minAltitudeFor,
   patchPixelCap,
 } from '../lib/detailImagery'
-import { cloudFadeFor, cloudSharpenFor, driftIntervalMs, DRIFT_MS_MIN } from '../lib/scale'
+import { cloudFadeFor, cloudSharpenFor, cloudIdleIntervalMs } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { eraPlan, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
@@ -301,6 +301,7 @@ onMounted(() => {
       night: NIGHT_TEXTURE,
       relief: RELIEF_TEXTURE,
       clouds: `${base}textures/clouds.jpg`,
+      cloudNrm: `${base}textures/clouds-nrm.webp`,
     },
     globe.renderer(),
   )
@@ -426,23 +427,27 @@ onMounted(() => {
   let lastSync: Pov | undefined
 
   /**
-   * Cloud drift, at whatever rate the current zoom makes invisible.
+   * Cloud drift: a phase read off the wall clock every frame, and a cadence
+   * chosen for nothing but smoothness.
    *
-   * A globe nobody is touching still redraws for this, and it used to do so at
-   * a flat 20 Hz — a rate chosen for the closest view the clouds survive to and
-   * then spent on every view, including the wide one the globe sits at by
-   * default, where the deck takes nearly three hundred milliseconds to cross a
-   * pixel. `driftIntervalMs` (lib/scale.ts) turns that around: the interval is
-   * whatever moves the deck 0.4 screen pixels, so the *picture* changes by
-   * about the same amount per step at every zoom, instead of the clock ticking
-   * at one rate regardless of what the clock is worth. Measured, that is 8-9
-   * frames a second at the default view against 20, for a per-step change less
-   * than half the one the app already presents at a closer zoom.
+   * These used to be the same decision, and that was the bug. The phase was
+   * advanced by a timer — one step every `driftIntervalMs`, sized so a step
+   * moved the deck 0.4 screen pixels — and every frame drawn *between* two of
+   * those steps drew the deck where it had been. Frames get drawn for a dozen
+   * reasons that have nothing to do with the drift (a pointer over the canvas,
+   * OrbitControls damping, the pump's safety tick, a texture landing), so the
+   * deck froze for a run of frames and then jumped: measured on an idle globe
+   * with a pointer resting on it, 61% of rendered frames repeated the previous
+   * phase exactly, and the ones that moved jumped up to 3.6x an even step.
    *
-   * Set from applyPov, which is the only thing that knows where the camera is;
-   * it starts at the floor, which is the rate this used to run at everywhere.
-   * Reduced motion, deep time and a close approach all switch drift off
-   * entirely, and then a parked camera draws nothing at all.
+   * Splitting them fixes it outright. `setCloudDrift` below runs on every tick
+   * and is a pure function of the clock, so *whatever* causes a frame, that
+   * frame shows the deck where the clock says it is — there is no longer a
+   * category of frame that can be stale. What is left is only how often to draw
+   * an otherwise idle globe, which `cloudIdleIntervalMs` answers with 30 Hz
+   * (~0.1 px of deck movement per frame, against the 0.4 px steps at 8-9 Hz
+   * that were being reported as staggered). With no film on screen, or with
+   * reduced motion, it answers `null` and the pump parks indefinitely.
    *
    * The alternative that was prototyped and rejected: cache the surface pass in
    * a render target when the scene is dirty and re-run only the cloud film on
@@ -463,7 +468,8 @@ onMounted(() => {
    * planet under moving clouds. Spending 56% fewer frames instead costs one
    * pure function and buys most of the same idle time back.
    */
-  let driftMs = DRIFT_MS_MIN
+  /** The framed span, kept for the cadence; see `cloudIdleIntervalMs`. */
+  let framedSpanDeg = viewSpanDeg(2.5)
 
   const applyPov = (force = false) => {
     const pov = globe!.pointOfView()
@@ -507,11 +513,11 @@ onMounted(() => {
     surface!.setFlatLight(near)
     lastSync = { ...pov }
     syncDetail(pov)
-    // how often the drift is worth stepping at this zoom — see `driftMs`. The
-    // framed span, not the horizon `span` above: close in the two differ by
+    // The framed span, not the horizon `span` below: close in the two differ by
     // more than an order of magnitude, and it is the framed one that says how
-    // many pixels a degree of ground is worth.
-    driftMs = driftIntervalMs(viewSpanDeg(pov.altitude, view.fov), view.viewportPx)
+    // many pixels a degree of ground is worth — which is what decides whether
+    // 30 Hz is enough to keep the deck's motion sub-pixel.
+    framedSpanDeg = viewSpanDeg(pov.altitude, view.fov)
     // clouds retire well before the ground fills the screen; haze lingers longer
     const cloudy = cloudFadeFor(span)
     surface!.setCloudSharpen(cloudy > 0.01 ? cloudSharpenFor(span) : 0)
@@ -632,10 +638,21 @@ onMounted(() => {
     // are the picture changing under their own steam, so they buy frames
     if (surface!.advance(dt)) wake(0)
 
-    if (!still && surface!.cloudsShown && now - lastDrift >= driftMs) {
+    // The deck's position, every frame, from the clock — never from a timer.
+    // This runs whether or not anything asked for a frame, so a frame drawn for
+    // some other reason entirely (a pointer moving, damping, the safety tick)
+    // still finds the phase where the wall clock puts it. The cadence question
+    // is the separate one below.
+    if (!still) surface!.setCloudDrift(now - t0)
+    const idleMs = cloudIdleIntervalMs({
+      cloudsShown: surface!.cloudsShown,
+      reducedMotion: still,
+      viewSpanDeg: framedSpanDeg,
+      viewportPx: view.viewportPx,
+    })
+    if (idleMs !== null && now - lastDrift >= idleMs) {
       lastDrift = now
       stats.drifts++
-      surface!.setCloudDrift((now - t0) / 1000)
       wake(0)
     }
     // autorotation is driven by OrbitControls.update(), which only runs inside

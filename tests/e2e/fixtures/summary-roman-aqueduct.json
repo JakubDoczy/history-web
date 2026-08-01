@@ -1,0 +1,41 @@
+{
+  "type": "standard",
+  "title": "Roman aqueduct",
+  "displaytitle": "<span class=\"mw-page-title-main\">Roman aqueduct</span>",
+  "namespace": { "id": 0, "text": "" },
+  "wikibase_item": "Q191360",
+  "titles": {
+    "canonical": "Roman_aqueduct",
+    "normalized": "Roman aqueduct",
+    "display": "<span class=\"mw-page-title-main\">Roman aqueduct</span>"
+  },
+  "pageid": 176907,
+  "thumbnail": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Pont_du_Gard_BLS.jpg/320px-Pont_du_Gard_BLS.jpg",
+    "width": 320,
+    "height": 213
+  },
+  "originalimage": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/8/84/Pont_du_Gard_BLS.jpg",
+    "width": 2560,
+    "height": 1707
+  },
+  "lang": "en",
+  "dir": "ltr",
+  "revision": "1268114551",
+  "tid": "9f0f2f10-d0c1-11ef-9b1a-2f6a4d6c2a11",
+  "timestamp": "2026-01-08T21:14:02Z",
+  "description": "Water-supply structures of ancient Rome",
+  "description_source": "local",
+  "content_urls": {
+    "desktop": {
+      "page": "https://en.wikipedia.org/wiki/Roman_aqueduct",
+      "revisions": "https://en.wikipedia.org/wiki/Roman_aqueduct?action=history",
+      "edit": "https://en.wikipedia.org/wiki/Roman_aqueduct?action=edit",
+      "talk": "https://en.wikipedia.org/wiki/Talk:Roman_aqueduct"
+    },
+    "mobile": { "page": "https://en.m.wikipedia.org/wiki/Roman_aqueduct" }
+  },
+  "extract": "The Romans constructed aqueducts throughout their Republic and later Empire, to bring water from outside sources into cities and towns.",
+  "extract_html": "<p>The <b>Romans</b> constructed aqueducts throughout their Republic and later Empire.</p>"
+}

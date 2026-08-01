@@ -17,7 +17,7 @@ import {
 import type { EraPlan } from './paleo'
 import { PALETTE_GAMMA, type Palette } from './palette'
 import { CLOUD_UPSCALE, cloudUpscaleWorthIt } from './cloudUpscale'
-import { CLOUD_DRIFT_UV_PER_S } from './scale'
+import { cloudDriftPhase } from './scale'
 import { fadeTowards } from './mapFade'
 import type { CloudUpscaleRequest, CloudUpscaleResponse } from './cloudUpscale.worker'
 
@@ -314,14 +314,22 @@ export function lightsReveal(energy: number, uLights: number): number {
  * Three cues are added here, all from the mask itself and all inside the
  * existing pass:
  *
- *  - **Self-shading.** The mask doubles as a height/density proxy — where there
- *    is more cloud there is more cloud *above*, which is true of this asset
- *    because it is a coverage composite, not a segmentation. Differencing it
- *    along the direction of the sun gives the slope of the cloud top, and the
- *    face whose slope descends toward the sun is the face turned toward it. Two
- *    taps, and it is the cue that does nearly all the work: puffy clouds read as
- *    3D because their sunward flanks are brighter than their far flanks.
- *  - **A silver lining.** The same slope, rectified and confined to the
+ *  - **A real surface normal**, baked (scripts/bake_clouds.py, sampled from
+ *    public/textures/clouds-nrm.webp). This started as a runtime finite
+ *    difference of the coverage mask along the sun direction, and that was
+ *    always the weak version of the idea: the mask is a smooth composite whose
+ *    gradient is tiny, and a difference taken along *one* axis carries no shape
+ *    across it, so a cloud got a light side and a dark side but never a form.
+ *    Offline there is room to treat the mask as a heightfield properly — a
+ *    three-octave blur pyramid, so a mass domes toward its middle instead of
+ *    sitting flat — and the answer arrives as one tap instead of two, in both
+ *    axes at once.
+ *  - **Ambient occlusion**, from the same bake, by horizon scan. This is the
+ *    cue no amount of N·L can produce, because it is about what stands *around*
+ *    a point rather than which way it faces: the creases where two cells have
+ *    grown together, and the low ground between towers, stay dark even with the
+ *    sun straight down them.
+ *  - **A silver lining.** The lit face, rectified and confined to the
  *    terminator band, where a real deck is lit edge-on and its sunward rims go
  *    hot while its bodies go blue-grey. The old code had a flat warm add over
  *    the whole band, which tinted cloud and gap alike.
@@ -329,6 +337,9 @@ export function lightsReveal(energy: number, uLights: number): number {
  *    is an opaque white core. The opacity curve already said something like
  *    this; the colour did not, so haze and core were the same white at different
  *    alphas, which is what an alpha-blended stencil looks like.
+ *  - **A cirrus deck**, one more tap of the mask already bound, at another
+ *    scale and speed and a low alpha. Two layers sliding across each other at
+ *    different rates is most of what reads as "atmosphere" rather than "decal".
  *
  * And the ground shadow is put on the same footing: it runs through a curve of
  * the same shape as the film's opacity, so the cloud that reads as thick is the
@@ -337,64 +348,92 @@ export function lightsReveal(energy: number, uLights: number): number {
  */
 export const CLOUD_DEPTH = {
   /**
-   * The finite-difference baseline, in *source* mask texels.
+   * How steep a full-deflection gradient in the baked map renders, as a tangent
+   * slope. 1.0 is 45°.
    *
-   * It tracks the screen: `pixelSpan` pixels' worth of mask, so the gradient is
-   * always taken across the frequency band the pixel can actually resolve.
-   * Fixed in texels instead — the obvious version — the gradient is measured
-   * below the mip level being displayed as soon as the mask is minified, which
-   * is the whole-disc view, i.e. exactly the view the clouds exist for; the
-   * result there is noise, and it reads as sparkle.
+   * This is the one number this file and scripts/bake_clouds.py have to agree
+   * on, and the script states it too (SHADER_RELIEF): the occlusion channel is
+   * a *geometric* measurement of the very surface these normals describe, and
+   * an occlusion baked for a gentler or steeper relief than the one being lit
+   * is worse than none — it would darken creases the normals say are not there.
+   * tests/shader.test.ts checks the two have not drifted apart.
    *
-   * `min` is a floor in texels, and it is doing more than guarding a division.
-   * Measured on the shipped mask (4096×2048), the mean absolute central
-   * difference over the pixels the film actually shows — weighted by the
-   * opacity curve below — is 0.12 at a ±1-texel baseline, 0.18 at ±3 and 0.22
-   * at ±6. A one-texel baseline therefore measures the mask's own micro-texture
-   * rather than the shape of a cloud, and the shading it produces sits on the
-   * outermost, most transparent rim, where almost none of it reaches the
-   * screen. Three texels is about 0.26° — a cloud *flank* — and puts the
-   * gradient where the film is already opaque enough to show it.
-   *
-   * `max` is a guard rather than a look: cloudUv is wrapped with fract(), so
-   * the one column of pixels that straddles the wrap reports a UV derivative of
-   * ~1, and without a ceiling those pixels would difference the mask across half
-   * the planet.
+   * Measured on the bake, the gradient's median over visible cloud is 13% of
+   * full deflection and its 90th percentile 46%, so a typical flank lands
+   * around 7° and a steep one around 25°. That is far more relief than a real
+   * cloud deck has at this horizontal scale — a 2 km tower over a 40 km cell is
+   * under 3° — and it is the same exaggeration every planet render makes for
+   * the same reason: at honest scale the shading is invisible.
    */
-  pixelSpan: 1.6,
-  minTexels: 4,
-  maxTexels: 20,
+  normalRelief: 1.0,
   /**
-   * Mask units per baseline mapped onto the [-1, 1] shading scale.
+   * Wrap lighting: how far the light bends past the geometric terminator of a
+   * cloud, in units of cos.
    *
-   * With the 0.18 mean above, 3.2 puts a typical flank at 0.58 and saturates
-   * the steepest tenth, while a cloud interior — which differences to under
-   * 0.05 — stays under 0.16 and is left nearly flat. That split is the point:
-   * it is the flanks that carry the form, and flattening the interiors is what
-   * keeps this from reading as noise laid over the cloud.
+   * A water-droplet cloud forward-scatters heavily, so the side facing away
+   * from the sun is not black — it is lit through, by the cloud in front of it.
+   * A plain N·L gives it a hard, waxy terminator instead, which is the single
+   * most common way a normal-mapped cloud layer reads as plastic.
+   */
+  wrap: 0.35,
+  /**
+   * The wrap-lit differential, mapped onto the [-1, 1] shading scale.
+   *
+   * What is composited is a *modulation* of the film's colour, not its
+   * illumination: the rest of the pipeline already lights the deck as a flat
+   * shell, so what this term carries is only how much more (or less) light a
+   * tilted face receives than that flat shell would. At a 60° sun a typical
+   * flank differs by about 0.09 of wrapped cos either way, so 4.5 puts it at
+   * 0.4 of the scale and saturates only the steepest faces at the most
+   * side-on light.
    */
   slope: 3.6,
   /** How far a sunward face brightens, and a far face darkens. */
-  lit: 0.40,
+  lit: 0.30,
   /**
    * Darkening is more than twice the brightening on purpose. Cloud tops are
    * already close to white, so there is very little headroom above and a great
    * deal below; symmetric gains give a film that clips on one side and barely
    * moves on the other, which reads as glare rather than as shape.
    */
-  shade: 0.78,
+  shade: 0.60,
   /**
-   * How much of the shading survives when the sun is directly overhead.
+   * How much of the baked sky visibility to apply.
    *
-   * The directional term scales with the sine of the sun's zenith angle,
-   * because that is the rate at which a tilted face gains or loses light — at
-   * the subsolar point a bump is lit the same on both flanks and physically
-   * *is* flat. But a cloud field is never quite that flat: neighbouring towers
-   * shade each other whatever the sun is doing. So a fraction of the term is
-   * kept isotropic, which also stops the modelling from switching off in the
-   * middle of the disc at local noon.
+   * Not 1: the channel measures the sky lost to *cloud*, and a cloud that has
+   * taken away half the sky has also filled it with something bright. So the
+   * occlusion is real but partial, and at 0.85 the deepest creases in the map
+   * (0.46 of open sky) reach about 0.54 of the colour they would otherwise
+   * have, which is roughly the contrast a photograph of a cumulus field shows
+   * between a crown and the gap beside it.
    */
-  ambient: 0.32,
+  ao: 0.75,
+  /**
+   * The high deck: the coverage mask again, at another scale, offset and speed.
+   *
+   * One extra tap of a texture already bound, and it buys the thing a single
+   * layer cannot have at any quality — parallax between two decks that are
+   * genuinely at different heights, sliding across each other at different
+   * rates. `scale` under 1 magnifies the mask, which stretches its features
+   * east-west into the long streaks cirrus actually forms; the offsets are
+   * there to decorrelate it from the deck below, and the speed is faster
+   * because the tropopause is.
+   *
+   * The window is high and narrow because only the densest parts of the mask
+   * should show at all: everything below `lo` is sky, and the alpha at the top
+   * is a sixth of the main deck's. What is wanted is a veil noticed on the
+   * limb, not a second weather system.
+   */
+  cirrus: {
+    scale: 0.55,
+    offsetU: 0.37,
+    offsetV: 0.07,
+    speed: 1.9,
+    lo: 0.66,
+    hi: 0.99,
+    alpha: 0.12,
+    tint: [0.88, 0.92, 1.0],
+  },
   /** Silver lining: added on sunward slopes, inside the terminator band. */
   rim: [0.42, 0.26, 0.10],
   /** Half-width of that band, in cos(sun zenith). ~18° either side. */
@@ -405,8 +444,8 @@ export const CLOUD_DEPTH = {
    * light, and rendering it as dim white is what made high cirrus look like
    * smeared paint.
    */
-  thin: [0.70, 0.79, 0.95],
-  thick: [1.0, 0.995, 0.98],
+  thin: [0.66, 0.745, 0.90],
+  thick: [0.93, 0.925, 0.912],
   /** Coverage window over which haze becomes core. */
   bodyLo: 0.12,
   bodyHi: 0.62,
@@ -448,17 +487,35 @@ export const CLOUD_DEPTH = {
 } as const
 
 /**
- * TS mirror of the self-shading multiplier applied to the cloud's lit colour.
+ * TS mirror of the wrap-lit differential: the shader's `cloudSlope`.
  *
- * `slope` is the shader's `cloudSlope` — +1 for a face turned fully toward the
- * sun, -1 fully away, and it is already clamped there. `tilt` is the sine of
- * the sun's zenith angle. Returns the factor `lit` is multiplied by, so 1 is
- * "no modelling at all".
+ * Both arguments are cosines of the sun angle — the first against the baked
+ * cloud normal, the second against the plain surface normal, which is what the
+ * rest of the pipeline has already lit the film by. The answer is how much more
+ * light this face gets than that flat shell, on a [-1, 1] scale.
+ *
+ * The clamp at zero is what makes it non-linear, and it is the whole reason the
+ * wrap is not merely a scale factor: past a cloud's own terminator both terms
+ * bottom out together and the modelling switches itself off, instead of
+ * inventing contrast on a face that receives no light at all.
  */
-export function cloudShading(slope: number, tilt: number, daylight: number): number {
-  const { ambient, lit, shade } = CLOUD_DEPTH
-  const form = slope * (ambient + (1 - ambient) * tilt) * daylight
-  return 1 + form * (form >= 0 ? lit : shade)
+export function cloudFormSlope(nDotL: number, flatNDotL: number): number {
+  const { wrap, slope } = CLOUD_DEPTH
+  const w = (c: number) => Math.max(0, Math.min(1, (c + wrap) / (1 + wrap)))
+  return Math.max(-1, Math.min(1, (w(nDotL) - w(flatNDotL)) * slope))
+}
+
+/**
+ * TS mirror of the multiplier applied to the cloud's lit colour.
+ *
+ * `slope` is `cloudFormSlope` above, already clamped; `ao` is the baked sky
+ * visibility, 1 for open sky. Returns the factor the film's colour is
+ * multiplied by, so 1 is "no modelling at all".
+ */
+export function cloudShading(slope: number, ao: number, daylight: number): number {
+  const { lit, shade, ao: aoK } = CLOUD_DEPTH
+  const form = slope * daylight
+  return (1 + form * (form >= 0 ? lit : shade)) * (1 - aoK + aoK * ao)
 }
 
 /**
@@ -473,6 +530,7 @@ export function cloudShadowDensity(occ: number): number {
 const G = ENHANCED_GRADE
 const N = NIGHT_LIGHTS
 const C = CLOUD_DEPTH
+const Ci = CLOUD_DEPTH.cirrus
 const f = (n: number) => n.toFixed(4)
 const v3 = (c: readonly number[]) => `vec3(${c.map(f).join(', ')})`
 
@@ -491,6 +549,8 @@ uniform sampler2D uNight;     // city lights
 uniform float uNightMix;      // 0 until the night map has landed, then ramps in
 uniform sampler2D uRelief;    // topography, used as a height field
 uniform sampler2D uClouds;    // cloud coverage mask
+uniform sampler2D uCloudNrm;  // baked cloud relief: rg = dH/duv, b = sky visibility
+uniform float uCloudNrmMix;   // 0 until that map lands, and until then the deck is flat
 uniform sampler2D uDetail;    // streamed high-resolution patch over the viewed region
 uniform vec4 uDetailRect;     // u0, v0, du, dv of that patch
 uniform float uDetailMix;
@@ -755,70 +815,67 @@ void main() {
   // Skipped entirely when no cloud film is drawn — a uniform branch, and clouds
   // are off for the whole of deep time and for every view closer than ~10°.
   vec2 cloudUv = vec2(0.0);
-  // How the cloud top is tilted where the sun is concerned: +1 is a face turned
-  // fully toward it, -1 a face turned fully away. Zero whenever no film is drawn.
+  // How much more sunlight this piece of cloud top gets than the flat shell the
+  // rest of the pipeline lights: +1 fully sunward, -1 fully away. Zero whenever
+  // no film is drawn.
   float cloudSlope = 0.0;
-  // sin of the sun's zenith angle — how side-on the light is, which is the rate
-  // at which a tilted face gains or loses it
-  float sunTilt = 0.0;
+  // Baked sky visibility; 1 is open sky, and 1 is also what "no film" means.
+  float cloudAO = 1.0;
+  // The high cirrus deck, composited after the main one.
+  float cirrus = 0.0;
   if (uCloudAlpha > 0.0) {
     vec3 liftedView = normalize(n + viewDir * (uCloudH / max(dot(n, viewDir), 0.25)));
     vec2 pduv = dirToUv(liftedView) - nUv;
     pduv.x -= (abs(pduv.x) > 0.5) ? sign(pduv.x) : 0.0;
     cloudUv = vec2(fract(vUv.x + pduv.x + uCloudRot), clamp(vUv.y + pduv.y, 0.0, 1.0));
 
-    // --- self-shading: the mask read as a height field, differenced toward the sun ---
+    // --- the baked relief: one tap, where two finite differences used to be ---
     //
     // The tangent frame is the relief block's, and it is the frame the UV
     // mapping is defined in: +u runs along cross(Y, n) and +v along
     // cross(n, east) — that identity is what tests/shader.test.ts pins down.
     //
-    // Equirectangular UV is not isotropic, so "one texel of arc toward the sun"
-    // is not a unit vector in UV. A step of k source texels is
-    // vec2(east / (2 cosLat), north) * k * uCloudTexel.y: the 2 is the map's 2:1
-    // aspect and the cosine is its longitudinal stretch. Without them the
-    // shading direction rotates with latitude, and Europe ends up lit from a
-    // different side than the Atlantic in the same frame.
+    // The map stores dH/du and dH/dv, in texture space, and the conversion to a
+    // slope along the *ground* happens here because equirectangular UV is not
+    // isotropic: a texel of u is cos(latitude) times the arc of a texel of v.
+    // Baked the other way the map would carry a latitude in every texel and be
+    // wrong for every row but one. Same correction the sun step this replaced
+    // had to make, for the same reason.
     //
     // cosLat is floored at 0.05 (~87°) rather than at an epsilon: past that the
     // parameterisation is degenerate — a v texel spans every longitude — and a
-    // 1/cosLat step would reach around the pole rather than toward the sun.
+    // 1/cosLat gradient would describe a cloud wrapped around the pole.
     float cosLat = max(sqrt(max(1.0 - n.y * n.y, 0.0)), 0.05);
     vec3 east = vec3(n.z, 0.0, -n.x) / cosLat;
     vec3 north = cross(n, east);
-    vec3 sunT = uSunDir - n * cosGeo;             // the sun, projected into the tangent plane
-    sunTilt = length(sunT);
-    // divide-by-max, not a branch: this is uniform control flow and the two taps
-    // below must stay in it. With the sun overhead the step collapses to zero,
-    // the two taps coincide, and the slope is exactly zero — which is also the
-    // physically right answer there.
-    vec3 tHat = sunT / max(sunTilt, 1e-4);
-    // the baseline follows the screen; see CLOUD_DEPTH.pixelSpan for why, and
-    // for what the ceiling is guarding against
-    vec2 fw = fwidth(cloudUv);
-    float steps = clamp(
-      max(fw.x / uCloudTexel.x, fw.y / uCloudTexel.y) * ${f(C.pixelSpan)},
-      ${f(C.minTexels)}, ${f(C.maxTexels)});
-    vec2 sunStep =
-      vec2(dot(tHat, east) / (2.0 * cosLat), dot(tHat, north)) * uCloudTexel.y * steps;
-    // Both taps are explicit-LOD, at the mip whose blur is about half the
-    // differencing baseline — so what is being differenced is the *body* of a
-    // cloud, not the mask's own grain. Taken at level 0 the slope field comes
-    // out as fine filaments that sit on the transparent rim of everything and
-    // read as noise laid over the film; a mip up, it follows the shapes the eye
-    // is already reading as clouds.
-    //
-    // It is also the plain mask rather than cloudMask(): the unsharp there
-    // exists to put acutance back into an *edge*, and running it on both taps
-    // would cost eight more fetches to sharpen the very band this deliberately
-    // discards.
-    float gLod = log2(max(steps, 1.0));
-    float mSun = textureLod(uClouds,
-      vec2(fract(cloudUv.x + sunStep.x), clamp(cloudUv.y + sunStep.y, 0.0, 1.0)), gLod).r;
-    float mAway = textureLod(uClouds,
-      vec2(fract(cloudUv.x - sunStep.x), clamp(cloudUv.y - sunStep.y, 0.0, 1.0)), gLod).r;
-    // descending toward the sun == turned toward the sun; see CLOUD_DEPTH
-    cloudSlope = clamp((mAway - mSun) * ${f(C.slope)}, -1.0, 1.0);
+    vec3 bake = texture(uCloudNrm, cloudUv).rgb;
+    // uCloudNrmMix is a correctness guard as much as a transition: an unbound
+    // sampler reads as transparent black in three, which decodes to a hard -1
+    // tilt in both axes, so the deck has to be provably flat until the map is
+    // really there.
+    vec2 grad = (bake.xy * 2.0 - 1.0) * (uCloudNrmMix * ${f(C.normalRelief)});
+    cloudAO = mix(1.0, bake.z, uCloudNrmMix);
+    // the same construction as the relief block above: the surface tilts away
+    // from the up-slope direction, and the height axis is the sphere normal
+    vec3 cloudN = normalize(n - east * (grad.x / cosLat) - north * grad.y);
+
+    // Wrap-lit, and *differential* — see cloudFormSlope. The clamp at zero is
+    // what makes the difference non-linear: past a cloud's own terminator both
+    // terms bottom out together and the modelling switches itself off.
+    float faceLit = clamp((dot(cloudN, uSunDir) + ${f(C.wrap)}) * ${f(1 / (1 + C.wrap))}, 0.0, 1.0);
+    float flatLit = clamp((cosGeo + ${f(C.wrap)}) * ${f(1 / (1 + C.wrap))}, 0.0, 1.0);
+    cloudSlope = clamp((faceLit - flatLit) * ${f(C.slope)}, -1.0, 1.0);
+
+    // --- and the high deck: the same mask, magnified, offset and faster ---
+    // One tap of a texture already bound. Two layers at genuinely different
+    // heights sliding past each other at different rates is most of what reads
+    // as atmosphere rather than as a decal; see CLOUD_DEPTH.cirrus. u wraps, so
+    // it is scaled freely; v only takes an offset, because scaling latitude
+    // would fold the poles into the tropics.
+    vec2 cirUv = vec2(
+      fract(cloudUv.x * ${f(Ci.scale)} + uCloudRot * ${f(Ci.speed)} + ${f(Ci.offsetU)}),
+      clamp(cloudUv.y + ${f(Ci.offsetV)}, 0.0, 1.0));
+    cirrus = smoothstep(${f(Ci.lo)}, ${f(Ci.hi)}, texture(uClouds, cirUv).r);
   }
 
   // --- cloud shadows: follow the sun ray up to the same height and sample there ---
@@ -894,11 +951,15 @@ void main() {
     vec3 body = mix(${v3(C.thin)}, ${v3(C.thick)},
       smoothstep(${f(C.bodyLo)}, ${f(C.bodyHi)}, cover));
     vec3 lit = mix(vec3(0.06, 0.08, 0.13), body, daylight);
-    // self-shading. The directional part scales with how side-on the sun is,
-    // because that is the rate a tilted face gains light; the rest is kept
-    // isotropic so neighbouring towers still shade each other at local noon.
-    float form = cloudSlope * mix(${f(C.ambient)}, 1.0, sunTilt) * daylight;
+    // The shape, from the baked normal: a modulation, because the film has
+    // already been lit as a flat shell and what is left to say is only how this
+    // face differs from that.
+    float form = cloudSlope * daylight;
     lit *= 1.0 + form * mix(${f(C.shade)}, ${f(C.lit)}, step(0.0, form));
+    // and the occlusion, which no amount of N.L can produce: the creases where
+    // two cells have grown together stay dark with the sun straight down them,
+    // because what is above them is more cloud
+    lit *= mix(1.0, cloudAO, ${f(C.ao)});
     // silver lining: the sunward slopes alone, inside the terminator band. The
     // old warm add ran on the band and nothing else, so it tinted every cloud
     // there uniformly — including the flanks that are facing away from the sun.
@@ -908,6 +969,14 @@ void main() {
     // own gradient rather than pushing everything to full opacity
     float opacity = clamp(cover * cover * (0.35 + 1.15 * cover), 0.0, 1.0);
     color = mix(color, max(lit, vec3(0.0)), opacity * (0.18 + 0.82 * daylight));
+  }
+  // The high deck, over everything the low one did. Flat-shaded on purpose:
+  // cirrus is ice crystals a few hundred metres thick, it has no flanks to
+  // model, and at this alpha any modelling of it would only fight the deck
+  // underneath for the same pixels.
+  if (cirrus > 0.0) {
+    color = mix(color, ${v3(Ci.tint)},
+      cirrus * ${f(Ci.alpha)} * uCloudAlpha * (0.05 + 0.95 * daylight));
   }
 
   // --- warm terminator band and blue limb ---
@@ -930,7 +999,17 @@ export interface GlobeSurfaceUrls {
   night: string
   relief: string
   clouds: string
+  /** The baked cloud relief; see scripts/bake_clouds.py. */
+  cloudNrm: string
 }
+
+/**
+ * How a map is meant to be read. 'color' is light and gets the sRGB decode;
+ * 'data' is a single-channel mask or height field; 'vector' is multi-channel
+ * data — the baked cloud relief — which needs all four channels *and* linear
+ * values, so it is neither of the other two.
+ */
+export type TextureKind = 'color' | 'data' | 'vector'
 
 export class GlobeSurface {
   readonly material: ShaderMaterial
@@ -943,8 +1022,8 @@ export class GlobeSurface {
   onDayReady?: () => void
   private dayReady = false
   /** Ramps 0 to 1 as each deferred map arrives; see lib/mapFade.ts. */
-  private fade = { night: 0, relief: 0, clouds: 0 }
-  private landed = { night: false, relief: false, clouds: false }
+  private fade = { night: 0, relief: 0, clouds: 0, cloudNrm: 0 }
+  private landed = { night: false, relief: false, clouds: false, cloudNrm: false }
   /** The settings these ramps are applied to, held so a frame can re-apply them. */
   private reliefStrength = 0.7
   private cloudSetting = { visible: false, opacity: 1, shadows: true }
@@ -989,6 +1068,8 @@ export class GlobeSurface {
         uNightMix: { value: 0 },
         uRelief: { value: null },
         uClouds: { value: null },
+        uCloudNrm: { value: null },
+        uCloudNrmMix: { value: 0 },
         uDetail: { value: null },
         uDetailRect: { value: new Vector4(0, 0, 1, 1) },
         uDetailMix: { value: 0 },
@@ -1025,7 +1106,7 @@ export class GlobeSurface {
    * relief map is differenced into a normal and the cloud mask is a soft alpha,
    * and neither carries detail that survives the limb. So data maps drop to 1.
    */
-  texture(url: string, kind: 'color' | 'data' = 'color', onLoad?: (t: Texture) => void): Texture {
+  texture(url: string, kind: TextureKind = 'color', onLoad?: (t: Texture) => void): Texture {
     let t = this.cache.get(url)
     if (!t) {
       t = this.loader.load(url, (tex) => {
@@ -1037,7 +1118,11 @@ export class GlobeSurface {
       // and the upload is a quarter of the bytes and a quarter of the mipmap
       // work. WebGL2 is a hard requirement here (the material is GLSL3), and
       // WebGL2 accepts RED/UNSIGNED_BYTE straight from an <img>.
-      else t.format = RedFormat
+      // 'vector' keeps all four channels — it carries a signed gradient in two
+      // of them and an occlusion in a third — but is still data, so it must not
+      // be tagged sRGB: decoding a normal through a transfer curve bends every
+      // slope toward zero and the relief quietly halves.
+      else if (kind === 'data') t.format = RedFormat
       t.anisotropy = this.anisoFor(kind)
       t.wrapS = RepeatWrapping
       this.cache.set(url, t)
@@ -1046,7 +1131,7 @@ export class GlobeSurface {
   }
 
   /** Colour maps get enough to keep the limb readable; data maps get none. */
-  private anisoFor(kind: 'color' | 'data'): number {
+  private anisoFor(kind: TextureKind): number {
     return kind === 'color' ? Math.min(4, this.maxAniso) : 1
   }
 
@@ -1084,6 +1169,13 @@ export class GlobeSurface {
       this.landed.clouds = true
       this.upscaleClouds(urls.clouds, t)
     })
+    // The baked relief. Its own ramp rather than the mask's: it is a quarter of
+    // the size and arrives on its own schedule, and until it does the deck has
+    // to be provably flat — an unbound sampler reads as transparent black,
+    // which decodes to a full negative tilt in both axes.
+    u.uCloudNrm.value = this.texture(urls.cloudNrm, 'vector', () => {
+      this.landed.cloudNrm = true
+    })
   }
 
   /**
@@ -1097,14 +1189,16 @@ export class GlobeSurface {
    */
   advance(dtMs: number): boolean {
     const u = this.material.uniforms
-    const before = this.fade.night + this.fade.relief + this.fade.clouds
+    const before = this.fade.night + this.fade.relief + this.fade.clouds + this.fade.cloudNrm
     this.fade.night = fadeTowards(this.fade.night, this.landed.night ? 1 : 0, dtMs)
     this.fade.relief = fadeTowards(this.fade.relief, this.landed.relief ? 1 : 0, dtMs)
     this.fade.clouds = fadeTowards(this.fade.clouds, this.landed.clouds ? 1 : 0, dtMs)
+    this.fade.cloudNrm = fadeTowards(this.fade.cloudNrm, this.landed.cloudNrm ? 1 : 0, dtMs)
+    u.uCloudNrmMix.value = this.fade.cloudNrm
     u.uNightMix.value = this.fade.night
     u.uRelief_.value = this.reliefStrength * this.fade.relief
     this.applyClouds()
-    return this.fade.night + this.fade.relief + this.fade.clouds !== before
+    return this.fade.night + this.fade.relief + this.fade.clouds + this.fade.cloudNrm !== before
   }
 
   /** Whether any cloud film is being drawn — i.e. whether drift is visible. */
@@ -1361,8 +1455,14 @@ export class GlobeSurface {
     this.material.uniforms.uLights.value = f
   }
 
-  setCloudDrift(seconds: number) {
-    this.material.uniforms.uCloudRot.value = (seconds * CLOUD_DRIFT_UV_PER_S) % 1
+  /**
+   * Put the deck where the clock says it is, in milliseconds since the drift
+   * epoch. Called on every frame rather than on a timer of its own — see
+   * `cloudDriftPhase` for why that distinction is the whole fix for the
+   * staggered drift.
+   */
+  setCloudDrift(elapsedMs: number) {
+    this.material.uniforms.uCloudRot.value = cloudDriftPhase(elapsedMs)
   }
 
   /**

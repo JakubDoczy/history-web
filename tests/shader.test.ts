@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import {
   CLOUD_DEPTH,
   NIGHT_LIGHTS,
+  cloudFormSlope,
   cloudShading,
   cloudShadowDensity,
 } from '../src/lib/globeSurface'
@@ -222,12 +223,13 @@ describe('uniform-gated taps', () => {
 })
 
 /**
- * Cloud depth: the self-shading, the silver lining and the thickness curve.
+ * Cloud depth: the baked relief, the occlusion, the silver lining and the
+ * thickness curve.
  *
  * The cues themselves can only be judged by eye, so what is pinned here is the
- * structure that made them safe and the two sign conventions that would be
- * silently wrong if reversed — a cloud lit from the *wrong* side still looks
- * like a cloud in a screenshot, which is exactly why it needs a test.
+ * structure that made them safe and the conventions that would be silently
+ * wrong if reversed — a cloud lit from the *wrong* side still looks like a
+ * cloud in a screenshot, which is exactly why it needs a test.
  */
 describe('cloud depth', () => {
   const glsl = shaderBlocks(readFileSync('src/lib/globeSurface.ts', 'utf8')).join('\n')
@@ -244,33 +246,73 @@ describe('cloud depth', () => {
     return src.slice(start, i)
   }
 
-  it('takes both gradient taps inside the uniform cloud gate', () => {
+  it('takes the relief tap inside the uniform cloud gate', () => {
     // not inside `if (cover > 0.002)`, which is a per-pixel test: a texture
     // fetch under non-uniform control flow has undefined derivatives, and the
     // whole file's convention is that every optional tap hangs off a uniform
     const body = blockAfter(glsl, 'if (uCloudAlpha > 0.0) {')
-    expect(body).toContain('float mSun = textureLod(uClouds')
-    expect(body).toContain('float mAway = textureLod(uClouds')
+    expect(body).toContain('vec3 bake = texture(uCloudNrm, cloudUv).rgb;')
     expect(body).toContain('cloudSlope = clamp(')
-    // and the composite branch itself samples nothing
+    // and both composite branches sample nothing
     const film = blockAfter(glsl, 'if (cover > 0.002) {')
     expect(film).not.toMatch(/texture\w*\(/)
+    expect(blockAfter(glsl, 'if (cirrus > 0.0) {')).not.toMatch(/texture\w*\(/)
   })
 
-  it('shades the face whose mask descends toward the sun', () => {
-    // the sign that decides whether clouds are lit from the sun or from the
-    // anti-sun. A bump's sunward flank is the one where coverage *falls* as you
-    // walk toward the sun, so the slope is (away - sunward), not the reverse.
-    expect(glsl).toMatch(/cloudSlope = clamp\(\(mAway - mSun\)/)
+  it('replaces the two runtime finite differences with one tap', () => {
+    // the whole point of scripts/bake_clouds.py: the mask's gradient is tiny
+    // and a difference along one axis carries no shape across it, so the answer
+    // is baked. Two textureLod taps of uClouds and the derivative machinery
+    // that sized them are gone.
+    expect(glsl).not.toMatch(/mSun|mAway|fwidth\(cloudUv\)/)
+    expect(glsl).not.toMatch(/textureLod\(uClouds/)
+    // one tap of the bake, and one of the mask for the high deck
+    const body = blockAfter(glsl, 'if (uCloudAlpha > 0.0) {')
+    expect(body.match(/texture\(uCloudNrm/g)).toHaveLength(1)
+    expect(body.match(/texture\(uClouds/g)).toHaveLength(1)
+  })
+
+  it('reads the baked gradient as a slope along the ground, not along UV', () => {
+    // equirectangular UV is anisotropic: a texel of u is cos(latitude) times
+    // the arc of a texel of v. Without the division the relief would rotate
+    // with latitude and Europe would be lit from a different side than the
+    // Atlantic in the same frame.
+    expect(glsl).toContain('vec3 cloudN = normalize(n - east * (grad.x / cosLat) - north * grad.y);')
+    expect(glsl).toContain('float cosLat = max(sqrt(max(1.0 - n.y * n.y, 0.0)), 0.05);')
+  })
+
+  it('holds the deck flat until the baked map has actually decoded', () => {
+    // an unbound sampler reads as transparent black in three, which decodes to
+    // a full negative tilt in both axes — so this fade is a correctness guard
+    // and not only a transition
+    expect(glsl).toContain(
+      'vec2 grad = (bake.xy * 2.0 - 1.0) * (uCloudNrmMix * ${f(C.normalRelief)});',
+    )
+    expect(glsl).toContain('cloudAO = mix(1.0, bake.z, uCloudNrmMix);')
+  })
+
+  it('agrees with the bake about how steep a full-deflection gradient is', () => {
+    // the occlusion channel is a geometric measurement of the surface these
+    // normals describe; baked for a different relief it darkens creases the
+    // normals say are not there
+    const py = readFileSync('scripts/bake_clouds.py', 'utf8')
+    const m = py.match(/^SHADER_RELIEF = ([\d.]+)$/m)
+    expect(m).toBeTruthy()
+    expect(Number(m![1])).toBe(CLOUD_DEPTH.normalRelief)
   })
 
   it('leaves the whole cloud path at its defaults when no film is drawn', () => {
     // uCloudAlpha == 0 must be bit-identical to the pre-cloud picture: the
-    // parallax block is skipped, so both new varyings keep the values declared
-    // here, and `cover` is exactly 0
+    // parallax block is skipped, so every value it would have set keeps the
+    // neutral one declared here, `cover` is exactly 0, and the high deck's
+    // branch is not taken either
     expect(glsl).toContain('float cloudSlope = 0.0;')
-    expect(glsl).toContain('float sunTilt = 0.0;')
+    expect(glsl).toContain('float cloudAO = 1.0;')
+    expect(glsl).toContain('float cirrus = 0.0;')
     expect(glsl).toContain('uCloudAlpha > 0.0 ? cloudMask(cloudUv) : 0.0')
+    // cloudShading with those defaults is exactly 1, and the cirrus mix by 0
+    expect(cloudShading(0, 1, 1)).toBe(1)
+    expect(cloudShading(0, 1, 0)).toBe(1)
   })
 
   it('gates the ground shadow on the uniform alone', () => {
@@ -290,19 +332,14 @@ describe('cloud depth', () => {
     expect(body).toContain('${f(C.shadowBlur)}).r')
   })
 
-  it('differences the mask a mip up, not at level 0', () => {
-    // at level 0 the slope field is fine filaments sitting on the transparent
-    // rim of everything, which reads as noise over the film
-    expect(glsl).toContain('float gLod = log2(max(steps, 1.0));')
-  })
-
-  it('bounds the differencing baseline at both ends', () => {
-    // the floor puts the gradient on a cloud flank rather than on the mask's
-    // grain; the ceiling is what stops the fract() seam column, whose UV
-    // derivative is ~1, from differencing across half the planet
-    expect(CLOUD_DEPTH.minTexels).toBeGreaterThanOrEqual(2)
-    expect(CLOUD_DEPTH.maxTexels).toBeGreaterThan(CLOUD_DEPTH.minTexels)
-    expect(glsl).toContain('${f(C.minTexels)}, ${f(C.maxTexels)});')
+  it('keeps the high deck off the poles and on the wrap', () => {
+    // u wraps, so the cirrus layer may be scaled freely in it; v does not, and
+    // scaling latitude would fold the poles into the tropics
+    expect(glsl).toContain('clamp(cloudUv.y + ${f(Ci.offsetV)}, 0.0, 1.0));')
+    expect(glsl).toMatch(/fract\(cloudUv\.x \* \$\{f\(Ci\.scale\)\}/)
+    // and it stays a veil: a fraction of the main deck's opacity
+    expect(CLOUD_DEPTH.cirrus.alpha).toBeLessThan(0.25)
+    expect(CLOUD_DEPTH.cirrus.lo).toBeGreaterThan(0.2) // only the densest parts show
   })
 
   it('darkens harder than it brightens', () => {
@@ -321,15 +358,43 @@ describe('cloud depth', () => {
     expect(cloudShading(-1, 1, 0)).toBe(1)
   })
 
-  it('keeps some modelling with the sun overhead, but less', () => {
-    // the directional term scales with the sine of the sun's zenith angle,
-    // which is zero at the subsolar point; the ambient fraction is what stops
-    // the middle of the disc from going flat at local noon
-    const overhead = cloudShading(-1, 0, 1)
-    const sideOn = cloudShading(-1, 1, 1)
-    expect(overhead).toBeLessThan(1)
-    expect(overhead).toBeGreaterThan(sideOn)
-    expect(1 - overhead).toBeCloseTo((1 - sideOn) * CLOUD_DEPTH.ambient, 6)
+  it('models less with the sun overhead than with it side-on, on its own', () => {
+    // no ambient fudge factor any more: a real normal gets this for free.
+    // Straight down, a tilted face loses only the cosine of its own tilt; the
+    // same face under a 60-degree sun swings much further either way.
+    const tilt = 0.4 // radians, about the 90th percentile of the bake
+    const overhead = cloudFormSlope(Math.cos(tilt), 1)
+    const sideOn = cloudFormSlope(Math.cos(Math.PI / 3 - tilt), Math.cos(Math.PI / 3))
+    expect(overhead).toBeLessThan(0) // a tilted face at the subsolar point loses
+    expect(Math.abs(overhead)).toBeLessThan(Math.abs(sideOn))
+  })
+
+  it('switches the modelling off past a cloud\'s own terminator', () => {
+    // both wrapped cosines bottom out together, so nothing is left to
+    // differentiate — the alternative is inventing contrast on a face that is
+    // receiving no light at all
+    expect(cloudFormSlope(-1, -1)).toBe(0)
+    expect(cloudFormSlope(-0.9, -1)).toBe(0)
+    expect(cloudFormSlope(-1, -0.9)).toBe(0)
+  })
+
+  it('lights the face turned toward the sun and shades the one turned away', () => {
+    const sun = Math.cos(Math.PI / 3)
+    expect(cloudFormSlope(Math.cos(Math.PI / 3 - 0.4), sun)).toBeGreaterThan(0)
+    expect(cloudFormSlope(Math.cos(Math.PI / 3 + 0.4), sun)).toBeLessThan(0)
+    expect(cloudFormSlope(sun, sun)).toBe(0)
+  })
+
+  it('darkens the creases whatever the sun is doing', () => {
+    // the cue N.L cannot produce: occlusion is about what stands around a
+    // point, not which way it faces
+    expect(cloudShading(0, 0.46, 1)).toBeLessThan(cloudShading(0, 1, 1))
+    expect(cloudShading(0, 1, 1)).toBe(1)
+    // and it is partial, because a cloud that took away half the sky also
+    // filled it with something bright
+    expect(cloudShading(0, 0, 1)).toBeGreaterThan(0.1)
+    expect(CLOUD_DEPTH.ao).toBeLessThan(1)
+    expect(glsl).toContain('lit *= mix(1.0, cloudAO, ${f(C.ao)});')
   })
 
   it('makes a thin veil cast far less shadow than a solid deck', () => {

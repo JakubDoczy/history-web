@@ -9,6 +9,7 @@ import {
   thumbWidth,
   withThumbWidth,
   chooseWidth,
+  pickImage,
   pickImageUrl,
   imageFromSummary,
   fetchWikiSummary,
@@ -159,6 +160,15 @@ describe('wikiRefForEvent', () => {
     expect(wikiRefForEvent(ev)?.title).toBe('Jericho')
   })
 
+  it('keeps the parentheses of a disambiguated title in the body form', () => {
+    // `[…](…/Early_Dynastic_Period_(Egypt))` — stopping at the first `(` yields
+    // a truncated title that 404s, silently and forever.
+    const ev = {
+      body: 'More at [Wikipedia](https://en.wikipedia.org/wiki/Early_Dynastic_Period_(Egypt)).',
+    }
+    expect(wikiRefForEvent(ev)?.title).toBe('Early_Dynastic_Period_(Egypt)')
+  })
+
   it('skips non-Wikipedia links in both places', () => {
     expect(
       wikiRefForEvent({
@@ -286,10 +296,19 @@ describe('pickImageUrl', () => {
     expect(pickImageUrl(summary(), 320)).toBe(THUMB)
   })
 
-  it('uses originalimage when there is no thumbnail', () => {
-    expect(pickImageUrl(summary({ thumbnail: undefined }), 740)).toBe(
-      'https://upload.wikimedia.org/wikipedia/commons/a/ab/Foo.jpg',
-    )
+  it('uses a small originalimage when there is no thumbnail', () => {
+    const small = { source: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Small.jpg', width: 900, height: 600 }
+    expect(pickImageUrl(summary({ thumbnail: undefined, originalimage: small }), 740)).toBe(small.source)
+  })
+
+  it('refuses a full-size original: a 3000px scan is not a 330px panel picture', () => {
+    // The summary carries no rendered thumbnail here, and the only other URL is
+    // the original file itself — tens of megabytes for a box 330 CSS px wide.
+    expect(pickImageUrl(summary({ thumbnail: undefined }), 740)).toBeNull()
+  })
+
+  it('skips a disambiguation page, whose "thumbnail" is the namespace icon', () => {
+    expect(pickImageUrl(summary({ type: 'disambiguation' }), 740)).toBeNull()
   })
 
   it('returns null when the article has no picture at all', () => {
@@ -308,6 +327,65 @@ describe('pickImageUrl', () => {
   it('handles a thumbnail URL that is not in thumb form', () => {
     const flat = 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Flat.png'
     expect(pickImageUrl(summary({ thumbnail: { source: flat, width: 500, height: 400 } }), 900)).toBe(flat)
+  })
+})
+
+/* ------------------------------------------------- the upgrade is a guess */
+
+describe('pickImage: an edited thumbnail URL never replaces the promised one', () => {
+  it('keeps the API thumbnail as a fallback whenever it rewrites the width', () => {
+    expect(pickImage(summary(), 740)).toEqual({
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Foo.jpg/740px-Foo.jpg',
+      fallbackUrl: THUMB,
+    })
+  })
+
+  it('does not rewrite when the response does not say how wide the original is', () => {
+    // Without originalimage.width the request could ask the thumbnailer to
+    // scale up, which it answers with a 404 rather than a bigger picture.
+    expect(pickImage(summary({ originalimage: undefined }), 740)).toEqual({ url: THUMB })
+  })
+
+  it('does not rewrite a URL that is not in canonical NNNpx- thumb form', () => {
+    // multi-page renderings (`lossy-page1-320px-…`) and video posters are named
+    // differently; the width segment is not ours to edit.
+    const page = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Doc.pdf/lossy-page1-320px-Doc.pdf.jpg'
+    expect(pickImage(summary({ thumbnail: { source: page, width: 320, height: 240 } }), 740)).toEqual({
+      url: page,
+    })
+  })
+
+  it('does not rewrite when the original is no bigger than the thumbnail', () => {
+    const s = summary({ originalimage: { source: 'x', width: 320, height: 213 } })
+    expect(pickImage(s, 740)).toEqual({ url: THUMB })
+  })
+
+  it('never asks for a downgrade when the panel is narrower than the thumbnail', () => {
+    expect(pickImage(summary(), 220)).toEqual({ url: THUMB })
+  })
+
+  it('an SVG rendering upgrades like any other thumbnail', () => {
+    const s = summary({
+      thumbnail: { source: SVG_THUMB, width: 240, height: 240 },
+      originalimage: {
+        source: 'https://upload.wikimedia.org/wikipedia/commons/1/12/Bar.svg',
+        width: 512,
+        height: 512,
+      },
+    })
+    expect(pickImage(s, 740)).toEqual({
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Bar.svg/512px-Bar.svg.png',
+      fallbackUrl: SVG_THUMB,
+    })
+  })
+
+  it('carries the fallback through to the rendered image', () => {
+    const img = imageFromSummary(summary(), { lang: 'en', title: 'X' }, 740)!
+    expect(img.fallbackUrl).toBe(THUMB)
+  })
+
+  it('leaves fallbackUrl unset when the URL was not touched', () => {
+    expect(imageFromSummary(summary(), { lang: 'en', title: 'X' }, 220)!.fallbackUrl).toBeUndefined()
   })
 })
 
@@ -364,6 +442,8 @@ describe('imageFromSummary', () => {
 const ok = (body: unknown) => ({ ok: true, status: 200, json: async () => body }) as unknown as Response
 const notFound = () =>
   ({ ok: false, status: 404, json: async () => ({ title: 'Not found' }) }) as unknown as Response
+const status = (code: number) =>
+  ({ ok: false, status: code, json: async () => ({}) }) as unknown as Response
 
 /** A fetch whose responses resolve only when the test says so. */
 function deferredFetch() {
@@ -390,6 +470,20 @@ describe('fetchWikiSummary', () => {
     )
   })
 
+  /* The endpoint 301s a non-normalised title and 302s a redirect article, and a
+     browser will not follow a redirect on a request that needed a CORS
+     pre-flight. So the request has to stay simple: GET, no request headers. */
+  it('asks with a bare, never-pre-flighted GET that follows redirects', async () => {
+    const impl = vi.fn(async () => ok(summary())) as unknown as typeof fetch
+    await fetchWikiSummary({ lang: 'en', title: 'Jericho' }, { fetchImpl: impl })
+    const init = vi.mocked(impl).mock.calls[0][1]!
+    expect(init.method ?? 'GET').toBe('GET')
+    expect(init.headers).toBeUndefined()
+    expect(init.redirect ?? 'follow').toBe('follow')
+    expect(init.credentials).toBe('omit')
+    expect(init.mode).toBe('cors')
+  })
+
   it('memoises by title for the session — a second ask makes no request', async () => {
     const impl = vi.fn(async () => ok(summary())) as unknown as typeof fetch
     const ref = { lang: 'en', title: 'Jericho' }
@@ -404,6 +498,50 @@ describe('fetchWikiSummary', () => {
     await fetchWikiSummary({ lang: 'en', title: 'Nope' }, { fetchImpl: impl })
     const second = await fetchWikiSummary({ lang: 'en', title: 'Nope' }, { fetchImpl: impl })
     expect(second).toBeNull()
+    expect(vi.mocked(impl)).toHaveBeenCalledTimes(1)
+  })
+
+  /* A missing article is a fact; a failed request is a moment. Remembering the
+     second is how one bad minute leaves a whole session with no pictures. */
+  it('does not remember a network failure — the next open asks again', async () => {
+    const impl = vi.fn(async () => {
+      throw new TypeError('Failed to fetch')
+    }) as unknown as typeof fetch
+    const ref = { lang: 'en', title: 'Jericho' }
+    expect(await fetchWikiSummary(ref, { fetchImpl: impl })).toBeNull()
+    expect(wikiCacheStats().cached).toBe(0)
+
+    const second = vi.fn(async () => ok(summary())) as unknown as typeof fetch
+    expect(await fetchWikiSummary(ref, { fetchImpl: second })).not.toBeNull()
+    expect(vi.mocked(second)).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not remember a 503, a 429 or any other transient HTTP answer', async () => {
+    for (const code of [429, 500, 502, 503]) {
+      clearWikiImageCache()
+      const impl = vi.fn(async () => status(code)) as unknown as typeof fetch
+      expect(await fetchWikiSummary({ lang: 'en', title: 'X' }, { fetchImpl: impl })).toBeNull()
+      expect(wikiCacheStats().cached).toBe(0)
+    }
+  })
+
+  it('does remember a 404 and a 410 — those articles will not appear later', async () => {
+    for (const code of [404, 410]) {
+      clearWikiImageCache()
+      const impl = vi.fn(async () => status(code)) as unknown as typeof fetch
+      const ref = { lang: 'en', title: 'Gone' }
+      await fetchWikiSummary(ref, { fetchImpl: impl })
+      await fetchWikiSummary(ref, { fetchImpl: impl })
+      expect(vi.mocked(impl)).toHaveBeenCalledTimes(1)
+      expect(wikiCacheStats().cached).toBe(1)
+    }
+  })
+
+  it('remembers an article that simply has no picture', async () => {
+    const impl = vi.fn(async () => ok({ type: 'standard', title: 'HIV/AIDS' })) as unknown as typeof fetch
+    const ref = { lang: 'en', title: 'HIV/AIDS' }
+    await fetchWikiSummary(ref, { fetchImpl: impl })
+    await fetchWikiSummary(ref, { fetchImpl: impl })
     expect(vi.mocked(impl)).toHaveBeenCalledTimes(1)
   })
 

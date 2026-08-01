@@ -10,15 +10,42 @@
  * requests:
  *
  *   https://en.wikipedia.org/api/rest_v1/page/summary/<title>
- *   → { title, description, extract, thumbnail: {source,width,height},
+ *   → { type, title, description, extract, thumbnail: {source,width,height},
  *       originalimage: {...}, content_urls: { desktop: { page } } }
  *
+ * Three properties of the live endpoint shape the code here, and none of them
+ * are visible in a mock:
+ *
+ * 1. It redirects. The spec returns 301 when the title is not in normalised
+ *    form and 302 when the article is a redirect — and a third of the links in
+ *    this dataset are redirects (`Aqueduct_(Roman)` → `Roman aqueduct`,
+ *    `Early_Dynastic_Period_(Egypt)` → `Early Dynastic Period of Egypt`).
+ *    RESTBase's own documentation warns that "redirected pre-flighted
+ *    cross-origin requests … will fail in most current browsers due to a spec
+ *    bug", so the request must stay *simple*: a bare GET with no request
+ *    headers at all, which is never pre-flighted and therefore follows the
+ *    redirect normally.
+ * 2. `thumbnail` is the only URL it promises. It is rendered at 320 px and it
+ *    is the only rendering Wikimedia guarantees exists. Editing the `NNNpx-`
+ *    segment to ask for a different size usually works and sometimes 404s (the
+ *    thumbnailer refuses to scale past the original, refuses some formats
+ *    outright, and names multi-page and video renderings differently), so an
+ *    edited URL is only ever offered *alongside* the untouched one — see
+ *    `pickImage`.
+ * 3. It answers "no" in two very different ways. 404 means this article has no
+ *    summary and never will, which is worth remembering for the session; a
+ *    dropped connection or a 503 means ask again next time. Collapsing the two
+ *    into `null` is how one flaky minute turns into a session with no pictures.
+ *
  * Everything here fails to `null` rather than throwing: an event with no picture
- * is a normal, already-supported state of the panel.
+ * is a normal, already-supported state of the panel. In dev every one of those
+ * failures says why on the console; in prod the logging compiles away.
  */
 
 /** The parts of the summary response this module reads. Everything is optional. */
 export interface WikiSummary {
+  /** `standard` | `disambiguation` | `no-extract` | `mainpage`. */
+  type?: string
   title?: string
   titles?: { canonical?: string; normalized?: string; display?: string }
   description?: string
@@ -37,6 +64,12 @@ export interface WikiImageSource {
 /** What the panel needs to render one picture. */
 export interface WikiImage {
   url: string
+  /**
+   * The API's own `thumbnail.source`, untouched, when `url` is a re-rendered
+   * version of it. The panel swaps to this if `url` fails to load, so a guess
+   * about the thumbnailer can cost sharpness but never the picture.
+   */
+  fallbackUrl?: string
   /** Intrinsic size of the *requested* rendering, when it can be derived — lets the panel reserve the box. */
   width?: number
   height?: number
@@ -60,6 +93,29 @@ const MIN_WIDTH = 200
 /** Wikimedia refuses absurd thumbnail requests; also our own sanity bound. */
 const MAX_WIDTH = 2000
 const DEFAULT_WIDTH = 640
+/**
+ * Biggest `originalimage` we will point an `<img>` at directly. Reached only
+ * when the summary has no thumbnail at all; originals run to tens of megabytes
+ * and this box is 330 CSS px wide, so past this the honest answer is "no
+ * picture" rather than a scan of a painting downloaded in full.
+ */
+const MAX_ORIGINAL_WIDTH = 1600
+
+/* -------------------------------------------------------------- diagnostics */
+
+/**
+ * Why a picture is not on screen, on the console, in dev only.
+ *
+ * Every failure in this module is deliberately silent to the reader — an event
+ * with no picture looks exactly like an event whose article has none. That is
+ * right for prod and useless when something is actually broken, and it is how
+ * this feature shipped broken once already. `import.meta.env.DEV` is a compile
+ * time constant, so the calls and their message strings leave the prod bundle
+ * entirely.
+ */
+export function wikiDebug(reason: string, detail?: unknown): void {
+  if (import.meta.env.DEV) console.debug(`[wikiImage] ${reason}`, detail ?? '')
+}
 
 /**
  * Namespaces that are not articles. A `File:` or `Category:` link has a summary
@@ -149,12 +205,20 @@ export function wikiRefForEvent(
     const ref = parseWikiUrl(l?.url)
     if (ref) return ref
   }
-  for (const m of (event.body ?? '').matchAll(/\]\((https?:\/\/[^\s)]+)\)/g)) {
+  for (const m of (event.body ?? '').matchAll(MARKDOWN_LINK)) {
     const ref = parseWikiUrl(m[1])
     if (ref) return ref
   }
   return null
 }
+
+/**
+ * The URL inside a markdown `[text](url)`, allowing one level of balanced
+ * parentheses inside it. Wikipedia disambiguates with them — a naive
+ * `[^\s)]+` stops at the `(` of `…/Early_Dynastic_Period_(Egypt)` and hands on
+ * a title that 404s.
+ */
+const MARKDOWN_LINK = /\]\((https?:\/\/(?:[^\s()]|\([^\s()]*\))+)\)/g
 
 /* ------------------------------------------------------------------- images */
 
@@ -193,19 +257,64 @@ export function chooseWidth(targetWidth: number, originalWidth?: number): number
 }
 
 /**
- * Best image URL for a summary at roughly `targetWidth` CSS-or-device pixels, or
- * `null` when the article has no picture.
+ * The picture to render for a summary, or `null` when the article has none.
+ *
+ * `url` is what to try first and `fallbackUrl` is the API's own thumbnail, set
+ * only when `url` is an edited version of it. The edit — asking the thumbnailer
+ * for a wider rendering than the 320 px the summary carries — is only attempted
+ * when every guess is removed from it:
+ *
+ *   · the URL is in canonical `/thumb/…/NNNpx-name` form (multi-page and video
+ *     renderings are named differently and are left alone),
+ *   · the response says how wide the original is, so the request cannot ask the
+ *     thumbnailer to scale up, which it answers with a 404,
+ *   · and the result is actually bigger than what we already have.
+ *
+ * If any of that does not hold, the guaranteed URL is used as-is. If it does
+ * hold and the guess is wrong anyway, the panel falls back to the same URL on
+ * the `<img>`'s error event.
  */
-export function pickImageUrl(summary: WikiSummary | null | undefined, targetWidth = DEFAULT_WIDTH): string | null {
+export function pickImage(
+  summary: WikiSummary | null | undefined,
+  targetWidth = DEFAULT_WIDTH,
+): { url: string; fallbackUrl?: string } | null {
+  // A disambiguation page's "thumbnail" is the namespace icon, not a picture of
+  // anything the event is about.
+  if (summary?.type === 'disambiguation') {
+    wikiDebug('skipped a disambiguation page', summary?.title)
+    return null
+  }
+
   const thumb = summary?.thumbnail?.source
   const original = summary?.originalimage
   if (typeof thumb !== 'string' || !thumb) {
-    return typeof original?.source === 'string' && original.source ? original.source : null
+    // PCS sends `originalimage` with `thumbnail` or neither; if it ever sends
+    // only the original, it is usable exactly while it is small enough to be.
+    const source = typeof original?.source === 'string' ? original.source : ''
+    if (!source) return null
+    if (original?.width && original.width > MAX_ORIGINAL_WIDTH) {
+      wikiDebug('no thumbnail and the original is too large to serve', { source, width: original.width })
+      return null
+    }
+    return { url: source }
   }
-  const width = chooseWidth(targetWidth, original?.width)
+
   const current = thumbWidth(thumb)
-  if (current === null || current === width) return thumb // not a thumb URL, or already right
-  return withThumbWidth(thumb, width)
+  const originalWidth = original?.width
+  if (current === null || !originalWidth || originalWidth <= current) return { url: thumb }
+
+  const width = Math.min(chooseWidth(targetWidth, originalWidth), originalWidth)
+  if (width <= current) return { url: thumb } // never ask for a downgrade
+  return { url: withThumbWidth(thumb, width), fallbackUrl: thumb }
+}
+
+/**
+ * Best image URL for a summary at roughly `targetWidth` CSS-or-device pixels, or
+ * `null` when the article has no picture. The URL to try first; see `pickImage`
+ * for the guaranteed one behind it.
+ */
+export function pickImageUrl(summary: WikiSummary | null | undefined, targetWidth = DEFAULT_WIDTH): string | null {
+  return pickImage(summary, targetWidth)?.url ?? null
 }
 
 /**
@@ -217,8 +326,9 @@ export function imageFromSummary(
   ref: WikiRef,
   targetWidth = DEFAULT_WIDTH,
 ): WikiImage | null {
-  const url = pickImageUrl(summary, targetWidth)
-  if (!url) return null
+  const picked = pickImage(summary, targetWidth)
+  if (!picked) return null
+  const { url, fallbackUrl } = picked
 
   const thumb = summary?.thumbnail
   const requested = thumbWidth(url)
@@ -237,6 +347,7 @@ export function imageFromSummary(
   const page = summary?.content_urls?.desktop?.page ?? summary?.content_urls?.mobile?.page
   return {
     url,
+    fallbackUrl,
     width,
     height,
     caption: caption || undefined,
@@ -248,8 +359,19 @@ export function imageFromSummary(
 
 /* -------------------------------------------------------------------- fetch */
 
+/**
+ * What one request came back with. `settled` is the difference between "this
+ * article has no summary" and "we could not ask": only the former is worth
+ * remembering, and remembering the latter is how a minute of bad signal leaves
+ * a session with no pictures at all.
+ */
+interface Outcome {
+  summary: WikiSummary | null
+  settled: boolean
+}
+
 interface Pending {
-  promise: Promise<WikiSummary | null>
+  promise: Promise<Outcome>
   controller: AbortController
   /** Live subscribers. The shared request is only aborted when the last one leaves. */
   refs: number
@@ -292,30 +414,53 @@ export async function fetchWikiSummary(ref: WikiRef, opts: FetchOptions = {}): P
   if (!entry) {
     const controller = new AbortController()
     const doFetch = opts.fetchImpl ?? ((...a: Parameters<typeof fetch>) => fetch(...a))
-    const promise = (async () => {
+    const url = summaryUrl(ref)
+    const promise = (async (): Promise<Outcome> => {
       try {
-        const res = await doFetch(summaryUrl(ref), {
+        const res = await doFetch(url, {
+          // No request headers. Not even `accept`: the endpoint speaks nothing
+          // but JSON, and any header outside the CORS safelist turns this into
+          // a pre-flighted request, which browsers then refuse to redirect —
+          // and this endpoint redirects for every article link that is a
+          // Wikipedia redirect. A bare GET is a simple request and follows.
           signal: controller.signal,
-          headers: { accept: 'application/json' },
+          method: 'GET',
           // The endpoint is public and cache-friendly; no credentials, ever.
           credentials: 'omit',
           mode: 'cors',
+          // Default, but load-bearing enough to say out loud: 301 (title not in
+          // normalised form) and 302 (the article is a redirect) are ordinary
+          // answers here, not errors.
+          redirect: 'follow',
         })
-        if (!res?.ok) return null
+        if (!res?.ok) {
+          // 404/410: this article has no summary. Anything else — 429, 5xx, a
+          // captive portal — is a condition that passes, so ask again later.
+          const settled = res?.status === 404 || res?.status === 410
+          wikiDebug(`summary request failed with HTTP ${res?.status}`, { url, willRetry: !settled })
+          return { summary: null, settled }
+        }
         const json = (await res.json()) as unknown
-        return json && typeof json === 'object' ? (json as WikiSummary) : null
-      } catch {
-        return null // network failure, CORS refusal, abort, malformed JSON — all "no picture"
+        if (!json || typeof json !== 'object') {
+          wikiDebug('summary response was not a JSON object', { url })
+          return { summary: null, settled: true }
+        }
+        return { summary: json as WikiSummary, settled: true }
+      } catch (err) {
+        // An abort is bookkept below; everything else here is the transport
+        // giving up — never remembered, so the next open tries again.
+        if (!controller.signal.aborted) wikiDebug('summary request threw', { url, err })
+        return { summary: null, settled: false }
       }
     })()
     entry = { promise, controller, refs: 0 }
     pending.set(key, entry)
-    // Only a request that ran to completion is memoised; an aborted one must not
-    // poison the cache with `null` for the rest of the session.
-    void promise.then((value) => {
+    // Only a request that ran to completion *and* got an answer is memoised: an
+    // aborted or failed one must not poison the cache for the rest of the session.
+    void promise.then((outcome) => {
       if (pending.get(key) === entry) {
         pending.delete(key)
-        if (!controller.signal.aborted) cache.set(key, value)
+        if (!controller.signal.aborted && outcome.settled) cache.set(key, outcome.summary)
       }
     })
   }
@@ -337,10 +482,10 @@ export async function fetchWikiSummary(ref: WikiRef, opts: FetchOptions = {}): P
 
   const signal = opts.signal
   if (!signal) {
-    const value = await self.promise
+    const outcome = await self.promise
     detached = true
     self.refs--
-    return value
+    return outcome.summary
   }
 
   return await new Promise<WikiSummary | null>((resolve) => {
@@ -349,14 +494,14 @@ export async function fetchWikiSummary(ref: WikiRef, opts: FetchOptions = {}): P
       resolve(null)
     }
     signal.addEventListener('abort', onAbort, { once: true })
-    void self.promise.then((value) => {
+    void self.promise.then((outcome) => {
       signal.removeEventListener('abort', onAbort)
       const aborted = signal.aborted
       if (!detached) {
         detached = true
         self.refs--
       }
-      resolve(aborted ? null : value)
+      resolve(aborted ? null : outcome.summary)
     })
   })
 }
@@ -369,8 +514,14 @@ export async function fetchWikiImage(
   opts: FetchOptions = {},
 ): Promise<WikiImage | null> {
   const ref = typeof articleLink === 'string' ? parseWikiUrl(articleLink) : (articleLink ?? null)
-  if (!ref) return null
+  if (!ref) {
+    wikiDebug('not a Wikipedia article link', articleLink)
+    return null
+  }
   const summary = await fetchWikiSummary(ref, opts)
-  if (!summary || opts.signal?.aborted) return null
-  return imageFromSummary(summary, ref, opts.targetWidth ?? DEFAULT_WIDTH)
+  if (opts.signal?.aborted) return null
+  if (!summary) return null
+  const image = imageFromSummary(summary, ref, opts.targetWidth ?? DEFAULT_WIDTH)
+  if (!image) wikiDebug('article has no lead image', refKey(ref))
+  return image
 }

@@ -1,0 +1,24 @@
+{
+  "type": "standard",
+  "title": "United Nations",
+  "namespace": { "id": 0, "text": "" },
+  "wikibase_item": "Q1065",
+  "titles": { "canonical": "United_Nations", "normalized": "United Nations", "display": "United Nations" },
+  "pageid": 31769,
+  "thumbnail": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Flag_of_the_United_Nations.svg/320px-Flag_of_the_United_Nations.svg.png",
+    "width": 320,
+    "height": 213
+  },
+  "originalimage": {
+    "source": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flag_of_the_United_Nations.svg",
+    "width": 1200,
+    "height": 800
+  },
+  "lang": "en",
+  "dir": "ltr",
+  "description": "Intergovernmental organization",
+  "description_source": "local",
+  "content_urls": { "desktop": { "page": "https://en.wikipedia.org/wiki/United_Nations" } },
+  "extract": "The United Nations is an intergovernmental organization founded in 1945."
+}

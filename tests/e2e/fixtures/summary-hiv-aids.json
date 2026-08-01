@@ -1,0 +1,21 @@
+{
+  "type": "standard",
+  "title": "HIV/AIDS",
+  "displaytitle": "<span class=\"mw-page-title-main\">HIV/AIDS</span>",
+  "namespace": { "id": 0, "text": "" },
+  "wikibase_item": "Q12199",
+  "titles": { "canonical": "HIV/AIDS", "normalized": "HIV/AIDS", "display": "HIV/AIDS" },
+  "pageid": 14416,
+  "lang": "en",
+  "dir": "ltr",
+  "revision": "1268991044",
+  "timestamp": "2026-01-11T04:52:19Z",
+  "description": "Spectrum of conditions caused by HIV infection",
+  "description_source": "local",
+  "content_urls": {
+    "desktop": { "page": "https://en.wikipedia.org/wiki/HIV/AIDS" },
+    "mobile": { "page": "https://en.m.wikipedia.org/wiki/HIV/AIDS" }
+  },
+  "extract": "The human immunodeficiency virus (HIV) is a retrovirus that attacks the immune system.",
+  "extract_html": "<p>The <b>human immunodeficiency virus</b> (HIV) is a retrovirus.</p>"
+}

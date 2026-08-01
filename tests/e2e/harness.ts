@@ -16,6 +16,13 @@ import { useEventStore } from '../../src/stores/events'
 import { clearWikiImageCache } from '../../src/lib/wikiImage'
 import type { HistoricalEvent } from '../../src/lib/events'
 
+/**
+ * Served by the dev server from this directory, not by a Playwright route: any
+ * route interception at all changes how Chromium handles CORS, and this spec is
+ * partly about CORS.
+ */
+const OWN_IMAGE = new URL('./fixtures/own-image.png', import.meta.url).pathname
+
 const EVENTS: HistoricalEvent[] = [
   {
     id: 'gobekli-tepe',
@@ -79,9 +86,50 @@ const EVENTS: HistoricalEvent[] = [
     priority: 90,
     tags: ['exploration'],
     summary: 'Carries an explicit image in the dataset.',
-    image: { url: '/placeholder-own.png', caption: 'Our own picture' },
+    image: { url: OWN_IMAGE, caption: 'Our own picture' },
     body: 'More at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_11).',
     links: [{ label: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Apollo_11' }],
+  },
+  {
+    // the article link is a Wikipedia *redirect*: the summary endpoint answers
+    // 302 and the browser has to follow it to the target. A third of this
+    // dataset's links are redirects, and a pre-flighted request cannot follow one.
+    id: 'redirected',
+    name: 'Roman aqueducts',
+    start: -312,
+    lat: 43.95,
+    lng: 4.53,
+    priority: 60,
+    tags: ['technology'],
+    summary: 'Rome piped water into its cities across engineered channels.',
+    body: 'More at [Wikipedia](https://en.wikipedia.org/wiki/Aqueduct_(Roman)).',
+    links: [{ label: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Aqueduct_(Roman)' }],
+  },
+  {
+    // a real article whose summary carries no thumbnail at all
+    id: 'no-picture',
+    name: 'HIV/AIDS identified',
+    start: 1981,
+    lat: 34.05,
+    lng: -118.24,
+    priority: 70,
+    tags: ['biology'],
+    summary: 'A new immune-deficiency syndrome was reported in Los Angeles.',
+    body: 'More at [Wikipedia](https://en.wikipedia.org/wiki/HIV/AIDS).',
+    links: [{ label: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/HIV/AIDS' }],
+  },
+  {
+    // the lead image is an SVG: the thumbnail is a PNG rendering of it
+    id: 'svg-lead',
+    name: 'United Nations founded',
+    start: 1945,
+    lat: 37.78,
+    lng: -122.42,
+    priority: 80,
+    tags: ['politics'],
+    summary: 'Fifty-one states signed the Charter in San Francisco.',
+    body: 'More at [Wikipedia](https://en.wikipedia.org/wiki/United_Nations).',
+    links: [{ label: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/United_Nations' }],
   },
   {
     // no Wikipedia link anywhere: nothing to look up
