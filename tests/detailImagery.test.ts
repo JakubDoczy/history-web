@@ -507,7 +507,16 @@ describe('era-dependent zoom floors', () => {
 })
 
 import { afterEach, beforeEach, vi } from 'vitest'
-import { coversView, DetailImagery, movedEnough, SETTLE_MS } from '../src/lib/detailImagery'
+import {
+  coversView,
+  DetailImagery,
+  MOTION_EPS,
+  movedEnough,
+  PAN_MIN_COVER,
+  SETTLE_MS,
+  viewCoverage,
+  viewMotion,
+} from '../src/lib/detailImagery'
 
 describe('movedEnough', () => {
   const at = (lat: number, lng: number, aspect: number) => viewBbox(lat, lng, 0.02, aspect)
@@ -533,6 +542,81 @@ describe('movedEnough', () => {
 
   it('always refetches when there is nothing loaded yet', () => {
     expect(movedEnough(undefined, at(0, 0, 1))).toBe(true)
+  })
+})
+
+describe('viewMotion', () => {
+  const box = (lat: number, lng: number) => ({
+    minLat: lat - 2,
+    maxLat: lat + 2,
+    minLng: lng - 2,
+    maxLng: lng + 2,
+  })
+
+  it('is zero for a camera that has not moved', () => {
+    expect(viewMotion(box(45, 10), box(45, 10))).toBe(0)
+  })
+
+  it('measures a pan against the span it is a pan of', () => {
+    // 1 degree of a 4 degree view is a quarter of it
+    expect(viewMotion(box(45, 10), box(45, 11))).toBeCloseTo(0.25, 6)
+  })
+
+  it('sees a pure zoom, which moves no centre at all', () => {
+    const a = { minLat: 44, maxLat: 46, minLng: 9, maxLng: 11 }
+    const b = { minLat: 43, maxLat: 47, minLng: 8, maxLng: 12 }
+    expect(viewMotion(a, b)).toBeGreaterThan(MOTION_EPS)
+  })
+
+  it('counts the first frame as motion, since there is nothing to compare to', () => {
+    expect(viewMotion(undefined, box(45, 10))).toBe(1)
+  })
+
+  it('puts orbit damping below the threshold before it reaches zero', () => {
+    // the creep after a released drag has to stop counting as motion, or the
+    // imagery waits on a camera that is still technically moving
+    const span = 4
+    const crawl = span * MOTION_EPS * 0.5
+    expect(viewMotion(box(45, 10), box(45, 10 + crawl))).toBeLessThan(MOTION_EPS)
+  })
+})
+
+describe('viewCoverage', () => {
+  const box = (minLat: number, maxLat: number, minLng: number, maxLng: number) => ({
+    minLat,
+    maxLat,
+    minLng,
+    maxLng,
+  })
+
+  it('is 1 when the held rectangle contains the view', () => {
+    expect(viewCoverage(box(40, 44, 10, 15), box(41, 43, 11, 14))).toBe(1)
+  })
+
+  it('is 0 once the view has panned clear of it', () => {
+    expect(viewCoverage(box(40, 44, 10, 15), box(40, 44, 20, 25))).toBe(0)
+  })
+
+  it('is the fraction of the view that still has imagery under it', () => {
+    // half the width, all of the height
+    expect(viewCoverage(box(40, 44, 10, 15), box(40, 44, 12.5, 17.5))).toBeCloseTo(0.5, 6)
+  })
+
+  it('is 0 when nothing has been composited', () => {
+    expect(viewCoverage(undefined, box(40, 44, 10, 15))).toBe(0)
+  })
+
+  it('drops through the escape hatch about two thirds of a view width along', () => {
+    // the hatch is what stops a long drag stranding the user on the basemap;
+    // it has to fire while there is still imagery on screen, not after
+    const start = viewBbox(45, 10, 0.05, 1.6)
+    const width = start.maxLng - start.minLng
+    expect(viewCoverage(start, viewBbox(45, 10 + width * 0.5, 0.05, 1.6))).toBeGreaterThan(
+      PAN_MIN_COVER,
+    )
+    expect(viewCoverage(start, viewBbox(45, 10 + width * 0.8, 0.05, 1.6))).toBeLessThan(
+      PAN_MIN_COVER,
+    )
   })
 })
 
@@ -878,11 +962,12 @@ describe('cached patch compositing', () => {
     expect(d.mix).toBe(1)
   })
 
-  it('redraws the patch it holds onto the new view before asking for anything', () => {
+  it('redraws the patch it holds onto the new view, out of the cache and after the drag', () => {
     const d = new DetailImagery()
     land(d, 45, 10)
     const rectBefore = [...d.rect]
     const requestsBefore = FakeImage.requests.length
+    const held = FakeImage.last // the patch already on screen
     // the canvas is reused between composites, so clear the record rather than
     // the instance
     const canvas = FakeCanvas.made[0]
@@ -890,16 +975,27 @@ describe('cached patch compositing', () => {
     canvas.cleared = 0
 
     d.update(45, 10 + PAN, CLOSE, 900, 1) // a pan of ~27% of the patch width
+    // Nothing at all happens while the camera is moving. A composite is a full
+    // texture upload and a full mip rebuild — 111 ms measured — and mid-drag it
+    // buys one frame of imagery on the newly exposed edge before the next drag
+    // frame replaces it. That is the stutter that was reported, so the drag
+    // costs neither a publish nor a request.
+    expect(canvas.ops).toHaveLength(0)
+    expect(FakeImage.requests).toHaveLength(requestsBefore)
+
+    vi.advanceTimersByTime(SETTLE_MS + 1)
     expect(canvas).toBeDefined()
     expect(canvas.ops).toHaveLength(1) // the one patch we own
     expect(canvas.cleared).toBe(1) // and nothing stale left under it
     // the patch is now to the *west* of the view, so it is drawn left of centre
     expect(canvas.ops[0].x).toBeLessThan(0)
     expect(canvas.ops[0].y).toBeCloseTo(0, 6) // same latitude: no vertical shift
-    // the texture now covers the new view, and it cost no request to do it
+    // the texture now covers the new view, and the picture came out of the
+    // cache: it is the patch we already had, not the one the settle has only
+    // just gone to ask for
     expect(d.rect).not.toEqual(rectBefore)
     expect(d.mix).toBe(1)
-    expect(FakeImage.requests).toHaveLength(requestsBefore)
+    expect(canvas.ops[0].image).toBe(held)
   })
 
   it('still issues the fresh request after the camera settles', () => {
@@ -922,6 +1018,11 @@ describe('cached patch compositing', () => {
     canvas.ops.length = 0
 
     d.update(45, 10 + PAN, CLOSE, 900, 1) // back to the middle: both still show
+    // The redraw is deferred to rest now: a composite mid-gesture is a full
+    // texture upload and mip rebuild the user feels as a stutter, and imagery
+    // they cannot see because the next drag frame replaces it. Same picture,
+    // one settle later.
+    vi.advanceTimersByTime(SETTLE_MS + 1)
     expect(canvas.ops).toHaveLength(2)
     // both patches are at the same zoom, so the tie-break is age: the newest
     // one — the one nearest the new view — must be drawn on top
@@ -1229,6 +1330,11 @@ describe('cached patch compositing', () => {
     canvas.ops.length = 0
     canvas.cleared = 0
     for (let i = 0; i < 8; i++) d.update(45, 10 + PAN, CLOSE, 900, 1)
+    // The redraw is deferred to rest now: a composite mid-gesture is a full
+    // texture upload and mip rebuild the user feels as a stutter, and imagery
+    // they cannot see because the next drag frame replaces it. Same picture,
+    // one settle later.
+    vi.advanceTimersByTime(SETTLE_MS + 1)
     expect(canvas.cleared).toBe(1)
     expect(canvas.ops).toHaveLength(1)
   })
@@ -1282,6 +1388,11 @@ describe('cached patch compositing', () => {
     // the window is resized, which is the one thing that still changes the
     // composite's shape now that a moving camera does not
     d.update(45, 10 + PAN, CLOSE, 1200, 1)
+    // The redraw is deferred to rest now: a composite mid-gesture is a full
+    // texture upload and mip rebuild the user feels as a stutter, and imagery
+    // they cannot see because the next drag frame replaces it. Same picture,
+    // one settle later.
+    vi.advanceTimersByTime(SETTLE_MS + 1)
     expect(canvas.width).not.toBe(first.w)
     expect(d.texture).not.toBe(first.tex) // a fresh texture, so GL reallocates
     // ...and the texture object is kept where the shape has not changed, which

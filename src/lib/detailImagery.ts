@@ -394,6 +394,74 @@ export const coversView = (held: Bbox | undefined, want: Bbox): held is Bbox =>
   held.maxLng >= want.maxLng
 
 /**
+ * How much of the wanted rectangle the held one actually covers, 0 to 1.
+ *
+ * Degrees squared, not real area: both rectangles are the same view a moment
+ * apart, so the cosine that would turn this into ground area divides out of the
+ * ratio.
+ */
+export const viewCoverage = (held: Bbox | undefined, want: Bbox): number => {
+  if (!held) return 0
+  const lat = Math.min(held.maxLat, want.maxLat) - Math.max(held.minLat, want.minLat)
+  const lng = Math.min(held.maxLng, want.maxLng) - Math.max(held.minLng, want.minLng)
+  if (lat <= 0 || lng <= 0) return 0
+  const area = (want.maxLat - want.minLat) * (want.maxLng - want.minLng)
+  return area > 0 ? Math.min(1, (lat * lng) / area) : 0
+}
+
+/**
+ * How far the view moved between two frames, as a fraction of its own span.
+ *
+ * The largest of the four edges, so a pure zoom counts as motion as readily as
+ * a pan does.
+ */
+export const viewMotion = (a: Bbox | undefined, b: Bbox): number => {
+  if (!a) return 1
+  const lat = Math.max(b.maxLat - b.minLat, 1e-9)
+  const lng = Math.max(b.maxLng - b.minLng, 1e-9)
+  return Math.max(
+    Math.abs(a.minLat - b.minLat) / lat,
+    Math.abs(a.maxLat - b.maxLat) / lat,
+    Math.abs(a.minLng - b.minLng) / lng,
+    Math.abs(a.maxLng - b.maxLng) / lng,
+  )
+}
+
+/**
+ * How far the view may drift between frames and still count as a still camera.
+ *
+ * Small, but not zero: orbit damping keeps the camera creeping for the better
+ * part of a second after the pointer is released, and waiting for that to reach
+ * exactly zero would be waiting for the imagery forever. Two parts in a
+ * thousand of the span is well under a screen pixel at any zoom.
+ */
+export const MOTION_EPS = 0.002
+
+/**
+ * The escape hatch on motion-deferred publishing: how little of the view the
+ * published rectangle may still cover, and how often the hatch may fire.
+ *
+ * Nothing is published while the camera is moving. A publish is a full texture
+ * upload plus a full `generateMipmap` — 111 ms measured at a desktop composite
+ * size — and during a drag it buys only the strip of ground that has just come
+ * into view, for one frame, before the next drag frame moves on. Eight of them
+ * across a 2.5 s pan is the staggered motion that was reported, and the right
+ * answer is to spend none of them: the patch already on the GPU is mapped to
+ * its own ground rectangle by the shader, so it pans with the globe for free
+ * and stays exactly where it belongs. What the user gives up is imagery on the
+ * newly exposed edge until the camera rests, which is the trade that was asked
+ * for.
+ *
+ * The hatch exists so a long drag cannot leave the view with no imagery at all.
+ * A third is about where the held rectangle has slid off far enough for the
+ * basemap to be most of what is on screen; below that, one composite is worth
+ * one hitch. The interval then bounds a flick, which can cross the threshold
+ * several times in a second.
+ */
+export const PAN_MIN_COVER = 0.35
+export const PAN_PUBLISH_MS = 800
+
+/**
  * Imagery is fetched in two stages.
  *
  * Stage one is NASA Blue Marble: one static layer, no date, always available.
@@ -718,6 +786,13 @@ export class DetailImagery {
   private lastDraw = ''
   /** Pixel size of the image last handed to the shader; see publish(). */
   private published?: { w: number; h: number }
+  /** When the shader was last handed pixels; see PAN_PUBLISH_MS. */
+  private publishedAt = 0
+  /** The view at the previous frame, and when it last differed; see MOTION_EPS. */
+  private lastSeen?: Bbox
+  private movedAt = 0
+  /** When detail last became wanted; the deadline for the first picture. */
+  private wantedAt = 0
   /** The screen the composite canvas is cut for; see compositeCanvasSize. */
   private viewport = { px: 900, aspect: 1 }
   /** Bumped when a Lanczos upscale lands, so the same plan is drawn again. */
@@ -747,6 +822,7 @@ export class DetailImagery {
       // a queued request must not land after we have zoomed back out, or it
       // adopts — and shows — a patch for a view nobody is looking at any more
       this.cancelQueued()
+      this.wantedAt = 0
       if (this.shown) {
         this.shown = false
         this.mix = 0
@@ -778,6 +854,14 @@ export class DetailImagery {
     // camera stood still.
     this.lastComposite = { target: bbox, screenPx: requestPx }
 
+    if (this.wantedAt === 0) this.wantedAt = Date.now()
+
+    // Is the camera moving *at all*? Recorded before every early return below,
+    // because the answer has to be about the camera and not about whether the
+    // view has moved far enough to be worth a request.
+    if (viewMotion(this.lastSeen, bbox) > MOTION_EPS) this.movedAt = Date.now()
+    this.lastSeen = bbox
+
     // the imagery we already hold may still cover the view — show it again
     // rather than paying for the same request twice
     if (this.texture && !movedEnough(this.current, bbox)) {
@@ -800,24 +884,90 @@ export class DetailImagery {
     // so the 280 ms never elapsed and no patch was ever fetched at all.
     if (this.pending && !movedEnough(this.pending, bbox)) return
     this.pending = bbox
-    // Redraw what we already own onto the new view *now*, before the settle
-    // timer has even started — but only when that redraw would show ground the
-    // published rectangle does not already hold. See coversView: on a zoom-in
-    // it never does, and the redraw's only effect is a full texture upload and
-    // a full mip chain rebuild per step, which is the burst behind the frame
-    // rate falling away as the camera closes in. A pan still redraws here,
-    // because a pan really does expose new ground.
-    if (!coversView(this.composited, bbox)) this.recomposite(bbox, requestPx)
-    clearTimeout(this.settle)
-    this.settle = setTimeout(() => {
-      this.settle = undefined
-      // The camera has stopped. Now — and only now — is it worth magnifying
-      // what we hold properly: during the move the next frame would have
-      // replaced the result anyway, and each resample costs a full-resolution
-      // copy of the patch to hand to the worker.
-      this.recomposite(bbox, requestPx, true)
+    // Everything below this line runs *while the camera is moving* — reaching
+    // here means the view has moved enough to re-arm the settle timer, and the
+    // rest of the pipeline hangs off that timer firing. So nothing here
+    // publishes: see PAN_MIN_COVER for why a composite mid-gesture is a hitch
+    // the user feels and imagery they do not.
+    //
+    // The one exception is a drag long enough to leave the held rectangle
+    // behind altogether. That is a mid-drag settle without the expensive half:
+    // redraw what we hold onto the view that has outrun it, and ask for imagery
+    // that fits it, but no Lanczos — the sharpening pass is what waits for rest.
+    if (
+      // nothing published yet is not a stale view, it is a cold start: the
+      // first request belongs to the settle path like any other
+      this.composited &&
+      !coversView(this.composited, bbox) &&
+      viewCoverage(this.composited, bbox) < PAN_MIN_COVER &&
+      Date.now() - this.publishedAt >= PAN_PUBLISH_MS
+    ) {
+      this.recomposite(bbox, requestPx)
       this.load(bbox, requestPx, src)
-    }, SETTLE_MS)
+    }
+    clearTimeout(this.settle)
+    this.arm(src)
+  }
+
+  /**
+   * Is the camera at rest?
+   *
+   * `this.settle === undefined` looks like it answers this and does not: the
+   * timer is only armed once the view has moved far enough to be worth a
+   * request, so through the first fifth of a drag — before that first trip — it
+   * reads "still" while the camera is plainly moving. `movedAt` is written on
+   * every frame the view changes at all, ahead of every early return, so it has
+   * no such hole.
+   */
+  private get still(): boolean {
+    return Date.now() - this.movedAt >= SETTLE_MS
+  }
+
+  /**
+   * Arm the settle timer, and keep re-arming it until the camera is actually
+   * still.
+   *
+   * `SETTLE_MS` after the last *significant* move is not the same thing as a
+   * still camera, and the difference is the whole of the pan problem. An
+   * ordinary drag trips `movedEnough` about every 300 ms — a fifth of a view
+   * width at a fifth of a view width per 300 ms — and 300 is more than 280, so
+   * this timer elapsed *between the trips of a continuous gesture*. Each time
+   * it did, it ran the rest pipeline: composite, publish, upload, mip chain,
+   * and a Lanczos pass on top. Measured across one 2.5 s pan: eight of them.
+   *
+   * So the timer now asks a second question when it fires — has the view been
+   * genuinely motionless for `SETTLE_MS`? — and waits out the remainder if not.
+   * `movedAt` is written on every frame the view moves at all (see MOTION_EPS),
+   * so this converges the moment the camera does.
+   *
+   * The view it then acts on is the live one, not the one captured when the
+   * timer was armed: after a deferral those can be a whole gesture apart.
+   */
+  private arm(src: ImagerySource) {
+    const now = Date.now()
+    const left = SETTLE_MS - (now - this.movedAt)
+    // A camera that never stops still has to get a *first* picture. Auto-rotate
+    // is what makes this reachable: the view drifts by more than MOTION_EPS
+    // every frame forever, so the wait for stillness would never end — and with
+    // nothing ever published there is no rectangle for the escape hatch to find
+    // having slid away either, so the deferral would be permanent and the patch
+    // would simply never appear. So until something is on the GPU the wait is
+    // one SETTLE_MS of wall clock rather than of stillness. After that the
+    // hatch takes over and bounds staleness at PAN_PUBLISH_MS.
+    const overdue = this.publishedAt === 0 && now - this.wantedAt >= SETTLE_MS
+    if (left > 0 && !overdue) {
+      this.settle = setTimeout(() => this.arm(src), left)
+      return
+    }
+    this.settle = undefined
+    const view = this.lastComposite
+    if (!view) return
+    // The camera has stopped. Now — and only now — is it worth magnifying what
+    // we hold properly: during the move the next frame would have replaced the
+    // result anyway, and each resample costs a full-resolution copy of the
+    // patch to hand to the worker.
+    this.recomposite(view.target, view.screenPx, true)
+    this.load(view.target, view.screenPx, src)
   }
 
   /** A canvas, or undefined where there is no DOM (tests, SSR). */
@@ -954,9 +1104,16 @@ export class DetailImagery {
         this.upscaled.set(image, { canvas, w: dw, h: dh, crop })
         this.upscaleEpoch++ // the same plan now draws different pixels
         const last = this.lastComposite
-        // Redraw only what is on screen now. recomposite() will find this
-        // upscale in the cache and draw it, so there is no loop.
-        if (last && this.cache.some((p) => p.image === image)) {
+        // Redraw only what is on screen now, and only if the camera is still.
+        // A resample that lands mid-drag is pure polish — the picture is
+        // already on screen and correct, this only sharpens it — so publishing
+        // it there would spend a full upload and mip rebuild on a frame the
+        // gesture is about to replace. It was measured doing exactly that,
+        // once inside a 1.4 s pan. Nothing is lost by waiting: the copy is
+        // cached against the patch and `upscaleEpoch` is already bumped, so the
+        // settle's own redraw picks it up. recomposite() will find this upscale
+        // in the cache and draw it, so there is no loop.
+        if (last && this.still && this.cache.some((p) => p.image === image)) {
           this.recomposite(last.target, last.screenPx, true)
         }
       })
@@ -1172,12 +1329,13 @@ export class DetailImagery {
     // `publish` is the only writer, so the number and the pixels change
     // together or not at all.
     const view = this.lastComposite
-    // Sharpen only if the camera is actually still. An armed settle timer means
-    // it is not: patches now land mid-zoom (see `generation`), and a Lanczos
-    // pass spent on a picture the next frame replaces is the stall this was
-    // moved off the main thread to avoid. Falling back to publishing the image
-    // directly covers the one case the composite cannot: no DOM, so no canvas.
-    const still = this.settle === undefined
+    // Sharpen only if the camera is actually still — see the `still` getter for
+    // why that is not the same as an unarmed settle timer. Patches land mid-zoom
+    // (see `generation`), and a Lanczos pass spent on a picture the next frame
+    // replaces is the stall this was moved off the main thread to avoid.
+    // Falling back to publishing the image directly covers the one case the
+    // composite cannot: no DOM, so no canvas.
+    const still = this.still
     if (!view || !this.recomposite(view.target, view.screenPx, still)) {
       this.sourceLabel = this.heldLabel = src.label
       this.attribution = this.heldAttribution = src.attribution ?? ''
@@ -1223,6 +1381,7 @@ export class DetailImagery {
       previous?.dispose()
     }
     this.published = size
+    this.publishedAt = Date.now()
     // Content, rectangle and mip level move together, in this order, in one
     // call: whatever the shader is handed, the rectangle it is stretched across
     // and the level that matches the base map all describe the same pixels.
