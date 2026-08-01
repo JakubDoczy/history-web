@@ -358,6 +358,42 @@ export const movedEnough = (a: Bbox | undefined, b: Bbox) => {
 }
 
 /**
+ * Does the rectangle already composited cover all of the one now wanted?
+ *
+ * Every publish is a full re-upload of the composite canvas *and* a full
+ * `generateMipmap` over it — there is no partial mip regeneration in WebGL, so
+ * the chain is rebuilt whatever fraction of the pixels changed. Measured over
+ * one scripted zoom-in: sixteen uploads and eighteen chain rebuilds, 29 MB at a
+ * 640-px viewport and ~130 MB at a desktop one.
+ *
+ * On a zoom-in every one of those was wasted. The composite is published with
+ * its own rectangle (`uDetailRect`), and the shader maps it onto the globe by
+ * that rectangle — so a composite of a *wider* box is still exactly where it
+ * belongs over the ground, it simply extends past the frame. Redrawing it onto
+ * the narrower box adds no ground at all; it only spends canvas pixels on less
+ * of it, which is what the settle-time pass does anyway, sharper, 280 ms later.
+ *
+ * A pan or a zoom-out exposes ground the held rectangle does not have, so this
+ * returns false and the fast redraw happens as before. A zoom-out therefore
+ * still redraws about every 10% of span growth — 32 publishes across a
+ * 90-frame gesture, measured. Compositing onto a rectangle half again as wide
+ * as the frame cuts that to 9 and was tried and rejected: the same canvas over
+ * more ground is a coarser picture of the ground already on screen, and "the
+ * effective resolution must not go backward over ground the camera is already
+ * looking at" is the rule the composite sizing exists to keep. Zoom-out was
+ * also not what anyone reported; zoom-in was, and this fixes that outright.
+ *
+ * Plain comparisons are safe because no rectangle in this module wraps: both
+ * `viewBbox` and `clampBboxSpan` clamp longitude into -180..180.
+ */
+export const coversView = (held: Bbox | undefined, want: Bbox): held is Bbox =>
+  !!held &&
+  held.minLat <= want.minLat &&
+  held.maxLat >= want.maxLat &&
+  held.minLng <= want.minLng &&
+  held.maxLng >= want.maxLng
+
+/**
  * Imagery is fetched in two stages.
  *
  * Stage one is NASA Blue Marble: one static layer, no date, always available.
@@ -765,11 +801,13 @@ export class DetailImagery {
     if (this.pending && !movedEnough(this.pending, bbox)) return
     this.pending = bbox
     // Redraw what we already own onto the new view *now*, before the settle
-    // timer has even started. The centre of the screen usually has not moved,
-    // so it stays exactly as sharp as it was and only the newly exposed edge
-    // falls back to the basemap. Costs one canvas blit and no request, so the
-    // settle and hysteresis rules below are untouched.
-    this.recomposite(bbox, requestPx)
+    // timer has even started — but only when that redraw would show ground the
+    // published rectangle does not already hold. See coversView: on a zoom-in
+    // it never does, and the redraw's only effect is a full texture upload and
+    // a full mip chain rebuild per step, which is the burst behind the frame
+    // rate falling away as the camera closes in. A pan still redraws here,
+    // because a pan really does expose new ground.
+    if (!coversView(this.composited, bbox)) this.recomposite(bbox, requestPx)
     clearTimeout(this.settle)
     this.settle = setTimeout(() => {
       this.settle = undefined

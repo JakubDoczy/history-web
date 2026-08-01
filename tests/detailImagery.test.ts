@@ -507,7 +507,7 @@ describe('era-dependent zoom floors', () => {
 })
 
 import { afterEach, beforeEach, vi } from 'vitest'
-import { DetailImagery, movedEnough, SETTLE_MS } from '../src/lib/detailImagery'
+import { coversView, DetailImagery, movedEnough, SETTLE_MS } from '../src/lib/detailImagery'
 
 describe('movedEnough', () => {
   const at = (lat: number, lng: number, aspect: number) => viewBbox(lat, lng, 0.02, aspect)
@@ -533,6 +533,55 @@ describe('movedEnough', () => {
 
   it('always refetches when there is nothing loaded yet', () => {
     expect(movedEnough(undefined, at(0, 0, 1))).toBe(true)
+  })
+})
+
+describe('coversView', () => {
+  const box = (minLat: number, maxLat: number, minLng: number, maxLng: number) => ({
+    minLat,
+    maxLat,
+    minLng,
+    maxLng,
+  })
+
+  it('says yes for a zoom-in, which is the whole point', () => {
+    // every publish is a full texture upload and a full mip chain rebuild; on a
+    // zoom-in the rectangle already on the GPU holds all the ground the new view
+    // wants, so the redraw would buy nothing
+    const held = box(40, 44, 10, 15)
+    expect(coversView(held, box(41, 43, 11, 14))).toBe(true)
+  })
+
+  it('says no for a zoom-out, which really does expose new ground', () => {
+    expect(coversView(box(41, 43, 11, 14), box(40, 44, 10, 15))).toBe(false)
+  })
+
+  it('says no for a pan that leaves the rectangle on any one side', () => {
+    const held = box(40, 44, 10, 15)
+    expect(coversView(held, box(40, 44, 12, 16))).toBe(false) // east
+    expect(coversView(held, box(40, 44, 9, 14))).toBe(false) // west
+    expect(coversView(held, box(43, 47, 10, 15))).toBe(false) // north
+    expect(coversView(held, box(37, 41, 10, 15))).toBe(false) // south
+  })
+
+  it('is inclusive at the edges — an identical rectangle needs no redraw', () => {
+    const b = box(40, 44, 10, 15)
+    expect(coversView(b, { ...b })).toBe(true)
+  })
+
+  it('says no when nothing has been composited yet', () => {
+    expect(coversView(undefined, box(40, 44, 10, 15))).toBe(false)
+  })
+
+  it('holds across a whole zoom-in, so the redraw fires once and not per step', () => {
+    // the measured failure: 33 publishes across one 90-frame wheel zoom
+    const held = viewBbox(41.9, 12.5, 1.6, 1.6)
+    let redraws = 0
+    for (let i = 0; i < 90; i++) {
+      const want = viewBbox(41.9, 12.5, 1.6 * Math.pow(0.011 / 1.6, i / 89), 1.6)
+      if (!coversView(held, want)) redraws++
+    }
+    expect(redraws).toBe(0)
   })
 })
 
@@ -950,19 +999,21 @@ describe('cached patch compositing', () => {
     const img = FakeImage.last!
     // the browser fills these in; the composite needs them to know the scale
     Object.assign(img, { naturalWidth: 600, naturalHeight: 400 })
-    img.onload!()
 
-    // ...then descend, so the composite canvas is finer than the patch in it.
-    // The composite canvas is created on arrival and reused, so the record is
-    // cleared rather than the instance.
-    const canvas = PixelCanvas.made.find((c) => c.ops.length)!
-    expect(canvas).toBeDefined()
-    canvas.ops.length = 0
+    // ...then descend *before* it lands, so the composite the arrival triggers
+    // draws that coarse patch onto a canvas cut to a much closer view. The
+    // descent itself no longer redraws anything — the rectangle already
+    // composited covers it, and the upload that redraw cost was the zoom-in
+    // stall (see coversView) — so the arrival is what puts a magnified patch on
+    // the canvas, which is the case this test is about.
     d.update(45, 10, 0.02, 900, 1)
+    img.onload!()
 
     // The zoom's own composite is bilinear: the raw image, straight onto the
     // canvas, and not one pixel filtered on the way. That is what keeps the
     // zoom handler inside a frame.
+    const canvas = PixelCanvas.made.find((c) => c.ops.length)!
+    expect(canvas).toBeDefined()
     expect(canvas.ops).not.toHaveLength(0)
     expect(canvas.ops[0].image).toBe(img)
     expect(PixelCanvas.made.every((c) => c.put === 0)).toBe(true)

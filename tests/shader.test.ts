@@ -98,4 +98,24 @@ describe('detail patch shading', () => {
   it('softens the coverage edge instead of stepping at it', () => {
     expect(glsl).toMatch(/float cover = smoothstep\(/)
   })
+
+  it('does not sample the second era map when nothing is crossfading', () => {
+    // uEraMix is 0 for every time that is not between two paleo frames, which
+    // is the whole modern era; the unconditional mix() cost a full-resolution
+    // texture fetch per fragment per frame to blend by zero
+    expect(glsl).toMatch(/vec3 albedo = texture\(uEraA, vUv\)\.rgb;/)
+    expect(glsl).toMatch(/if \(uEraMix > 0\.0\) albedo = mix\(albedo, texture\(uEraB, vUv\)\.rgb, uEraMix\);/)
+  })
+
+  it('gates every optional tap on a uniform, never on a per-pixel value', () => {
+    // sampling inside non-uniform control flow leaves the derivatives undefined,
+    // which several mobile GPUs render as flicker; each of these conditions is
+    // the same for every fragment in the draw
+    for (const guard of ['if (uDetailMix > 0.0)', 'if (uEraMix > 0.0)', 'if (uCloudSharp <= 0.0)']) {
+      expect(glsl).toContain(guard)
+    }
+    // and the cloud taps are behind the alpha that fades them out on approach,
+    // so a close-up view pays for none of them
+    expect(glsl).toContain('uCloudAlpha > 0.0 ? cloudMask(cloudUv) : 0.0')
+  })
 })

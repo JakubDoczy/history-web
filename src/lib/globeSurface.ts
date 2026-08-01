@@ -269,7 +269,15 @@ void main() {
   float lambert = mix(clamp(cosSun * slope + floor_, 0.0, 1.3), 1.0, uFlatLight);
 
   // --- surface: crossfade between two era textures (both are the modern map today) ---
-  vec3 albedo = mix(texture(uEraA, vUv).rgb, texture(uEraB, vUv).rgb, uEraMix);
+  // uEraMix is 0 except during a paleo crossfade — textureBlend returns f = 0
+  // for every time that is not between two frames, which is the whole modern
+  // era and most of deep time. Sampling the second map unconditionally spent a
+  // full-resolution fetch per fragment on a mix of zero, every frame, forever.
+  // Branching is safe here for the same reason it is safe for uDetailMix: the
+  // condition is a uniform, so it is the same for every fragment in the draw and
+  // the derivatives inside stay defined.
+  vec3 albedo = texture(uEraA, vUv).rgb;
+  if (uEraMix > 0.0) albedo = mix(albedo, texture(uEraB, vUv).rgb, uEraMix);
 
   // --- high-resolution patch, feathered at its edges so the join is invisible ---
   // uDetailMix is uniform across the draw, so branching on it is safe. Branching
