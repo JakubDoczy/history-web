@@ -84,6 +84,179 @@ describe('EventIndex', () => {
   })
 })
 
+/* --------------------------------------------------- viewport-scoped culling */
+
+import { chooseQueryPlan, eventRadiusDeg, inScope, type QueryPlan } from '../src/lib/events'
+
+describe('eventRadiusDeg', () => {
+  it('is zero for a point event', () => {
+    expect(eventRadiusDeg(ev('p'))).toBe(0)
+  })
+  it('is the furthest vertex of an area event from its centroid', () => {
+    // ring is [lng, lat]; the furthest of these is 3° away along the meridian
+    const area = ev('a', { lat: 0, lng: 0, area: [[0, 3], [1, 0], [0, -2]] })
+    expect(eventRadiusDeg(area)).toBeCloseTo(3, 6)
+  })
+  it('lets a footprint reach into a scope its centroid is outside of', () => {
+    const area = ev('a', { lat: 0, lng: 0, area: [[0, 5], [0, -5], [5, 0]] })
+    const scope = { lat: 0, lng: 6, radiusDeg: 2 }
+    expect(inScope(area, scope)).toBe(true)
+    expect(inScope(ev('p'), scope)).toBe(false)
+  })
+})
+
+describe('viewport-scoped queries', () => {
+  /** Events scattered over real-ish clumps, so a scope holds some and not others. */
+  const placed = (n: number, seed = 1): HistoricalEvent[] => {
+    let s = seed
+    const rand = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32)
+    const hubs = [
+      [48.85, 2.35], [51.5, -0.13], [41.9, 12.5], [35.7, 139.7], [-33.9, 151.2],
+      [40.7, -74], [-1.3, 36.8], [55.75, 37.6], [28.6, 77.2], [-23.5, -46.6],
+    ]
+    return Array.from({ length: n }, (_, i) => {
+      const [hLat, hLng] = hubs[i % hubs.length]
+      const start = Math.floor(rand() * 3000) - 1000
+      return ev(`e${i}`, {
+        start,
+        end: rand() < 0.3 ? start + Math.floor(rand() * 300) : undefined,
+        priority: 1 + Math.floor(rand() * 99),
+        lat: Math.max(-89, Math.min(89, hLat + (rand() - 0.5) * 20)),
+        lng: hLng + (rand() - 0.5) * 20,
+        tags: [['war', 'science', 'culture'][i % 3]],
+      })
+    })
+  }
+
+  const scopes = [
+    { lat: 48.85, lng: 2.35, radiusDeg: 8 }, // Europe, close in
+    { lat: 48.85, lng: 2.35, radiusDeg: 45 }, // half a hemisphere
+    { lat: 35.7, lng: 139.7, radiusDeg: 2 }, // one city
+    { lat: 89, lng: 0, radiusDeg: 20 }, // over the pole
+    { lat: 0, lng: 180, radiusDeg: 30 }, // across the seam
+  ]
+
+  it('matches the reference implementation, scope by scope', () => {
+    const data = placed(2000)
+    const idx = new EventIndex(data)
+    for (const scope of scopes)
+      for (const [s, e, f] of [
+        [-1000, 2100, {}],
+        [1500, 1520, {}],
+        [0, 1000, { tags: ['war'] }],
+      ] as const)
+        expect(idx.query(s, e, f, 30, scope).map((x) => x.id)).toEqual(
+          visibleEvents(data, s, e, f, 30, scope).map((x) => x.id),
+        )
+  })
+
+  it('gives the same answer whichever plan the planner picks', () => {
+    // The three enumerations are interchangeable by design; if they were not,
+    // the pins on screen would depend on how big the dataset happens to be.
+    const data = placed(3000, 9)
+    const idx = new EventIndex(data)
+    const used = new Set<QueryPlan>()
+    for (const scope of [undefined, ...scopes])
+      for (const [s, e] of [[-1000, 2100], [1200, 1210], [1500, 1900], [-900, -880]] as const) {
+        expect(idx.query(s, e, {}, 30, scope).map((x) => x.id)).toEqual(
+          visibleEvents(data, s, e, {}, 30, scope).map((x) => x.id),
+        )
+        used.add(idx.lastPlan)
+      }
+    // and the matrix above really did exercise all three
+    expect([...used].sort()).toEqual(['priority', 'space', 'time'])
+  })
+
+  it('surfaces regional events that lost the global contest', () => {
+    // one global heavyweight per hub, and a crowd of local events in Europe
+    const data = [
+      ...Array.from({ length: 30 }, (_, i) =>
+        ev(`world${i}`, { start: 1500, priority: 99, lat: -40 + i, lng: -120 + i * 4 }),
+      ),
+      ...Array.from({ length: 10 }, (_, i) =>
+        ev(`paris${i}`, { start: 1500, priority: 40 + i, lat: 48.8 + i * 0.01, lng: 2.3 }),
+      ),
+    ]
+    const idx = new EventIndex(data)
+    const world = idx.query(1400, 1600, {}, 30).map((e) => e.id)
+    expect(world.some((id) => id.startsWith('paris'))).toBe(false)
+    const zoomed = idx.query(1400, 1600, {}, 30, { lat: 48.85, lng: 2.35, radiusDeg: 5 })
+    expect(zoomed.map((e) => e.id)).toEqual(
+      // all ten, best first — the whole budget spent inside the frame
+      Array.from({ length: 10 }, (_, i) => `paris${9 - i}`),
+    )
+  })
+
+  it('is exactly the old query when no scope is given', () => {
+    const data = placed(500, 4)
+    const idx = new EventIndex(data)
+    expect(idx.query(1000, 1600, {}, 30, undefined).map((e) => e.id)).toEqual(
+      visibleEvents(data, 1000, 1600, {}, 30).map((e) => e.id),
+    )
+  })
+
+  it('returns nothing when the scope is empty of events', () => {
+    const idx = new EventIndex(placed(200, 6))
+    expect(idx.query(-1000, 2100, {}, 30, { lat: -85, lng: 0, radiusDeg: 1 })).toEqual([])
+  })
+})
+
+describe('EventIndex.admits — what a selection may override', () => {
+  const data = [
+    ev('paris', { start: 1789, end: 1799, lat: 48.85, lng: 2.35, priority: 80, tags: ['war'] }),
+    ev('child', { start: 1789, lat: 0, lng: 0, priority: 10, parent: 'paris', tags: ['science'] }),
+  ]
+  const idx = new EventIndex(data)
+
+  it('admits a pin the timeline still reaches, wherever the camera is', () => {
+    // no scope argument at all: the camera is not this question's business
+    expect(idx.admits('paris', 1700, 1800)?.id).toBe('paris')
+  })
+
+  it('refuses one the timeline no longer reaches', () => {
+    expect(idx.admits('paris', 1900, 2000)).toBeUndefined()
+  })
+
+  it('refuses one the user has filtered away', () => {
+    expect(idx.admits('paris', 1700, 1800, { tags: ['science'] })).toBeUndefined()
+    expect(idx.admits('child', 1700, 1800, { parent: 'paris' })?.id).toBe('child')
+    expect(idx.admits('child', 1700, 1800, { parent: 'child' })?.id).toBe('child')
+    expect(idx.admits('paris', 1700, 1800, { parent: 'child' })).toBeUndefined()
+  })
+
+  it('refuses a minor pin while minor pins are hidden, and admits it when shown', () => {
+    const withMinor = new EventIndex([ev('m', { start: 1789, priority: MINOR_PRIORITY })])
+    expect(withMinor.admits('m', 1700, 1800)).toBeUndefined()
+    expect(withMinor.admits('m', 1700, 1800, { minor: true })?.id).toBe('m')
+  })
+
+  it('has nothing to say about an id that carries no pin', () => {
+    expect(idx.admits('nope', 0, 3000)).toBeUndefined()
+  })
+})
+
+describe('chooseQueryPlan', () => {
+  it('scans by priority when the window is wide — the answer is at the front', () => {
+    expect(chooseQueryPlan({ n: 50_000, cap: 30, timeHits: 40_000, spaceCandidates: 50_000 })).toBe(
+      'priority',
+    )
+  })
+  it('walks the time index when a single year is asked of a huge corpus', () => {
+    expect(chooseQueryPlan({ n: 50_000, cap: 30, timeHits: 20, spaceCandidates: 50_000 })).toBe(
+      'time',
+    )
+  })
+  it('walks the grid when the camera is close and the window is wide', () => {
+    expect(chooseQueryPlan({ n: 50_000, cap: 30, timeHits: 45_000, spaceCandidates: 120 })).toBe(
+      'space',
+    )
+  })
+  it('never proposes to scan more than the corpus', () => {
+    // a query that matches nothing must still cost at most one pass
+    expect(chooseQueryPlan({ n: 1000, cap: 30, timeHits: 0, spaceCandidates: 1000 })).toBe('time')
+  })
+})
+
 import { setActivePinia, createPinia } from 'pinia'
 import { useEventStore } from '../src/stores/events'
 

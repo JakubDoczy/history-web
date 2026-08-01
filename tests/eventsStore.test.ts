@@ -202,3 +202,154 @@ describe('the store as an item store', () => {
     expect(events.flyTo?.seq).toBe(2)
   })
 })
+
+/* ------------------------------------------- viewport scoping and tiers --- */
+
+import { useViewStore } from '../src/stores/view'
+import { cameraScope } from '../src/lib/viewport'
+
+const at = (id: string, priority: number, lat: number, lng: number): HistoricalEvent => ({
+  id, name: id, start: 1500, lat, lng, priority, tags: ['war'], summary: '',
+})
+
+describe('the globe query follows the camera', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().selection = { start: 1400, end: 1600 }
+  })
+
+  /** Thirty global heavyweights, ten Parisian also-rans. */
+  const seed = () => [
+    ...Array.from({ length: 30 }, (_, i) => at(`world${i}`, 99, -40 + i, -120 + i * 4)),
+    ...Array.from({ length: 10 }, (_, i) => at(`paris${i}`, 40 + i, 48.8 + i * 0.01, 2.3)),
+  ]
+
+  it('is the global contest at world view — the default camera changes nothing', () => {
+    const events = useEventStore()
+    const view = useViewStore()
+    events.adopt(seed())
+    // the default camera really is world view
+    expect(cameraScope({ lat: 0, lng: 0, altitude: view.altitude, aspect: 1.6 })).toBeUndefined()
+    expect(events.visible.every((e) => e.id.startsWith('world'))).toBe(true)
+  })
+
+  it('spends the budget inside the frame once zoomed in', () => {
+    const events = useEventStore()
+    const view = useViewStore()
+    events.adopt(seed())
+    view.scope = { lat: 48.85, lng: 2.35, radiusDeg: 5 }
+    const ids = events.visible.map((e) => e.id)
+    expect(ids).toHaveLength(10)
+    expect(ids.every((id) => id.startsWith('paris'))).toBe(true)
+  })
+
+  it('goes back to the global set when the camera pulls out', () => {
+    const events = useEventStore()
+    const view = useViewStore()
+    events.adopt(seed())
+    view.scope = { lat: 48.85, lng: 2.35, radiusDeg: 5 }
+    expect(events.visible[0].id).toMatch(/^paris/)
+    view.scope = undefined
+    expect(events.visible.every((e) => e.id.startsWith('world'))).toBe(true)
+  })
+
+  it('tiers the visible set into three, best first', () => {
+    const events = useEventStore()
+    events.adopt(Array.from({ length: 30 }, (_, i) => at(`e${i}`, 99 - i, i, 0)))
+    const tiers = events.tiers
+    const visible = events.visible
+    expect(tiers.size).toBe(30)
+    expect(tiers.get(visible[0].id)).toBe(1)
+    expect(tiers.get(visible[29].id)).toBe(3)
+    // monotone down the list: a better-placed pin is never in a worse tier
+    for (let i = 1; i < visible.length; i++)
+      expect(tiers.get(visible[i].id)!).toBeGreaterThanOrEqual(tiers.get(visible[i - 1].id)!)
+  })
+
+  it('keeps minor pins in the bottom tier when they are shown', () => {
+    const events = useEventStore()
+    const settings = useSettingsStore()
+    settings.showMinorEvents = true
+    events.adopt([at('ranked', 80, 0, 0), at('unranked', 0, 1, 0)])
+    expect(events.tiers.get('unranked')).toBe(3)
+    expect(events.tiers.get('ranked')).toBe(1)
+  })
+})
+
+describe('the selected event keeps its pin', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().selection = { start: 1400, end: 1600 }
+  })
+
+  const seed = () => [
+    ...Array.from({ length: 30 }, (_, i) => at(`world${i}`, 99, -40 + i, -120 + i * 4)),
+    at('paris', 40, 48.85, 2.35),
+  ]
+
+  it('survives panning the camera away from it', () => {
+    const events = useEventStore()
+    const view = useViewStore()
+    events.adopt(seed())
+    view.scope = { lat: 48.85, lng: 2.35, radiusDeg: 5 }
+    events.select('paris')
+    expect(events.visible.map((e) => e.id)).toContain('paris')
+    // pan to the other side of the world: the frame no longer holds it
+    view.scope = { lat: -33.9, lng: 151.2, radiusDeg: 5 }
+    const kept = events.visible.map((e) => e.id)
+    expect(kept).toContain('paris')
+    // and it is kept, not ranked in: the pins that won a place under this
+    // camera are exactly the ones that would be there with nothing selected
+    events.select(undefined)
+    expect(kept.filter((id) => id !== 'paris')).toEqual(events.visible.map((e) => e.id))
+  })
+
+  it('survives slipping out of the top N at world view', () => {
+    const events = useEventStore()
+    const settings = useSettingsStore()
+    settings.maxEvents = 10
+    events.adopt(seed())
+    expect(events.visible.map((e) => e.id)).not.toContain('paris') // it never places
+    events.select('paris')
+    const ids = events.visible.map((e) => e.id)
+    expect(ids).toContain('paris')
+    expect(ids).toHaveLength(11) // the ten that placed, plus the one being kept
+    expect(ids[ids.length - 1]).toBe('paris') // appended, not ranked in
+  })
+
+  it('does not survive the timeline moving off it — the long-standing rule', () => {
+    // The window and the filters are the user's own statements about what to
+    // show; only the cap and the camera (the app's own judgement) are overridden.
+    const events = useEventStore()
+    const time = useTimeStore()
+    events.adopt(seed())
+    events.select('paris')
+    expect(events.visible.map((e) => e.id)).toContain('paris')
+    time.selection = { start: 1900, end: 2000 }
+    expect(events.visible.map((e) => e.id)).not.toContain('paris')
+  })
+
+  it('does not survive a filter the user set', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    events.select('paris')
+    events.toggleTag('science') // 'paris' is tagged war
+    expect(events.visible.map((e) => e.id)).not.toContain('paris')
+  })
+
+  it('adds nothing when the selection is in the set already', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    const before = events.visible.length
+    events.select(events.visible[0].id)
+    expect(events.visible).toHaveLength(before)
+  })
+
+  it('adds nothing for a selected person, which carries no pin of its own', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    const before = events.visible.length
+    events.select('not-an-event')
+    expect(events.visible).toHaveLength(before)
+  })
+})

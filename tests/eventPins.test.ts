@@ -84,7 +84,7 @@ describe('cluster badge', () => {
   })
 
   it('is a round badge in the dominant member colour, not a teardrop', () => {
-    const svg = clusterSvg([ev({ tags: ['science'] }), ev({ tags: ['war'] })])
+    const svg = clusterSvg([ev({ tags: ['science'] }), ev({ tags: ['war'] })], 2)
     expect(svg).toContain(TAG_COLORS.science)
     expect(svg).not.toContain('<path')
     expect((svg.match(/<circle/g) ?? []).length).toBe(3) // ring, ring stroke, disc
@@ -129,5 +129,80 @@ describe('pinStateKey', () => {
     expect(pinStateKey(badge('a', [a, b]))).not.toBe(pinStateKey(pin(a)))
     expect(pinStateKey(badge('a', [a, b]))).not.toBe(pinStateKey(badge('a', [a])))
     expect(pinStateKey(badge('a', [a, b]))).toBe(pinStateKey(badge('a', [a, b])))
+  })
+})
+
+/* ------------------------------------------------------ significance tiers */
+
+import { TIER_SCALE } from '../src/lib/eventPins'
+import type { Tier } from '../src/lib/eventTiers'
+
+describe('tier styling', () => {
+  const tiers: Tier[] = [1, 2, 3]
+
+  it('draws tier 1 at exactly the size the map has always used', () => {
+    for (const priority of [0, 50, 100])
+      expect(pinHeight(ev({ priority }), false, 1)).toBe(pinHeight(ev({ priority }), false))
+    expect(TIER_SCALE[1]).toBe(1)
+  })
+
+  it('steps down in size with the tier, at every priority', () => {
+    for (const priority of [0, 40, 100]) {
+      const h = tiers.map((t) => pinHeight(ev({ priority }), false, t))
+      expect(h[0]).toBeGreaterThan(h[1])
+      expect(h[1]).toBeGreaterThan(h[2])
+    }
+  })
+
+  it('keeps the priority scaling inside the tier', () => {
+    // a high-priority tier-3 pin is still bigger than a low-priority tier-3 one
+    expect(pinHeight(ev({ priority: 100 }), false, 3)).toBeGreaterThan(
+      pinHeight(ev({ priority: 0 }), false, 3),
+    )
+  })
+
+  it('still grows a selected pin by a third, whatever tier it is in', () => {
+    for (const t of tiers)
+      expect(pinHeight(ev({ priority: 100 }), true, t) / pinHeight(ev({ priority: 100 }), false, t))
+        .toBeCloseTo(1.35, 1)
+  })
+
+  it('gives the glow ring to tier 1 alone', () => {
+    const glowing = (svg: string) => /r="11" fill="#fff"/.test(svg)
+    expect(glowing(pinSvg(ev(), false, 1))).toBe(true)
+    expect(glowing(pinSvg(ev(), false, 2))).toBe(false)
+    expect(glowing(pinSvg(ev(), false, 3))).toBe(false)
+  })
+
+  it('keeps the glow inside the box, so it draws as a ring and not two arcs', () => {
+    // the viewBox is 24 wide about cx=12: a glow wider than 12 would be clipped
+    const svg = pinSvg(ev(), false, 1)
+    for (const [, r, w] of svg.matchAll(/r="([\d.]+)"[^/]*stroke-width="([\d.]+)"/g))
+      expect(Number(r) + Number(w) / 2).toBeLessThanOrEqual(12)
+  })
+
+  it('still puts the tip on the coordinate, whatever the tier', () => {
+    // the artwork scales, the anchor is a percentage of the box, so it holds
+    for (const t of tiers) {
+      const svg = pinSvg(ev({ priority: 80 }), false, t)
+      expect(attr(svg, 'viewBox')).toBe('0 0 24 32')
+    }
+  })
+
+  it('shrinks and de-glows a cluster badge by its dominant member tier', () => {
+    const members = [ev({ id: 'a' }), ev({ id: 'b' })]
+    expect(clusterSize(2, 1)).toBeGreaterThan(clusterSize(2, 2))
+    expect(clusterSize(2, 2)).toBeGreaterThan(clusterSize(2, 3))
+    expect((clusterSvg(members, 1).match(/<circle/g) ?? []).length).toBe(4)
+    expect((clusterSvg(members, 3).match(/<circle/g) ?? []).length).toBe(3)
+  })
+
+  it('rebuilds a pin when its tier changes, and only then', () => {
+    const a = ev({ id: 'a' })
+    const pin: PinDatum = { kind: 'event', id: 'a', lat: 0, lng: 0, event: a, fanned: false }
+    expect(pinStateKey(pin, undefined, 1)).not.toBe(pinStateKey(pin, undefined, 2))
+    expect(pinStateKey(pin, undefined, 2)).toBe(pinStateKey(pin, undefined, 2))
+    const badge: PinDatum = { kind: 'cluster', id: 'c', lat: 0, lng: 0, members: [a] }
+    expect(pinStateKey(badge, undefined, 1)).not.toBe(pinStateKey(badge, undefined, 3))
   })
 })

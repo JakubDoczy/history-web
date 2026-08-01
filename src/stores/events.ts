@@ -1,23 +1,41 @@
 import { defineStore } from 'pinia'
+import { toRaw } from 'vue'
 import {
   EventIndex,
   anchorYearOf,
+  effectivePriority,
+  isMinor,
   searchItems,
   type EventFilter,
   type HistoricalEvent,
   type Item,
 } from '../lib/events'
+import { assignTiers, type Tier } from '../lib/eventTiers'
 import { internalLinkIds } from '../lib/richtext'
 import { chunksFor, mergeEvents, type EventManifest } from '../lib/eventChunks'
 import { TAGS } from '../lib/tags'
 import { FAN_COLLAPSE_FACTOR, spanChangedEnough } from '../lib/eventClusters'
 import { useTimeStore } from './time'
 import { useSettingsStore } from './settings'
+import { useViewStore } from './view'
 
 // The index lives outside reactive state: it is rebuilt wholesale on merge and
 // queried thousands of times per scrub, so wrapping it in proxies buys nothing.
 // `revision` is what tells getters it changed.
 let index = new EventIndex([])
+
+/**
+ * The tier each visible event was last given.
+ *
+ * Held outside the store, and outside reactivity, because it is the *input* to
+ * the getter that produces the next one — tiers have hysteresis (see
+ * lib/eventTiers.ts), so the assignment is a function of the previous
+ * assignment as well as of the current result set. A getter reading its own
+ * last value through a ref would loop; a module-level handoff cannot, since a
+ * computed only re-runs when something it read changed, and this is not one of
+ * those things.
+ */
+let lastTiers: ReadonlyMap<string, Tier> = new Map()
 
 const DATA = `${import.meta.env.BASE_URL}data/events/`
 
@@ -63,13 +81,57 @@ export const useEventStore = defineStore('events', {
     /**
      * The globe shows the *selection*, not the whole visible window: the rail is
      * a map of time, and the highlighted band on it is what you asked to see.
+     *
+     * And, once the camera is closer than world view, only the ground it can
+     * see: the top-N budget is what one frame can usefully hold, so zoomed in it
+     * is spent among the events in the frame. `view.scope` is `undefined` at
+     * world view, where this is the global query it has always been, and is
+     * quantised so that a pan or a zoom re-runs it a few times rather than sixty
+     * times a second (lib/viewport.ts).
      */
     visible(state): HistoricalEvent[] {
       const { selection } = useTimeStore()
       const { maxEvents, showMinorEvents } = useSettingsStore()
+      const view = useViewStore()
       void state.revision // getter caches by revision, not by array identity
       const filter = { ...state.filter, minor: showMinorEvents }
-      return index.query(selection.start, selection.end, filter, maxEvents)
+      // `toRaw`, because the scope is read *per candidate* inside the query and
+      // store state hands out a deep reactive proxy: every `scope.lat` in that
+      // loop would otherwise go through a get trap. Timed against the same
+      // query with a plain object, the proxy costs 1.4-2.3x. Reading the
+      // property here still registers the dependency; only the value handed on
+      // is unwrapped.
+      const scope = view.scope && toRaw(view.scope)
+      const out = index.query(selection.start, selection.end, filter, maxEvents, scope)
+      // The open panel's event keeps its pin. Panning away from it, or scrubbing
+      // until it slips out of the top N, used to leave the panel describing an
+      // event with nothing on the globe to point at — and viewport scoping made
+      // that easy to do by accident, since the pin now leaves the set as soon as
+      // it leaves the frame. It is appended rather than ranked in: it did not
+      // win a place, it is being kept, and the tiers below read it as what it
+      // is (a pin the selection styling marks anyway).
+      if (state.selectedId && !out.some((e) => e.id === state.selectedId)) {
+        const kept = index.admits(state.selectedId, selection.start, selection.end, filter)
+        if (kept) out.push(kept)
+      }
+      return out
+    },
+    /**
+     * Significance tier per visible event, cut from the same effective scores
+     * the culling ranked them by (see lib/eventTiers.ts).
+     *
+     * It rides on `visible`, so it is recomputed exactly when the result set is
+     * — a scrub, a zoom past a quantisation step, a filter change — and never
+     * on a frame that changed neither.
+     */
+    tiers(): ReadonlyMap<string, Tier> {
+      const { selection } = useTimeStore()
+      const ranked = this.visible.map((e) => ({
+        id: e.id,
+        score: effectivePriority(e, selection.start, selection.end),
+        minor: isMinor(e),
+      }))
+      return (lastTiers = assignTiers(ranked, lastTiers))
     },
     /**
      * The item the panel shows. A derived birth/death pin is not an article of
@@ -146,6 +208,11 @@ export const useEventStore = defineStore('events', {
     adopt(events: Item[]) {
       this.all = mergeEvents(this.all, events)
       index = new EventIndex(this.all)
+      // A merge changes what the result set is a contest *between*, so the
+      // tier memory it was holding is about a different contest. Dropping it
+      // costs at most one re-cut of the tiers on the frame a chunk lands, and
+      // keeps the hysteresis from carrying an opinion across datasets.
+      lastTiers = new Map()
       this.revision++
     },
     async load(file: string) {

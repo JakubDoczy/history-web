@@ -35,6 +35,8 @@ import {
   type FanView,
   type PinDatum,
 } from '../lib/eventClusters'
+import { cameraScope, sameScope } from '../lib/viewport'
+import type { Tier } from '../lib/eventTiers'
 import { primaryTag, tagColor } from '../lib/tags'
 import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE, RELIEF_TEXTURE, SKY_TEXTURE } from '../data/paleoTextures'
 
@@ -115,14 +117,32 @@ const layout = computed(() =>
  * rebuilds nothing; the elements are cached by the same key for the case where
  * the globe does ask again.
  */
-type KeyedPin = PinDatum & { key: string }
+type KeyedPin = PinDatum & { key: string; tier: Tier }
 const pinData = new Map<string, KeyedPin>()
 const pinEls = new Map<string, HTMLElement>()
 
-const stablePins = (pins: PinDatum[], selectedId?: string): KeyedPin[] => {
+/**
+ * A pin's tier: its own, or — for a badge — its dominant member's.
+ *
+ * Dominant by *tier*, not by the raw priority the cluster is anchored on: the
+ * two orders differ once the coverage penalty is applied, and a badge hiding
+ * the set's leading event has to say so whichever member the badge is sitting
+ * on. Anything not in the map is not in the result set and cannot lead it.
+ */
+const tierOf = (p: PinDatum, tiers: ReadonlyMap<string, Tier>): Tier =>
+  p.kind === 'cluster'
+    ? (p.members.reduce<Tier>((best, m) => Math.min(best, tiers.get(m.id) ?? 3) as Tier, 3))
+    : (tiers.get(p.event.id) ?? 3)
+
+const stablePins = (
+  pins: PinDatum[],
+  tiers: ReadonlyMap<string, Tier>,
+  selectedId?: string,
+): KeyedPin[] => {
   const live = new Set<string>()
   const out = pins.map((p) => {
-    const key = pinStateKey(p, selectedId)
+    const tier = tierOf(p, tiers)
+    const key = pinStateKey(p, selectedId, tier)
     live.add(key)
     const held = pinData.get(key)
     if (held) {
@@ -134,7 +154,7 @@ const stablePins = (pins: PinDatum[], selectedId?: string): KeyedPin[] => {
       Object.assign(held as PinDatum, p)
       return held
     }
-    const fresh = { ...p, key } as KeyedPin
+    const fresh = { ...p, key, tier } as KeyedPin
     pinData.set(key, fresh)
     return fresh
   })
@@ -221,17 +241,20 @@ onMounted(() => {
     .htmlTransitionDuration(0)
     .htmlElement((d) => {
       const p = asPin(d)
-      const key = (d as KeyedPin).key ?? pinStateKey(p, events.selectedId)
+      const tier = (d as KeyedPin).tier ?? 1
+      const key = (d as KeyedPin).key ?? pinStateKey(p, events.selectedId, tier)
       const held = pinEls.get(key)
       if (held) return held
       const el =
         p.kind === 'cluster'
-          ? clusterElement(p.members, () =>
+          ? clusterElement(p.members, tier, () =>
               // the live span, not the quantised one: it is compared against
               // the live span on the next zoom
               events.expandCluster(p.id, visibleSpanDeg(view.altitude)),
             )
-          : pinElement(p.event, events.selectedId === p.event.id, () => events.select(p.event.id))
+          : pinElement(p.event, events.selectedId === p.event.id, tier, () =>
+              events.select(p.event.id),
+            )
       pinEls.set(key, el)
       return el
     })
@@ -323,6 +346,9 @@ onMounted(() => {
       __setTime?: (t: number) => void
       __surface?: GlobeSurface
       __settings?: ReturnType<typeof useSettingsStore>
+      __events?: ReturnType<typeof useEventStore>
+      __time?: ReturnType<typeof useTimeStore>
+      __view?: ReturnType<typeof useViewStore>
     }
     w.__globe = globe
     // the paleo frames can only be checked against a reference map at a stated
@@ -334,6 +360,13 @@ onMounted(() => {
     // is gone by the next tick. These are the setters that stick.
     w.__surface = surface
     w.__settings = settings
+    // The stores behind the pins: a screenshot script has to be able to set a
+    // selection exactly, and to read back *which* events the camera's scope
+    // let through and what tier each was given — neither of which is legible
+    // from a picture of a globe.
+    w.__events = events
+    w.__time = time
+    w.__view = view
   }
 
   // CSS2DRenderer stamps a depth-sorted z-index (0..100) on every pin, and its
@@ -512,6 +545,21 @@ onMounted(() => {
     view.detailSource = detail!.sourceLabel
     view.viewportPx = el.value?.clientHeight ?? 900
     view.viewportWidthPx = el.value?.clientWidth ?? 900
+    // The visible circle, quantised (lib/viewport.ts), and written only when the
+    // quantised value moves. This runs on every distinct camera position — a pan
+    // is a new position every frame — and the event query, the clustering and
+    // every pin element hang off it, so publishing the raw circle here would
+    // rebuild the whole pin layer sixty times a second. Instead a pan crosses a
+    // grid line about four times per screen width, and a zoom a few times per
+    // octave, which is the cadence the clustering already re-runs at.
+    const scope = cameraScope({
+      lat: pov.lat,
+      lng: pov.lng,
+      altitude: pov.altitude,
+      fovDeg: view.fov,
+      aspect: view.viewportWidthPx / Math.max(1, view.viewportPx),
+    })
+    if (!sameScope(view.scope, scope)) view.scope = scope
     surface!.setFlatLight(near)
     lastSync = { ...pov }
     syncDetail(pov)
@@ -707,9 +755,9 @@ onMounted(() => {
   // d3 transitions the data changes start (arcs 180 ms, polygons 300 ms).
   stops.push(
     watchEffect(() => {
-      // selection is part of a pin's identity, so it must be a dependency here
-      // even though the layout object may be unchanged
-      globe!.htmlElementsData(stablePins(layout.value.pins, events.selectedId))
+      // selection and tier are both part of a pin's identity, so both must be
+      // dependencies here even though the layout object may be unchanged
+      globe!.htmlElementsData(stablePins(layout.value.pins, events.tiers, events.selectedId))
       wake()
     }),
     // Legs get stable identity for the same reason pins do: while a fan is open
@@ -866,11 +914,32 @@ onBeforeUnmount(() => {
 .event-pin--cluster svg {
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
 }
+/* Significance tiers (lib/eventTiers.ts). Size is drawn into the SVG; what is
+   left here is depth — how far forward each tier sits — which is opacity and
+   stacking, not another shape. Tier 1 also carries a glow ring in its artwork,
+   so its drop shadow is warmed slightly to match rather than doubled. */
+.event-pin--tier1 {
+  z-index: 1;
+}
+.event-pin--tier1 svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 6px rgba(255, 240, 200, 0.35));
+}
+.event-pin--tier3 svg {
+  opacity: 0.72;
+}
+.event-pin--tier3:hover svg {
+  opacity: 1;
+}
 /* the minor tier: present, but not asking for attention */
 .event-pin--minor svg {
   opacity: 0.62;
 }
 .event-pin--minor:hover svg {
+  opacity: 1;
+}
+/* selected always wins, whatever tier it is in */
+.event-pin--selected svg,
+.event-pin--selected.event-pin--minor svg {
   opacity: 1;
 }
 </style>

@@ -1,6 +1,8 @@
 import type { Year } from './time'
 import type { Ring } from './nations'
 import { internalLinkIds } from './richtext'
+import { GeoGrid, SpanIndex, TopScored, separationDeg } from './queryIndex'
+import type { ViewportScope } from './viewport'
 
 /**
  * The dataset is a set of ITEMS, not only events. Three kinds share one id
@@ -294,6 +296,32 @@ export function coveragePenalty(
 export const effectivePriority = (e: HistoricalEvent, start: Year, end: Year): number =>
   e.priority * coveragePenalty(e.start, e.end ?? e.start, start, end)
 
+/* ------------------------------------------------------- viewport scoping */
+
+/**
+ * How far an area event reaches from its centroid, in degrees of arc.
+ *
+ * An area event is indexed as a point (its centroid) plus this radius, so a
+ * plague whose centroid is off screen is still found when its footprint is on
+ * it. The bounding circle is loose for a long thin ring, which costs a few
+ * false positives in the grid and nothing in the answer — membership is tested
+ * against the same circle either way, and the alternative (testing the polygon)
+ * would pay for precision no one can see at pin scale.
+ */
+export function eventRadiusDeg(e: HistoricalEvent): number {
+  if (!e.area?.length) return 0
+  let max = 0
+  for (const [lng, lat] of e.area) {
+    const d = separationDeg(e.lat, e.lng, lat, lng)
+    if (d > max) max = d
+  }
+  return max
+}
+
+/** Is this event inside the visible circle (footprint included)? */
+export const inScope = (e: HistoricalEvent, scope: ViewportScope): boolean =>
+  separationDeg(scope.lat, scope.lng, e.lat, e.lng) <= scope.radiusDeg + eventRadiusDeg(e)
+
 /** Events in the time window, matching filters, top `cap` by effective priority. */
 export function visibleEvents(
   events: HistoricalEvent[],
@@ -301,10 +329,12 @@ export function visibleEvents(
   end: Year,
   filter: EventFilter = {},
   cap = 100,
+  scope?: ViewportScope,
 ): HistoricalEvent[] {
   const byId = new Map<string, Item>(events.map((e) => [e.id, e]))
   return events
     .filter((e) => intersects(e, start, end))
+    .filter((e) => !scope || inScope(e, scope))
     .filter((e) => passes(e, filter, byId))
     .map((e) => ({ e, s: effectivePriority(e, start, end) }))
     // Raw priority breaks a tie in the discounted score, which keeps this in
@@ -314,29 +344,106 @@ export function visibleEvents(
     .map((x) => x.e)
 }
 
+/* ------------------------------------------------------------ query plans */
+
+/**
+ * Three ways to enumerate the same candidates. All produce the identical
+ * answer; they differ only in what they touch to get there.
+ *
+ *  · `priority` — walk the pins best-first and stop when nothing unseen can
+ *    still make the cut. Unbeatable when the window is wide, because the answer
+ *    is then sitting at the front of the list; degenerates to a full scan when
+ *    almost nothing matches, because the bound never rises.
+ *  · `time`     — enumerate the span index's hits. Wins when the selection is
+ *    narrow against a large corpus: a single year out of ten thousand events.
+ *  · `space`    — enumerate the grid's cells. Wins when the camera is close:
+ *    the frame holds a hundredth of the corpus and the time window is wide.
+ */
+export type QueryPlan = 'priority' | 'space' | 'time'
+
+/**
+ * Which plan to run, from three counts that are all O(log n) or already known.
+ *
+ * The model is crude on purpose — one multiplication per plan, because a
+ * planner that costs more than the difference between the plans is a loss. It
+ * assumes time and space membership are independent (they are not: history
+ * happens in cities) and that hits are spread evenly through priority order
+ * (they are not either). Both errors push the same way — the priority scan is
+ * usually better than estimated — so the estimate is compared against a scan
+ * cost that is deliberately not padded.
+ */
+export function chooseQueryPlan(o: {
+  /** Pins in the index. */
+  n: number
+  cap: number
+  /** Pins whose span meets the selection (exact, from the span index). */
+  timeHits: number
+  /** Pins in the cells the scope touches, or `n` when unscoped. */
+  spaceCandidates: number
+}): QueryPlan {
+  const n = Math.max(1, o.n)
+  const density = (o.timeHits / n) * (o.spaceCandidates / n)
+  // how far the best-first scan must walk before `cap` survivors accumulate
+  const scan = Math.min(n, (o.cap + 1) / Math.max(density, 1 / n))
+  // the span index over-scans by the slack in each magnitude bucket; measured
+  // on the real corpus and on the synthetic ones that is well under 2x
+  const time = 2 * o.timeHits + 8
+  const space = o.spaceCandidates + 8
+  const best = Math.min(scan, time, space)
+  return best === scan ? 'priority' : best === space ? 'space' : 'time'
+}
+
 /**
  * Query index for large item sets.
  *
  * It holds every item (so links, search and the panel can reach a person or a
  * concept) but queries only what can be pinned: real events plus the birth and
- * death points derived from each person. Pins are pre-sorted by priority once,
- * so a query walks them best-first and can stop as soon as no unseen event can
- * still make the cut (see `query`).
+ * death points derived from each person.
+ *
+ * One canonical order runs through the whole thing: `byPriority`, best first.
+ * It is the scan order of the cheapest plan, it is the tie-break in every
+ * plan's result, and it is the identity a pin has in both auxiliary indexes —
+ * `spans` and `geo` are built over exactly that array, so a hit from either is
+ * a position in it. That is what lets three different enumerations produce the
+ * same list to the last element (see `query`).
  */
 export class EventIndex {
   readonly items: Item[]
   readonly byId: Map<string, Item>
-  /** Real + derived events, by pin id. A derived id is not in `byId`. */
-  readonly pinsById: Map<string, HistoricalEvent>
+  /**
+   * The pins that are *not* in `byId`: the birth and death points derived from
+   * each person, whose ids exist nowhere in the data.
+   *
+   * This used to be every pin, real ones included — a second map the size of
+   * the corpus, holding what `byId` already held. At 68 000 items that copy
+   * cost 10 ms of the build to answer a question `byId` can answer with one
+   * extra `isEvent` check (see `pin`).
+   */
+  private derivedPins: Map<string, HistoricalEvent>
   private byPriority: HistoricalEvent[]
+  /** Time spans of `byPriority`, by magnitude bucket (lib/queryIndex.ts). */
+  private spans: SpanIndex
+  /** Locations of `byPriority`, on a lat/lng grid; areas by centroid + radius. */
+  private geo: GeoGrid
   /** id → items whose body links to it. Built once; see `backlinksTo`. */
   private backlinks = new Map<string, Item[]>()
+  /**
+   * Which plan the last query ran. Diagnostics only — the bench script reads
+   * it, and a test asserts the planner picks what it claims to. Nothing in the
+   * app behaves differently for it.
+   */
+  lastPlan: QueryPlan = 'priority'
 
   constructor(items: Item[]) {
     this.items = items
-    this.byId = new Map(items.map((e) => [e.id, e]))
+    // Loops rather than `new Map(items.map(…))`: the map-of-pairs form
+    // allocates a two-element array per item and measured twice as slow at
+    // 68 000 items, which at that size is 20 ms of the build spent on garbage.
+    this.byId = new Map()
+    for (const i of items) this.byId.set(i.id, i)
     const pins = pinnableEvents(items)
-    this.pinsById = new Map(pins.map((e) => [e.id, e]))
+    this.derivedPins = new Map()
+    for (const p of pins) if (p.derivedFrom) this.derivedPins.set(p.id, p)
     // Every derived pin sits at MINOR_PRIORITY, so within the minor tier the
     // rank of the *person* is the only thing left to sort on — which is what
     // makes ranking a life worth doing even though a life carries no pin of
@@ -345,54 +452,146 @@ export class EventIndex {
     const rank = (e: HistoricalEvent) =>
       e.derivedFrom ? (this.byId.get(e.derivedFrom)?.priority ?? 0) : e.priority
     this.byPriority = [...pins].sort((a, b) => b.priority - a.priority || rank(b) - rank(a))
-    for (const i of items)
-      for (const id of internalLinkIds(i.body ?? '')) {
+    // One pass fills the columns both indexes are built from. Building them
+    // from arrays of little objects instead cost 17 ms per 68 000 events in
+    // allocation alone — a sixth of the whole build budget, spent on garbage.
+    const n = this.byPriority.length
+    const starts = new Float64Array(n)
+    const ends = new Float64Array(n)
+    const lats = new Float64Array(n)
+    const lngs = new Float64Array(n)
+    const radii = new Float64Array(n)
+    for (let i = 0; i < n; i++) {
+      const e = this.byPriority[i]
+      const s = e.start
+      const f = e.end ?? s
+      starts[i] = Math.min(s, f)
+      ends[i] = Math.max(s, f)
+      lats[i] = e.lat
+      lngs[i] = e.lng
+      radii[i] = eventRadiusDeg(e)
+    }
+    this.spans = SpanIndex.fromColumns(starts, ends)
+    this.geo = GeoGrid.fromColumns(lats, lngs, radii)
+    for (const i of items) {
+      // Most items have no body at all, and running the link regex over an
+      // empty string 68 000 times cost 20 ms of the build for no links.
+      if (!i.body) continue
+      for (const id of internalLinkIds(i.body)) {
         const list = this.backlinks.get(id)
         if (list) list.push(i)
         else this.backlinks.set(id, [i])
       }
+    }
   }
 
   /**
-   * Top `cap` pins in the span, ranked by *effective* priority — rank times the
-   * partial-coverage penalty (see `coveragePenalty`).
+   * Top `cap` pins in the span — and, when the camera is zoomed in past world
+   * view, in the circle of ground it can see — ranked by *effective* priority:
+   * rank times the partial-coverage penalty (see `coveragePenalty`).
    *
-   * The penalty is per-query, so the pre-sort by raw priority is no longer the
-   * answer; it is still the scan order, and it still bounds the work. Because
-   * the penalty is a multiplier in (0, 1], an event's discounted score can
-   * never exceed its raw priority, so once `cap` hits are in hand and the raw
-   * priority of the item under the scan has fallen to the weakest of them,
-   * nothing further down the list can displace anything — that is an exact
-   * early exit, not a heuristic. `prune` keeps the running set from growing
-   * past 2·cap so the scan stays linear on a corpus where most events match.
+   * The budget is deliberately spent inside the scope rather than filtered
+   * after it: a global top-30 filtered down to Europe would show whichever of
+   * the world's thirty biggest events happened to be European, which at close
+   * zoom is usually none of them. Running the same contest among the events on
+   * screen is what makes zooming in reveal something.
+   *
+   * Whichever plan enumerates the candidates, the survivors are chosen by the
+   * same bounded heap under the same total order (score, then canonical
+   * position), so the three plans are interchangeable — and a test holds them
+   * to that on random datasets, because a planner that could change the answer
+   * would make the pins depend on the dataset's size.
+   *
+   * The `priority` plan's early exit is exact rather than heuristic: the
+   * coverage penalty is a multiplier in (0, 1], so an event's discounted score
+   * can never exceed its raw priority, and once `cap` hits are in hand and the
+   * raw priority under the scan has fallen to the weakest of them, nothing
+   * further down the list can displace anything.
    */
-  query(start: Year, end: Year, filter: EventFilter = {}, cap = 100): HistoricalEvent[] {
+  query(
+    start: Year,
+    end: Year,
+    filter: EventFilter = {},
+    cap = 100,
+    scope?: ViewportScope,
+  ): HistoricalEvent[] {
     if (cap <= 0) return []
-    const hits: { e: HistoricalEvent; s: number }[] = []
-    let bound = -Infinity // weakest score among the best `cap` seen so far
-    let full = false
-    const prune = () => {
-      // Stable, so equal scores keep scan order — which is priority order, and
-      // then data order. `visibleEvents` sorts to the same total order.
-      hits.sort((a, b) => b.s - a.s)
-      hits.length = Math.min(hits.length, cap)
-      bound = hits[hits.length - 1].s
-      full = true
+    const n = this.byPriority.length
+    const timeHits = this.spans.countIntersecting(start, end)
+    const spaceCandidates = scope ? this.geo.candidateCount(scope) : n
+    const plan = chooseQueryPlan({ n, cap, timeHits, spaceCandidates })
+    // The enumeration to fall back on, and what it will cost: both exact counts
+    // rather than estimates, which is what makes the budget below meaningful.
+    const spaceCost = scope ? spaceCandidates : Infinity
+    const timeCost = 2 * timeHits
+    const fallback: QueryPlan = spaceCost <= timeCost ? 'space' : 'time'
+    const fallbackCost = Math.min(spaceCost, timeCost)
+
+    const run = (chosen: QueryPlan): HistoricalEvent[] | undefined => {
+      const top = new TopScored<HistoricalEvent>(cap)
+      // The space plan's enumeration *is* the membership test, so only the
+      // other two pay for one.
+      const testScope = chosen === 'space' ? undefined : scope
+      // `i` is a position in byPriority, which is both the tie-break and the
+      // identity the auxiliary indexes hand back.
+      const consider = (i: number) => {
+        const e = this.byPriority[i]
+        if (!intersects(e, start, end)) return
+        if (testScope && !this.geo.contains(testScope, i)) return
+        if (!passes(e, filter, this.byId)) return
+        top.push(e, effectivePriority(e, start, end), i)
+      }
+      if (chosen === 'priority') {
+        // How far the best-first scan may walk before the fallback is simply
+        // the better bet. The planner's estimate of this scan is the one number
+        // here that cannot be measured up front — it assumes hits are spread
+        // evenly through priority order, and the coverage penalty makes that
+        // wrong in exactly the case that hurts (a close camera over a busy
+        // region, where the cap fills with discounted scores so the early exit
+        // never fires). Rather than model that, the scan is given a budget the
+        // size of its alternative and abandoned if it overruns: the answer is
+        // the same either way, and the worst case is twice the better plan
+        // instead of the 15 ms this used to cost at 100x.
+        const limit = Math.min(n, Math.ceil(fallbackCost))
+        let i = 0
+        for (; i < limit; i++) {
+          if (top.full && this.byPriority[i].priority <= top.worstScore) break
+          consider(i)
+        }
+        if (i >= limit && limit < n) return undefined // overran: try the other one
+      } else if (chosen === 'space' && scope) this.geo.forEach(scope, consider)
+      else this.spans.forEach(start, end, consider)
+      this.lastPlan = chosen
+      return top.drain()
     }
-    for (const e of this.byPriority) {
-      if (full && e.priority <= bound) break
-      if (!intersects(e, start, end)) continue
-      if (!passes(e, filter, this.byId)) continue
-      hits.push({ e, s: effectivePriority(e, start, end) })
-      if (hits.length >= 2 * cap) prune()
-    }
-    hits.sort((a, b) => b.s - a.s)
-    return hits.slice(0, cap).map((h) => h.e)
+    return run(plan) ?? run(fallback)!
   }
 
   /** The pin carrying an id — a real event, or one derived from a person. */
   pin(id: string): HistoricalEvent | undefined {
-    return this.pinsById.get(id)
+    const item = this.byId.get(id)
+    // a person or a concept carries no pin of its own, and a derived id is in
+    // neither the data nor `byId`
+    if (item) return isEvent(item) ? item : undefined
+    return this.derivedPins.get(id)
+  }
+
+  /**
+   * The pin for `id`, if the timeline and the filters still admit it.
+   *
+   * This is what a *selection* is allowed to bypass, and the line is drawn
+   * where user intent is: the cap and the camera are the app's judgement about
+   * what will fit on screen, and an event the user has explicitly opened should
+   * outrank both — losing the pin under the open panel is the app arguing with
+   * a decision the user just made. The timeline window and the tag/parent
+   * filters are the *user's own* statements about what to show, and overriding
+   * those would be the same mistake in the other direction; both have hidden a
+   * selected pin since long before this, and both still do.
+   */
+  admits(id: string, start: Year, end: Year, filter: EventFilter = {}): HistoricalEvent | undefined {
+    const pin = this.pin(id)
+    if (!pin || !intersects(pin, start, end)) return undefined
+    return passes(pin, filter, this.byId) ? pin : undefined
   }
 
   /** Items whose body links to `id`. The other half of a two-way relation. */
