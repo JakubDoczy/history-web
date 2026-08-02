@@ -801,6 +801,8 @@ export class DetailImagery {
   /** The rectangle the texture we currently hold covers, composite or not. */
   private composited?: Bbox
   private canvas?: HTMLCanvasElement
+  /** …and its context, held so a composite is not a fresh `getContext` call. */
+  private ctx?: CanvasRenderingContext2D
   /** Lanczos upscales, keyed by the image they came from; dies with the patch. */
   private upscaled = new WeakMap<
     CanvasImageSource & object,
@@ -830,6 +832,8 @@ export class DetailImagery {
   private attributions = new Map<string, string>()
   /** Reused scratch canvas for feathering a patch into the composite. */
   private scratch?: HTMLCanvasElement
+  /** …and its context, on the same terms as the composite's. */
+  private scratchCtx?: CanvasRenderingContext2D
 
   constructor(opts: DetailImageryOptions = {}) {
     this.maxPx = opts.maxPx ?? MAX_PATCH_PX
@@ -908,12 +912,23 @@ export class DetailImagery {
     // The union of the cached rectangles, not the published one: a composite is
     // cut to a rectangle it does not necessarily fill, and it is the imagery,
     // not the rectangle, that decides whether anything is owed.
-    const covered =
+    //
+    // Asked LAST of the three conditions below, not first. `update` runs on
+    // every frame the camera moves, and this scan sorts the cache, ranks each
+    // patch by the ground it uniquely contributes and then cuts the survivors
+    // against each other on both axes — the most expensive thing in this file
+    // per frame, and the top row of a pan profile (0.28 ms a frame, against a
+    // whole frame's own 2.2 ms). The two conditions it guards are a field read
+    // and one rectangle comparison, and during a pan `movedEnough` is true
+    // within a few frames of the gesture starting, so the scan is skipped on
+    // almost every frame of the motion that was paying for it. `&&` is ordered,
+    // so this is the same answer for less work, not a different one.
+    const covered = () =>
       unionCoverage(compositePlan(this.cache, bbox, Date.now()), bbox) >= REST_MIN_COVER
 
     // the imagery we already hold may still cover the view — show it again
     // rather than paying for the same request twice
-    if (this.texture && covered && !movedEnough(this.current, bbox)) {
+    if (this.texture && !movedEnough(this.current, bbox) && covered()) {
       if (!this.shown || this.mix !== 1) {
         this.shown = true
         this.mix = 1
@@ -1028,9 +1043,20 @@ export class DetailImagery {
     if (typeof document === 'undefined') return undefined
     const c = this.canvas ?? document.createElement('canvas')
     this.canvas = c
-    c.width = width
-    c.height = height
-    const ctx = c.getContext('2d')
+    // Only when it really changed. Assigning `width`/`height` at all reallocates
+    // the backing store and resets every piece of context state, *including*
+    // when the value assigned is the one already there — the spec says so, and
+    // the profiler agreed: across one scripted pan this line and the
+    // `getContext` after it were seconds of main thread, for a canvas whose size
+    // is deliberately fixed for the session (see compositeCanvasSize). The
+    // composite clears the canvas itself, so nothing here relied on the reset.
+    if (c.width !== width || c.height !== height) {
+      c.width = width
+      c.height = height
+      this.ctx = undefined // the reset drops the smoothing flag set below
+    }
+    const ctx = this.ctx ?? c.getContext('2d') ?? undefined
+    this.ctx = ctx
     if (ctx) {
       // Bilinear, explicitly. Skia's default for a magnifying drawImage is a
       // high-quality resample, and the composite magnifies whenever the canvas
@@ -1154,9 +1180,17 @@ export class DetailImagery {
 
     const scratch = this.scratch ?? document.createElement('canvas')
     this.scratch = scratch
-    scratch.width = vw
-    scratch.height = vh
-    const sc = scratch.getContext('2d')
+    // Sized only when the size changed, for the reason `surface` is: this runs
+    // once per patch per composite — four times per drawn frame at the cache's
+    // limit — and each assignment is a fresh backing store of up to a screenful.
+    // The `clearRect` below is what this function actually relied on.
+    if (scratch.width !== vw || scratch.height !== vh) {
+      scratch.width = vw
+      scratch.height = vh
+      this.scratchCtx = undefined
+    }
+    const sc = this.scratchCtx ?? scratch.getContext('2d') ?? undefined
+    this.scratchCtx = sc
     // a stub canvas in a test has no gradients; the butt joint is still correct
     if (!sc?.createLinearGradient) return undefined
     sc.clearRect(0, 0, vw, vh)

@@ -2,11 +2,13 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
+import { useEventStore } from '../stores/events'
 import { formatYear } from '../lib/time'
 import { HISTORICAL, SUB_AGES, erasOverlapping, spanEraLabel, subErasIn, type Era } from '../lib/eras'
 
 const time = useTimeStore()
 const ui = useUiStore()
+const events = useEventStore()
 
 // The chip names the *selection* — that is what the globe is showing — and
 // opens a picker that sets the selection to a whole era, or to one of the
@@ -44,7 +46,17 @@ function hoverEra(e: Era, subs: Era[]) {
 }
 
 const open = ref(false)
+/**
+ * Picking an era or a period is a question about the *world* in that time, so it
+ * lands on a clean map: whatever was focused is dropped and whatever was open is
+ * closed (`dismiss`), and only then does the window fly.
+ *
+ * The two stores are composed here rather than wired to each other — the time
+ * store knows nothing about events and should not learn, and this handler is
+ * already the place where "pick an era" is spelled out as what it does.
+ */
 function pick(e: Era) {
+  events.dismiss()
   time.selectEra(e)
   open.value = false
 }

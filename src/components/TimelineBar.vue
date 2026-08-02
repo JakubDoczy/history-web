@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { useTimeStore } from '../stores/time'
+import { useEventStore } from '../stores/events'
 import { formatYear, toWarp, fromWarp, type Year } from '../lib/time'
 import { bandsFor, subBandsFor, subLaneOpen, spanEraLabel } from '../lib/eras'
 import { flagSide, mergedEdge } from '../lib/selection'
 
 const time = useTimeStore()
+const events = useEventStore()
 const el = useTemplateRef('el')
 const width = ref(1)
 
@@ -169,8 +171,14 @@ function onPointerUp(e: PointerEvent) {
   pointers.delete(e.pointerId)
   if (dragged || pointers.size) return
   const sub = pressedSub && subByName.value.get(pressedSub)
-  if (sub) time.selectEra(sub)
-  else time.setTime(toT(localX(e)))
+  // Tapping an age on the rail is the same statement as picking one from the
+  // menu (TopBar.vue): a question about the world in that time, answered on a
+  // clean map — so focus mode and the open panel go with it. Scrubbing the
+  // cursor is not that statement and leaves both alone.
+  if (sub) {
+    events.dismiss()
+    time.selectEra(sub)
+  } else time.setTime(toT(localX(e)))
 }
 function onWheel(e: WheelEvent) {
   time.zoom(e.deltaY > 0 ? 1.2 : 1 / 1.2, localX(e) / width.value)

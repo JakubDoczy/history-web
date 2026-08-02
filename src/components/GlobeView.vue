@@ -273,10 +273,11 @@ const routeDrawing = (): Drawing | undefined => {
  * selection, is what shows it (see `focus` in stores/events.ts).
  */
 const focusDrawing = (): Drawing | undefined => {
-  const f = events.focus
-  const sel = events.selected
-  if (!f || !sel || sel.id !== f.itemId) return undefined
-  return isEvent(sel) ? sel.drawing : undefined
+  // The FOCUS's drawing, not the selection's: while a child battle is selected
+  // inside an operation's focus, the operation's plan must stay on the map —
+  // the context is what the mode shows, the selection is what the panel reads.
+  const item = events.focused
+  return item && isEvent(item) ? item.drawing : undefined
 }
 
 onMounted(() => {
@@ -394,7 +395,35 @@ onMounted(() => {
       const p = asPoly(d)
       if (p.kind === 'area') events.select(p.event.id)
     })
-    .polygonsTransitionDuration(300)
+    // NO transition, and this is the fix for the reported "smudges along the
+    // area's edge while the map moves".
+    //
+    // three-globe builds a polygon object at scale 1 — altitude ZERO, exactly
+    // coplanar with the planet — and only moves it to its real altitude inside
+    // the tween's `onUpdate`. That callback runs from three-globe's own
+    // animation cycle, which is a separate rAF chain from the renderer's, and
+    // which `pauseAnimation` cancels. This app calls `pauseAnimation` every time
+    // the render pump parks (lib/renderPump.ts), so the cycle is stopped for
+    // most of the app's life and a freshly added polygon can sit at altitude 0
+    // for as long as it takes something to resume it — measured at over 2.7 s.
+    //
+    // At altitude 0 the cap and its stroke are in the same plane as the globe
+    // mesh, and the two z-fight: the even tint breaks into ragged patches the
+    // shape of the sphere's 4° facets, and the stroke stipples. Move the camera
+    // and which patches win changes every frame — the smear the reader sees.
+    // Selecting an area event is nearly always accompanied by a camera move
+    // ("Show on map" flies for 900 ms), so this is the common case, not a rare
+    // one.
+    //
+    // With the duration at zero, three-globe takes the branch that applies the
+    // altitude *synchronously inside the digest*, so a polygon is at its final
+    // height on the first frame it exists and is never coplanar with anything.
+    // Nothing is lost: every polygon on this globe now lives within 9 km of the
+    // ground (see `polygonAltitude` above), so the animation that was being
+    // skipped was a 300 ms ramp across about one screen pixel. It also stops the
+    // layer creating a Tween per polygon per change, which the same broken cycle
+    // was never reliably going to finish.
+    .polygonsTransitionDuration(0)
     // NO paths layer. Routes used to be drawn by globe.gl's paths layer, and
     // three separate things were wrong with that:
     //
@@ -780,6 +809,40 @@ onMounted(() => {
   for (const ev of ['pointermove', 'pointerdown', 'pointerup', 'pointerleave', 'wheel']) {
     dom.addEventListener(ev, () => wake(), { passive: true })
   }
+  /**
+   * Hover is a response to the pointer, so it is only paid for near one.
+   *
+   * globe.gl raycasts the whole scene once per frame to find what is under the
+   * cursor, and that raycast is the single most expensive thing on the main
+   * thread while the camera moves: measured over a scripted close-zoom pan, 7.0
+   * to 16.0 ms of a 12.6 to 21.1 ms frame — more than half of it, every frame,
+   * to re-answer a question nobody asked. It walks every triangle of the globe
+   * sphere, every polygon cap, and every segment of every route.
+   *
+   * three-render-objects already skips it while a *drag* is in progress
+   * (`hoverDuringDrag` is false), so what is left to pay for is the motion it
+   * does not know about: a wheel zoom, the damping after a drag, a 900 ms "Show
+   * on map" flight, autorotation. None of those is a hover.
+   *
+   * The rule is the two things that can make a hover meaningful: the pointer did
+   * something recently, or the camera has come to rest. Anything else — a globe
+   * moving under an idle cursor — gets the raycast switched off, and switched
+   * back on within a frame of either condition returning. Clicks are safe
+   * because a `pointerdown` is pointer activity and turns it on before the
+   * gesture that would need it completes.
+   */
+  let pointerAt = 0
+  for (const ev of ['pointermove', 'pointerdown', 'pointerup', 'wheel']) {
+    dom.addEventListener(ev, () => (pointerAt = performance.now()), { passive: true })
+  }
+  /** How long after the pointer moves a hover is still worth looking for. */
+  const HOVER_GRACE_MS = 1000
+  let hoverOn = true
+  const setHover = (on: boolean) => {
+    if (on === hoverOn) return
+    hoverOn = on
+    globe!.enablePointerInteraction(on)
+  }
 
   const t0 = performance.now()
   let lastFrame = t0
@@ -839,8 +902,16 @@ onMounted(() => {
     // ~20 Hz. Reduced motion sets no phase and buys no frames, so the dash sits
     // where it was built and the brightness ramp carries the direction alone.
     if (!still && routes!.hasFlow) {
-      routes!.setFlowPhase(now)
-      if (now - lastFlow >= ROUTE_FLOW_INTERVAL_MS) {
+      const due = now - lastFlow >= ROUTE_FLOW_INTERVAL_MS
+      // Only onto a frame that will actually be drawn. This tick runs at 60 Hz
+      // whether or not anything is being rendered, and the phase is a write to
+      // every dashed piece of every route — sixty materials for the Atlantic
+      // triangle — so on a parked globe it was thousands of uniform writes a
+      // second for a picture nobody was drawing. `due` is the case where the
+      // wake below is about to draw one, and `resumeAnimation` renders
+      // synchronously, so the phase has to be in place before it.
+      if (pump.running || due) routes!.setFlowPhase(now)
+      if (due) {
         lastFlow = now
         stats.flows++
         wake(0)
@@ -859,7 +930,9 @@ onMounted(() => {
       }
     }
     // deferred work waits for a still camera as well as an idle browser
-    surface!.setBusy(now - movedAt < STILL_MS)
+    const still2 = now - movedAt >= STILL_MS
+    surface!.setBusy(!still2)
+    setHover(still2 || now - pointerAt < HOVER_GRACE_MS)
 
     if (dayReady && framesSinceReady < 2) {
       wake()
@@ -942,7 +1015,9 @@ onMounted(() => {
     // than to the selection; the colour falls back to the event's tag so an
     // unstyled layer is already in the map's own language.
     watchEffect(() => {
-      const sel = events.selected
+      // colour from the focused context (whose drawing this is), not whatever
+      // child happens to be selected inside it
+      const sel = events.focused ?? events.selected
       const color = sel ? tagColor(primaryTag(sel)) : '#ffffff'
       if (
         drawing!.set(focusDrawing(), {

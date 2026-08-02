@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { FOCUS_CHILD_CAP, useEventStore } from '../src/stores/events'
+import { FOCUS_CHILD_CAP, FOCUS_STACK_CAP, useEventStore } from '../src/stores/events'
 import { useSettingsStore } from '../src/stores/settings'
 import { useTimeStore } from '../src/stores/time'
 import type { HistoricalEvent } from '../src/lib/events'
@@ -589,13 +589,23 @@ describe('focus mode', () => {
     expect(events.focus).toEqual({ itemId: 'd-day' })
   })
 
-  it('leaves when something else is selected, and stays when the same one is', () => {
+  /**
+   * The rule the navigation stack sharpened. It used to be "anything but the
+   * focused item leaves the mode", which threw the operation away the moment
+   * the reader clicked one of the battles it had just put on the globe. What
+   * leaves is a statement about something *outside* the family; a part of the
+   * focused item is a statement about the thing already on screen.
+   */
+  it('stays for the focused item and for its parts, leaves for anything else', () => {
     const events = useEventStore()
-    events.adopt([plan('barbarossa'), child('minsk', 'barbarossa', 60)])
+    events.adopt([plan('barbarossa'), child('minsk', 'barbarossa', 60), plan('d-day')])
     events.showOnMap('barbarossa')
     events.select('barbarossa') // re-selecting the focus is not a change
     expect(events.focus?.itemId).toBe('barbarossa')
-    events.select('minsk')
+    events.select('minsk') // a battle inside the operation: still the operation
+    expect(events.focus?.itemId).toBe('barbarossa')
+    expect(events.selectedId).toBe('minsk')
+    events.select('d-day') // somewhere else entirely
     expect(events.focus).toBeUndefined()
   })
 
@@ -772,5 +782,360 @@ describe('focus mode', () => {
     events.adopt([plan('barbarossa'), { ...child('later', 'barbarossa'), start: 1990 }])
     events.showOnMap('barbarossa')
     expect(events.visible.map((e) => e.id)).not.toContain('later')
+  })
+})
+
+/**
+ * FOCUS NAVIGATION — the stack of contexts.
+ *
+ * The mode is a place you can be *inside of*: an operation puts its battles on
+ * the globe so that they can be opened, and opening one has to leave the
+ * operation where it was. These are the transitions that make that true, and
+ * the ones that end it — see `focusStack` in stores/events.ts.
+ */
+describe('focus navigation, inside a plan and back out', () => {
+  const plan = (id: string, extra: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
+    id, name: id, start: 1941, lat: 53.9, lng: 27.6, priority: 70, tags: ['war'], summary: '',
+    drawing: { layers: [{ type: 'marker', pos: [27.6, 53.9] }] },
+    ...extra,
+  })
+  const part = (id: string, parent: string, priority = 0): HistoricalEvent => ({
+    id, name: id, start: 1941, lat: 54, lng: 28, priority, tags: ['war'], summary: '', parent,
+  })
+
+  /** An operation, two battles inside it, a village inside one battle, and an
+   *  unrelated plan on the other side of the war. */
+  const corpus = (): HistoricalEvent[] => [
+    plan('barbarossa'),
+    part('kiev', 'barbarossa', 60),
+    part('minsk', 'barbarossa', 50),
+    plan('village', { ...part('village', 'kiev', 10) }),
+    plan('d-day', { lat: 49.3, lng: -0.6 }),
+  ]
+
+  const store = () => {
+    const events = useEventStore()
+    events.adopt(corpus())
+    return events
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+  })
+
+  it('keeps the operation when one of its battles is opened', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    const pinned = events.visible.map((e) => e.id).sort()
+    events.select('kiev')
+    expect(events.focus).toEqual({ itemId: 'barbarossa' }) // the context is untouched
+    expect(events.selectedId).toBe('kiev') // …and the battle is what is being read
+    expect(events.focusChildren.map((e) => e.id)).toContain('kiev')
+    expect(events.visible.map((e) => e.id).sort()).toEqual(pinned) // same globe
+    // and the panel says where it is, by name
+    expect(events.focusReturnTo?.id).toBe('barbarossa')
+  })
+
+  it('opens the battle in whatever shape the panel was already in', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    expect(events.panelMinimised).toBe(true)
+    events.select('kiev')
+    expect(events.panelMinimised).toBe(true) // a pill for the battle, over the map
+    events.toggleFocusExpanded()
+    events.select('minsk')
+    expect(events.panelMinimised).toBe(false) // reading: the next one is read too
+    expect(events.focusReturnTo?.id).toBe('barbarossa')
+  })
+
+  it('closing the battle comes back to the operation, not to the world', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    events.select('kiev')
+    events.close()
+    expect(events.focus).toEqual({ itemId: 'barbarossa' })
+    expect(events.selectedId).toBe('barbarossa')
+    expect(events.panelMinimised).toBe(true) // the operation's pill is back
+    expect(events.visible.map((e) => e.id)).toContain('minsk') // …and its battles
+  })
+
+  it('Escape unwinds the same ladder, one rung at a time', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    events.select('kiev')
+    events.focusBack()
+    expect(events.selectedId).toBe('barbarossa')
+    expect(events.focus?.itemId).toBe('barbarossa')
+    events.focusBack()
+    expect(events.focus).toBeUndefined() // out of the mode…
+    expect(events.selectedId).toBe('barbarossa') // …but still reading, as ever
+    events.focusBack()
+    expect(events.selectedId).toBe('barbarossa') // nothing left to unwind
+  })
+
+  /** "Show on map" on a part *pushes*: the battle gets the map on its own
+   *  terms, and leaving it comes back to the operation it is part of. */
+  it('pushes a context when a battle is shown on the map, and pops it on exit', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    events.showOnMap('kiev')
+    expect(events.focus).toEqual({ itemId: 'kiev' })
+    expect(events.selectedId).toBe('kiev')
+    expect(events.focusChildren.map((e) => e.id)).toEqual(['village']) // its own parts
+    expect(events.focusReturnTo).toBeUndefined() // it is the context now, not a part of one
+    events.close()
+    expect(events.focus).toEqual({ itemId: 'barbarossa' })
+    expect(events.selectedId).toBe('barbarossa')
+    expect(events.visible.map((e) => e.id).sort()).toEqual(['barbarossa', 'kiev', 'minsk'])
+  })
+
+  it('pops one context per exit, all the way down to the plain map', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    events.showOnMap('kiev')
+    events.showOnMap('village')
+    expect(events.focus?.itemId).toBe('village')
+    events.exitFocus()
+    expect(events.focus?.itemId).toBe('kiev')
+    events.exitFocus()
+    expect(events.focus?.itemId).toBe('barbarossa')
+    events.exitFocus()
+    expect(events.focus).toBeUndefined()
+  })
+
+  it('drops the whole stack when something outside the family is picked', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    events.showOnMap('kiev')
+    events.select('d-day') // a search hit, a link, another pin
+    expect(events.focus).toBeUndefined()
+    expect(events.focusStack).toEqual([])
+    expect(events.selectedId).toBe('d-day')
+    // and the globe is the ordinary one again
+    expect(events.visible.map((e) => e.id)).toContain('barbarossa')
+  })
+
+  it('replaces the stack when the map is asked for something outside the family', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    events.showOnMap('kiev')
+    events.showOnMap('d-day')
+    expect(events.focusStack).toEqual(['d-day'])
+    events.close()
+    expect(events.focus).toBeUndefined()
+    expect(events.selectedId).toBeUndefined()
+  })
+
+  /** The way back has to be an affordance, not a memory: it exists exactly when
+   *  the panel is on a part of the context, and it names that context. */
+  it('offers the way back only from inside a context', () => {
+    const events = store()
+    expect(events.focusReturnTo).toBeUndefined()
+    events.select('kiev')
+    expect(events.focusReturnTo).toBeUndefined() // no focus: nothing to be inside of
+    events.showOnMap('barbarossa')
+    expect(events.focusReturnTo).toBeUndefined() // the context itself
+    events.select('kiev')
+    expect(events.focusReturnTo?.name).toBe('barbarossa')
+  })
+
+  /** A child ranked out of the pinned set is still part of the operation: it can
+   *  be reached from "Contains", and when it is, it gets its pin. */
+  it('keeps a pin under a part the child cap ranked out', () => {
+    const events = useEventStore()
+    events.adopt([
+      plan('barbarossa'),
+      ...Array.from({ length: 40 }, (_, i) => part(`c${i}`, 'barbarossa', i)),
+    ])
+    events.showOnMap('barbarossa')
+    expect(events.visible.map((e) => e.id)).not.toContain('c0') // ranked out
+    events.select('c0')
+    expect(events.focus?.itemId).toBe('barbarossa') // still inside the operation
+    expect(events.visible.map((e) => e.id)).toContain('c0') // and on the globe
+  })
+
+  it('bounds the stack, keeping the innermost contexts', () => {
+    const events = useEventStore()
+    // a chain of parts, each inside the last
+    events.adopt([
+      plan('a'),
+      ...Array.from({ length: 6 }, (_, i) => plan(`p${i}`, { parent: i ? `p${i - 1}` : 'a' })),
+    ])
+    events.showOnMap('a')
+    for (let i = 0; i < 6; i++) events.showOnMap(`p${i}`)
+    expect(events.focusStack).toHaveLength(FOCUS_STACK_CAP)
+    expect(events.focusStack[FOCUS_STACK_CAP - 1]).toBe('p5')
+  })
+
+  /** Report 3: an era or an age is a question about the world, and it is
+   *  answered on a clean map. The pickers call this (TopBar, TimelineBar). */
+  it('dismisses everything for an era pick, from however deep in', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    events.showOnMap('kiev')
+    events.select('village')
+    events.expandCluster('somewhere', 40)
+    events.dismiss()
+    expect(events.focus).toBeUndefined()
+    expect(events.focusStack).toEqual([])
+    expect(events.focusExpanded).toBe(false)
+    expect(events.selectedId).toBeUndefined()
+    expect(events.expandedClusterId).toBeUndefined()
+    expect(events.visible.map((e) => e.id)).toContain('d-day') // the ordinary globe
+  })
+})
+
+/**
+ * THE STATE MACHINE IS TOTAL.
+ *
+ * The stuck state was reachable because nothing said what could not happen: the
+ * globe was left filtered down to a focused item while no panel named it, so
+ * there was nothing on screen to leave the mode by — no pill, no article, and
+ * (before this) no era pick that would clear it either.
+ *
+ * So rather than testing the one sequence that was reported, this walks the
+ * WHOLE reachable graph — every action the UI can fire, from every state they
+ * can reach — and checks the invariants at each node. The state is exactly
+ * `focusStack`, `selectedId` and `focusExpanded`, which is what makes the walk
+ * finite and what makes restoring a node by assignment legitimate.
+ */
+describe('every reachable state has a way out', () => {
+  const plan = (id: string, extra: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
+    id, name: id, start: 1941, lat: 53.9, lng: 27.6, priority: 70, tags: ['war'], summary: '',
+    drawing: { layers: [{ type: 'marker', pos: [27.6, 53.9] }] },
+    ...extra,
+  })
+  const corpus: HistoricalEvent[] = [
+    plan('op'),
+    plan('battle', { parent: 'op', priority: 60 }),
+    plan('village', { parent: 'battle', priority: 10 }),
+    plan('elsewhere', { lat: 49.3, lng: -0.6 }),
+  ]
+
+  type Snapshot = { focusStack: string[]; selectedId?: string; focusExpanded: boolean }
+  const ids = ['op', 'battle', 'village', 'elsewhere']
+
+  /** Everything a user can do to this state machine, named. */
+  const ACTIONS: [string, (e: ReturnType<typeof useEventStore>) => void][] = [
+    ...ids.map((id) => [`select ${id}`, (e: ReturnType<typeof useEventStore>) => e.select(id)] as const),
+    ...ids.map((id) => [`showOnMap ${id}`, (e: ReturnType<typeof useEventStore>) => e.showOnMap(id)] as const),
+    ['close', (e) => e.close()],
+    ['select()', (e) => e.select()],
+    ['focusBack', (e) => e.focusBack()],
+    ['exitFocus', (e) => e.exitFocus()],
+    ['toggleExpanded', (e) => e.toggleFocusExpanded()],
+    ['dismiss', (e) => e.dismiss()],
+  ]
+
+  const snap = (e: ReturnType<typeof useEventStore>): Snapshot => ({
+    focusStack: [...e.focusStack],
+    selectedId: e.selectedId,
+    focusExpanded: e.focusExpanded,
+  })
+  const restore = (e: ReturnType<typeof useEventStore>, s: Snapshot) => {
+    e.focusStack = [...s.focusStack]
+    e.selectedId = s.selectedId
+    e.focusExpanded = s.focusExpanded
+  }
+  const key = (s: Snapshot) => `${s.focusStack.join('>')}|${s.selectedId ?? '-'}|${s.focusExpanded}`
+
+  /** What the reader can see and press: an article, a pill, or nothing at all. */
+  const panelOf = (e: ReturnType<typeof useEventStore>) =>
+    !e.selected ? 'none' : e.panelMinimised ? 'pill' : 'article'
+
+  /** Walk the graph once; `visit` is handed every state that is reached. */
+  const walk = (visit: (e: ReturnType<typeof useEventStore>, path: string[]) => void) => {
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+    const events = useEventStore()
+    events.adopt(corpus)
+    const start = snap(events)
+    const seen = new Map<string, string[]>([[key(start), []]])
+    const queue: [Snapshot, string[]][] = [[start, []]]
+    while (queue.length) {
+      const [state, path] = queue.shift()!
+      for (const [name, act] of ACTIONS) {
+        restore(events, state)
+        act(events)
+        const next = snap(events)
+        const trail = [...path, name]
+        visit(events, trail)
+        if (!seen.has(key(next))) {
+          seen.set(key(next), trail)
+          queue.push([next, trail])
+        }
+      }
+    }
+    return seen
+  }
+
+  it('reaches every shape of the machine, so the checks below are not vacuous', () => {
+    const seen = walk(() => {})
+    // 4 items x (no focus | 4 depth-1 contexts | the nested ones) x expanded x
+    // which of the family the panel is on. The exact number is not the point —
+    // that it is a graph rather than a handful of states is.
+    expect(seen.size).toBeGreaterThan(20)
+    // and the deepest thing reachable is the chain of parts, capped
+    expect(Math.max(...[...seen.keys()].map((k) => k.split('|')[0].split('>').filter(Boolean).length)))
+      .toBeLessThanOrEqual(FOCUS_STACK_CAP)
+  })
+
+  it('never leaves the globe filtered with nothing on screen to unfilter it', () => {
+    walk((events, path) => {
+      const focused = events.focus?.itemId
+      if (!focused) return
+      // A focus filters the globe down to one family (see `visible`). If no
+      // panel is up, nothing names it and nothing can leave it: that is the
+      // stuck state, and it must not be reachable.
+      expect(panelOf(events), `no panel after ${path.join(' → ')}`).not.toBe('none')
+      // …and what the panel is on is the context or a part of it, so the article
+      // on screen and the pins on the globe are about the same thing.
+      const sel = events.selectedId
+      const inside = sel !== undefined ? events.byId(sel) : undefined
+      const isPart = !!inside && 'parent' in inside && inside.parent === focused
+      expect(sel === focused || isPart, `panel on ${sel} inside ${focused}`).toBe(true)
+    })
+  })
+
+  it('only ever shows the pill inside the mode', () => {
+    walk((events, path) => {
+      if (events.panelMinimised)
+        expect(events.focusStack.length, `pill outside the mode after ${path.join(' → ')}`)
+          .toBeGreaterThan(0)
+    })
+  })
+
+  it('leaves the globe unfiltered whenever the mode is off', () => {
+    walk((events, path) => {
+      if (events.focusStack.length) return
+      // nothing is being held back: the unrelated plan is on the globe again
+      expect(events.visible.map((e) => e.id), `after ${path.join(' → ')}`).toContain('elsewhere')
+    })
+  })
+
+  it('is always a bounded number of closes from the plain map', () => {
+    const seen = walk(() => {})
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+    const events = useEventStore()
+    events.adopt(corpus)
+    for (const [k, path] of seen) {
+      const [stack, sel, expanded] = k.split('|')
+      restore(events, {
+        focusStack: stack ? stack.split('>') : [],
+        selectedId: sel === '-' ? undefined : sel,
+        focusExpanded: expanded === 'true',
+      })
+      // one press per rung of the ladder, plus the one that closes the article
+      let presses = 0
+      while ((events.focusStack.length || events.selectedId) && presses < 12) {
+        events.close()
+        presses++
+      }
+      expect(events.focusStack, `stuck after ${path.join(' → ')}`).toEqual([])
+      expect(events.selectedId, `stuck after ${path.join(' → ')}`).toBeUndefined()
+      expect(presses, `too many presses from ${k}`).toBeLessThanOrEqual(FOCUS_STACK_CAP + 2)
+    }
   })
 })

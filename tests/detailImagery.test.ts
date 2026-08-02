@@ -1966,3 +1966,140 @@ describe('panning to rest', () => {
     d.dispose()
   })
 })
+
+describe('the cost of a frame that is only moving', () => {
+  /**
+   * A canvas that counts what is expensive about one: how many times its
+   * backing store was reallocated, and how many contexts were asked for.
+   *
+   * Both are per-frame costs in the shipped app — `recomposite` runs whenever
+   * the view moves and feathers every patch it draws — and both are invisible
+   * to a test that only looks at the pixels.
+   */
+  class CountingCanvas {
+    static made: CountingCanvas[] = []
+    static resizes = 0
+    static contexts = 0
+    /** …and per canvas, so the composite can be told from the scratch. */
+    mine = { resizes: 0, contexts: 0 }
+    #w = 0
+    #h = 0
+    gradients = 0
+    set width(v: number) {
+      CountingCanvas.resizes++
+      this.mine.resizes++
+      this.#w = v
+    }
+    get width() {
+      return this.#w
+    }
+    set height(v: number) {
+      CountingCanvas.resizes++
+      this.mine.resizes++
+      this.#h = v
+    }
+    get height() {
+      return this.#h
+    }
+    constructor() {
+      CountingCanvas.made.push(this)
+    }
+    getContext() {
+      CountingCanvas.contexts++
+      this.mine.contexts++
+      return {
+        clearRect: () => {},
+        drawImage: () => {},
+        createLinearGradient: () => {
+          this.gradients++
+          return { addColorStop: () => {} }
+        },
+        fillRect: () => {},
+        set fillStyle(_v: unknown) {},
+        set globalCompositeOperation(_v: unknown) {},
+        set imageSmoothingQuality(_v: unknown) {},
+      }
+    }
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.requests = []
+    FakeImage.last = undefined
+    CountingCanvas.made = []
+    CountingCanvas.resizes = 0
+    CountingCanvas.contexts = 0
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new CountingCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  const CLOSE = 0.02
+  const settle = (d: DetailImagery, lat: number, lng: number) => {
+    for (let i = 0; i < 40; i++) {
+      d.update(lat, lng, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    FakeImage.last?.onload?.()
+    for (let i = 0; i < 40; i++) {
+      d.update(lat, lng, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+  }
+
+  it('does not reallocate the composite canvas once it has one', () => {
+    // The composite canvas is deliberately one size for the session (see
+    // compositeCanvasSize), so every recomposite after the first is drawing at
+    // exactly the size it drew at last time. Assigning `width`/`height` anyway
+    // is not free and not a no-op: the spec resets the backing store — and
+    // every piece of context state with it — whatever value is assigned.
+    const d = new DetailImagery()
+    settle(d, 45, 10)
+    const composite = CountingCanvas.made[0]
+    const after = { ...composite.mine }
+    expect(after.resizes).toBeGreaterThan(0) // it was sized once, obviously
+    expect(composite.width).toBeGreaterThan(0)
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const step = (span.maxLng - span.minLng) * 0.3
+    // …and now a pan long enough to composite repeatedly at the same size
+    for (let i = 1; i <= 6; i++) settle(d, 45, 10 + step * i)
+    // the scratch canvas legitimately changes size with each patch's footprint;
+    // the composite's own must not have been touched again
+    expect(composite.mine.resizes, 'the composite canvas was resized again').toBe(after.resizes)
+    expect(
+      composite.mine.contexts,
+      'a composite asks for a context it already holds',
+    ).toBe(after.contexts)
+    d.dispose()
+  })
+
+  it('does not scan the patch cache on a frame that has plainly moved', () => {
+    // `unionCoverage(compositePlan(...))` is the most expensive thing per frame
+    // in this file, and on a moving camera its answer cannot matter: the
+    // cheaper `movedEnough` has already decided the held imagery is not being
+    // re-shown. Counted through the cache the plan has to read.
+    const d = new DetailImagery()
+    settle(d, 45, 10)
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const wide = (span.maxLng - span.minLng) * 3
+    let reads = 0
+    const inner = (d as unknown as { cache: unknown[] }).cache
+    let held = inner
+    Object.defineProperty(d, 'cache', {
+      get: () => (reads++, held),
+      set: (v) => (held = v),
+      configurable: true,
+    })
+    // one long sweep, far enough that every frame is past `movedEnough`
+    for (let i = 1; i <= 20; i++) {
+      d.update(45, 10 + (wide * i) / 20, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    // a handful of reads for the settle path is fine; one per frame is the bug
+    expect(reads, 'the cache is scanned once per moving frame').toBeLessThan(20)
+    d.dispose()
+  })
+})

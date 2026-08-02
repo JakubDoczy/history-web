@@ -4,6 +4,7 @@ import {
   EventIndex,
   anchorYearOf,
   effectivePriority,
+  isEvent,
   isMinor,
   searchItems,
   type EventFilter,
@@ -53,6 +54,19 @@ const DATA = `${import.meta.env.BASE_URL}data/events/`
 export const FOCUS_CHILD_CAP = 15
 
 /**
+ * How many focus contexts the stack will hold (see `focusStack`).
+ *
+ * The real case is two — an operation, and a battle inside it the reader pressed
+ * "Show on map" on — and the corpus's parent chains are three deep at the very
+ * most. The cap is not a UX rule, it is a bound: nothing here ever pops a frame
+ * the user did not put on, so without one a long enough session down a chain of
+ * parts would grow the array forever. When it bites, the *oldest* context goes:
+ * the way back out of the innermost few is worth more than the way back to
+ * something six steps ago.
+ */
+export const FOCUS_STACK_CAP = 4
+
+/**
  * The children of an item, best first — what focus mode pins alongside it.
  *
  * Direct children only, and *children only*: the pins a battle plan puts on the
@@ -72,6 +86,30 @@ const focusChildrenOf = (parentId: string, cap = FOCUS_CHILD_CAP): HistoricalEve
   [...index.childrenOf(parentId)]
     .sort((a, b) => b.priority - a.priority || a.start - b.start)
     .slice(0, cap)
+
+/**
+ * Is `id` a *part of* `parentId` — a battle inside the operation?
+ *
+ * This is the whole test the focus navigation turns on (see `select`), so it
+ * asks the data rather than the fifteen pins the cap let through: a child listed
+ * under "Contains" but ranked out of the pinned set is still part of the thing
+ * on screen, and opening it should no more leave the operation than opening the
+ * one next to it would. `visible` keeps a pin under it either way.
+ *
+ * Derived pins (a person's birth, a death) are asked about too, so a life whose
+ * birth pin belongs to the focused item behaves like any other part.
+ */
+const isPartOf = (parentId: string, id?: string): boolean => {
+  if (!id) return false
+  const item = index.byId.get(id)
+  // Only an event is *part of* anything — a life or an idea is related to
+  // things, never contained by them (see `parent` in lib/events.ts).
+  if (item && isEvent(item) && item.parent === parentId) return true
+  return index.pin(id)?.parent === parentId
+}
+
+/** The focus context the reader is in: the top of the stack. */
+const topFocus = (stack: readonly string[]): string | undefined => stack[stack.length - 1]
 
 /**
  * A JSON fetch that fails by returning undefined rather than by throwing, and
@@ -136,8 +174,29 @@ export const useEventStore = defineStore('events', {
      * It is *not* the same thing as the selection, and keeping them apart is
      * what makes Escape do something sensible: Escape leaves the mode and gives
      * back the article, without closing it.
+     *
+     * A STACK, innermost last, because looking at something is a place you can
+     * be *inside of*. An operation's battles are on the globe precisely so they
+     * can be opened; opening one used to throw the operation away, so closing
+     * the battle landed on the default world rather than back where the reader
+     * had been. Now:
+     *
+     *  · selecting a part of the focused item keeps this stack as it is — the
+     *    plan and its pins stay, the part's article opens over them, and the
+     *    panel offers "← Operation Barbarossa" (see `focusReturnTo`);
+     *  · pressing "Show on map" on that part *pushes* it: it becomes the
+     *    context, with its own ink and its own parts, and leaving pops back to
+     *    the operation rather than to the world;
+     *  · a statement about anything else — a search hit, a link out of the
+     *    family — empties the stack in one go (`clearFocus`).
+     *
+     * INVARIANT (the thing the stuck state broke): while this is non-empty the
+     * selection is either the context itself or a part of it, so there is always
+     * an article or a pill on screen naming something — i.e. always a way out.
+     * Every action below leaves that true; `tests/eventsStore.test.ts` walks the
+     * transitions and checks it.
      */
-    focus: undefined as { itemId: string } | undefined,
+    focusStack: [] as string[],
     /** In focus mode, has the reader pulled the article back up over the map? */
     focusExpanded: false,
   }),
@@ -179,13 +238,23 @@ export const useEventStore = defineStore('events', {
       // app's judgement — the top-N cap and the viewport scope — because a
       // focused item and its children are not competing for the screen, they
       // are the screen.
-      if (state.focus) {
+      const focusId = topFocus(state.focusStack)
+      if (focusId) {
         const out: HistoricalEvent[] = []
         // The MINOR filter is lifted for the whole set: a child battle is part
         // of the thing already on the globe, and the focused item itself may
         // well be the minor pin the reader had to search for to get here.
         const focusFilter = { ...filter, minor: true }
-        for (const id of [state.focus.itemId, ...focusChildrenOf(state.focus.itemId).map((c) => c.id)]) {
+        // The selection is appended for the same reason it is outside the mode
+        // (below): whatever the panel is open on keeps its pin. Inside a focus
+        // that is normally the context or one of the children already listed —
+        // it matters for the child that "Contains" reached but the child cap
+        // ranked out of the pinned set.
+        for (const id of [
+          focusId,
+          ...focusChildrenOf(focusId).map((c) => c.id),
+          ...(state.selectedId ? [state.selectedId] : []),
+        ]) {
           if (out.some((e) => e.id === id)) continue
           const kept = index.admits(id, selection.start, selection.end, focusFilter)
           if (kept) out.push(kept)
@@ -326,19 +395,50 @@ export const useEventStore = defineStore('events', {
       void s.revision
       return searchItems(s.all, q)
     },
+    /**
+     * The focus context the reader is in, or `undefined` for the plain map.
+     *
+     * The top of `focusStack`, in the shape the rest of the app already reads
+     * (`events.focus?.itemId`). A getter, so the stack is the single truth and
+     * nothing can set a focus without going through the actions that keep the
+     * selection consistent with it.
+     */
+    focus(state): { itemId: string } | undefined {
+      const id = topFocus(state.focusStack)
+      return id ? { itemId: id } : undefined
+    },
     /** The item focus mode is on, if any — what the pill names and what draws. */
     focused(state): Item | undefined {
       void state.revision
-      return state.focus ? index.byId.get(state.focus.itemId) : undefined
+      const id = topFocus(state.focusStack)
+      // `pin` as well as `byId`: "Show on map" reaches derived pins (a person's
+      // birth), which are events in their own right but live outside `byId`.
+      // Without the fallback the mode would be on with nothing named.
+      return id ? (index.byId.get(id) ?? index.pin(id)) : undefined
     },
     /** The child events focus mode is forcing onto the globe. */
     focusChildren(state): HistoricalEvent[] {
       void state.revision
-      return state.focus ? focusChildrenOf(state.focus.itemId) : []
+      const id = topFocus(state.focusStack)
+      return id ? focusChildrenOf(id) : []
+    },
+    /**
+     * When the panel is open on a *part* of the focused item — a battle inside
+     * the operation — the item to go back to; `undefined` otherwise.
+     *
+     * This is the back control's whole condition and its label ("← Operation
+     * Barbarossa"), and it is why the reader can tell they are inside something
+     * rather than looking at a battle that happens to have pins around it.
+     */
+    focusReturnTo(state): Item | undefined {
+      void state.revision
+      const id = topFocus(state.focusStack)
+      if (!id || !state.selectedId || state.selectedId === id) return undefined
+      return index.byId.get(id) ?? index.pin(id)
     },
     /** Is the panel currently the compact pill rather than the article? */
     panelMinimised(state): boolean {
-      return !!state.focus && !state.focusExpanded
+      return state.focusStack.length > 0 && !state.focusExpanded
     },
   },
   actions: {
@@ -395,36 +495,134 @@ export const useEventStore = defineStore('events', {
     ensure(start: number, end: number) {
       if (this.manifest) for (const f of chunksFor(this.manifest, start, end)) this.load(f)
     },
+    /**
+     * Open an item. `select()` with nothing is not "select undefined" — it is
+     * the close button, and it unwinds (see `close`).
+     *
+     * Selecting anything *outside* the focused item leaves the mode altogether.
+     * The mode is a statement about one item ("show me this"); a search hit or a
+     * link out of the family is a statement about a different one, and leaving a
+     * battle plan drawn under someone else's article would be the map arguing
+     * with the panel.
+     *
+     * Selecting the focused item, or one of its PARTS, is not that. A battle is
+     * on the globe *because* the operation is being looked at, so opening it
+     * stays inside the operation: the ink and the sibling pins keep their places
+     * and the article (or the pill — whichever shape the panel is in) swaps to
+     * the battle, with a way back to the operation on it.
+     */
     select(id?: string) {
-      // Selecting anything *else* leaves focus mode. The mode is a statement
-      // about one item ("show me this"); clicking another pin, following a link
-      // or closing the panel are all statements about a different one, and
-      // leaving a battle plan drawn under someone else's article would be the
-      // map arguing with the panel. Re-selecting the focused item is not a
-      // change and keeps the mode — which is what lets the pill's own children
-      // be clicked without the drawing flickering away.
-      if (this.focus && this.focus.itemId !== id) this.exitFocus()
+      if (id === undefined) return this.close()
+      const focusId = topFocus(this.focusStack)
+      if (focusId !== undefined && focusId !== id && !isPartOf(focusId, id)) this.clearFocus()
       this.selectedId = id
       // picking a member answers the question the cluster was asking, so it
       // closes; the selected event keeps its own pin either way.
       this.expandedClusterId = undefined
     },
     /**
+     * The close button on the article and on the pill, and the last thing Escape
+     * does — one layer at a time, never straight to the world:
+     *
+     *  · reading a part of the focused item → back to the focused item, still in
+     *    the mode, its plan still on the globe;
+     *  · reading the focused item itself → out of that context, and into
+     *    whatever context it was opened from (`exitFocus` pops the stack);
+     *  · nothing focused → the panel simply closes.
+     *
+     * The one place the selection is cleared is the bottom of that ladder, which
+     * is what makes "close" reachable in a finite number of presses from every
+     * state and what keeps a focus from ever being left on screen with no panel
+     * to leave it by.
+     */
+    close() {
+      const focusId = topFocus(this.focusStack)
+      this.expandedClusterId = undefined
+      if (focusId === undefined) {
+        this.selectedId = undefined
+        return
+      }
+      if (this.selectedId !== undefined && this.selectedId !== focusId) {
+        this.selectedId = focusId
+        return
+      }
+      this.exitFocus()
+      // The stack ran out: the mode is over and so is the reading.
+      if (this.focusStack.length === 0) this.selectedId = undefined
+    },
+    /**
+     * Escape, and the panel's "← …" control: unwind exactly one layer of the
+     * mode without closing anything that can be stepped back into instead.
+     *
+     * Same ladder as `close`, minus its last rung — Escape gives the map back,
+     * it does not take the article away (see HomeView.vue).
+     */
+    focusBack() {
+      const focusId = topFocus(this.focusStack)
+      if (focusId === undefined) return
+      if (this.selectedId !== undefined && this.selectedId !== focusId) this.selectedId = focusId
+      else this.exitFocus()
+    },
+    /**
      * Put the map in front: minimise the panel, draw the item's drawing, pin its
-     * children. See `focus` in the state above.
+     * children. See `focusStack` in the state above.
+     *
+     * A part of the item already in focus is *pushed*, so leaving it comes back
+     * here; anything else replaces the stack, because it is a statement about
+     * somewhere else entirely.
      */
     enterFocus(id: string) {
-      this.focus = { itemId: id }
+      const focusId = topFocus(this.focusStack)
+      if (focusId === id) {
+        // already the context — "Show on map" pressed again on the open article
+      } else if (focusId !== undefined && isPartOf(focusId, id)) {
+        this.focusStack.push(id)
+        if (this.focusStack.length > FOCUS_STACK_CAP) this.focusStack.shift()
+      } else {
+        this.focusStack = [id]
+      }
+      this.focusExpanded = false
+      // The mode is always on its own item: this is what makes the invariant
+      // hold no matter which way the caller arrived (a pin, a link, a search).
+      this.selectedId = id
+    },
+    /**
+     * Leave the innermost context: the article comes back whole, the drawing
+     * goes, the pins relax — or, if this focus was opened from inside another,
+     * that one comes back instead of the plain map.
+     */
+    exitFocus() {
+      this.focusStack.pop()
+      this.focusExpanded = false
+      const focusId = topFocus(this.focusStack)
+      if (focusId !== undefined) this.selectedId = focusId
+    },
+    /**
+     * Drop every context at once — the plain map, with the panel left alone.
+     * What a statement about something outside the family does to the mode.
+     */
+    clearFocus() {
+      if (this.focusStack.length) this.focusStack = []
       this.focusExpanded = false
     },
-    /** Leave it: the article comes back whole, the drawing goes, the pins relax. */
-    exitFocus() {
-      this.focus = undefined
-      this.focusExpanded = false
+    /**
+     * The clean slate: no focus, no selection, no open cluster.
+     *
+     * This is what picking an era or an age means — the reader has asked for a
+     * different *time*, which is a question about the whole world and not about
+     * whatever one operation was filling the globe. The era pickers call it
+     * alongside `time.selectEra` (TopBar.vue, TimelineBar.vue) rather than the
+     * time store calling it itself: time knows nothing about events, and this is
+     * the composition point where the two are already spoken about together.
+     */
+    dismiss() {
+      this.clearFocus()
+      this.selectedId = undefined
+      this.expandedClusterId = undefined
     },
     /** The pill's chevron: the article, over the map, without leaving the mode. */
     toggleFocusExpanded() {
-      if (this.focus) this.focusExpanded = !this.focusExpanded
+      if (this.focusStack.length) this.focusExpanded = !this.focusExpanded
     },
     /**
      * Ask the globe to look at a coordinate (a person's birth or death place),
@@ -460,6 +658,11 @@ export const useEventStore = defineStore('events', {
      * The selection is left alone when the panel is already showing this item,
      * so pressing it from a birth pin does not swap the pin out from under the
      * article it opened.
+     *
+     * Pressed on a PART of the item already in focus — a battle inside the
+     * operation — this pushes rather than replaces (see `enterFocus`), so the
+     * battle gets the map on the operation's terms and closing it comes back to
+     * the operation.
      */
     showOnMap(id: string) {
       // The one thing that can still refuse: an item with nowhere to go at all,

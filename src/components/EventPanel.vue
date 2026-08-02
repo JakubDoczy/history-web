@@ -42,7 +42,7 @@ const when = computed(() => {
  * right but carry the life's article), it is that pin — the reader is looking at
  * one end of a life and the map should go there, not to the other end.
  */
-const mapId = computed(() => events.selectedId ?? e.value.id)
+const mapId = computed(() => events.selectedId ?? events.selected?.id ?? '')
 /**
  * Whether the action has anywhere to go. An event always has (its pin), a life
  * has the place it began, an idea has nothing — and the button is then simply
@@ -170,40 +170,65 @@ onBeforeUnmount(() => inflight?.abort())
 </script>
 
 <template>
-  <!-- Two shapes of the same panel. The article is the default; the pill is what
-       focus mode leaves behind so the map is unobstructed (see `focus` in
-       stores/events.ts). `mode="out-in"` because they are not two states of one
-       box — they are different sizes in different corners, and crossfading them
-       in place reads as a glitch rather than as a fold. -->
-  <Transition name="panel-swap" mode="out-in">
-    <div
-      v-if="events.selected && events.panelMinimised"
-      class="sheet pill"
-      data-test="panel-pill"
-    >
-      <button class="pill-main" data-test="pill-expand" @click="events.toggleFocusExpanded()">
-        <span class="pill-name">{{ e.name }}</span>
-        <span class="pill-kind">{{ pillKind }}</span>
-      </button>
-      <button class="pill-btn" aria-label="Expand article" @click="events.toggleFocusExpanded()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 15l6-6 6 6" />
-        </svg>
-      </button>
-      <button class="pill-btn" data-test="pill-close" aria-label="Close" @click="events.select()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M6 6l12 12M18 6L6 18" />
-        </svg>
-      </button>
-    </div>
+  <!-- WHETHER there is a panel is decided out here, by an ordinary v-if with no
+       transition on it, and only the SHAPE of it is transitioned inside.
+       That split is a bug fix, not tidiness. This used to be one
+       `<Transition mode="out-in">` over a three-way chain — pill, article, and
+       *nothing* — and out-in holds the incoming element back until the outgoing
+       one's leave resolves. Land on the "nothing" branch while a swap is in
+       flight (close the panel within the 0.24 s fold, or on any frame the
+       browser is too busy to run — this app is a WebGL globe, so that is a
+       normal frame) and the leave never lands: the old panel stayed welded into
+       the DOM, still clickable, describing an event the store had already let
+       go. Nothing on screen answered to the state any more, so nothing could
+       close it — not the X, not Escape, not picking another era. It was the
+       reported stuck state.
+       Now closing removes the host synchronously, and the inner swap only ever
+       chooses between two elements that both exist. -->
+  <div v-if="events.selected" class="panel-host">
+    <!-- Two shapes of the same panel. The article is the default; the pill is
+         what focus mode leaves behind so the map is unobstructed (see
+         `focusStack` in stores/events.ts). `mode="out-in"` because they are not
+         two states of one box — they are different sizes in different corners,
+         and crossfading them in place reads as a glitch rather than as a fold. -->
+    <Transition name="panel-swap" mode="out-in">
+      <div v-if="events.panelMinimised" key="pill" class="sheet pill" data-test="panel-pill">
+        <!-- Inside a focus, on one of its parts: the way back to the thing that
+             put this battle on the globe (see `focusReturnTo`). -->
+        <button
+          v-if="events.focusReturnTo"
+          class="pill-back"
+          data-test="focus-back"
+          :title="`Back to ${events.focusReturnTo.name}`"
+          @click="events.focusBack()"
+        >
+          <span aria-hidden="true">←</span>
+          <span class="pill-back-name">{{ events.focusReturnTo.name }}</span>
+        </button>
+        <button class="pill-main" data-test="pill-expand" @click="events.toggleFocusExpanded()">
+          <span class="pill-name">{{ e.name }}</span>
+          <span class="pill-kind">{{ pillKind }}</span>
+        </button>
+        <button class="pill-btn" aria-label="Expand article" @click="events.toggleFocusExpanded()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 15l6-6 6 6" />
+          </svg>
+        </button>
+        <button class="pill-btn" data-test="pill-close" aria-label="Close" @click="events.close()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
 
-    <!-- `has-minimise` is how the title knows how much of its own line the
-         corner buttons have taken: one of them normally, two in focus mode. -->
-    <article
-      v-else-if="events.selected"
-      class="sheet panel scroll-y"
-      :class="{ 'has-minimise': events.focus }"
-    >
+      <!-- `has-minimise` is how the title knows how much of its own line the
+           corner buttons have taken: one of them normally, two in focus mode. -->
+      <article
+        v-else
+        key="article"
+        class="sheet panel scroll-y"
+        :class="{ 'has-minimise': events.focus }"
+      >
     <span class="grabber" aria-hidden="true" />
     <!-- In focus mode the article can fold back down to the pill without
          leaving the mode: the drawing stays, the pins stay, the reading stops. -->
@@ -218,7 +243,7 @@ onBeforeUnmount(() => inflight?.abort())
         <path d="M6 9l6 6 6-6" />
       </svg>
     </button>
-    <button class="close" aria-label="Close" @click="events.select()">
+    <button class="close" aria-label="Close" @click="events.close()">
       <svg
         width="14"
         height="14"
@@ -231,9 +256,20 @@ onBeforeUnmount(() => inflight?.abort())
       </svg>
     </button>
 
-    <!-- No breadcrumb: "Part of" below carries the whole chain, not just one
-         step of it, and two renderings of the same parent in one panel is the
-         patchwork this rework replaced. -->
+    <!-- The one breadcrumb there is, and only inside a focus: the reader is
+         looking at a battle *because* an operation is on the globe underneath
+         it, and this says so and takes them back (see `focusReturnTo`). "Part
+         of" below still carries the whole chain; this is about where the map
+         is, not about where the article sits in the hierarchy. -->
+    <button
+      v-if="events.focusReturnTo"
+      class="back"
+      data-test="focus-back"
+      @click="events.focusBack()"
+    >
+      <span aria-hidden="true">←</span>
+      <span class="back-name">{{ events.focusReturnTo.name }}</span>
+    </button>
     <h2>{{ e.name }}</h2>
     <p class="when tnum">
       <span v-if="kindLabel" class="kind">{{ kindLabel }}</span>
@@ -363,11 +399,19 @@ onBeforeUnmount(() => inflight?.abort())
     >
       Show only this event family
     </button>
-    </article>
-  </Transition>
+      </article>
+    </Transition>
+  </div>
 </template>
 
 <style scoped>
+/* The host exists to hold the v-if, not to lay anything out: `display: contents`
+   keeps it from generating a box, so the pill and the article go on resolving
+   their `position: absolute` against the same containing block they always did. */
+.panel-host {
+  display: contents;
+}
+
 /* The article. It is the thing being read, so it gets the room: as wide as a
    comfortable measure allows, as tall as the two bars leave, and starting as
    close to its own top edge as the close buttons permit.
@@ -412,9 +456,45 @@ onBeforeUnmount(() => inflight?.abort())
   display: flex;
   align-items: center;
   gap: var(--s1);
-  max-width: min(380px, calc(100vw - 2 * var(--s4)));
+  /* Wider than the article's own pill used to be, because inside a focus it
+     carries two names: the part being read and the whole it is part of. The
+     back chip is capped below, so the extra room goes to the item's own name. */
+  max-width: min(470px, calc(100vw - 2 * var(--s4)));
   padding: 3px 5px 3px var(--s2);
   border-radius: var(--r-pill);
+}
+/* The way out of a part and back to the whole, on the pill: an arrow and the
+   name of the context, kept to a third of the bar so the item the pill is
+   actually about still reads first. It is the same control as `.back` in the
+   article — one gesture, drawn twice at the two scales the panel comes in. */
+.pill-back {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 140px;
+  min-width: 0;
+  padding: 4px 8px 4px 4px;
+  margin-right: 2px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: var(--r-pill) 0 0 var(--r-pill);
+  background: none;
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--fast);
+}
+.pill-back:hover {
+  color: var(--patina);
+}
+.pill-back-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .pill-main {
   display: flex;
@@ -492,6 +572,15 @@ onBeforeUnmount(() => inflight?.abort())
   opacity: 0;
   transform: translateY(10px) scale(0.985);
 }
+/* A panel on its way out is a picture of a state that has already gone: it must
+   not take a click. The half-second of overlap is short enough to look like one
+   surface folding into another and long enough to hit by accident, and a hit
+   used to run the *old* panel's handler against the new store — which is how a
+   closed article's "Show on map" threw and how a stale pill closed a selection
+   the reader had just made. */
+.panel-swap-leave-active {
+  pointer-events: none;
+}
 /* The article carries its own entrance animation; running both at once
    double-counts the fade. */
 .panel-swap-enter-active.panel {
@@ -534,6 +623,36 @@ onBeforeUnmount(() => inflight?.abort())
    level with the corner buttons — so the space they need is reserved on the
    line rather than found by luck. One button is 30px at right: --s3; the
    fold-down chevron in focus mode is a second one 32px further in. */
+/* The same way out, on the article: a line above the title, which is where a
+   reader looks for "where am I". It keeps clear of the corner buttons on its
+   own line rather than trusting the title's padding to cover it. */
+.back {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: calc(100% - 82px);
+  margin: 0 0 4px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--patina);
+  cursor: pointer;
+  transition: color var(--fast);
+}
+.back:hover {
+  color: #a5dcd2;
+}
+.back-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 h2 {
   margin: 0;
   font-family: var(--serif);

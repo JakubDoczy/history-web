@@ -17,14 +17,17 @@ const events = useEventStore()
 
 /**
  * Escape unwinds the app one layer at a time, outermost first: an open pop-over,
- * then focus mode. It deliberately stops there rather than going on to clear the
- * selection — one key press should undo one thing, and losing the article you
- * were reading because you wanted the map back is not what was asked for.
+ * then focus mode — and focus mode is itself a stack, so `focusBack` takes one
+ * rung of that (the part being read inside an operation, then the operation
+ * itself, then whatever it was opened from). It deliberately stops before
+ * clearing the selection — one key press should undo one thing, and losing the
+ * article you were reading because you wanted the map back is not what was
+ * asked for.
  */
 const onKey = (e: KeyboardEvent) => {
   if (e.key !== 'Escape') return
   if (ui.search || ui.settings) ui.close()
-  else if (events.focus) events.exitFocus()
+  else if (events.focus) events.focusBack()
 }
 onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
