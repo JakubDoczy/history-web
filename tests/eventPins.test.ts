@@ -9,6 +9,7 @@ import {
   pinSvg,
 } from '../src/lib/eventPins'
 import type { PinDatum } from '../src/lib/eventClusters'
+import type { GeoPath } from '../src/lib/paths'
 import { TAG_COLORS } from '../src/lib/tags'
 
 const ev = (o: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
@@ -56,6 +57,33 @@ describe('pinSvg', () => {
     const svg = pinSvg(ev(), false)
     expect(svg).not.toContain('pin-footprint')
     expect(svg).toContain('<circle cx="12" cy="11" r="3.6"')
+  })
+
+  it('draws a winding route in the head of a path event, and no footprint', () => {
+    const route: GeoPath = [
+      [0, 0],
+      [10, 10],
+    ]
+    const svg = pinSvg(ev({ paths: [route] }), false)
+    expect(svg).not.toContain('pin-footprint')
+    // the route stroke plus the teardrop; a point pin has only the teardrop
+    expect((svg.match(/<path/g) ?? []).length).toBe(2)
+    expect(svg).toContain('stroke-linecap="round"')
+    // a port at each end of the line, not the point pin's single centre dot
+    expect(svg).not.toContain('<circle cx="12" cy="11" r="3.6"')
+    expect((svg.match(/r="1.5"/g) ?? []).length).toBe(2)
+    // and it is the same size as any other pin of its priority
+    expect(attr(svg, 'width')).toBe(attr(pinSvg(ev(), false), 'width'))
+    expect(attr(svg, 'height')).toBe(attr(pinSvg(ev(), false), 'height'))
+  })
+
+  it('lets a route win the head from a footprint, which the ellipse still says', () => {
+    // an event with both (the Atlantic slave trade): the reader is being offered
+    // the routes, and the region is still drawn under the tip
+    const svg = pinSvg(ev({ area: [[0, 0]], paths: [[[0, 0], [1, 1]]] }), false)
+    expect(svg).toContain('pin-footprint')
+    expect(svg).not.toContain('stroke-width="2" stroke-linecap="round"') // no brackets
+    expect(Number(attr(svg, 'height'))).toBe(Number(attr(pinSvg(ev({ area: [[0, 0]] }), false), 'height')))
   })
 
   it('marks the selection with a halo and a white outline', () => {

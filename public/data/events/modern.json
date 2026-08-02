@@ -463,8 +463,8 @@
   "id": "ether-anesthesia",
   "name": "First public demonstration of ether anesthesia",
   "start": 1846,
-  "lat": 42.36,
-  "lng": -71.06,
+  "lat": 42.3631,
+  "lng": -71.069,
   "priority": 72,
   "tags": [
    "science",
@@ -863,8 +863,8 @@
   "id": "lincoln-assassination",
   "name": "Assassination of Abraham Lincoln",
   "start": 1865,
-  "lat": 38.9,
-  "lng": -77.03,
+  "lat": 38.8967,
+  "lng": -77.0257,
   "priority": 56,
   "tags": [
    "politics"
@@ -1047,8 +1047,8 @@
   "id": "metric-system-1875",
   "name": "Metre Convention standardises metric system",
   "start": 1875,
-  "lat": 48.8,
-  "lng": 2.35,
+  "lat": 48.8296,
+  "lng": 2.2196,
   "priority": 55,
   "tags": [
    "science",
@@ -1297,8 +1297,8 @@
   "id": "wireless-telegraphy",
   "name": "Guglielmo Marconi and wireless telegraphy",
   "start": 1895,
-  "lat": 44.51,
-  "lng": 11.31,
+  "lat": 44.3719,
+  "lng": 11.2661,
   "priority": 69,
   "tags": [
    "technology"
@@ -1356,8 +1356,8 @@
   "id": "radioactivity",
   "name": "Discovery of radioactivity",
   "start": 1896,
-  "lat": 48.86,
-  "lng": 2.35,
+  "lat": 48.8417,
+  "lng": 2.3475,
   "priority": 72,
   "tags": [
    "science"
@@ -1602,8 +1602,8 @@
   "name": "Xinhai Revolution ends the Qing dynasty",
   "start": 1911,
   "end": 1912,
-  "lat": 30.59,
-  "lng": 114.31,
+  "lat": 30.545,
+  "lng": 114.302,
   "priority": 79,
   "tags": [
    "politics"
@@ -2019,8 +2019,8 @@
   "id": "ussr-founded",
   "name": "Soviet Union founded",
   "start": 1922,
-  "lat": 55.75,
-  "lng": 37.62,
+  "lat": 55.7601,
+  "lng": 37.6186,
   "priority": 63,
   "tags": [
    "politics"
@@ -2122,8 +2122,8 @@
   "id": "jazz-singer",
   "name": "The Jazz Singer — first sound film",
   "start": 1927,
-  "lat": 34.1,
-  "lng": -118.24,
+  "lat": 34.0983,
+  "lng": -118.3145,
   "priority": 63,
   "tags": [
    "culture",
@@ -2142,8 +2142,8 @@
   "id": "television-invention",
   "name": "Invention of television",
   "start": 1927,
-  "lat": 37.78,
-  "lng": -122.42,
+  "lat": 37.7997,
+  "lng": -122.4045,
   "priority": 66,
   "tags": [
    "technology"
@@ -2315,8 +2315,8 @@
   "id": "hitler-chancellor",
   "name": "Hitler appointed Chancellor of Germany",
   "start": 1933,
-  "lat": 52.52,
-  "lng": 13.4,
+  "lat": 52.5117,
+  "lng": 13.3806,
   "priority": 81,
   "tags": [
    "politics"
@@ -2334,8 +2334,8 @@
   "id": "enabling-act",
   "name": "Enabling Act in Nazi Germany",
   "start": 1933,
-  "lat": 52.52,
-  "lng": 13.4,
+  "lat": 52.5182,
+  "lng": 13.3697,
   "priority": 79,
   "tags": [
    "politics"
@@ -2394,8 +2394,8 @@
   "name": "Second Sino-Japanese War",
   "start": 1937,
   "end": 1945,
-  "lat": 39.9,
-  "lng": 116.4,
+  "lat": 39.8483,
+  "lng": 116.2133,
   "priority": 75,
   "tags": [
    "war"

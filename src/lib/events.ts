@@ -1,5 +1,6 @@
 import type { Year } from './time'
 import type { Ring } from './nations'
+import type { GeoPath } from './paths'
 import { internalLinkIds } from './richtext'
 import { GeoGrid, SpanIndex, TopScored, separationDeg } from './queryIndex'
 import type { ViewportScope } from './viewport'
@@ -50,6 +51,21 @@ export interface HistoricalEvent extends ItemBase {
   lng: number
   /** Optional polygon (GeoJSON [lng, lat] order) for area events; lat/lng then acts as centroid. */
   area?: Ring
+  /**
+   * Optional route geometry: one or more polylines in GeoJSON [lng, lat] order
+   * (see lib/paths.ts for why this is always an array, never a bare `path`).
+   *
+   * A path event is a pin like any other until it is opened; selecting it draws
+   * the routes on the globe, and deselecting removes them again — the same
+   * lifecycle the selected area polygon has. `lat`/`lng` stays the place the
+   * pin stands, and by convention it stands *on* the route (the Strait of
+   * Magellan for the circumnavigation, Nanjing for the treasure fleets).
+   *
+   * An event may carry both `area` and `paths`; both are drawn when it is
+   * selected. The Atlantic slave trade is the case that asked for it — three
+   * legs of a triangle over the basin the whole system worked across.
+   */
+  paths?: GeoPath[]
   parent?: string // id of parent event
   /**
    * Set only on events the index derives from a person (see `derivedEventsFor`).
@@ -101,6 +117,26 @@ export function anchorYearOf(i: Item): Year {
   if (isPerson(i)) return i.born
   if (isConcept(i)) return i.anchorYear
   return i.start
+}
+
+/**
+ * Every coordinate an item occupies, `[lng, lat]` each — its pin, its footprint
+ * and its routes. What "show this on the map" is framed on (lib/geoFocus.ts).
+ *
+ * A person contributes the place their life began (or ended, if that is the only
+ * one recorded); a concept contributes nothing, which is what leaves it with no
+ * map action at all.
+ */
+export function geometryPointsOf(item: Item): GeoPath {
+  if (isPerson(item)) {
+    const p = item.birthPlace ?? item.deathPlace
+    return p ? [[p.lng, p.lat]] : []
+  }
+  if (isConcept(item)) return []
+  const out: GeoPath = [[item.lng, item.lat]]
+  if (item.area) out.push(...item.area)
+  for (const path of item.paths ?? []) out.push(...path)
+  return out
 }
 
 /** The span an item occupies on the timeline — a point for anything instantaneous. */
@@ -307,6 +343,13 @@ export const effectivePriority = (e: HistoricalEvent, start: Year, end: Year): n
  * false positives in the grid and nothing in the answer — membership is tested
  * against the same circle either way, and the alternative (testing the polygon)
  * would pay for precision no one can see at pin scale.
+ *
+ * `paths` deliberately do NOT widen it, though they are geometry too. A route
+ * is drawn only when its event is selected, and a selected pin is kept by the
+ * store whatever the camera is doing (`EventIndex.admits` ignores the scope) —
+ * so counting the route here would buy nothing on screen and cost a great deal:
+ * a circumnavigation's radius is most of the planet, which would put its pin in
+ * the top-N contest in *every* frame, at a spot the camera is not looking at.
  */
 export function eventRadiusDeg(e: HistoricalEvent): number {
   if (!e.area?.length) return 0

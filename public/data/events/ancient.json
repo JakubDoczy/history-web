@@ -207,8 +207,8 @@
   "id": "egypt-unification",
   "name": "Unification of Egypt",
   "start": -3099,
-  "lat": 29.9,
-  "lng": 31.2,
+  "lat": 29.8494,
+  "lng": 31.2506,
   "priority": 87,
   "tags": [
    "politics"
@@ -616,8 +616,8 @@
   "id": "oracle-bones",
   "name": "Chinese oracle bone divination",
   "start": -1200,
-  "lat": 36.1,
-  "lng": 114.35,
+  "lat": 36.1264,
+  "lng": 114.3147,
   "priority": 53,
   "tags": [
    "culture",
@@ -842,8 +842,8 @@
   "id": "rome-founding",
   "name": "Founding of Rome",
   "start": -752,
-  "lat": 41.9,
-  "lng": 12.5,
+  "lat": 41.8892,
+  "lng": 12.4869,
   "priority": 82,
   "tags": [
    "politics"
@@ -989,8 +989,8 @@
   "id": "roman-republic-founded",
   "name": "Roman Republic formally established",
   "start": -508,
-  "lat": 41.9,
-  "lng": 12.5,
+  "lat": 41.893,
+  "lng": 12.4847,
   "priority": 77,
   "tags": [
    "politics",
@@ -1344,8 +1344,8 @@
   "id": "plato-academy",
   "name": "Plato founds the Academy",
   "start": -386,
-  "lat": 37.97,
-  "lng": 23.73,
+  "lat": 37.9925,
+  "lng": 23.7118,
   "priority": 67,
   "tags": [
    "culture",
@@ -1568,8 +1568,8 @@
   "id": "stoic-philosophy",
   "name": "Stoic philosophy founded",
   "start": -300,
-  "lat": 37.97,
-  "lng": 23.72,
+  "lat": 37.9765,
+  "lng": 23.7231,
   "priority": 59,
   "tags": [
    "culture",
@@ -1668,8 +1668,8 @@
   "id": "qin-unification",
   "name": "Qin unification of China",
   "start": -220,
-  "lat": 34.38,
-  "lng": 109.0,
+  "lat": 34.3335,
+  "lng": 108.705,
   "priority": 91,
   "tags": [
    "politics"
@@ -1762,8 +1762,8 @@
   "name": "Han dynasty",
   "start": -201,
   "end": 220,
-  "lat": 34.27,
-  "lng": 108.95,
+  "lat": 34.3033,
+  "lng": 108.8447,
   "priority": 84,
   "tags": [
    "politics",
@@ -1821,6 +1821,162 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Silk_Road"
    }
+  ],
+  "paths": [
+   [
+    [
+     108.95,
+     34.27
+    ],
+    [
+     103.79,
+     36.06
+    ],
+    [
+     98.51,
+     39.74
+    ],
+    [
+     94.66,
+     40.14
+    ],
+    [
+     89.19,
+     42.95
+    ],
+    [
+     86.15,
+     41.77
+    ],
+    [
+     82.98,
+     41.72
+    ],
+    [
+     80.26,
+     41.17
+    ],
+    [
+     75.99,
+     39.47
+    ],
+    [
+     72.79,
+     40.53
+    ],
+    [
+     66.96,
+     39.65
+    ],
+    [
+     64.42,
+     39.77
+    ],
+    [
+     62.19,
+     37.66
+    ],
+    [
+     58.79,
+     36.21
+    ],
+    [
+     51.43,
+     35.7
+    ],
+    [
+     48.51,
+     34.8
+    ],
+    [
+     44.4,
+     33.34
+    ],
+    [
+     38.27,
+     34.55
+    ],
+    [
+     36.16,
+     36.2
+    ]
+   ],
+   [
+    [
+     94.66,
+     40.14
+    ],
+    [
+     88.16,
+     39.03
+    ],
+    [
+     85.53,
+     38.14
+    ],
+    [
+     82.72,
+     37.06
+    ],
+    [
+     79.93,
+     37.11
+    ],
+    [
+     77.24,
+     38.42
+    ],
+    [
+     75.23,
+     37.77
+    ],
+    [
+     74.31,
+     35.92
+    ],
+    [
+     72.83,
+     33.74
+    ]
+   ],
+   [
+    [
+     66.96,
+     39.65
+    ],
+    [
+     64.42,
+     39.77
+    ],
+    [
+     60.63,
+     41.55
+    ],
+    [
+     55.0,
+     44.5
+    ],
+    [
+     48.03,
+     46.35
+    ],
+    [
+     43.5,
+     46.3
+    ],
+    [
+     39.42,
+     47.11
+    ],
+    [
+     34.97,
+     44.85
+    ],
+    [
+     28.98,
+     41.01
+    ]
+   ]
   ]
  },
  {
@@ -2053,8 +2209,8 @@
   "id": "caesar-assassination",
   "name": "Assassination of Julius Caesar",
   "start": -43,
-  "lat": 41.9,
-  "lng": 12.48,
+  "lat": 41.8955,
+  "lng": 12.4767,
   "priority": 73,
   "tags": [
    "politics"
@@ -2125,8 +2281,8 @@
   "id": "roman-empire",
   "name": "Founding of the Roman Empire",
   "start": -26,
-  "lat": 41.9,
-  "lng": 12.48,
+  "lat": 41.8929,
+  "lng": 12.4854,
   "priority": 88,
   "tags": [
    "politics"
@@ -2449,8 +2605,8 @@
   "id": "pantheon-built",
   "name": "Pantheon completed in Rome",
   "start": 126,
-  "lat": 41.89,
-  "lng": 12.48,
+  "lat": 41.8986,
+  "lng": 12.4769,
   "priority": 64,
   "tags": [
    "culture",

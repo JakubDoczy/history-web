@@ -463,8 +463,8 @@
   "id": "burgess-shale-fauna",
   "name": "Burgess Shale exceptional preservation",
   "start": -508000000,
-  "lat": 51.4,
-  "lng": -116.5,
+  "lat": 51.4372,
+  "lng": -116.4739,
   "priority": 74,
   "tags": [
    "biology"

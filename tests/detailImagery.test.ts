@@ -1795,3 +1795,174 @@ describe('cached imagery is released, not just dropped', () => {
     expect(FakeBitmap.made.every((b) => b.closed)).toBe(true)
   })
 })
+
+import { REST_MIN_COVER, FEATHER_FRACTION, viewBbox as viewBboxFor } from '../src/lib/detailImagery'
+import { unionCoverage as unionCov } from '../src/lib/patchCache'
+
+/**
+ * The two properties a pan has to keep: the picture finishes, and it never gets
+ * worse on the way. Both were reported broken from the field, and both are
+ * about the gap between "the request is worth repeating" and "the imagery
+ * reaches the edge of the screen", which are not the same question.
+ */
+describe('panning to rest', () => {
+  const CLOSE = 0.02
+
+  /** A canvas that records draws and can build the gradients feathering needs. */
+  class PanCanvas {
+    static made: PanCanvas[] = []
+    width = 0
+    height = 0
+    ops: { image: unknown; x: number; y: number; w: number; h: number }[] = []
+    gradients = 0
+    composites: string[] = []
+    constructor() {
+      PanCanvas.made.push(this)
+    }
+    getContext() {
+      return {
+        clearRect: () => {},
+        drawImage: (image: unknown, x = 0, y = 0, w = 0, h = 0) =>
+          this.ops.push({ image, x, y, w, h }),
+        createLinearGradient: () => {
+          this.gradients++
+          return { addColorStop: () => {} }
+        },
+        fillRect: () => {},
+        set globalCompositeOperation(v: string) {
+          this.composites?.push?.(v)
+        },
+        get globalCompositeOperation() {
+          return 'source-over'
+        },
+        fillStyle: '',
+      } as unknown as CanvasRenderingContext2D
+    }
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.requests = []
+    FakeImage.last = undefined
+    PanCanvas.made = []
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new PanCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  /**
+   * The rectangle a request went out for, read back off the WMS URL.
+   *
+   * Asserting on what the pipeline *asks for* rather than on what it has cached
+   * keeps the test to the class's own surface — and it is the stronger
+   * statement anyway: the invariant is that a view missing imagery causes a
+   * request that covers it.
+   */
+  const requestedBbox = (url: string): Bbox => {
+    const q = new URLSearchParams(url.slice(url.indexOf('?') + 1))
+    const n = q.get('bbox')!.split(',').map(Number)
+    return q.get('version') === '1.3.0'
+      ? { minLat: n[0], minLng: n[1], maxLat: n[2], maxLng: n[3] }
+      : { minLng: n[0], minLat: n[1], maxLng: n[2], maxLat: n[3] }
+  }
+
+  /** Hold the camera at a view long enough for one settle, and land the patch. */
+  const settleAt = (d: DetailImagery, lat: number, lng: number, ms = SETTLE_MS * 3) => {
+    for (let i = 0; i < ms / 16; i++) {
+      d.update(lat, lng, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    if (FakeImage.last?.onload) FakeImage.last.onload()
+  }
+
+  it('fills the edge a pan too small to refetch has exposed', () => {
+    const d = new DetailImagery()
+    settleAt(d, 45, 10)
+    const first = FakeImage.requests.length
+    expect(first).toBeGreaterThan(0)
+
+    // A pan past the patch's own 1.25x margin but under the fifth-of-a-span
+    // that `movedEnough` asks for. This is the case that used to leave a strip
+    // of base map along the leading edge that no later frame would ever fill.
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const width = span.maxLng - span.minLng
+    const nudge = width * 0.16 // margin gives out at 0.125; refetch trips at 0.2
+    expect(movedEnough(span, viewBboxFor(45, 10 + nudge, CLOSE, 1))).toBe(false)
+
+    settleAt(d, 45, 10 + nudge)
+    expect(FakeImage.requests.length).toBeGreaterThan(first) // a request was owed
+
+    // ...for a rectangle that covers the view, and once it lands the published
+    // rectangle is the view's own again
+    const want = viewBboxFor(45, 10 + nudge, CLOSE, 1)
+    const asked = requestedBbox(FakeImage.requests.at(-1)!)
+    expect(unionCov([{ bbox: asked }], want)).toBeGreaterThanOrEqual(REST_MIN_COVER)
+    expect(d.rect[0] * 360 - 180).toBeCloseTo(want.minLng, 6)
+    d.dispose()
+  })
+
+  it('asks again after several small pans that each stay under the threshold', () => {
+    const d = new DetailImagery()
+    settleAt(d, 45, 10)
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const step = (span.maxLng - span.minLng) * 0.15
+    let lng = 10
+    for (let i = 0; i < 3; i++) {
+      lng += step
+      const before = FakeImage.requests.length
+      settleAt(d, 45, lng)
+      expect(FakeImage.requests.length).toBeGreaterThan(before)
+      const want = viewBboxFor(45, lng, CLOSE, 1)
+      const asked = requestedBbox(FakeImage.requests.at(-1)!)
+      expect(unionCov([{ bbox: asked }], want)).toBeGreaterThanOrEqual(REST_MIN_COVER)
+    }
+    d.dispose()
+  })
+
+  it('stops asking once the view is covered, however long it stands still', () => {
+    // the other side of the same rule: a coverage test that never quite reaches
+    // its threshold would spend a request every settle for as long as the app
+    // is open
+    const d = new DetailImagery()
+    settleAt(d, 45, 10)
+    const after = FakeImage.requests.length
+    for (let i = 0; i < 200; i++) {
+      d.update(45, 10, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    expect(FakeImage.requests).toHaveLength(after)
+    d.dispose()
+  })
+
+  it('tolerates the camera creeping under orbit damping without refetching', () => {
+    const d = new DetailImagery()
+    settleAt(d, 45, 10)
+    const after = FakeImage.requests.length
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const creep = (span.maxLng - span.minLng) * (MOTION_EPS / 2)
+    for (let i = 0; i < 120; i++) {
+      d.update(45, 10 + creep * Math.sin(i / 9), CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    expect(FakeImage.requests).toHaveLength(after)
+    d.dispose()
+  })
+
+  it('feathers a patch whose edge falls inside the composite', () => {
+    // the join between two patches is a crossfade, not a butt joint: that is
+    // what lets the plan keep a patch for a thin strip without bringing a
+    // visible rectangular edge with it
+    const d = new DetailImagery()
+    settleAt(d, 45, 10)
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const nudge = (span.maxLng - span.minLng) * 0.16
+    PanCanvas.made.forEach((c) => (c.gradients = 0))
+    settleAt(d, 45, 10 + nudge)
+    expect(PanCanvas.made.some((c) => c.gradients > 0)).toBe(true)
+    expect(FEATHER_FRACTION).toBeGreaterThan(0)
+    d.dispose()
+  })
+})

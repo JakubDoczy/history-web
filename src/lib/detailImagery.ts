@@ -1,5 +1,5 @@
 import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 'three'
-import { compositePlan, placeOnCanvas, pruneCache, type CachedPatch } from './patchCache'
+import { compositePlan, placeOnCanvas, pruneCache, unionCoverage, type CachedPatch } from './patchCache'
 import {
   createPatchResampler,
   upscaleFits,
@@ -462,6 +462,35 @@ export const PAN_MIN_COVER = 0.35
 export const PAN_PUBLISH_MS = 800
 
 /**
+ * How much of the view the imagery must reach before the pipeline may consider
+ * itself finished and stop asking for more.
+ *
+ * Not 1, and the reason is termination rather than taste. The rectangle is
+ * recomputed from the live camera, and a camera counts as still while it drifts
+ * by up to MOTION_EPS of a span per frame — so a patch fetched for the view of
+ * a moment ago covers the view of now to about 1 - MOTION_EPS, not to 1. At a
+ * threshold above that, "not covered" would be permanently true under orbit
+ * damping and the settle would spend a request every SETTLE_MS forever.
+ *
+ * A percent is five times that drift, and on the other side it is a strip
+ * around seven pixels wide on a 720-tall screen: an order of magnitude below
+ * the eighth of a frame at which the patch margin gives out, which is the gap
+ * this test exists to catch.
+ */
+export const REST_MIN_COVER = 0.99
+
+/**
+ * How wide the crossfade between two patches inside a composite is, as a
+ * fraction of the smaller side of the patch being laid down.
+ *
+ * A fraction rather than a fixed count so it reads the same at every zoom, and
+ * clamped at both ends in DetailImagery.feathered: below about four pixels a
+ * ramp is a hard edge with extra steps, and above about sixty it starts eating
+ * into ground the patch is there to show.
+ */
+export const FEATHER_FRACTION = 0.04
+
+/**
  * Imagery is fetched in two stages.
  *
  * Stage one is NASA Blue Marble: one static layer, no date, always available.
@@ -799,6 +828,8 @@ export class DetailImagery {
   private upscaleEpoch = 0
   /** Attribution text by source label, so the panel can describe what is shown. */
   private attributions = new Map<string, string>()
+  /** Reused scratch canvas for feathering a patch into the composite. */
+  private scratch?: HTMLCanvasElement
 
   constructor(opts: DetailImageryOptions = {}) {
     this.maxPx = opts.maxPx ?? MAX_PATCH_PX
@@ -862,9 +893,27 @@ export class DetailImagery {
     if (viewMotion(this.lastSeen, bbox) > MOTION_EPS) this.movedAt = Date.now()
     this.lastSeen = bbox
 
+    // Does the imagery we hold actually reach every corner of the view?
+    //
+    // Not the same question as `movedEnough`, and the gap between them is the
+    // bug this exists to close. `movedEnough` asks whether the *request* is
+    // worth repeating and trips at a fifth of a patch span; the patch is cut
+    // 1.25x the frame, so it stops covering the frame after a pan of an eighth
+    // of it. A pan that lands between the two — the small final adjustment at
+    // the end of a drag — left a strip of base map along the leading edge that
+    // *no later frame would ever fill*: the camera was at rest, nothing had
+    // moved enough, so no request was ever queued and no composite was ever
+    // drawn. "Sometimes edges stay low res forever" is exactly that strip.
+    //
+    // The union of the cached rectangles, not the published one: a composite is
+    // cut to a rectangle it does not necessarily fill, and it is the imagery,
+    // not the rectangle, that decides whether anything is owed.
+    const covered =
+      unionCoverage(compositePlan(this.cache, bbox, Date.now()), bbox) >= REST_MIN_COVER
+
     // the imagery we already hold may still cover the view — show it again
     // rather than paying for the same request twice
-    if (this.texture && !movedEnough(this.current, bbox)) {
+    if (this.texture && covered && !movedEnough(this.current, bbox)) {
       if (!this.shown || this.mix !== 1) {
         this.shown = true
         this.mix = 1
@@ -882,7 +931,11 @@ export class DetailImagery {
     // the timer when the target has actually moved. update() runs once per
     // animation frame; clearing the timer unconditionally reset it every ~16 ms,
     // so the 280 ms never elapsed and no patch was ever fetched at all.
-    if (this.pending && !movedEnough(this.pending, bbox)) return
+    // Likewise for a request already in flight: it only excuses the view from
+    // asking again if what it will deliver covers the view. One that was cut
+    // for a rectangle the camera has since panned off leaves the same
+    // permanent strip.
+    if (this.pending && coversView(this.pending, bbox) && !movedEnough(this.pending, bbox)) return
     this.pending = bbox
     // Everything below this line runs *while the camera is moving* — reaching
     // here means the view has moved enough to re-arm the settle timer, and the
@@ -1039,8 +1092,94 @@ export class DetailImagery {
     sharpen: boolean,
   ) {
     const up = this.magnified(p, x, y, w, h, canvasW, canvasH, sharpen)
-    if (up) ctx.drawImage(up.canvas, up.x, up.y, up.w, up.h)
-    else ctx.drawImage(p.image, x, y, w, h)
+    const draw = (c: CanvasRenderingContext2D, dx: number, dy: number) => {
+      if (up) c.drawImage(up.canvas, up.x + dx, up.y + dy, up.w, up.h)
+      else c.drawImage(p.image, x + dx, y + dy, w, h)
+    }
+    const soft = this.feathered(p, x, y, w, h, canvasW, canvasH, draw)
+    if (soft) ctx.drawImage(soft.canvas, soft.x, soft.y)
+    else draw(ctx, 0, 0)
+  }
+
+  /**
+   * A patch with its interior edges ramped out, ready to be laid over whatever
+   * is already on the canvas.
+   *
+   * The joins *inside* a composite used to be butt joints: patch A drawn, patch
+   * B drawn over part of it, and a hard rectangular line between two different
+   * resolutions of the same ground wherever B stopped. That line is the "small
+   * image over a larger copy over a larger copy" from the field — and it is
+   * also why the plan had to throw away any patch contributing less than a
+   * twelfth of the view, because each one it kept brought another edge. Which
+   * in turn is how ground that *was* covered lost its imagery the moment a
+   * sharper patch arrived that did not quite reach as far: a step backward, at
+   * the exact moment the picture was supposed to improve.
+   *
+   * Ramping the alpha out over the last few pixels instead makes the join a
+   * crossfade between two resolutions. Nothing is lost where they overlap — the
+   * ramp only reduces B's contribution, and A is still underneath — so a patch
+   * that adds a sliver may now be kept for the sliver's sake (see
+   * MIN_UNIQUE_COVERAGE) without bringing an edge with it.
+   *
+   * Only edges that fall *inside* the canvas are ramped. An edge lying on the
+   * canvas boundary is the composite's own outer edge, and the shader already
+   * feathers that against the base map; ramping it twice would pull the imagery
+   * back from the edge of the rectangle it is supposed to fill.
+   */
+  private feathered(
+    p: CachedPatch<CanvasImageSource>,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    canvasW: number,
+    canvasH: number,
+    draw: (c: CanvasRenderingContext2D, dx: number, dy: number) => void,
+  ): { canvas: HTMLCanvasElement; x: number; y: number } | undefined {
+    if (typeof document === 'undefined') return undefined
+    const inset = {
+      left: x > 0.5,
+      right: x + w < canvasW - 0.5,
+      top: y > 0.5,
+      bottom: y + h < canvasH - 0.5,
+    }
+    if (!inset.left && !inset.right && !inset.top && !inset.bottom) return undefined
+    // the part of the patch that lands on the canvas, in canvas pixels
+    const vx = Math.max(0, Math.floor(x))
+    const vy = Math.max(0, Math.floor(y))
+    const vw = Math.ceil(Math.min(canvasW, x + w)) - vx
+    const vh = Math.ceil(Math.min(canvasH, y + h)) - vy
+    if (vw < 4 || vh < 4) return undefined
+    const band = Math.round(clamp(Math.min(vw, vh) * FEATHER_FRACTION, 4, 64))
+
+    const scratch = this.scratch ?? document.createElement('canvas')
+    this.scratch = scratch
+    scratch.width = vw
+    scratch.height = vh
+    const sc = scratch.getContext('2d')
+    // a stub canvas in a test has no gradients; the butt joint is still correct
+    if (!sc?.createLinearGradient) return undefined
+    sc.clearRect(0, 0, vw, vh)
+    draw(sc, -vx, -vy)
+    // `destination-out`, not `destination-in`: it subtracts alpha only where it
+    // paints, so one band per edge composes without a full-canvas pass and
+    // without touching the middle. (`destination-in` is global — every pixel the
+    // source does not cover is erased — so four band-shaped passes of it leave
+    // four thin bands and nothing else, which is what it did.)
+    sc.globalCompositeOperation = 'destination-out'
+    const ramp = (x0: number, y0: number, x1: number, y1: number) => {
+      const g = sc.createLinearGradient(x0, y0, x1, y1)
+      g.addColorStop(0, 'rgba(0,0,0,1)') // full erase at the edge...
+      g.addColorStop(1, 'rgba(0,0,0,0)') // ...fading to none by the band's end
+      sc.fillStyle = g
+      sc.fillRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0) || vw, Math.abs(y1 - y0) || vh)
+    }
+    if (inset.left) ramp(0, 0, band, 0)
+    if (inset.right) ramp(vw, 0, vw - band, 0)
+    if (inset.top) ramp(0, 0, 0, band)
+    if (inset.bottom) ramp(0, vh, 0, vh - band)
+    sc.globalCompositeOperation = 'source-over'
+    return { canvas: scratch, x: vx, y: vy }
   }
 
   /** The visible part of the patch, Lanczos-resampled, or undefined if not worth it. */

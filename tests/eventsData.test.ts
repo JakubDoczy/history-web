@@ -7,6 +7,7 @@ import {
   anchorYearOf,
   derivedEventsFor,
   effectivePriority,
+  geometryPointsOf,
   isConcept,
   isEvent,
   isMinor,
@@ -19,6 +20,10 @@ import {
   type Person,
 } from '../src/lib/events'
 import { type EventManifest } from '../src/lib/eventChunks'
+import { MAX_SEGMENT_DEG, densifyPaths, isGeoPath } from '../src/lib/paths'
+import { MAX_FIT_ALTITUDE, POINT_CAP_DEG, altitudeForCapDeg, focusTargetFor } from '../src/lib/geoFocus'
+import { separationDeg } from '../src/lib/queryIndex'
+import { visibleSpanDeg } from '../src/lib/detailImagery'
 import { TAGS } from '../src/lib/tags'
 import { MIN_TIME, MAX_TIME } from '../src/lib/time'
 import { internalLinkIds, renderRichText } from '../src/lib/richtext'
@@ -124,7 +129,7 @@ describe('items — dataset shape', () => {
       'id', 'kind', 'name', 'priority', 'tags', 'summary', 'body', 'image', 'links', 'related',
     ]
     const allowed: Record<string, Set<string>> = {
-      event: new Set([...common, 'start', 'end', 'lat', 'lng', 'area', 'parent']),
+      event: new Set([...common, 'start', 'end', 'lat', 'lng', 'area', 'paths', 'parent']),
       person: new Set([...common, 'born', 'died', 'birthPlace', 'deathPlace']),
       concept: new Set([...common, 'anchorYear']),
     }
@@ -236,6 +241,115 @@ describe('items — geography', () => {
       expect(e.lat, `${e.id} centroid outside ring bbox`).toBeGreaterThanOrEqual(Math.min(...lats))
       expect(e.lat, `${e.id} centroid outside ring bbox`).toBeLessThanOrEqual(Math.max(...lats))
     }
+  })
+})
+
+/**
+ * Route geometry. The rules are the same three the build script enforces (see
+ * `validate_paths` in scripts/build_event_chunks.py) plus the ones only the
+ * corpus can answer: that the routes are actually there, that a pin stands on
+ * the road it draws, and that the camera can be put somewhere that shows it.
+ */
+describe('items — path events', () => {
+  const pathEvents = events.filter((e) => e.paths)
+
+  it('ships a body of routes, on the events that are about going somewhere', () => {
+    expect(pathEvents.length, 'too few path events').toBeGreaterThanOrEqual(6)
+    for (const id of ['silk-road', 'slave-trade', 'magellan', 'zheng-he'])
+      expect(
+        pathEvents.map((e) => e.id),
+        `${id} should draw its route`,
+      ).toContain(id)
+  })
+
+  it('uses `paths` — always a list of routes — and never a bare `path`', () => {
+    for (const e of items) expect('path' in e, `${e.id} uses the wrong field`).toBe(false)
+    for (const e of pathEvents) {
+      expect(Array.isArray(e.paths), e.id).toBe(true)
+      expect(e.paths!.length, `${e.id} has an empty paths list`).toBeGreaterThanOrEqual(1)
+    }
+  })
+
+  it('has at least two points per route, all of them on the planet', () => {
+    for (const e of pathEvents)
+      for (const [i, path] of e.paths!.entries()) {
+        expect(path.length, `${e.id} path ${i}`).toBeGreaterThanOrEqual(2)
+        expect(isGeoPath(path), `${e.id} path ${i} is not a route`).toBe(true)
+        for (const p of path) {
+          expect(p.length, `${e.id} path ${i}`).toBe(2)
+          const [lng, lat] = p // GeoJSON order, as everywhere else
+          expect(lat, `${e.id} path ${i}`).toBeGreaterThanOrEqual(-90)
+          expect(lat, `${e.id} path ${i}`).toBeLessThanOrEqual(90)
+          expect(lng, `${e.id} path ${i}`).toBeGreaterThanOrEqual(-180)
+          expect(lng, `${e.id} path ${i}`).toBeLessThanOrEqual(180)
+        }
+      }
+  })
+
+  it('stands its pin on the route it draws', () => {
+    // the pin is what a reader clicks to see the route, so it must not be
+    // somewhere else entirely; densified, since a waypoint is not the road
+    for (const e of pathEvents) {
+      const nearest = Math.min(
+        ...densifyPaths(e.paths!, 2)
+          .flat()
+          .map(([lng, lat]) => separationDeg(e.lat, e.lng, lat, lng)),
+      )
+      expect(nearest, `${e.id}'s pin is ${nearest.toFixed(1)}° off its own route`).toBeLessThan(8)
+    }
+  })
+
+  it('is authored at waypoint fidelity, and densifies to a smooth arc', () => {
+    for (const e of pathEvents) {
+      const drawn = densifyPaths(e.paths!)
+      for (const path of drawn)
+        for (let i = 1; i < path.length; i++)
+          expect(
+            separationDeg(path[i - 1][1], path[i - 1][0], path[i][1], path[i][0]),
+            `${e.id} has a segment the renderer would draw as a rhumb line`,
+          ).toBeLessThanOrEqual(MAX_SEGMENT_DEG + 1e-9)
+      // and densifying really did something: these are ocean crossings
+      expect(drawn.flat().length).toBeGreaterThan(e.paths!.flat().length)
+    }
+  })
+
+  it('can be framed by the camera: the fit holds the whole route, or admits it cannot', () => {
+    for (const e of pathEvents) {
+      const target = focusTargetFor(e)!
+      const horizon = visibleSpanDeg(target.altitude) / 2
+      const worst = Math.max(
+        ...geometryPointsOf(e).map(([lng, lat]) => separationDeg(target.lat, target.lng, lat, lng)),
+      )
+      // A circumnavigation cannot be shown at once — half of it is behind the
+      // planet — so the fit stops at world view rather than lying about it.
+      if (worst > horizon) expect(target.altitude, `${e.id}`).toBe(MAX_FIT_ALTITUDE)
+      // every route is wider than a point, so every fit backs off further than
+      // the height a bare pin is flown to
+      expect(target.altitude, `${e.id}`).toBeGreaterThan(altitudeForCapDeg(POINT_CAP_DEG))
+    }
+    expect(focusTargetFor(byId.get('magellan') as HistoricalEvent)!.altitude).toBe(MAX_FIT_ALTITUDE)
+  })
+
+  it("keeps the owner's example a point pin: Magellan is a place, the voyage is its route", () => {
+    const magellan = byId.get('magellan') as HistoricalEvent
+    expect(magellan.area, 'the circumnavigation is a route, not a region').toBeUndefined()
+    expect(magellan.paths).toHaveLength(1)
+    // the pin stands in the strait that carries the name
+    expect(separationDeg(magellan.lat, magellan.lng, -53.5, -70.9)).toBeLessThan(2)
+    // and the route goes right round: it must reach both the far Pacific and
+    // the Indian Ocean, or it is not a circumnavigation
+    const lngs = magellan.paths![0].map((p) => p[0])
+    expect(Math.min(...lngs)).toBeLessThanOrEqual(-170)
+    expect(Math.max(...lngs)).toBeGreaterThan(120)
+  })
+
+  it('lets one event carry both a footprint and its routes', () => {
+    const trade = byId.get('slave-trade') as HistoricalEvent
+    expect(trade.area, 'the Atlantic basin the system worked across').toBeDefined()
+    expect(trade.paths, 'the three legs of the triangle').toHaveLength(3)
+    // a triangle closes: the return leg ends where the outward one began
+    const [outward, , homeward] = trade.paths!
+    expect(homeward[homeward.length - 1]).toEqual(outward[0])
   })
 })
 

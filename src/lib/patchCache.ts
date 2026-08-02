@@ -90,11 +90,54 @@ export function rectIntersection(a: Bbox, b: Bbox): Bbox | undefined {
 export const rectArea = (b: Bbox) =>
   Math.max(0, b.maxLat - b.minLat) * Math.max(0, b.maxLng - b.minLng)
 
-/** How much of `target` a patch covers, 0..1. */
+/**
+ * How much of `target` a patch covers, 0..1.
+ *
+ * Single patch. For "how much imagery does the view actually have", which is a
+ * different question and the one that decides whether a request is owed, see
+ * unionCoverage.
+ */
 export function coverage(target: Bbox, patch: Bbox): number {
   const hit = rectIntersection(target, patch)
   const area = rectArea(target)
   return hit && area > 0 ? rectArea(hit) / area : 0
+}
+
+/**
+ * How much of `target` a *set* of patches covers between them, 0..1.
+ *
+ * Summing `coverage` would double-count every overlap, and patches in this
+ * cache overlap almost by construction — they are successive views of the same
+ * place. So the rectangles are cut against each other on both axes and each
+ * cell of the resulting grid is counted once. At four patches that is a grid of
+ * at most 9x9, which is cheaper than it sounds and exact, where the alternative
+ * (inclusion-exclusion) is neither.
+ *
+ * This is the number behind "is any visible ground still without imagery": the
+ * published rectangle answers a different question, because a composite cut to
+ * a rectangle is not the same as a composite that fills it.
+ */
+export function unionCoverage(patches: { bbox: Bbox }[], target: Bbox): number {
+  const area = rectArea(target)
+  if (area <= 0) return 0
+  const hits = patches
+    .map((p) => rectIntersection(target, p.bbox))
+    .filter((b): b is Bbox => !!b)
+  if (!hits.length) return 0
+  const lats = [...new Set(hits.flatMap((b) => [b.minLat, b.maxLat]))].sort((a, b) => a - b)
+  const lngs = [...new Set(hits.flatMap((b) => [b.minLng, b.maxLng]))].sort((a, b) => a - b)
+  let covered = 0
+  for (let i = 0; i < lats.length - 1; i++) {
+    for (let j = 0; j < lngs.length - 1; j++) {
+      const lat = (lats[i] + lats[i + 1]) / 2
+      const lng = (lngs[j] + lngs[j + 1]) / 2
+      const inside = hits.some(
+        (b) => b.minLat <= lat && lat <= b.maxLat && b.minLng <= lng && lng <= b.maxLng,
+      )
+      if (inside) covered += (lats[i + 1] - lats[i]) * (lngs[j + 1] - lngs[j])
+    }
+  }
+  return Math.min(1, covered / area)
 }
 
 /**
@@ -218,16 +261,26 @@ export function uniqueContribution<T>(
  * How much of the view a patch must add, over and above what is drawn on top of
  * it, to be worth drawing at all.
  *
- * Every patch in a composite brings a hard rectangular edge with it — the joins
- * inside a composite are not feathered, only its outer boundary is — so this is
- * really "how much ground is worth an edge". Measured over a scripted
- * continuous zoom-out, the draw stack averaged 3.6 patches deep with four
- * concentric copies of the same ground at the worst; at 2% that fell to 2.0,
- * and at 8% to 1.4, with the frames showing any nesting at all going from 88%
- * to 18%. Above about a tenth it starts refusing patches that cover a visible
- * slice of the screen, which is a coverage loss rather than an edge saved.
+ * This used to be 0.08 — "how much ground is worth a hard rectangular edge",
+ * because the joins inside a composite were butt joints and every patch kept
+ * brought another visible step between two resolutions of the same ground.
+ * Measured over a scripted zoom-out, dropping to 2% took the draw stack from
+ * 1.4 patches deep to 2.0 and the frames showing nesting from 18% to 88%.
+ *
+ * The joins are crossfades now (see DetailImagery.feathered), so the question
+ * changes: a patch kept for a sliver costs a ramp nobody can see rather than an
+ * edge everybody can. And the old number had a cost of its own that the nesting
+ * measurement could not show — a twelfth of the view is a band sixty pixels
+ * wide, and dropping the only patch covering it took imagery *away* from ground
+ * that already had it, at the moment a sharper patch arrived that did not quite
+ * reach as far. "Some high res portions get low res before being refreshed to
+ * high res again" is that band.
+ *
+ * So what is left is a cost bound, not an artefact bound: half a percent of the
+ * view is three pixels on a 640-tall screen, and the draw stack is capped at
+ * PATCH_KEEP either way.
  */
-export const MIN_UNIQUE_COVERAGE = 0.08
+export const MIN_UNIQUE_COVERAGE = 0.005
 
 /**
  * Drop every patch that the ones drawn after it make redundant.

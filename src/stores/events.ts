@@ -10,6 +10,7 @@ import {
   type HistoricalEvent,
   type Item,
 } from '../lib/events'
+import { focusTargetFor, type FocusTarget } from '../lib/geoFocus'
 import { assignTiers, type Tier } from '../lib/eventTiers'
 import { internalLinkIds } from '../lib/richtext'
 import { chunksFor, mergeEvents, type EventManifest } from '../lib/eventChunks'
@@ -70,8 +71,14 @@ export const useEventStore = defineStore('events', {
      * A place the panel asked the globe to look at. Bumped, never cleared: the
      * globe watches the counter, so asking for the same coordinates twice still
      * flies there twice.
+     *
+     * `altitude` is optional and means "and this far out", which is what fitting
+     * a route or a footprint in the frame needs; without it the camera keeps the
+     * height the user chose, which is what a birth-place chip wants.
      */
-    flyTo: undefined as { lat: number; lng: number; seq: number } | undefined,
+    flyTo: undefined as
+      | { lat: number; lng: number; altitude?: number; seq: number }
+      | undefined,
     /** The cluster the user has opened, if any (see lib/eventClusters.ts). */
     expandedClusterId: undefined as string | undefined,
     /** Visible span when that cluster was opened — the fan is only valid near it. */
@@ -152,6 +159,17 @@ export const useEventStore = defineStore('events', {
     pinById: (s) => (id: string) => {
       void s.revision
       return index.pin(id)
+    },
+    /**
+     * Where the camera would have to be to show this item — `undefined` for an
+     * item with no geometry at all, which is what hides the panel's "Show on
+     * map" action on a concept. Derived birth/death pins resolve too, since they
+     * are events like any other once the index has made them.
+     */
+    mapTarget: (s) => (id: string): FocusTarget | undefined => {
+      void s.revision
+      const item = index.byId.get(id) ?? index.pin(id)
+      return item && focusTargetFor(item)
     },
     /**
      * The items on either end of a link with this one: what its body points at,
@@ -235,9 +253,40 @@ export const useEventStore = defineStore('events', {
       // closes; the selected event keeps its own pin either way.
       this.expandedClusterId = undefined
     },
-    /** Ask the globe to look at a coordinate (a person's birth or death place). */
-    lookAt(lat: number, lng: number) {
-      this.flyTo = { lat, lng, seq: (this.flyTo?.seq ?? 0) + 1 }
+    /**
+     * Ask the globe to look at a coordinate (a person's birth or death place),
+     * optionally from a given height — see `flyTo` and `showOnMap`.
+     */
+    lookAt(lat: number, lng: number, altitude?: number) {
+      this.flyTo = { lat, lng, altitude, seq: (this.flyTo?.seq ?? 0) + 1 }
+    },
+    /**
+     * "Show me this on the map": the one action that makes an item *visible*,
+     * wherever the reader arrived from — a search hit, a link inside an article,
+     * a minor item nothing would have pinned.
+     *
+     * Three things have to be true afterwards, and each is one line here:
+     *
+     *  · it is **selected**, which is what keeps its pin (the store re-adds a
+     *    selected pin the culling dropped) and what draws its area and its
+     *    routes;
+     *  · the **timeline** contains it — `focusTime` recentres the window if the
+     *    year is outside it and then extends the selection band onto the year,
+     *    which is the same extendSelectionTo rule a scrub obeys;
+     *  · the **camera** frames its whole geometry (lib/geoFocus.ts): a point
+     *    from a sensible height, a footprint or a route fitted with margin.
+     *
+     * The selection is left alone when the panel is already showing this item,
+     * so pressing it from a birth pin does not swap the pin out from under the
+     * article it opened.
+     */
+    showOnMap(id: string) {
+      const target = this.mapTarget(id)
+      if (!target) return
+      if (this.selected?.id !== id) this.select(id)
+      const year = this.focusYear(id)
+      if (year !== undefined) useTimeStore().focusTime(year)
+      this.lookAt(target.lat, target.lng, target.altitude)
     },
     /** The year to put the timeline on when an item is opened from a link. */
     focusYear(id: string): number | undefined {

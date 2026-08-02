@@ -19,15 +19,19 @@ named era (Classical, Medieval, Industrial…) from the menu in the top bar.
 
 **The globe** rotates and zooms freely. Colored pins are events — the color tells you
 the theme (war red, science teal, exploration amber…). A pin with a dashed footprint
-marks an event that covers a region; select it and the region draws on the map.
+marks an event that covers a region, and one with a small winding route in its head
+marks a journey; select either and the region, or the route, draws on the map — the
+Silk Road's branches, the Atlantic triangle, Magellan's track right round the world.
 Numbered badges are stacks of events in one place — tap to fan them out. Zooming in
 streams sharp satellite imagery for the ground you're looking at; before 1930 the
 zoom stops at a 100 km view, so modern cities never appear in centuries that had none.
 
 **Events** open into a short illustrated article with links to related events — follow
-a battle up to its war, or a discovery sideways to its consequences. Search (top bar)
-finds any event by name or tag; "Show only this event family" filters the globe to one
-storyline.
+a battle up to its war, or a discovery sideways to its consequences. **Show on map**,
+next to the date, puts the thing on screen: it opens the timeline onto its years and
+flies the camera out far enough to hold all of it, whether that is a city, a plague's
+footprint or a three-year voyage. Search (top bar) finds any event by name or tag;
+"Show only this event family" filters the globe to one storyline.
 
 **Nations** appear in human history as border outlines — always a handful of the great
 powers of that moment, redrawn as the centuries pass.
@@ -88,7 +92,13 @@ tests/            unit tests, one file per lib module
 - **Events** live in `public/data/events/` as era chunks behind a manifest; the app
   streams whichever chunks the visible time window touches.
   `scripts/build_event_chunks.py` rebuilds chunks, spine, and manifest from any flat
-  JSON dropped in that folder.
+  JSON dropped in that folder, and validates the geometry on the way through.
+- **Geometry** is `[lng, lat]` throughout (GeoJSON order): `lat`/`lng` for the pin,
+  an optional `area` ring, and an optional `paths` — *always* a list of polylines, so
+  a network (the Silk Road) and a single voyage are the same shape of data. Routes are
+  authored as named waypoints and curved onto great circles at draw time
+  (`src/lib/paths.ts`), because the renderer would otherwise join two ports with a
+  line that is straight in lat/lng and wrong on the sphere.
 - **Paleogeography**: `scripts/gen_paleo_v4.py` downloads the PALEOMAP PaleoDEMs and
   renders the 38 deep-time frames (hypsometric tints, hillshade, shelf seas, ice).
 - **Nations** are hand-curated keyframed polygons in `src/data/nations.json`; rings

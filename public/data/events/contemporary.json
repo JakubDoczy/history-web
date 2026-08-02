@@ -350,8 +350,8 @@
   "id": "nato-founded",
   "name": "NATO founded",
   "start": 1949,
-  "lat": 38.9,
-  "lng": -77.04,
+  "lat": 38.8925,
+  "lng": -77.0286,
   "priority": 78,
   "tags": [
    "politics",
@@ -375,8 +375,8 @@
   "id": "prc-founded",
   "name": "People's Republic of China proclaimed",
   "start": 1949,
-  "lat": 39.9,
-  "lng": 116.39,
+  "lat": 39.9075,
+  "lng": 116.3914,
   "priority": 84,
   "tags": [
    "politics"
@@ -924,8 +924,8 @@
   "id": "stonewall-uprising",
   "name": "Stonewall uprising",
   "start": 1969,
-  "lat": 40.73,
-  "lng": -73.99,
+  "lat": 40.7338,
+  "lng": -74.0021,
   "priority": 60,
   "tags": [
    "politics",
@@ -1039,8 +1039,8 @@
   "id": "apollo-13",
   "name": "Apollo 13",
   "start": 1970,
-  "lat": 28.57,
-  "lng": -80.65,
+  "lat": 28.6084,
+  "lng": -80.6041,
   "priority": 52,
   "tags": [
    "exploration"
@@ -1087,8 +1087,8 @@
   "id": "watergate-scandal",
   "name": "Watergate scandal",
   "start": 1972,
-  "lat": 38.89,
-  "lng": -77.04,
+  "lat": 38.9,
+  "lng": -77.0553,
   "priority": 69,
   "tags": [
    "politics"
@@ -1126,8 +1126,8 @@
   "id": "soweto-uprising",
   "name": "Soweto uprising",
   "start": 1976,
-  "lat": -26.27,
-  "lng": 27.86,
+  "lat": -26.2372,
+  "lng": 27.9075,
   "priority": 60,
   "tags": [
    "politics"
@@ -1145,8 +1145,8 @@
   "id": "voyager",
   "name": "Voyager probes launched",
   "start": 1977,
-  "lat": 28.57,
-  "lng": -80.65,
+  "lat": 28.5833,
+  "lng": -80.5831,
   "priority": 58,
   "tags": [
    "exploration",
@@ -1249,8 +1249,8 @@
   "id": "solidarity-poland",
   "name": "Solidarity movement emerges in Poland",
   "start": 1980,
-  "lat": 54.35,
-  "lng": 18.65,
+  "lat": 54.3607,
+  "lng": 18.6493,
   "priority": 69,
   "tags": [
    "politics"
@@ -1293,8 +1293,8 @@
   "id": "aids-identified",
   "name": "AIDS epidemic identified",
   "start": 1981,
-  "lat": 34.05,
-  "lng": -118.24,
+  "lat": 34.0665,
+  "lng": -118.4456,
   "priority": 75,
   "tags": [
    "disease"
@@ -1372,8 +1372,8 @@
   "id": "tiananmen-square",
   "name": "Tiananmen Square protests",
   "start": 1989,
-  "lat": 39.9,
-  "lng": 116.4,
+  "lat": 39.9033,
+  "lng": 116.3914,
   "priority": 69,
   "tags": [
    "politics"
@@ -1391,8 +1391,8 @@
   "id": "berlin-wall-fall",
   "name": "Fall of the Berlin Wall",
   "start": 1989,
-  "lat": 52.52,
-  "lng": 13.38,
+  "lat": 52.5544,
+  "lng": 13.3975,
   "priority": 86,
   "tags": [
    "politics"
@@ -1435,8 +1435,8 @@
   "id": "german-reunification",
   "name": "Reunification of Germany",
   "start": 1990,
-  "lat": 52.52,
-  "lng": 13.4,
+  "lat": 52.5186,
+  "lng": 13.3762,
   "priority": 78,
   "tags": [
    "politics"
@@ -1625,8 +1625,8 @@
   "id": "dolly-sheep",
   "name": "Dolly the sheep cloned",
   "start": 1997,
-  "lat": 55.94,
-  "lng": -3.2,
+  "lat": 55.8553,
+  "lng": -3.162,
   "priority": 71,
   "tags": [
    "science",
@@ -1645,8 +1645,8 @@
   "id": "kyoto-protocol",
   "name": "Kyoto Protocol signed",
   "start": 1997,
-  "lat": 35.01,
-  "lng": 135.75,
+  "lat": 35.0553,
+  "lng": 135.7856,
   "priority": 65,
   "tags": [
    "politics",
@@ -1665,8 +1665,8 @@
   "id": "good-friday-agreement",
   "name": "Good Friday Agreement",
   "start": 1998,
-  "lat": 54.6,
-  "lng": -5.93,
+  "lat": 54.6042,
+  "lng": -5.8317,
   "priority": 63,
   "tags": [
    "politics"
@@ -1706,8 +1706,8 @@
   "id": "9-11",
   "name": "September 11 attacks",
   "start": 2001,
-  "lat": 40.71,
-  "lng": -74.01,
+  "lat": 40.7115,
+  "lng": -74.0134,
   "priority": 86,
   "tags": [
    "war",
@@ -1766,8 +1766,8 @@
   "id": "facebook-founded",
   "name": "Facebook founded",
   "start": 2004,
-  "lat": 42.37,
-  "lng": -71.11,
+  "lat": 42.3706,
+  "lng": -71.1225,
   "priority": 60,
   "tags": [
    "technology"
@@ -2003,8 +2003,8 @@
   "id": "usa-marriage-equality",
   "name": "Same-sex marriage legalized in the US",
   "start": 2015,
-  "lat": 38.89,
-  "lng": -77.04,
+  "lat": 38.8906,
+  "lng": -77.0044,
   "priority": 60,
   "tags": [
    "politics",
@@ -2042,8 +2042,8 @@
   "id": "paris-agreement",
   "name": "Paris Agreement on climate change",
   "start": 2015,
-  "lat": 48.86,
-  "lng": 2.35,
+  "lat": 48.937,
+  "lng": 2.429,
   "priority": 68,
   "tags": [
    "politics",
@@ -2143,8 +2143,8 @@
   "id": "chatgpt-released",
   "name": "ChatGPT released",
   "start": 2022,
-  "lat": 37.77,
-  "lng": -122.41,
+  "lat": 37.7626,
+  "lng": -122.4148,
   "priority": 65,
   "tags": [
    "technology",

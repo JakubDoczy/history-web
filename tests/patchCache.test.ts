@@ -467,3 +467,77 @@ describe('pruneCache', () => {
     expect(kept).toHaveLength(1)
   })
 })
+
+import { unionCoverage, MIN_UNIQUE_COVERAGE } from '../src/lib/patchCache'
+
+describe('unionCoverage', () => {
+  const target = box(0, 0, 10, 10)
+
+  it('is 1 when one patch contains the view', () => {
+    expect(unionCoverage([patch(box(-5, -5, 15, 15), 60, 0)], target)).toBeCloseTo(1, 6)
+  })
+
+  it('does not double-count the overlap between patches', () => {
+    // summing coverage() would call these two halves 1.4 of a view
+    const a = patch(box(0, 0, 10, 8), 60, 0)
+    const b = patch(box(0, 4, 10, 10), 60, 1)
+    expect(unionCoverage([a, b], target)).toBeCloseTo(1, 6)
+  })
+
+  it('reports the strip a pan leaves behind', () => {
+    // the patch is cut 1.25x the frame, so a pan of a fifth of a frame walks
+    // the view off the end of it — this is the number that says so
+    const held = patch(box(0, -1, 10, 9), 60, 0)
+    expect(unionCoverage([held], target)).toBeCloseTo(0.9, 6)
+  })
+
+  it('is 0 for patches that miss, and for none at all', () => {
+    expect(unionCoverage([patch(box(40, 40, 50, 50), 60, 0)], target)).toBe(0)
+    expect(unionCoverage([], target)).toBe(0)
+  })
+
+  it('adds up patches that only cover the view between them', () => {
+    const left = patch(box(0, 0, 10, 5), 60, 0)
+    const right = patch(box(0, 5, 10, 10), 60, 1)
+    expect(unionCoverage([left, right], target)).toBeCloseTo(1, 6)
+    expect(unionCoverage([left], target)).toBeCloseTo(0.5, 6)
+  })
+})
+
+describe('no-backward-resolution in the draw plan', () => {
+  const target = box(0, 0, 10, 10)
+
+  it('keeps the only patch covering a strip, even a thin one', () => {
+    // A sharper patch arriving that does not quite reach as far used to take
+    // imagery *away* from the edge it left behind: the older patch's unique
+    // contribution fell under the threshold and it was dropped, so ground that
+    // had been sharp went back to base map at the moment the picture was
+    // supposed to improve.
+    const old = patch(box(0, 0, 10, 10), 100, 0)
+    const fresh = patch(box(0, 0, 10, 9.6), 400, 1) // misses a 4% strip
+    const plan = usefulPlan(drawOrder([old, fresh]), target)
+    expect(plan).toHaveLength(2)
+    expect(unionCoverage(plan, target)).toBeCloseTo(1, 6)
+  })
+
+  it('still drops a patch that adds nothing at all', () => {
+    const buried = patch(box(2, 2, 8, 8), 100, 0)
+    const over = patch(box(0, 0, 10, 10), 400, 1)
+    expect(usefulPlan(drawOrder([buried, over]), target)).toHaveLength(1)
+  })
+
+  it('keeps the threshold at a size nobody can see', () => {
+    // it is a cost bound now, not an artefact bound: the joins are crossfades
+    expect(MIN_UNIQUE_COVERAGE).toBeLessThanOrEqual(0.01)
+  })
+
+  it('never lets the plan cover less ground than the cache does', () => {
+    const patches = [
+      patch(box(0, 0, 10, 10), 80, 0),
+      patch(box(0, 1, 10, 9), 200, 1),
+      patch(box(0, 2, 10, 8), 900, 2),
+    ]
+    const plan = compositePlan(patches, target, 3)
+    expect(unionCoverage(plan, target)).toBeCloseTo(unionCoverage(patches, target), 6)
+  })
+})

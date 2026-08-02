@@ -28,6 +28,20 @@ const when = computed(() => {
   return ev.end ? `${formatYear(ev.start)} – ${formatYear(ev.end)}` : formatYear(ev.start)
 })
 
+/**
+ * What "Show on map" is about. Normally the article itself; when the panel was
+ * opened from a *derived* pin (a birth or a death, which are events in their own
+ * right but carry the life's article), it is that pin — the reader is looking at
+ * one end of a life and the map should go there, not to the other end.
+ */
+const mapId = computed(() => events.selectedId ?? e.value.id)
+/**
+ * Whether the action has anywhere to go. An event always has (its pin), a life
+ * has the place it began, an idea has nothing — and the button is then simply
+ * not there, rather than there and inert.
+ */
+const mappable = computed(() => !!events.mapTarget(mapId.value))
+
 const children = computed(() => (event.value ? events.childrenOf(event.value.id) : []))
 /** Everything this article links to, and everything that links back to it. */
 const linked = computed(() => events.linkedTo(e.value.id))
@@ -163,6 +177,16 @@ onBeforeUnmount(() => inflight?.abort())
     <p class="when tnum">
       <span v-if="kindLabel" class="kind">{{ kindLabel }}</span>
       <span v-if="when">{{ when }}</span>
+      <!-- The one action that makes the article's subject *visible*: it selects
+           the item, brings the timeline onto it and flies the camera to fit its
+           whole geometry — a point, a footprint, or a route across an ocean. -->
+      <button v-if="mappable" class="show-on-map" data-test="show-on-map" @click="events.showOnMap(mapId)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z" />
+          <path d="M9 4v13M15 7v13" />
+        </svg>
+        Show on map
+      </button>
     </p>
 
     <!-- a life's two fixed points, as buttons: they move the globe and the clock -->
@@ -344,6 +368,40 @@ h2 {
   font-size: var(--t-xs);
   color: var(--muted);
   letter-spacing: 0.1em;
+}
+
+/* "Show on map" rides in the date line, styled as a chip like the tag buttons
+   and the place chips: it is an action *about* this item, not a section of it.
+   Brass, because it is the only one there that moves the globe. */
+.show-on-map {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--brass-line);
+  border-radius: var(--r-pill);
+  color: var(--brass);
+  padding: 3px 10px;
+  cursor: pointer;
+  transition:
+    color var(--fast),
+    border-color var(--fast),
+    background-color var(--fast);
+}
+.show-on-map:hover {
+  background: var(--brass-soft);
+  color: #f2dcae;
+}
+.show-on-map:active {
+  transform: scale(0.96);
+}
+.show-on-map svg {
+  opacity: 0.85;
 }
 
 /* a life's birth and death places: chips that fly the globe there */
@@ -629,6 +687,11 @@ ul {
     min-height: 40px;
     box-sizing: border-box;
     padding: 7px 14px;
+  }
+  .show-on-map {
+    min-height: 36px;
+    box-sizing: border-box;
+    padding: 6px 12px;
   }
   .block li {
     min-height: 40px;

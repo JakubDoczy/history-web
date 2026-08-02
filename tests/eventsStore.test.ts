@@ -130,6 +130,7 @@ describe('event data loading, when the network misbehaves', () => {
 })
 
 import type { Item, Person } from '../src/lib/events'
+import { focusTargetFor } from '../src/lib/geoFocus'
 
 const einstein: Person = {
   id: 'einstein', kind: 'person', name: 'Albert Einstein', born: 1879, died: 1955,
@@ -200,6 +201,85 @@ describe('the store as an item store', () => {
     expect(events.flyTo).toEqual({ lat: 48.4, lng: 9.99, seq: 1 })
     events.lookAt(48.4, 9.99)
     expect(events.flyTo?.seq).toBe(2)
+    // a place chip leaves the zoom alone; a fitted view states one
+    expect(events.flyTo?.altitude).toBeUndefined()
+    events.lookAt(48.4, 9.99, 0.8)
+    expect(events.flyTo?.altitude).toBe(0.8)
+  })
+})
+
+/* --------------------------------------------------------- show on map --- */
+
+describe('show on map', () => {
+  const route: HistoricalEvent = {
+    id: 'voyage', name: 'A voyage', start: 1519, end: 1522, lat: -52.5, lng: -70,
+    priority: 79, tags: ['exploration'], summary: '',
+    paths: [[[-70, -52.5], [-100, -35], [-130, -15], [-145, 0]]],
+  }
+  const seed = (): Item[] => [
+    route,
+    einstein,
+    { id: 'idea', kind: 'concept', name: 'An idea', anchorYear: 1905, priority: 70, tags: ['science'], summary: '' },
+  ]
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().$reset()
+  })
+
+  it('selects the item, brings the timeline onto it and fits its geometry', () => {
+    const events = useEventStore()
+    const time = useTimeStore()
+    events.adopt(seed())
+    time.setSelection(1700, 1800)
+    events.showOnMap('voyage')
+
+    expect(events.selectedId).toBe('voyage') // …which is what keeps the pin
+    // the band grew to hold the year, by the edge the year was past
+    expect(time.selection.start).toBe(1519)
+    expect(time.selection.end).toBe(1800)
+    // and the camera is somewhere that can see the whole route
+    const target = focusTargetFor(route)!
+    expect(events.flyTo).toEqual({ ...target, seq: 1 })
+    expect(events.flyTo!.altitude).toBeGreaterThan(0.3)
+  })
+
+  it('offers nothing for an item with no geometry, and does nothing if asked', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    expect(events.mapTarget('idea')).toBeUndefined()
+    events.select('idea')
+    events.showOnMap('idea')
+    expect(events.flyTo).toBeUndefined()
+    expect(events.selectedId).toBe('idea') // and the panel is left alone
+  })
+
+  it('flies a life to the place it began', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    events.showOnMap('einstein')
+    expect(events.selectedId).toBe('einstein')
+    expect(events.flyTo!.lat).toBeCloseTo(48.4, 6)
+    expect(events.flyTo!.lng).toBeCloseTo(9.99, 6)
+  })
+
+  it('keeps a derived pin selected when the article it opened asks for the map', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    events.select('einstein--death')
+    events.showOnMap('einstein--death')
+    // the pin the reader opened stays the selected one, and the map goes there
+    expect(events.selectedId).toBe('einstein--death')
+    expect(events.flyTo!.lat).toBeCloseTo(40.36, 6)
+    expect(events.flyTo!.lng).toBeCloseTo(-74.67, 6)
+    expect(useTimeStore().selection.end).toBeGreaterThanOrEqual(1955)
+  })
+
+  it('works from a cold start, on an item nothing has selected', () => {
+    const events = useEventStore()
+    events.adopt(seed())
+    expect(events.selectedId).toBeUndefined()
+    events.showOnMap('voyage')
+    expect(events.selected?.id).toBe('voyage')
   })
 })
 

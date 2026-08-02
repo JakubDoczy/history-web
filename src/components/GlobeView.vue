@@ -8,6 +8,7 @@ import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
 import { useViewStore } from '../stores/view'
 import { isEvent, type HistoricalEvent } from '../lib/events'
+import { densifyPaths, type GeoPath } from '../lib/paths'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { RenderPump } from '../lib/renderPump'
@@ -66,12 +67,23 @@ type EventAreaEntry = {
 }
 type PolyEntry = BorderEntry | EventAreaEntry
 
+/** One drawn route of the selected event; `points` is already densified. */
+type EventPathEntry = {
+  event: HistoricalEvent
+  points: GeoPath
+}
+
 /** What the polygon layer was last given; see the watcher that fills it. */
 let lastPolys: PolyEntry[] = []
+/** …and the paths layer. Same rule: only re-set when the list really changed. */
+let lastPaths: EventPathEntry[] = []
+/** Is a route on screen? The dash animation needs frames while one is (see `tick`). */
+let routesDrawn = false
 
 const asPin = (d: object) => d as PinDatum
 const asLeg = (d: object) => d as ClusterLeg
 const asPoly = (d: object) => d as PolyEntry
+const asPath = (d: object) => d as EventPathEntry
 
 /**
  * Clustering runs off a *quantised* span: zoom fires continuously, and
@@ -194,9 +206,36 @@ const eventAreas = (): EventAreaEntry[] => {
   return [entry]
 }
 
+/**
+ * The routes of the selected event, on exactly the same terms as its footprint:
+ * drawn while the panel is open on it, gone when it closes, held by id so the
+ * layer is not handed a new object for a line it is already drawing.
+ *
+ * Densified here rather than in the data (lib/paths.ts): the renderer fills the
+ * gaps between waypoints *linearly in lat/lng*, so an ocean leg authored as two
+ * ports would be drawn as a rhumb line rather than the great circle a ship
+ * sails. Doing it at entry-build time means it happens once per event, not once
+ * per frame.
+ */
+const pathEntries = new Map<string, EventPathEntry[]>()
+const eventPaths = (): EventPathEntry[] => {
+  const sel = events.selected
+  const e = sel && isEvent(sel) ? sel : undefined
+  if (!e?.paths?.length) return []
+  const held = pathEntries.get(e.id)
+  if (held) return held
+  const entries = densifyPaths(e.paths).map((points) => ({ event: e, points }))
+  pathEntries.set(e.id, entries)
+  return entries
+}
+
 onMounted(() => {
   const dom = el.value!
   const base = import.meta.env.BASE_URL
+  // One read of the motion preference: the cloud drift, the arrival ramps and
+  // the running dashes on a drawn route all obey it, and the dash rate has to be
+  // known when the layer is configured, below.
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   globe = new Globe(dom)
     // Flat black to start with, and the starfield later — see the first-frame
@@ -290,6 +329,39 @@ onMounted(() => {
       if (p.kind === 'area') events.select(p.event.id)
     })
     .polygonsTransitionDuration(300)
+    // paths layer: the routes of the selected event — trade roads, voyages, the
+    // legs of the Atlantic triangle. Same lifecycle as the area polygon above:
+    // nothing is drawn until an event is opened, and closing the panel clears it.
+    //
+    // Points are `[lng, lat]`, the order every other piece of geometry in the
+    // dataset uses; the layer's own default is the other way round, hence the
+    // two accessors.
+    .pathPoints((d) => asPath(d).points)
+    .pathPointLng((p) => (p as [number, number])[0])
+    .pathPointLat((p) => (p as [number, number])[1])
+    // Just clear of the surface — above the area cap (0.012), so a route over
+    // its own event's footprint is not tinted by it, and far below the pins,
+    // which are HTML and draw over the scene regardless.
+    .pathPointAlt(0.014)
+    // The entries arrive densified (see `eventPaths`), so the layer's own
+    // linear fill-in has nothing left to get wrong; 1° keeps its subdivision
+    // finer than ours rather than coarser.
+    .pathResolution(1)
+    .pathColor((d: object) => tagColor(primaryTag(asPath(d).event)))
+    // A fat line (any non-null stroke) rather than the layer's 1 px default:
+    // width is in screen pixels, so the route stays legible zoomed out to the
+    // whole ocean it crosses and does not thicken into a band zoomed in.
+    .pathStroke(2.2)
+    // A dashed line that runs is the difference between "here is a corridor"
+    // and "things moved along here" — direction, at the cost of frames (see the
+    // `routesDrawn` wake in `tick`). Dash and gap are in units of line length,
+    // so a long voyage and a short one carry the same *number* of dashes rather
+    // than the same dash size, which keeps both legible.
+    .pathDashLength(0.02)
+    .pathDashGap(0.012)
+    .pathDashAnimateTime(still ? 0 : 9000)
+    .pathTransitionDuration(400)
+    .pathLabel((d) => asPath(d).event.name)
     // clicking bare globe dismisses an open cluster
     .onGlobeClick(() => events.collapseClusters())
 
@@ -599,8 +671,6 @@ onMounted(() => {
   /** Where the era cursor was last frame; the lookahead needs a direction. */
   let prevEraTime: number | undefined
 
-  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
   /**
    * Frame-on-demand: the wiring. The policy — cushion, safety tick, when to park
    * — is in lib/renderPump.ts, and the comment there is the one worth reading.
@@ -703,6 +773,12 @@ onMounted(() => {
     // the loop this is deciding whether to run — so unlike every other animation
     // here it cannot ask for itself
     if (settings.autoRotate) wake(0)
+    // Neither is the dash animation on a drawn route: three-globe advances it
+    // from the frame loop, so a parked globe freezes it mid-stride. This is the
+    // one animation in the app that keeps the pump running on an idle camera,
+    // and it is bounded by the thing that started it — a path event being open
+    // in the panel. Reduced motion turns it off, like every other motion here.
+    if (routesDrawn && !still) wake(0)
 
     if (pump.running) {
       // streaming is a function of where the camera is, and the camera cannot
@@ -772,19 +848,42 @@ onMounted(() => {
       globe!.polygonsData(next)
       wake()
     }),
+    // The selected event's routes. Same guard as the polygons above: handing the
+    // layer an equal-but-new list would rebuild every line and restart its
+    // transition.
+    watchEffect(() => {
+      const next = eventPaths()
+      if (next.length === lastPaths.length && next.every((p, i) => p === lastPaths[i])) return
+      lastPaths = next
+      routesDrawn = next.length > 0
+      globe!.pathsData(next)
+      wake()
+    }),
     watchEffect(() => {
       globe!.controls().autoRotate = settings.autoRotate
       wake()
     }),
     // A panel asked the globe to look somewhere — a person's birth or death
-    // place. The store bumps a counter rather than clearing the request, so
-    // asking for the same coordinates twice still flies there twice; altitude
-    // is left alone, since the user's zoom is not ours to reset.
+    // place, or the whole geometry of an item under "Show on map". The store
+    // bumps a counter rather than clearing the request, so asking for the same
+    // coordinates twice still flies there twice.
+    //
+    // Altitude only when the request carries one: a place chip is about *where*
+    // and leaves the user's zoom alone, while fitting a route in the frame is a
+    // statement about how far out the camera has to be and would be meaningless
+    // without it.
     watchEffect(() => {
       const target = events.flyTo
       if (!target) return
       void target.seq
-      globe!.pointOfView({ lat: target.lat, lng: target.lng }, 900)
+      globe!.pointOfView(
+        target.altitude === undefined
+          ? { lat: target.lat, lng: target.lng }
+          : { lat: target.lat, lng: target.lng, altitude: target.altitude },
+        900,
+      )
+      // the default cushion (1.5 s) outlasts the 900 ms flight, and OrbitControls
+      // announces every damping step of it anyway
       wake()
     }),
     // The relief map is the modern height field; deep-time frames carry their own

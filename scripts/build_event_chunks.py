@@ -11,6 +11,9 @@ Items are events, persons and concepts (see src/lib/events.ts). An entry with
 no "kind" is an event, which is what the several hundred entries written before
 the item model existed rely on.
 
+Geometry is validated on the way through: an event may carry an `area` ring and
+a `paths` list of routes, both in [lng, lat] order (see validate_paths).
+
 Chunk coverage in the manifest is the true min..max time extent of each chunk,
 so long-running events are found from windows that only touch their tail.
 
@@ -135,6 +138,35 @@ def validate(items: list[dict], ranked: list[str]) -> None:
         for field in required[k]:
             if field not in e:
                 sys.exit(f'{e["id"]}: a {k} needs a {field!r}')
+        validate_paths(e)
+
+
+def validate_paths(e: dict) -> None:
+    """Route geometry: `paths` is ALWAYS a list of polylines, never a bare one.
+
+    One canonical field, checked here so a typo is a build failure rather than a
+    line missing from the globe (see src/lib/paths.ts). Each polyline needs two
+    points to be a line at all, and each point is [lng, lat] — GeoJSON order,
+    the same order `area` rings use.
+    """
+    if 'path' in e:
+        sys.exit(f'{e["id"]}: use "paths" (a list of routes), not "path"')
+    paths = e.get('paths')
+    if paths is None:
+        return
+    if kind_of(e) != 'event':
+        sys.exit(f'{e["id"]}: only an event can carry paths')
+    if not isinstance(paths, list) or not paths:
+        sys.exit(f'{e["id"]}: paths must be a non-empty list of routes')
+    for i, path in enumerate(paths):
+        if not isinstance(path, list) or len(path) < 2:
+            sys.exit(f'{e["id"]}: path {i} needs at least two points')
+        for pt in path:
+            if not isinstance(pt, list) or len(pt) != 2:
+                sys.exit(f'{e["id"]}: path {i} has a point that is not [lng, lat]')
+            lng, lat = pt
+            if not (-180 <= lng <= 180 and -90 <= lat <= 90):
+                sys.exit(f'{e["id"]}: path {i} has a point off the planet: {pt}')
 
 
 def main() -> None:

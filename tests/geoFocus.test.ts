@@ -1,0 +1,201 @@
+import { describe, it, expect } from 'vitest'
+import {
+  FIT_FOV,
+  MAX_FIT_ALTITUDE,
+  MIN_FIT_ALTITUDE,
+  POINT_CAP_DEG,
+  altitudeForCapDeg,
+  boundingCap,
+  focusTargetFor,
+} from '../src/lib/geoFocus'
+import { viewSpanDeg, visibleSpanDeg } from '../src/lib/detailImagery'
+import { separationDeg } from '../src/lib/queryIndex'
+import type { Concept, HistoricalEvent, Person } from '../src/lib/events'
+import type { GeoPath } from '../src/lib/paths'
+
+const ev = (o: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
+  id: 'e', name: 'e', start: 1500, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: '', ...o,
+})
+
+describe('boundingCap', () => {
+  it('contains every point it was cut from', () => {
+    const sets: GeoPath[] = [
+      [
+        [0, 0],
+        [10, 10],
+        [-5, 4],
+      ],
+      // a route crossing the antimeridian: no longitude convention to get wrong
+      [
+        [170, 10],
+        [178, 12],
+        [-175, 14],
+        [-168, 11],
+      ],
+      // and one crossing a pole
+      [
+        [0, 85],
+        [90, 88],
+        [180, 86],
+      ],
+    ]
+    for (const points of sets) {
+      const cap = boundingCap(points)!
+      for (const [lng, lat] of points)
+        expect(separationDeg(cap.lat, cap.lng, lat, lng)).toBeLessThanOrEqual(cap.radiusDeg + 1e-9)
+    }
+  })
+
+  it('gives a single point a cap of no width, centred on it', () => {
+    const cap = boundingCap([[12.5, -8.25]])!
+    expect(cap.lat).toBeCloseTo(-8.25, 9)
+    expect(cap.lng).toBeCloseTo(12.5, 9)
+    expect(cap.radiusDeg).toBeCloseTo(0, 9)
+  })
+
+  it('falls back to the anchor when the points cancel out', () => {
+    // a route right round the equator has a mean vector of nothing at all
+    const wrapped: GeoPath = [
+      [0, 0],
+      [90, 0],
+      [180, 0],
+      [-90, 0],
+    ]
+    expect(boundingCap(wrapped)).toBeUndefined()
+    const cap = boundingCap(wrapped, { lat: 5, lng: 10 })!
+    expect([cap.lat, cap.lng]).toEqual([5, 10])
+    expect(cap.radiusDeg).toBeGreaterThan(90)
+  })
+
+  it('has nothing to say about no points at all', () => {
+    expect(boundingCap([])).toBeUndefined()
+    expect(boundingCap([], { lat: 0, lng: 0 })).toBeUndefined()
+  })
+})
+
+describe('altitudeForCapDeg', () => {
+  it('puts the cap inside the frame, with margin, at every size that fits', () => {
+    for (const radius of [0.5, 2, 6, 15, 30, 45, 60]) {
+      const alt = altitudeForCapDeg(radius)
+      // the frame (or, once the frame is wider than the planet, the horizon)
+      // holds the whole cap
+      const framed = Math.max(viewSpanDeg(alt, FIT_FOV), visibleSpanDeg(alt)) / 2
+      expect(framed, `cap ${radius}°`).toBeGreaterThanOrEqual(radius)
+    }
+  })
+
+  it('is monotonic: a wider cap never asks for a closer camera', () => {
+    let prev = -Infinity
+    for (let r = 0; r <= 90; r += 1.5) {
+      const alt = altitudeForCapDeg(r)
+      expect(alt).toBeGreaterThanOrEqual(prev)
+      prev = alt
+    }
+  })
+
+  it('stops at world view rather than pretending a whole globe can be framed', () => {
+    expect(altitudeForCapDeg(120)).toBe(MAX_FIT_ALTITUDE)
+    expect(altitudeForCapDeg(180)).toBe(MAX_FIT_ALTITUDE)
+    expect(altitudeForCapDeg(0)).toBe(MIN_FIT_ALTITUDE)
+    expect(altitudeForCapDeg(-5)).toBe(MIN_FIT_ALTITUDE)
+  })
+
+  it('respects the lens: a narrow one has to back further off', () => {
+    expect(altitudeForCapDeg(10, 30)).toBeGreaterThan(altitudeForCapDeg(10, 50))
+  })
+})
+
+describe('focusTargetFor', () => {
+  it('frames a point event from a height that shows its region', () => {
+    const target = focusTargetFor(ev({ lat: 48.86, lng: 2.35 }))!
+    expect(target.lat).toBeCloseTo(48.86, 6)
+    expect(target.lng).toBeCloseTo(2.35, 6)
+    expect(target.altitude).toBe(altitudeForCapDeg(POINT_CAP_DEG))
+    // a ~1500 km frame: the city in its country, not the city filling the screen
+    expect(viewSpanDeg(target.altitude, FIT_FOV) * 111.32).toBeGreaterThan(1000)
+    expect(viewSpanDeg(target.altitude, FIT_FOV) * 111.32).toBeLessThan(2500)
+  })
+
+  it('fits an area event to its footprint, not to its centroid', () => {
+    const area = ev({
+      lat: 0,
+      lng: 0,
+      area: [
+        [-20, -20],
+        [20, -20],
+        [20, 20],
+        [-20, 20],
+      ],
+    })
+    const point = focusTargetFor(ev({ lat: 0, lng: 0 }))!
+    expect(focusTargetFor(area)!.altitude).toBeGreaterThan(point.altitude)
+  })
+
+  it('fits a route, and pulls the camera off the pin to do it', () => {
+    // pin in the Strait of Magellan, route out into the Pacific
+    const e = ev({
+      lat: -52.5,
+      lng: -70,
+      paths: [
+        [
+          [-70, -52.5],
+          [-100, -35],
+          [-130, -15],
+          [-145, 0],
+        ],
+      ],
+    })
+    const target = focusTargetFor(e)!
+    expect(target.altitude).toBeGreaterThan(1)
+    // the camera looks at the middle of the route, not at the pin
+    expect(separationDeg(target.lat, target.lng, e.lat, e.lng)).toBeGreaterThan(20)
+    // and every waypoint is inside the horizon from there
+    for (const [lng, lat] of e.paths![0])
+      expect(separationDeg(target.lat, target.lng, lat, lng)).toBeLessThanOrEqual(
+        visibleSpanDeg(target.altitude) / 2 + 1e-9,
+      )
+  })
+
+  it('includes the pin, the footprint and every route at once', () => {
+    const both = ev({
+      lat: 5,
+      lng: -25,
+      area: [
+        [-70, -25],
+        [12, -10],
+      ],
+      paths: [
+        [
+          [-3, 53.4],
+          [-1.28, 5.1],
+        ],
+      ],
+    })
+    const target = focusTargetFor(both)!
+    for (const [lng, lat] of [[-70, -25], [12, -10], [-3, 53.4], [5, -25], [-25, 5]] as GeoPath)
+      expect(separationDeg(target.lat, target.lng, lat, lng)).toBeLessThanOrEqual(
+        visibleSpanDeg(target.altitude) / 2 + 1e-9,
+      )
+  })
+
+  it('sends a life to the place it began, and an idea nowhere at all', () => {
+    const person: Person = {
+      id: 'p', kind: 'person', name: 'p', born: 1879, priority: 50, tags: ['science'], summary: '',
+      birthPlace: { lat: 48.4, lng: 9.99 },
+      deathPlace: { lat: 40.35, lng: -74.66 },
+    }
+    const target = focusTargetFor(person)!
+    expect([target.lat, target.lng]).toEqual([48.4, 9.99])
+
+    const noBirth = focusTargetFor({ ...person, birthPlace: undefined })!
+    expect(noBirth.lat).toBeCloseTo(40.35, 9)
+    expect(noBirth.lng).toBeCloseTo(-74.66, 9)
+    expect(noBirth.altitude).toBe(target.altitude)
+    expect(focusTargetFor({ ...person, birthPlace: undefined, deathPlace: undefined })).toBeUndefined()
+
+    const concept: Concept = {
+      id: 'c', kind: 'concept', name: 'c', anchorYear: 1600, priority: 50, tags: ['science'], summary: '',
+    }
+    expect(focusTargetFor(concept)).toBeUndefined()
+  })
+})

@@ -7,7 +7,9 @@ import { primaryTag, tagColor } from './tags'
  * Map pins. A point event is the classic teardrop; an area event is a pin
  * *standing on a footprint* — a dashed ellipse under its tip plus corner
  * brackets in its head — so "this covers a region" reads at a glance instead of
- * needing the legend. The fill colour is the event's primary tag, so the globe
+ * needing the legend; a path event carries a winding route in its head, drawn
+ * in the same white line the brackets are, so "this goes somewhere" reads the
+ * same way. The fill colour is the event's primary tag, so the globe
  * reads as one: red = war, blue = technology, grey = extinction…
  *
  * Several events on the same spot collapse into a round count badge instead
@@ -66,6 +68,32 @@ const brackets = (cx: number, cy: number) => {
 }
 
 /**
+ * The path mark: a short winding route across the pin's head, with a dot at
+ * each end.
+ *
+ * Same language as the area brackets — white, 2px round-capped strokes on the
+ * tag-coloured body — because they answer the same question in the same place:
+ * *what shape of thing is this?* The curve is deliberately an S rather than a
+ * straight line; a straight one at this size reads as a strikethrough. The two
+ * end dots are the ports, which is what makes it a journey rather than a
+ * squiggle, and they survive the shrink to an 18 px minor pin where the curve
+ * itself is only a few pixels of stroke.
+ */
+const route = (cx: number, cy: number) => {
+  const r = 5.2
+  const x0 = cx - r
+  const x1 = cx + r
+  return (
+    `<path d="M${x0} ${cy + 2.6}C${cx - 2.4} ${cy + 3.4} ${cx - 3.2} ${cy - 3.2} ${cx} ${cy - 2.6}` +
+    `C${cx + 3.2} ${cy - 2} ${cx + 2.4} ${cy + 2.2} ${x1} ${cy - 2.8}"` +
+    ` fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"` +
+    ` opacity="0.97"/>` +
+    `<circle cx="${x0}" cy="${cy + 2.6}" r="1.5" fill="#fff" opacity="0.97"/>` +
+    `<circle cx="${x1}" cy="${cy - 2.8}" r="1.5" fill="#fff" opacity="0.97"/>`
+  )
+}
+
+/**
  * The tier-1 mark: a soft ring around the pin's head, drawn *behind* the body.
  *
  * Behind, and at low opacity, so it reads as light coming off the pin rather
@@ -84,6 +112,7 @@ export function pinSvg(e: HistoricalEvent, selected: boolean, tier: Tier = 1): s
   const color = tagColor(primaryTag(e))
   const h = pinHeight(e, selected, tier)
   const area = !!e.area
+  const hasPaths = !!e.paths?.length
   const boxH = area ? AREA_BOX_H : BOX_H
   const w = Math.round(h * (BOX_W / BOX_H))
   const svgH = Math.round(h * (boxH / BOX_H))
@@ -99,9 +128,15 @@ export function pinSvg(e: HistoricalEvent, selected: boolean, tier: Tier = 1): s
       ` stroke-width="2.2" stroke-dasharray="3.6 2.8" stroke-linecap="round" opacity="0.95"/>` +
       `</g>`
     : ''
-  const glyph = area
-    ? brackets(12, 11) + '<circle cx="12" cy="11" r="1.5" fill="#fff" opacity="0.97"/>'
-    : '<circle cx="12" cy="11" r="3.6" fill="#fff" opacity="0.95"/>'
+  // A route beats a footprint in the head when an event has both: the routes
+  // are the thing the reader is being invited to open (they are what the globe
+  // draws on selection), and the footprint is still said below, by the ellipse
+  // the pin stands in.
+  const glyph = hasPaths
+    ? route(12, 11)
+    : area
+      ? brackets(12, 11) + '<circle cx="12" cy="11" r="1.5" fill="#fff" opacity="0.97"/>'
+      : '<circle cx="12" cy="11" r="3.6" fill="#fff" opacity="0.95"/>'
   const halo = selected
     ? '<circle cx="12" cy="11" r="10.5" fill="none" stroke="#ffe27a" stroke-width="1.6" opacity="0.9"/>'
     : ''
@@ -197,6 +232,7 @@ export function pinElement(
     ` event-pin--tier${tier}` +
     (selected ? ' event-pin--selected' : '') +
     (e.area ? ' event-pin--area' : '') +
+    (e.paths?.length ? ' event-pin--path' : '') +
     // minor pins are opt-in and there are a lot of them; they keep the smallest
     // size pinHeight gives them and go translucent, so they read as a layer
     // underneath the ranked ones rather than as competition for them
