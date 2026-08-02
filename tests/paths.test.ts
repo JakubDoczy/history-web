@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { MAX_SEGMENT_DEG, allPathPoints, densifyPath, densifyPaths, isGeoPath, type GeoPath } from '../src/lib/paths'
+import {
+  MAX_SEGMENT_DEG,
+  ROUTE_STYLE,
+  allPathPoints,
+  bearingDeg,
+  densifyPath,
+  densifyPaths,
+  directionOf,
+  isGeoPath,
+  pathTermini,
+  pointAlongPath,
+  slerpPoint,
+  type GeoPath,
+} from '../src/lib/paths'
 import { separationDeg } from '../src/lib/queryIndex'
 
 /** Longest segment of a polyline, in degrees of arc. */
@@ -205,5 +218,189 @@ describe('isGeoPath', () => {
         [0, Number.NaN],
       ]),
     ).toBe(false)
+  })
+})
+
+describe('directionOf', () => {
+  it('defaults to one-way, so a voyage need not declare itself', () => {
+    expect(directionOf({})).toBe('oneway')
+    expect(directionOf({ direction: 'oneway' })).toBe('oneway')
+    expect(directionOf({ direction: 'twoway' })).toBe('twoway')
+  })
+})
+
+describe('bearingDeg', () => {
+  it('reads the cardinal directions off the equator and the meridian', () => {
+    expect(bearingDeg([0, 0], [10, 0])).toBeCloseTo(90, 6)
+    expect(bearingDeg([0, 0], [-10, 0])).toBeCloseTo(270, 6)
+    expect(bearingDeg([0, 0], [0, 10])).toBeCloseTo(0, 6)
+    expect(bearingDeg([0, 10], [0, 0])).toBeCloseTo(180, 6)
+  })
+
+  it('is always in [0, 360)', () => {
+    for (const [a, b] of [
+      [[-179, 10], [179, 10]],
+      [[179, -10], [-179, -20]],
+      [[0, 89], [180, 89]],
+    ] as [[number, number], [number, number]][]) {
+      const d = bearingDeg(a, b)
+      expect(d).toBeGreaterThanOrEqual(0)
+      expect(d).toBeLessThan(360)
+    }
+  })
+
+  it('curves with the great circle: a high-latitude eastward leg starts north of east', () => {
+    // London to Moscow really does begin on a north-easterly heading
+    expect(bearingDeg([-0.13, 51.51], [37.62, 55.75])).toBeLessThan(90)
+    expect(bearingDeg([-0.13, 51.51], [37.62, 55.75])).toBeGreaterThan(45)
+  })
+})
+
+describe('slerpPoint', () => {
+  it('returns the endpoints exactly', () => {
+    const a: [number, number] = [10, 20]
+    const b: [number, number] = [30, 40]
+    expect(slerpPoint(a, b, 0)).toEqual(a)
+    expect(slerpPoint(a, b, 1)).toEqual(b)
+    expect(slerpPoint(a, b, -1)).toEqual(a)
+    expect(slerpPoint(a, b, 2)).toEqual(b)
+  })
+
+  it('lands on the great circle, not on the lat/lng straight line', () => {
+    // Cape Verde to Barbados: the arc runs south of the rhumb line
+    const a: [number, number] = [-23.5, 14.9]
+    const b: [number, number] = [-59.6, 13.1]
+    const mid = slerpPoint(a, b, 0.5)
+    expect(offArc(a, b, mid)).toBeLessThan(1e-6)
+    expect(separationDeg(a[1], a[0], mid[1], mid[0])).toBeCloseTo(
+      separationDeg(mid[1], mid[0], b[1], b[0]),
+      6,
+    )
+  })
+
+  it('does not invent an arc between antipodes', () => {
+    expect(slerpPoint([0, 0], [180, 0], 0.5)).toEqual([180, 0])
+  })
+})
+
+describe('pointAlongPath', () => {
+  const equator: GeoPath = [
+    [0, 0],
+    [30, 0],
+    [60, 0],
+  ]
+
+  it('walks by arc length, not by waypoint', () => {
+    // half the waypoints are in the first tenth of this route
+    const lopsided: GeoPath = [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [100, 0],
+    ]
+    expect(pointAlongPath(lopsided, 0.5)!.lng).toBeCloseTo(50, 4)
+    expect(pointAlongPath(equator, 0.5)!.lng).toBeCloseTo(30, 4)
+    expect(pointAlongPath(equator, 0.25)!.lng).toBeCloseTo(15, 4)
+  })
+
+  it('clamps to the ends and carries the end segment"s heading there', () => {
+    expect(pointAlongPath(equator, 0)).toMatchObject({ lng: 0, lat: 0, bearing: 90 })
+    const end = pointAlongPath(equator, 1)!
+    expect(end.lng).toBeCloseTo(60, 6)
+    expect(pointAlongPath(equator, -3)!.lng).toBeCloseTo(0, 6)
+    expect(pointAlongPath(equator, 9)!.lng).toBeCloseTo(60, 6)
+  })
+
+  it('gives the heading of the leg it landed on, not of the whole route', () => {
+    const bent: GeoPath = [
+      [0, 0],
+      [20, 0], // due east
+      [20, 20], // then due north
+    ]
+    expect(pointAlongPath(bent, 0.2)!.bearing).toBeCloseTo(90, 3)
+    expect(pointAlongPath(bent, 0.9)!.bearing).toBeCloseTo(0, 3)
+  })
+
+  it('has nothing to report for a route that is not one', () => {
+    expect(pointAlongPath([], 0.5)).toBeUndefined()
+    expect(pointAlongPath([[1, 1]], 0.5)).toBeUndefined()
+  })
+
+  it('survives a route whose waypoints are all the same place', () => {
+    const still = pointAlongPath(
+      [
+        [5, 5],
+        [5, 5],
+      ],
+      0.5,
+    )!
+    expect(still.lng).toBe(5)
+    expect(still.lat).toBe(5)
+  })
+
+  it('stays on the route it is walking', () => {
+    const atlantic: GeoPath = [
+      [-6.35, 36.79],
+      [-15.4, 28.1],
+      [-59.6, 13.1],
+      [-77.0, 18.0],
+    ]
+    const drawn = densifyPath(atlantic)
+    for (const t of [0.1, 1 / 3, 0.5, 2 / 3, 0.9]) {
+      const p = pointAlongPath(atlantic, t)!
+      const nearest = Math.min(
+        ...drawn.map(([lng, lat]) => separationDeg(p.lat, p.lng, lat, lng)),
+      )
+      expect(nearest, `t=${t}`).toBeLessThan(MAX_SEGMENT_DEG)
+    }
+  })
+})
+
+describe('pathTermini', () => {
+  it('takes the first and last point of every route, in order', () => {
+    expect(
+      pathTermini([
+        [
+          [0, 0],
+          [1, 1],
+          [2, 2],
+        ],
+        [
+          [10, 10],
+          [11, 11],
+        ],
+      ]),
+    ).toEqual([
+      [0, 0],
+      [2, 2],
+      [10, 10],
+      [11, 11],
+    ])
+  })
+
+  it('ignores anything that is not a route', () => {
+    expect(pathTermini([[[5, 5]] as unknown as GeoPath])).toEqual([])
+  })
+})
+
+describe('ROUTE_STYLE', () => {
+  it('keeps the halo wider than the line it sits under', () => {
+    expect(ROUTE_STYLE.haloStroke).toBeGreaterThan(ROUTE_STYLE.stroke)
+    expect(ROUTE_STYLE.haloAlt).toBeLessThan(ROUTE_STYLE.lineAlt)
+    // …and both clear of the area cap (0.012), which they draw over
+    expect(ROUTE_STYLE.haloAlt).toBeGreaterThan(0.012)
+  })
+
+  it('gives a one-way route more line than gap, and a two-way one an even split', () => {
+    expect(ROUTE_STYLE.dash / (ROUTE_STYLE.dash + ROUTE_STYLE.gap)).toBeGreaterThan(0.625)
+    expect(ROUTE_STYLE.evenDash).toBe(ROUTE_STYLE.evenGap)
+  })
+
+  it('runs the dash fast enough to read as flowing, slow enough to stay calm', () => {
+    // a dash crosses the whole route in this long; under a second is a strobe,
+    // over about five is the creep this replaced
+    expect(ROUTE_STYLE.animateMs).toBeGreaterThan(1500)
+    expect(ROUTE_STYLE.animateMs).toBeLessThan(5000)
   })
 })

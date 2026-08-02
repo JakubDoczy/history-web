@@ -4,6 +4,7 @@ import {
   EventIndex,
   anchorYearOf,
   effectivePriority,
+  hasMapGeometry,
   isMinor,
   searchItems,
   type EventFilter,
@@ -39,6 +40,31 @@ let index = new EventIndex([])
 let lastTiers: ReadonlyMap<string, Tier> = new Map()
 
 const DATA = `${import.meta.env.BASE_URL}data/events/`
+
+/**
+ * How many child pins focus mode will force onto the globe.
+ *
+ * The exemption is the selected-pin one widened by one generation (see
+ * `visible`), and it needs a bound for the same reason the top-N cap exists:
+ * "Part of this event" on World War II is a hundred entries, and forcing all of
+ * them past the culling would replace one open article with a swarm. Fifteen is
+ * about what a fitted frame holds without the pins colliding, and every real
+ * operation in the corpus has fewer parts than that.
+ */
+export const FOCUS_CHILD_CAP = 15
+
+/**
+ * The children of an item, best first — what focus mode pins alongside it.
+ *
+ * Direct children only, not the whole subtree: the panel's own "Part of this
+ * event" list is direct children, and the two should agree. A grandchild is one
+ * click away, at which point it becomes the focus and brings its own.
+ */
+const focusChildrenOf = (all: Item[], parentId: string, cap = FOCUS_CHILD_CAP): HistoricalEvent[] =>
+  all
+    .filter((e): e is HistoricalEvent => 'parent' in e && e.parent === parentId)
+    .sort((a, b) => b.priority - a.priority || a.start - b.start)
+    .slice(0, cap)
 
 /**
  * A JSON fetch that fails by returning undefined rather than by throwing, and
@@ -83,6 +109,26 @@ export const useEventStore = defineStore('events', {
     expandedClusterId: undefined as string | undefined,
     /** Visible span when that cluster was opened — the fan is only valid near it. */
     expandedSpan: 0,
+    /**
+     * FOCUS MODE: the reader asked to *look at* something, not to read about it.
+     *
+     * Entered by "Show on map" on an item that has real geometry — a drawing, a
+     * route or a footprint (see `hasMapGeometry`). Three things follow, and they
+     * are the whole feature:
+     *
+     *  · the panel minimises to a pill (EventPanel.vue), so the map is not
+     *    behind an article;
+     *  · the item's `drawing` renders (GlobeView.vue) — the one place it does;
+     *  · its child events get their pins forced on (see `visible`), so an
+     *    operation shows its battles.
+     *
+     * It is *not* the same thing as the selection, and keeping them apart is
+     * what makes Escape do something sensible: Escape leaves the mode and gives
+     * back the article, without closing it.
+     */
+    focus: undefined as { itemId: string } | undefined,
+    /** In focus mode, has the reader pulled the article back up over the map? */
+    focusExpanded: false,
   }),
   getters: {
     /**
@@ -120,6 +166,20 @@ export const useEventStore = defineStore('events', {
       if (state.selectedId && !out.some((e) => e.id === state.selectedId)) {
         const kept = index.admits(state.selectedId, selection.start, selection.end, filter)
         if (kept) out.push(kept)
+      }
+      // …and, in focus mode, its children keep theirs. Same exemption, one
+      // generation wider: the reader asked to look at an operation, and an
+      // operation is its battles. Capped (FOCUS_CHILD_CAP), appended rather
+      // than ranked in, and — unlike the selected pin — allowed past the MINOR
+      // filter, because a child is not competing for a place on the globe, it
+      // is part of the thing already on it.
+      if (state.focus) {
+        const childFilter = { ...filter, minor: true }
+        for (const c of focusChildrenOf(state.all, state.focus.itemId)) {
+          if (out.some((e) => e.id === c.id)) continue
+          const kept = index.admits(c.id, selection.start, selection.end, childFilter)
+          if (kept) out.push(kept)
+        }
       }
       return out
     },
@@ -192,6 +252,19 @@ export const useEventStore = defineStore('events', {
       void s.revision
       return searchItems(s.all, q)
     },
+    /** The item focus mode is on, if any — what the pill names and what draws. */
+    focused(state): Item | undefined {
+      void state.revision
+      return state.focus ? index.byId.get(state.focus.itemId) : undefined
+    },
+    /** The child events focus mode is forcing onto the globe. */
+    focusChildren(state): HistoricalEvent[] {
+      return state.focus ? focusChildrenOf(state.all, state.focus.itemId) : []
+    },
+    /** Is the panel currently the compact pill rather than the article? */
+    panelMinimised(state): boolean {
+      return !!state.focus && !state.focusExpanded
+    },
   },
   actions: {
     /** Fetch the manifest and the always-loaded spine; then prefetch the rest when idle. */
@@ -248,10 +321,35 @@ export const useEventStore = defineStore('events', {
       if (this.manifest) for (const f of chunksFor(this.manifest, start, end)) this.load(f)
     },
     select(id?: string) {
+      // Selecting anything *else* leaves focus mode. The mode is a statement
+      // about one item ("show me this"); clicking another pin, following a link
+      // or closing the panel are all statements about a different one, and
+      // leaving a battle plan drawn under someone else's article would be the
+      // map arguing with the panel. Re-selecting the focused item is not a
+      // change and keeps the mode — which is what lets the pill's own children
+      // be clicked without the drawing flickering away.
+      if (this.focus && this.focus.itemId !== id) this.exitFocus()
       this.selectedId = id
       // picking a member answers the question the cluster was asking, so it
       // closes; the selected event keeps its own pin either way.
       this.expandedClusterId = undefined
+    },
+    /**
+     * Put the map in front: minimise the panel, draw the item's drawing, pin its
+     * children. See `focus` in the state above.
+     */
+    enterFocus(id: string) {
+      this.focus = { itemId: id }
+      this.focusExpanded = false
+    },
+    /** Leave it: the article comes back whole, the drawing goes, the pins relax. */
+    exitFocus() {
+      this.focus = undefined
+      this.focusExpanded = false
+    },
+    /** The pill's chevron: the article, over the map, without leaving the mode. */
+    toggleFocusExpanded() {
+      if (this.focus) this.focusExpanded = !this.focusExpanded
     },
     /**
      * Ask the globe to look at a coordinate (a person's birth or death place),
@@ -287,6 +385,14 @@ export const useEventStore = defineStore('events', {
       const year = this.focusYear(id)
       if (year !== undefined) useTimeStore().focusTime(year)
       this.lookAt(target.lat, target.lng, target.altitude)
+      // …and, when there is something on the map worth the screen, get the
+      // article out of the way (see `focus`). An item that is only a pin does
+      // not qualify: minimising the panel to reveal one teardrop would be a
+      // worse view of the same thing, so this also *leaves* the mode when the
+      // reader shows a plain item while focused on a rich one.
+      const item = this.byId(id) ?? this.pinById(id)
+      if (item && hasMapGeometry(item)) this.enterFocus(id)
+      else this.exitFocus()
     },
     /** The year to put the timeline on when an item is opened from a link. */
     focusYear(id: string): number | undefined {

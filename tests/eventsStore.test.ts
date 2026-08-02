@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useEventStore } from '../src/stores/events'
+import { FOCUS_CHILD_CAP, useEventStore } from '../src/stores/events'
 import { useSettingsStore } from '../src/stores/settings'
 import { useTimeStore } from '../src/stores/time'
 import type { HistoricalEvent } from '../src/lib/events'
@@ -431,5 +431,178 @@ describe('the selected event keeps its pin', () => {
     const before = events.visible.length
     events.select('not-an-event')
     expect(events.visible).toHaveLength(before)
+  })
+})
+
+/**
+ * FOCUS MODE — "Show on map" on something with geometry worth the screen.
+ *
+ * The mode is deliberately separate from the selection (see `focus` in
+ * stores/events.ts), and most of these tests are about that seam: what enters
+ * it, what leaves it, and what it does to the pins while it lasts.
+ */
+describe('focus mode', () => {
+  const plan = (id: string, extra: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
+    id,
+    name: id,
+    start: 1941,
+    lat: 53.9,
+    lng: 27.6,
+    priority: 70,
+    tags: ['war'],
+    summary: '',
+    drawing: { layers: [{ type: 'marker', pos: [27.6, 53.9] }] },
+    ...extra,
+  })
+
+  const child = (id: string, parent: string, priority = 0): HistoricalEvent => ({
+    id, name: id, start: 1941, lat: 54, lng: 28, priority, tags: ['war'], summary: '', parent,
+  })
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+  })
+
+  it('enters on Show on map when the item has geometry to look at', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa')])
+    events.showOnMap('barbarossa')
+    expect(events.focus).toEqual({ itemId: 'barbarossa' })
+    expect(events.panelMinimised).toBe(true)
+    expect(events.focused?.id).toBe('barbarossa')
+  })
+
+  it('enters for a route or a footprint too, not only for a drawing', () => {
+    const events = useEventStore()
+    events.adopt([
+      plan('route', { drawing: undefined, paths: [[[0, 0], [10, 10]]] }),
+      plan('region', { drawing: undefined, area: [[0, 0], [1, 0], [1, 1]] }),
+    ])
+    events.showOnMap('route')
+    expect(events.focus?.itemId).toBe('route')
+    events.showOnMap('region')
+    expect(events.focus?.itemId).toBe('region')
+  })
+
+  it('does NOT enter for a bare pin: hiding the article would reveal one teardrop', () => {
+    const events = useEventStore()
+    events.adopt([plan('bare', { drawing: undefined })])
+    events.showOnMap('bare')
+    expect(events.focus).toBeUndefined()
+    expect(events.panelMinimised).toBe(false)
+  })
+
+  it('leaves when Show on map is used on a plain item next', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa'), plan('bare', { drawing: undefined })])
+    events.showOnMap('barbarossa')
+    events.showOnMap('bare')
+    expect(events.focus).toBeUndefined()
+  })
+
+  it('moves when Show on map is used on another rich item', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa'), plan('d-day', { lat: 49.3, lng: -0.6 })])
+    events.showOnMap('barbarossa')
+    events.showOnMap('d-day')
+    expect(events.focus).toEqual({ itemId: 'd-day' })
+  })
+
+  it('leaves when something else is selected, and stays when the same one is', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa'), child('minsk', 'barbarossa', 60)])
+    events.showOnMap('barbarossa')
+    events.select('barbarossa') // re-selecting the focus is not a change
+    expect(events.focus?.itemId).toBe('barbarossa')
+    events.select('minsk')
+    expect(events.focus).toBeUndefined()
+  })
+
+  it('leaves when the panel is closed', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa')])
+    events.showOnMap('barbarossa')
+    events.select(undefined)
+    expect(events.focus).toBeUndefined()
+    expect(events.selectedId).toBeUndefined()
+  })
+
+  it('expands back to the article without leaving the mode, and folds again', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa')])
+    events.showOnMap('barbarossa')
+    events.toggleFocusExpanded()
+    expect(events.focusExpanded).toBe(true)
+    expect(events.panelMinimised).toBe(false)
+    expect(events.focus?.itemId).toBe('barbarossa') // still the mode
+    events.toggleFocusExpanded()
+    expect(events.panelMinimised).toBe(true)
+  })
+
+  it('re-minimises when Show on map is pressed again on the expanded item', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa')])
+    events.showOnMap('barbarossa')
+    events.toggleFocusExpanded()
+    events.showOnMap('barbarossa')
+    expect(events.panelMinimised).toBe(true)
+  })
+
+  it('does nothing when asked to expand outside the mode', () => {
+    const events = useEventStore()
+    events.toggleFocusExpanded()
+    expect(events.focusExpanded).toBe(false)
+  })
+
+  it('forces the children onto the globe, minor ones included', () => {
+    const events = useEventStore()
+    const settings = useSettingsStore()
+    settings.maxEvents = 1
+    events.adopt([
+      plan('barbarossa'),
+      child('minsk', 'barbarossa'), // minor: priority 0
+      child('kiev', 'barbarossa'),
+      child('elsewhere', 'other-war'), // minor, and not this operation's
+    ])
+    expect(events.visible.map((e) => e.id)).not.toContain('minsk')
+    events.showOnMap('barbarossa')
+    const ids = events.visible.map((e) => e.id)
+    expect(ids).toContain('barbarossa')
+    expect(ids).toContain('minsk')
+    expect(ids).toContain('kiev')
+    // …but only ITS children
+    expect(ids).not.toContain('elsewhere')
+    events.exitFocus()
+    expect(events.visible.map((e) => e.id)).not.toContain('minsk')
+  })
+
+  it('caps how many children it will force on', () => {
+    const events = useEventStore()
+    useSettingsStore().maxEvents = 1
+    events.adopt([
+      plan('barbarossa'),
+      ...Array.from({ length: 40 }, (_, i) => child(`c${i}`, 'barbarossa', i)),
+    ])
+    events.showOnMap('barbarossa')
+    expect(events.focusChildren).toHaveLength(FOCUS_CHILD_CAP)
+    // the parent, plus the capped children (the top-N budget is 1)
+    expect(events.visible).toHaveLength(FOCUS_CHILD_CAP + 1)
+    // best first: the cap keeps the ones that matter
+    expect(events.focusChildren[0].id).toBe('c39')
+  })
+
+  it('does not double-list a child that won a place on its own merit', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa'), child('minsk', 'barbarossa', 95)])
+    events.showOnMap('barbarossa')
+    expect(events.visible.filter((e) => e.id === 'minsk')).toHaveLength(1)
+  })
+
+  it('still obeys the timeline: a child outside the window keeps its pin off', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa'), { ...child('later', 'barbarossa'), start: 1990 }])
+    events.showOnMap('barbarossa')
+    expect(events.visible.map((e) => e.id)).not.toContain('later')
   })
 })

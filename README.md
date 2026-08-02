@@ -30,8 +30,13 @@ zoom stops at a 100 km view, so modern cities never appear in centuries that had
 a battle up to its war, or a discovery sideways to its consequences. **Show on map**,
 next to the date, puts the thing on screen: it opens the timeline onto its years and
 flies the camera out far enough to hold all of it, whether that is a city, a plague's
-footprint or a three-year voyage. Search (top bar) finds any event by name or tag;
-"Show only this event family" filters the globe to one storyline.
+footprint or a three-year voyage. When there is real geometry to look at, the article
+folds down to a bar above the timeline so nothing covers the map, the event's own
+battles appear as pins alongside it, and — for the operations that have one — a
+**battle plan** draws: front lines, arrows of advance, the pockets where armies were
+lost. Tap the bar to read the article again, Escape to put the map back to normal.
+Search (top bar) finds any event by name or tag; "Show only this event family" filters
+the globe to one storyline.
 
 **Nations** appear in human history as border outlines — always a handful of the great
 powers of that moment, redrawn as the centuries pass.
@@ -99,6 +104,35 @@ tests/            unit tests, one file per lib module
   authored as named waypoints and curved onto great circles at draw time
   (`src/lib/paths.ts`), because the renderer would otherwise join two ports with a
   line that is straight in lat/lng and wrong on the sphere.
+- **Route direction**: `direction` is `"oneway"` (the default) or `"twoway"`. A
+  one-way route is a voyage — its dashes run from the first waypoint to the last and
+  two chevrons sit on the road at a third and two-thirds along. A two-way route is a
+  network (the Silk Road, the Manila galleon) and gets a symmetric, static 50/50 dash
+  with no arrows, because an arrow on a thousand-year trade road would be a claim the
+  history does not support.
+- **Drawings** (`drawing`) are the battle-plan overlay: an operational map drawn from
+  data rather than shipped as a picture, rendered by `src/lib/drawingLayer.ts` when the
+  item is *shown on the map*. Schema in `src/lib/drawing.ts`, validated at build time by
+  `validate_drawing` and over the corpus by `tests/eventsData.test.ts`. One field,
+  `layers`, holding any number of four kinds — every coordinate `[lng, lat]`, every
+  colour optional and defaulting to the event's tag colour:
+
+  | kind | shape | keys |
+  | --- | --- | --- |
+  | `frontline` | a line held at a moment | `paths` (list of polylines), `dash: solid\|dashed`, `width` (screen px) |
+  | `thrust` | an axis of advance, with a real arrowhead on the end | `path` (the spine; its last point is the tip), `width` (degrees of arc), `taper` |
+  | `marker` | a point with a glyph | `pos`, `style: cross\|star\|dot\|arrow`, `size` (degrees), `bearing` (for `arrow`) |
+  | `label` | words on the map | `pos`, `text`, `size: sm\|md` |
+
+  Every layer may also carry `color`, `label` (a caption above a marker; documentation
+  on the others) and `at` — a year or a 0..1 fraction, reserved for staging a drawing as
+  the timeline moves. Nothing reads `at` yet and every layer renders regardless.
+  Two units on purpose: a frontline is a *symbol drawn on* a map and is sized in screen
+  pixels, a thrust is a *thing on the ground* and is sized in degrees of arc.
+  The shipped exemplars are **Operation Barbarossa** (the 22 June border, the December
+  high-water mark, the three army-group axes, the Minsk/Smolensk/Kiev pockets) and
+  **D-Day** (the five beaches, the airborne drops, the beachhead on the night of the
+  6th and the front on 30 June).
 - **Paleogeography**: `scripts/gen_paleo_v4.py` downloads the PALEOMAP PaleoDEMs and
   renders the 38 deep-time frames (hypsometric tints, hillshade, shelf seas, ice).
 - **Nations** are hand-curated keyframed polygons in `src/data/nations.json`; rings

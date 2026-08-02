@@ -1,6 +1,7 @@
 import type { Year } from './time'
 import type { Ring } from './nations'
-import type { GeoPath } from './paths'
+import type { GeoPath, PathDirection } from './paths'
+import { drawingPoints, type Drawing } from './drawing'
 import { internalLinkIds } from './richtext'
 import { GeoGrid, SpanIndex, TopScored, separationDeg } from './queryIndex'
 import type { ViewportScope } from './viewport'
@@ -66,6 +67,22 @@ export interface HistoricalEvent extends ItemBase {
    * legs of a triangle over the basin the whole system worked across.
    */
   paths?: GeoPath[]
+  /**
+   * Whether the routes have a direction — see `PathDirection` in lib/paths.ts.
+   * Absent means `oneway`, so a voyage need not say so; a trade network must.
+   */
+  direction?: PathDirection
+  /**
+   * An operational overlay: frontlines, thrusts, markers and labels, drawn when
+   * the item is shown on the map. See lib/drawing.ts for the schema and
+   * lib/drawingLayer.ts for what puts it on the globe.
+   *
+   * Unlike `area` and `paths`, this does NOT draw on a plain selection. A battle
+   * plan is a lot of ink, and clicking a pin is a glance; "Show on map" is the
+   * request to *study* the thing, and it is what puts the panel out of the way
+   * (see `focus` in stores/events.ts) so there is something to study.
+   */
+  drawing?: Drawing
   parent?: string // id of parent event
   /**
    * Set only on events the index derives from a person (see `derivedEventsFor`).
@@ -136,8 +153,22 @@ export function geometryPointsOf(item: Item): GeoPath {
   const out: GeoPath = [[item.lng, item.lat]]
   if (item.area) out.push(...item.area)
   for (const path of item.paths ?? []) out.push(...path)
+  // …and its drawing, which for an event like D-Day is the only geometry it has
+  // beyond the pin: no footprint, no route, and a plan that spans a coastline.
+  out.push(...drawingPoints(item.drawing))
   return out
 }
+
+/**
+ * Is there something on the map worth clearing the screen for?
+ *
+ * The test behind focus mode (see `focus` in stores/events.ts): a drawing, a
+ * route or a footprint is *geometry you look at*, and the article should get out
+ * of its way. A bare pin is not — minimising the panel to reveal one teardrop
+ * would be a worse view of the same thing.
+ */
+export const hasMapGeometry = (i: Item): boolean =>
+  isEvent(i) && (!!i.drawing || !!i.paths?.length || !!i.area?.length)
 
 /** The span an item occupies on the timeline — a point for anything instantaneous. */
 export function timeExtentOf(i: Item): [Year, Year] {

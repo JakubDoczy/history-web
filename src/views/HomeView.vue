@@ -9,11 +9,23 @@ import ScaleBar from '../components/ScaleBar.vue'
 import { useSettingsStore } from '../stores/settings'
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useUiStore } from '../stores/ui'
+import { useEventStore } from '../stores/events'
 
 const ui = useUiStore()
 const settings = useSettingsStore()
+const events = useEventStore()
 
-const onKey = (e: KeyboardEvent) => e.key === 'Escape' && ui.close()
+/**
+ * Escape unwinds the app one layer at a time, outermost first: an open pop-over,
+ * then focus mode. It deliberately stops there rather than going on to clear the
+ * selection — one key press should undo one thing, and losing the article you
+ * were reading because you wanted the map back is not what was asked for.
+ */
+const onKey = (e: KeyboardEvent) => {
+  if (e.key !== 'Escape') return
+  if (ui.search || ui.settings) ui.close()
+  else if (events.focus) events.exitFocus()
+}
 onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>

@@ -20,10 +20,17 @@ import {
   type Person,
 } from '../src/lib/events'
 import { type EventManifest } from '../src/lib/eventChunks'
-import { MAX_SEGMENT_DEG, densifyPaths, isGeoPath } from '../src/lib/paths'
-import { MAX_FIT_ALTITUDE, POINT_CAP_DEG, altitudeForCapDeg, focusTargetFor } from '../src/lib/geoFocus'
+import {
+  ARROW_FRACTIONS,
+  MAX_SEGMENT_DEG,
+  densifyPaths,
+  directionOf,
+  isGeoPath,
+} from '../src/lib/paths'
+import { drawingPoints, isDrawing, routeDecorFor } from '../src/lib/drawing'
+import { FIT_FOV, MAX_FIT_ALTITUDE, POINT_CAP_DEG, altitudeForCapDeg, focusTargetFor } from '../src/lib/geoFocus'
 import { separationDeg } from '../src/lib/queryIndex'
-import { visibleSpanDeg } from '../src/lib/detailImagery'
+import { viewSpanDeg, visibleSpanDeg } from '../src/lib/detailImagery'
 import { TAGS } from '../src/lib/tags'
 import { MIN_TIME, MAX_TIME } from '../src/lib/time'
 import { internalLinkIds, renderRichText } from '../src/lib/richtext'
@@ -129,7 +136,10 @@ describe('items — dataset shape', () => {
       'id', 'kind', 'name', 'priority', 'tags', 'summary', 'body', 'image', 'links', 'related',
     ]
     const allowed: Record<string, Set<string>> = {
-      event: new Set([...common, 'start', 'end', 'lat', 'lng', 'area', 'paths', 'parent']),
+      event: new Set([
+        ...common,
+        'start', 'end', 'lat', 'lng', 'area', 'paths', 'direction', 'drawing', 'parent',
+      ]),
       person: new Set([...common, 'born', 'died', 'birthPlace', 'deathPlace']),
       concept: new Set([...common, 'anchorYear']),
     }
@@ -794,5 +804,187 @@ describe('items — partial coverage against real spans', () => {
     // 1299–1922 against 1200–1300: two years of overlap, and over 600 outside
     expect(effectivePriority(ottoman, 1200, 1300)).toBeLessThan(60)
     expect(ids(1200, 1300)[0]).toBe('mongol-conquests')
+  })
+})
+
+/**
+ * ONE-WAY vs TWO-WAY. The field is optional and defaults to `oneway`, but the
+ * corpus states it on every path event on purpose: the eight drawn routes are
+ * the whole population, they are the exemplars a new one gets authored against,
+ * and "the author thought about it" is not something a default can record.
+ */
+describe('items — route direction', () => {
+  const pathEvents = events.filter((e) => e.paths)
+
+  it('declares a direction on every drawn route', () => {
+    for (const e of pathEvents)
+      expect(['oneway', 'twoway'], `${e.id} has no direction`).toContain(directionOf(e))
+    for (const e of pathEvents) expect(e.direction, `${e.id} leaves it to the default`).toBeDefined()
+  })
+
+  it('never puts a direction on an event with no route to give it one', () => {
+    for (const e of events) if (!e.paths) expect(e.direction, e.id).toBeUndefined()
+  })
+
+  it('calls the trade networks two-way and the voyages one-way', () => {
+    const dir = (id: string) => directionOf(byId.get(id) as HistoricalEvent)
+    // carried goods both ways for centuries; an arrow on either would be a lie
+    expect(dir('silk-road')).toBe('twoway')
+    expect(dir('manila-galleon')).toBe('twoway')
+    // voyages, and a triangle that circulated one way round
+    for (const id of ['magellan', 'columbus', 'da-gama', 'dias', 'zheng-he', 'slave-trade'])
+      expect(dir(id), id).toBe('oneway')
+  })
+
+  it('gives every one-way route its chevrons and every two-way route none', () => {
+    for (const e of pathEvents) {
+      const decor = routeDecorFor(e)!
+      const arrows = decor.layers.filter((l) => l.type === 'marker' && l.style === 'arrow')
+      const dots = decor.layers.filter((l) => l.type === 'marker' && l.style === 'dot')
+      // both ends of every leg, always
+      expect(dots.length, e.id).toBe(e.paths!.length * 2)
+      expect(arrows.length, e.id).toBe(
+        directionOf(e) === 'oneway' ? e.paths!.length * ARROW_FRACTIONS.length : 0,
+      )
+      // and every glyph sits on the road it decorates
+      for (const l of [...arrows, ...dots]) {
+        const pos = (l as { pos: [number, number] }).pos
+        const nearest = Math.min(
+          ...densifyPaths(e.paths!, 2)
+            .flat()
+            .map(([lng, lat]) => separationDeg(pos[1], pos[0], lat, lng)),
+        )
+        expect(nearest, `${e.id} glyph is off its own route`).toBeLessThan(1)
+      }
+    }
+  })
+})
+
+/**
+ * BATTLE PLANS. The build script validates the shape (see `validate_drawing` in
+ * scripts/build_event_chunks.py); what only the corpus can answer is whether the
+ * plans are *about* the events they hang on — that the geometry is in the right
+ * theatre, at the right scale, and that the camera can frame it.
+ */
+describe('items — drawings', () => {
+  const drawn = events.filter((e) => e.drawing)
+
+  it('ships the exemplars', () => {
+    expect(drawn.map((e) => e.id)).toEqual(expect.arrayContaining(['barbarossa', 'd-day']))
+  })
+
+  it('is a valid drawing wherever one is present, and absent everywhere else', () => {
+    for (const e of drawn) expect(isDrawing(e.drawing), `${e.id}`).toBe(true)
+    for (const i of items) if (!isEvent(i)) expect('drawing' in i, i.id).toBe(false)
+  })
+
+  it('keeps every drawn coordinate on the planet and in the right order', () => {
+    for (const e of drawn)
+      for (const [lng, lat] of drawingPoints(e.drawing)) {
+        expect(Math.abs(lng), `${e.id} lng`).toBeLessThanOrEqual(180)
+        expect(Math.abs(lat), `${e.id} lat`).toBeLessThanOrEqual(90)
+      }
+  })
+
+  it('draws where the event happened: every layer near the pin', () => {
+    for (const e of drawn) {
+      const worst = Math.max(
+        ...drawingPoints(e.drawing).map(([lng, lat]) => separationDeg(e.lat, e.lng, lat, lng)),
+      )
+      // a theatre, not a hemisphere — if a drawing is further from its own pin
+      // than this, a coordinate has been swapped
+      expect(worst, `${e.id} draws ${worst.toFixed(1)}° from its own pin`).toBeLessThan(25)
+    }
+  })
+
+  it('uses each of the four kinds somewhere, so the schema is exercised', () => {
+    const kinds = new Set(drawn.flatMap((e) => e.drawing!.layers.map((l) => l.type)))
+    for (const k of ['frontline', 'thrust', 'marker', 'label'])
+      expect(kinds, `no drawing uses a ${k}`).toContain(k)
+  })
+
+  it('can be framed by the camera, and the plan fills the frame rather than a corner', () => {
+    for (const e of drawn) {
+      const target = focusTargetFor(e)!
+      const half = visibleSpanDeg(target.altitude) / 2
+      const pts = drawingPoints(e.drawing)
+      const worst = Math.max(
+        ...pts.map(([lng, lat]) => separationDeg(target.lat, target.lng, lat, lng)),
+      )
+      expect(worst, `${e.id} does not fit the fit`).toBeLessThanOrEqual(half + 1e-9)
+      // …and is not lost in it. Measured against the FRAME, not the horizon:
+      // close in the two differ by an order of magnitude, and it is the frame
+      // the reader is looking at.
+      const frameHalf = viewSpanDeg(target.altitude, FIT_FOV) / 2
+      expect(worst / frameHalf, `${e.id} is a smudge in its own frame`).toBeGreaterThan(0.3)
+    }
+  })
+
+  it("draws Barbarossa's 1941: two fronts, three army groups, the pockets", () => {
+    const b = byId.get('barbarossa') as HistoricalEvent
+    const layers = b.drawing!.layers
+    const fronts = layers.filter((l) => l.type === 'frontline')
+    const thrusts = layers.filter((l) => l.type === 'thrust')
+    expect(fronts, 'the June border and the December high-water mark').toHaveLength(2)
+    expect(thrusts, 'Army Groups North, Centre and South').toHaveLength(3)
+
+    // The June 22 line is the 1939 partition border: it runs from the Baltic to
+    // the Black Sea, and stays west of the December one at every latitude.
+    const june = (fronts[0] as { paths: [number, number][][] }).paths[0]
+    const dec = (fronts[1] as { paths: [number, number][][] }).paths[0]
+    expect(Math.max(...june.map((p) => p[1]))).toBeGreaterThan(55) // Baltic
+    expect(Math.min(...june.map((p) => p[1]))).toBeLessThan(46) // the Danube delta
+    expect(Math.max(...june.map((p) => p[0]))).toBeLessThan(Math.max(...dec.map((p) => p[0])))
+    // the December line reaches the Moscow suburbs and no further
+    expect(Math.max(...dec.map((p) => p[0]))).toBeGreaterThan(38)
+    expect(Math.max(...dec.map((p) => p[0]))).toBeLessThan(41)
+
+    // each thrust starts on the June line and ends deep inside the USSR
+    for (const t of thrusts as { path: [number, number][]; label?: string }[]) {
+      expect(t.path[0][0], `${t.label} starts too far east`).toBeLessThan(24)
+      expect(t.path[t.path.length - 1][0], `${t.label} stops too soon`).toBeGreaterThan(29)
+    }
+    // Leningrad, Moscow, Rostov — the three objectives, north to south
+    const tips = (thrusts as { path: [number, number][] }[]).map((t) => t.path[t.path.length - 1])
+    expect(separationDeg(tips[0][1], tips[0][0], 59.94, 30.31)).toBeLessThan(1.5)
+    expect(separationDeg(tips[1][1], tips[1][0], 55.75, 37.62)).toBeLessThan(1.5)
+    expect(separationDeg(tips[2][1], tips[2][0], 47.24, 39.72)).toBeLessThan(1.5)
+
+    const marks = layers.filter((l) => l.type === 'marker') as { label?: string }[]
+    for (const pocket of ['Minsk', 'Smolensk', 'Kiev'])
+      expect(marks.map((m) => m.label ?? '').join(' '), `${pocket} pocket`).toContain(pocket)
+  })
+
+  it('gives Barbarossa a footprint that is the 1941 theatre, not all of Russia', () => {
+    const b = byId.get('barbarossa') as HistoricalEvent
+    // the front never reached the Urals, let alone Kamchatka; a footprint that
+    // said otherwise framed the drawing at world view
+    expect(Math.max(...b.area!.map((p) => p[0]))).toBeLessThan(45)
+    expect(focusTargetFor(b)!.altitude).toBeLessThan(0.5)
+  })
+
+  it('draws Normandy on the beaches: five landings between the Cotentin and the Orne', () => {
+    const d = byId.get('d-day') as HistoricalEvent
+    const layers = d.drawing!.layers
+    const thrusts = layers.filter((l) => l.type === 'thrust') as {
+      path: [number, number][]
+      label?: string
+    }[]
+    expect(thrusts, 'Utah, Omaha, Gold, Juno, Sword').toHaveLength(5)
+    for (const beach of ['Utah', 'Omaha', 'Gold', 'Juno', 'Sword'])
+      expect(thrusts.map((t) => t.label), beach).toContain(beach)
+    // every assault comes from the sea (north) onto the coast
+    for (const t of thrusts) {
+      const from = t.path[0]
+      const to = t.path[t.path.length - 1]
+      expect(from[1], `${t.label} starts inland`).toBeGreaterThan(to[1])
+      expect(to[1], `${t.label} lands off the Normandy coast`).toBeGreaterThan(49.2)
+      expect(to[1], `${t.label} lands off the Normandy coast`).toBeLessThan(49.5)
+    }
+    // west to east in the order the beaches actually run
+    const lngs = thrusts.map((t) => t.path[t.path.length - 1][0])
+    expect(lngs).toEqual([...lngs].sort((a, b) => a - b))
+    // and the two frontlines: the night of the 6th, and the front three weeks on
+    expect(layers.filter((l) => l.type === 'frontline')).toHaveLength(2)
   })
 })

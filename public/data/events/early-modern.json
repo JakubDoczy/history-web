@@ -419,7 +419,8 @@
      36.79
     ]
    ]
-  ]
+  ],
+  "direction": "oneway"
  },
  {
   "id": "spanish-conquest",
@@ -726,7 +727,8 @@
      53.4
     ]
    ]
-  ]
+  ],
+  "direction": "oneway"
  },
  {
   "id": "mughal-empire",
@@ -1148,7 +1150,8 @@
      14.6
     ]
    ]
-  ]
+  ],
+  "direction": "twoway"
  },
  {
   "id": "netherlands-independence",

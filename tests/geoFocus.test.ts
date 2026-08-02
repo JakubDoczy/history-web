@@ -199,3 +199,46 @@ describe('focusTargetFor', () => {
     expect(focusTargetFor(concept)).toBeUndefined()
   })
 })
+
+describe('focusTargetFor — a drawing is geometry too', () => {
+  it('frames a battle plan on the plan, not on the pin it hangs from', () => {
+    const plan = ev({
+      lat: 49.34,
+      lng: -0.6,
+      drawing: {
+        layers: [
+          { type: 'frontline', paths: [[[-1.6, 49.6], [0.1, 49.2]]] },
+          { type: 'marker', pos: [-0.9, 49.4] },
+          { type: 'label', pos: [-0.3, 49.3], text: 'Sword' },
+        ],
+      },
+    })
+    const target = focusTargetFor(plan)!
+    // fitted to the plan's own extent, which is a great deal closer than the
+    // 1500 km frame a bare point is given
+    expect(target.altitude).toBeLessThan(altitudeForCapDeg(POINT_CAP_DEG))
+    for (const [lng, lat] of [[-1.6, 49.6], [0.1, 49.2], [-0.9, 49.4], [-0.3, 49.3]] as GeoPath)
+      expect(separationDeg(target.lat, target.lng, lat, lng)).toBeLessThanOrEqual(
+        visibleSpanDeg(target.altitude) / 2 + 1e-9,
+      )
+  })
+
+  it('still gives a bare point the point cap, whatever coordinate it sits at', () => {
+    // separationDeg of a point against itself returns a hair above zero at some
+    // coordinates (an acos near 1); without the extent epsilon those points were
+    // framed from the minimum altitude instead of the point cap
+    for (const [lng, lat] of [[0, 0], [-74.66, 40.35], [37.62, 55.75], [139.7, 35.7]])
+      expect(focusTargetFor(ev({ lat, lng }))!.altitude, `${lng},${lat}`).toBe(
+        altitudeForCapDeg(POINT_CAP_DEG),
+      )
+  })
+
+  it('never goes closer than the app"s own zoom floor', () => {
+    const tiny = ev({
+      lat: 49.34,
+      lng: -0.6,
+      drawing: { layers: [{ type: 'marker', pos: [-0.59, 49.35] }] },
+    })
+    expect(focusTargetFor(tiny)!.altitude).toBe(MIN_FIT_ALTITUDE)
+  })
+})

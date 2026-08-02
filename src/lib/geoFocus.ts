@@ -39,6 +39,18 @@ export const MAX_FIT_ALTITUDE = 2.5
 /** And how close. Below this the camera is inside the app's own zoom limits. */
 export const MIN_FIT_ALTITUDE = 0.05
 
+/**
+ * The cap radius below which an item counts as having no extent at all.
+ *
+ * A tenth of a kilometre: far below anything this dataset is authored at, and
+ * far above the rounding noise in `separationDeg`, which returns ~1e-8° for a
+ * point measured against itself (an `acos` near 1). Without the epsilon a
+ * single-point item would sometimes read as having a hair of extent and be
+ * framed from the minimum altitude instead of from the point cap — which is a
+ * bug that only shows up at certain coordinates.
+ */
+export const MIN_EXTENT_DEG = 1e-3
+
 export interface FocusTarget {
   lat: number
   lng: number
@@ -132,7 +144,16 @@ export function focusTargetFor(item: Item, fovDeg = FIT_FOV): FocusTarget | unde
     lat: cap.lat,
     lng: cap.lng,
     // A single point still gets a considered altitude rather than the zero its
-    // cap radius would give.
-    altitude: altitudeForCapDeg(Math.max(cap.radiusDeg, POINT_CAP_DEG), fovDeg),
+    // cap radius would give — but ONLY a point. Once an item has extent, the
+    // extent is the answer, however small it is: a battle plan across the
+    // Normandy beaches is 50 km wide, and floored to the point cap it would be
+    // framed from 1500 km up, which is a picture of the Channel with a smudge on
+    // it. `MIN_FIT_ALTITUDE` is what stops the fit going absurdly close, and it
+    // is the right floor for this because it is about the camera, not about
+    // guessing what the reader meant.
+    altitude: altitudeForCapDeg(
+      cap.radiusDeg > MIN_EXTENT_DEG ? cap.radiusDeg : POINT_CAP_DEG,
+      fovDeg,
+    ),
   }
 }

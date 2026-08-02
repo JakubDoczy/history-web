@@ -18,6 +18,14 @@ const e = computed(() => events.selected!)
 const person = computed(() => (isPerson(e.value) ? e.value : null))
 const event = computed(() => (isEvent(e.value) ? e.value : null))
 const kindLabel = computed(() => ({ event: '', person: 'Person', concept: 'Concept' })[kindOf(e.value)])
+/**
+ * The pill's chip. The article can leave the chip off an event — most items are
+ * events and the word adds nothing next to a date — but the pill has no date and
+ * no body, so something has to say what kind of thing this is.
+ */
+const pillKind = computed(
+  () => kindLabel.value || (event.value?.drawing ? 'Plan' : event.value?.paths ? 'Route' : 'Event'),
+)
 
 /** The line under the title: a span, a lifespan, or the year an idea is anchored at. */
 const when = computed(() => {
@@ -154,8 +162,48 @@ onBeforeUnmount(() => inflight?.abort())
 </script>
 
 <template>
-  <article v-if="events.selected" class="sheet panel scroll-y">
+  <!-- Two shapes of the same panel. The article is the default; the pill is what
+       focus mode leaves behind so the map is unobstructed (see `focus` in
+       stores/events.ts). `mode="out-in"` because they are not two states of one
+       box — they are different sizes in different corners, and crossfading them
+       in place reads as a glitch rather than as a fold. -->
+  <Transition name="panel-swap" mode="out-in">
+    <div
+      v-if="events.selected && events.panelMinimised"
+      class="sheet pill"
+      data-test="panel-pill"
+    >
+      <button class="pill-main" data-test="pill-expand" @click="events.toggleFocusExpanded()">
+        <span class="pill-name">{{ e.name }}</span>
+        <span class="pill-kind">{{ pillKind }}</span>
+      </button>
+      <button class="pill-btn" aria-label="Expand article" @click="events.toggleFocusExpanded()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 15l6-6 6 6" />
+        </svg>
+      </button>
+      <button class="pill-btn" data-test="pill-close" aria-label="Close" @click="events.select()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+    </div>
+
+    <article v-else-if="events.selected" class="sheet panel scroll-y">
     <span class="grabber" aria-hidden="true" />
+    <!-- In focus mode the article can fold back down to the pill without
+         leaving the mode: the drawing stays, the pins stay, the reading stops. -->
+    <button
+      v-if="events.focus"
+      class="close minimise"
+      data-test="panel-minimise"
+      aria-label="Minimise"
+      @click="events.toggleFocusExpanded()"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </button>
     <button class="close" aria-label="Close" @click="events.select()">
       <svg
         width="14"
@@ -277,7 +325,8 @@ onBeforeUnmount(() => inflight?.abort())
     >
       Show only this event family
     </button>
-  </article>
+    </article>
+  </Transition>
 </template>
 
 <style scoped>
@@ -299,6 +348,110 @@ onBeforeUnmount(() => inflight?.abort())
 }
 .grabber {
   display: none;
+}
+
+/* --- focus mode: the panel folded down to a bar ---------------------------
+   Docked bottom-left, just clear of the timeline, so the map above it — which
+   is the whole reason the panel got out of the way — is uninterrupted. It is a
+   row of three targets: the name (expands), a chevron (expands), an X (closes,
+   which also leaves the mode). */
+.pill {
+  position: absolute;
+  left: calc(var(--s4) + var(--safe-l));
+  bottom: calc(var(--rail-clear) + var(--s2));
+  z-index: var(--z-event-panel);
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+  max-width: min(420px, calc(100vw - 2 * var(--s4)));
+  padding: 5px 6px 5px var(--s3);
+  border-radius: var(--r-pill);
+}
+.pill-main {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: 5px 2px;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.pill-name {
+  font-family: var(--serif);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  color: var(--frost);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--fast);
+}
+.pill-main:hover .pill-name {
+  color: #f0f5fb;
+}
+.pill-kind {
+  flex: none;
+  border: 1px solid var(--brass-line);
+  border-radius: var(--r-pill);
+  padding: 1px 8px;
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+.pill-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color var(--fast),
+    background-color var(--fast),
+    border-color var(--fast);
+}
+.pill-btn:hover {
+  color: var(--frost);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--line);
+}
+.pill-btn:active {
+  transform: scale(0.94);
+}
+
+/* Folding the article down to the pill and back. Both directions run with
+   `mode="out-in"`, so this is two half-transitions, not a morph — the article
+   drops and fades as it goes, the pill rises into the same corner it lives in.
+   Same durations and easing as every other panel (tokens.css). */
+.panel-swap-enter-active,
+.panel-swap-leave-active {
+  transition:
+    opacity var(--slow),
+    transform var(--slow);
+}
+.panel-swap-enter-from,
+.panel-swap-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.985);
+}
+/* The article carries its own entrance animation; running both at once
+   double-counts the fade. */
+.panel-swap-enter-active.panel {
+  animation: none;
+}
+
+/* the fold-down chevron sits beside the close button, not under it */
+.close.minimise {
+  right: calc(var(--s3) + 32px);
 }
 
 .close {
@@ -701,6 +854,24 @@ ul {
   }
   .family {
     min-height: 44px;
+  }
+  /* the pill spans the width the sheet did, still above the timeline */
+  .pill {
+    left: calc(var(--s3) + var(--safe-l));
+    right: calc(var(--s3) + var(--safe-r));
+    max-width: none;
+  }
+  .pill-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .pill-main {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 2px;
+  }
+  .close.minimise {
+    right: calc(var(--s2) + 42px);
   }
 }
 </style>

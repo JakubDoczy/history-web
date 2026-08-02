@@ -2484,48 +2484,40 @@
   "lng": 27.57,
   "area": [
    [
-    22,
-    55
+    20.5,
+    56.5
    ],
    [
-    30,
-    70
+    24.0,
+    60.5
    ],
    [
-    60,
-    72
+    32.0,
+    60.5
    ],
    [
-    100,
-    75
+    40.0,
+    57.5
    ],
    [
-    140,
-    70
+    40.5,
+    52.0
    ],
    [
-    170,
-    65
+    40.0,
+    46.5
    ],
    [
-    135,
-    45
+    33.0,
+    44.5
    ],
    [
-    100,
-    45
+    27.5,
+    45.0
    ],
    [
-    75,
-    38
-   ],
-   [
-    50,
-    40
-   ],
-   [
-    30,
-    45
+    22.0,
+    48.5
    ]
   ],
   "priority": 72,
@@ -2544,7 +2536,343 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Operation_Barbarossa"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "label": "Front, 22 June 1941",
+     "color": "#eaf1fb",
+     "dash": "solid",
+     "width": 2.6,
+     "at": 1941,
+     "paths": [
+      [
+       [
+        21.07,
+        55.92
+       ],
+       [
+        22.93,
+        54.1
+       ],
+       [
+        23.34,
+        53.13
+       ],
+       [
+        23.7,
+        52.1
+       ],
+       [
+        23.99,
+        51.2
+       ],
+       [
+        24.28,
+        50.48
+       ],
+       [
+        22.78,
+        49.78
+       ],
+       [
+        22.6,
+        49.05
+       ],
+       [
+        24.7,
+        48.55
+       ],
+       [
+        25.94,
+        48.29
+       ],
+       [
+        27.2,
+        47.6
+       ],
+       [
+        27.6,
+        47.16
+       ],
+       [
+        28.03,
+        45.75
+       ],
+       [
+        28.2,
+        45.3
+       ]
+      ]
+     ]
+    },
+    {
+     "type": "frontline",
+     "label": "Front, 5 December 1941",
+     "color": "#e5484d",
+     "dash": "dashed",
+     "width": 2.6,
+     "at": 1941,
+     "paths": [
+      [
+       [
+        31.05,
+        59.94
+       ],
+       [
+        31.9,
+        58.9
+       ],
+       [
+        32.3,
+        57.9
+       ],
+       [
+        33.1,
+        57.15
+       ],
+       [
+        35.9,
+        56.86
+       ],
+       [
+        37.5,
+        56.3
+       ],
+       [
+        37.4,
+        55.98
+       ],
+       [
+        36.7,
+        55.35
+       ],
+       [
+        37.2,
+        54.9
+       ],
+       [
+        37.6,
+        54.2
+       ],
+       [
+        38.5,
+        52.6
+       ],
+       [
+        36.2,
+        51.7
+       ],
+       [
+        36.6,
+        50.6
+       ],
+       [
+        36.25,
+        50.0
+       ],
+       [
+        37.3,
+        49.2
+       ],
+       [
+        37.6,
+        48.85
+       ],
+       [
+        38.9,
+        47.25
+       ]
+      ]
+     ]
+    },
+    {
+     "type": "thrust",
+     "label": "Army Group North",
+     "color": "#ff8a4c",
+     "width": 0.26,
+     "path": [
+      [
+       21.9,
+       55.1
+      ],
+      [
+       23.2,
+       55.3
+      ],
+      [
+       25.0,
+       55.6
+      ],
+      [
+       26.53,
+       55.88
+      ],
+      [
+       28.35,
+       57.35
+      ],
+      [
+       28.33,
+       57.82
+      ],
+      [
+       29.85,
+       58.74
+      ],
+      [
+       30.25,
+       59.8
+      ]
+     ]
+    },
+    {
+     "type": "thrust",
+     "label": "Army Group Centre",
+     "color": "#ff8a4c",
+     "width": 0.32,
+     "path": [
+      [
+       22.95,
+       53.3
+      ],
+      [
+       24.7,
+       53.6
+      ],
+      [
+       27.57,
+       53.9
+      ],
+      [
+       30.42,
+       54.51
+      ],
+      [
+       32.05,
+       54.78
+      ],
+      [
+       34.3,
+       55.21
+      ],
+      [
+       36.02,
+       55.51
+      ],
+      [
+       37.25,
+       55.9
+      ]
+     ]
+    },
+    {
+     "type": "thrust",
+     "label": "Army Group South",
+     "color": "#ff8a4c",
+     "width": 0.28,
+     "path": [
+      [
+       23.15,
+       50.3
+      ],
+      [
+       24.7,
+       50.45
+      ],
+      [
+       26.25,
+       50.62
+      ],
+      [
+       28.66,
+       50.25
+      ],
+      [
+       30.52,
+       50.45
+      ],
+      [
+       32.6,
+       49.9
+      ],
+      [
+       34.55,
+       49.59
+      ],
+      [
+       36.25,
+       48.6
+      ],
+      [
+       39.55,
+       47.28
+      ]
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.3,
+     "color": "#ffd7a8",
+     "pos": [
+      26.3,
+      53.6
+     ],
+     "label": "Minsk pocket · 324,000"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.3,
+     "color": "#ffd7a8",
+     "pos": [
+      31.6,
+      54.6
+     ],
+     "label": "Smolensk pocket · 300,000"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.36,
+     "color": "#ffd7a8",
+     "pos": [
+      32.4,
+      50.3
+     ],
+     "label": "Kiev pocket · 665,000"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.34,
+     "color": "#f2f6fc",
+     "pos": [
+      37.62,
+      55.75
+     ],
+     "label": "Moscow — not taken"
+    },
+    {
+     "type": "label",
+     "pos": [
+      30.32,
+      59.94
+     ],
+     "text": "Leningrad, besieged"
+    },
+    {
+     "type": "label",
+     "pos": [
+      39.72,
+      47.24
+     ],
+     "text": "Rostov"
+    }
+   ]
+  }
  },
  {
   "id": "pearl-harbor",
@@ -2594,6 +2922,109 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/The_Holocaust"
+   }
+  ]
+ },
+ {
+  "id": "minsk-pocket",
+  "name": "Białystok–Minsk encirclement",
+  "start": 1941,
+  "lat": 53.13,
+  "lng": 25.32,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "barbarossa",
+  "summary": "Army Group Centre's panzer pincers closed east of Minsk in the war's first fortnight, taking some 324,000 prisoners.",
+  "body": "Part of [Operation Barbarossa](event:barbarossa). Guderian's and Hoth's panzer groups drove past the Soviet armies on the border and met east of Minsk on 27 June 1941, trapping most of the Western Front.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Bia%C5%82ystok%E2%80%93Minsk).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Bia%C5%82ystok%E2%80%93Minsk"
+   }
+  ]
+ },
+ {
+  "id": "smolensk-1941",
+  "name": "Battle of Smolensk",
+  "start": 1941,
+  "lat": 54.78,
+  "lng": 32.05,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "barbarossa",
+  "summary": "Two months of fighting on the road to Moscow cost the Red Army another 300,000 men — and cost Germany the summer.",
+  "body": "Part of [Operation Barbarossa](event:barbarossa). The pocket at Smolensk closed in July 1941, but Soviet counter-attacks held Army Group Centre on the upper Dnieper into September, delaying the advance on Moscow.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Smolensk_(1941)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Smolensk_(1941)"
+   }
+  ]
+ },
+ {
+  "id": "kiev-pocket",
+  "name": "Kiev encirclement",
+  "start": 1941,
+  "lat": 50.3,
+  "lng": 32.4,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "barbarossa",
+  "summary": "The largest encirclement in military history: about 665,000 Soviet troops were taken east of Kiev in September 1941.",
+  "body": "Part of [Operation Barbarossa](event:barbarossa). Hitler turned Guderian's panzers south from the Moscow axis; they met Kleist's group at Lokhvytsia on 16 September 1941, closing a pocket around four Soviet armies.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Kiev_(1941)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Kiev_(1941)"
+   }
+  ]
+ },
+ {
+  "id": "moscow-1941",
+  "name": "Battle of Moscow",
+  "start": 1941,
+  "end": 1942,
+  "lat": 55.75,
+  "lng": 37.62,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "barbarossa",
+  "summary": "German spearheads came within 30 km of the Kremlin before the December counter-offensive threw them back.",
+  "body": "Part of [Operation Barbarossa](event:barbarossa). Operation Typhoon opened in October 1941 and destroyed the Soviet armies at Vyazma and Bryansk, but stalled in mud, frost and fresh Siberian divisions; Zhukov counter-attacked on 5 December.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Moscow).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Moscow"
+   }
+  ]
+ },
+ {
+  "id": "leningrad-siege",
+  "name": "Siege of Leningrad",
+  "start": 1941,
+  "end": 1944,
+  "lat": 59.94,
+  "lng": 30.31,
+  "priority": 0,
+  "tags": [
+   "war",
+   "disaster"
+  ],
+  "parent": "barbarossa",
+  "summary": "Army Group North cut the city off in September 1941; some 800,000 civilians died before the blockade was lifted.",
+  "body": "Part of [Operation Barbarossa](event:barbarossa). The last land route into Leningrad was severed on 8 September 1941. The city was supplied across the ice of Lake Ladoga for 872 days.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Leningrad).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Siege_of_Leningrad"
    }
   ]
  },
@@ -2692,6 +3123,327 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Normandy_landings"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "label": "Beachhead, night of 6 June 1944",
+     "color": "#eaf1fb",
+     "dash": "solid",
+     "width": 2.8,
+     "at": 1944,
+     "paths": [
+      [
+       [
+        -1.24,
+        49.42
+       ],
+       [
+        -1.32,
+        49.36
+       ],
+       [
+        -1.29,
+        49.28
+       ],
+       [
+        -1.16,
+        49.26
+       ],
+       [
+        -1.09,
+        49.34
+       ],
+       [
+        -1.1,
+        49.41
+       ]
+      ],
+      [
+       [
+        -0.96,
+        49.37
+       ],
+       [
+        -0.9,
+        49.33
+       ],
+       [
+        -0.8,
+        49.33
+       ],
+       [
+        -0.72,
+        49.37
+       ]
+      ],
+      [
+       [
+        -0.63,
+        49.33
+       ],
+       [
+        -0.5,
+        49.25
+       ],
+       [
+        -0.37,
+        49.21
+       ],
+       [
+        -0.25,
+        49.23
+       ],
+       [
+        -0.16,
+        49.25
+       ],
+       [
+        -0.05,
+        49.24
+       ]
+      ]
+     ]
+    },
+    {
+     "type": "frontline",
+     "label": "Front, 30 June 1944",
+     "color": "#e5484d",
+     "dash": "dashed",
+     "width": 2.6,
+     "at": 1944,
+     "paths": [
+      [
+       [
+        -1.53,
+        49.22
+       ],
+       [
+        -1.3,
+        49.2
+       ],
+       [
+        -1.13,
+        49.22
+       ],
+       [
+        -0.98,
+        49.15
+       ],
+       [
+        -0.83,
+        49.1
+       ],
+       [
+        -0.62,
+        49.17
+       ],
+       [
+        -0.45,
+        49.21
+       ],
+       [
+        -0.37,
+        49.24
+       ],
+       [
+        -0.25,
+        49.27
+       ]
+      ]
+     ]
+    },
+    {
+     "type": "thrust",
+     "color": "#4c8dff",
+     "width": 0.028,
+     "path": [
+      [
+       -1.3,
+       49.72
+      ],
+      [
+       -1.24,
+       49.56
+      ],
+      [
+       -1.18,
+       49.44
+      ]
+     ],
+     "label": "Utah"
+    },
+    {
+     "type": "thrust",
+     "color": "#4c8dff",
+     "width": 0.028,
+     "path": [
+      [
+       -0.95,
+       49.7
+      ],
+      [
+       -0.91,
+       49.54
+      ],
+      [
+       -0.88,
+       49.4
+      ]
+     ],
+     "label": "Omaha"
+    },
+    {
+     "type": "thrust",
+     "color": "#34d1bf",
+     "width": 0.028,
+     "path": [
+      [
+       -0.6,
+       49.68
+      ],
+      [
+       -0.57,
+       49.52
+      ],
+      [
+       -0.54,
+       49.37
+      ]
+     ],
+     "label": "Gold"
+    },
+    {
+     "type": "thrust",
+     "color": "#34d1bf",
+     "width": 0.028,
+     "path": [
+      [
+       -0.45,
+       49.66
+      ],
+      [
+       -0.42,
+       49.5
+      ],
+      [
+       -0.39,
+       49.36
+      ]
+     ],
+     "label": "Juno"
+    },
+    {
+     "type": "thrust",
+     "color": "#34d1bf",
+     "width": 0.028,
+     "path": [
+      [
+       -0.32,
+       49.64
+      ],
+      [
+       -0.3,
+       49.48
+      ],
+      [
+       -0.28,
+       49.32
+      ]
+     ],
+     "label": "Sword"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.035,
+     "color": "#f5a623",
+     "pos": [
+      -1.32,
+      49.41
+     ],
+     "label": "82nd & 101st Airborne"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.035,
+     "color": "#f5a623",
+     "pos": [
+      -0.18,
+      49.245
+     ],
+     "label": "6th Airborne"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.032,
+     "color": "#ffd7a8",
+     "pos": [
+      -0.37,
+      49.18
+     ],
+     "label": "Caen, held to 9 July"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.024,
+     "color": "#ffd7a8",
+     "pos": [
+      -1.62,
+      49.64
+     ],
+     "label": "Cherbourg, taken 27 June"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -1.2,
+      49.47
+     ],
+     "text": "Utah",
+     "size": "sm"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -0.9,
+      49.435
+     ],
+     "text": "Omaha",
+     "size": "sm"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -0.55,
+      49.425
+     ],
+     "text": "Gold",
+     "size": "sm"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -0.39,
+      49.47
+     ],
+     "text": "Juno",
+     "size": "sm"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -0.28,
+      49.515
+     ],
+     "text": "Sword",
+     "size": "sm"
+    }
+   ]
+  }
  }
 ]

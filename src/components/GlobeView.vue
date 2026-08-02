@@ -8,7 +8,9 @@ import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
 import { useViewStore } from '../stores/view'
 import { isEvent, type HistoricalEvent } from '../lib/events'
-import { densifyPaths, type GeoPath } from '../lib/paths'
+import { ROUTE_STYLE, densifyPaths, directionOf, type GeoPath, type PathDirection } from '../lib/paths'
+import { routeDecorFor, type Drawing } from '../lib/drawing'
+import { DrawingLayer } from '../lib/drawingLayer'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { RenderPump } from '../lib/renderPump'
@@ -54,6 +56,10 @@ let surface: GlobeSurface | undefined
 let celestial: CelestialLayer | undefined
 let atmosphere: AtmosphereLayer | undefined
 let detail: DetailImagery | undefined
+/** The authored battle plan of the item in focus mode; nothing otherwise. */
+let drawing: DrawingLayer | undefined
+/** Terminus dots and direction chevrons for the selected event's routes. */
+let decor: DrawingLayer | undefined
 let resizeObs: ResizeObserver | undefined
 let raf = 0
 const stops: (() => void)[] = []
@@ -67,10 +73,26 @@ type EventAreaEntry = {
 }
 type PolyEntry = BorderEntry | EventAreaEntry
 
-/** One drawn route of the selected event; `points` is already densified. */
+/**
+ * One drawn route of the selected event; `points` is already densified.
+ *
+ * Every route produces TWO entries — a `halo` under a `line` — because the paths
+ * layer draws one stroke per datum and a route needs two to be legible: a wide
+ * dark solid under-stroke, and the tag-coloured dashed line over it. Doing it as
+ * two entries rather than two layers keeps one lifecycle, one data-join and one
+ * set of accessors; the role picks the colour, the width, the dash and the
+ * altitude.
+ *
+ * The altitude is carried in the point itself (a third component) because the
+ * layer's `pathPointAlt` accessor is per POINT, not per datum — which is also
+ * how a halo gets to sit a thousandth of a radius below its own line.
+ */
+type LayerPoint = [number, number, number]
 type EventPathEntry = {
   event: HistoricalEvent
-  points: GeoPath
+  role: 'halo' | 'line'
+  direction: PathDirection
+  points: LayerPoint[]
 }
 
 /** What the polygon layer was last given; see the watcher that fills it. */
@@ -198,6 +220,12 @@ const eventAreas = (): EventAreaEntry[] => {
   // only an event has a footprint; a person or a concept is an article
   const e = sel && isEvent(sel) ? sel : undefined
   if (!e?.area) return []
+  // A drawing supersedes the footprint it is drawn inside. The area cap is a
+  // tinted sheet over a whole theatre, and a battle plan read through it is a
+  // battle plan read through a filter — the frontlines lose contrast against
+  // exactly the ground they are about. While the plan is up, the footprint
+  // steps aside; leaving the mode brings it back.
+  if (e.drawing && events.focus?.itemId === e.id) return []
   const held = areaEntries.get(e.id)
   if (held) return [held]
   const ring = e.area
@@ -224,9 +252,55 @@ const eventPaths = (): EventPathEntry[] => {
   if (!e?.paths?.length) return []
   const held = pathEntries.get(e.id)
   if (held) return held
-  const entries = densifyPaths(e.paths).map((points) => ({ event: e, points }))
+  const direction = directionOf(e)
+  const entries: EventPathEntry[] = []
+  for (const points of densifyPaths(e.paths)) {
+    // Halo first, so it is also digested first — the layer keeps insertion
+    // order within a frame, and a halo drawn after its line would flash over it
+    // for the length of the entry transition.
+    entries.push({
+      event: e,
+      role: 'halo',
+      direction,
+      points: points.map(([lng, lat]) => [lng, lat, ROUTE_STYLE.haloAlt] as LayerPoint),
+    })
+    entries.push({
+      event: e,
+      role: 'line',
+      direction,
+      points: points.map(([lng, lat]) => [lng, lat, ROUTE_STYLE.lineAlt] as LayerPoint),
+    })
+  }
   pathEntries.set(e.id, entries)
   return entries
+}
+
+/**
+ * The dots and chevrons on the selected event's routes (lib/drawing.ts).
+ *
+ * Generated from the routes rather than authored, and rendered by the same
+ * DrawingLayer the battle plans use — so there is one piece of code on this
+ * globe that knows how to put a glyph on a sphere, and route decoration cannot
+ * drift out of step with the routes it decorates.
+ */
+const decorSpecs = new Map<string, Drawing | undefined>()
+const routeDecor = (): Drawing | undefined => {
+  const sel = events.selected
+  const e = sel && isEvent(sel) ? sel : undefined
+  if (!e?.paths?.length) return undefined
+  if (!decorSpecs.has(e.id)) decorSpecs.set(e.id, routeDecorFor(e))
+  return decorSpecs.get(e.id)
+}
+
+/**
+ * The authored drawing — and the one place it is decided that focus mode, not
+ * selection, is what shows it (see `focus` in stores/events.ts).
+ */
+const focusDrawing = (): Drawing | undefined => {
+  const f = events.focus
+  const sel = events.selected
+  if (!f || !sel || sel.id !== f.itemId) return undefined
+  return isEvent(sel) ? sel.drawing : undefined
 }
 
 onMounted(() => {
@@ -337,29 +411,55 @@ onMounted(() => {
     // dataset uses; the layer's own default is the other way round, hence the
     // two accessors.
     .pathPoints((d) => asPath(d).points)
-    .pathPointLng((p) => (p as [number, number])[0])
-    .pathPointLat((p) => (p as [number, number])[1])
+    .pathPointLng((p) => (p as LayerPoint)[0])
+    .pathPointLat((p) => (p as LayerPoint)[1])
     // Just clear of the surface — above the area cap (0.012), so a route over
     // its own event's footprint is not tinted by it, and far below the pins,
-    // which are HTML and draw over the scene regardless.
-    .pathPointAlt(0.014)
+    // which are HTML and draw over the scene regardless. Per point rather than
+    // per route, which is what lets the halo sit under its own line.
+    .pathPointAlt((p) => (p as LayerPoint)[2])
     // The entries arrive densified (see `eventPaths`), so the layer's own
     // linear fill-in has nothing left to get wrong; 1° keeps its subdivision
     // finer than ours rather than coarser.
     .pathResolution(1)
-    .pathColor((d: object) => tagColor(primaryTag(asPath(d).event)))
+    .pathColor((d: object) => {
+      const p = asPath(d)
+      return p.role === 'halo' ? ROUTE_STYLE.haloColor : tagColor(primaryTag(p.event))
+    })
     // A fat line (any non-null stroke) rather than the layer's 1 px default:
     // width is in screen pixels, so the route stays legible zoomed out to the
     // whole ocean it crosses and does not thicken into a band zoomed in.
-    .pathStroke(2.2)
+    .pathStroke((d: object) =>
+      asPath(d).role === 'halo' ? ROUTE_STYLE.haloStroke : ROUTE_STYLE.stroke,
+    )
     // A dashed line that runs is the difference between "here is a corridor"
     // and "things moved along here" — direction, at the cost of frames (see the
     // `routesDrawn` wake in `tick`). Dash and gap are in units of line length,
     // so a long voyage and a short one carry the same *number* of dashes rather
     // than the same dash size, which keeps both legible.
-    .pathDashLength(0.02)
-    .pathDashGap(0.012)
-    .pathDashAnimateTime(still ? 0 : 9000)
+    //
+    // Three cases, and they are the feature:
+    //  · the halo is SOLID (gap 0) — it is the dark bed the dashes lie in, and a
+    //    dashed halo would just be a second dashed line half a pixel out;
+    //  · a ONE-WAY route runs a 70%-duty dash along the way it was travelled;
+    //  · a TWO-WAY route gets an even 50/50 dash that does not move. Symmetric
+    //    in both senses: reversing the route changes nothing you can see, and
+    //    the globe stops buying frames for it (see `routesDrawn`).
+    .pathDashLength((d: object) => {
+      const p = asPath(d)
+      if (p.role === 'halo') return 1
+      return p.direction === 'twoway' ? ROUTE_STYLE.evenDash : ROUTE_STYLE.dash
+    })
+    .pathDashGap((d: object) => {
+      const p = asPath(d)
+      if (p.role === 'halo') return 0
+      return p.direction === 'twoway' ? ROUTE_STYLE.evenGap : ROUTE_STYLE.gap
+    })
+    .pathDashAnimateTime((d: object) => {
+      const p = asPath(d)
+      if (still || p.role === 'halo' || p.direction === 'twoway') return 0
+      return ROUTE_STYLE.animateMs
+    })
     .pathTransitionDuration(400)
     .pathLabel((d) => asPath(d).event.name)
     // clicking bare globe dismisses an open cluster
@@ -428,6 +528,12 @@ onMounted(() => {
   if (cam instanceof PerspectiveCamera) view.fov = cam.fov
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
+  // Two instances of the same renderer, because they have different lifetimes:
+  // route decoration follows the *selection* (like the routes it belongs to),
+  // and a battle plan follows *focus mode*. One layer holding both would have to
+  // rebuild the plan whenever a chevron moved.
+  drawing = new DrawingLayer(globe.scene(), radius)
+  decor = new DrawingLayer(globe.scene(), radius)
   // A patch at the 4096 ceiling is a 33 MB texture upload, and the composite is
   // re-uploaded whenever the view moves — so what the device can afford, not
   // what GL permits, is the right ceiling. See patchPixelCap.
@@ -629,6 +735,9 @@ onMounted(() => {
     surface!.setFlatLight(near)
     lastSync = { ...pov }
     syncDetail(pov)
+    // A drawing's labels are spaced for the frame "Show on map" flies to; zoomed
+    // out they pile into one smear. The geometry stays either way.
+    drawing?.setViewSpanDeg(viewSpanDeg(pov.altitude, view.fov))
     // The framed span, not the horizon `span` below: close in the two differ by
     // more than an order of magnitude, and it is the framed one that says how
     // many pixels a degree of ground is worth — which is what decides whether
@@ -855,9 +964,45 @@ onMounted(() => {
       const next = eventPaths()
       if (next.length === lastPaths.length && next.every((p, i) => p === lastPaths[i])) return
       lastPaths = next
-      routesDrawn = next.length > 0
+      // Only a *running* dash keeps the pump awake. A two-way route's dashes are
+      // static by design, so a Silk Road left open no longer costs 60 frames a
+      // second for a picture that is not changing.
+      routesDrawn = next.some((p) => p.role === 'line' && p.direction === 'oneway')
       globe!.pathsData(next)
       wake()
+    }),
+    // The glyphs on those routes — ports and chevrons. Same lifecycle as the
+    // lines: they appear with the selection and go with it.
+    watchEffect(() => {
+      const sel = events.selected
+      const color = sel ? tagColor(primaryTag(sel)) : '#ffffff'
+      if (
+        decor!.set(routeDecor(), {
+          color,
+          // Just above the line, so a chevron sits *on* the route rather than
+          // being half-swallowed by it.
+          altitude: ROUTE_STYLE.lineAlt + 0.0004,
+          resolution: { width: view.viewportWidthPx, height: view.viewportPx },
+        })
+      )
+        wake()
+    }),
+    // The authored drawing. `focusDrawing` is what ties it to focus mode rather
+    // than to the selection; the colour falls back to the event's tag so an
+    // unstyled layer is already in the map's own language.
+    watchEffect(() => {
+      const sel = events.selected
+      const color = sel ? tagColor(primaryTag(sel)) : '#ffffff'
+      if (
+        drawing!.set(focusDrawing(), {
+          color,
+          // Above the area cap (0.012) and the routes: a plan is the top layer
+          // of ink on the map, and still far below the HTML pins.
+          altitude: 0.0155,
+          resolution: { width: view.viewportWidthPx, height: view.viewportPx },
+        })
+      )
+        wake()
     }),
     watchEffect(() => {
       globe!.controls().autoRotate = settings.autoRotate
@@ -933,6 +1078,11 @@ onMounted(() => {
 
   resizeObs = new ResizeObserver(() => {
     globe?.width(dom.clientWidth).height(dom.clientHeight)
+    // Fat lines are sized in screen pixels, so their material has to be told
+    // what a screen pixel is; a resize without this leaves a frontline drawn at
+    // the old aspect and visibly the wrong weight.
+    drawing?.setResolution(dom.clientWidth, dom.clientHeight)
+    decor?.setResolution(dom.clientWidth, dom.clientHeight)
     applyPov(true) // the scale bar reads viewportPx; without this it is stale until the next zoom
     wake()
   })
@@ -946,6 +1096,8 @@ onBeforeUnmount(() => {
   detail?.dispose()
   celestial?.dispose()
   atmosphere?.dispose()
+  drawing?.dispose()
+  decor?.dispose()
   resizeObs?.disconnect()
   globe?._destructor()
 })
@@ -970,6 +1122,32 @@ onBeforeUnmount(() => {
 /* the globe's HTML pin layer, pinned below every panel — see tokens.css */
 .globe-css2d {
   z-index: var(--z-globe-overlay);
+}
+
+/* Drawing labels (lib/drawingLayer.ts). CSS2D, so they live in the same
+   container the pins do and inherit its z-index. Small caps and a hard halo:
+   these sit on satellite imagery — snowfield, forest, ocean — with nothing
+   behind them, so the outline is not decoration, it is the only thing keeping
+   them readable. Never a click target; the pin under them must win. */
+.drawing-label {
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f2f6fc;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  text-shadow:
+    0 0 3px rgba(2, 5, 10, 0.95),
+    0 0 6px rgba(2, 5, 10, 0.8),
+    0 1px 0 rgba(2, 5, 10, 0.9);
+}
+.drawing-label--md {
+  font-size: 12.5px;
+  letter-spacing: 0.18em;
+  color: #fff;
 }
 
 .event-pin svg {

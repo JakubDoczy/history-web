@@ -11,8 +11,9 @@ Items are events, persons and concepts (see src/lib/events.ts). An entry with
 no "kind" is an event, which is what the several hundred entries written before
 the item model existed rely on.
 
-Geometry is validated on the way through: an event may carry an `area` ring and
-a `paths` list of routes, both in [lng, lat] order (see validate_paths).
+Geometry is validated on the way through: an event may carry an `area` ring, a
+`paths` list of routes and a `drawing` overlay, all in [lng, lat] order (see
+validate_paths and validate_drawing).
 
 Chunk coverage in the manifest is the true min..max time extent of each chunk,
 so long-running events are found from windows that only touch their tail.
@@ -139,6 +140,10 @@ def validate(items: list[dict], ranked: list[str]) -> None:
             if field not in e:
                 sys.exit(f'{e["id"]}: a {k} needs a {field!r}')
         validate_paths(e)
+        validate_drawing(e)
+
+
+DIRECTIONS = ('oneway', 'twoway')
 
 
 def validate_paths(e: dict) -> None:
@@ -152,6 +157,14 @@ def validate_paths(e: dict) -> None:
     if 'path' in e:
         sys.exit(f'{e["id"]}: use "paths" (a list of routes), not "path"')
     paths = e.get('paths')
+    direction = e.get('direction')
+    # Checked before the early return: `direction` on an event with no routes is
+    # a statement about nothing, and is almost always a route that got deleted.
+    if direction is not None:
+        if paths is None:
+            sys.exit(f'{e["id"]}: direction without paths — there is no route to point')
+        if direction not in DIRECTIONS:
+            sys.exit(f'{e["id"]}: direction must be one of {DIRECTIONS}, not {direction!r}')
     if paths is None:
         return
     if kind_of(e) != 'event':
@@ -167,6 +180,88 @@ def validate_paths(e: dict) -> None:
             lng, lat = pt
             if not (-180 <= lng <= 180 and -90 <= lat <= 90):
                 sys.exit(f'{e["id"]}: path {i} has a point off the planet: {pt}')
+
+
+def check_line(e: dict, where: str, path) -> None:
+    """A polyline: at least two [lng, lat] points, all on the planet."""
+    if not isinstance(path, list) or len(path) < 2:
+        sys.exit(f'{e["id"]}: {where} needs at least two points')
+    for pt in path:
+        if not isinstance(pt, list) or len(pt) != 2:
+            sys.exit(f'{e["id"]}: {where} has a point that is not [lng, lat]')
+        lng, lat = pt
+        if not (isinstance(lng, (int, float)) and isinstance(lat, (int, float))):
+            sys.exit(f'{e["id"]}: {where} has a non-numeric point: {pt}')
+        if not (-180 <= lng <= 180 and -90 <= lat <= 90):
+            sys.exit(f'{e["id"]}: {where} has a point off the planet: {pt}')
+
+
+def check_point(e: dict, where: str, pos) -> None:
+    if not isinstance(pos, list) or len(pos) != 2:
+        sys.exit(f'{e["id"]}: {where} pos must be [lng, lat]')
+    lng, lat = pos
+    if not (-180 <= lng <= 180 and -90 <= lat <= 90):
+        sys.exit(f'{e["id"]}: {where} pos is off the planet: {pos}')
+
+
+MARKER_STYLES = ('cross', 'star', 'dot', 'arrow')
+
+
+def validate_drawing(e: dict) -> None:
+    """The battle-plan overlay: `drawing.layers`, four kinds, all [lng, lat].
+
+    Mirrors `isDrawingSpec` in src/lib/drawing.ts. Checked here so a mistyped
+    layer kind or a swapped coordinate pair is a build failure rather than a
+    silently missing arrow on a map nobody re-reads.
+    """
+    d = e.get('drawing')
+    if d is None:
+        return
+    if kind_of(e) != 'event':
+        sys.exit(f'{e["id"]}: only an event can carry a drawing')
+    if not isinstance(d, dict) or not isinstance(d.get('layers'), list) or not d['layers']:
+        sys.exit(f'{e["id"]}: drawing must be an object with a non-empty "layers" list')
+    for i, layer in enumerate(d['layers']):
+        where = f'drawing layer {i}'
+        if not isinstance(layer, dict):
+            sys.exit(f'{e["id"]}: {where} is not an object')
+        t = layer.get('type')
+        if 'color' in layer and not (isinstance(layer['color'], str) and layer['color']):
+            sys.exit(f'{e["id"]}: {where} has a non-string color')
+        if 'at' in layer and not isinstance(layer['at'], (int, float)):
+            sys.exit(f'{e["id"]}: {where} has a non-numeric "at"')
+        if t == 'frontline':
+            paths = layer.get('paths')
+            if not isinstance(paths, list) or not paths:
+                sys.exit(f'{e["id"]}: {where} (frontline) needs a non-empty "paths" list')
+            for j, p in enumerate(paths):
+                check_line(e, f'{where} path {j}', p)
+            if layer.get('dash') not in (None, 'solid', 'dashed'):
+                sys.exit(f'{e["id"]}: {where} dash must be "solid" or "dashed"')
+        elif t == 'thrust':
+            check_line(e, f'{where} (thrust)', layer.get('path'))
+            if 'taper' in layer and not isinstance(layer['taper'], bool):
+                sys.exit(f'{e["id"]}: {where} taper must be a boolean')
+        elif t == 'marker':
+            check_point(e, where, layer.get('pos'))
+            if layer.get('style') not in (None,) + MARKER_STYLES:
+                sys.exit(f'{e["id"]}: {where} style must be one of {MARKER_STYLES}')
+            if layer.get('style') == 'arrow' and not isinstance(layer.get('bearing'), (int, float)):
+                sys.exit(f'{e["id"]}: {where} is an arrow and needs a numeric "bearing"')
+        elif t == 'label':
+            check_point(e, where, layer.get('pos'))
+            if not isinstance(layer.get('text'), str) or not layer['text']:
+                sys.exit(f'{e["id"]}: {where} (label) needs non-empty "text"')
+            if layer.get('size') not in (None, 'sm', 'md'):
+                sys.exit(f'{e["id"]}: {where} size must be "sm" or "md"')
+        else:
+            sys.exit(f'{e["id"]}: {where} has unknown type {t!r}')
+        if 'width' in layer and not (isinstance(layer['width'], (int, float)) and 0 < layer['width'] < 90):
+            sys.exit(f'{e["id"]}: {where} width must be a positive number')
+        if 'size' in layer and t == 'marker' and not (
+            isinstance(layer['size'], (int, float)) and 0 < layer['size'] < 90
+        ):
+            sys.exit(f'{e["id"]}: {where} size must be a positive number of degrees')
 
 
 def main() -> None:
