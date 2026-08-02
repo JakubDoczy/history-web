@@ -16,10 +16,6 @@
   "body": "Part of [French Revolution](event:french-revolution). [Napoleon's](item:napoleon-bonaparte) empire met its limits at sea: Nelson's victory at [Trafalgar](event:trafalgar) secured British command of the sea; the [invasion of Russia](event:russia-1812) destroyed the Grande Armée; [Waterloo](event:waterloo) ended the adventure.\n\nThe wars spread the Napoleonic Code, conscription and nationalism across Europe, and the peace that followed at Vienna held the great powers back from general war for a century — until [1914](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleonic_Wars).",
   "links": [
    {
-    "label": "French Revolution",
-    "event": "french-revolution"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Napoleonic_Wars"
    }
@@ -36,13 +32,15 @@
    "war"
   ],
   "parent": "napoleonic-wars",
+  "strong": [
+   "austerlitz"
+  ],
+  "weak": [
+   "russia-1812"
+  ],
   "summary": "Nelson destroyed the combined French and Spanish fleets off Cadiz, ending any prospect of invading Britain.",
   "body": "Part of [Napoleonic Wars](event:napoleonic-wars). Nelson destroyed the combined French and Spanish fleets off Cadiz, ending any prospect of invading Britain.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Trafalgar).",
   "links": [
-   {
-    "label": "Napoleonic Wars",
-    "event": "napoleonic-wars"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Trafalgar"
@@ -60,13 +58,12 @@
    "war"
   ],
   "parent": "napoleonic-wars",
+  "weak": [
+   "waterloo"
+  ],
   "summary": "A feigned weakness drew the Austro-Russian army onto ground of Napoleon's choosing.",
   "body": "Part of [Napoleonic Wars](event:napoleonic-wars). Napoleon feigned weakness to draw the Austro-Russian army onto ground of his choosing, and the resulting battle was a decisive French victory.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Austerlitz).",
   "links": [
-   {
-    "label": "Napoleonic Wars",
-    "event": "napoleonic-wars"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Austerlitz"
@@ -94,19 +91,18 @@
    "science"
   ],
   "summary": "English naturalist who established that species descend with modification from common ancestors, and proposed natural selection as the mechanism.",
-  "body": "Darwin abandoned medicine at Edinburgh and read for the clergy at Cambridge before sailing as naturalist on HMS *Beagle* in 1831. The five-year voyage took him along the coasts of South America and to the Galápagos, and the fossils, geology and island species he collected there occupied him for the rest of his life.\n\nHe worked out the principle of [natural selection](item:natural-selection) by 1838 but published nothing for twenty years, spending them instead on barnacles, orchids and correspondence. In 1858 Alfred Russel Wallace sent him an essay reaching the same conclusion; their work was read jointly to the Linnean Society, and [*On the Origin of Species*](item:origin-species) followed in 1859.\n\nLater books extended the argument to human ancestry, to sexual selection and to the expression of emotion. Darwin lived quietly at Down House in Kent, in poor health, and is buried in Westminster Abbey. Descent with modification is now the organising principle of biology, and its union with genetics after the [structure of DNA](item:dna-structure) was established has left the core of his argument intact.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charles_Darwin).",
-  "related": [
-   "natural-selection",
-   "origin-species"
+  "strong": [
+   "origin-species",
+   "natural-selection"
   ],
+  "weak": [
+   "human-genome"
+  ],
+  "body": "Darwin abandoned medicine at Edinburgh and read for the clergy at Cambridge before sailing as naturalist on HMS *Beagle* in 1831. The five-year voyage took him along the coasts of South America and to the Galápagos, and the fossils, geology and island species he collected there occupied him for the rest of his life.\n\nHe worked out the principle of [natural selection](item:natural-selection) by 1838 but published nothing for twenty years, spending them instead on barnacles, orchids and correspondence. In 1858 Alfred Russel Wallace sent him an essay reaching the same conclusion; their work was read jointly to the Linnean Society, and [*On the Origin of Species*](item:origin-species) followed in 1859.\n\nLater books extended the argument to human ancestry, to sexual selection and to the expression of emotion. Darwin lived quietly at Down House in Kent, in poor health, and is buried in Westminster Abbey. Descent with modification is now the organising principle of biology, and its union with genetics after the [structure of DNA](item:dna-structure) was established has left the core of his argument intact.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charles_Darwin).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Charles_Darwin"
-   },
-   {
-    "label": "On the Origin of Species",
-    "event": "origin-species"
    }
   ],
   "priority": 92
@@ -131,20 +127,20 @@
    "politics"
   ],
   "summary": "Sixteenth president of the United States, who led the Union through the Civil War and made the abolition of slavery its object.",
-  "body": "Lincoln was born in a Kentucky log cabin, had perhaps a year of formal schooling, and taught himself law in Illinois. A Whig legislator and one-term congressman, he returned to politics over the extension of slavery into the territories, lost a Senate race to Stephen Douglas in 1858 after a celebrated series of debates, and was elected president in 1860 on the new Republican ticket.\n\nSeven states seceded before he took office and [war](item:us-civil-war) began within six weeks. He held the border states, blockaded the South, and cycled through commanders until he found Grant. The [Emancipation Proclamation](item:emancipation) of 1863 turned the war for the Union into a war against slavery and opened the army to black soldiers; his address at [Gettysburg](item:gettysburg) that November restated the war as a test of whether government by consent could survive.\n\nRe-elected in 1864, he pressed the Thirteenth Amendment through Congress and argued for a lenient peace. Five days after Lee's surrender he was [shot at Ford's Theatre](item:lincoln-assassination), the first American president to be assassinated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abraham_Lincoln).",
-  "related": [
+  "strong": [
    "us-civil-war",
    "emancipation",
+   "lincoln-assassination",
+   "gettysburg"
+  ],
+  "weak": [
    "democracy"
   ],
+  "body": "Lincoln was born in a Kentucky log cabin, had perhaps a year of formal schooling, and taught himself law in Illinois. A Whig legislator and one-term congressman, he returned to politics over the extension of slavery into the territories, lost a Senate race to Stephen Douglas in 1858 after a celebrated series of debates, and was elected president in 1860 on the new Republican ticket.\n\nSeven states seceded before he took office and [war](item:us-civil-war) began within six weeks. He held the border states, blockaded the South, and cycled through commanders until he found Grant. The [Emancipation Proclamation](item:emancipation) of 1863 turned the war for the Union into a war against slavery and opened the army to black soldiers; his address at [Gettysburg](item:gettysburg) that November restated the war as a test of whether government by consent could survive.\n\nRe-elected in 1864, he pressed the Thirteenth Amendment through Congress and argued for a lenient peace. Five days after Lee's surrender he was [shot at Ford's Theatre](item:lincoln-assassination), the first American president to be assassinated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abraham_Lincoln).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Abraham_Lincoln"
-   },
-   {
-    "label": "American Civil War",
-    "event": "us-civil-war"
    }
   ],
   "priority": 86
@@ -208,6 +204,9 @@
    "war"
   ],
   "summary": "Spain and Portugal lost almost all of their American empires within a generation.",
+  "strong": [
+   "napoleonic-wars"
+  ],
   "body": "Bolívar and San Martín campaigned from Venezuela to Peru; Brazil separated from Portugal without a general war. The new republics inherited enormous inequality and unstable borders.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_American_wars_of_independence).",
   "links": [
    {
@@ -273,13 +272,12 @@
    "war"
   ],
   "parent": "napoleonic-wars",
+  "strong": [
+   "waterloo"
+  ],
   "summary": "An army of some 600,000 marched to Moscow; fewer than a tenth came back.",
   "body": "Part of [Napoleonic Wars](event:napoleonic-wars). An army of some 600,000 marched to Moscow; fewer than a tenth came back.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/French_invasion_of_Russia).",
   "links": [
-   {
-    "label": "Napoleonic Wars",
-    "event": "napoleonic-wars"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/French_invasion_of_Russia"
@@ -301,10 +299,6 @@
   "body": "Part of [Napoleonic Wars](event:napoleonic-wars). Wellington held the ridge until the Prussians arrived; Napoleon abdicated four days later and died in exile on St Helena.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Waterloo).",
   "links": [
    {
-    "label": "Napoleonic Wars",
-    "event": "napoleonic-wars"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Waterloo"
    }
@@ -323,6 +317,12 @@
    "climate"
   ],
   "summary": "The largest eruption in recorded history threw enough sulphate into the stratosphere to cool the whole planet.",
+  "strong": [
+   "krakatoa"
+  ],
+  "weak": [
+   "little-ice-age"
+  ],
   "body": "Tens of thousands died on Sumbawa; far more died in the [famines of the following year](event:year-without-summer).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1815_eruption_of_Mount_Tambora).",
   "links": [
    {
@@ -352,19 +352,18 @@
    "technology"
   ],
   "summary": "English mathematician whose notes on Babbage's Analytical Engine describe a machine that could operate on symbols rather than only on numbers.",
-  "body": "Augusta Ada Byron was the daughter of the poet Lord Byron, who left England when she was a month old, and of Anne Isabella Milbanke, who had her tutored in mathematics in the hope of steadying an inherited temperament. She met Charles Babbage at seventeen and became a correspondent on his calculating engines.\n\nIn 1843 she translated an Italian account of the proposed Analytical Engine and appended notes three times the length of the original. They include a step-by-step method for computing Bernoulli numbers on the machine — commonly described as the first published algorithm intended for a computer — and, more strikingly, the observation that a machine manipulating symbols by rule could compose music or work on anything reducible to symbols, not merely arithmetic.\n\nNeither the engine nor the notes had much practical effect: Babbage never built the machine, and the ideas were rediscovered rather than inherited when [electronic computing](item:global-internet) began a century later, in work such as [Turing's](item:alan-turing). She died of cancer at thirty-six.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ada_Lovelace).",
-  "related": [
-   "alan-turing",
-   "industrial-revolution"
+  "strong": [
+   "alan-turing"
   ],
+  "weak": [
+   "industrial-revolution",
+   "deep-learning"
+  ],
+  "body": "Augusta Ada Byron was the daughter of the poet Lord Byron, who left England when she was a month old, and of Anne Isabella Milbanke, who had her tutored in mathematics in the hope of steadying an inherited temperament. She met Charles Babbage at seventeen and became a correspondent on his calculating engines.\n\nIn 1843 she translated an Italian account of the proposed Analytical Engine and appended notes three times the length of the original. They include a step-by-step method for computing Bernoulli numbers on the machine — commonly described as the first published algorithm intended for a computer — and, more strikingly, the observation that a machine manipulating symbols by rule could compose music or work on anything reducible to symbols, not merely arithmetic.\n\nNeither the engine nor the notes had much practical effect: Babbage never built the machine, and the ideas were rediscovered rather than inherited when [electronic computing](item:global-internet) began a century later, in work such as [Turing's](item:alan-turing). She died of cancer at thirty-six.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ada_Lovelace).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Ada_Lovelace"
-   },
-   {
-    "label": "Alan Turing",
-    "event": "alan-turing"
    }
   ],
   "priority": 0
@@ -381,13 +380,12 @@
    "disaster"
   ],
   "parent": "tambora",
+  "weak": [
+   "krakatoa"
+  ],
   "summary": "Snow fell in New England in June and harvests failed across Europe and Asia, causing the worst famine of the century.",
   "body": "Part of [Eruption of Tambora](event:tambora). Kept indoors by the weather at Lake Geneva, Mary Shelley wrote *Frankenstein*.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Year_Without_a_Summer).",
   "links": [
-   {
-    "label": "Eruption of Tambora",
-    "event": "tambora"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Year_Without_a_Summer"
@@ -406,13 +404,15 @@
    "economy"
   ],
   "parent": "industrial-revolution",
+  "strong": [
+   "watt-engine"
+  ],
+  "weak": [
+   "suez-canal"
+  ],
   "summary": "The Liverpool and Manchester Railway opened, the first intercity line worked entirely by steam locomotives.",
   "body": "Part of [Industrial Revolution](event:industrial-revolution). Within thirty years rail networks covered Britain, Europe and the eastern United States, sharply reducing travel times and prompting the adoption of standard time.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Liverpool_and_Manchester_Railway).",
   "links": [
-   {
-    "label": "Industrial Revolution",
-    "event": "industrial-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Liverpool_and_Manchester_Railway"
@@ -432,6 +432,10 @@
    "economy"
   ],
   "summary": "Britain forced China to keep importing opium, taking Hong Kong and a series of unequal treaties.",
+  "strong": [
+   "qing-dynasty",
+   "taiping"
+  ],
   "body": "The wars began the period of foreign dominance known in Chinese historiography as the \"century of humiliation\", which ended imperial China and has shaped Chinese foreign policy to this day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Opium_Wars).",
   "links": [
    {
@@ -451,6 +455,9 @@
    "technology"
   ],
   "summary": "Morse's Washington–Baltimore line separated communication from transport for the first time in history.",
+  "strong": [
+   "telephone"
+  ],
   "body": "By 1866 a working cable crossed the Atlantic, cutting the time for a message from London to New York from ten days to minutes.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Electrical_telegraph).",
   "links": [
    {
@@ -471,6 +478,9 @@
    "technology"
   ],
   "summary": "William Morton demonstrated that ether vapour could render a patient painless during surgery at Massachusetts General Hospital.",
+  "strong": [
+   "germ-theory"
+  ],
   "body": "Surgery before the 1840s was carried out without effective pain relief. Morton's demonstration on October 16, 1846 showed that ether could render a patient insensible, though chloroform soon became the preferred agent in Europe.\n\nThe ability to operate without pain opened surgery to procedures that had been unthinkable, and together with [germ theory](event:germ-theory) it began to make the operating theatre survivable.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_general_anesthesia).",
   "links": [
    {
@@ -529,6 +539,9 @@
    "politics"
   ],
   "summary": "Liberal and nationalist uprisings swept some fifty European states within months; nearly all were suppressed within two years.",
+  "strong": [
+   "communist-manifesto"
+  ],
   "body": "Liberal and nationalist uprisings swept some fifty European states within months; nearly all were suppressed within two years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Revolutions_of_1848).",
   "links": [
    {
@@ -549,6 +562,9 @@
    "culture"
   ],
   "summary": "Marx and Engels published a short pamphlet arguing that history is driven by class struggle.",
+  "strong": [
+   "russian-revolution"
+  ],
   "body": "It became the founding text of a movement that would govern a third of humanity in the twentieth century — see the [Russian Revolution](event:russian-revolution) and [the founding of the PRC](event:prc-founded).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Communist_Manifesto).",
   "links": [
    {
@@ -576,6 +592,10 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Taiping_Rebellion"
    }
+  ],
+  "parent": "qing-dynasty",
+  "weak": [
+   "us-civil-war"
   ]
  },
  {
@@ -591,6 +611,12 @@
    "politics"
   ],
   "summary": "Britain, France and the Ottoman Empire fought Russia over influence in the Black Sea and the Holy Land, and over the fate of a declining Ottoman Empire.",
+  "strong": [
+   "ottoman-empire"
+  ],
+  "weak": [
+   "us-civil-war"
+  ],
   "body": "The war saw the first modern war correspondents and photographers, and brought Florence Nightingale's reform of military nursing. It also introduced the rifle-musket and trench warfare that would reappear, far deadlier, in [1914](event:ww1).\n\nThe Russian defeat checked tsarist expansion for a generation, and the Treaty of Paris neutralised the Black Sea — terms Russia repudiated as soon as the other powers were distracted in 1870. Defeat also pushed St Petersburg into the reforms that ended serfdom.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Crimean_War).",
   "links": [
    {
@@ -611,13 +637,12 @@
    "economy"
   ],
   "parent": "industrial-revolution",
+  "strong": [
+   "transcontinental-railroad"
+  ],
   "summary": "Henry Bessemer's process converted pig iron to steel in bulk, cutting costs and making railroads and armaments much cheaper.",
   "body": "Part of [Industrial Revolution](event:industrial-revolution). The Bessemer converter used a blast of air to burn away carbon impurities, a method simple and cheap enough that within a generation steel had replaced iron for most purposes.\n\nThe result was [railways](event:railways) that covered continents and ships that were faster and more durable, along with the steel navies and artillery that the powers built in the decades before [World War I](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bessemer_process).",
   "links": [
-   {
-    "label": "Industrial Revolution",
-    "event": "industrial-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Bessemer_process"
@@ -637,13 +662,12 @@
    "politics"
   ],
   "parent": "english-east-india",
+  "strong": [
+   "british-raj"
+  ],
   "summary": "Indian soldiers and civilians rose against the East India Company, nearly expelling the British from the subcontinent before being brutally suppressed.",
   "body": "Part of the [East India Company](event:english-east-india) era in India. The rebellion — sparked partly by rumours that new cartridges were greased with animal fat offensive to Hindu and Muslim soldiers — spread across the north, lasted over a year, and cost hundreds of thousands of lives, most of them Indian.\n\nIts suppression was ferocious, with mass reprisals against civilians. The Crown took direct control from the Company and brought India more firmly into the Empire, but the uprising had shown that British rule was neither inevitable nor unopposed — a lesson that would echo through the next ninety years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Indian_Rebellion_of_1857).",
   "links": [
-   {
-    "label": "British Raj",
-    "event": "british-raj"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Indian_Rebellion_of_1857"
@@ -661,13 +685,12 @@
    "technology"
   ],
   "parent": "telegraph",
+  "weak": [
+   "panama-canal-opens"
+  ],
   "summary": "A submarine telegraph cable successfully crossed the Atlantic, connecting North America to Europe and shortening communication from ten days to minutes.",
   "body": "Part of [Electric telegraph](event:telegraph). After three failed attempts, the cable laid in 1858 worked for three weeks before failing — but that was enough to show the feasibility. The cable of 1866 endured and opened a new era of real-time global communication.\n\nIt made possible the instantaneous coordination of ship movements, stock prices and news across an ocean, binding the Atlantic economy into one system.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Transatlantic_telegraph_cable).",
   "links": [
-   {
-    "label": "Electric telegraph",
-    "event": "telegraph"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Transatlantic_telegraph_cable"
@@ -686,6 +709,9 @@
    "politics"
   ],
   "summary": "The Crown took over direct rule of India from the East India Company after the rebellion of 1857.",
+  "strong": [
+   "indian-independence"
+  ],
   "body": "Railways, telegraphs and English-language institutions coexisted with deindustrialisation and repeated devastating famines. It ended with [independence and partition](event:indian-independence).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/British_Raj).",
   "links": [
    {
@@ -706,6 +732,9 @@
    "biology"
   ],
   "summary": "Natural selection explained the diversity and design of life without a designer.",
+  "strong": [
+   "scopes-trial"
+  ],
   "body": "[Darwin](item:charles-darwin) had sat on the idea for twenty years; Alfred Russel Wallace's independent arrival at the same conclusion forced publication. The theory unified all of biology and, with [genetics](event:dna-structure), remains its central organising principle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/On_the_Origin_of_Species).",
   "links": [
    {
@@ -724,20 +753,17 @@
    "science"
   ],
   "summary": "The explanation of adaptation without design: heritable variation plus differential survival and reproduction, repeated over generations.",
-  "body": "The argument has three premises and one conclusion. Organisms vary; some of that variation is inherited; more offspring are produced than can survive. It follows that variants which happen to leave more descendants become more common, and that populations change over time in ways that look designed but are not.\n\n[Darwin](item:charles-darwin) and Alfred Russel Wallace arrived at it independently and published jointly in 1858; [*On the Origin of Species*](item:origin-species) set out the evidence the following year. Its weakest point was heredity — Darwin had no mechanism — and it was resolved only when Mendelian genetics was combined with selection in the modern synthesis of the 1930s and 40s, and again by the [structure of DNA](item:dna-structure) and the reading of [whole genomes](item:human-genome).\n\nNatural selection is not the only evolutionary process: drift, migration and mutation all change populations, and much molecular change is effectively neutral. It is, however, the only known process that produces adaptation, and it applies wherever there is heritable variation in reproductive success — including to bacteria acquiring antibiotic resistance and to viruses evolving during an epidemic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Natural_selection).",
-  "related": [
-   "charles-darwin",
-   "origin-species",
-   "germ-theory-of-disease"
+  "strong": [
+   "origin-species"
   ],
+  "weak": [
+   "crispr"
+  ],
+  "body": "The argument has three premises and one conclusion. Organisms vary; some of that variation is inherited; more offspring are produced than can survive. It follows that variants which happen to leave more descendants become more common, and that populations change over time in ways that look designed but are not.\n\n[Darwin](item:charles-darwin) and Alfred Russel Wallace arrived at it independently and published jointly in 1858; [*On the Origin of Species*](item:origin-species) set out the evidence the following year. Its weakest point was heredity — Darwin had no mechanism — and it was resolved only when Mendelian genetics was combined with selection in the modern synthesis of the 1930s and 40s, and again by the [structure of DNA](item:dna-structure) and the reading of [whole genomes](item:human-genome).\n\nNatural selection is not the only evolutionary process: drift, migration and mutation all change populations, and much molecular change is effectively neutral. It is, however, the only known process that produces adaptation, and it applies wherever there is heritable variation in reproductive success — including to bacteria acquiring antibiotic resistance and to viruses evolving during an epidemic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Natural_selection).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Natural_selection"
-   },
-   {
-    "label": "Charles Darwin",
-    "event": "charles-darwin"
    }
   ],
   "priority": 91
@@ -754,6 +780,9 @@
    "science"
   ],
   "summary": "Pasteur, Koch and Lister established that specific microorganisms cause specific diseases.",
+  "strong": [
+   "penicillin"
+  ],
   "body": "[Germ theory](item:germ-theory-of-disease) reshaped practice: antisepsis, pasteurisation, sterile surgery and public sanitation followed; combined with later [antibiotics](event:penicillin) and [vaccination](event:smallpox-vaccine), they roughly doubled human life expectancy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Germ_theory_of_disease).",
   "links": [
    {
@@ -793,20 +822,19 @@
    "disease"
   ],
   "summary": "The principle that specific microorganisms cause specific diseases, displacing miasma and imbalance as explanations of illness.",
-  "body": "For most of history epidemics were explained by bad air, divine punishment or an imbalance of humours. Microorganisms had been visible since [Leeuwenhoek's microscopes](item:leeuwenhoek-microscope) in the 1670s, but nothing connected them to illness until the nineteenth century.\n\nThe case was assembled piece by piece: John Snow traced a cholera outbreak to a single London water pump in 1854; Pasteur showed that fermentation and putrefaction are the work of living organisms and that heating kills them; Lister applied the inference to surgery with carbolic antisepsis; [Koch](item:germ-theory) isolated the anthrax and tuberculosis bacilli and set out the postulates that establish which organism causes which disease.\n\nThe consequences were larger than any single cure. Sterile surgery, safe water, sewerage and food hygiene cut mortality long before there was much to treat infections with, and the theory made [vaccination](item:smallpox-vaccine) intelligible rather than merely empirical and [antibiotics](item:penicillin) conceivable. Retrospective diagnosis of past epidemics — the [Black Death](item:black-death), the [Plague of Justinian](item:justinian-plague) — rests on it, and so does the century-long rise in life expectancy that followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Germ_theory_of_disease).",
-  "related": [
+  "strong": [
    "germ-theory",
-   "natural-selection",
    "penicillin"
   ],
+  "weak": [
+   "smallpox-vaccine",
+   "black-death"
+  ],
+  "body": "For most of history epidemics were explained by bad air, divine punishment or an imbalance of humours. Microorganisms had been visible since [Leeuwenhoek's microscopes](item:leeuwenhoek-microscope) in the 1670s, but nothing connected them to illness until the nineteenth century.\n\nThe case was assembled piece by piece: John Snow traced a cholera outbreak to a single London water pump in 1854; Pasteur showed that fermentation and putrefaction are the work of living organisms and that heating kills them; Lister applied the inference to surgery with carbolic antisepsis; [Koch](item:germ-theory) isolated the anthrax and tuberculosis bacilli and set out the postulates that establish which organism causes which disease.\n\nThe consequences were larger than any single cure. Sterile surgery, safe water, sewerage and food hygiene cut mortality long before there was much to treat infections with, and the theory made [vaccination](item:smallpox-vaccine) intelligible rather than merely empirical and [antibiotics](item:penicillin) conceivable. Retrospective diagnosis of past epidemics — the [Black Death](item:black-death), the [Plague of Justinian](item:justinian-plague) — rests on it, and so does the century-long rise in life expectancy that followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Germ_theory_of_disease).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Germ_theory_of_disease"
-   },
-   {
-    "label": "Germ theory of disease",
-    "event": "germ-theory"
    }
   ],
   "priority": 81
@@ -822,13 +850,12 @@
    "politics"
   ],
   "parent": "us-civil-war",
+  "strong": [
+   "civil-rights"
+  ],
   "summary": "Lincoln declared enslaved people in the rebelling states to be free; the Thirteenth Amendment abolished slavery outright in 1865.",
   "body": "Part of [American Civil War](event:us-civil-war). [Lincoln](item:abraham-lincoln) declared enslaved people in the rebelling states to be free; the Thirteenth Amendment abolished slavery outright in 1865.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Emancipation_Proclamation).",
   "links": [
-   {
-    "label": "American Civil War",
-    "event": "us-civil-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Emancipation_Proclamation"
@@ -846,13 +873,12 @@
    "war"
   ],
   "parent": "us-civil-war",
+  "strong": [
+   "emancipation"
+  ],
   "summary": "Three days of fighting in Pennsylvania ended Lee's invasion of the North.",
   "body": "Part of [American Civil War](event:us-civil-war). Three days of fighting in Pennsylvania ended Lee's invasion of the North.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Gettysburg).",
   "links": [
-   {
-    "label": "American Civil War",
-    "event": "us-civil-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Gettysburg"
@@ -870,13 +896,12 @@
    "politics"
   ],
   "parent": "us-civil-war",
+  "strong": [
+   "jfk-assassination"
+  ],
   "summary": "Lincoln was shot at Ford's Theatre five days after Lee's surrender.",
   "body": "Part of [American Civil War](event:us-civil-war). Lincoln was shot at Ford's Theatre five days after Lee's surrender.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Abraham_Lincoln).",
   "links": [
-   {
-    "label": "American Civil War",
-    "event": "us-civil-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Assassination_of_Abraham_Lincoln"
@@ -903,20 +928,18 @@
    "science"
   ],
   "summary": "Polish-French physicist and chemist who discovered polonium and radium, coined the term radioactivity, and remains the only person to win Nobel Prizes in two sciences.",
-  "body": "Born Maria Skłodowska in Warsaw under Russian rule, she was barred as a woman from the university there and studied instead at the clandestine Flying University before leaving for Paris in 1891. At the Sorbonne she took degrees in physics and mathematics, and in 1895 married Pierre Curie.\n\nFollowing Henri Becquerel's discovery that uranium salts emit [radiation of their own accord](item:radioactivity), she measured the effect in every element she could obtain, showed that it came from the atom itself, and named it radioactivity. Processing tonnes of pitchblende by hand, the Curies isolated two new elements in 1898: polonium, named for her homeland, and radium. She shared the 1903 Nobel Prize in Physics with Pierre and Becquerel, and took the 1911 Prize in Chemistry alone.\n\nDuring [the First World War](item:ww1) she equipped mobile radiological units — the *petites Curies* — and trained their operators, bringing [X-ray](item:x-rays) diagnosis to the front. She died of aplastic anaemia, almost certainly caused by her lifelong exposure to radiation; her notebooks remain radioactive.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marie_Curie).",
-  "related": [
-   "radioactivity",
+  "strong": [
+   "radioactivity"
+  ],
+  "weak": [
    "x-rays",
    "albert-einstein"
   ],
+  "body": "Born Maria Skłodowska in Warsaw under Russian rule, she was barred as a woman from the university there and studied instead at the clandestine Flying University before leaving for Paris in 1891. At the Sorbonne she took degrees in physics and mathematics, and in 1895 married Pierre Curie.\n\nFollowing Henri Becquerel's discovery that uranium salts emit [radiation of their own accord](item:radioactivity), she measured the effect in every element she could obtain, showed that it came from the atom itself, and named it radioactivity. Processing tonnes of pitchblende by hand, the Curies isolated two new elements in 1898: polonium, named for her homeland, and radium. She shared the 1903 Nobel Prize in Physics with Pierre and Becquerel, and took the 1911 Prize in Chemistry alone.\n\nDuring [the First World War](item:ww1) she equipped mobile radiological units — the *petites Curies* — and trained their operators, bringing [X-ray](item:x-rays) diagnosis to the front. She died of aplastic anaemia, almost certainly caused by her lifelong exposure to radiation; her notebooks remain radioactive.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marie_Curie).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Marie_Curie"
-   },
-   {
-    "label": "Discovery of radioactivity",
-    "event": "radioactivity"
    }
   ],
   "priority": 72
@@ -933,6 +956,9 @@
    "technology"
   ],
   "summary": "Japan abolished the shogunate and deliberately industrialised, becoming a great power within a generation.",
+  "strong": [
+   "russo-japanese-war"
+  ],
   "body": "Within forty years of [ending its isolation](event:edo-japan) Japan had defeated Russia at sea — the first modern victory of an Asian state over a European empire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Meiji_Restoration).",
   "links": [
    {
@@ -953,6 +979,9 @@
    "economy"
   ],
   "summary": "A sea-level canal between the Mediterranean and the Red Sea cut thousands of kilometres from the Europe–Asia route.",
+  "strong": [
+   "suez-crisis"
+  ],
   "body": "A sea-level canal between the Mediterranean and the Red Sea cut thousands of kilometres from the Europe–Asia route.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Suez_Canal).",
   "links": [
    {
@@ -972,13 +1001,12 @@
    "technology"
   ],
   "parent": "railways",
+  "strong": [
+   "suez-canal"
+  ],
   "summary": "The golden spike at Promontory Summit joined the American rail network coast to coast.",
   "body": "Part of [First passenger railway](event:railways). The golden spike at Promontory Summit joined the American rail network coast to coast.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_transcontinental_railroad).",
   "links": [
-   {
-    "label": "First passenger railway",
-    "event": "railways"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/First_transcontinental_railroad"
@@ -996,6 +1024,9 @@
    "science"
   ],
   "summary": "Arranging the elements by weight and property revealed a periodic law — and gaps where undiscovered elements had to be.",
+  "weak": [
+   "radioactivity"
+  ],
   "body": "Arranging the elements by weight and property revealed a periodic law — and gaps where undiscovered elements had to be.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Periodic_table).",
   "links": [
    {
@@ -1025,20 +1056,20 @@
    "religion"
   ],
   "summary": "Leader of the Indian independence movement, who made non-violent mass civil disobedience an instrument of political change.",
-  "body": "Gandhi trained as a barrister in London and spent twenty years in South Africa, where discrimination against Indian residents led him to develop *satyagraha* — a discipline of open, non-violent refusal to comply with unjust law, accepting the penalty rather than evading it.\n\nReturning to India in 1915, he turned the Congress from a body of professionals into a mass movement. He organised peasants and mill workers, launched non-cooperation with [British rule](item:british-raj), and in 1930 walked 385 kilometres to the sea to make salt in defiance of the government monopoly; the [Salt March](item:salt-march) drew tens of thousands into civil disobedience and made the Raj's position visibly untenable. The [Quit India](item:quit-india) movement of 1942 brought him and most of the Congress leadership to prison.\n\nHe campaigned against untouchability and for Hindu-Muslim unity, and regarded [the partition](item:partition) that accompanied [independence](item:indian-independence) in 1947 as a defeat. He was shot in Delhi in January 1948 by a Hindu nationalist who thought him too conciliatory towards Muslims. His methods were studied closely by later movements, among them the [American civil rights campaign](item:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mahatma_Gandhi).",
-  "related": [
+  "strong": [
    "salt-march",
-   "indian-independence",
-   "nelson-mandela"
+   "quit-india",
+   "indian-independence"
   ],
+  "weak": [
+   "nelson-mandela",
+   "civil-rights"
+  ],
+  "body": "Gandhi trained as a barrister in London and spent twenty years in South Africa, where discrimination against Indian residents led him to develop *satyagraha* — a discipline of open, non-violent refusal to comply with unjust law, accepting the penalty rather than evading it.\n\nReturning to India in 1915, he turned the Congress from a body of professionals into a mass movement. He organised peasants and mill workers, launched non-cooperation with [British rule](item:british-raj), and in 1930 walked 385 kilometres to the sea to make salt in defiance of the government monopoly; the [Salt March](item:salt-march) drew tens of thousands into civil disobedience and made the Raj's position visibly untenable. The [Quit India](item:quit-india) movement of 1942 brought him and most of the Congress leadership to prison.\n\nHe campaigned against untouchability and for Hindu-Muslim unity, and regarded [the partition](item:partition) that accompanied [independence](item:indian-independence) in 1947 as a defeat. He was shot in Delhi in January 1948 by a Hindu nationalist who thought him too conciliatory towards Muslims. His methods were studied closely by later movements, among them the [American civil rights campaign](item:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mahatma_Gandhi).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Mahatma_Gandhi"
-   },
-   {
-    "label": "Salt March",
-    "event": "salt-march"
    }
   ],
   "priority": 86
@@ -1055,6 +1086,9 @@
    "technology"
   ],
   "summary": "Seventeen nations agreed on standard definitions of the metre and kilogram, making the metric system international.",
+  "strong": [
+   "french-revolution"
+  ],
   "body": "France had built the metric system during the [Revolution](event:french-revolution), but for decades it spread slowly and Britain in particular resisted it. The 1875 Convention created shared prototypes of the metre and kilogram and the Bureau International des Poids et Mesures outside Paris to keep them.\n\nIts successor, the SI, is now the legal basis of measurement in almost every country, and the treaty bodies founded in 1875 still define the units that science and trade depend on.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Metre_Convention).",
   "links": [
    {
@@ -1074,6 +1108,9 @@
    "technology"
   ],
   "summary": "Alexander Graham Bell patented a device that carried the human voice over a wire.",
+  "strong": [
+   "wireless-telegraphy"
+  ],
   "body": "Alexander Graham Bell patented a device that carried the human voice over a wire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Telephone).",
   "links": [
    {
@@ -1093,6 +1130,9 @@
    "technology"
   ],
   "summary": "Thomas Edison built the first device that could both record sound and play it back, capturing a voice on a cylinder wrapped in tinfoil.",
+  "strong": [
+   "jazz-singer"
+  ],
   "body": "Early phonographs were crude; Edison's first recording was \"Mary Had a Little Lamb\". Within a decade the device was manufactured commercially. By the early twentieth century the gramophone and flat disc records were displacing it, but Edison had shown that sound could be captured, stored and retrieved.\n\nRecording separated music from live performance, and a performance could now outlast the performer. A commercial recording industry followed, and the problem of reproducing sound faithfully later shaped broadcasting and [sound film](event:jazz-singer).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Phonograph).",
   "links": [
    {
@@ -1112,6 +1152,12 @@
    "technology"
   ],
   "summary": "Edison's long-lasting incandescent lamp, and the generating stations built to supply it, electrified cities.",
+  "strong": [
+   "phonograph"
+  ],
+  "weak": [
+   "telephone"
+  ],
   "body": "Edison's long-lasting incandescent lamp, and the generating stations built to supply it, electrified cities.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Incandescent_light_bulb).",
   "links": [
    {
@@ -1140,20 +1186,19 @@
    "science"
   ],
   "summary": "Theoretical physicist whose work on relativity, light quanta and statistical mechanics reshaped the physics of space, time, matter and energy.",
-  "body": "Einstein was born at Ulm and educated in Munich, Aarau and Zurich. Unable to find an academic post, he took work at the Swiss patent office in Bern, and in 1905 — his *annus mirabilis* — published four papers in a single year: on the photoelectric effect, on Brownian motion, on the electrodynamics of moving bodies, and on the equivalence of mass and energy.\n\nThe third and fourth of these are [special relativity](item:relativity), which abandoned absolute time in favour of a fixed speed of light. Ten years later general relativity recast gravity as the curvature of spacetime; the bending of starlight measured during the 1919 eclipse made him famous outside physics. The theory's later predictions include black holes and [gravitational waves](item:gravitational-waves), detected a century after he wrote it down. See also the article on [relativity](item:theory-of-relativity).\n\nHe received the 1921 Nobel Prize in Physics for the photoelectric effect rather than for relativity. A Jewish pacifist, he left Germany when [Hitler took power](item:hitler-chancellor) and settled at Princeton, where he spent his last two decades on an unsuccessful search for a unified field theory. In 1939 he signed a letter to President Roosevelt warning that [nuclear fission](item:nuclear-fission) might make a bomb possible — a step he later described as his one great mistake.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Albert_Einstein).",
-  "related": [
-   "theory-of-relativity",
+  "strong": [
    "relativity",
-   "marie-curie"
+   "theory-of-relativity"
   ],
+  "weak": [
+   "gravitational-waves",
+   "trinity"
+  ],
+  "body": "Einstein was born at Ulm and educated in Munich, Aarau and Zurich. Unable to find an academic post, he took work at the Swiss patent office in Bern, and in 1905 — his *annus mirabilis* — published four papers in a single year: on the photoelectric effect, on Brownian motion, on the electrodynamics of moving bodies, and on the equivalence of mass and energy.\n\nThe third and fourth of these are [special relativity](item:relativity), which abandoned absolute time in favour of a fixed speed of light. Ten years later general relativity recast gravity as the curvature of spacetime; the bending of starlight measured during the 1919 eclipse made him famous outside physics. The theory's later predictions include black holes and [gravitational waves](item:gravitational-waves), detected a century after he wrote it down. See also the article on [relativity](item:theory-of-relativity).\n\nHe received the 1921 Nobel Prize in Physics for the photoelectric effect rather than for relativity. A Jewish pacifist, he left Germany when [Hitler took power](item:hitler-chancellor) and settled at Princeton, where he spent his last two decades on an unsuccessful search for a unified field theory. In 1939 he signed a letter to President Roosevelt warning that [nuclear fission](item:nuclear-fission) might make a bomb possible — a step he later described as his one great mistake.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Albert_Einstein).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Albert_Einstein"
-   },
-   {
-    "label": "Einstein's theory of relativity",
-    "event": "relativity"
    }
   ],
   "priority": 89
@@ -1171,6 +1216,14 @@
    "disaster"
   ],
   "summary": "Greenhouse gases released since the Industrial Revolution have warmed the planet by about 1.3 °C, and the rate is increasing.",
+  "strong": [
+   "industrial-revolution",
+   "kyoto-protocol",
+   "paris-agreement"
+  ],
+  "weak": [
+   "quaternary-ice-ages"
+  ],
   "body": "Atmospheric CO2 has risen from about 280 ppm before the [Industrial Revolution](event:industrial-revolution) to over 420 ppm. Ice sheets and glaciers are losing mass, sea level is rising, and extreme heat has become measurably more frequent.\n\nThe [Montreal Protocol](event:montreal-protocol) and the [Paris Agreement](event:paris-agreement) are the main treaty responses; the geological analogue is the [PETM](event:petm), 56 million years ago.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Global_warming).",
   "links": [
    {
@@ -1246,6 +1299,12 @@
    "war"
   ],
   "summary": "European powers partitioned almost the entire African continent among themselves in three decades.",
+  "strong": [
+   "decolonisation"
+  ],
+  "weak": [
+   "suez-crisis"
+  ],
   "body": "The Berlin Conference of 1884–85 set the rules; the borders drawn then are largely those of Africa today. Conquest was brutal — the Congo Free State alone may have cost millions of lives — and was undone only by [decolonisation](event:decolonisation) after 1945.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scramble_for_Africa).",
   "links": [
    {
@@ -1266,6 +1325,9 @@
    "geology"
   ],
   "summary": "The explosion was heard 4,800 km away and the tsunamis it raised killed more than 36,000 people.",
+  "weak": [
+   "kanto-earthquake"
+  ],
   "body": "It was the first global disaster reported worldwide within hours, by [telegraph](event:telegraph).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1883_eruption_of_Krakatoa).",
   "links": [
    {
@@ -1285,6 +1347,12 @@
    "technology"
   ],
   "summary": "George Eastman produced the first camera using roll film and affordable for amateurs, putting photography in ordinary hands.",
+  "strong": [
+   "jazz-singer"
+  ],
+  "weak": [
+   "television-invention"
+  ],
   "body": "Photography before 1888 required glass plates, darkrooms and chemical expertise. The Kodak camera with roll film cost $25 and worked simply: the user exposed the frame, returned the camera to the factory, and received prints and a reloaded camera.\n\nThis put photography within reach of the general public. By 1900 millions of amateur photographs existed; by 1945 personal photography was routine, and the documentary power of the image was transforming warfare and politics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kodak).",
   "links": [
    {
@@ -1304,6 +1372,9 @@
    "technology"
   ],
   "summary": "Marconi transmitted radio signals without wires, solving the problem of communication to moving ships and remote locations.",
+  "strong": [
+   "television-invention"
+  ],
   "body": "Building on the discoveries of Hertz and others, Marconi was the first to make wireless transmission practical. By 1897 he was operating a station on the Isle of Wight; in 1901 he claimed the first signal across the Atlantic.\n\nWireless proved its worth at sea: the distress calls sent from the [Titanic](event:titanic-sinks) in 1912 brought the Carpathia to the lifeboats, and the disaster led to international rules requiring a continuous radio watch. By the 1920s the same technology had become a mass broadcast medium.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Guglielmo_Marconi).",
   "links": [
    {
@@ -1323,6 +1394,9 @@
    "science"
   ],
   "summary": "Wilhelm Röntgen discovered X-rays while experimenting with cathode tubes, opening a new window into the human body and atom.",
+  "strong": [
+   "radioactivity"
+  ],
   "body": "On November 8, 1895, Röntgen found that a cathode tube emitted an invisible radiation that passed through flesh but was absorbed by bone, producing the first image of a living skeleton made without dissection.\n\nX-rays allowed diagnosis without cutting, and became a tool for probing the structure of matter, from crystals to the atom itself. The discovery also set others hunting for similar rays, and [radioactivity](event:radioactivity) was found the following year.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/X-ray).",
   "links": [
    {
@@ -1344,6 +1418,9 @@
    "politics"
   ],
   "summary": "Cuban insurgents fought Spanish rule for three years before American intervention in 1898 ended Spain's empire in the Americas and left the United States dominant on the island.",
+  "strong": [
+   "castro-cuba"
+  ],
   "body": "The Cuban rising had been running for three years when the United States intervened in 1898. The Spanish-American War that followed lasted about ten weeks.\n\nSpain lost its last major colony. Cuba became nominally independent but remained under American occupation, with American companies dominant in the sugar economy. The war marked the emergence of the United States as a global power and began half a century of American military intervention in Latin America.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cuban_War_of_Independence).",
   "links": [
    {
@@ -1390,6 +1467,10 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Boxer_Rebellion"
    }
+  ],
+  "parent": "qing-dynasty",
+  "strong": [
+   "chinese-revolution"
   ]
  },
  {
@@ -1410,6 +1491,10 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Second_Boer_War"
    }
+  ],
+  "parent": "scramble-africa",
+  "weak": [
+   "russo-japanese-war"
   ]
  },
  {
@@ -1423,6 +1508,9 @@
    "technology"
   ],
   "summary": "The Wright brothers flew a heavier-than-air powered machine under control at Kitty Hawk.",
+  "strong": [
+   "bleriot-channel"
+  ],
   "body": "Sixty-six years separate that 12-second hop from the [Moon landing](event:moon-landing).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wright_Flyer).",
   "links": [
    {
@@ -1443,6 +1531,9 @@
    "politics"
   ],
   "summary": "British women, denied the vote, escalated from petitions to property damage and hunger strikes, forcing the question of female enfranchisement onto the political agenda.",
+  "strong": [
+   "finland-suffrage"
+  ],
   "body": "Emmeline Pankhurst and her daughters adopted militant tactics — arson, bombing, slashing paintings — that terrified the establishment and fascinated the press. The campaign was suspended during [World War I](event:ww1) but resumed after, resulting in limited suffrage in 1918 and full suffrage in 1928.\n\nThe movement divided campaigners themselves: constitutional suffragists, far more numerous, argued that militancy set the cause back. But their visibility made the cause impossible to ignore, and their sacrifice — prison, force-feeding — gave moral weight to the claim that democracy without women was a sham.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Suffragette).",
   "links": [
    {
@@ -1463,6 +1554,9 @@
    "war"
   ],
   "summary": "Japan and Russia fought for control of Korea and Manchuria; Japan's victory proved that an Asian power could defeat a European empire.",
+  "strong": [
+   "russian-revolution"
+  ],
   "body": "Japan's navy destroyed two Russian fleets, and its army outmanoeuvred Russian conscripts on land. The Treaty of Portsmouth (1905) required Russia to cede territory and influence, and the defeat helped touch off the revolution of 1905 that shook the tsarist state a decade before [1917](event:russian-revolution).\n\nThe victory showed that an Asian power could defeat a European empire in the field, and it changed perceptions of European military dominance from Turkey to China to India. Japan itself, emboldened, continued its expansion toward [empire](event:meiji).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Russo-Japanese_War).",
   "links": [
    {
@@ -1483,6 +1577,9 @@
    "science"
   ],
   "summary": "Einstein's relativity described space and time as aspects of a single flexible geometry, and mass as a form of energy.",
+  "weak": [
+   "higgs"
+  ],
   "body": "Special relativity (1905), the work of [Albert Einstein](item:albert-einstein), resolved the incompatibility between mechanics and electromagnetism. General relativity (1915) recast gravity as the curvature of spacetime, and was confirmed in 1919 by observations of starlight bending around the sun.\n\nGPS, black holes, cosmology and [gravitational waves](event:gravitational-waves) all follow from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
   "links": [
    {
@@ -1500,20 +1597,15 @@
    "science"
   ],
   "summary": "The theory that space and time form a single flexible geometry, that the speed of light is the same for every observer, and that gravity is the curvature of that geometry.",
-  "body": "Special relativity, published by [Einstein](item:albert-einstein) in 1905, begins from two propositions: the laws of physics are the same for all observers in uniform motion, and light travels at the same speed for all of them. Absolute simultaneity, absolute length and absolute time do not survive. Moving clocks run slow, moving lengths contract, and mass and energy turn out to be the same quantity in different units.\n\nGeneral relativity followed in 1915. Gravity is not a force acting across space but the curvature of spacetime produced by mass and energy; bodies in free fall follow the straightest available paths through it. The theory predicted the precession of Mercury's orbit, the bending of starlight confirmed in 1919, and the slowing of clocks in a gravitational field that satellite navigation must correct for.\n\nIts stranger predictions took a century to confirm: black holes, the expansion of the universe, and [gravitational waves](item:gravitational-waves), first detected in 2015. Relativity remains untouched by experiment and irreconcilable with quantum mechanics, which is where most of contemporary theoretical physics lives — see the entry on [Einstein's theory of relativity](item:relativity).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
-  "related": [
-   "albert-einstein",
+  "strong": [
    "relativity",
    "gravitational-waves"
   ],
+  "body": "Special relativity, published by [Einstein](item:albert-einstein) in 1905, begins from two propositions: the laws of physics are the same for all observers in uniform motion, and light travels at the same speed for all of them. Absolute simultaneity, absolute length and absolute time do not survive. Moving clocks run slow, moving lengths contract, and mass and energy turn out to be the same quantity in different units.\n\nGeneral relativity followed in 1915. Gravity is not a force acting across space but the curvature of spacetime produced by mass and energy; bodies in free fall follow the straightest available paths through it. The theory predicted the precession of Mercury's orbit, the bending of starlight confirmed in 1919, and the slowing of clocks in a gravitational field that satellite navigation must correct for.\n\nIts stranger predictions took a century to confirm: black holes, the expansion of the universe, and [gravitational waves](item:gravitational-waves), first detected in 2015. Relativity remains untouched by experiment and irreconcilable with quantum mechanics, which is where most of contemporary theoretical physics lives — see the entry on [Einstein's theory of relativity](item:relativity).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Theory_of_relativity"
-   },
-   {
-    "label": "Albert Einstein",
-    "event": "albert-einstein"
    }
   ],
   "priority": 89
@@ -1529,6 +1621,9 @@
    "politics"
   ],
   "summary": "Finland became the first European nation to grant women full voting and candidacy rights.",
+  "weak": [
+   "usa-marriage-equality"
+  ],
   "body": "Women had already voted elsewhere, in the Wyoming Territory from 1869 and New Zealand from 1893, but Finland was the first country to give women both the vote and the right to stand for election.\n\nThe reform was tied to Finland's struggle for independence from Russia, and women's part in the national movement strengthened their claim. The new single-chamber parliament created in 1906 was elected on universal suffrage, and nineteen women took seats in it the following year. Other Nordic countries followed within decades, then Britain and the United States, though many nations did not enfranchise women until after [World War II](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Women%27s_suffrage_in_Finland).",
   "links": [
    {
@@ -1549,6 +1644,9 @@
    "politics"
   ],
   "summary": "Austria-Hungary annexed Bosnia-Herzegovina, triggering a crisis with Russia and Serbia that brought Europe close to war six years before [1914](event:ww1).",
+  "strong": [
+   "sarajevo"
+  ],
   "body": "The crisis revealed the brittleness of the European order. Austria's move violated the Treaty of Berlin; Serbia wanted Bosnia for itself; Russia claimed to defend Slavic interests; Germany backed Austria. For a moment the powers seemed on the brink of war.\n\nRussia backed down, but the humiliation fuelled Slavic nationalism and Russian desire for revenge. The Balkans had become the flashpoint where ethnic, great-power and religious interests collided — a role it would maintain through [1945](event:ww2) and beyond.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bosnian_crisis_of_1908%E2%80%9309).",
   "links": [
    {
@@ -1569,6 +1667,9 @@
    "exploration"
   ],
   "summary": "Louis Blériot flew a monoplane across the English Channel, proving that aircraft could make practical journeys and making invasion by air conceivable.",
+  "strong": [
+   "lindbergh-flight"
+  ],
   "body": "The [Wright brothers](event:wright-flyer) had flown, but Blériot's 1909 crossing showed that an aircraft could be taken where the aviator chose. The flight took 36 minutes, and the sea that had protected Britain for a thousand years was no longer an obstacle.\n\nThe implications were military. Within a few years aircraft were being armed, and by [1914](event:ww1) they were flying reconnaissance over the front.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Louis_Blériot).",
   "links": [
    {
@@ -1589,6 +1690,9 @@
    "exploration"
   ],
   "summary": "Robert Falcon Scott led an expedition to the South Pole, reaching it only to find he had been beaten by Amundsen; he and his party died on the return.",
+  "strong": [
+   "antarctic-glaciation"
+  ],
   "body": "Scott's journey to the South Pole in 1911-1912 was a race against Roald Amundsen, who used sled dogs and reached the Pole on 14 December 1911, five weeks ahead of him. Scott's party man-hauled its sledges in temperatures below -40 °C, and the method proved fatal. He died about eleven miles from One Ton Depot.\n\nHis final letters were found with his body and made him a national figure in Britain. The expedition combined scientific work in meteorology, geology and biology with the imperial prestige of exploration, a late episode of the [Age of Discovery](event:age-of-discovery) before the world was fully mapped.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Terra_Nova_Expedition).",
   "links": [
    {
@@ -1615,7 +1719,8 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Xinhai_Revolution"
    }
-  ]
+  ],
+  "parent": "qing-dynasty"
  },
  {
   "id": "titanic-sinks",
@@ -1628,6 +1733,9 @@
    "disaster"
   ],
   "summary": "The \"unsinkable\" liner struck an iceberg and sank in the North Atlantic, killing about 1,500 people.",
+  "strong": [
+   "wireless-telegraphy"
+  ],
   "body": "Titanic was the largest ship afloat and reflected the period's confidence in engineering. It struck an iceberg at night and sank in under three hours, killing about 1,500 people. There were lifeboats for barely half those aboard, and survival rates fell sharply with class: most women in first class survived, while the majority of third-class passengers did not.\n\nThe disaster prompted new rules requiring lifeboat capacity for everyone aboard and a continuous wireless watch at sea, and it undercut the Edwardian assumption that technology had made travel fundamentally safe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Titanic).",
   "links": [
    {
@@ -1657,20 +1765,19 @@
    "technology"
   ],
   "summary": "English mathematician who defined what a computation is, broke German naval ciphers during the Second World War, and framed the question of machine intelligence.",
-  "body": "Turing's 1936 paper on computable numbers answered a problem in mathematical logic by imagining an abstract machine reading and writing symbols on a tape. The Turing machine settled which questions no procedure can decide, and defined the notion of an algorithm that every later computer implements.\n\nAt Bletchley Park during [the Second World War](item:ww2) he designed the bombe, an electromechanical machine that searched Enigma settings, and led the section that broke the naval ciphers directing the U-boat campaign in the Atlantic. The work stayed secret for decades; historians generally credit Bletchley's output with shortening the war.\n\nAfterwards he designed one of the first stored-program computers, wrote on the chemical basis of pattern formation in biology, and in 1950 proposed the imitation game — could a machine's replies be told from a person's? — as a way of replacing the unanswerable question of whether machines think; among the objections he answered there was [Lovelace's](item:ada-lovelace), that a machine can originate nothing. In 1952 he was prosecuted for homosexuality and accepted hormone treatment in place of prison; he died two years later of cyanide poisoning, ruled a suicide. The British government apologised in 2009 and pardoned him in 2013.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Alan_Turing).",
-  "related": [
-   "global-internet",
-   "ada-lovelace",
-   "deep-learning"
+  "strong": [
+   "deep-learning",
+   "ww2"
   ],
+  "weak": [
+   "global-internet",
+   "microprocessor"
+  ],
+  "body": "Turing's 1936 paper on computable numbers answered a problem in mathematical logic by imagining an abstract machine reading and writing symbols on a tape. The Turing machine settled which questions no procedure can decide, and defined the notion of an algorithm that every later computer implements.\n\nAt Bletchley Park during [the Second World War](item:ww2) he designed the bombe, an electromechanical machine that searched Enigma settings, and led the section that broke the naval ciphers directing the U-boat campaign in the Atlantic. The work stayed secret for decades; historians generally credit Bletchley's output with shortening the war.\n\nAfterwards he designed one of the first stored-program computers, wrote on the chemical basis of pattern formation in biology, and in 1950 proposed the imitation game — could a machine's replies be told from a person's? — as a way of replacing the unanswerable question of whether machines think; among the objections he answered there was [Lovelace's](item:ada-lovelace), that a machine can originate nothing. In 1952 he was prosecuted for homosexuality and accepted hormone treatment in place of prison; he died two years later of cyanide poisoning, ruled a suicide. The British government apologised in 2009 and pardoned him in 2013.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Alan_Turing).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Alan_Turing"
-   },
-   {
-    "label": "Second World War",
-    "event": "ww2"
    }
   ],
   "priority": 82
@@ -1687,6 +1794,9 @@
    "economy"
   ],
   "summary": "Henry Ford introduced the moving assembly line to automobile manufacturing, allowing mass production and making cars affordable for ordinary workers.",
+  "strong": [
+   "industrial-revolution"
+  ],
   "body": "The assembly line cut the time to assemble a Model T from 12 hours to 93 minutes. By the early 1920s the Model T accounted for roughly half the cars on earth, and a worker on Ford's five-dollar day could afford one.\n\nCheap cars made suburbs possible and commuting normal. Ford's mass production methods were copied worldwide, from Soviet tractor plants to Japanese electronics manufacturing.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assembly_line).",
   "links": [
    {
@@ -1707,6 +1817,9 @@
    "economy"
   ],
   "summary": "A canal of locks and an artificial lake joined the Atlantic and Pacific, cutting some 13,000 kilometres from the voyage between New York and San Francisco.",
+  "strong": [
+   "suez-canal"
+  ],
   "body": "The French had attempted a sea-level cut and failed. The Americans succeeded with locks, a dammed lake and a mosquito-control campaign that finally curbed yellow fever, though malaria and accidents still killed thousands of workers. The first ship transited on August 15, 1914, weeks after [World War I](event:ww1) began in Europe.\n\nThe canal let the United States move a fleet between the Atlantic and the Pacific and strengthened its position in the Caribbean. Washington governed the surrounding Canal Zone as its own territory until 1979 and kept control of the waterway until 1999.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Panama_Canal).",
   "links": [
    {
@@ -1727,6 +1840,9 @@
    "war"
   ],
   "summary": "Four years of industrial-scale war killed some 20 million people and destroyed four empires.",
+  "strong": [
+   "ww2"
+  ],
   "body": "An [assassination in Sarajevo](event:sarajevo) triggered interlocking alliances; machine guns and artillery made the [Western Front](event:somme) a stalemate of trenches for four years. Russia collapsed into [revolution](event:russian-revolution); the United States entered in 1917.\n\nThe [Treaty of Versailles](event:versailles) redrew Europe and the Middle East, and left grievances that contributed directly to [the next war](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_War_I).",
   "links": [
    {
@@ -1747,13 +1863,12 @@
    "war"
   ],
   "parent": "ww1",
+  "weak": [
+   "jfk-assassination"
+  ],
   "summary": "Gavrilo Princip shot the Austrian heir in Sarajevo, setting off the July Crisis.",
   "body": "Part of [World War I](event:ww1). Gavrilo Princip shot the Austrian heir in Sarajevo, setting off the July Crisis.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Archduke_Franz_Ferdinand).",
   "links": [
-   {
-    "label": "World War I",
-    "event": "ww1"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Assassination_of_Archduke_Franz_Ferdinand"
@@ -1772,6 +1887,12 @@
    "politics"
   ],
   "summary": "Irish republicans seized buildings in central Dublin and proclaimed a republic; the rising was crushed within a week, but its aftermath reshaped Irish politics.",
+  "strong": [
+   "irish-independence"
+  ],
+  "weak": [
+   "ww1"
+  ],
   "body": "The rebellion was crushed in a week, and sixteen rebel leaders were executed by firing squad. But their deaths transformed them into martyrs — Irish public opinion, previously divided on independence, swung decisively against British rule.\n\nSinn Féin swept the 1918 election on that changed mood, and the war that followed produced [the Irish Free State](event:irish-independence) in 1921.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Easter_Rising).",
   "links": [
    {
@@ -1791,13 +1912,12 @@
    "war"
   ],
   "parent": "ww1",
+  "strong": [
+   "somme"
+  ],
   "summary": "Ten months of attrition around a French fortress city cost some 700,000 casualties.",
   "body": "Part of [World War I](event:ww1). Ten months of attrition around a French fortress city cost some 700,000 casualties.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Verdun).",
   "links": [
-   {
-    "label": "World War I",
-    "event": "ww1"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Verdun"
@@ -1815,13 +1935,12 @@
    "war"
   ],
   "parent": "ww1",
+  "weak": [
+   "stalingrad"
+  ],
   "summary": "Nearly 60,000 British casualties fell on the first day; tanks appeared in battle for the first time.",
   "body": "Part of [World War I](event:ww1). Nearly 60,000 British casualties fell on the first day; tanks appeared in battle for the first time.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_the_Somme).",
   "links": [
-   {
-    "label": "World War I",
-    "event": "ww1"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_the_Somme"
@@ -1860,13 +1979,12 @@
    "politics"
   ],
   "parent": "russian-revolution",
+  "strong": [
+   "ussr-founded"
+  ],
   "summary": "Bolshevik forces seized the Winter Palace and the organs of the Provisional Government in Petrograd.",
   "body": "Part of [Russian Revolution](event:russian-revolution). Bolshevik forces seized the Winter Palace and the organs of the Provisional Government in Petrograd.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/October_Revolution).",
   "links": [
-   {
-    "label": "Russian Revolution",
-    "event": "russian-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/October_Revolution"
@@ -1886,6 +2004,12 @@
    "disaster"
   ],
   "summary": "An H1N1 influenza pandemic infected perhaps a third of humanity and killed 50 million or more.",
+  "strong": [
+   "covid"
+  ],
+  "weak": [
+   "ww1"
+  ],
   "body": "It spread along the troop movements of [the First World War](event:ww1), and unusually killed healthy young adults. Wartime censorship kept it out of the news everywhere except neutral Spain — hence the misleading name.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_flu).",
   "links": [
    {
@@ -1914,20 +2038,18 @@
    "politics"
   ],
   "summary": "South African lawyer and revolutionary who spent twenty-seven years in prison and then negotiated the end of apartheid as the country's first democratically elected president.",
-  "body": "Mandela was born into the Thembu royal house in the Transkei, trained as a lawyer, and opened the first black law practice in Johannesburg with Oliver Tambo. As apartheid legislation hardened after 1948 he helped build the African National Congress Youth League and organised campaigns of defiance.\n\nAfter the Sharpeville massacre and the banning of the ANC he abandoned strictly non-violent tactics and co-founded its armed wing, arguing that sabotage was the least destructive of the remaining options. He was convicted of sabotage at the Rivonia Trial in 1964 and sentenced to life, spending eighteen years on Robben Island; the speech he gave from the dock, ending with a cause for which he was prepared to die, became the movement's text.\n\nInternational sanctions, internal revolt from the [Soweto uprising](item:soweto-uprising) onwards and a bankrupt policy brought the government to negotiate. Released in 1990, he shared the Nobel Peace Prize with F. W. de Klerk, and in 1994 was elected president in [South Africa's first universal-suffrage election](item:apartheid-end). He served one term, preferring reconciliation and a Truth and Reconciliation Commission to retribution, and stepped down.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nelson_Mandela).",
-  "related": [
+  "strong": [
    "apartheid-end",
-   "mohandas-gandhi",
+   "soweto-uprising"
+  ],
+  "weak": [
    "democracy"
   ],
+  "body": "Mandela was born into the Thembu royal house in the Transkei, trained as a lawyer, and opened the first black law practice in Johannesburg with Oliver Tambo. As apartheid legislation hardened after 1948 he helped build the African National Congress Youth League and organised campaigns of defiance.\n\nAfter the Sharpeville massacre and the banning of the ANC he abandoned strictly non-violent tactics and co-founded its armed wing, arguing that sabotage was the least destructive of the remaining options. He was convicted of sabotage at the Rivonia Trial in 1964 and sentenced to life, spending eighteen years on Robben Island; the speech he gave from the dock, ending with a cause for which he was prepared to die, became the movement's text.\n\nInternational sanctions, internal revolt from the [Soweto uprising](item:soweto-uprising) onwards and a bankrupt policy brought the government to negotiate. Released in 1990, he shared the Nobel Peace Prize with F. W. de Klerk, and in 1994 was elected president in [South Africa's first universal-suffrage election](item:apartheid-end). He served one term, preferring reconciliation and a Truth and Reconciliation Commission to retribution, and stepped down.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nelson_Mandela).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Nelson_Mandela"
-   },
-   {
-    "label": "End of apartheid",
-    "event": "apartheid-end"
    }
   ],
   "priority": 75
@@ -1943,13 +2065,12 @@
    "politics"
   ],
   "parent": "ww1",
+  "strong": [
+   "ww2"
+  ],
   "summary": "The peace imposed on Germany assigned it war guilt and reparations, and redrew the map of Europe.",
   "body": "Part of [World War I](event:ww1). The peace imposed on Germany assigned it war guilt and reparations, and redrew the map of Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Treaty_of_Versailles).",
   "links": [
-   {
-    "label": "World War I",
-    "event": "ww1"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Treaty_of_Versailles"
@@ -1968,6 +2089,9 @@
    "politics"
   ],
   "summary": "The United States banned the manufacture, sale and transport of alcohol, creating a massive black market and empowering organized crime.",
+  "strong": [
+   "great-depression"
+  ],
   "body": "Prohibition was intended as a moral and public health reform, backed by progressive reformers and churches. In practice it criminalised millions of ordinary citizens and created large illegal markets; Al Capone's Chicago bootleg empire was built on it.\n\nThe policy showed the limits of law that lacks popular support. By 1933 even conservative politicians accepted that Prohibition had failed, and the Twenty-first Amendment repealed the Eighteenth, the first and only repeal of an amendment to the United States Constitution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Prohibition_in_the_United_States).",
   "links": [
    {
@@ -1987,6 +2111,9 @@
    "politics"
   ],
   "summary": "After a two-year war of independence, the Anglo-Irish Treaty created the Irish Free State as a dominion and partitioned the island.",
+  "strong": [
+   "troubles-begin"
+  ],
   "body": "The war lasted 1919-1921 and was brutal — British auxiliary police burned Irish towns, Irish rebels killed suspected informers. The settlement partitioned the island, with six northern counties remaining in the United Kingdom.\n\nThe Free State was a compromise that satisfied neither republican purists nor Ulster unionists. But it established the principle that the British Empire's grip on its territories was not absolute — a lesson that would reshape the [decolonisation](event:decolonisation) of the twentieth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Irish_War_of_Independence).",
   "links": [
    {
@@ -2007,6 +2134,9 @@
    "disease"
   ],
   "summary": "Frederick Banting and Charles Best extracted insulin from the pancreas, providing the first effective treatment for diabetes and saving millions of lives.",
+  "strong": [
+   "penicillin"
+  ],
   "body": "Before insulin, type 1 diabetes was fatal, causing a slow decline through hyperglycemia and ketoacidosis. Banting's team found that pancreatic extracts lowered blood sugar, and within a year insulin was being mass-produced and injected into diabetics.\n\nThe first patient, a fourteen-year-old boy, went from near-death to recovery, and millions who would have died could now be treated. The finding that the pancreas regulates blood sugar also opened the field of endocrinology.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Insulin).",
   "links": [
    {
@@ -2030,10 +2160,6 @@
   "body": "Part of [Russian Revolution](event:russian-revolution). The union treaty created the USSR, which would last until [1991](event:soviet-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Soviet_Union).",
   "links": [
    {
-    "label": "Russian Revolution",
-    "event": "russian-revolution"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Soviet_Union"
    }
@@ -2050,6 +2176,9 @@
    "disaster"
   ],
   "summary": "A magnitude 7.9 earthquake destroyed Tokyo and Yokohama, killing over 100,000 people and shaking faith in urban progress.",
+  "strong": [
+   "fukushima-disaster"
+  ],
   "body": "The earthquake struck at midday, when most cooking stoves were lit, and fires spread unchecked through Tokyo and Yokohama. Most of the dead were killed by the firestorms rather than by the shaking itself; a single fire whirl in Tokyo's Honjo district killed tens of thousands sheltering in an open yard.\n\nReconstruction was rapid, and Tokyo was rebuilt on a larger scale. In the chaos, false rumours that Koreans were poisoning wells and setting fires led to massacres by vigilante groups in which thousands of Korean residents were killed, and the rebuilding strained Japanese public finances for years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1923_Great_Kant%C5%8D_earthquake).",
   "links": [
    {
@@ -2070,6 +2199,9 @@
    "science"
   ],
   "summary": "A Tennessee schoolteacher was prosecuted for teaching evolution, putting [Darwin's theory](event:origin-species) on trial before a national radio audience.",
+  "weak": [
+   "natural-selection"
+  ],
   "body": "John Scopes was fined $100 for violating a state law against teaching that humans descended from animals. William Jennings Bryan prosecuted and Clarence Darrow defended, and the proceedings were broadcast live on radio, the first trial to reach an audience of millions.\n\nScopes was convicted, though the verdict was overturned on a technicality. The case exposed a division in American culture between scientific consensus on [Darwin's theory](event:origin-species) and religious conviction, a division that persisted long after the trial.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scopes_trial).",
   "links": [
    {
@@ -2090,6 +2222,9 @@
    "economy"
   ],
   "summary": "British coal miners struck over wage cuts, joined by millions of other workers in the only general strike in British history.",
+  "strong": [
+   "great-depression"
+  ],
   "body": "For nine days in May 1926, Britain was partially paralysed: trains, buses and newspapers stopped. The government and middle-class volunteers kept essential services running. The strike coalition fractured, and miners returned to worse terms than they had refused before the stoppage.\n\nThe strike exposed the weakness of Britain's economic position after [World War I](event:ww1) and the depth of its class divisions. It also convinced much of the union movement that its future lay in parliamentary politics through the Labour Party rather than in mass industrial action.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1926_United_Kingdom_general_strike).",
   "links": [
    {
@@ -2110,6 +2245,9 @@
    "technology"
   ],
   "summary": "Charles Lindbergh flew the Spirit of St. Louis from New York to Paris in 33 hours, proving that aircraft could cross an ocean safely and thrilling the world.",
+  "weak": [
+   "gagarin"
+  ],
   "body": "Lindbergh was twenty-five, relatively unknown, and flying alone. When he landed at Le Bourget airfield after 33 hours, a crowd of more than a hundred thousand surged onto the field, and newspapers sold millions of copies carrying his photograph.\n\nThe flight showed that aviation was not confined to exhibition and military use. Where [wireless](event:wireless-telegraphy) had freed messages from ships, aircraft now began to free travellers from them: airmail contracts and airline investment followed, and scheduled transatlantic services began within little more than a decade.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charles_Lindbergh).",
   "links": [
    {
@@ -2149,6 +2287,9 @@
    "technology"
   ],
   "summary": "Philo Farnsworth transmitted the first all-electronic television image, the basis of the medium that would shape the second half of the twentieth century.",
+  "weak": [
+   "internet"
+  ],
   "body": "Philo Farnsworth, a twenty-one-year-old from a farm in Idaho, transmitted the first electronic television image, a single horizontal line, on September 7, 1927. Vladimir Zworykin, then at Westinghouse and later at RCA, was developing rival camera and display tubes over the same years, and the competing claims led to a long patent fight that Farnsworth largely won.\n\nElectronic television was far better than the mechanical alternatives, and by the late 1930s it was becoming commercial. [World War II](event:ww2) delayed mass adoption, but by 1950 television was becoming a presence in American homes, and it went on to reshape news, politics and entertainment.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_television).",
   "links": [
    {
@@ -2207,13 +2348,12 @@
    "economy"
   ],
   "parent": "great-depression",
+  "weak": [
+   "financial-crisis"
+  ],
   "summary": "The New York stock market lost a third of its value in weeks, wiping out fortunes and confidence alike.",
   "body": "Part of [Great Depression](event:great-depression). The New York stock market lost a third of its value in weeks, wiping out fortunes and confidence alike.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wall_Street_Crash_of_1929).",
   "links": [
-   {
-    "label": "Great Depression",
-    "event": "great-depression"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Wall_Street_Crash_of_1929"
@@ -2255,13 +2395,12 @@
    "climate"
   ],
   "parent": "great-depression",
+  "weak": [
+   "global-warming"
+  ],
   "summary": "Drought and ploughed-up prairie grass turned the southern Great Plains into moving dunes, displacing hundreds of thousands.",
   "body": "Part of [Great Depression](event:great-depression). Drought and ploughed-up prairie grass turned the southern Great Plains into moving dunes, displacing hundreds of thousands.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dust_Bowl).",
   "links": [
-   {
-    "label": "Great Depression",
-    "event": "great-depression"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Dust_Bowl"
@@ -2279,13 +2418,12 @@
    "politics"
   ],
   "parent": "british-raj",
+  "strong": [
+   "quit-india"
+  ],
   "summary": "Gandhi walked 385 km to the sea to make salt in defiance of the British monopoly, launching mass civil disobedience.",
   "body": "Part of [British Raj](event:british-raj). [Gandhi's](item:mohandas-gandhi) method of non-violent resistance directly influenced the [American civil rights movement](event:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Salt_March).",
   "links": [
-   {
-    "label": "British Raj",
-    "event": "british-raj"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Salt_March"
@@ -2303,6 +2441,12 @@
    "war"
   ],
   "summary": "Japanese military forces seized Manchuria from China, the first major aggression by a revisionist power in the post-[World War I](event:ww1) era.",
+  "strong": [
+   "sino-japanese-war"
+  ],
+  "weak": [
+   "abyssinia-invasion"
+  ],
   "body": "The League of Nations condemned the invasion but took no action. Japan then withdrew from the League and began rearming openly. The Manchurian conquest set a pattern in which aggression met protest rather than force.\n\nJapan's success encouraged similar moves by Mussolini in Abyssinia in 1935 and Hitler in the Rhineland in 1936. The democracies lacked the will to enforce the rules they had created, and the result was a slide toward [World War II](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Invasion_of_Manchuria).",
   "links": [
    {
@@ -2322,6 +2466,10 @@
    "politics"
   ],
   "summary": "President Hindenburg appointed Adolf Hitler Chancellor, believing he could be controlled and that the appointment would end Germany's political paralysis.",
+  "strong": [
+   "enabling-act",
+   "great-depression"
+  ],
   "body": "The Nazis had taken 37% of the vote in July 1932 and fallen back to 33% in November, making them the largest party in the Reichstag but far short of a majority. Conservatives around Hindenburg brokered the appointment in the belief that they could use and contain Hitler.\n\nWithin two months the Reichstag fire decree had suspended civil liberties and the [Enabling Act](event:enabling-act) had given him the power to legislate alone. Within six, opposition parties were banned, thousands of opponents were held in the first camps, and Germany was a one-party state.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Machtergreifung).",
   "links": [
    {
@@ -2341,6 +2489,9 @@
    "politics"
   ],
   "summary": "The Reichstag voted to grant Hitler the power to make laws without parliament, effectively ending democracy in Germany and enabling the Holocaust.",
+  "strong": [
+   "holocaust"
+  ],
   "body": "The vote was 444-94. The Social Democrats voted against; the Communist deputies had already been arrested or driven into hiding and could not vote at all. The Centre Party and the conservative right voted in favour, expecting that they could limit how the powers were used. Hitler used them to ban parties, purge the civil service and build the machinery of a totalitarian state.\n\nThe Enabling Act ended parliamentary government in Weimar Germany. Within a year the country had one party, one leader and no mechanism for peaceful change. [World War II](event:ww2) and the [Holocaust](event:holocaust) followed from this vote.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Enabling_Act_of_1933).",
   "links": [
    {
@@ -2360,6 +2511,12 @@
    "war"
   ],
   "summary": "Mussolini's forces invaded Ethiopia, one of only two African states that had kept their independence, and used chemical weapons against its army and civilians.",
+  "strong": [
+   "ethiopian-ottoman"
+  ],
+  "weak": [
+   "spanish-civil-war"
+  ],
   "body": "The League of Nations imposed sanctions, but they were incomplete and ineffective: oil, essential to Italy's war machine, was not embargoed. Italy used mustard gas against Ethiopian soldiers and civilians, the first large-scale use of chemical weapons since [World War I](event:ww1).\n\nItaly's aggression went unopposed and showed that the League could not enforce its rules. Hitler took note and reoccupied the Rhineland the following year. The path to [World War II](event:ww2) was paved by such acts of revisionist aggression left unchecked.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Second_Italo-Ethiopian_War).",
   "links": [
    {
@@ -2381,6 +2538,9 @@
    "politics"
   ],
   "summary": "Franco's nationalists, backed by Germany and Italy, defeated the Republic in a war that served as a rehearsal for [the world war](event:ww2).",
+  "strong": [
+   "ww2"
+  ],
   "body": "Franco's nationalists, backed by Germany and Italy, defeated the Republic. The conflict let the fascist powers test equipment and tactics, and [World War II](event:ww2) began a few months after it ended.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_Civil_War).",
   "links": [
    {
@@ -2401,6 +2561,10 @@
    "war"
   ],
   "summary": "Japan launched a full-scale invasion of China, occupying much of the country in an eight-year war that killed millions and later merged into [World War II](event:ww2).",
+  "strong": [
+   "ww2",
+   "prc-founded"
+  ],
   "body": "The war began with an incident at Marco Polo Bridge and escalated to the occupation of Shanghai, Nanjing and most of coastal China. Japanese forces committed mass atrocities against civilians and prisoners; at Nanjing in 1937, estimates of those killed range from tens of thousands to 300,000.\n\nThe war lasted eight years and killed an estimated fifteen to twenty million Chinese, most of them civilians. It merged into [World War II](event:ww2) when Japan attacked the United States in 1941. Chinese resistance, nominally unified under Chiang Kai-shek but in fact fragmented between Nationalists and Communists, proved crucial to the eventual defeat of Japan.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Second_Sino-Japanese_War).",
   "links": [
    {
@@ -2420,6 +2584,12 @@
    "science"
   ],
   "summary": "Otto Hahn and Fritz Strassmann discovered that uranium nuclei could split, releasing enormous energy and opening the nuclear age.",
+  "strong": [
+   "trinity"
+  ],
+  "weak": [
+   "chernobyl"
+  ],
   "body": "The experiments were done in Berlin, but the theoretical explanation came from Lise Meitner and Otto Frisch, who calculated that a splitting uranium nucleus would release some 200 million electron volts, millions of times the energy of any chemical reaction between the same atoms.\n\nSplitting a heavy nucleus had been thought impossible, but the chemical evidence for barium among the products left no other explanation. Within months, physicists worldwide realised that a chain reaction was possible and that a bomb was conceivable. Einstein's letter to Roosevelt warning of Nazi atomic weapons followed, and the race for the [atomic bomb](event:trinity) began.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nuclear_fission).",
   "links": [
    {
@@ -2463,13 +2633,12 @@
    "war"
   ],
   "parent": "ww2",
+  "strong": [
+   "d-day"
+  ],
   "summary": "The RAF held off the Luftwaffe in the first campaign fought entirely in the air, ending the threat of invasion.",
   "body": "Part of [World War II](event:ww2). The RAF held off the Luftwaffe in the first campaign fought entirely in the air, ending the threat of invasion.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Britain).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Britain"
@@ -2528,10 +2697,6 @@
   "summary": "Germany invaded the Soviet Union along a 2,900 km front — the largest invasion in history.",
   "body": "Part of [World War II](event:ww2). Germany invaded the Soviet Union along a 2,900 km front — the largest invasion in history.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Operation_Barbarossa).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Operation_Barbarossa"
@@ -2885,13 +3050,15 @@
    "war"
   ],
   "parent": "ww2",
+  "strong": [
+   "midway"
+  ],
+  "weak": [
+   "9-11"
+  ],
   "summary": "A Japanese carrier strike on the US Pacific Fleet brought the United States into the war.",
   "body": "Part of [World War II](event:ww2). A Japanese carrier strike on the US Pacific Fleet brought the United States into the war.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Attack_on_Pearl_Harbor).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Attack_on_Pearl_Harbor"
@@ -2912,13 +3079,15 @@
    "disaster"
   ],
   "parent": "ww2",
+  "strong": [
+   "rwanda-genocide"
+  ],
+  "weak": [
+   "israel-founded"
+  ],
   "summary": "Nazi Germany murdered six million Jews, along with Roma, disabled people, Soviet prisoners and political opponents.",
   "body": "Part of [World War II](event:ww2). Mass shootings by the Einsatzgruppen gave way to industrialised killing at extermination camps, of which Auschwitz-Birkenau was the largest. The word *genocide* was coined to describe it, and the Genocide Convention of 1948 followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Holocaust).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/The_Holocaust"
@@ -2936,6 +3105,9 @@
    "war"
   ],
   "parent": "barbarossa",
+  "weak": [
+   "kiev-pocket"
+  ],
   "summary": "Army Group Centre's panzer pincers closed east of Minsk in the war's first fortnight, taking some 324,000 prisoners.",
   "body": "Part of [Operation Barbarossa](event:barbarossa). Guderian's and Hoth's panzer groups drove past the Soviet armies on the border and met east of Minsk on 27 June 1941, trapping most of the Western Front.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Bia%C5%82ystok%E2%80%93Minsk).",
   "links": [
@@ -2956,6 +3128,9 @@
    "war"
   ],
   "parent": "barbarossa",
+  "strong": [
+   "minsk-pocket"
+  ],
   "summary": "Two months of fighting on the road to Moscow cost the Red Army another 300,000 men — and cost Germany the summer.",
   "body": "Part of [Operation Barbarossa](event:barbarossa). The pocket at Smolensk closed in July 1941, but Soviet counter-attacks held Army Group Centre on the upper Dnieper into September, delaying the advance on Moscow.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Smolensk_(1941)).",
   "links": [
@@ -2976,6 +3151,9 @@
    "war"
   ],
   "parent": "barbarossa",
+  "strong": [
+   "stalingrad"
+  ],
   "summary": "The largest encirclement in military history: about 665,000 Soviet troops were taken east of Kiev in September 1941.",
   "body": "Part of [Operation Barbarossa](event:barbarossa). Hitler turned Guderian's panzers south from the Moscow axis; they met Kleist's group at Lokhvytsia on 16 September 1941, closing a pocket around four Soviet armies.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Kiev_(1941)).",
   "links": [
@@ -2997,6 +3175,9 @@
    "war"
   ],
   "parent": "barbarossa",
+  "strong": [
+   "leningrad-siege"
+  ],
   "summary": "German spearheads came within 30 km of the Kremlin before the December counter-offensive threw them back.",
   "body": "Part of [Operation Barbarossa](event:barbarossa). Operation Typhoon opened in October 1941 and destroyed the Soviet armies at Vyazma and Bryansk, but stalled in mud, frost and fresh Siberian divisions; Zhukov counter-attacked on 5 December.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Moscow).",
   "links": [
@@ -3019,6 +3200,9 @@
    "disaster"
   ],
   "parent": "barbarossa",
+  "weak": [
+   "black-death"
+  ],
   "summary": "Army Group North cut the city off in September 1941; some 800,000 civilians died before the blockade was lifted.",
   "body": "Part of [Operation Barbarossa](event:barbarossa). The last land route into Leningrad was severed on 8 September 1941. The city was supplied across the ice of Lake Ladoga for 872 days.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Leningrad).",
   "links": [
@@ -3039,13 +3223,12 @@
    "politics"
   ],
   "parent": "british-raj",
+  "strong": [
+   "indian-independence"
+  ],
   "summary": "Gandhi's final major campaign for Indian independence demanded that Britain leave India immediately, galvanising the nation and hastening the end of the Raj.",
   "body": "Part of [British Raj](event:british-raj). The British jailed Gandhi and thousands of other Congress leaders, but the movement — \"Do or Die\" was Gandhi's slogan — could not be suppressed by imprisonment alone.\n\n[World War II](event:ww2) had weakened Britain's grip, and the movement's moral force, rooted in non-violent resistance and decades of struggle, proved irresistible. Within five years of Quit India, the [British Raj](event:british-raj) ended and [India had won independence](event:indian-independence).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Quit_India_Movement).",
   "links": [
-   {
-    "label": "British Raj",
-    "event": "british-raj"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Quit_India_Movement"
@@ -3064,13 +3247,12 @@
    "war"
   ],
   "parent": "ww2",
+  "strong": [
+   "barbarossa"
+  ],
   "summary": "The turning point of the Eastern Front; the German Sixth Army was encircled and destroyed in the ruined city.",
   "body": "Part of [World War II](event:ww2). Roughly **two million** casualties made it one of the bloodiest battles in history. The Soviet counter-offensive *Operation Uranus* closed the ring in November 1942; Paulus surrendered in February.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Stalingrad).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Stalingrad"
@@ -3088,13 +3270,12 @@
    "war"
   ],
   "parent": "ww2",
+  "weak": [
+   "vj-day"
+  ],
   "summary": "American carriers sank four Japanese fleet carriers in a single day, reversing the balance in the Pacific.",
   "body": "Part of [World War II](event:ww2). American carriers sank four Japanese fleet carriers in a single day, reversing the balance in the Pacific.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Midway).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Midway"
@@ -3112,13 +3293,12 @@
    "war"
   ],
   "parent": "ww2",
+  "weak": [
+   "yorktown"
+  ],
   "summary": "The largest amphibious operation ever mounted put 156,000 Allied troops ashore in Normandy in one day.",
   "body": "Part of [World War II](event:ww2). The largest amphibious operation ever mounted put 156,000 Allied troops ashore in Normandy in one day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Normandy_landings).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Normandy_landings"

@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, useTemplateRef, watchEffect } from 'vue'
 import Globe, { type GlobeInstance } from 'globe.gl'
-import { AmbientLight, DirectionalLight, PerspectiveCamera, Vector3 } from 'three'
+import {
+  AmbientLight,
+  DirectionalLight,
+  DoubleSide,
+  MeshBasicMaterial,
+  PerspectiveCamera,
+  Vector3,
+} from 'three'
 import { useEventStore } from '../stores/events'
 import { useNationStore, type BorderEntry } from '../stores/nations'
 import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
 import { useViewStore } from '../stores/view'
 import { isEvent, type HistoricalEvent } from '../lib/events'
-import { ROUTE_STYLE, densifyPaths, directionOf, type GeoPath, type PathDirection } from '../lib/paths'
-import { routeDecorFor, type Drawing } from '../lib/drawing'
-import { DrawingLayer } from '../lib/drawingLayer'
+import { ROUTE_FLOW_INTERVAL_MS } from '../lib/paths'
+import { routeDrawingFor, type Drawing } from '../lib/drawing'
+import { DrawingLayer, SURFACE_ALT } from '../lib/drawingLayer'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { RenderPump } from '../lib/renderPump'
@@ -58,8 +65,8 @@ let atmosphere: AtmosphereLayer | undefined
 let detail: DetailImagery | undefined
 /** The authored battle plan of the item in focus mode; nothing otherwise. */
 let drawing: DrawingLayer | undefined
-/** Terminus dots and direction chevrons for the selected event's routes. */
-let decor: DrawingLayer | undefined
+/** The selected event's routes and their terminus dots. */
+let routes: DrawingLayer | undefined
 let resizeObs: ResizeObserver | undefined
 let raf = 0
 const stops: (() => void)[] = []
@@ -73,39 +80,43 @@ type EventAreaEntry = {
 }
 type PolyEntry = BorderEntry | EventAreaEntry
 
-/**
- * One drawn route of the selected event; `points` is already densified.
- *
- * Every route produces TWO entries — a `halo` under a `line` — because the paths
- * layer draws one stroke per datum and a route needs two to be legible: a wide
- * dark solid under-stroke, and the tag-coloured dashed line over it. Doing it as
- * two entries rather than two layers keeps one lifecycle, one data-join and one
- * set of accessors; the role picks the colour, the width, the dash and the
- * altitude.
- *
- * The altitude is carried in the point itself (a third component) because the
- * layer's `pathPointAlt` accessor is per POINT, not per datum — which is also
- * how a halo gets to sit a thousandth of a radius below its own line.
- */
-type LayerPoint = [number, number, number]
-type EventPathEntry = {
-  event: HistoricalEvent
-  role: 'halo' | 'line'
-  direction: PathDirection
-  points: LayerPoint[]
-}
-
 /** What the polygon layer was last given; see the watcher that fills it. */
 let lastPolys: PolyEntry[] = []
-/** …and the paths layer. Same rule: only re-set when the list really changed. */
-let lastPaths: EventPathEntry[] = []
-/** Is a route on screen? The dash animation needs frames while one is (see `tick`). */
-let routesDrawn = false
 
 const asPin = (d: object) => d as PinDatum
 const asLeg = (d: object) => d as ClusterLeg
 const asPoly = (d: object) => d as PolyEntry
-const asPath = (d: object) => d as EventPathEntry
+
+/**
+ * The cap material for a polygon: one per colour, held for the app's life.
+ *
+ * Held rather than made per datum because three-globe compares the material by
+ * identity on every digest and a fresh object would swap the material on every
+ * border, every time the list is re-set. There are a handful of tag colours and
+ * one blank (the borders' invisible cap), so the map never grows past ten.
+ */
+const capMaterials = new Map<string, MeshBasicMaterial>()
+const capMaterial = (color: string, opacity: number): MeshBasicMaterial => {
+  const key = `${color}|${opacity}`
+  let m = capMaterials.get(key)
+  if (!m) {
+    m = new MeshBasicMaterial({
+      color: color || '#000000',
+      transparent: true,
+      opacity: color ? opacity : 0,
+      // The whole point: see the comment on `polygonCapMaterial`.
+      depthWrite: false,
+      // Both faces, like the layer's own default. A cap is earcut in lat/lng and
+      // some of its triangles come out wound the other way; culling backfaces
+      // punches black diamonds in the middle of a footprint (it did, over the
+      // Atlantic). The rest of the material is what three-globe would have built
+      // anyway — it is unlit Basic there too.
+      side: DoubleSide,
+    })
+    capMaterials.set(key, m)
+  }
+  return m
+}
 
 /**
  * Clustering runs off a *quantised* span: zoom fires continuously, and
@@ -236,60 +247,25 @@ const eventAreas = (): EventAreaEntry[] => {
 
 /**
  * The routes of the selected event, on exactly the same terms as its footprint:
- * drawn while the panel is open on it, gone when it closes, held by id so the
- * layer is not handed a new object for a line it is already drawing.
+ * drawn while the panel is open on it, gone when it closes.
  *
- * Densified here rather than in the data (lib/paths.ts): the renderer fills the
- * gaps between waypoints *linearly in lat/lng*, so an ocean leg authored as two
- * ports would be drawn as a rhumb line rather than the great circle a ship
- * sails. Doing it at entry-build time means it happens once per event, not once
- * per frame.
- */
-const pathEntries = new Map<string, EventPathEntry[]>()
-const eventPaths = (): EventPathEntry[] => {
-  const sel = events.selected
-  const e = sel && isEvent(sel) ? sel : undefined
-  if (!e?.paths?.length) return []
-  const held = pathEntries.get(e.id)
-  if (held) return held
-  const direction = directionOf(e)
-  const entries: EventPathEntry[] = []
-  for (const points of densifyPaths(e.paths)) {
-    // Halo first, so it is also digested first — the layer keeps insertion
-    // order within a frame, and a halo drawn after its line would flash over it
-    // for the length of the entry transition.
-    entries.push({
-      event: e,
-      role: 'halo',
-      direction,
-      points: points.map(([lng, lat]) => [lng, lat, ROUTE_STYLE.haloAlt] as LayerPoint),
-    })
-    entries.push({
-      event: e,
-      role: 'line',
-      direction,
-      points: points.map(([lng, lat]) => [lng, lat, ROUTE_STYLE.lineAlt] as LayerPoint),
-    })
-  }
-  pathEntries.set(e.id, entries)
-  return entries
-}
-
-/**
- * The dots and chevrons on the selected event's routes (lib/drawing.ts).
+ * Expressed as a `Drawing` (lib/drawing.ts) and rendered by the same layer the
+ * battle plans use. That is the point of the redesign: there is one piece of
+ * code on this globe that knows how to put a line on a sphere, so a voyage and a
+ * frontline are at the same altitude, in the same units, with the same depth
+ * handling, and a route cannot drift out of step with the dots that mark its
+ * ports because they are built from it in one pass.
  *
- * Generated from the routes rather than authored, and rendered by the same
- * DrawingLayer the battle plans use — so there is one piece of code on this
- * globe that knows how to put a glyph on a sphere, and route decoration cannot
- * drift out of step with the routes it decorates.
+ * Memoised by event id, so the layer's own key comparison has a stable object to
+ * stringify and a re-selected event is not re-smoothed.
  */
-const decorSpecs = new Map<string, Drawing | undefined>()
-const routeDecor = (): Drawing | undefined => {
+const routeSpecs = new Map<string, Drawing | undefined>()
+const routeDrawing = (): Drawing | undefined => {
   const sel = events.selected
   const e = sel && isEvent(sel) ? sel : undefined
   if (!e?.paths?.length) return undefined
-  if (!decorSpecs.has(e.id)) decorSpecs.set(e.id, routeDecorFor(e))
-  return decorSpecs.get(e.id)
+  if (!routeSpecs.has(e.id)) routeSpecs.set(e.id, routeDrawingFor(e))
+  return routeSpecs.get(e.id)
 }
 
 /**
@@ -372,15 +348,22 @@ onMounted(() => {
       type: 'Polygon',
       coordinates: asPoly(d).coordinates as unknown as number[],
     }))
-    // Borders read as a drawn line, not a wash of colour. The cap is fully
-    // transparent on purpose: caps are lit Lambert meshes, so on the night side
-    // of the terminator even a 13% tint renders as a dark sheet that blots out
-    // the map (strokes are unlit lines and stay crisp everywhere). The
-    // invisible cap still catches hover/click for the label.
-    .polygonCapColor((d) => {
+    // Borders read as a drawn line, not a wash of colour. The border cap is
+    // fully transparent on purpose — a tinted cap over a whole nation is a wash
+    // of colour where a border wants to be a drawn line — and the invisible cap
+    // is still what catches hover and click for the label.
+    //
+    // The MATERIAL is ours rather than three-globe's, for one reason:
+    // `depthWrite`. Left to itself the layer builds caps that write depth, so
+    // every nation on the planet had an invisible pane of glass 25 km over it,
+    // and anything grounded under one vanished — with the overlays moved down to
+    // SURFACE_ALT that was the whole Barbarossa plan except the stretches of
+    // front that happened to lie over water. A cap contributes nothing to depth
+    // that the globe underneath it has not already contributed, so it no longer
+    // claims any. In every other respect it is what the layer would have built.
+    .polygonCapMaterial((d) => {
       const p = asPoly(d)
-      if (p.kind === 'area') return tagColor(primaryTag(p.event)) + '38'
-      return 'rgba(0,0,0,0)'
+      return capMaterial(p.kind === 'area' ? tagColor(primaryTag(p.event)) : '', 0.22)
     })
     // No side colour at all, rather than a transparent one: three-globe reads
     // this as "no sides" and builds the cap alone, which is one fewer mesh and
@@ -392,8 +375,17 @@ onMounted(() => {
       if (p.kind === 'area') return tagColor(primaryTag(p.event))
       return p.nation.color
     })
-    // Borders sit almost on the surface, and always under the event pins (0.006).
-    .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.012 : 0.004))
+    // Down near the ground, for the reason everything else is (SURFACE_ALT in
+    // lib/drawingLayer.ts): at 0.004 a border slid 63 px against its own
+    // coastline across a close frame. Not all the way down, though — three-globe
+    // tessellates a cap and its stroke at `polygonCapCurvatureResolution`
+    // degrees, and a 5° chord sags 6.1 km below the sphere, so a border much
+    // under 0.0012 R (7.6 km) would be swallowed by the planet between its own
+    // vertices. The footprint sits a hair above the borders, as it always did,
+    // and the routes drawn over it still win: nothing in the polygon layer
+    // writes depth any more, so what paints over what is renderOrder, and the
+    // DrawingLayer's is twelve against the layer's nought.
+    .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.0014 : 0.0012))
     .polygonLabel((d) => {
       const p = asPoly(d)
       return p.kind === 'area' ? p.event.name : p.label
@@ -403,65 +395,21 @@ onMounted(() => {
       if (p.kind === 'area') events.select(p.event.id)
     })
     .polygonsTransitionDuration(300)
-    // paths layer: the routes of the selected event — trade roads, voyages, the
-    // legs of the Atlantic triangle. Same lifecycle as the area polygon above:
-    // nothing is drawn until an event is opened, and closing the panel clears it.
+    // NO paths layer. Routes used to be drawn by globe.gl's paths layer, and
+    // three separate things were wrong with that:
     //
-    // Points are `[lng, lat]`, the order every other piece of geometry in the
-    // dataset uses; the layer's own default is the other way round, hence the
-    // two accessors.
-    .pathPoints((d) => asPath(d).points)
-    .pathPointLng((p) => (p as LayerPoint)[0])
-    .pathPointLat((p) => (p as LayerPoint)[1])
-    // Just clear of the surface — above the area cap (0.012), so a route over
-    // its own event's footprint is not tinted by it, and far below the pins,
-    // which are HTML and draw over the scene regardless. Per point rather than
-    // per route, which is what lets the halo sit under its own line.
-    .pathPointAlt((p) => (p as LayerPoint)[2])
-    // The entries arrive densified (see `eventPaths`), so the layer's own
-    // linear fill-in has nothing left to get wrong; 1° keeps its subdivision
-    // finer than ours rather than coarser.
-    .pathResolution(1)
-    .pathColor((d: object) => {
-      const p = asPath(d)
-      return p.role === 'halo' ? ROUTE_STYLE.haloColor : tagColor(primaryTag(p.event))
-    })
-    // A fat line (any non-null stroke) rather than the layer's 1 px default:
-    // width is in screen pixels, so the route stays legible zoomed out to the
-    // whole ocean it crosses and does not thicken into a band zoomed in.
-    .pathStroke((d: object) =>
-      asPath(d).role === 'halo' ? ROUTE_STYLE.haloStroke : ROUTE_STYLE.stroke,
-    )
-    // A dashed line that runs is the difference between "here is a corridor"
-    // and "things moved along here" — direction, at the cost of frames (see the
-    // `routesDrawn` wake in `tick`). Dash and gap are in units of line length,
-    // so a long voyage and a short one carry the same *number* of dashes rather
-    // than the same dash size, which keeps both legible.
+    //  · it drew them 90 km above the map, so a voyage slid against the ocean it
+    //    crossed as the camera turned (see SURFACE_ALT in lib/drawingLayer.ts);
+    //  · its dash animation is advanced by three-globe's own FrameTicker, which
+    //    globe.gl's `pauseAnimation` cancels — and under frame-on-demand this
+    //    app pauses and resumes on nearly every frame, so the dash was
+    //    structurally unable to tick (measured: 0.0000 of movement in 4.7 s);
+    //  · a route needed two data entries, a "halo" and a "line", to get a
+    //    casing, because the layer draws one stroke per datum.
     //
-    // Three cases, and they are the feature:
-    //  · the halo is SOLID (gap 0) — it is the dark bed the dashes lie in, and a
-    //    dashed halo would just be a second dashed line half a pixel out;
-    //  · a ONE-WAY route runs a 70%-duty dash along the way it was travelled;
-    //  · a TWO-WAY route gets an even 50/50 dash that does not move. Symmetric
-    //    in both senses: reversing the route changes nothing you can see, and
-    //    the globe stops buying frames for it (see `routesDrawn`).
-    .pathDashLength((d: object) => {
-      const p = asPath(d)
-      if (p.role === 'halo') return 1
-      return p.direction === 'twoway' ? ROUTE_STYLE.evenDash : ROUTE_STYLE.dash
-    })
-    .pathDashGap((d: object) => {
-      const p = asPath(d)
-      if (p.role === 'halo') return 0
-      return p.direction === 'twoway' ? ROUTE_STYLE.evenGap : ROUTE_STYLE.gap
-    })
-    .pathDashAnimateTime((d: object) => {
-      const p = asPath(d)
-      if (still || p.role === 'halo' || p.direction === 'twoway') return 0
-      return ROUTE_STYLE.animateMs
-    })
-    .pathTransitionDuration(400)
-    .pathLabel((d) => asPath(d).event.name)
+    // All of it now goes through the DrawingLayer, like every other mark this
+    // globe puts on its map. See `routeDrawing` above.
+    //
     // clicking bare globe dismisses an open cluster
     .onGlobeClick(() => events.collapseClusters())
 
@@ -529,11 +477,11 @@ onMounted(() => {
   celestial = new CelestialLayer(globe.scene(), radius, `${base}textures/moon.jpg`)
   atmosphere = new AtmosphereLayer(globe.scene(), radius)
   // Two instances of the same renderer, because they have different lifetimes:
-  // route decoration follows the *selection* (like the routes it belongs to),
-  // and a battle plan follows *focus mode*. One layer holding both would have to
-  // rebuild the plan whenever a chevron moved.
+  // routes follow the *selection*, and a battle plan follows *focus mode*. One
+  // layer holding both would rebuild the plan whenever a route changed, and a
+  // rebuild re-smooths every voyage on it.
   drawing = new DrawingLayer(globe.scene(), radius)
-  decor = new DrawingLayer(globe.scene(), radius)
+  routes = new DrawingLayer(globe.scene(), radius)
   // A patch at the 4096 ceiling is a 33 MB texture upload, and the composite is
   // re-uploaded whenever the view moves — so what the device can afford, not
   // what GL permits, is the right ceiling. See patchPixelCap.
@@ -796,7 +744,7 @@ onMounted(() => {
    *   applyPov / resize   anything that re-derives from the camera or the canvas
    *   the tick itself     the arrival ramps, cloud drift, autorotation
    */
-  const stats = { wakes: 0, resumes: 0, pauses: 0, drifts: 0, ticks: 0 }
+  const stats = { wakes: 0, resumes: 0, pauses: 0, drifts: 0, flows: 0, ticks: 0 }
   const pump = new RenderPump()
   pump.onResume = () => {
     stats.resumes++
@@ -836,6 +784,8 @@ onMounted(() => {
   const t0 = performance.now()
   let lastFrame = t0
   let lastDrift = t0
+  /** When the route flow last bought a frame. See ROUTE_FLOW_INTERVAL_MS. */
+  let lastFlow = t0
   // The day map has decoded; the next frame is the first with a planet on it.
   // The loader is dismissed a frame after that, so the fade starts from a
   // rendered globe rather than from an empty canvas — see index.html.
@@ -882,12 +832,20 @@ onMounted(() => {
     // the loop this is deciding whether to run — so unlike every other animation
     // here it cannot ask for itself
     if (settings.autoRotate) wake(0)
-    // Neither is the dash animation on a drawn route: three-globe advances it
-    // from the frame loop, so a parked globe freezes it mid-stride. This is the
-    // one animation in the app that keeps the pump running on an idle camera,
-    // and it is bounded by the thing that started it — a path event being open
-    // in the panel. Reduced motion turns it off, like every other motion here.
-    if (routesDrawn && !still) wake(0)
+    // The dash flowing along a one-way route, on exactly the cloud drift's
+    // terms: the phase is set from the wall clock on every frame that happens,
+    // so any frame shows it correctly, and the cadence question — how often to
+    // draw an otherwise idle globe — is answered separately and modestly at
+    // ~20 Hz. Reduced motion sets no phase and buys no frames, so the dash sits
+    // where it was built and the brightness ramp carries the direction alone.
+    if (!still && routes!.hasFlow) {
+      routes!.setFlowPhase(now)
+      if (now - lastFlow >= ROUTE_FLOW_INTERVAL_MS) {
+        lastFlow = now
+        stats.flows++
+        wake(0)
+      }
+    }
 
     if (pump.running) {
       // streaming is a function of where the camera is, and the camera cannot
@@ -951,37 +909,30 @@ onMounted(() => {
     // the very same objects in the same order, and re-setting the data then
     // costs a full data-join over every polygon to conclude nothing moved.
     watchEffect(() => {
-      const next = [...nations.borders, ...eventAreas()]
+      // Focus mode takes the borders off the globe with everything else that is
+      // not the focused item (see `focus` in stores/events.ts). It is gated
+      // here rather than in the nation store because the borders themselves are
+      // unchanged — a polity does not stop existing because someone opened a
+      // battle plan — and because the era band and the timeline read the same
+      // store and must keep seeing them. Reading `events.focus` inside this
+      // watcher is what makes leaving the mode put them straight back.
+      const next = [...(events.focus ? [] : nations.borders), ...eventAreas()]
       if (next.length === lastPolys.length && next.every((p, i) => p === lastPolys[i])) return
       lastPolys = next
       globe!.polygonsData(next)
       wake()
     }),
-    // The selected event's routes. Same guard as the polygons above: handing the
-    // layer an equal-but-new list would rebuild every line and restart its
-    // transition.
-    watchEffect(() => {
-      const next = eventPaths()
-      if (next.length === lastPaths.length && next.every((p, i) => p === lastPaths[i])) return
-      lastPaths = next
-      // Only a *running* dash keeps the pump awake. A two-way route's dashes are
-      // static by design, so a Silk Road left open no longer costs 60 frames a
-      // second for a picture that is not changing.
-      routesDrawn = next.some((p) => p.role === 'line' && p.direction === 'oneway')
-      globe!.pathsData(next)
-      wake()
-    }),
-    // The glyphs on those routes — ports and chevrons. Same lifecycle as the
-    // lines: they appear with the selection and go with it.
+    // The selected event's routes: the lines and the dots on their ports. They
+    // appear with the selection and go with it, and the layer's own key
+    // comparison keeps a re-run of this watcher from rebuilding an unchanged
+    // route.
     watchEffect(() => {
       const sel = events.selected
       const color = sel ? tagColor(primaryTag(sel)) : '#ffffff'
       if (
-        decor!.set(routeDecor(), {
+        routes!.set(routeDrawing(), {
           color,
-          // Just above the line, so a chevron sits *on* the route rather than
-          // being half-swallowed by it.
-          altitude: ROUTE_STYLE.lineAlt + 0.0004,
+          altitude: SURFACE_ALT,
           resolution: { width: view.viewportWidthPx, height: view.viewportPx },
         })
       )
@@ -996,9 +947,9 @@ onMounted(() => {
       if (
         drawing!.set(focusDrawing(), {
           color,
-          // Above the area cap (0.012) and the routes: a plan is the top layer
-          // of ink on the map, and still far below the HTML pins.
-          altitude: 0.0155,
+          // The same altitude as everything else on the map. A plan is still the
+          // top layer of ink — that is KIND_ORDER and renderOrder, not height.
+          altitude: SURFACE_ALT,
           resolution: { width: view.viewportWidthPx, height: view.viewportPx },
         })
       )
@@ -1082,7 +1033,7 @@ onMounted(() => {
     // what a screen pixel is; a resize without this leaves a frontline drawn at
     // the old aspect and visibly the wrong weight.
     drawing?.setResolution(dom.clientWidth, dom.clientHeight)
-    decor?.setResolution(dom.clientWidth, dom.clientHeight)
+    routes?.setResolution(dom.clientWidth, dom.clientHeight)
     applyPov(true) // the scale bar reads viewportPx; without this it is stale until the next zoom
     wake()
   })
@@ -1097,7 +1048,9 @@ onBeforeUnmount(() => {
   celestial?.dispose()
   atmosphere?.dispose()
   drawing?.dispose()
-  decor?.dispose()
+  routes?.dispose()
+  for (const m of capMaterials.values()) m.dispose()
+  capMaterials.clear()
   resizeObs?.disconnect()
   globe?._destructor()
 })

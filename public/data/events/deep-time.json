@@ -11,6 +11,9 @@
    "geology"
   ],
   "summary": "The Earth formed approximately 4.54 billion years ago by accretion of material from the solar nebula.",
+  "strong": [
+   "theia-impact"
+  ],
   "body": "Dust and rock orbiting the young Sun accumulated into planetesimals and then into the proto-Earth over tens of millions of years. Heat from accretion and radioactive decay melted the surface, allowing iron to sink toward the core while lighter silicates rose to form the mantle and early crust.\n\nRadiometric dating of meteorites and the oldest terrestrial zircons establishes the age as approximately **4.54 billion years**.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Earth).",
   "links": [
    {
@@ -30,6 +33,9 @@
    "geology"
   ],
   "summary": "A Mars-sized body, Theia, collided with the proto-Earth; debris from the impact coalesced into the Moon.",
+  "weak": [
+   "first-oceans"
+  ],
   "body": "The collision melted much of the planet and stripped away a large fraction of the mantle, leaving Earth with an unusually large satellite and a pronounced axial tilt.\n\nThe Moon's gravitational effect has stabilised Earth's axial obliquity, maintaining relatively stable climate conditions over billions of years, a requirement for the [origin of life](event:abiogenesis).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Giant-impact_hypothesis).",
   "links": [
    {
@@ -69,6 +75,9 @@
    "geology"
   ],
   "summary": "A period of intense asteroid impacts affected the inner Solar System, creating craters on the Moon and resurfacing the early Earth.",
+  "strong": [
+   "earliest-continents"
+  ],
   "body": "The Moon's major impact basins formed during this interval, suggesting similar bombardment occurred on Earth; terrestrial craters from this period have been erased by erosion and plate tectonics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Heavy_Bombardment).",
   "links": [
    {
@@ -89,6 +98,9 @@
    "biology"
   ],
   "summary": "Self-replicating chemical systems emerged, likely around hydrothermal vents, forming the first cellular life.",
+  "strong": [
+   "first-oceans"
+  ],
   "body": "The earliest widely accepted evidence for life consists of carbon-isotope signatures in rocks approximately **3.8 billion years old**, followed by microfossils and [stromatolites](event:stromatolites).\n\nAll organisms alive today derive from a single ancestral population, the last universal common ancestor.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abiogenesis).",
   "links": [
    {
@@ -127,13 +139,12 @@
    "biology"
   ],
   "parent": "abiogenesis",
+  "weak": [
+   "oxygenic-photosynthesis"
+  ],
   "summary": "Layered microbial structures in Western Australia provide some of the earliest direct evidence of life.",
   "body": "Part of [Origin of life](event:abiogenesis). The Dresser and Strelley Pool formations in the Pilbara craton contain laminated structures built by microbial communities in shallow-water environments.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Stromatolite).",
   "links": [
-   {
-    "label": "Origin of life",
-    "event": "abiogenesis"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Stromatolite"
@@ -151,6 +162,9 @@
    "biology"
   ],
   "summary": "Purple and green bacteria evolved photosynthetic pathways that used hydrogen sulphide and dissolved iron as electron donors rather than water.",
+  "strong": [
+   "oxygenic-photosynthesis"
+  ],
   "body": "This metabolic pathway spread widely and proved successful for hundreds of millions of years, later superseded by oxygenic photosynthesis. Rather than splitting water, these bacteria obtained electrons from hydrogen sulphide or dissolved iron, producing elemental sulphur or iron oxides without generating free oxygen. Anoxygenic photosynthesisers persist today in dark, anoxic environments.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Anoxygenic_photosynthesis).",
   "links": [
    {
@@ -170,6 +184,9 @@
    "biology"
   ],
   "summary": "Cyanobacteria evolved the ability to split water molecules using light energy, producing free oxygen as a byproduct.",
+  "strong": [
+   "great-oxidation"
+  ],
   "body": "This metabolic innovation eventually transformed the atmosphere, oceans, and crustal chemistry, precipitating the [Great Oxidation Event](event:great-oxidation).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Photosynthesis).",
   "links": [
    {
@@ -190,12 +207,11 @@
    "geology"
   ],
   "summary": "Iron oxides and silica were deposited in layers as oxygen from biological sources reacted with dissolved iron in the oceans.",
+  "weak": [
+   "earliest-continents"
+  ],
   "body": "These deposits are closely associated with the [Great Oxidation Event](event:great-oxidation). Mined extensively for iron ore today, they record ocean chemistry as both oxygen and dissolved iron levels fluctuated. Each layer pair reflects changes in oxidation conditions.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Banded_iron_formation).",
   "links": [
-   {
-    "label": "Great Oxidation Event",
-    "event": "great-oxidation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Banded_iron_formation"
@@ -216,6 +232,9 @@
    "biology"
   ],
   "summary": "Free oxygen accumulated in the atmosphere for the first time, proving toxic to most existing life and oxidising iron across the planet's surface.",
+  "strong": [
+   "banded-iron-formations-peak"
+  ],
   "body": "Oxygen produced by [cyanobacteria](event:oxygenic-photosynthesis) had been absorbed by dissolved iron for hundreds of millions of years, forming banded iron formations. Once these iron sinks became saturated, oxygen began accumulating in the atmosphere.\n\nThis change led to ozone layer formation, collapse of methane-driven greenhouse warming causing the [Huronian glaciation](event:huronian-glaciation), and the emergence of aerobic respiration, which provided greater energy yields than fermentation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Oxidation_Event).",
   "links": [
    {
@@ -237,13 +256,12 @@
    "geology"
   ],
   "parent": "great-oxidation",
+  "weak": [
+   "snowball-earth"
+  ],
   "summary": "The first documented global glaciation occurred when rising atmospheric oxygen destroyed methane, reducing greenhouse warming.",
   "body": "Part of [Great Oxidation Event](event:great-oxidation). Glacial deposits near Lake Huron in Ontario provide the basis for naming this glaciation. It may have lasted approximately 300 million years, potentially the longest ice age in Earth's history.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Huronian_glaciation).",
   "links": [
-   {
-    "label": "Great Oxidation Event",
-    "event": "great-oxidation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Huronian_glaciation"
@@ -261,6 +279,9 @@
    "biology"
   ],
   "summary": "A cell engulfed another cell, retaining it as an internal organelle; this established the compartmented eukaryotic cell with mitochondria.",
+  "strong": [
+   "multicellular-eukaryotes"
+  ],
   "body": "Endosymbiosis provided eukaryotes with enhanced energy production capability, supporting larger genomes, larger cell sizes, and eventually multicellular bodies. Chloroplasts were acquired through a similar process at a later stage.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eukaryote).",
   "links": [
    {
@@ -280,13 +301,12 @@
    "biology"
   ],
   "parent": "eukaryotes",
+  "weak": [
+   "ediacaran"
+  ],
   "summary": "Microfossils with multiple wall layers indicate that eukaryotic life was diversifying before the emergence of animals and plants.",
   "body": "Part of [First eukaryotic cells](event:eukaryotes). Acritarchs are small organic-walled fossils of uncertain biological affinity, interpreted as resting spores from early eukaryotic algae. Their abundance and diversity in the fossil record indicate that eukaryotic life flourished in the oceans.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Acritarch).",
   "links": [
-   {
-    "label": "First eukaryotic cells",
-    "event": "eukaryotes"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Acritarch"
@@ -304,6 +324,12 @@
    "biology"
   ],
   "summary": "Eukaryotes evolved meiosis and cellular fusion, allowing genetic recombination and accelerated adaptation to environmental change.",
+  "strong": [
+   "eukaryotes"
+  ],
+  "weak": [
+   "multicellular-eukaryotes"
+  ],
   "body": "Sexual reproduction enables genetic shuffling among organisms, facilitating more rapid responses to environmental pressures. Evidence derives from molecular clock analyses and the appearance of increasingly large and complex eukaryotic forms in the fossil record. This innovation set the stage for the evolution of [multicellular life](event:multicellular-eukaryotes).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sexual_reproduction).",
   "links": [
    {
@@ -324,6 +350,9 @@
    "biology"
   ],
   "summary": "Eukaryotic cells formed multicellular colonies with specialised functions, establishing multicellular life.",
+  "strong": [
+   "ediacaran"
+  ],
   "body": "Filamentous and colonial forms appeared during the Proterozoic, preceding the evolution of algae, plants, and animals. *Bangiomorpha*, a red alga from Arctic Canada, is among the oldest recognised examples; similar fossils occur in China.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Multicellular_organism).",
   "links": [
    {
@@ -344,6 +373,12 @@
    "geology"
   ],
   "summary": "Nearly all continental crust consolidated into a single supercontinent before subsequent rifting and dispersal.",
+  "strong": [
+   "pangaea"
+  ],
+  "weak": [
+   "snowball-earth"
+  ],
   "body": "The breakup of this landmass inundated continental interiors with shallow seas and increased silicate weathering, potentially contributing to the onset of [Snowball Earth](event:snowball-earth).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rodinia).",
   "links": [
    {
@@ -365,6 +400,9 @@
    "biology"
   ],
   "summary": "Atmospheric oxygen levels increased episodically during this period while eukaryotic life diversified.",
+  "strong": [
+   "snowball-earth"
+  ],
   "body": "At least two major oxygenation episodes occurred during the Tonian, alongside the first fossil appearance of diverse multicellular eukaryotes. These changes in atmospheric composition enabled the development of oxygen-dependent metabolic pathways that became characteristic of Phanerozoic life.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tonian).",
   "links": [
    {
@@ -386,6 +424,9 @@
    "geology"
   ],
   "summary": "Glaciers advanced toward the equator, possibly covering the entire ocean surface, during the Cryogenian period.",
+  "strong": [
+   "ediacaran"
+  ],
   "body": "The Sturtian and Marinoan glaciations covered much of the planet in ice for tens of millions of years. Volcanic carbon dioxide accumulated beneath the ice cover until a runaway greenhouse effect rapidly thawed global conditions.\n\nThese extreme climate fluctuations preceded the appearance of the [Ediacaran biota](event:ediacaran) and the [Cambrian explosion](event:cambrian-explosion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Snowball_Earth).",
   "links": [
    {
@@ -406,6 +447,9 @@
    "biology"
   ],
   "summary": "The first large soft-bodied multicellular organisms appeared in the fossil record.",
+  "strong": [
+   "cambrian-explosion"
+  ],
   "body": "Named after the Ediacara Hills of South Australia, these frond-shaped, disc-shaped, and quilt-textured forms have uncertain phylogenetic positions; most disappeared at the beginning of the Cambrian.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ediacaran_biota).",
   "links": [
    {
@@ -426,6 +470,9 @@
    "biology"
   ],
   "summary": "Nearly all modern animal body plans appeared in the fossil record within a period of tens of millions of years.",
+  "weak": [
+   "ordovician-reef-ecosystems"
+  ],
   "body": "Eyes, hard shells, jointed limbs, and predatory behaviour all appear together in the record. The Burgess Shale of British Columbia and the Chengjiang fauna of Yunnan preserve exceptional detail of this radiation.\n\nProposed causes include rising oxygen levels following [Snowball Earth](event:snowball-earth), the evolution of predation, and innovations in developmental genetic regulation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cambrian_explosion).",
   "links": [
    {
@@ -446,13 +493,12 @@
    "biology"
   ],
   "parent": "cambrian-explosion",
+  "strong": [
+   "burgess-shale-fauna"
+  ],
   "summary": "Armoured arthropods with complex eyes and jointed limbs diversified throughout the oceans.",
   "body": "Part of [Cambrian explosion](event:cambrian-explosion). Trilobites were among the most successful Paleozoic animals, persisting for approximately 300 million years. Their compound eyes and segmented body organization established a successful morphological design retained in later arthropods.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trilobite).",
   "links": [
-   {
-    "label": "Cambrian explosion",
-    "event": "cambrian-explosion"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Trilobite"
@@ -470,13 +516,12 @@
    "biology"
   ],
   "parent": "cambrian-explosion",
+  "weak": [
+   "ediacaran"
+  ],
   "summary": "Rapid sediment deposition buried soft-bodied animals, preserving anatomical details normally lost in fossil formation.",
   "body": "Part of [Cambrian explosion](event:cambrian-explosion). The Burgess Shale of British Columbia preserves an exceptional diversity of body plans, including forms with no living descendants. Fossils such as *Hallucigenia* and *Opabinia* show the range of body forms present in early marine ecosystems.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Burgess_Shale).",
   "links": [
-   {
-    "label": "Cambrian explosion",
-    "event": "cambrian-explosion"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Burgess_Shale"
@@ -495,6 +540,9 @@
    "biology"
   ],
   "summary": "Shallow-water reef ecosystems constructed by corals, sponges, and bryozoans became prominent seafloor features.",
+  "strong": [
+   "ordovician-extinction"
+  ],
   "body": "The first major reef ecosystems appeared in the Ordovician and remained a dominant feature of shallow marine environments throughout the Phanerozoic. These reefs became centres of diversification for many animal groups.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ordovician).",
   "links": [
    {
@@ -515,6 +563,9 @@
    "biology"
   ],
   "summary": "Jawless fish diversified in freshwater and marine environments, establishing vertebrates as a successful lineage.",
+  "strong": [
+   "devonian-fish-revolution"
+  ],
   "body": "Ostracoderms and other armoured jawless fish appeared in the Ordovician, with *Arandaspis* from central Australia among the earliest known. These forms dominated early vertebrate assemblages. Their descendants eventually evolved jaws, leading to the evolution of sharks, bony fish, and later terrestrial vertebrates.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Agnatha).",
   "links": [
    {
@@ -535,6 +586,10 @@
    "biology"
   ],
   "summary": "Spore-bearing plants colonized terrestrial environments, beginning the development of continental vegetation.",
+  "strong": [
+   "silurian-land-colonisation",
+   "carboniferous-forests"
+  ],
   "body": "Root systems enhanced chemical weathering and reduced atmospheric CO2 levels, enabling soil formation and the establishment of terrestrial ecosystems.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Evolutionary_history_of_plants).",
   "links": [
    {
@@ -556,6 +611,9 @@
    "biology"
   ],
   "summary": "Approximately 85% of marine species went extinct as glaciation locked up seawater and drained the shallow continental shelves.",
+  "strong": [
+   "devonian-extinction"
+  ],
   "body": "By species count, this was the second-largest mass extinction, occurring in a world where life was almost exclusively marine.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Ordovician_mass_extinction).",
   "links": [
    {
@@ -576,6 +634,9 @@
    "biology"
   ],
   "summary": "Millipedes and early arachnids colonized terrestrial environments, breathing air and hunting among primitive plants.",
+  "weak": [
+   "early-fish"
+  ],
   "body": "Fossils and burrows from Silurian deposits in Scotland, Wales, and Germany record early terrestrial arthropods. These animals appeared alongside [first land plants](event:land-plants), together establishing the earliest terrestrial food webs.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silurian).",
   "links": [
    {
@@ -596,6 +657,9 @@
    "biology"
   ],
   "summary": "Diverse jawed fish with varied body forms dominated the oceans during the Age of Fishes.",
+  "strong": [
+   "tetrapods"
+  ],
   "body": "Sharks, placoderms, lobe-finned fish, and ray-finned fish all diversified extensively. Lobe-finned fish gave rise to [tetrapods](event:tetrapods) and terrestrial vertebrates. Marine ecosystem diversity reached levels comparable only to a few subsequent periods.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Devonian).",
   "links": [
    {
@@ -636,6 +700,9 @@
    "biology"
   ],
   "summary": "A series of extinction pulses over millions of years eliminated most reef ecosystems and shallow marine fauna.",
+  "weak": [
+   "permian-extinction"
+  ],
   "body": "Expanding terrestrial plant coverage may have increased nutrient discharge and caused oxygen depletion in ocean waters.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Devonian_extinction).",
   "links": [
    {
@@ -657,6 +724,9 @@
    "geology"
   ],
   "summary": "Extensive swamp forests of lycopod trees accumulated large quantities of carbon that eventually became coal deposits.",
+  "weak": [
+   "synapsid-domination"
+  ],
   "body": "Atmospheric oxygen levels reached approximately 35%, enabling insects such as dragonflies to reach wingspans of 70 cm. Coal deposits formed during this interval were exploited as fuel during the [Industrial Revolution](event:industrial-revolution) 300 million years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Carboniferous_rainforest_collapse).",
   "links": [
    {
@@ -696,13 +766,12 @@
    "biology"
   ],
   "parent": "tetrapods",
+  "weak": [
+   "first-dinosaurs"
+  ],
   "summary": "The evolution of the amniotic egg permitted vertebrate reproduction independent of aquatic environments.",
   "body": "Part of [Vertebrates walk on land](event:tetrapods). The amniotic egg's protective membranes and nutritive yolk supply enabled reproduction away from water. The earliest known amniotes occur in Carboniferous coal deposits at Joggins, Nova Scotia. Reptiles, dinosaurs, birds, and mammals all derive from this lineage.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Amniote).",
   "links": [
-   {
-    "label": "Vertebrates walk on land",
-    "event": "tetrapods"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Amniote"
@@ -721,6 +790,9 @@
    "biology"
   ],
   "summary": "Synapsids, the amniote lineage leading to mammals, dominated terrestrial ecosystems as herbivores and predators.",
+  "strong": [
+   "triassic-mammalian-radiation"
+  ],
   "body": "Synapsids were the dominant terrestrial vertebrates of the Permian, a position transferred to [dinosaurs](event:first-dinosaurs) following the [Permian–Triassic extinction](event:permian-extinction). Sail-backed forms such as *Dimetrodon*, found in the red beds of Texas, were prevalent in early Permian assemblages; later therapsids exhibited more mammal-like characteristics, eventually evolving into Mesozoic mammals.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Synapsida).",
   "links": [
    {
@@ -742,6 +814,9 @@
    "geology"
   ],
   "summary": "Approximately 81% of marine species and 70% of land vertebrates went extinct in Earth's most severe biotic crisis.",
+  "strong": [
+   "first-dinosaurs"
+  ],
   "body": "Volcanism from the [Siberian Traps](event:siberian-traps) released large volumes of carbon dioxide and sulphur into the atmosphere, causing warming, ocean acidification, and widespread oxygen depletion.\n\nEcological recovery required approximately **10 million years**, and the depleted world that followed was the one in which the [first dinosaurs](event:first-dinosaurs) arose.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Permian–Triassic_extinction_event).",
   "links": [
    {
@@ -797,10 +872,6 @@
   "body": "Part of [Permian–Triassic extinction](event:permian-extinction). Lava flows burned through coal and evaporite layers, releasing carbon and halogenated compounds in addition to the products of direct magmatic outgassing.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siberian_Traps).",
   "links": [
    {
-    "label": "Permian–Triassic extinction",
-    "event": "permian-extinction"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Siberian_Traps"
    }
@@ -818,6 +889,12 @@
    "biology"
   ],
   "summary": "Dolphin-shaped marine reptiles were the dominant predators in Mesozoic oceans for more than 150 million years.",
+  "strong": [
+   "eocene-whale-evolution"
+  ],
+  "weak": [
+   "cretaceous-seaway"
+  ],
   "body": "Ichthyosaurs first appeared in the Triassic and became the apex predators of Jurassic and Cretaceous seas. Their streamlined body form and large eyes were adapted to open-ocean hunting. They were viviparous and air-breathing, showing convergent evolution with modern cetaceans.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ichthyosaur).",
   "links": [
    {
@@ -837,6 +914,9 @@
    "biology"
   ],
   "summary": "Small bipedal archosaurs from what is now Argentina mark the origin of the dinosaurian lineage.",
+  "strong": [
+   "sauropod-gigantism"
+  ],
   "body": "Dinosaurs were minor components of ecosystems until the [end-Triassic extinction](event:triassic-extinction) eliminated competing faunas, after which they dominated terrestrial environments for approximately 135 million years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dinosaur).",
   "links": [
    {
@@ -877,6 +957,12 @@
    "geology"
   ],
   "summary": "Approximately 50% of known species went extinct during volcanic activity from the Central Atlantic Magmatic Province and Pangaea fragmentation.",
+  "strong": [
+   "first-dinosaurs"
+  ],
+  "weak": [
+   "ordovician-extinction"
+  ],
   "body": "Dinosaurs survived this extinction and diversified into newly available ecological niches.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Triassic–Jurassic_extinction_event).",
   "links": [
    {
@@ -897,13 +983,12 @@
    "geology"
   ],
   "parent": "pangaea",
+  "weak": [
+   "himalaya-uplift"
+  ],
   "summary": "Rifting of Pangaea initiated the formation of a new ocean basin along the developing Mid-Atlantic Ridge.",
   "body": "Part of [Pangaea supercontinent](event:pangaea). Seafloor spreading at rates of several centimetres per year continues to widen the Atlantic; symmetric magnetic anomalies flanking the ridge provided key evidence supporting plate tectonic theory.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_Ocean).",
   "links": [
-   {
-    "label": "Pangaea supercontinent",
-    "event": "pangaea"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Atlantic_Ocean"
@@ -922,6 +1007,9 @@
    "biology"
   ],
   "summary": "Quadrupedal dinosaurs achieved the largest body sizes known for terrestrial animals, reaching several tens of metric tonnes.",
+  "weak": [
+   "theropod-radiation"
+  ],
   "body": "Sauropods such as *Brachiosaurus* and *Diplodocus* from the Morrison Formation of North America and Tendaguru in Tanzania were sustained by Jurassic ecosystem productivity. Long necks and peg-shaped teeth were adaptations for browsing elevated vegetation, and they dominated terrestrial faunas for tens of millions of years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sauropoda).",
   "links": [
    {
@@ -942,6 +1030,9 @@
    "biology"
   ],
   "summary": "Bipedal carnivorous dinosaurs became the dominant apex predators, evolving from small forms to giants.",
+  "strong": [
+   "first-birds"
+  ],
   "body": "Theropods ranged from chicken-sized forms to *Tyrannosaurus* at lengths exceeding 12 metres. They were fast-moving, with acute senses and powerful jaws or claws. Their descendants, [birds](event:first-birds), were the only dinosaurs to survive the [K–Pg extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theropoda).",
   "links": [
    {
@@ -961,6 +1052,9 @@
    "biology"
   ],
   "summary": "Feathered theropods from the Jurassic lagoon deposits at Solnhofen record dinosaurs at an intermediate stage on the way to birds.",
+  "weak": [
+   "kpg-extinction"
+  ],
   "body": "Birds are extant dinosaurs — the sole branch of the dinosaurian lineage to survive the [end-Cretaceous extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Archaeopteryx).",
   "links": [
    {
@@ -981,6 +1075,12 @@
    "biology"
   ],
   "summary": "Flowering plants appeared and, through interactions with insect pollinators, became the dominant plant group globally.",
+  "strong": [
+   "miocene-grassland-expansion"
+  ],
+  "weak": [
+   "cretaceous-warmth"
+  ],
   "body": "Darwin described their sudden abundance in the fossil record as an \"abominable mystery\".\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Flowering_plant).",
   "links": [
    {
@@ -1002,6 +1102,9 @@
    "geology"
   ],
   "summary": "The Cretaceous was among Earth's warmest periods, with atmospheric CO2 levels several times higher than modern concentrations.",
+  "strong": [
+   "cretaceous-seaway"
+  ],
   "body": "Polar ice caps did not exist. Shallow tropical seas covered extensive continental areas, and rainforests extended to high latitudes. This warmth resulted from intensive submarine volcanism and high rates of CO2 release. The climate was stable enough for ecosystems to flourish, but its abrupt end contributed to the stresses of the [mass extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous).",
   "links": [
    {
@@ -1043,6 +1146,9 @@
    "biology"
   ],
   "summary": "Small eutherians, the lineage leading to placental mammals, spread and diversified while dinosaurs dominated terrestrial ecosystems.",
+  "strong": [
+   "paleocene-mammal-radiation"
+  ],
   "body": "Fossils from China and Mongolia document diverse small eutherian mammals in the Cretaceous. Molecular clocks and the fossil record disagree over how far the modern placental orders had already diverged, but these lineages were restricted to small, largely nocturnal ecological roles while dinosaurs dominated terrestrial ecosystems, and were poised to diversify after the [K–Pg extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Placentalia).",
   "links": [
    {
@@ -1090,6 +1196,9 @@
    "disaster"
   ],
   "summary": "Flood basalt eruptions occurred in western India during the interval of the Chicxulub impact.",
+  "weak": [
+   "siberian-traps"
+  ],
   "body": "Flood basalts poured over western India for hundreds of thousands of years either side of the [K–Pg boundary](event:kpg-extinction). Whether they were a co-cause of the extinction or merely an additional stressor remains actively debated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Deccan_Traps).",
   "links": [
    {
@@ -1110,6 +1219,10 @@
    "biology"
   ],
   "summary": "Approximately 75% of all species, including all non-avian dinosaurs, went extinct during a geologically brief interval.",
+  "strong": [
+   "deccan-traps",
+   "placental-radiation"
+  ],
   "body": "The [Chicxulub impact](event:chicxulub) was the primary cause, with impact ejecta depositing an iridium-rich layer globally recognised at the boundary; the [Deccan Traps](event:deccan-traps) eruptions were already stressing ecosystems beforehand.\n\nThe extinction created ecological space for mammalian diversification, eventually leading to [primate](event:hominin-split) evolution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous–Paleogene_extinction_event).",
   "links": [
    {
@@ -1156,13 +1269,12 @@
    "disaster"
   ],
   "parent": "kpg-extinction",
+  "weak": [
+   "toba"
+  ],
   "summary": "A 10-kilometre-diameter asteroid impacted the Yucatán platform, releasing energy equivalent to billions of Hiroshima bombs.",
   "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). The impact excavated a crater 180 km across into sulphur-rich carbonate rock, launching a global cloud of dust and sulphate aerosols that shut down photosynthesis for years.\n\nThe crater was identified through gravity data in the 1970s and confirmed in 1991.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chicxulub_crater).",
   "links": [
-   {
-    "label": "Cretaceous–Paleogene extinction",
-    "event": "kpg-extinction"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Chicxulub_crater"
@@ -1181,13 +1293,12 @@
    "biology"
   ],
   "parent": "kpg-extinction",
+  "weak": [
+   "petm"
+  ],
   "summary": "After dinosaur extinction, mammals increased rapidly in taxonomic diversity and body size, occupying newly vacant ecological roles.",
   "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). Within millions of years, mammals ranged from small nocturnal animals to herbivores reaching sheep size and their carnivorous predators, a progression documented sequentially in the Bighorn Basin of Wyoming. Primates, perissodactyls, and artiodactyls all originated during this interval.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paleocene).",
   "links": [
-   {
-    "label": "Cretaceous–Paleogene extinction",
-    "event": "kpg-extinction"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Paleocene"
@@ -1206,6 +1317,12 @@
    "climate"
   ],
   "summary": "A large carbon input to the atmosphere caused global warming of 5–8 °C within several thousand years.",
+  "strong": [
+   "eocene-climatic-optimum"
+  ],
+  "weak": [
+   "global-warming"
+  ],
   "body": "It is the closest geological analogue to modern [greenhouse warming](event:global-warming); it acidified the oceans and drove a rapid turnover of mammal faunas.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paleocene–Eocene_Thermal_Maximum).",
   "links": [
    {
@@ -1246,6 +1363,9 @@
    "geology"
   ],
   "summary": "Collision of the Indian plate with Asian continental crust produced the world's highest mountain range and altered global climate.",
+  "weak": [
+   "antarctic-glaciation"
+  ],
   "body": "Continental convergence continues at about 5 cm per year. Weathering of uplifted silicate rocks reduced atmospheric CO2, contributing to planetary cooling toward glacial conditions, and the mountain range influenced atmospheric circulation and monsoon patterns.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Himalayas).",
   "links": [
    {
@@ -1266,6 +1386,9 @@
    "biology"
   ],
   "summary": "Artiodactyl mammals returned to marine environments and evolved into fully aquatic cetaceans.",
+  "weak": [
+   "placental-radiation"
+  ],
   "body": "Fossils from Pakistan and Egypt document the transition from semi-aquatic forms like *Ambulocetus* with functional hindlimbs through intermediate forms such as *Rodhocetus* to fully aquatic basilosaurids. The stepwise appearance of a migrating nostril, flippers and tail flukes makes this one of the most completely documented evolutionary transitions.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cetacea).",
   "links": [
    {
@@ -1286,6 +1409,9 @@
    "geology"
   ],
   "summary": "Declining atmospheric CO2 and opening of the Drake Passage enabled permanent ice sheet formation at the South Pole.",
+  "strong": [
+   "eocene-climatic-optimum"
+  ],
   "body": "The Eocene–Oligocene boundary marks the transition from greenhouse to icehouse conditions, establishing the climatic regime that persists today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Antarctic_ice_sheet).",
   "links": [
    {
@@ -1307,13 +1433,12 @@
    "geology"
   ],
   "parent": "antarctic-glaciation",
+  "weak": [
+   "miocene-grassland-expansion"
+  ],
   "summary": "Climate shifted from warm and humid to cooler and more arid conditions over millions of years.",
   "body": "Part of [Antarctica freezes](event:antarctic-glaciation). Global temperatures declined through the Oligocene, the Drake Passage widened, and the Antarctic Circumpolar Current became established. Forest ecosystems retracted and open habitats expanded across many regions, affecting terrestrial mammal evolution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oligocene).",
   "links": [
-   {
-    "label": "Antarctica freezes",
-    "event": "antarctic-glaciation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Oligocene"
@@ -1333,6 +1458,9 @@
    "climate"
   ],
   "summary": "Grassland vegetation expanded across continents, restructuring terrestrial ecosystems toward grazing-based food webs.",
+  "weak": [
+   "hominin-split"
+  ],
   "body": "The transition from closed-canopy forests to grasslands and savannas selected for herbivores with high-crowned teeth resistant to abrasive plant material. African plains ecosystems developed during this interval, and African primate evolution was influenced by the forest-to-savanna transition.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Miocene).",
   "links": [
    {
@@ -1353,6 +1481,9 @@
    "biology"
   ],
   "summary": "The hominin and chimpanzee lineages diverged in Africa.",
+  "strong": [
+   "stone-tools"
+  ],
   "body": "Fossils such as Sahelanthropus from Chad lie near this branching point; divergence timing derives from integrating paleontological and molecular clock data.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chimpanzee–human_last_common_ancestor).",
   "links": [
    {
@@ -1373,6 +1504,9 @@
    "geology"
   ],
   "summary": "The Mediterranean basin became isolated from the Atlantic and underwent extensive evaporation, leaving kilometre-thick salt deposits.",
+  "weak": [
+   "himalaya-uplift"
+  ],
   "body": "The basin refilled catastrophically through the Strait of Gibraltar in the Zanclean flood, possibly within a couple of years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Messinian_salinity_crisis).",
   "links": [
    {
@@ -1393,6 +1527,9 @@
    "technology"
   ],
   "summary": "Hominins began deliberately producing stone cutting tools, initiating the archaeological record.",
+  "strong": [
+   "fire-control"
+  ],
   "body": "The Lomekwi 3 site in Kenya documents toolmaking at 3.3 million years ago; the Oldowan industry from approximately 2.6 million years ago is the first widespread tool tradition.\n\nStone tools provided access to meat and bone marrow, high-energy food sources associated with subsequent brain size increases.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oldowan).",
   "links": [
    {
@@ -1412,13 +1549,12 @@
    "biology"
   ],
   "parent": "hominin-split",
+  "weak": [
+   "stone-tools"
+  ],
   "summary": "The Lucy skeleton showed that upright walking evolved millions of years before the enlargement of the human brain.",
   "body": "Part of [Human–chimpanzee divergence](event:hominin-split). Discovered at Hadar, Ethiopia in 1974, Lucy is classified as *Australopithecus afarensis*; footprint trails at Laetoli, Tanzania document similar bipedal locomotion preserved in volcanic ash.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Lucy_(Australopithecus)).",
   "links": [
-   {
-    "label": "Human–chimpanzee divergence",
-    "event": "hominin-split"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Lucy_(Australopithecus)"
@@ -1438,6 +1574,10 @@
    "geology"
   ],
   "summary": "Northern hemisphere ice sheets advanced and retreated repeatedly on orbital time scales.",
+  "strong": [
+   "megafauna-pleistocene",
+   "holocene"
+  ],
   "body": "Approximately fifty glacial-interglacial cycles, driven by Milankovitch orbital variations, shaped landscapes and hominin evolution over the past 2.6 million years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Quaternary_glaciation).",
   "links": [
    {
@@ -1459,6 +1599,10 @@
    "exploration"
   ],
   "summary": "The first hominin with modern body proportions, ranging from Africa to Java and northern China.",
+  "strong": [
+   "fire-control",
+   "hand-axe-tool-tradition"
+  ],
   "body": "Its persistence for over one million years makes it the longest-surviving human species documented to date.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_erectus).",
   "links": [
    {
@@ -1482,10 +1626,6 @@
   "summary": "Symmetrical stone hand-axes produced by early humans are found across Africa, Europe, and Asia.",
   "body": "Part of [First stone tools](event:stone-tools). The earliest known hand-axes occur at Kokiselei in northern Kenya. This tool form dominated for over one million years, exhibiting careful shaping and resharpening, representing the first unambiguous evidence of planning and standardization in human tool technology.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hand_axe).",
   "links": [
-   {
-    "label": "First stone tools",
-    "event": "stone-tools"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hand_axe"
@@ -1522,6 +1662,10 @@
    "biology"
   ],
   "summary": "Anatomically modern humans originated in Africa, with the oldest known fossils from Jebel Irhoud, Morocco.",
+  "strong": [
+   "out-of-africa",
+   "cave-art"
+  ],
   "body": "Genetic and paleontological evidence indicates a pan-African origin rather than a single population center, with gene exchange among African populations over tens of thousands of years preceding the [dispersal out of Africa](event:out-of-africa).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
   "links": [
    {
@@ -1542,6 +1686,9 @@
    "biology"
   ],
   "summary": "A human species related to Neanderthals ranged across Siberia, Central Asia, and into tropical regions, with DNA sequences preserved in modern Oceanian populations.",
+  "strong": [
+   "neanderthals"
+  ],
   "body": "Knowledge of Denisovans derives primarily from DNA extracted from a finger bone and tooth recovered from a cave in the Altai Mountains. They interbred with modern humans, with contemporary Melanesian and Aboriginal Australian populations carrying 3–5% Denisovan DNA sequences, potentially providing adaptive advantages in tropical environments.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Denisova_hominin).",
   "links": [
    {
@@ -1562,13 +1709,12 @@
    "biology"
   ],
   "parent": "homo-sapiens",
+  "weak": [
+   "out-of-africa"
+  ],
   "summary": "Anatomically modern humans dispersed throughout Africa, with populations interacting and exchanging genetic material.",
   "body": "Part of [Origin of Homo sapiens](event:homo-sapiens). Fossils from locations such as Omo Kibish, Ethiopia, combined with genetic data, indicate a multiregional African origin from interconnected populations rather than a single ancestral population. Later, dispersal into Eurasia allowed interaction and genetic exchange with Neanderthals and Denisovans.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
   "links": [
-   {
-    "label": "Origin of Homo sapiens",
-    "event": "homo-sapiens"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Homo_sapiens"
@@ -1587,6 +1733,9 @@
    "biology"
   ],
   "summary": "A small-bodied human species persisted on an Indonesian island, possibly derived from *Homo erectus*.",
+  "weak": [
+   "denisovans"
+  ],
   "body": "The one-metre-tall *Homo floresiensis* from Liang Bua cave produced stone tools and hunted dwarf elephants (*Stegodon*). Small body size likely resulted from island dwarfing, a typical evolutionary response in isolated populations. The youngest fossil remains date to approximately 50,000 years ago; the cause of species extinction is unknown.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_floresiensis).",
   "links": [
    {
@@ -1628,6 +1777,9 @@
    "biology"
   ],
   "summary": "Modern humans dispersed from Africa and colonized every habitable continent within tens of thousands of years.",
+  "weak": [
+   "toba"
+  ],
   "body": "Descendants of a relatively small founding population supplanted or assimilated all other human groups, with genetic exchange occurring with [Neanderthals](event:neanderthals) and Denisovans.\n\nBy 65,000 years ago humans had reached [Australia](event:sahul); by 16,000 years ago they had colonized [the Americas](event:americas-peopling).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_human_migrations).",
   "links": [
    {
@@ -1647,13 +1799,12 @@
    "exploration"
   ],
   "parent": "out-of-africa",
+  "weak": [
+   "americas-peopling"
+  ],
   "summary": "Humans crossed open ocean to reach Sahul, the combined landmass of Australia and New Guinea.",
   "body": "Part of [Out of Africa dispersal](event:out-of-africa). The Madjedbebe rock shelter in Arnhem Land holds the oldest securely dated artefacts. The crossing required deliberate seafaring across at least 90 km of open ocean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Prehistory_of_Australia).",
   "links": [
-   {
-    "label": "Out of Africa dispersal",
-    "event": "out-of-africa"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Prehistory_of_Australia"
@@ -1672,6 +1823,9 @@
    "biology"
   ],
   "summary": "Large ice-age animals — mammoths, giant ground sloths, cave bears — inhabited the continents during the Pleistocene.",
+  "weak": [
+   "americas-peopling"
+  ],
   "body": "The Pleistocene supported a diversity of animals weighing over 40 kg comparable to that of modern African megafauna. Many survived multiple glacial cycles but became extinct within the last 10,000 years, often coinciding with human arrival in their regions. Climate change, hunting, or a combination of the two probably drove these extinctions.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Megafauna).",
   "links": [
    {
@@ -1691,13 +1845,12 @@
    "biology"
   ],
   "parent": "out-of-africa",
+  "weak": [
+   "cave-art"
+  ],
   "summary": "The last Neanderthal populations in Iberia and the Caucasus went extinct following millennia of overlap with modern humans.",
   "body": "Part of [Out of Africa dispersal](event:out-of-africa). Neanderthals practiced intentional burial, controlled fire, and used pigments. Their DNA comprises 1–2% of modern non-African human genomes.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neanderthal).",
   "links": [
-   {
-    "label": "Out of Africa dispersal",
-    "event": "out-of-africa"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Neanderthal"
@@ -1716,6 +1869,9 @@
    "culture"
   ],
   "summary": "Painted cave sites at Chauvet, Lascaux, and Sulawesi display evidence of symbolic expression and artistic production.",
+  "weak": [
+   "gobekli-tepe"
+  ],
   "body": "The Chauvet cave lions and rhinoceroses date to approximately 36,000 years ago; hand stencils and animal depictions of similar age in Indonesia show that the practice was not a European invention.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cave_painting).",
   "links": [
    {
@@ -1742,6 +1898,10 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Last_Glacial_Maximum"
    }
+  ],
+  "parent": "quaternary-ice-ages",
+  "strong": [
+   "americas-peopling"
   ]
  },
  {
@@ -1760,10 +1920,6 @@
   "body": "Part of [Out of Africa dispersal](event:out-of-africa). Archaeological sites such as Monte Verde in Chile predate the Clovis culture, suggesting occupation via a coastal migration route; human populations reached Tierra del Fuego within a few thousand years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Settlement_of_the_Americas).",
   "links": [
    {
-    "label": "Out of Africa dispersal",
-    "event": "out-of-africa"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Settlement_of_the_Americas"
    }
@@ -1781,6 +1937,12 @@
    "technology"
   ],
   "summary": "Wolves became the first domesticated animal, thousands of years before any crop or livestock.",
+  "strong": [
+   "animal-domestication"
+  ],
+  "weak": [
+   "sahul"
+  ],
   "body": "The Bonn-Oberkassel burial site, dated to approximately 14,200 years ago, contains the remains of a dog interred with two humans.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Origin_of_the_domestic_dog).",
   "links": [
    {
@@ -1807,7 +1969,8 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Younger_Dryas"
    }
-  ]
+  ],
+  "parent": "quaternary-ice-ages"
  },
  {
   "id": "holocene",
@@ -1821,6 +1984,10 @@
    "geology"
   ],
   "summary": "The current interglacial commenced, establishing the stable, warm climate in which all human civilisation developed.",
+  "strong": [
+   "younger-dryas",
+   "agriculture"
+  ],
   "body": "The boundary is defined by a Greenland ice core section; global temperatures increased several degrees Celsius over several decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Holocene).",
   "links": [
    {

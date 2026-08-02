@@ -26,15 +26,19 @@ Numbered badges are stacks of events in one place — tap to fan them out. Zoomi
 streams sharp satellite imagery for the ground you're looking at; before 1930 the
 zoom stops at a 100 km view, so modern cities never appear in centuries that had none.
 
-**Events** open into a short illustrated article with links to related events — follow
-a battle up to its war, or a discovery sideways to its consequences. **Show on map**,
+**Events** open into a short illustrated article that ends in four graded lists —
+**Part of** the thing that contains it, what it **Contains**, what it is **Related** to,
+and a softer **See also**. Follow a battle up to its war, or a discovery sideways to its
+consequences; the relations are typed, so the panel can say how close two things are
+rather than piling everything into one strip. **Show on map**,
 next to the date, puts the thing on screen: it opens the timeline onto its years and
 flies the camera out far enough to hold all of it, whether that is a city, a plague's
-footprint or a three-year voyage. When there is real geometry to look at, the article
-folds down to a bar above the timeline so nothing covers the map, the event's own
-battles appear as pins alongside it, and — for the operations that have one — a
-**battle plan** draws: front lines, arrows of advance, the pockets where armies were
-lost. Tap the bar to read the article again, Escape to put the map back to normal.
+footprint or a three-year voyage. The article then folds down to a bar above the
+timeline and the globe clears: everything unrelated goes — other events' pins, the
+nation borders — leaving the thing you asked for, the events it contains as pins
+alongside it, and, for the operations that have one, a **battle plan**: front lines,
+arrows of advance, the pockets where armies were lost.
+Tap the bar to read the article again, Escape to put the map back to normal.
 Search (top bar) finds any event by name or tag; "Show only this event family" filters
 the globe to one storyline.
 

@@ -103,9 +103,6 @@ export function densifyPath(path: GeoPath, maxSegDeg = MAX_SEGMENT_DEG): GeoPath
 export const densifyPaths = (paths: GeoPath[], maxSegDeg = MAX_SEGMENT_DEG): GeoPath[] =>
   paths.map((p) => densifyPath(p, maxSegDeg))
 
-/** Every point of every route, in one list — what a bounding cap is cut from. */
-export const allPathPoints = (paths: GeoPath[]): GeoPath => paths.flat() as GeoPath
-
 /**
  * Is this a drawable route? Two points at least (one point is a place, not a
  * path), each a coordinate pair on the planet.
@@ -134,13 +131,14 @@ export const isGeoPath = (p: unknown): p is GeoPath =>
  *
  * `oneway` — a voyage. Something went from the first waypoint to the last, once
  * and that way round: Magellan west, da Gama east, a slaving ship's leg of the
- * triangle. The drawn line says so — the dashes run along the travel direction
- * and arrowheads sit on the road.
+ * triangle. The drawn line says so twice — it brightens toward the destination,
+ * and (motion allowed) its dashes flow that way.
  *
  * `twoway` — a network. The Silk Road carried silk west and silver east for a
- * thousand years, and the Manila galleon was a round trip by definition; an
- * arrow on either would be a claim the history does not support. These get a
- * symmetric treatment instead: an even 50% dash that does not move.
+ * thousand years, and the Manila galleon was a round trip by definition; a
+ * direction on either would be a claim the history does not support. These get a
+ * symmetric treatment instead: an even dash that does not move, and a brightness
+ * that fades away equally at both ends.
  *
  * The default is `oneway` because most drawn routes are voyages, and because a
  * voyage that forgot to declare itself should still read as a voyage. A trade
@@ -152,122 +150,330 @@ export const DEFAULT_DIRECTION: PathDirection = 'oneway'
 export const directionOf = (e: { direction?: PathDirection }): PathDirection =>
   e.direction ?? DEFAULT_DIRECTION
 
+/* --------------------------------------------------------------- smoothing */
+
+/**
+ * Samples per authored segment when a route is smoothed. Eight is the point
+ * where the corner of a triangle trade route stops reading as a corner; past
+ * about twelve nothing on screen changes and the point count doubles.
+ */
+export const ROUTE_SMOOTH_SAMPLES = 8
+/**
+ * How hard the spline pulls. 1 is a textbook Catmull-Rom, and a textbook
+ * Catmull-Rom through waypoints an author placed to *avoid* land bows out past
+ * them — Magellan's turn round Cape Horn swung into Tierra del Fuego at full
+ * tension. Half-strength tangents keep the curve visibly curved and keep it in
+ * the water; it is still interpolating, so every authored waypoint is still hit
+ * exactly whatever this is set to.
+ */
+export const ROUTE_SMOOTH_TENSION = 0.5
+/**
+ * Longest segment of a *drawn* route, in degrees of arc — five times finer than
+ * the `MAX_SEGMENT_DEG` the data is authored to.
+ *
+ * Two jobs. It is what makes a long ocean leg a great circle rather than a
+ * chord, as before. But it is also what lets the route sit ~4 km off the ground
+ * (see `SURFACE_ALT` in lib/drawingLayer.ts): a polyline is drawn as chords, and
+ * a chord across 3° of arc sags 2.2 km below the sphere — through the planet, at
+ * that altitude. At 1° the sag is 240 m, an eighth of the clearance.
+ */
+export const ROUTE_SEGMENT_DEG = 1
+
+/**
+ * A centripetal Catmull-Rom spline through the waypoints, on the sphere.
+ *
+ * Authored routes are lists of ports and landfalls, and joining ports with
+ * straight arcs draws a voyage as a polygon: Magellan reads as eleven decisions
+ * rather than one passage. This puts the curve back — the tangent at each
+ * waypoint is a blend of its neighbours', so the drawn line leaves a port on the
+ * heading it arrived on and turns through the next one instead of at it.
+ *
+ * Centripetal (the knots are spaced by the square root of chord length, α=0.5)
+ * rather than uniform, because uniform Catmull-Rom loops on itself wherever the
+ * spacing is uneven — and route data is nothing but uneven spacing, a dozen
+ * waypoints threading the Philippines and two crossing the Pacific.
+ *
+ * The interpolation is done on the unit vectors and renormalised, so the result
+ * is on the sphere by construction and there is no antimeridian to special-case:
+ * a spline through 179°E and 179°W passes through 180°, not back across Asia.
+ *
+ * Every authored waypoint survives exactly, in order — the samples are taken
+ * strictly *between* them.
+ */
+export function smoothPath(
+  path: GeoPath,
+  samples = ROUTE_SMOOTH_SAMPLES,
+  tension = ROUTE_SMOOTH_TENSION,
+): GeoPath {
+  // Consecutive duplicates carry no direction and would divide by zero in the
+  // knot spacing; they are also not a shape anyone authored on purpose.
+  const pts = path.filter((p, i) => i === 0 || p[0] !== path[i - 1][0] || p[1] !== path[i - 1][1])
+  if (pts.length < 3 || samples < 2) return [...path]
+  const v = pts.map(toVec)
+  const n = v.length
+  // Virtual end control points, reflected through the endpoint: the first and
+  // last real segments then get the same treatment as the middle ones, and the
+  // route does not straighten out just before it arrives.
+  const at = (i: number): [number, number, number] =>
+    i < 0
+      ? [2 * v[0][0] - v[1][0], 2 * v[0][1] - v[1][1], 2 * v[0][2] - v[1][2]]
+      : i >= n
+        ? [2 * v[n - 1][0] - v[n - 2][0], 2 * v[n - 1][1] - v[n - 2][1], 2 * v[n - 1][2] - v[n - 2][2]]
+        : v[i]
+  const dist = (a: [number, number, number], b: [number, number, number]) =>
+    Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
+  const out: GeoPath = []
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = at(i - 1)
+    const p1 = at(i)
+    const p2 = at(i + 1)
+    const p3 = at(i + 2)
+    // centripetal knots; the floor keeps a degenerate control point (two
+    // waypoints a metre apart) from blowing the tangents up
+    const d01 = Math.max(Math.sqrt(dist(p0, p1)), 1e-6)
+    const d12 = Math.max(Math.sqrt(dist(p1, p2)), 1e-6)
+    const d23 = Math.max(Math.sqrt(dist(p2, p3)), 1e-6)
+    // Non-uniform Catmull-Rom tangents, scaled into the segment's own [0,1]
+    // parameter so the Hermite basis below can be the plain one.
+    const m1: [number, number, number] = [0, 0, 0]
+    const m2: [number, number, number] = [0, 0, 0]
+    for (let k = 0; k < 3; k++) {
+      m1[k] =
+        tension *
+        d12 *
+        ((p1[k] - p0[k]) / d01 - (p2[k] - p0[k]) / (d01 + d12) + (p2[k] - p1[k]) / d12)
+      m2[k] =
+        tension *
+        d12 *
+        ((p2[k] - p1[k]) / d12 - (p3[k] - p1[k]) / (d12 + d23) + (p3[k] - p2[k]) / d23)
+    }
+    out.push(pts[i]) // the authored waypoint, verbatim
+    for (let s = 1; s < samples; s++) {
+      const t = s / samples
+      const t2 = t * t
+      const t3 = t2 * t
+      const h00 = 2 * t3 - 3 * t2 + 1
+      const h10 = t3 - 2 * t2 + t
+      const h01 = -2 * t3 + 3 * t2
+      const h11 = t3 - t2
+      const p: [number, number, number] = [0, 0, 0]
+      for (let k = 0; k < 3; k++)
+        p[k] = h00 * p1[k] + h10 * m1[k] + h01 * p2[k] + h11 * m2[k]
+      const len = Math.hypot(p[0], p[1], p[2])
+      // A sample can only land on the origin if the control points did; there is
+      // no direction to renormalise there, so the waypoints stand alone.
+      if (len > 1e-9) out.push(toLngLat([p[0] / len, p[1] / len, p[2] / len]))
+    }
+  }
+  out.push(pts[n - 1])
+  return out
+}
+
+/**
+ * The polyline a route is actually drawn as: smoothed through its waypoints,
+ * then densified onto great circles.
+ *
+ * The order is the whole trick. Smoothing first puts curvature *through* the
+ * waypoints, which is a statement about the shape of the voyage; densifying
+ * second puts every stretch between two samples on the arc a ship would sail,
+ * which is a statement about the sphere. Densifying first and smoothing after
+ * would round off the densified points — that is, smooth away the great circle.
+ */
+export const routePolyline = (path: GeoPath): GeoPath =>
+  densifyPath(smoothPath(path), ROUTE_SEGMENT_DEG)
+
 /* ------------------------------------------------------------ route styling */
 
 /**
- * How a route is drawn. Gathered here rather than scattered through the globe
- * component because the numbers are a set — the halo is only a halo if it is
- * wider than the line it sits under, and the dash only reads as flowing if the
- * pattern is short enough to see a dash arrive.
+ * How a route is drawn.
  *
- * Widths are in *screen pixels* (the layer draws fat lines), so a route stays
- * legible zoomed out to the ocean it crosses and does not thicken into a band
- * zoomed in. Dash and gap are in units of line length, so a long voyage and a
- * short one carry the same *number* of dashes rather than the same dash size.
+ * The shipped design was a globe.gl paths-layer line: a wide dark solid
+ * "halo" entry with a hard-dashed coloured entry laid over it, both floating
+ * ~90 km above the planet, the dash advanced by three-globe's own frame ticker.
+ * All three of those were wrong, and the numbers are worth keeping:
+ *
+ *  · **the dash never moved.** Measured on the shipped build with a route open
+ *    and the camera parked, the dash offset advanced 0.0000 of line length in
+ *    4.7 s — 100% of frames identical. The route wake (`routesDrawn`) bought one
+ *    frame per tick with `wake(0)`, so the pump paused and resumed on *every*
+ *    frame (11 pauses / 11 resumes in that 4.7 s), and globe.gl's
+ *    `pauseAnimation` cancels three-globe's FrameTicker rAF — which had been
+ *    scheduled by the `resume` a few statements earlier and had not fired yet.
+ *    The animation was structurally unable to tick.
+ *  · **when it did move, it lurched.** With the pump's cushion held open by a
+ *    drag, the ticker ran free and the offset moved in steps whose largest was
+ *    3.9x the median, because the step is `rate x timeDelta` off whatever frames
+ *    the browser happened to draw.
+ *  · **and the rate was a strobe.** 3200 ms to traverse the line against a
+ *    0.04-of-length dash cycle is 7.8 dashes past any point per second.
+ *
+ * So: no layer ticker, no per-frame accumulation. The phase is a pure function
+ * of the wall clock (`flowPhase`), exactly like the cloud drift, and the pump is
+ * woken at a steady modest rate while a flowing route is on screen. Any frame,
+ * drawn for any reason, shows the phase the clock says.
+ *
+ * Widths are in *screen pixels* (fat lines), so a route stays legible zoomed out
+ * to the ocean it crosses and does not thicken into a band zoomed in. Dash and
+ * gap are fractions of the route's own length, so a circumnavigation and a
+ * coastal hop carry the same *number* of dashes rather than the same dash size.
  */
 export const ROUTE_STYLE = {
-  /** The drawn line. 2.6 px: enough body to carry a colour over bright terrain. */
-  stroke: 2.6,
+  /** The drawn line. Thin and elegant; the casing under it does the shouting. */
+  stroke: 2.3,
   /**
-   * The under-stroke. Wider than the line by 2.2 px — about a pixel of dark
-   * either side — and *solid*, so the gaps in the dashed line above still read
-   * as a route rather than as unrelated ticks. Without it a route crossing the
-   * Sahara or a snowfield disappears into the map.
+   * The casing. Wider than the line by 2.4 px — a pixel of dark either side —
+   * and *solid*, so the gaps in the dashed line above still read as one route
+   * rather than as unrelated ticks. Without it a route crossing the Sahara or a
+   * snowfield disappears into the map; much more of it and the casing becomes
+   * the line, with the stroke reading as a highlight down the middle of a black
+   * road (5.3 px at half opacity did exactly that at close zoom).
    */
-  haloStroke: 2.6 + 2.2,
-  haloColor: 'rgba(5,9,16,0.62)',
+  haloStroke: 2.3 + 2.4,
+  haloColor: '#03070d',
+  haloOpacity: 0.42,
   /**
-   * A one-way route's dash. Duty cycle 0.7 (was 0.625): more line than gap, so
-   * the eye follows a chain rather than counting ticks.
+   * A one-way route's dash. Duty cycle 0.65 — a chain of long strokes with a
+   * breath between them, not a row of ticks. 0.04 of the route per cycle puts 25
+   * dashes on a route however long it is.
    */
-  dash: 0.028,
-  gap: 0.012,
+  dash: 0.026,
+  gap: 0.014,
   /**
-   * A two-way route's dash: 50/50, which is the symmetric pattern — reversing
-   * the route reverses nothing you can see. It does not animate.
+   * A two-way route's dash: 50/50, the symmetric pattern — reversing the route
+   * reverses nothing you can see. It does not move.
    */
   evenDash: 0.02,
   evenGap: 0.02,
   /**
-   * How long a dash takes to travel the whole line, in ms. 3200 against the
-   * 9000 it was: at 9 s a dash crossed an ocean slower than the cloud deck
-   * drifts and read as a still line someone had nudged. Still calm — a dash
-   * covers a thirtieth of the route per second, which is a walk, not a strobe.
+   * How bright the stroke is at the two ends of a route, against 1 at its
+   * brightest. A one-way route runs `tail` at the origin to full at the
+   * destination, so the direction is legible in a still screenshot and under
+   * reduced motion, where no dash is moving. A two-way route is `end` at both
+   * ends and full in the middle — symmetric, and it reads as a road fading into
+   * the distance in both directions, which is what a trade network is.
    */
-  animateMs: 3200,
-  /** Altitudes: halo below line, both above the area cap (0.012), below the pins. */
-  lineAlt: 0.0142,
-  haloAlt: 0.0132,
+  tailOpacity: 0.36,
+  endOpacity: 0.5,
+  /**
+   * How many constant-opacity pieces the gradient is cut into.
+   *
+   * A fat line carries one opacity for the whole line — `LineMaterial` has no
+   * per-vertex alpha, and the two ways to get one (patching its shader, or
+   * `alphaToCoverage` tricks) are a lot of surface area for a stroke. Twenty
+   * pieces put at most 0.05 of opacity between neighbours, which is below what
+   * the eye finds as an edge on a 2.3 px line, and there are 25 dashes on the
+   * route anyway — most dashes land inside one piece and simply *are* that
+   * brightness. `taperOpacity` is shaped to keep that step small: the ramps are
+   * piecewise linear, which is the gentlest a ramp between two given values can
+   * be.
+   */
+  taperPieces: 20,
+  /**
+   * One dash cycle, in ms. 1200 against the 128 ms the strobe amounted to: a
+   * dash crosses its own length in a beat and a bit, which reads as a current in
+   * the line rather than as traffic on it.
+   */
+  flowCycleMs: 1200,
 } as const
+
+/**
+ * How often the pump is woken while a route is flowing: ~20 Hz.
+ *
+ * The dash advances 1/24 of its cycle per frame at this rate — under 2 px on a
+ * route framed to fill the screen — and the phase is read from the clock, so a
+ * frame that arrives late or early is still correct rather than behind. Compare
+ * `cloudIdleIntervalMs`, which answers the same question for the cloud deck.
+ */
+export const ROUTE_FLOW_INTERVAL_MS = 50
+
+/**
+ * Where in the dash cycle the wall clock is: [0, 1).
+ *
+ * Pure, and modular — it cannot accumulate, drift or lurch, whatever frames were
+ * or were not drawn since the last call. This is the whole fix for the animation
+ * the owner saw as "rapid then static".
+ */
+export const flowPhase = (nowMs: number): number => {
+  const c = ROUTE_STYLE.flowCycleMs
+  return (((nowMs % c) + c) % c) / c
+}
+
+/**
+ * How bright the stroke is at fraction `t` along a route.
+ *
+ * One-way rises evenly to the destination; two-way rises to the middle and falls
+ * away again, which is symmetric by construction rather than by two numbers
+ * somebody has to keep equal. Both are piecewise LINEAR on purpose. The gradient
+ * is drawn as `taperPieces` constant-opacity runs (see ROUTE_STYLE), so what
+ * matters is the largest step between two neighbouring pieces, and for a ramp
+ * between two given values a straight line is the shape that makes that step as
+ * small as it can be — an eased curve concentrates the same total change into
+ * fewer pieces and starts to band. On a two-way route the peak in the middle
+ * doubles the total change, which is why it gets a higher floor.
+ */
+export const taperOpacity = (t: number, direction: PathDirection): number => {
+  const c = Math.max(0, Math.min(1, t))
+  if (direction === 'twoway')
+    return ROUTE_STYLE.endOpacity + (1 - ROUTE_STYLE.endOpacity) * (1 - Math.abs(2 * c - 1))
+  return ROUTE_STYLE.tailOpacity + (1 - ROUTE_STYLE.tailOpacity) * c
+}
+
+/**
+ * Cut a polyline into `pieces` runs of roughly equal *length*, as index ranges
+ * that share their boundary vertices — so the pieces butt together with no seam
+ * even though each is drawn separately.
+ *
+ * `cumulative[i]` is the distance from the start to vertex i, in any unit. `t`
+ * is the midpoint of the piece as a fraction of the whole, which is what the
+ * gradient is sampled at: sampling at the piece's *start* would make the first
+ * piece the tail colour exactly and the last piece one step short of the head.
+ */
+export function lengthPieces(
+  cumulative: number[],
+  pieces: number,
+): { start: number; end: number; t: number }[] {
+  const n = cumulative.length
+  if (n < 2 || pieces < 1) return n >= 2 ? [{ start: 0, end: n - 1, t: 0.5 }] : []
+  const total = cumulative[n - 1]
+  if (!(total > 0)) return [{ start: 0, end: n - 1, t: 0.5 }]
+  const out: { start: number; end: number; t: number }[] = []
+  let start = 0
+  for (let p = 0; p < pieces && start < n - 1; p++) {
+    const wantEnd = (total * (p + 1)) / pieces
+    // The NEAREST vertex to the wanted boundary, not the first one past it: a
+    // polyline whose vertices are crowded at one end (which route data is) has
+    // no vertex anywhere near most boundaries, and "first one past" then hands
+    // the whole rest of the line to one piece.
+    let end = start + 1
+    while (
+      end < n - 1 &&
+      Math.abs(cumulative[end + 1] - wantEnd) <= Math.abs(cumulative[end] - wantEnd)
+    )
+      end++
+    // The last piece always runs to the end, whatever the rounding said.
+    if (p === pieces - 1) end = n - 1
+    out.push({
+      start,
+      end,
+      t: (cumulative[start] + cumulative[end]) / (2 * total),
+    })
+    start = end
+  }
+  return out
+}
 
 /* ------------------------------------------------------- points along a route */
 
-/** A place on a route, and which way the route is going through it. */
-export interface PathPoint {
-  lng: number
-  lat: number
-  /** Degrees clockwise from north — the tangent, pointing the way of travel. */
-  bearing: number
-}
-
-/**
- * Initial bearing from `a` to `b`, degrees clockwise from north.
- *
- * "Initial" is the honest word: on a sphere the bearing of a great circle
- * changes along it, so this is the direction you set off in. Over the short
- * segments a densified route is made of, that is the direction of the segment.
+/*
+ * `PathPoint`, `bearingDeg` and `pointAlongPath` used to live here: the machinery
+ * for walking a route by ARC LENGTH and reading off the heading, which is how
+ * the direction chevrons were placed a third and two-thirds along. The chevrons
+ * are gone with the redesign, and so is the machinery — direction is now carried
+ * by the line itself, by a brightness that rises toward the destination (which
+ * works in a still frame and under reduced motion) and by dashes that flow the
+ * same way when motion is allowed. `slerpPoint` below stays; the renderer trims
+ * a thrust's shaft with it.
  */
-export function bearingDeg(a: [number, number], b: [number, number]): number {
-  const p1 = a[1] * RAD
-  const p2 = b[1] * RAD
-  const dl = (b[0] - a[0]) * RAD
-  const y = Math.sin(dl) * Math.cos(p2)
-  const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl)
-  const deg = Math.atan2(y, x) / RAD
-  return (deg + 360) % 360
-}
-
-/**
- * The point a given fraction of the way along a route, by ARC LENGTH — not by
- * waypoint count.
- *
- * The difference is the whole point. Magellan's track is authored with a dozen
- * waypoints around the Philippines and two across the Pacific, so "the middle
- * waypoint" is in Indonesia while the middle of the *voyage* is in open water.
- * An arrowhead placed by waypoint index would cluster wherever the author
- * happened to write detail.
- *
- * `t` is clamped to [0, 1]; the bearing at the ends is the first (or last)
- * segment's, which is the direction the route leaves (or arrives) in.
- */
-export function pointAlongPath(path: GeoPath, t: number): PathPoint | undefined {
-  if (path.length < 2) return undefined
-  const segs: number[] = []
-  let total = 0
-  for (let i = 1; i < path.length; i++) {
-    const d = separationDeg(path[i - 1][1], path[i - 1][0], path[i][1], path[i][0])
-    segs.push(d)
-    total += d
-  }
-  // A route whose waypoints are all the same place has no length to walk along;
-  // the first point is the only answer that is not a division by zero.
-  if (!(total > 0)) return { lng: path[0][0], lat: path[0][1], bearing: 0 }
-  let want = Math.max(0, Math.min(1, t)) * total
-  for (let i = 0; i < segs.length; i++) {
-    if (want > segs[i] && i < segs.length - 1) {
-      want -= segs[i]
-      continue
-    }
-    const a = path[i]
-    const b = path[i + 1]
-    const f = segs[i] > 0 ? Math.max(0, Math.min(1, want / segs[i])) : 0
-    // Interpolating on the great circle rather than in lat/lng, for the reason
-    // densifyPath exists at all: over a long leg the two are not the same place.
-    const [lng, lat] = slerpPoint(a, b, f)
-    return { lng, lat, bearing: bearingDeg(a, b) }
-  }
-  return undefined
-}
 
 /**
  * The point a fraction `f` of the way along the great circle from `a` to `b`.
@@ -291,17 +497,3 @@ export function slerpPoint(a: [number, number], b: [number, number], f: number):
     va[2] * k1 + vb[2] * k2,
   ])
 }
-
-/**
- * Where the arrowheads go on a one-way route: a third and two-thirds along.
- *
- * Not at the end, which is where an arrow "belongs" on a diagram — a route's end
- * is a port, and the port already carries a terminus dot. Two arrows inside the
- * line say the direction twice, at places the eye lands anyway, and survive the
- * route being partly behind the planet.
- */
-export const ARROW_FRACTIONS = [1 / 3, 2 / 3] as const
-
-/** The termini — first and last point of every route. The ports. */
-export const pathTermini = (paths: GeoPath[]): GeoPath =>
-  paths.filter((p) => p.length >= 2).flatMap((p) => [p[0], p[p.length - 1]])

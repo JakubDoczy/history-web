@@ -427,6 +427,123 @@ describe('EventIndex backlinks', () => {
   })
 })
 
+import { buildRelations, type Item } from '../src/lib/events'
+
+/**
+ * The relation graph: three one-sided fields in the data become four maps read
+ * in both directions, under one precedence order (containment > strong > weak).
+ */
+describe('buildRelations', () => {
+  const item = (id: string, o: Partial<HistoricalEvent> = {}): HistoricalEvent =>
+    ev(id, { start: 1900, ...o })
+  const build = (items: Item[]) => buildRelations(items, new Map(items.map((i) => [i.id, i])))
+
+  it('materialises the inverse of a strong edge, so one side is enough', () => {
+    const r = build([item('einstein', { strong: ['relativity'] }), item('relativity')])
+    expect(r.strong.get('einstein')).toEqual(['relativity'])
+    expect(r.strong.get('relativity')).toEqual(['einstein'])
+  })
+
+  it('does the same for weak, and keeps the two tiers apart', () => {
+    const r = build([item('a', { strong: ['b'], weak: ['c'] }), item('b'), item('c')])
+    expect(r.strong.get('a')).toEqual(['b'])
+    expect(r.weak.get('a')).toEqual(['c'])
+    expect(r.weak.get('c')).toEqual(['a'])
+    expect(r.strong.get('c')).toBeUndefined()
+  })
+
+  it('dedupes an edge written from both sides', () => {
+    const r = build([item('a', { strong: ['b'] }), item('b', { strong: ['a'] })])
+    expect(r.strong.get('a')).toEqual(['b'])
+    expect(r.strong.get('b')).toEqual(['a'])
+  })
+
+  it('never relates an item to itself, or to an id that is not loaded', () => {
+    const r = build([item('a', { strong: ['a', 'ghost', 'b'] }), item('b')])
+    expect(r.strong.get('a')).toEqual(['b'])
+  })
+
+  it('lets containment win: a parent is never also an association', () => {
+    const r = build([
+      item('war'),
+      item('battle', { parent: 'war', strong: ['war'], weak: ['war'] }),
+    ])
+    expect(r.strong.get('battle')).toBeUndefined()
+    expect(r.weak.get('battle')).toBeUndefined()
+    expect(r.strong.get('war')).toBeUndefined()
+    expect(r.children.get('war')!.map((e) => e.id)).toEqual(['battle'])
+  })
+
+  it('lets strong win over weak for the same pair', () => {
+    const r = build([item('a', { strong: ['b'] }), item('b', { weak: ['a'] })])
+    expect(r.strong.get('a')).toEqual(['b'])
+    expect(r.weak.get('a')).toBeUndefined()
+    expect(r.weak.get('b')).toBeUndefined()
+  })
+
+  it('orders children chronologically and associations best-first', () => {
+    const r = build([
+      item('war'),
+      item('late', { parent: 'war', start: 1944, priority: 10 }),
+      item('early', { parent: 'war', start: 1940, priority: 90 }),
+      item('hub', { strong: ['small', 'big'] }),
+      item('small', { priority: 20 }),
+      item('big', { priority: 80 }),
+    ])
+    expect(r.children.get('war')!.map((e) => e.id)).toEqual(['early', 'late'])
+    expect(r.strong.get('hub')).toEqual(['big', 'small'])
+  })
+
+  it('ignores a parent that is not loaded, rather than inventing a family', () => {
+    const r = build([item('orphan', { parent: 'nowhere', strong: ['x'] }), item('x')])
+    expect(r.children.get('nowhere')).toBeUndefined()
+    expect(r.strong.get('orphan')).toEqual(['x'])
+  })
+})
+
+describe('EventIndex relations', () => {
+  const item = (id: string, o: Partial<HistoricalEvent> = {}): HistoricalEvent =>
+    ev(id, { start: 1900, ...o })
+  const index = new EventIndex([
+    item('war', { start: 1939 }),
+    item('operation', { start: 1941, parent: 'war' }),
+    item('battle', { start: 1942, parent: 'operation', weak: ['aside'] }),
+    item('treaty', { start: 1945, strong: ['war'] }),
+    item('aside', { start: 1950 }),
+  ])
+
+  it('walks the parent chain innermost first', () => {
+    expect(index.parentChain('battle').map((e) => e.id)).toEqual(['operation', 'war'])
+    expect(index.parentChain('war')).toEqual([])
+    expect(index.parentChain('nope')).toEqual([])
+  })
+
+  it('hands back direct children only', () => {
+    expect(index.childrenOf('war').map((e) => e.id)).toEqual(['operation'])
+    expect(index.childrenOf('operation').map((e) => e.id)).toEqual(['battle'])
+    expect(index.childrenOf('battle')).toEqual([])
+  })
+
+  it('reads a strong edge from the side that did not declare it', () => {
+    expect(index.strongOf('war').map((i) => i.id)).toEqual(['treaty'])
+    expect(index.strongOf('treaty').map((i) => i.id)).toEqual(['war'])
+  })
+
+  it('reads weak edges the same way', () => {
+    expect(index.weakOf('aside').map((i) => i.id)).toEqual(['battle'])
+  })
+
+  it('survives a parent cycle rather than hanging on it', () => {
+    const cyclic = new EventIndex([
+      item('a', { parent: 'b' }),
+      item('b', { parent: 'a' }),
+    ])
+    // it stops the moment the walk revisits something, so `a` is not its own
+    // ancestor and the chain is finite
+    expect(cyclic.parentChain('a').map((e) => e.id)).toEqual(['b'])
+  })
+})
+
 import {
   COVERAGE_ENDED,
   COVERAGE_ONGOING,

@@ -39,9 +39,32 @@ export interface ItemBase {
   /** Optional rich body (markdown subset, see lib/richtext.ts). */
   body?: string
   image?: { url: string; caption?: string }
-  links?: { label: string; url?: string; event?: string }[]
-  /** Ids of items worth reading next; rendered in the panel's read-more strip. */
-  related?: string[]
+  /**
+   * External references — the "Read more" strip. Outward links only: an entry
+   * pointing at another *item* used to be how a relation was expressed here, and
+   * 247 of them said what `parent`/`strong`/`weak` now say properly, one section
+   * higher up the panel. The graph is the one place a relation lives.
+   */
+  links?: { label: string; url: string }[]
+  /**
+   * STRONG association: the defining, first-order connections. Einstein and
+   * relativity; a treaty and the war it ended; an inventor and the invention.
+   * If a reader who knows one of the pair would be surprised not to be shown
+   * the other, it is strong.
+   *
+   * Symmetric by definition, so it is authored on ONE side only — the index
+   * materialises the inverse (see `buildRelations`) and the build script warns
+   * when both sides say it. Which side gets to write it is a judgement about
+   * where the sentence reads better, not about direction: relativity lists
+   * Einstein because the concept is the thing that needs a person attached.
+   */
+  strong?: string[]
+  /**
+   * WEAK association: see-also. Informative but secondary — the same century,
+   * the same idea one step removed, a rhyme rather than a cause. Symmetric and
+   * one-side-authored exactly like `strong`.
+   */
+  weak?: string[]
 }
 
 export interface HistoricalEvent extends ItemBase {
@@ -83,7 +106,17 @@ export interface HistoricalEvent extends ItemBase {
    * (see `focus` in stores/events.ts) so there is something to study.
    */
   drawing?: Drawing
-  parent?: string // id of parent event
+  /**
+   * HIERARCHICAL CONTAINMENT: the one relation with a direction. A battle is
+   * part of an operation, an operation part of a war. At most one parent, it
+   * must resolve to an event, and the graph is acyclic — all three checked by
+   * scripts/build_event_chunks.py and again by the data tests.
+   *
+   * It is the strongest thing the model can say about two items, and the panel
+   * and focus mode both read it that way: containment wins over `strong`, which
+   * wins over `weak` (see `buildRelations`).
+   */
+  parent?: string
   /**
    * Set only on events the index derives from a person (see `derivedEventsFor`).
    * Never present in the data files; it is what makes a birth pin open the
@@ -159,17 +192,6 @@ export function geometryPointsOf(item: Item): GeoPath {
   return out
 }
 
-/**
- * Is there something on the map worth clearing the screen for?
- *
- * The test behind focus mode (see `focus` in stores/events.ts): a drawing, a
- * route or a footprint is *geometry you look at*, and the article should get out
- * of its way. A bare pin is not — minimising the panel to reveal one teardrop
- * would be a worse view of the same thing.
- */
-export const hasMapGeometry = (i: Item): boolean =>
-  isEvent(i) && (!!i.drawing || !!i.paths?.length || !!i.area?.length)
-
 /** The span an item occupies on the timeline — a point for anything instantaneous. */
 export function timeExtentOf(i: Item): [Year, Year] {
   if (isPerson(i)) return [i.born, i.died ?? i.born]
@@ -225,6 +247,117 @@ export function pinnableEvents(items: Item[]): HistoricalEvent[] {
     else if (isPerson(i)) out.push(...derivedEventsFor(i))
   }
   return out
+}
+
+/* --------------------------------------------------------------- relations */
+
+/**
+ * The four relation maps, materialised in both directions.
+ *
+ * The data files carry three optional fields — `parent`, `strong`, `weak` — and
+ * every one of them is written on one side only. This turns that authoring
+ * shorthand into the graph the app actually reads:
+ *
+ *  · `children`  the inverse of `parent`, chronological. A parent never lists
+ *                its parts; the parts each name the whole.
+ *  · `strong`    declared strong edges *plus their inverses*, so listing
+ *                Einstein on the relativity article puts relativity on
+ *                Einstein's without anyone writing it twice.
+ *  · `weak`      the same for see-also.
+ *
+ * **One pair, one relation.** The three are a precedence order, not a set of
+ * independent tags: containment beats strong, strong beats weak. A pair that is
+ * already parent-and-child is removed from both association maps, and a pair
+ * that is strong in one direction is removed from weak — otherwise an item that
+ * says `weak: [ww2]` while WWII is its parent would appear twice in the panel,
+ * once as the thing it is part of and once as an aside.
+ *
+ * Nothing relates to itself, and every id is deduped: the authoring convention
+ * is a request, not a guarantee, and a corpus of six hundred items will always
+ * hold a pair someone wrote from both ends.
+ */
+export interface Relations {
+  /** parent id → its direct children, chronological. */
+  children: Map<string, HistoricalEvent[]>
+  /** id → strongly associated ids, both directions merged. */
+  strong: Map<string, string[]>
+  /** id → see-also ids, both directions merged, minus anything stronger. */
+  weak: Map<string, string[]>
+}
+
+/** Add `value` to the set stored at `key`, creating it on first use. */
+const addTo = (m: Map<string, Set<string>>, key: string, value: string) => {
+  const set = m.get(key)
+  if (set) set.add(value)
+  else m.set(key, new Set([value]))
+}
+
+/**
+ * Collect the declared edges of one field into a symmetric adjacency map.
+ * Unknown ids are dropped here rather than carried as dangling strings — the
+ * build script fails on them, so at runtime they can only come from a chunk
+ * that has not loaded yet, and a link to nothing is worse than no link.
+ */
+function symmetrise(
+  items: Item[],
+  field: 'strong' | 'weak',
+  byId: Map<string, Item>,
+): Map<string, Set<string>> {
+  const out = new Map<string, Set<string>>()
+  for (const i of items)
+    for (const other of i[field] ?? []) {
+      if (other === i.id || !byId.has(other)) continue
+      addTo(out, i.id, other)
+      addTo(out, other, i.id)
+    }
+  return out
+}
+
+export function buildRelations(items: Item[], byId: Map<string, Item>): Relations {
+  const children = new Map<string, HistoricalEvent[]>()
+  /** id → the pair it is already in a *hierarchical* relation with. */
+  const family = new Map<string, Set<string>>()
+  for (const i of items) {
+    if (!isEvent(i) || !i.parent || i.parent === i.id || !byId.has(i.parent)) continue
+    const list = children.get(i.parent)
+    if (list) list.push(i)
+    else children.set(i.parent, [i])
+    addTo(family, i.id, i.parent)
+    addTo(family, i.parent, i.id)
+  }
+  // Chronological, because "Contains" is a narrative: a war's parts read in the
+  // order they happened. Priority breaks the tie so two events in the same year
+  // still land in a stable, meaningful order.
+  for (const list of children.values())
+    list.sort((a, b) => a.start - b.start || b.priority - a.priority)
+
+  const rank = (id: string) => byId.get(id)?.priority ?? MINOR_PRIORITY
+  const year = (id: string) => {
+    const i = byId.get(id)
+    return i ? anchorYearOf(i) : 0
+  }
+  const resolve = (
+    src: Map<string, Set<string>>,
+    exclude: (id: string) => Set<string> | undefined,
+  ): Map<string, string[]> => {
+    const out = new Map<string, string[]>()
+    for (const [id, set] of src) {
+      const kept = [...set].filter((o) => !exclude(id)?.has(o))
+      // Best first, then oldest first — the same order the search results and
+      // the old "Linked" strip used, so the panel's lists all read alike.
+      if (kept.length) out.set(id, kept.sort((a, b) => rank(b) - rank(a) || year(a) - year(b)))
+    }
+    return out
+  }
+
+  const strongSets = symmetrise(items, 'strong', byId)
+  const strong = resolve(strongSets, (id) => family.get(id))
+  const weak = resolve(symmetrise(items, 'weak', byId), (id) => {
+    const out = new Set(family.get(id))
+    for (const o of strongSets.get(id) ?? []) out.add(o)
+    return out
+  })
+  return { children, strong, weak }
 }
 
 /* --------------------------------------------------------------- filtering */
@@ -501,6 +634,8 @@ export class EventIndex {
   private geo: GeoGrid
   /** id → items whose body links to it. Built once; see `backlinksTo`. */
   private backlinks = new Map<string, Item[]>()
+  /** The typed relation graph, both directions materialised (see `buildRelations`). */
+  private relations: Relations
   /**
    * Which plan the last query ran. Diagnostics only — the bench script reads
    * it, and a test asserts the planner picks what it claims to. Nothing in the
@@ -515,6 +650,7 @@ export class EventIndex {
     // 68 000 items, which at that size is 20 ms of the build spent on garbage.
     this.byId = new Map()
     for (const i of items) this.byId.set(i.id, i)
+    this.relations = buildRelations(items, this.byId)
     const pins = pinnableEvents(items)
     this.derivedPins = new Map()
     for (const p of pins) if (p.derivedFrom) this.derivedPins.set(p.id, p)
@@ -671,6 +807,54 @@ export class EventIndex {
   /** Items whose body links to `id`. The other half of a two-way relation. */
   backlinksTo(id: string): Item[] {
     return this.backlinks.get(id) ?? []
+  }
+
+  /* ------------------------------------------------------------ relations */
+
+  /** Direct children of `id`, chronological. Not the whole subtree. */
+  childrenOf(id: string): HistoricalEvent[] {
+    return this.relations.children.get(id) ?? []
+  }
+
+  /**
+   * What `id` is part of, innermost first: its parent, then its parent's
+   * parent, up to the root. `[]` for anything with no parent.
+   *
+   * Defended against a cycle even though the data cannot hold one — the build
+   * script rejects them, but this walk runs on whatever chunks happen to be
+   * loaded, and a hang here would take the panel with it.
+   */
+  parentChain(id: string): HistoricalEvent[] {
+    const out: HistoricalEvent[] = []
+    const seen = new Set<string>([id])
+    let cur = this.byId.get(id)
+    while (cur && isEvent(cur) && cur.parent && !seen.has(cur.parent)) {
+      seen.add(cur.parent)
+      const next = this.byId.get(cur.parent)
+      if (!next || !isEvent(next)) break
+      out.push(next)
+      cur = next
+    }
+    return out
+  }
+
+  private lookup(ids: string[] | undefined): Item[] {
+    const out: Item[] = []
+    for (const id of ids ?? []) {
+      const i = this.byId.get(id)
+      if (i) out.push(i)
+    }
+    return out
+  }
+
+  /** Strongly associated items, both authoring directions merged, best first. */
+  strongOf(id: string): Item[] {
+    return this.lookup(this.relations.strong.get(id))
+  }
+
+  /** See-also items — weak edges only; the panel adds body-link neighbours. */
+  weakOf(id: string): Item[] {
+    return this.lookup(this.relations.weak.get(id))
   }
 }
 

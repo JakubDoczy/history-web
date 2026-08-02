@@ -15,6 +15,21 @@ Geometry is validated on the way through: an event may carry an `area` ring, a
 `paths` list of routes and a `drawing` overlay, all in [lng, lat] order (see
 validate_paths and validate_drawing).
 
+Relations are validated too (see validate_relations). Three typed fields carry
+the whole graph, and all three are written on ONE side only:
+
+  parent   hierarchical containment, one at most, must resolve to an event,
+           acyclic. Battle -> operation -> war.
+  strong   defining, first-order associations. Einstein <-> relativity, a
+           treaty <-> the war it ended. Symmetric; the runtime index
+           materialises the inverse (see buildRelations in src/lib/events.ts).
+  weak     see-also. Informative but secondary. Symmetric, same rule.
+
+One pair, one relation: containment beats strong, strong beats weak. Saying the
+same pair twice — from both ends, or at two strengths, or on top of a
+parent/child edge — is redundant, and this script prints it. The data tests
+then hold the corpus to zero such warnings.
+
 Chunk coverage in the manifest is the true min..max time extent of each chunk,
 so long-running events are found from windows that only touch their tail.
 
@@ -141,6 +156,79 @@ def validate(items: list[dict], ranked: list[str]) -> None:
                 sys.exit(f'{e["id"]}: a {k} needs a {field!r}')
         validate_paths(e)
         validate_drawing(e)
+    validate_relations(items, by_id)
+
+
+def validate_relations(items: list[dict], by_id: dict) -> None:
+    """parent / strong / weak: resolvable, acyclic, symmetric-once, disjoint.
+
+    Anything that would make the runtime graph wrong is fatal; anything that is
+    merely said twice is a warning, because the index dedupes it and failing the
+    build over a harmless duplicate helps nobody. `main` counts the warnings and
+    the data tests assert there are none, which is what keeps them from rotting.
+    """
+    warnings: list[str] = []
+
+    # --- parent: one, resolvable, to an event, acyclic
+    for e in items:
+        parent = e.get('parent')
+        if parent is None:
+            continue
+        if kind_of(e) != 'event':
+            sys.exit(f'{e["id"]}: only an event can have a parent')
+        if parent == e['id']:
+            sys.exit(f'{e["id"]}: is its own parent')
+        if parent not in by_id:
+            sys.exit(f'{e["id"]}: unknown parent {parent!r}')
+        if kind_of(by_id[parent]) != 'event':
+            sys.exit(f'{e["id"]}: parent {parent!r} is not an event')
+        seen, cur = {e['id']}, parent
+        while cur:
+            if cur in seen:
+                sys.exit(f'{e["id"]}: parent chain is a cycle, through {cur!r}')
+            seen.add(cur)
+            cur = by_id[cur].get('parent')
+
+    # --- strong / weak: resolvable, no self, no duplicates within one list
+    declared: dict[str, set[tuple[str, str]]] = {'strong': set(), 'weak': set()}
+    for e in items:
+        for field in ('strong', 'weak'):
+            ids = e.get(field)
+            if ids is None:
+                continue
+            if not isinstance(ids, list) or not all(isinstance(i, str) for i in ids):
+                sys.exit(f'{e["id"]}: {field} must be a list of ids')
+            if not ids:
+                sys.exit(f'{e["id"]}: empty {field} — drop the field instead')
+            if len(set(ids)) != len(ids):
+                sys.exit(f'{e["id"]}: {field} lists the same id twice')
+            for other in ids:
+                if other == e['id']:
+                    sys.exit(f'{e["id"]}: relates to itself via {field}')
+                if other not in by_id:
+                    sys.exit(f'{e["id"]}: unknown {field} id {other!r}')
+                declared[field].add((e['id'], other))
+
+    # --- one pair, one relation
+    family = {
+        (e['id'], e['parent']) for e in items if e.get('parent')
+    } | {(e['parent'], e['id']) for e in items if e.get('parent')}
+    for field, pairs in declared.items():
+        for a, b in sorted(pairs):
+            if (b, a) in pairs:
+                # only report each unordered pair once
+                if a < b:
+                    warnings.append(f'{a} and {b} both declare {field} — write it on one side only')
+            if (a, b) in family:
+                warnings.append(f'{a} -> {b} is already parent/child; the {field} edge is redundant')
+    for a, b in sorted(declared['weak']):
+        if (a, b) in declared['strong'] or (b, a) in declared['strong']:
+            warnings.append(f'{a} -> {b} is both strong and weak; strong already wins')
+
+    for w in warnings:
+        print(f'  warning: {w}')
+    if warnings:
+        print(f'  {len(warnings)} relation warning(s)')
 
 
 DIRECTIONS = ('oneway', 'twoway')
@@ -317,6 +405,9 @@ def main() -> None:
     minor = sum(1 for e in items if e['priority'] == MINOR_PRIORITY)
     print(f'{total} items -> {len(manifest["chunks"])} chunks + spine ({len(spine)})')
     print(f'  kinds: {kinds}  ranked: {n}  minor: {minor}')
+    rel = {f: sum(len(e.get(f, ())) for e in items) for f in ('strong', 'weak')}
+    rel['parent'] = sum(1 for e in items if e.get('parent'))
+    print(f'  relations: {rel}  (each edge is authored once and read both ways)')
     for c in manifest['chunks']:
         print(f"  {c['file']:20s} {c['count']:6d}  {c['from']:.6g} .. {c['to']:.6g}")
 

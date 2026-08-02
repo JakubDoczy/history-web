@@ -13,6 +13,9 @@
    "biology"
   ],
   "summary": "Farming was developed independently in several regions, beginning with the Fertile Crescent, and permanently changed how humans live.",
+  "strong": [
+   "uruk"
+  ],
   "body": "Wheat, barley, peas, sheep and goats were domesticated in the hills of the Levant and upper Mesopotamia; rice in the Yangtze valley, maize in Mexico, potatoes in the Andes.\n\nFood surpluses supported permanent villages, storable wealth, occupational specialisation and eventually cities. They also brought poorer diets, epidemic disease and social hierarchy. Developments from [writing](event:writing) to the [Industrial Revolution](event:industrial-revolution) rest on this foundation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neolithic_Revolution).",
   "links": [
    {
@@ -38,10 +41,6 @@
   "body": "Part of [Dawn of agriculture](event:agriculture). Circles of T-shaped limestone pillars up to 5.5 m tall are decorated with foxes, snakes and vultures. The site suggests that large-scale ritual gathering may have preceded, rather than followed, settled agriculture.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Göbekli_Tepe).",
   "links": [
    {
-    "label": "Dawn of agriculture",
-    "event": "agriculture"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Göbekli_Tepe"
    }
@@ -59,13 +58,12 @@
    "culture"
   ],
   "parent": "agriculture",
+  "strong": [
+   "catalhoyuk"
+  ],
   "summary": "One of the world's oldest continuously occupied settlements built a stone wall and tower.",
   "body": "Part of [Dawn of agriculture](event:agriculture). One of the world's oldest continuously occupied settlements built a stone wall and tower.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Jericho).",
   "links": [
-   {
-    "label": "Dawn of agriculture",
-    "event": "agriculture"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Jericho"
@@ -89,10 +87,6 @@
   "body": "Part of [Dawn of agriculture](event:agriculture). Domestic animals supplied meat, milk, wool, traction and manure. Kept in close quarters with people, they were also a source of the zoonotic diseases that later devastated populations without immunity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Domestication_of_animals).",
   "links": [
    {
-    "label": "Dawn of agriculture",
-    "event": "agriculture"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Domestication_of_animals"
    }
@@ -110,13 +104,12 @@
    "culture"
   ],
   "parent": "agriculture",
+  "weak": [
+   "uruk"
+  ],
   "summary": "A dense Neolithic town in Anatolia housing several thousand people in mudbrick houses entered through the roof.",
   "body": "Part of [Dawn of agriculture](event:agriculture). A dense Neolithic town in Anatolia housing several thousand people in mudbrick houses entered through the roof.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Çatalhöyük).",
   "links": [
-   {
-    "label": "Dawn of agriculture",
-    "event": "agriculture"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Çatalhöyük"
@@ -136,6 +129,9 @@
    "culture"
   ],
   "summary": "Uruk in southern Mesopotamia grew into arguably the world's first city, with tens of thousands of inhabitants.",
+  "strong": [
+   "writing"
+  ],
   "body": "Monumental temples, mass-produced pottery and administrative seals mark the emergence of a state-scale society, and the accounting needs of its temples produced [writing](event:writing).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Uruk).",
   "links": [
    {
@@ -155,6 +151,9 @@
    "technology"
   ],
   "summary": "Potters' wheels and then wheeled vehicles appeared across Mesopotamia and the Pontic steppe.",
+  "strong": [
+   "bronze-age"
+  ],
   "body": "The oldest wheeled-vehicle images and surviving wheels date to the fourth millennium BCE; the axle, not the wheel itself, was the hard part.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wheel).",
   "links": [
    {
@@ -175,6 +174,10 @@
    "technology"
   ],
   "summary": "Alloying copper with tin produced a metal hard enough for tools and weapons, and trade networks to carry the ingredients.",
+  "strong": [
+   "iron-age",
+   "bronze-age-collapse"
+  ],
   "body": "Tin is rare and rarely found near copper, so bronze required long-distance exchange stretching from Cornwall and Afghanistan to the Mediterranean. That dependence on distant supply was a fragility that helped bring on the [Late Bronze Age collapse](event:bronze-age-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bronze_Age).",
   "links": [
    {
@@ -195,6 +198,10 @@
    "technology"
   ],
   "summary": "Cuneiform accounting marks in Sumer became the first true writing system, with Egyptian hieroglyphs following within a century or two.",
+  "strong": [
+   "phoenician-alphabet",
+   "oracle-bones"
+  ],
   "body": "What began as tokens for counting grain and livestock became, within a few centuries, a full script able to record law, literature and history — and with it the first records that historians can read directly.\n\nWriting was invented independently at least three more times: in China, in Mesoamerica, and probably in the Indus valley.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_writing).",
   "links": [
    {
@@ -214,6 +221,9 @@
    "politics"
   ],
   "summary": "Upper and Lower Egypt were unified under a single king, traditionally Narmer, beginning three millennia of pharaonic civilisation.",
+  "strong": [
+   "middle-kingdom-egypt"
+  ],
   "body": "The Narmer Palette shows the king wearing the crowns of both lands. The state that emerged, bound together by the Nile, outlasted every one of its Bronze Age contemporaries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Dynastic_Period_(Egypt)).",
   "links": [
    {
@@ -235,12 +245,14 @@
    "politics"
   ],
   "summary": "A seafaring Bronze Age culture on Crete built palaces, a merchant fleet and an undeciphered script.",
+  "strong": [
+   "mycenaean-greece"
+  ],
+  "weak": [
+   "phoenician-alphabet"
+  ],
   "body": "Knossos, the largest palace, contained plumbing, frescoes and storage for hundreds of olive oil jars. The Minoans traded across the Mediterranean and wrote in a still undeciphered script, Linear A. The [Thera eruption](event:thera-eruption) struck the southern Aegean around 1600 BCE, and by about 1450 BCE the palaces had passed into Mycenaean hands.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Minoan_civilization).",
   "links": [
-   {
-    "label": "Thera eruption",
-    "event": "thera-eruption"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Minoan_civilization"
@@ -260,6 +272,12 @@
    "politics"
   ],
   "summary": "Mohenjo-daro and Harappa held grid-planned cities with drains, standardised bricks and a script still undeciphered.",
+  "strong": [
+   "vedic-period"
+  ],
+  "weak": [
+   "uruk"
+  ],
   "body": "At its height the civilisation covered a larger area than Egypt and Mesopotamia combined. No palaces, royal tombs or obvious military establishments have been identified in its cities, which sets it apart from other states of the period.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Indus_Valley_Civilisation).",
   "links": [
    {
@@ -281,6 +299,9 @@
    "religion"
   ],
   "summary": "The sarsen circle was raised on Salisbury Plain, aligned on the solstice sunrise and sunset.",
+  "strong": [
+   "gobekli-tepe"
+  ],
   "body": "The bluestones were dragged or carried some 250 km from the Preseli hills of Wales.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Stonehenge).",
   "links": [
    {
@@ -302,13 +323,12 @@
    "technology"
   ],
   "parent": "egypt-unification",
+  "weak": [
+   "stonehenge"
+  ],
   "summary": "Khufu's tomb, 146 metres tall and built from over two million blocks, was the tallest structure on Earth for 3,800 years.",
   "body": "Part of [Unification of Egypt](event:egypt-unification). It is the only one of the Seven Wonders of the Ancient World still standing, and was raised by a paid, organised workforce rather than by slaves.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza).",
   "links": [
-   {
-    "label": "Unification of Egypt",
-    "event": "egypt-unification"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza"
@@ -328,6 +348,12 @@
    "war"
   ],
   "summary": "Sargon of Akkad conquered the Sumerian cities and assembled what is often called the first empire.",
+  "strong": [
+   "ur-nammu-code"
+  ],
+  "weak": [
+   "neo-assyrian"
+  ],
   "body": "It ran on standing armies, appointed governors and a common language of administration — a template later empires would adopt. The empire collapsed after roughly two centuries; drought has been proposed as a cause.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Akkadian_Empire).",
   "links": [
    {
@@ -348,6 +374,9 @@
    "culture"
   ],
   "summary": "The oldest surviving law code predates Hammurabi by about three centuries, setting out written justice in Sumer.",
+  "strong": [
+   "hammurabi"
+  ],
   "body": "Ur-Nammu of the Third Dynasty of Ur, or his son Shulgi, had the laws set down in Sumerian; they survive in later clay-tablet copies covering theft, injury and negligent building. Far shorter than the [Code of Hammurabi](event:hammurabi) but three centuries older, it shows written law already emerging across Mesopotamia.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Code_of_Ur-Nammu).",
   "links": [
    {
@@ -369,6 +398,9 @@
    "culture"
   ],
   "summary": "A golden age of Egyptian art, literature and stable governance, when the state reasserted control after the First Intermediate Period.",
+  "weak": [
+   "hittite-empire"
+  ],
   "body": "Pharaohs like Amenemhat III brought Egypt together again after fragmentation. The era saw flourishing literature, refined sculpture and architecture, and the height of Egyptian bureaucratic sophistication.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Middle_Kingdom_of_Egypt).",
   "links": [
    {
@@ -389,6 +421,9 @@
    "culture"
   ],
   "summary": "The Babylonian king had 282 laws carved on a basalt stele and set up in public.",
+  "weak": [
+   "roman-law-growth"
+  ],
   "body": "It is not the earliest law code, but it is the most complete, and it fixed the principle that the law was written down and knowable rather than the king's whim of the day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Code_of_Hammurabi).",
   "links": [
    {
@@ -413,14 +448,6 @@
   "body": "From their capital at Hattusa they assembled a state of vassal kingdoms, a chariot army and detailed law codes, and fought Egypt at [Kadesh](event:kadesh) before agreeing one of the first recorded peace treaties. The empire fell apart in the [Late Bronze Age collapse](event:bronze-age-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hittites).",
   "links": [
    {
-    "label": "Battle of Kadesh",
-    "event": "kadesh"
-   },
-   {
-    "label": "Late Bronze Age collapse",
-    "event": "bronze-age-collapse"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hittites"
    }
@@ -438,6 +465,9 @@
    "geology"
   ],
   "summary": "One of the largest eruptions of the Holocene destroyed the Minoan town of Akrotiri on Santorini.",
+  "strong": [
+   "minoan-civilization"
+  ],
   "body": "Ash and tsunamis struck Crete, and the buried town — preserved like a Bronze Age Pompeii — has been linked, speculatively, to the legend of Atlantis.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Minoan_eruption).",
   "links": [
    {
@@ -459,16 +489,12 @@
    "politics"
   ],
   "summary": "Mainland Greek palace kingdoms built citadels, traded across the Mediterranean and left the first written Greek.",
+  "strong": [
+   "trojan-war",
+   "bronze-age-collapse"
+  ],
   "body": "Palace centres like Mycenae, Tiryns and Pylos were run by warrior kings and kept their accounts in Linear B, the earliest written form of Greek. Later Greeks remembered this age in the legends of the [Trojan War](event:trojan-war); the palaces burned during the [Late Bronze Age collapse](event:bronze-age-collapse).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mycenaean_Greece).",
   "links": [
-   {
-    "label": "Trojan War",
-    "event": "trojan-war"
-   },
-   {
-    "label": "Late Bronze Age collapse",
-    "event": "bronze-age-collapse"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Mycenaean_Greece"
@@ -488,6 +514,9 @@
    "culture"
   ],
   "summary": "The first Chinese dynasty attested by contemporary writing, ruling from Anyang with bronze ritual vessels and oracle bones.",
+  "weak": [
+   "qin-unification"
+  ],
   "body": "Questions inscribed on ox scapulae and turtle plastrons are the ancestors of the Chinese script still in use today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Shang_dynasty).",
   "links": [
    {
@@ -509,6 +538,9 @@
    "culture"
   ],
   "summary": "The Vedas were composed in Sanskrit, laying the foundations of Hindu religion, ritual and social order.",
+  "weak": [
+   "zoroastrianism"
+  ],
   "body": "The Vedas were composed in Sanskrit during this period, laying the foundations of Hindu religion, ritual and social order. They set out forms of worship, cosmological ideas and social divisions that carried into classical Hinduism.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vedic_period).",
   "links": [
    {
@@ -528,6 +560,9 @@
    "war"
   ],
   "summary": "Egyptians under Ramesses II fought the Hittites to a draw; the peace that followed is the earliest surviving international treaty.",
+  "weak": [
+   "hittite-empire"
+  ],
   "body": "Egyptians under Ramesses II fought the Hittites to a draw; the peace that followed is the earliest surviving international treaty.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Kadesh).",
   "links": [
    {
@@ -548,6 +583,9 @@
    "technology"
   ],
   "summary": "Ironworking spread from Anatolia across Eurasia and Africa, putting hard metal within reach of ordinary farmers and soldiers.",
+  "strong": [
+   "african-iron-working"
+  ],
   "body": "Unlike bronze, iron ore is common almost everywhere, so the new metal broke the trade dependency that had constrained the [Bronze Age](event:bronze-age).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Iron_Age).",
   "links": [
    {
@@ -604,6 +642,9 @@
    "disaster"
   ],
   "summary": "Within about fifty years the Hittite empire, Mycenaean Greece and the great trading cities of the Levant were all destroyed or abandoned.",
+  "strong": [
+   "hittite-empire"
+  ],
   "body": "Ugarit, Hattusa and Pylos burned; Egypt survived but was permanently weakened after fighting off the \"Sea Peoples\". Drought, earthquake swarms, migration and the collapse of interlocking trade networks all seem to be involved.\n\nGreece lost writing altogether for four centuries — a genuine dark age.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Bronze_Age_collapse).",
   "links": [
    {
@@ -628,10 +669,6 @@
   "body": "Part of [Shang dynasty](event:shang-dynasty). Diviners applied heat to the bones, read the cracks, and inscribed the question and the outcome beside them. These inscriptions are the first direct evidence of the Chinese language and of what the Shang court worried about.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oracle_bone_script).",
   "links": [
    {
-    "label": "Shang dynasty",
-    "event": "shang-dynasty"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Oracle_bone_script"
    }
@@ -650,13 +687,12 @@
    "culture"
   ],
   "parent": "bronze-age-collapse",
+  "weak": [
+   "herodotus"
+  ],
   "summary": "The legendary siege of Troy, dated by later Greeks to the twelfth century BCE and immortalised in the *Iliad*.",
   "body": "Part of [Late Bronze Age collapse](event:bronze-age-collapse). The legendary siege of Troy, dated by later Greeks to the twelfth century BCE and immortalised in the *Iliad*.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trojan_War).",
   "links": [
-   {
-    "label": "Late Bronze Age collapse",
-    "event": "bronze-age-collapse"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Trojan_War"
@@ -676,6 +712,9 @@
    "culture"
   ],
   "summary": "A Nubian kingdom on the upper Nile rivalled Egypt, ruled it as the 25th Dynasty, and built hundreds of steep pyramids of its own.",
+  "weak": [
+   "egypt-unification"
+  ],
   "body": "Kush emerged around Napata as Egyptian power waned, and its kings ruled Egypt itself for a century. The capital later moved south to Meroe, a centre of iron working and of trade in gold, incense and ivory reaching from inner Africa to the Mediterranean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kingdom_of_Kush).",
   "links": [
    {
@@ -717,16 +756,12 @@
    "culture"
   ],
   "summary": "China's longest dynasty saw the invention of the 'Mandate of Heaven', feudal government and the philosophical flowering of the Axial Age.",
+  "strong": [
+   "shang-dynasty",
+   "confucius"
+  ],
   "body": "The Zhou overthrew the [Shang](event:shang-dynasty), claiming that heaven had withdrawn its mandate from a failed ruler. Their system of regional lords foreshadowed later imperial administration, and the disorder of the Spring and Autumn and Warring States periods produced [Confucius](event:confucius), Laozi and the other classical Chinese thinkers.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zhou_dynasty).",
   "links": [
-   {
-    "label": "Shang dynasty",
-    "event": "shang-dynasty"
-   },
-   {
-    "label": "Confucius",
-    "event": "confucius"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Zhou_dynasty"
@@ -744,6 +779,9 @@
    "religion"
   ],
   "summary": "The First Temple was built in Jerusalem, becoming the centre of Israelite worship until its destruction in 587 BCE.",
+  "strong": [
+   "hebrew-bible-canon"
+  ],
   "body": "According to tradition the Temple was built in Jerusalem under King Solomon to house the Ark of the Covenant. It was the centre of Israelite worship until its destruction by Nebuchadnezzar II of Babylon in 587 BCE. A Second Temple was later raised on the site and stood until its destruction by Rome in 70 CE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Solomon%27s_Temple).",
   "links": [
    {
@@ -765,6 +803,9 @@
    "war"
   ],
   "summary": "Assyria built the largest empire the world had yet seen, ruling from Nineveh with siege engines, mass deportation and a road system.",
+  "strong": [
+   "achaemenid-empire"
+  ],
   "body": "Assyria built the largest empire the world had yet seen, ruled from Nineveh and extending at its height from Egypt to the Iranian plateau. Its military power rested on standing armies, siege engines and cavalry, and it held its provinces through appointed governors, a road system and the mass deportation of conquered populations. It fell to a coalition of Medes and Babylonians, who destroyed Nineveh in 612 BCE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neo-Assyrian_Empire).",
   "links": [
    {
@@ -785,6 +826,9 @@
    "economy"
   ],
   "summary": "Phoenician settlers from Tyre founded the city that would dominate the western Mediterranean until the [Punic Wars](event:punic-wars).",
+  "strong": [
+   "punic-wars"
+  ],
   "body": "Phoenician settlers from Tyre founded Carthage on the coast of North Africa as a trading colony. It grew into a maritime power controlling the trade routes of the western Mediterranean, and its commercial wealth eventually brought it into conflict with Rome in the [Punic Wars](event:punic-wars).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Carthage).",
   "links": [
    {
@@ -809,10 +853,6 @@
   "body": "Part of [Phoenician alphabet](event:phoenician-alphabet). Writing vowels as well as consonants made the Greek script phonetically complete and easy to learn. Writing spread beyond a narrow scribal class over the following centuries, though full literacy remained limited.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Greek_alphabet).",
   "links": [
    {
-    "label": "Phoenician alphabet",
-    "event": "phoenician-alphabet"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Greek_alphabet"
    }
@@ -830,6 +870,9 @@
    "religion"
   ],
   "summary": "The traditional date of the first games at Olympia, which the Greeks used as the origin of their shared chronology.",
+  "strong": [
+   "athenian-democracy"
+  ],
   "body": "By ancient tradition the first Olympic Games were held in 776 BCE, and Greek writers later used that date as the starting point of a shared chronology. The games were held every four years at the sanctuary of Olympia in the Peloponnese, where athletes from the Greek city-states competed alongside religious observances dedicated to Zeus, and victors were crowned with olive wreaths. The festival continued for nearly twelve centuries, until it was suppressed in the late fourth century CE during the Christianisation of the Roman Empire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ancient_Olympic_Games).",
   "links": [
    {
@@ -849,6 +892,9 @@
    "politics"
   ],
   "summary": "Traditional date of Rome's founding, the seed of the republic and empire that would shape the Mediterranean world.",
+  "strong": [
+   "roman-republic-founded"
+  ],
   "body": "Archaeology shows settlement on the Palatine from at least the tenth century BCE; the Romulus legend gave the city a founding myth to match its later power.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Founding_of_Rome).",
   "links": [
    {
@@ -870,6 +916,9 @@
    "politics"
   ],
   "summary": "The Etruscans of central Italy shaped early Roman religion, government, architecture and culture.",
+  "strong": [
+   "rome-founding"
+  ],
   "body": "From the Etruscans Rome took augury (reading omens in the flight of birds) and haruspicy (inspecting the livers of sacrificed animals), temple design, drainage engineering and, by way of Greek traders, the alphabet. Etruscan kings ruled Rome until the Republic, and Etruscan practice shaped Roman religion long after.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Etruscan_civilization).",
   "links": [
    {
@@ -891,6 +940,9 @@
    "science"
   ],
   "summary": "Thales, Pythagoras, Heraclitus and others sought natural explanations for the world rather than mythological ones.",
+  "strong": [
+   "socrates"
+  ],
   "body": "Thales was credited by later Greeks with predicting an eclipse and held that the Earth floats on water; Pythagoras found ratios linking music and number; Heraclitus declared that all things flow. They worked in the Greek cities of Ionia and southern Italy rather than in Athens.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Presocratic_philosophy).",
   "links": [
    {
@@ -912,12 +964,11 @@
    "culture"
   ],
   "summary": "An ancient Persian faith, dualist in outlook, whose ideas of a final judgment are often argued to have influenced Judaism, Christianity and Islam.",
+  "strong": [
+   "achaemenid-empire"
+  ],
   "body": "Zoroaster taught of a cosmic struggle between truth and falsehood, resolved by a final judgment. His own dates are uncertain, with estimates ranging from about 1500 to 600 BCE. The [Achaemenid Empire](event:achaemenid-empire) invoked the god Ahura Mazda, and Zoroastrianism was the state religion of the later Sasanian empire until the Arab conquest.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zoroastrianism).",
   "links": [
-   {
-    "label": "Achaemenid Persian Empire",
-    "event": "achaemenid-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Zoroastrianism"
@@ -936,6 +987,12 @@
    "religion"
   ],
   "summary": "Siddhartha Gautama taught in the Ganges plain, founding one of the world's great religious and philosophical traditions.",
+  "strong": [
+   "maurya-empire"
+  ],
+  "weak": [
+   "hinduism-solidifies"
+  ],
   "body": "His teaching — the Four Noble Truths and the Eightfold Path — spread with merchants and, later, with the patronage of [Ashoka](event:maurya-empire) across South, Central and East Asia.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gautama_Buddha).",
   "links": [
    {
@@ -957,6 +1014,9 @@
    "religion"
   ],
   "summary": "Kong Qiu taught an ethic of duty, ritual propriety and learning that shaped Chinese government and society for two millennia.",
+  "strong": [
+   "neo-confucianism"
+  ],
   "body": "Confucian texts became the syllabus of the imperial examinations, making his thought the working philosophy of the Chinese state from the [Han](event:han-dynasty) onward.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Confucius).",
   "links": [
    {
@@ -977,6 +1037,9 @@
    "politics"
   ],
   "summary": "Cyrus the Great and his successors ruled from the Aegean to the Indus, the largest empire the world had seen.",
+  "strong": [
+   "alexander-conquests"
+  ],
   "body": "The Persians governed through satrapies, a royal road, a standardised coinage and a policy of religious tolerance — Cyrus is remembered in the Hebrew Bible for allowing the Judean exiles to return.\n\nIt fell to [Alexander](event:alexander-conquests) in 330 BCE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Achaemenid_Empire).",
   "links": [
    {
@@ -1017,6 +1080,9 @@
    "politics"
   ],
   "summary": "The reforms of Cleisthenes gave political power to the assembly of citizens, inventing direct democracy.",
+  "strong": [
+   "peloponnesian-war"
+  ],
   "body": "Roughly 30,000 adult male citizens could vote; women, resident foreigners and a very large enslaved population could not. Even so, the idea that ordinary people should decide public matters — [democracy](item:democracy) — begins here.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Athenian_democracy).",
   "links": [
    {
@@ -1034,20 +1100,21 @@
    "politics"
   ],
   "summary": "Rule by the people: the principle that political authority derives from those subject to it, and the institutions built to make that workable.",
-  "body": "The word is Greek and so is the first working example. The reforms of Cleisthenes in 508 BCE reorganised [Athens](item:athenian-democracy) so that policy was decided by an assembly of citizens and offices were filled largely by lot. It was direct, not representative, and the citizen body excluded women, resident foreigners and a very large enslaved population — perhaps a seventh of the adults present had a vote.\n\nWhat survived antiquity was not the institution but the argument. Roman republicanism, the limits placed on a king by [Magna Carta](item:magna-carta), and the Dutch and English revolutions supplied the vocabulary of consent, representation and the rule of law; the [American](item:us-constitution) and [French](item:rights-of-man) revolutions turned it into written constitutions asserting rights against the state.\n\nThe franchise widened slowly and unevenly — property qualifications, then [women's suffrage](item:finland-suffrage) from 1906, then the [American civil rights](item:civil-rights-act) legislation of the 1960s and the [end of apartheid](item:apartheid-end) in 1994. The count of electoral democracies rose through the twentieth century and has fallen back since about 2010, which is a reminder that the arrangement is maintained rather than achieved.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Democracy).",
-  "related": [
+  "strong": [
    "athenian-democracy",
-   "abraham-lincoln",
-   "nelson-mandela"
+   "us-constitution",
+   "rights-of-man",
+   "magna-carta"
   ],
+  "weak": [
+   "suffragette-movement",
+   "revolutions-1848"
+  ],
+  "body": "The word is Greek and so is the first working example. The reforms of Cleisthenes in 508 BCE reorganised [Athens](item:athenian-democracy) so that policy was decided by an assembly of citizens and offices were filled largely by lot. It was direct, not representative, and the citizen body excluded women, resident foreigners and a very large enslaved population — perhaps a seventh of the adults present had a vote.\n\nWhat survived antiquity was not the institution but the argument. Roman republicanism, the limits placed on a king by [Magna Carta](item:magna-carta), and the Dutch and English revolutions supplied the vocabulary of consent, representation and the rule of law; the [American](item:us-constitution) and [French](item:rights-of-man) revolutions turned it into written constitutions asserting rights against the state.\n\nThe franchise widened slowly and unevenly — property qualifications, then [women's suffrage](item:finland-suffrage) from 1906, then the [American civil rights](item:civil-rights-act) legislation of the 1960s and the [end of apartheid](item:apartheid-end) in 1994. The count of electoral democracies rose through the twentieth century and has fallen back since about 2010, which is a reminder that the arrangement is maintained rather than achieved.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Democracy).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Democracy"
-   },
-   {
-    "label": "Athenian democracy",
-    "event": "athenian-democracy"
    }
   ],
   "priority": 85
@@ -1065,12 +1132,11 @@
    "culture"
   ],
   "summary": "The Vedas, Upanishads and Puranas set out the cosmology, deities and rituals of Hinduism over the course of a millennium.",
+  "strong": [
+   "vedic-period"
+  ],
   "body": "The [Vedic period](event:vedic-period) produced the foundation hymns; the Upanishads added philosophical enquiry and metaphysical speculation; the epics and Puranas supplied mythology and models of devotional worship. By the early centuries CE the doctrines of dharma (duty and law), karma (action and consequence) and rebirth were well established as central concepts of Hindu thought.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hinduism).",
   "links": [
-   {
-    "label": "Vedic period in India",
-    "event": "vedic-period"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hinduism"
@@ -1111,6 +1177,9 @@
    "economy"
   ],
   "summary": "Smelting furnaces appear across sub-Saharan Africa, from the Nok culture of Nigeria to the Great Lakes, reshaping farming and trade.",
+  "weak": [
+   "great-zimbabwe"
+  ],
   "body": "Whether the technique was invented locally or carried across the Sahara is still argued. Iron hoes and axes made heavy soils and woodland workable, and ironworking spread alongside the long Bantu migrations that reshaped the languages of central and southern Africa.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Iron_metallurgy_in_Africa).",
   "links": [
    {
@@ -1131,6 +1200,9 @@
    "war"
   ],
   "summary": "The Greek city-states repelled two Persian invasions, a victory that shaped Greek self-understanding for centuries.",
+  "strong": [
+   "peloponnesian-war"
+  ],
   "body": "The wars produced [Marathon](event:marathon), [Thermopylae](event:thermopylae) and [Salamis](event:salamis), and their telling by Herodotus effectively invented history as a literary form.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Greco-Persian_Wars).",
   "links": [
    {
@@ -1150,13 +1222,12 @@
    "war"
   ],
   "parent": "greco-persian-wars",
+  "weak": [
+   "thermopylae"
+  ],
   "summary": "An outnumbered Athenian hoplite army defeated the Persian landing force on the plain of Marathon.",
   "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). An outnumbered Athenian hoplite army engaged the Persian expeditionary force that had landed on the plain of Marathon, north-east of Athens, and defeated it. The outcome prevented an immediate Persian attack on the city, though the war continued for another decade.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Marathon).",
   "links": [
-   {
-    "label": "Greco-Persian Wars",
-    "event": "greco-persian-wars"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Marathon"
@@ -1178,10 +1249,6 @@
   "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). A small Greek coalition force under Leonidas of Sparta held the narrow coastal pass at Thermopylae for three days against the much larger Persian army led by Xerxes. The Greeks were outflanked when a Persian detachment found a mountain path around the pass; most of the force withdrew, while Leonidas and a rearguard were killed holding the position. The stand delayed the Persian advance into central Greece.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Thermopylae).",
   "links": [
    {
-    "label": "Greco-Persian Wars",
-    "event": "greco-persian-wars"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Thermopylae"
    }
@@ -1198,13 +1265,12 @@
    "war"
   ],
   "parent": "greco-persian-wars",
+  "weak": [
+   "thermopylae"
+  ],
   "summary": "The Greek fleet destroyed the larger Persian navy in the narrows off Salamis, forcing Xerxes to withdraw.",
   "body": "Part of [Greco-Persian Wars](event:greco-persian-wars). The Greek fleet, under the direction of Themistocles, engaged the larger Persian navy in the strait between the island of Salamis and the Attic coast, where the narrow water favoured the more manoeuvrable Greek triremes. The Persian fleet was destroyed with heavy losses. Xerxes withdrew with much of his force, and the army he left behind in Greece was defeated at Plataea the following year.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Salamis).",
   "links": [
-   {
-    "label": "Greco-Persian Wars",
-    "event": "greco-persian-wars"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Salamis"
@@ -1224,6 +1290,9 @@
    "culture"
   ],
   "summary": "A system of jurisprudence emerged over centuries, from the Twelve Tables to Justinian's Digest, shaping all later Western law.",
+  "strong": [
+   "justinian"
+  ],
   "body": "Roman law separated public from private law and worked out concepts of legal personality, contract, inheritance and property. [Justinian's](event:justinian) jurists compiled it in the sixth century; medieval universities revived it; and modern civil law systems across Europe, Latin America and Asia descend from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_law).",
   "links": [
    {
@@ -1245,13 +1314,12 @@
    "religion"
   ],
   "parent": "athenian-democracy",
+  "weak": [
+   "colosseum-built"
+  ],
   "summary": "Athens crowned its Acropolis with a marble temple to Athena, paid for out of the tribute of its empire.",
   "body": "Part of [Athenian democracy](event:athenian-democracy). The Parthenon was built on the Acropolis as a temple to Athena Parthenos, the patron deity of the city, with the sculptor Phidias supervising its decoration. It was paid for out of the tribute collected from the members of the Athenian maritime alliance. The building used the Doric order and was decorated with sculptural reliefs and a gold and ivory statue of the goddess.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Parthenon).",
   "links": [
-   {
-    "label": "Athenian democracy",
-    "event": "athenian-democracy"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Parthenon"
@@ -1269,12 +1337,11 @@
    "culture"
   ],
   "summary": "Herodotus, later called the \"Father of History\", wrote the first extended prose enquiry into the past, centred on the Greco-Persian Wars.",
+  "strong": [
+   "greco-persian-wars"
+  ],
   "body": "Herodotus travelled widely through the Persian empire and the eastern Mediterranean, collecting accounts and questioning witnesses. His *Histories* give the earliest extended narrative of the [Greco-Persian Wars](event:greco-persian-wars). The work mixes reporting, hearsay and legend, but it established the idea that the past should be investigated and written as a connected narrative.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Herodotus).",
   "links": [
-   {
-    "label": "Greco-Persian Wars",
-    "event": "greco-persian-wars"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Herodotus"
@@ -1313,6 +1380,9 @@
    "culture"
   ],
   "summary": "The Maya ran interlocking cycles of 260 and 365 days alongside a Long Count that numbered every day from a fixed starting point.",
+  "strong": [
+   "maya-classic"
+  ],
   "body": "The 260-day tzolk'in and the 365-day haab' meshed in a 52-year round, while the Long Count counted days from a mythical zero point placed in 3114 BCE. Later Maya astronomers used the same arithmetic to tabulate the cycles of Venus and the seasons in which eclipses could fall.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mesoamerican_Long_Count_calendar).",
   "links": [
    {
@@ -1332,6 +1402,9 @@
    "culture"
   ],
   "summary": "Athens condemned Socrates to drink hemlock for impiety and corrupting the young.",
+  "strong": [
+   "plato-academy"
+  ],
   "body": "Through Plato and Aristotle his method of relentless questioning became the backbone of Western philosophy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trial_of_Socrates).",
   "links": [
    {
@@ -1352,6 +1425,9 @@
    "science"
   ],
   "summary": "Plato opened a school in a grove outside Athens that taught mathematics, dialectic and philosophy and became a model for later institutions of learning.",
+  "strong": [
+   "aristotle"
+  ],
   "body": "Plato taught that reality rests on abstract Forms reached through reason, and that geometry trained the mind to grasp them. The Academy taught until Sulla's sack of Athens in 86 BCE, was revived by later Platonists, and closed for good in 529 CE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Plato's_Academy).",
   "links": [
    {
@@ -1373,6 +1449,12 @@
    "science"
   ],
   "summary": "Aristotle systematised logic, biology, physics, ethics and politics, and tutored the young Alexander.",
+  "strong": [
+   "alexander-conquests"
+  ],
+  "weak": [
+   "scholasticism"
+  ],
   "body": "His works dominated European and Islamic learning until the [Scientific Revolution](event:copernicus) began to overturn them.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aristotle).",
   "links": [
    {
@@ -1395,6 +1477,9 @@
    "exploration"
   ],
   "summary": "In eleven years Alexander destroyed the Persian Empire and led an army from Greece to the Punjab.",
+  "weak": [
+   "maurya-empire"
+  ],
   "body": "He founded some twenty cities, [Alexandria](event:alexandria) chief among them, and after his death at 32 his generals carved the conquests into the Hellenistic kingdoms.\n\nGreek language, art and civic forms spread from Egypt to Afghanistan and outlasted the empire that carried them there.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wars_of_Alexander_the_Great).",
   "links": [
    {
@@ -1414,13 +1499,12 @@
    "war"
   ],
   "parent": "alexander-conquests",
+  "weak": [
+   "marathon"
+  ],
   "summary": "Alexander broke the main Persian army under Darius III, opening Mesopotamia and Persia to conquest.",
   "body": "Part of [Conquests of Alexander the Great](event:alexander-conquests). The battle was fought on the Mesopotamian plain near the village of Gaugamela and was the last major pitched battle between Alexander's Macedonian army and the Persian forces. Darius III was defeated and fled the field, and organised Persian resistance ended soon afterwards. The victory opened Mesopotamia and the Persian heartland to Alexander.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Gaugamela).",
   "links": [
-   {
-    "label": "Conquests of Alexander the Great",
-    "event": "alexander-conquests"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Gaugamela"
@@ -1442,10 +1526,6 @@
   "summary": "Alexander laid out a Greek city on the Egyptian coast that became the leading centre of learning in the Mediterranean.",
   "body": "Part of [Conquests of Alexander the Great](event:alexander-conquests). Alexandria was laid out as a port and administrative centre, and its position on the Mediterranean made it a hub of trade. Its [Library and Museum](event:library-alexandria) assembled large collections of texts and drew scholars from across the Hellenistic world. After Alexander's death the city became the capital of the Ptolemaic kingdom, and it remained one of the largest cities of the Mediterranean throughout antiquity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Alexandria).",
   "links": [
-   {
-    "label": "Conquests of Alexander the Great",
-    "event": "alexander-conquests"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Alexandria"
@@ -1486,13 +1566,12 @@
    "economy"
   ],
   "parent": "roman-republic-founded",
+  "weak": [
+   "roman-aqueducts"
+  ],
   "summary": "Rome laid some 400,000 km of roads, about 80,000 km of them paved, transforming travel, trade and military logistics.",
   "body": "Part of [Roman Republic formally established](event:roman-republic-founded). The Appian Way, begun in 312 BCE, set the standard: straight where possible, cambered for drainage, surfaced with fitted stone. A legion could march 30 km a day along them, and goods and messages moved across the empire in weeks rather than months.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_roads).",
   "links": [
-   {
-    "label": "Roman Republic formally established",
-    "event": "roman-republic-founded"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Roman_roads"
@@ -1511,6 +1590,9 @@
    "science"
   ],
   "summary": "Epicurus taught that pleasure — defined as absence of pain — is the good, and that simple life brings more pleasure than excess.",
+  "strong": [
+   "stoic-philosophy"
+  ],
   "body": "Epicureanism was misunderstood in later ages as hedonism, but Epicurus himself lived plainly and advocated friendship, philosophy and modest food over luxury. His garden school in Athens became a lasting model of intellectual community.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Epicureanism).",
   "links": [
    {
@@ -1531,13 +1613,12 @@
    "technology"
   ],
   "parent": "nubian-kush",
+  "weak": [
+   "phoenician-alphabet"
+  ],
   "summary": "The Kingdom of Kush developed its own alphabetic script to write the Meroitic language instead of Egyptian.",
   "body": "Part of [Kingdom of Kush](event:nubian-kush). Meroitic has hieroglyphic and cursive forms and is read right to left. The signs can be sounded out, but the language behind them is still barely understood, so much of what the inscriptions say remains closed to us.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Meroitic_script).",
   "links": [
-   {
-    "label": "Kingdom of Kush",
-    "event": "nubian-kush"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Meroitic_script"
@@ -1556,6 +1637,10 @@
    "science"
   ],
   "summary": "Romans mixed lime, volcanic ash and seawater into a durable material that hardened underwater.",
+  "strong": [
+   "roman-aqueducts",
+   "pantheon-built"
+  ],
   "body": "Roman concrete (opus caementicium) let builders raise vaults, domes and harbour works far beyond what cut stone allowed. The Pantheon and the aqueducts depend on it, and its marine version, which sets under seawater, survives in harbours two thousand years on and is still studied by materials scientists.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_concrete).",
   "links": [
    {
@@ -1576,6 +1661,9 @@
    "science"
   ],
   "summary": "Zeno of Citium taught that virtue is the highest good and that passion should be controlled by reason.",
+  "strong": [
+   "marcus-aurelius"
+  ],
   "body": "Stoicism attracted Romans looking for an ethical framework: duty, reason, and apatheia — freedom from destructive passion. [Marcus Aurelius](event:marcus-aurelius), Seneca and the freed slave Epictetus became its best-known voices.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Stoicism).",
   "links": [
    {
@@ -1597,13 +1685,12 @@
    "science"
   ],
   "parent": "alexandria",
+  "weak": [
+   "printing"
+  ],
   "summary": "The Ptolemies assembled the greatest collection of scrolls in the ancient world and paid scholars to work on them.",
   "body": "Part of [Founding of Alexandria](event:alexandria). Eratosthenes measured the circumference of the Earth here to within a few percent; Euclid, Archimedes and Ptolemy all worked in its orbit. The library declined over centuries rather than perishing in a single fire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Library_of_Alexandria).",
   "links": [
-   {
-    "label": "Founding of Alexandria",
-    "event": "alexandria"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Library_of_Alexandria"
@@ -1675,6 +1762,9 @@
    "politics"
   ],
   "summary": "Ying Zheng conquered the warring states and declared himself Qin Shi Huang, first emperor of a unified China.",
+  "strong": [
+   "han-dynasty"
+  ],
   "body": "He standardised script, coinage, weights and axle widths, linked frontier walls into an early [Great Wall](event:great-wall), and was buried with the [Terracotta Army](event:terracotta-army). The dynasty lasted fifteen years; the unified state it created has recurred ever since.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Qin_dynasty).",
   "links": [
    {
@@ -1696,13 +1786,12 @@
    "war"
   ],
   "parent": "qin-unification",
+  "weak": [
+   "silk-road"
+  ],
   "summary": "Frontier walls were linked and repeatedly rebuilt over eighteen centuries; most of what survives is Ming work.",
   "body": "Part of [Qin unification of China](event:qin-unification). Walls built by earlier states were connected into a single defensive system under the Qin, and later dynasties rebuilt and extended it over the following eighteen centuries. The wall served both as a barrier against incursions from the north and as a means of controlling trade and movement across the frontier. Most of what survives today is Ming work, built between 1368 and 1644.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Wall_of_China).",
   "links": [
-   {
-    "label": "Qin unification of China",
-    "event": "qin-unification"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Great_Wall_of_China"
@@ -1720,13 +1809,12 @@
    "war"
   ],
   "parent": "punic-wars",
+  "weak": [
+   "zama"
+  ],
   "summary": "Hannibal's double envelopment destroyed a much larger Roman army in southern Italy.",
   "body": "Part of [Punic Wars](event:punic-wars). The battle was fought near Cannae in southern Italy during the Second Punic War. Hannibal's outnumbered army used a double envelopment: the centre of his line gave ground while the flanks held and then closed on the Romans from both sides. The Roman army was surrounded and destroyed. Cannae was among the heaviest defeats in Roman military history and is still studied in military academies as a model of envelopment, though it did not prevent Rome's eventual victory in the war.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Cannae).",
   "links": [
-   {
-    "label": "Punic Wars",
-    "event": "punic-wars"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Cannae"
@@ -1744,13 +1832,12 @@
    "culture"
   ],
   "parent": "qin-unification",
+  "weak": [
+   "great-pyramid"
+  ],
   "summary": "Some 8,000 life-sized clay soldiers were buried to guard the first emperor's tomb; farmers rediscovered them in 1974.",
   "body": "Part of [Qin unification of China](event:qin-unification). The tomb complex of the first emperor of a unified China held some 8,000 life-sized ceramic soldiers, together with horses and attendants, arranged in formation to guard the burial. Each figure was individually sculpted and painted. Farmers rediscovered the pits in 1974, and the figures have since provided detailed evidence of Qin military organisation, weaponry and sculptural technique.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Terracotta_Army).",
   "links": [
-   {
-    "label": "Qin unification of China",
-    "event": "qin-unification"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Terracotta_Army"
@@ -1770,6 +1857,9 @@
    "culture"
   ],
   "summary": "Four centuries of Han rule set the pattern of Chinese imperial government and gave the majority ethnic group its name.",
+  "strong": [
+   "silk-road"
+  ],
   "body": "The Han institutionalised [Confucian](event:confucius) learning in its bureaucracy, opened the [Silk Road](event:silk-road), and invented paper, the seismoscope and the wheelbarrow.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Han_dynasty).",
   "links": [
    {
@@ -1793,10 +1883,6 @@
   "body": "Part of [Punic Wars](event:punic-wars). The battle was fought in North Africa near Zama. Scipio Africanus commanded the Roman army against Hannibal, who had been recalled from Italy to defend Carthaginian territory, and won a decisive victory. Carthage accepted peace terms heavily favourable to Rome, ending the Second Punic War and leaving Rome the dominant power in the western Mediterranean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Zama).",
   "links": [
    {
-    "label": "Punic Wars",
-    "event": "punic-wars"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Zama"
    }
@@ -1815,6 +1901,9 @@
    "exploration"
   ],
   "summary": "Caravan routes linked China, Central Asia, Persia, India and the Mediterranean for some fifteen centuries.",
+  "strong": [
+   "spread-buddhism"
+  ],
   "body": "Silk, spices, paper, gunpowder, religions and — devastatingly — the [Black Death](event:black-death) all travelled these roads. On the network as a whole, see [the Silk Roads](item:silk-roads). The Han envoy Zhang Qian's mission west is the conventional starting point.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
   "links": [
    {
@@ -1990,20 +2079,21 @@
    "exploration"
   ],
   "summary": "The overland and maritime routes that connected China, India, Persia and the Mediterranean, and the exchange of goods, technologies, religions and disease along them.",
-  "body": "The name is a nineteenth-century coinage for something that was never a single road. [The routes](item:silk-road) were a shifting web of caravan stages and sea lanes, worked in relays by merchants who rarely travelled their whole length; a bolt of silk might change hands twenty times between Chang'an and Antioch.\n\nGoods moved in both directions — silk, porcelain and rhubarb west; horses, glass, silver and cotton east — but the more consequential cargo was intangible. [Paper](item:paper-invention) reached Samarkand and then the Islamic world and Europe; [Buddhism](item:spread-buddhism) travelled from India into Central Asia and China; gunpowder, the compass and Indian numerals followed the same channels. The [Han](item:han-dynasty) mission of Zhang Qian in 130 BCE is the conventional starting point, and the *Pax Mongolica* under [Genghis Khan's](item:temujin-genghis-khan) successors its safest period, when [Marco Polo](item:marco-polo) made the journey.\n\nDisease used the roads too: the [Black Death](item:black-death) almost certainly reached Europe along them. The overland trade declined as the Ming turned inward after [Zheng He](item:zheng-he-admiral) and as Portuguese ships opened a sea route to the Indies, but the maritime leg never stopped.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
-  "related": [
+  "strong": [
    "silk-road",
-   "temujin-genghis-khan",
-   "zheng-he-admiral"
+   "marco-polo",
+   "spread-buddhism"
   ],
+  "weak": [
+   "temujin-genghis-khan",
+   "zheng-he-admiral",
+   "black-death"
+  ],
+  "body": "The name is a nineteenth-century coinage for something that was never a single road. [The routes](item:silk-road) were a shifting web of caravan stages and sea lanes, worked in relays by merchants who rarely travelled their whole length; a bolt of silk might change hands twenty times between Chang'an and Antioch.\n\nGoods moved in both directions — silk, porcelain and rhubarb west; horses, glass, silver and cotton east — but the more consequential cargo was intangible. [Paper](item:paper-invention) reached Samarkand and then the Islamic world and Europe; [Buddhism](item:spread-buddhism) travelled from India into Central Asia and China; gunpowder, the compass and Indian numerals followed the same channels. The [Han](item:han-dynasty) mission of Zhang Qian in 130 BCE is the conventional starting point, and the *Pax Mongolica* under [Genghis Khan's](item:temujin-genghis-khan) successors its safest period, when [Marco Polo](item:marco-polo) made the journey.\n\nDisease used the roads too: the [Black Death](item:black-death) almost certainly reached Europe along them. The overland trade declined as the Ming turned inward after [Zheng He](item:zheng-he-admiral) and as Portuguese ships opened a sea route to the Indies, but the maritime leg never stopped.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Silk_Road"
-   },
-   {
-    "label": "Silk Road trade network",
-    "event": "silk-road"
    }
   ],
   "priority": 85
@@ -2021,17 +2111,12 @@
    "exploration"
   ],
   "parent": "buddha",
+  "weak": [
+   "spread-christianity"
+  ],
   "summary": "Buddhist monks and merchants carried the faith from India across Central Asia and into China.",
   "body": "Part of [Life of the Buddha](event:buddha). Monks and merchants carried the teaching north into Bactria and along the [Silk Road](event:silk-road) oasis cities; it reached China by the first century CE. Monasteries became centres of translation and learning, and the religion adapted to each culture it entered.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Buddhism).",
   "links": [
-   {
-    "label": "Life of the Buddha",
-    "event": "buddha"
-   },
-   {
-    "label": "Silk Road trade network",
-    "event": "silk-road"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Buddhism"
@@ -2051,6 +2136,9 @@
    "religion"
   ],
   "summary": "The Nazca people of Peru scratched enormous geometric and animal figures into the desert floor.",
+  "strong": [
+   "moche-civilization"
+  ],
   "body": "The lines stretch for miles — some outline spiders, hummingbirds and monkeys, others are long straight tracks and geometric figures. Their purpose is debated: astronomical markers, ritual pathways, or routes to water. Local people always knew of them, but their full shapes were only appreciated once aircraft flew over the pampa in the twentieth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nazca_Lines).",
   "links": [
    {
@@ -2080,20 +2168,21 @@
    "war"
   ],
   "summary": "Roman general and statesman whose conquest of Gaul, civil war and dictatorship ended the Republic in all but name.",
-  "body": "Caesar came from an old patrician family of no recent distinction. He built a career through popular politics and debt, and in 60 BCE joined Pompey and Crassus in the informal alliance later called the First Triumvirate, which secured him the consulship and then a long command in the north.\n\nThe [conquest of Gaul](item:caesar-gaul) between 58 and 50 BCE brought him wealth, a devoted army and a reputation his rivals could not match; his own account of it is still read. Ordered to give up his command, he [crossed the Rubicon](item:rubicon) in 49 BCE and took Italy in weeks. He defeated Pompey at Pharsalus, campaigned in Egypt — where he installed [Cleopatra](item:cleopatra-vii) on the throne — and returned to be made dictator, eventually for life.\n\nHe reformed the calendar, settled veterans in colonies across the Mediterranean and extended citizenship. On the Ides of March 44 BCE he was [assassinated](item:caesar-assassination) by a conspiracy of senators who hoped to restore the Republic. The wars that followed did the opposite, ending with his heir Octavian as [the first emperor](item:roman-republic-fall).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Julius_Caesar).",
-  "related": [
-   "cleopatra-vii",
+  "strong": [
+   "rubicon",
    "caesar-assassination",
-   "roman-republic-fall"
+   "caesar-gaul",
+   "roman-republic-fall",
+   "cleopatra-vii"
   ],
+  "weak": [
+   "roman-empire"
+  ],
+  "body": "Caesar came from an old patrician family of no recent distinction. He built a career through popular politics and debt, and in 60 BCE joined Pompey and Crassus in the informal alliance later called the First Triumvirate, which secured him the consulship and then a long command in the north.\n\nThe [conquest of Gaul](item:caesar-gaul) between 58 and 50 BCE brought him wealth, a devoted army and a reputation his rivals could not match; his own account of it is still read. Ordered to give up his command, he [crossed the Rubicon](item:rubicon) in 49 BCE and took Italy in weeks. He defeated Pompey at Pharsalus, campaigned in Egypt — where he installed [Cleopatra](item:cleopatra-vii) on the throne — and returned to be made dictator, eventually for life.\n\nHe reformed the calendar, settled veterans in colonies across the Mediterranean and extended citizenship. On the Ides of March 44 BCE he was [assassinated](item:caesar-assassination) by a conspiracy of senators who hoped to restore the Republic. The wars that followed did the opposite, ending with his heir Octavian as [the first emperor](item:roman-republic-fall).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Julius_Caesar).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Julius_Caesar"
-   },
-   {
-    "label": "Assassination of Caesar",
-    "event": "caesar-assassination"
    }
   ],
   "priority": 73
@@ -2118,19 +2207,17 @@
    "politics"
   ],
   "summary": "The last ruler of Ptolemaic Egypt, who kept her kingdom independent for two decades by way of alliances with Rome's most powerful men.",
-  "body": "Cleopatra was a Macedonian Greek by descent, the last of the Ptolemies who had ruled [Egypt](item:alexandria) since the death of Alexander. She came to the throne at eighteen alongside a younger brother, was driven out, and returned with Roman backing after [Julius Caesar](item:julius-caesar) arrived in Alexandria in 48 BCE. She was reportedly the only member of her dynasty to learn Egyptian.\n\nAfter Caesar's [assassination](item:caesar-assassination) she allied with Mark Antony, with whom she had three children and against whom Octavian turned Roman opinion. Their combined fleet was destroyed at [Actium](item:actium) in 31 BCE; both took their own lives the following year, and Egypt became a Roman province governed as the emperor's personal possession.\n\nHer reign closed three thousand years of Egyptian monarchy. Almost everything written about her in antiquity comes from the side that defeated her, and the portrait of a seductress owes more to Augustan propaganda — and later to Shakespeare — than to the shrewd and multilingual administrator the evidence suggests.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cleopatra).",
-  "related": [
-   "julius-caesar",
+  "strong": [
    "actium"
   ],
+  "weak": [
+   "alexandria"
+  ],
+  "body": "Cleopatra was a Macedonian Greek by descent, the last of the Ptolemies who had ruled [Egypt](item:alexandria) since the death of Alexander. She came to the throne at eighteen alongside a younger brother, was driven out, and returned with Roman backing after [Julius Caesar](item:julius-caesar) arrived in Alexandria in 48 BCE. She was reportedly the only member of her dynasty to learn Egyptian.\n\nAfter Caesar's [assassination](item:caesar-assassination) she allied with Mark Antony, with whom she had three children and against whom Octavian turned Roman opinion. Their combined fleet was destroyed at [Actium](item:actium) in 31 BCE; both took their own lives the following year, and Egypt became a Roman province governed as the emperor's personal possession.\n\nHer reign closed three thousand years of Egyptian monarchy. Almost everything written about her in antiquity comes from the side that defeated her, and the portrait of a seductress owes more to Augustan propaganda — and later to Shakespeare — than to the shrewd and multilingual administrator the evidence suggests.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cleopatra).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Cleopatra"
-   },
-   {
-    "label": "Battle of Actium",
-    "event": "actium"
    }
   ],
   "priority": 57
@@ -2151,10 +2238,6 @@
   "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). As governor, Caesar campaigned against the Gallic tribes for eight years, in a series of battles and sieges that ended with the suppression of a general Gallic revolt. The conquest brought him wealth, military resources and a loyal army, which he later used to seize power at Rome.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gallic_Wars).",
   "links": [
    {
-    "label": "Fall of the Roman Republic",
-    "event": "roman-republic-fall"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Gallic_Wars"
    }
@@ -2173,6 +2256,9 @@
    "war"
   ],
   "summary": "Civil war destroyed the republican constitution and left one man in charge of the Roman world.",
+  "strong": [
+   "roman-empire"
+  ],
   "body": "Caesar [crossed the Rubicon](event:rubicon) in 49 BCE, won the civil war, and was [assassinated](event:caesar-assassination) in 44. The wars that followed ended at [Actium](event:actium), leaving Octavian sole ruler and founding the [Empire](event:roman-empire).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Crisis_of_the_Roman_Republic).",
   "links": [
    {
@@ -2197,10 +2283,6 @@
   "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The Rubicon formed the boundary between Cisalpine Gaul and Italy proper, and Roman law forbade a general to bring an armed force across it. Caesar crossed with a legion anyway, an open challenge to the Senate's authority that began the civil war between his forces and those loyal to the Senate and Pompey.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rubicon).",
   "links": [
    {
-    "label": "Fall of the Roman Republic",
-    "event": "roman-republic-fall"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Rubicon"
    }
@@ -2220,10 +2302,6 @@
   "summary": "Sixty senators stabbed the dictator to death at the Theatre of Pompey on the Ides of March, 44 BCE.",
   "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The plot to save the Republic destroyed it: the resulting civil wars ended with Octavian as sole ruler.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Julius_[Caesar](item:julius-caesar)).",
   "links": [
-   {
-    "label": "Fall of the Roman Republic",
-    "event": "roman-republic-fall"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Assassination_of_Julius_Caesar"
@@ -2245,10 +2323,6 @@
   "body": "Part of [Fall of the Roman Republic](event:roman-republic-fall). The naval battle was fought off Actium in western Greece. Octavian's fleet, commanded by Marcus Agrippa, defeated the forces of Mark Antony and [Cleopatra](item:cleopatra-vii) VII of Egypt, who withdrew to Egypt after the defeat. Octavian pursued them, and after their deaths the following year he annexed Egypt as a Roman province. The victory left him without a rival in the Roman world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Actium).",
   "links": [
    {
-    "label": "Fall of the Roman Republic",
-    "event": "roman-republic-fall"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Actium"
    }
@@ -2266,12 +2340,11 @@
    "culture"
   ],
   "summary": "Virgil's epic poem traced Rome's mythical origins and became the model of the heroic epic for two millennia.",
+  "strong": [
+   "roman-empire"
+  ],
   "body": "The Aeneid follows the Trojan Aeneas to Italy and ties Rome's origins to the settlement won under [Augustus](event:roman-empire). Written to stand beside Homer, it was read in schools for centuries as the benchmark of Latin verse.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aeneid).",
   "links": [
-   {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Aeneid"
@@ -2289,6 +2362,9 @@
    "politics"
   ],
   "summary": "The Senate granted Octavian the name Augustus and effective sole power, beginning two centuries of Roman peace.",
+  "weak": [
+   "ottoman-empire"
+  ],
   "body": "The *Pax Romana* united the Mediterranean under one law, one currency and a road network that would not be matched in Europe for well over a millennium.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_Empire).",
   "links": [
    {
@@ -2308,16 +2384,18 @@
    "culture"
   ],
   "summary": "Ovid's epic poem narrated myths of transformation and became one of the most widely read works of the ancient world.",
+  "strong": [
+   "virgil-aeneid"
+  ],
   "body": "The Metamorphoses links a large collection of Greek and Roman myths through the theme of change and rebirth. Written at the height of [the Augustan age](event:roman-empire), it is known for its wit, and it circulated widely in antiquity before becoming a major influence on medieval and Renaissance literature and art.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Metamorphoses).",
   "links": [
-   {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Metamorphoses"
    }
+  ],
+  "weak": [
+   "roman-empire"
   ]
  },
  {
@@ -2331,6 +2409,9 @@
    "religion"
   ],
   "summary": "Jesus of Nazareth was executed in Roman Judaea; his followers' claim that he rose again founded Christianity.",
+  "strong": [
+   "hebrew-bible-canon"
+  ],
   "body": "Within three centuries the movement had spread across the empire that killed him, and after [Constantine](event:constantine) it became the religion of the Roman state.\n\nChristianity is today the largest religion in the world, and the Western calendar still counts from an estimate of his birth.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Crucifixion_of_Jesus).",
   "links": [
    {
@@ -2352,17 +2433,13 @@
    "technology"
   ],
   "parent": "roman-empire",
+  "weak": [
+   "pantheon-built",
+   "rome-peak"
+  ],
   "summary": "The Flavian Amphitheatre was built under emperors Vespasian and Titus, the largest such structure in the ancient world.",
   "body": "Part of [Founding of the Roman Empire](event:roman-empire). The Colosseum could seat 50,000 and was used for gladiatorial combats and public spectacles. It showcased the wealth, engineering and architectural ambition of the [Empire at its peak](event:rome-peak).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Colosseum).",
   "links": [
-   {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
-   {
-    "label": "Roman Empire at its greatest extent",
-    "event": "rome-peak"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Colosseum"
@@ -2381,12 +2458,11 @@
    "culture"
   ],
   "summary": "Pliny compiled an encyclopedic survey of everything known about the natural world, minerals, animals and plants.",
+  "strong": [
+   "vesuvius"
+  ],
   "body": "The Natural History gathers fact, folk belief and hearsay into thirty-seven books, and is our fullest window onto Roman knowledge of the natural world. Pliny died in 79 CE at Stabiae, having taken ships across the bay both to observe the [eruption of Vesuvius](event:vesuvius) and to take people off the shore.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Natural_History_(Pliny)).",
   "links": [
-   {
-    "label": "Eruption of Vesuvius destroys Pompeii",
-    "event": "vesuvius"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Natural_History_(Pliny)"
@@ -2433,7 +2509,8 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Eruption_of_Mount_Vesuvius_in_79_AD"
    }
-  ]
+  ],
+  "parent": "roman-empire"
  },
  {
   "id": "teotihuacan",
@@ -2448,6 +2525,12 @@
    "politics"
   ],
   "summary": "A city of over 100,000 people in the Valley of Mexico, laid out along the Avenue of the Dead.",
+  "strong": [
+   "maya-classic"
+  ],
+  "weak": [
+   "nazca-geoglyphs"
+  ],
   "body": "Teotihuacan was laid out along the Avenue of the Dead, lined with pyramids and other monumental architecture. At its height around 450 CE it held a population estimated at between 100,000 and 200,000, which made it one of the largest cities in the world at the time and a centre of trade and religious activity. The ethnic and linguistic identity of its inhabitants is uncertain, though its influence reached across Mesoamerica. The city was abandoned around 550 CE for reasons that remain debated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Teotihuacan).",
   "links": [
    {
@@ -2469,6 +2552,9 @@
    "politics"
   ],
   "summary": "The Moche of northern coastal Peru built irrigation canals, huge adobe platform mounds and the most expressive pottery in the Andes.",
+  "weak": [
+   "chimor"
+  ],
   "body": "Their modelled and painted vessels show hunting, warfare, ritual and everyday life in unusual detail. Moche engineers irrigated a desert coast from the river valleys, and their largest mound, the Huaca del Sol, is the biggest adobe structure in the Americas. The decline of the culture has been linked to prolonged drought and El Niño flooding.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Moche_culture).",
   "links": [
    {
@@ -2493,10 +2579,6 @@
   "body": "Part of [Founding of the Roman Empire](event:roman-empire). Engineer Frontinus described the system in his treatise; water was distributed to public baths, fountains, sewers and some private homes. No other ancient city had such abundant fresh water or such sophisticated infrastructure.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aqueduct_(Roman)).",
   "links": [
    {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Aqueduct_(Roman)"
    }
@@ -2515,13 +2597,12 @@
    "politics"
   ],
   "parent": "crucifixion",
+  "strong": [
+   "constantine"
+  ],
   "summary": "Three centuries after the crucifixion, Christianity had grown from a Judaean movement into a significant minority religion across the Mediterranean.",
   "body": "Part of [Crucifixion of Jesus](event:crucifixion). Itinerant missionaries like Paul carried the faith along trade routes; communities worshipped in homes and catacombs despite periodic persecution. By 300 CE it had enough political weight to shape emperors.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Christianity).",
   "links": [
-   {
-    "label": "Crucifixion of Jesus",
-    "event": "crucifixion"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/History_of_Christianity"
@@ -2541,6 +2622,9 @@
    "politics"
   ],
   "summary": "Ancestral Puebloans built cliff dwellings and vast trade networks in the American Southwest before abandoning the region around 1300.",
+  "strong": [
+   "cahokia"
+  ],
   "body": "They left behind remarkable pueblos, kivas and thousands of petroglyphs. The reasons for their migration to river valleys remain debated — drought, social upheaval or resource depletion are all suggested.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ancestral_Puebloans).",
   "links": [
    {
@@ -2561,17 +2645,13 @@
    "culture"
   ],
   "parent": "han-dynasty",
+  "weak": [
+   "woodblock-printing",
+   "silk-road"
+  ],
   "summary": "Cai Lun reported to the court a method of making sheets from plant fibres, creating a revolution in writing.",
   "body": "Part of [Han dynasty](event:han-dynasty). Paper was cheaper and lighter than silk or bamboo strips; it could be rolled into scrolls or folded into codices. It was kept secret in China for centuries, then spread westward along the [Silk Road](event:silk-road).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_paper).",
   "links": [
-   {
-    "label": "Han dynasty",
-    "event": "han-dynasty"
-   },
-   {
-    "label": "Silk Road trade network",
-    "event": "silk-road"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/History_of_paper"
@@ -2589,13 +2669,12 @@
    "politics"
   ],
   "parent": "roman-empire",
+  "weak": [
+   "migration-period"
+  ],
   "summary": "Under Trajan the empire reached from Britain to Mesopotamia, ruling perhaps a fifth of humanity.",
   "body": "Part of [Founding of the Roman Empire](event:roman-empire). Under Trajan, who ruled from 98 to 117 CE, the empire reached its greatest extent, stretching from Britain in the north-west to Mesopotamia in the south-east. It enclosed the whole of the Mediterranean basin and ruled a population estimated at perhaps a fifth of humanity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trajan).",
   "links": [
-   {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Trajan"
@@ -2618,10 +2697,6 @@
   "body": "Part of [Founding of the Roman Empire](event:roman-empire). Its coffered dome, still the largest unreinforced concrete dome on Earth, opens to the sky through a nine-metre oculus, and the exterior was once clad in gilded bronze. Dedicated to the gods of Rome, it survived because it was later consecrated as a church.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pantheon,_Rome).",
   "links": [
    {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Pantheon,_Rome"
    }
@@ -2640,13 +2715,12 @@
    "politics"
   ],
   "parent": "roman-empire",
+  "weak": [
+   "antonine-plague"
+  ],
   "summary": "The last of the Five Good Emperors wrote personal philosophical meditations on Stoicism while ruling from 161 to 180 CE.",
   "body": "Part of [Founding of the Roman Empire](event:roman-empire). Marcus Aurelius kept a set of private philosophical notes, later compiled as the *Meditations*, dealing with the Stoic themes of duty, acceptance and virtue. The text became a classic statement of those ideas and was widely read in later centuries. Because he combined philosophical writing with imperial rule, later writers treated him as an example of the philosopher-king.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marcus_Aurelius).",
   "links": [
-   {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Marcus_Aurelius"
@@ -2699,13 +2773,12 @@
    "disease"
   ],
   "parent": "roman-empire",
+  "strong": [
+   "justinian-plague"
+  ],
   "summary": "An epidemic, probably smallpox, killed millions across the Roman world and thinned its armies.",
   "body": "Part of [Founding of the Roman Empire](event:roman-empire). The epidemic spread through the Roman Empire between about 165 and 180 CE, during the reign of Marcus Aurelius. The disease is usually identified as smallpox. Mortality was heaviest in the cities and in the army, and estimates of the total death toll run into the millions. The losses reduced the empire's military manpower and disrupted its economy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Antonine_Plague).",
   "links": [
-   {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Antonine_Plague"
@@ -2724,6 +2797,9 @@
    "culture"
   ],
   "summary": "Maya city-states in the lowlands built stepped pyramids, tracked the planets and kept the most sophisticated writing system in the Americas.",
+  "weak": [
+   "ancestral-puebloans"
+  ],
   "body": "Their Long Count calendar recorded dates to the day across thousands of years. In the ninth century the southern cities were abandoned, probably under a combination of drought and warfare.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Maya_civilization).",
   "links": [
    {
@@ -2745,6 +2821,9 @@
    "politics"
   ],
   "summary": "Japan's Kofun period saw the rise of a unified state, keyhole-shaped tombs, and early Chinese influence.",
+  "strong": [
+   "heian-period"
+  ],
   "body": "Vast keyhole-shaped earthen tombs were raised for the elite, the largest covering more ground than any Egyptian pyramid. Bronze mirrors, iron armour and horse gear from the mounds show growing hierarchy and close contact with Korea. Chinese writing arrived during the period; Buddhism followed in the sixth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kofun_period).",
   "links": [
    {
@@ -2769,10 +2848,6 @@
   "body": "Part of [Founding of the Roman Empire](event:roman-empire). Constantine also founded [Constantinople](event:constantinople-founded) and summoned the [Council of Nicaea](event:nicaea); by 380 Christianity was the official religion of Rome.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Edict_of_Milan).",
   "links": [
    {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Edict_of_Milan"
    }
@@ -2792,6 +2867,9 @@
    "science"
   ],
   "summary": "A classical age of Indian art, literature and mathematics under the Gupta kings.",
+  "strong": [
+   "decimal-numerals"
+  ],
   "body": "Aryabhata calculated pi and the length of the year; the [decimal place-value system](event:decimal-numerals) took its mature form in this period.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gupta_Empire).",
   "links": [
    {
@@ -2811,13 +2889,12 @@
    "religion"
   ],
   "parent": "constantine",
+  "weak": [
+   "great-schism"
+  ],
   "summary": "Bishops from across the empire agreed the Nicene Creed, defining orthodox Christian doctrine.",
   "body": "Part of [Constantine legalises Christianity](event:constantine). Constantine convened the council at Nicaea in Bithynia to settle theological disputes within the church, chiefly over the nature of Christ. The bishops who attended, drawn from across the empire, agreed the Nicene Creed, a statement of doctrine that defined orthodox belief and set it against the positions the council rejected as heretical. The creed remained the standard definition of orthodoxy in later Christian theology.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_Council_of_Nicaea).",
   "links": [
-   {
-    "label": "Constantine legalises Christianity",
-    "event": "constantine"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/First_Council_of_Nicaea"
@@ -2835,13 +2912,12 @@
    "politics"
   ],
   "parent": "constantine",
+  "weak": [
+   "fall-constantinople"
+  ],
   "summary": "Constantine refounded Byzantium as a new imperial capital that would outlast Rome itself by a thousand years.",
   "body": "Part of [Constantine legalises Christianity](event:constantine). Constantine refounded the Greek city of Byzantium, on the Bosphorus, as a new capital for the Roman Empire and named it Constantinople. The site was fortified and provided with public buildings and churches, and the seat of imperial government was moved there. The city remained the capital of the Eastern Roman (Byzantine) Empire for more than a thousand years after Rome fell in the west, until the Ottoman conquest of 1453.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Constantinople).",
   "links": [
-   {
-    "label": "Constantine legalises Christianity",
-    "event": "constantine"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Constantinople"
@@ -2861,6 +2937,9 @@
    "war"
   ],
   "summary": "Gothic, Vandal, Frankish and Hunnic peoples moved into the Roman provinces, remaking the map of Europe.",
+  "strong": [
+   "rome-fall"
+  ],
   "body": "The arrival of the Huns on the steppe set the movements going; within two centuries the western provinces had become Germanic kingdoms.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Migration_Period).",
   "links": [
    {
@@ -2882,6 +2961,9 @@
    "culture"
   ],
   "summary": "Jerome produced the Vulgate, a Latin translation from Hebrew and Greek that became the Church's standard scripture for 1,200 years.",
+  "strong": [
+   "hebrew-bible-canon"
+  ],
   "body": "Working mostly at Bethlehem, Jerome went back to the Hebrew for the Old Testament rather than relying on the Greek Septuagint. The Vulgate became the standard text of Latin Christendom, shaped the vocabulary of medieval Europe, and remained the Catholic Church's official Bible until modern scholarship produced new translations.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vulgate).",
   "links": [
    {
@@ -2901,13 +2983,12 @@
    "war"
   ],
   "parent": "migration-period",
+  "strong": [
+   "rome-fall"
+  ],
   "summary": "Alaric's Goths took the city for the first time in eight hundred years, shocking the Roman world.",
   "body": "Part of [Migration Period](event:migration-period). Alaric led the Visigoths into Rome and plundered the city. It had not been taken by a foreign enemy in some eight hundred years, and contemporaries across the empire reacted with shock. The sack exposed the military weakness of the Western Roman Empire and preceded the loss of its remaining western provinces.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sack_of_Rome_(410)).",
   "links": [
-   {
-    "label": "Migration Period",
-    "event": "migration-period"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Sack_of_Rome_(410)"
@@ -2926,6 +3007,9 @@
    "science"
   ],
   "summary": "Indian mathematicians formalised positional decimal notation with zero as a number in its own right.",
+  "strong": [
+   "al-khwarizmi"
+  ],
   "body": "Brahmagupta gave rules for arithmetic with zero and negative numbers in 628. Transmitted through [al-Khwarizmi](event:al-khwarizmi) to Europe, these numerals displaced Roman ones and made modern computation possible.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hindu–Arabic_numeral_system).",
   "links": [
    {

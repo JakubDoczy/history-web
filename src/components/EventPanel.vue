@@ -50,12 +50,24 @@ const mapId = computed(() => events.selectedId ?? e.value.id)
  */
 const mappable = computed(() => !!events.mapTarget(mapId.value))
 
-const children = computed(() => (event.value ? events.childrenOf(event.value.id) : []))
-/** Everything this article links to, and everything that links back to it. */
-const linked = computed(() => events.linkedTo(e.value.id))
-const readMore = computed(() =>
-  (e.value.related ?? []).map((id) => events.byId(id)).filter((i): i is Item => !!i),
-)
+/* --- the four relation sections, in precedence order ----------------------
+   `parent` / `strong` / `weak` in the data, materialised both ways by the
+   index (see `buildRelations` in lib/events.ts). The store has already made
+   them disjoint, so an item shown under one heading is never shown under
+   another — which is the whole reason the sections can be read as a hierarchy
+   of closeness rather than as four overlapping lists. */
+/** What this is part of, innermost first — its parent, then the parent's parent. */
+const partOf = computed(() => events.parentChainOf(e.value.id))
+/** What it contains: direct children, chronological. */
+const children = computed(() => events.childrenOf(e.value.id))
+/** Its defining associations. */
+const related = computed(() => events.strongOf(e.value.id))
+/** The softer ones, with the article's prose links folded in behind them. */
+const seeAlso = computed(() => events.seeAlsoOf(e.value.id))
+
+/** Persons and concepts are chipped; an event is the unmarked case (as in search). */
+const badge = (i: Item) => (kindOf(i) === 'event' ? '' : kindOf(i))
+const yearOf = (id: string) => formatYear(events.focusYear(id) ?? 0)
 
 const places = computed(() => {
   const p = person.value
@@ -76,10 +88,6 @@ function goTo(id: string) {
 function onBodyClick(ev: MouseEvent) {
   const id = (ev.target as HTMLElement).dataset?.event
   if (id) goTo(id)
-}
-function follow(link: { event?: string; url?: string }) {
-  if (link.event) goTo(link.event)
-  else if (link.url) window.open(link.url, '_blank')
 }
 /**
  * A birth or death place chip: put the globe over it and the timeline on the
@@ -189,7 +197,13 @@ onBeforeUnmount(() => inflight?.abort())
       </button>
     </div>
 
-    <article v-else-if="events.selected" class="sheet panel scroll-y">
+    <!-- `has-minimise` is how the title knows how much of its own line the
+         corner buttons have taken: one of them normally, two in focus mode. -->
+    <article
+      v-else-if="events.selected"
+      class="sheet panel scroll-y"
+      :class="{ 'has-minimise': events.focus }"
+    >
     <span class="grabber" aria-hidden="true" />
     <!-- In focus mode the article can fold back down to the pill without
          leaving the mode: the drawing stays, the pins stay, the reading stops. -->
@@ -217,10 +231,9 @@ onBeforeUnmount(() => inflight?.abort())
       </svg>
     </button>
 
-    <nav v-if="event?.parent" class="crumb">
-      <a @click="goTo(event!.parent!)">{{ events.byId(event!.parent!)?.name }}</a>
-    </nav>
-
+    <!-- No breadcrumb: "Part of" below carries the whole chain, not just one
+         step of it, and two renderings of the same parent in one panel is the
+         patchwork this rework replaced. -->
     <h2>{{ e.name }}</h2>
     <p class="when tnum">
       <span v-if="kindLabel" class="kind">{{ kindLabel }}</span>
@@ -282,8 +295,20 @@ onBeforeUnmount(() => inflight?.abort())
       <span>{{ e.summary }}</span>
     </p>
 
-    <div v-if="children.length" class="block">
-      <span class="eyebrow">Part of this event</span>
+    <!-- The relation sections, widest first: what contains this, what it
+         contains, what it is bound to, what merely rhymes with it. -->
+    <div v-if="partOf.length" class="block" data-test="part-of">
+      <span class="eyebrow">Part of</span>
+      <ul>
+        <li v-for="p in partOf" :key="p.id">
+          <a @click="goTo(p.id)">{{ p.name }}</a>
+          <span class="year tnum">{{ formatYear(p.start) }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div v-if="children.length" class="block" data-test="contains">
+      <span class="eyebrow">Contains</span>
       <ul>
         <li v-for="c in children" :key="c.id">
           <a @click="goTo(c.id)">{{ c.name }}</a>
@@ -292,23 +317,36 @@ onBeforeUnmount(() => inflight?.abort())
       </ul>
     </div>
 
-    <!-- The article's neighbourhood, assembled rather than hand-listed: what this
-         body links to, and what links back at it. -->
-    <div v-if="linked.length" class="block" data-test="linked">
-      <span class="eyebrow">Linked</span>
+    <div v-if="related.length" class="block" data-test="related">
+      <span class="eyebrow">Related</span>
       <ul>
-        <li v-for="l in linked" :key="l.id">
-          <a @click="goTo(l.id)">{{ l.name }}</a>
-          <span class="year tnum">{{ kindOf(l) === 'event' ? formatYear(events.focusYear(l.id) ?? 0) : kindOf(l) }}</span>
+        <li v-for="r in related" :key="r.id">
+          <a @click="goTo(r.id)">{{ r.name }}</a>
+          <span v-if="badge(r)" class="kind">{{ badge(r) }}</span>
+          <span class="year tnum">{{ yearOf(r.id) }}</span>
         </li>
       </ul>
     </div>
 
-    <div v-if="e.links?.length || readMore.length" class="block">
+    <div v-if="seeAlso.length" class="block" data-test="see-also">
+      <span class="eyebrow">See also</span>
+      <ul>
+        <li v-for="l in seeAlso" :key="l.id">
+          <a @click="goTo(l.id)">{{ l.name }}</a>
+          <span v-if="badge(l)" class="kind">{{ badge(l) }}</span>
+          <span class="year tnum">{{ yearOf(l.id) }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Outward references only. Anything pointing at another item in this
+         corpus is a relation, and belongs in the sections above. -->
+    <div v-if="e.links?.length" class="block">
       <span class="eyebrow">Read more</span>
       <p class="links">
-        <a v-for="r in readMore" :key="r.id" @click.prevent="goTo(r.id)">{{ r.name }}</a>
-        <a v-for="l in e.links" :key="l.label" @click.prevent="follow(l)">{{ l.label }}</a>
+        <a v-for="l in e.links" :key="l.label" :href="l.url" target="_blank" rel="noopener">
+          {{ l.label }}
+        </a>
       </p>
     </div>
 
@@ -330,13 +368,19 @@ onBeforeUnmount(() => inflight?.abort())
 </template>
 
 <style scoped>
+/* The article. It is the thing being read, so it gets the room: as wide as a
+   comfortable measure allows, as tall as the two bars leave, and starting as
+   close to its own top edge as the close buttons permit.
+   `top` clears the title bar (50px of it) by 4px rather than by 12; the bottom
+   clears the timeline by 12 rather than by 20; and the top padding is --s3
+   rather than --s5, which is the dead band the title used to float in. */
 .panel {
   position: absolute;
-  top: calc(58px + var(--safe-t));
+  top: calc(54px + var(--safe-t));
   left: calc(var(--s4) + var(--safe-l));
-  width: min(370px, calc(100vw - 2 * var(--s4)));
-  max-height: calc(100dvh - var(--rail-clear) - 78px - var(--safe-t));
-  padding: var(--s5) var(--s5) var(--s5);
+  width: min(400px, calc(100vw - 2 * var(--s4)));
+  max-height: calc(100dvh - var(--rail-clear) - 66px - var(--safe-t));
+  padding: var(--s3) var(--s5) var(--s5);
   z-index: var(--z-event-panel);
   animation: panel-in 0.26s var(--ease);
 }
@@ -354,7 +398,12 @@ onBeforeUnmount(() => inflight?.abort())
    Docked bottom-left, just clear of the timeline, so the map above it — which
    is the whole reason the panel got out of the way — is uninterrupted. It is a
    row of three targets: the name (expands), a chevron (expands), an X (closes,
-   which also leaves the mode). */
+   which also leaves the mode).
+
+   Sized one notch below the article's own scale — a caption, not a headline.
+   The pill is a label on a map the reader is looking *past* it at, so every
+   dimension here is the panel's minus a step: the type is --t-md rather than
+   --t-lg, the chip is eyebrow-sized, the buttons are 26px rather than 30. */
 .pill {
   position: absolute;
   left: calc(var(--s4) + var(--safe-l));
@@ -363,25 +412,25 @@ onBeforeUnmount(() => inflight?.abort())
   display: flex;
   align-items: center;
   gap: var(--s1);
-  max-width: min(420px, calc(100vw - 2 * var(--s4)));
-  padding: 5px 6px 5px var(--s3);
+  max-width: min(380px, calc(100vw - 2 * var(--s4)));
+  padding: 3px 5px 3px var(--s2);
   border-radius: var(--r-pill);
 }
 .pill-main {
   display: flex;
   align-items: baseline;
-  gap: var(--s2);
+  gap: 6px;
   min-width: 0;
   background: none;
   border: none;
-  padding: 5px 2px;
+  padding: 4px 2px;
   color: inherit;
   cursor: pointer;
   text-align: left;
 }
 .pill-name {
   font-family: var(--serif);
-  font-size: var(--t-lg);
+  font-size: var(--t-md);
   font-weight: 600;
   color: var(--frost);
   white-space: nowrap;
@@ -396,9 +445,9 @@ onBeforeUnmount(() => inflight?.abort())
   flex: none;
   border: 1px solid var(--brass-line);
   border-radius: var(--r-pill);
-  padding: 1px 8px;
+  padding: 1px 7px;
   font-family: var(--cond);
-  font-size: var(--t-xs);
+  font-size: var(--t-eyebrow);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--brass);
@@ -407,8 +456,8 @@ onBeforeUnmount(() => inflight?.abort())
   flex: none;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   background: none;
   border: 1px solid transparent;
   border-radius: var(--r-pill);
@@ -481,16 +530,10 @@ onBeforeUnmount(() => inflight?.abort())
   transform: scale(0.94);
 }
 
-.crumb {
-  margin-bottom: var(--s1);
-  font-size: var(--t-sm);
-}
-.crumb a::before {
-  content: '↑';
-  margin-right: 5px;
-  opacity: 0.7;
-}
-
+/* The title starts at the panel's own top edge now, which puts its first line
+   level with the corner buttons — so the space they need is reserved on the
+   line rather than found by luck. One button is 30px at right: --s3; the
+   fold-down chevron in focus mode is a second one 32px further in. */
 h2 {
   margin: 0;
   font-family: var(--serif);
@@ -498,8 +541,11 @@ h2 {
   font-size: var(--t-title);
   line-height: 1.24;
   letter-spacing: -0.005em;
-  padding-right: var(--s5);
+  padding-right: 46px;
   text-wrap: balance;
+}
+.has-minimise h2 {
+  padding-right: 78px;
 }
 .when {
   margin: 6px 0 0;
@@ -513,12 +559,18 @@ h2 {
   align-items: center;
   gap: var(--s2);
 }
-/* what kind of article this is — quiet, since most of them are events */
+/* what kind of article this is — quiet, since most of them are events. Used
+   twice: in the date line for the article itself, and on a row in Related /
+   See also, where the same chip the search results use says that the thing on
+   the other end of a relation is a life or an idea rather than an event. */
 .kind {
+  flex: none;
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
   padding: 1px 8px;
+  font-family: var(--cond);
   font-size: var(--t-xs);
+  text-transform: uppercase;
   color: var(--muted);
   letter-spacing: 0.1em;
 }
@@ -717,11 +769,15 @@ ul {
 }
 .block li {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
   gap: var(--s3);
   font-size: var(--t-md);
   padding: 3px 0;
+}
+/* the name takes the room; the kind chip and the year keep to the right edge */
+.block li > a {
+  flex: 1;
+  min-width: 0;
 }
 .year {
   color: var(--muted);
@@ -796,15 +852,17 @@ ul {
 }
 
 @media (max-width: 640px) {
-  /* a bottom sheet, sitting just clear of the timeline */
+  /* a bottom sheet, sitting just clear of the timeline. It grows with the
+     desktop panel, but only to 62dvh: the map above it is the other half of
+     what a phone is showing, and a sheet past two thirds stops being a sheet. */
   .panel {
     top: auto;
     bottom: calc(var(--rail-clear) + var(--s2));
     left: calc(var(--s3) + var(--safe-l));
     right: calc(var(--s3) + var(--safe-r));
     width: auto;
-    max-height: 56dvh;
-    padding: var(--s5) var(--s4) var(--s4);
+    max-height: 62dvh;
+    padding: var(--s4) var(--s4) var(--s4);
     animation-name: sheet-in;
   }
   @keyframes sheet-in {
@@ -855,20 +913,23 @@ ul {
   .family {
     min-height: 44px;
   }
-  /* the pill spans the width the sheet did, still above the timeline */
+  /* the pill spans the width the sheet did, still above the timeline. It shrinks
+     with the desktop one, but not below a thumb: 38px is the smallest the two
+     buttons can be and still be hit without aiming. */
   .pill {
     left: calc(var(--s3) + var(--safe-l));
     right: calc(var(--s3) + var(--safe-r));
     max-width: none;
+    padding: 3px 5px 3px var(--s3);
   }
   .pill-btn {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
   }
   .pill-main {
     flex: 1;
     min-width: 0;
-    padding: 8px 2px;
+    padding: 7px 2px;
   }
   .close.minimise {
     right: calc(var(--s2) + 42px);

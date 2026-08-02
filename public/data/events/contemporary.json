@@ -11,13 +11,12 @@
    "war"
   ],
   "parent": "ww2",
+  "strong": [
+   "hiroshima"
+  ],
   "summary": "The first detonation of a nuclear weapon, in the New Mexico desert before dawn on 16 July 1945.",
   "body": "Part of [World War II](event:ww2). The product of the Manhattan Project, it made the [bombing of Hiroshima](event:hiroshima) possible three weeks later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trinity_(nuclear_test)).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Trinity_(nuclear_test)"
@@ -36,13 +35,12 @@
    "science"
   ],
   "parent": "ww2",
+  "strong": [
+   "cold-war"
+  ],
   "summary": "Two atomic bombs killed well over 100,000 people; Japan surrendered within days.",
   "body": "Part of [World War II](event:ww2). They remain the only use of nuclear weapons in war. The threat of their use structured the entire [Cold War](event:cold-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atomic_bombings_of_Hiroshima_and_Nagasaki).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Atomic_bombings_of_Hiroshima_and_Nagasaki"
@@ -61,13 +59,12 @@
    "politics"
   ],
   "parent": "ww2",
+  "weak": [
+   "vj-day"
+  ],
   "summary": "Germany surrendered unconditionally on May 7, ending the war in Europe and completing the defeat of Nazi Germany.",
   "body": "Part of [World War II](event:ww2). Germany's unconditional surrender was signed at Reims on 7 May and ratified in Berlin the next day. Hitler had killed himself a week earlier as Soviet troops fought through the capital.\n\nUnlike the armistice that ended [the First World War](event:ww1), the surrender left no room to argue that Germany had not been beaten in the field. But victory in Europe was not peace: the continent was divided along the lines the armies had reached, and the wartime alliance dissolved into the [Cold War](event:cold-war) within two years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Victory_in_Europe_Day).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Victory_in_Europe_Day"
@@ -90,10 +87,6 @@
   "body": "Part of [World War II](event:ww2). Japan announced its surrender on 15 August, after the [atomic bombings](event:hiroshima) of Hiroshima and Nagasaki and the Soviet invasion of Manchuria; the formal instrument was signed aboard the USS Missouri on 2 September.\n\nThe Pacific war, which had begun with the attack on [Pearl Harbor](event:pearl-harbor), had lasted three years and eight months and cost millions of lives, most of them Chinese and Japanese civilians.\n\nThe American occupation that followed rewrote Japan's constitution, broke up the industrial combines and renounced war. The settlement held, though the bases on Okinawa remain contested.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Victory_over_Japan_Day).",
   "links": [
    {
-    "label": "World War II",
-    "event": "ww2"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Victory_over_Japan_Day"
    }
@@ -110,6 +103,12 @@
    "politics"
   ],
   "summary": "Fifty states signed the UN Charter in San Francisco, creating a permanent international forum and a Security Council empowered to authorise the use of force.",
+  "strong": [
+   "versailles"
+  ],
+  "weak": [
+   "marshall-plan"
+  ],
   "body": "The Universal Declaration of Human Rights followed in 1948.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/United_Nations).",
   "links": [
    {
@@ -207,10 +206,6 @@
   "body": "Part of [Decolonisation](event:decolonisation). Independence was the culmination of decades of mass campaigning, including [Gandhi's Salt March](event:salt-march). [Partition](event:partition) accompanied it: 10–20 million displaced and perhaps a million killed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Indian_independence_movement).",
   "links": [
    {
-    "label": "Decolonisation",
-    "event": "decolonisation"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Indian_independence_movement"
    }
@@ -228,13 +223,12 @@
    "disaster"
   ],
   "parent": "indian-independence",
+  "weak": [
+   "israel-founded"
+  ],
   "summary": "Hastily drawn borders through Punjab and Bengal triggered the largest mass migration in history and appalling communal violence.",
   "body": "Part of [Independence of India and Pakistan](event:indian-independence). Hastily drawn borders through Punjab and Bengal triggered the largest mass migration in history and appalling communal violence.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Partition_of_India).",
   "links": [
-   {
-    "label": "Independence of India and Pakistan",
-    "event": "indian-independence"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Partition_of_India"
@@ -273,6 +267,9 @@
    "technology"
   ],
   "summary": "Bell Labs built a solid-state amplifier and switch, the component from which all modern electronics is made.",
+  "weak": [
+   "internet"
+  ],
   "body": "Shrinking transistors — from one per device to tens of billions on a [chip](event:microprocessor) — is the single trend behind computing, communications and the [internet](event:internet).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Transistor).",
   "links": [
    {
@@ -293,6 +290,9 @@
    "politics"
   ],
   "summary": "American aid worth some $13 billion rebuilt Western Europe's shattered economies and tied their recovery to an alliance with the United States.",
+  "strong": [
+   "nato-founded"
+  ],
   "body": "Proposed by Secretary of State George Marshall in June 1947 and enacted by Congress the following April, the European Recovery Program sent roughly $13 billion — over $150 billion in today's money — to sixteen countries over four years.\n\nThe aid revived industrial output and secured Western Europe's alignment with the United States during the [Cold War](event:cold-war). Its architects argued that rebuilding a defeated enemy worked better than the punitive settlement imposed after [the First World War](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marshall_Plan).",
   "links": [
    {
@@ -313,6 +313,9 @@
    "religion"
   ],
   "summary": "Israel declared independence as the British mandate ended; war with its Arab neighbours followed immediately, displacing some 700,000 Palestinians.",
+  "strong": [
+   "six-day-war"
+  ],
   "body": "Israel declared independence as the British mandate ended; war with its Arab neighbours followed immediately, displacing some 700,000 Palestinians.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Israeli_Declaration_of_Independence).",
   "links": [
    {
@@ -333,13 +336,15 @@
    "politics"
   ],
   "parent": "cold-war",
+  "strong": [
+   "berlin-wall"
+  ],
+  "weak": [
+   "marshall-plan"
+  ],
   "summary": "The Soviets cut off West Berlin; Allied aircraft supplied the city for eleven months.",
   "body": "Part of [The Cold War](event:cold-war). The Soviet Union blockaded West Berlin from June 1948 to May 1949, cutting the road, rail and canal routes into the western sectors. Allied aircraft, chiefly American and British, supplied the city's 2.2 million residents for eleven months, flying about 278,000 sorties carrying coal, food and other necessities. The blockade was lifted in May 1949 after it failed to force the Western powers out of the city.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Berlin_Blockade).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Berlin_Blockade"
@@ -358,13 +363,12 @@
    "war"
   ],
   "parent": "cold-war",
+  "weak": [
+   "un-founded"
+  ],
   "summary": "Twelve Western nations signed the North Atlantic Treaty, creating a collective-defence alliance that still stands today.",
   "body": "Part of [The Cold War](event:cold-war). The treaty's Article 5 — that an attack on one is an attack on all — has been invoked only once, after [9/11](event:9-11). NATO expanded eastward after 1991, absorbing former Soviet satellite states and shaping European security for decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/NATO).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/NATO"
@@ -402,13 +406,15 @@
    "war"
   ],
   "parent": "cold-war",
+  "strong": [
+   "vietnam-war"
+  ],
+  "weak": [
+   "prc-founded"
+  ],
   "summary": "North Korean, Chinese, American and UN forces fought to a stalemate close to the original border; no peace treaty was ever signed.",
   "body": "Part of [The Cold War](event:cold-war). North Korea invaded the south on 25 June 1950, and the United Nations authorised a military response. American, South Korean and other UN forces drove north until Chinese troops entered the war in October and pushed them back. North Korean, Chinese, American and UN forces then fought to a stalemate close to the original border. An armistice signed in July 1953 fixed a demilitarised zone near the 38th parallel; no peace treaty was ever signed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Korean_War).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Korean_War"
@@ -428,6 +434,13 @@
    "biology"
   ],
   "summary": "High-yield dwarf wheat and rice, fertiliser and irrigation roughly tripled cereal yields in the developing world.",
+  "strong": [
+   "agriculture",
+   "population-8bn"
+  ],
+  "weak": [
+   "dust-bowl"
+  ],
   "body": "Norman Borlaug's varieties are credited with averting famine for a billion people, at the cost of heavy fertiliser and water use.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Green_Revolution).",
   "links": [
    {
@@ -448,6 +461,10 @@
    "biology"
   ],
   "summary": "Watson and Crick, using Rosalind Franklin's X-ray data, described the double helix — and with it, how genes copy themselves.",
+  "strong": [
+   "human-genome",
+   "crispr"
+  ],
   "body": "Molecular biology, genetic engineering, [the Human Genome Project](event:human-genome) and [CRISPR](event:crispr) all follow from this two-page paper.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nucleic_acid_double_helix).",
   "links": [
    {
@@ -468,6 +485,9 @@
    "politics"
   ],
   "summary": "A mass campaign of boycotts, marches and litigation dismantled legal segregation in the United States.",
+  "strong": [
+   "apartheid-end"
+  ],
   "body": "From *Brown v. Board* and the Montgomery bus boycott through the [March on Washington](event:march-washington) to the [Civil Rights Act](event:civil-rights-act) and the Voting Rights Act, and the [assassination of Martin Luther King](event:mlk-assassination).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Civil_rights_movement).",
   "links": [
    {
@@ -488,6 +508,9 @@
    "disease"
   ],
   "summary": "Jonas Salk's inactivated polio vaccine was declared safe and effective after the largest medical field trial ever run, and childhood polio soon vanished from the developed world.",
+  "strong": [
+   "smallpox-eradication"
+  ],
   "body": "Polio had paralysed thousands of children each year; Salk's vaccine stopped the epidemics. Albert Sabin's live attenuated vaccine followed, leading to a global eradication campaign that nearly succeeded — only two endemic countries remain today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Polio_vaccine).",
   "links": [
    {
@@ -508,13 +531,15 @@
    "war"
   ],
   "parent": "cold-war",
+  "strong": [
+   "decolonisation"
+  ],
+  "weak": [
+   "castro-cuba"
+  ],
   "summary": "Two decades of war ended with American withdrawal and the unification of Vietnam under the north.",
   "body": "Part of [The Cold War](event:cold-war). Perhaps three million Vietnamese died. Televised coverage and mass protest changed how Western democracies relate to their own wars.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vietnam_War).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Vietnam_War"
@@ -533,13 +558,15 @@
    "politics"
   ],
   "parent": "cold-war",
+  "strong": [
+   "israel-founded"
+  ],
+  "weak": [
+   "panama-canal-opens"
+  ],
   "summary": "Egypt nationalised the Suez Canal; Britain, France and Israel invaded; superpower pressure and humiliation forced withdrawal.",
   "body": "Part of [The Cold War](event:cold-war). Egypt nationalised the canal in July 1956; Britain, France and Israel invaded in October under a secret plan. American financial pressure and Soviet threats forced a withdrawal within weeks.\n\nThe crisis ended Britain and France's standing as independent great powers in the Middle East and drew the region further into superpower competition.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Suez_Crisis).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Suez_Crisis"
@@ -558,13 +585,12 @@
    "war"
   ],
   "parent": "cold-war",
+  "strong": [
+   "solidarity-poland"
+  ],
   "summary": "Hungarians briefly freed themselves from Soviet control; Soviet tanks rolled in and crushed the uprising, killing thousands.",
   "body": "Part of [The Cold War](event:cold-war). A student demonstration in Budapest in October 1956 grew into a national uprising, and the new government of Imre Nagy declared neutrality and withdrawal from the Warsaw Pact.\n\nSoviet armour returned in early November. Some 2,500 Hungarians were killed, around 200,000 fled the country, and Nagy was executed two years later. The suppression showed that Moscow would use force to hold its sphere, a position not seriously tested again until the [Solidarity movement](event:solidarity-poland) emerged in Poland in 1980.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hungarian_Revolution_of_1956).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hungarian_Revolution_of_1956"
@@ -588,10 +614,6 @@
   "body": "Part of [The Cold War](event:cold-war). It ran from [Sputnik](event:sputnik) through [Gagarin](event:gagarin) to the [Apollo programme](event:apollo-program), and ended symbolically with a US–Soviet docking in orbit in 1975.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Space_Race).",
   "links": [
    {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Space_Race"
    }
@@ -609,13 +631,12 @@
    "technology"
   ],
   "parent": "space-race",
+  "weak": [
+   "wright-flyer"
+  ],
   "summary": "The first artificial satellite beeped overhead every 96 minutes and stunned the United States into action.",
   "body": "Part of [The Space Race](event:space-race). The Soviet Union launched Sputnik 1 on 4 October 1957. The satellite was a 58-centimetre metal sphere with four external antennas; it passed overhead every 96 minutes, transmitting a simple radio pulse. The launch showed that the Soviet Union could place objects in orbit and, by extension, deliver a warhead by intercontinental missile. In the United States it prompted a sharp increase in funding for science education and for the space programme.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sputnik_1).",
   "links": [
-   {
-    "label": "The Space Race",
-    "event": "space-race"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Sputnik_1"
@@ -637,10 +658,6 @@
   "body": "Part of [The Cold War](event:cold-war). The American embargo that followed pushed Cuba into Moscow's orbit and brought the superpowers perilously close to war at [the Cuban Missile Crisis](event:cuban-missile-crisis) three years later. Castro governed for nearly five decades, handing power to his brother in 2008.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cuban_Revolution).",
   "links": [
    {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Cuban_Revolution"
    }
@@ -657,13 +674,12 @@
    "politics"
   ],
   "parent": "cold-war",
+  "strong": [
+   "berlin-wall-fall"
+  ],
   "summary": "East Germany walled off West Berlin overnight to stop the flight of its population.",
   "body": "Part of [The Cold War](event:cold-war). On the night of 13 August 1961 East Germany sealed the border around West Berlin with barbed wire, replacing it over the following years with a concrete wall and a fortified strip behind it. The barrier was built to stop the flight of the East German population to the West: some 3.5 million people had left between 1949 and 1961. Border guards had orders to shoot those attempting to cross, and at least 140 people died at the wall during its 28 years. It became the most visible symbol of the division of Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Berlin_Wall).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Berlin_Wall"
@@ -681,13 +697,12 @@
    "exploration"
   ],
   "parent": "space-race",
+  "strong": [
+   "sputnik"
+  ],
   "summary": "The first human in space completed a single orbit aboard Vostok 1 and landed by parachute.",
   "body": "Part of [The Space Race](event:space-race). On 12 April 1961 Yuri Gagarin, a 27-year-old Soviet air force pilot, became the first human to reach space. Vostok 1 completed a single orbit in about 108 minutes, reaching a maximum altitude of some 327 kilometres. Gagarin ejected from the capsule during the descent and landed by parachute in the Saratov region of southern Russia. The flight was a major success for the Soviet space programme and made him internationally famous.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Yuri_Gagarin).",
   "links": [
-   {
-    "label": "The Space Race",
-    "event": "space-race"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Yuri_Gagarin"
@@ -711,10 +726,6 @@
   "body": "Part of [The Space Race](event:space-race). Kennedy's commitment in May 1961 to land a man on the Moon before the decade was out mobilised 400,000 people and, at its peak, about 4% of the federal budget. Eleven crewed missions flew between 1968 and 1972, six of which landed on the Moon. Three further landings, Apollo 18 to 20, were cancelled on cost grounds, and the programme ended with Apollo 17 in December 1972.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_program).",
   "links": [
    {
-    "label": "The Space Race",
-    "event": "space-race"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Apollo_program"
    }
@@ -732,13 +743,12 @@
    "war"
   ],
   "parent": "cold-war",
+  "strong": [
+   "castro-cuba"
+  ],
   "summary": "Thirteen days in October 1962 brought the superpowers closer to nuclear war than at any other moment.",
   "body": "Part of [The Cold War](event:cold-war). Soviet missiles in Cuba were withdrawn in exchange for a US pledge not to invade and the quiet removal of American missiles from Turkey. A direct Moscow–Washington hotline followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cuban_Missile_Crisis).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Cuban_Missile_Crisis"
@@ -756,6 +766,9 @@
    "politics"
   ],
   "summary": "President Kennedy was shot while riding through Dallas in an open car, and Vice-President Lyndon Johnson was sworn in the same afternoon.",
+  "strong": [
+   "apollo-program"
+  ],
   "body": "Lee Harvey Oswald was arrested and then shot dead two days later; the Warren Commission concluded he had acted alone, though doubts and conspiracy theories have never gone away.\n\nThe killing came between the [Cuban Missile Crisis](event:cuban-missile-crisis) and the escalation of [the Vietnam War](event:vietnam-war), and Johnson went on to sign the [Civil Rights Act](event:civil-rights-act) his predecessor had proposed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_John_F._Kennedy).",
   "links": [
    {
@@ -775,13 +788,12 @@
    "politics"
   ],
   "parent": "civil-rights",
+  "strong": [
+   "civil-rights-act"
+  ],
   "summary": "A quarter of a million people gathered at the Lincoln Memorial to hear King's \"I Have a Dream\" speech.",
   "body": "Part of [American civil rights movement](event:civil-rights). On 28 August 1963 a quarter of a million people gathered at the Lincoln Memorial for a march organised by civil rights and labour groups to demand jobs, civil rights legislation and an end to segregation. Martin Luther King Jr delivered his \"I Have a Dream\" speech from the steps of the memorial. The march helped build the pressure that produced the Civil Rights Act the following year.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/March_on_Washington_for_Jobs_and_Freedom).",
   "links": [
-   {
-    "label": "American civil rights movement",
-    "event": "civil-rights"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/March_on_Washington_for_Jobs_and_Freedom"
@@ -799,6 +811,12 @@
    "culture"
   ],
   "summary": "Four Liverpool musicians from working-class families became the most popular band in the world, reshaping youth culture.",
+  "strong": [
+   "jazz-singer"
+  ],
+  "weak": [
+   "metoo-movement"
+  ],
   "body": "Their appearance on American television in 1964 drew 73 million viewers. The Beatles pioneered album-focused releases, recording innovations, and psychedelic aesthetics, becoming the backdrop to the sixties counterculture and influencing music for generations.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Beatles).",
   "links": [
    {
@@ -818,13 +836,12 @@
    "politics"
   ],
   "parent": "civil-rights",
+  "weak": [
+   "emancipation"
+  ],
   "summary": "Federal law outlawed discrimination by race, colour, religion, sex or national origin in employment and public accommodation.",
   "body": "Part of [American civil rights movement](event:civil-rights). Signed by President Johnson on 2 July 1964, the act outlawed discrimination by race, colour, religion, sex or national origin in employment, and banned segregation in public accommodation such as hotels, restaurants, theatres and transport. It allowed the federal government to withhold funds from public bodies that discriminated, and created the Equal Employment Opportunity Commission to investigate complaints.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Civil_Rights_Act_of_1964).",
   "links": [
-   {
-    "label": "American civil rights movement",
-    "event": "civil-rights"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Civil_Rights_Act_of_1964"
@@ -847,10 +864,6 @@
   "body": "Part of [People's Republic of China proclaimed](event:prc-founded). Mao Zedong launched the Cultural Revolution in May 1966 against his opponents inside the party and the \"four olds\" — old customs, culture, habits and ideas. Students organised into Red Guard units attacked officials, teachers and anyone judged bourgeois or revisionist; universities closed and schooling was disrupted for years. Estimates of the death toll range from hundreds of thousands to millions, and millions more were purged, imprisoned or sent to the countryside. Temples, monuments, artworks and books were destroyed as part of the campaign against traditional culture. The upheaval ended with Mao's death in 1976.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cultural_Revolution).",
   "links": [
    {
-    "label": "People's Republic of China proclaimed",
-    "event": "prc-founded"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Cultural_Revolution"
    }
@@ -868,6 +881,9 @@
    "politics"
   ],
   "summary": "Israel decisively defeated Egypt, Syria and Jordan in six days, occupying the West Bank, Gaza Strip and Golan Heights.",
+  "strong": [
+   "camp-david-accords"
+  ],
   "body": "Israel opened the war with a pre-emptive air strike on Egypt and, within six days, held the Sinai, the Gaza Strip, the West Bank, East Jerusalem and the Golan Heights.\n\nThe outcome left more than a million Palestinians under Israeli military occupation, a situation that has never been fully resolved. It reshaped the politics of the region and gave new impetus to the Palestinian national movement.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Six-Day_War).",
   "links": [
    {
@@ -888,6 +904,12 @@
    "biology"
   ],
   "summary": "Christiaan Barnard in Cape Town transplanted a donor heart into a patient who survived for 18 days, proving transplantation possible.",
+  "strong": [
+   "polio-vaccine"
+  ],
+  "weak": [
+   "insulin"
+  ],
   "body": "On 3 December 1967 Christiaan Barnard and his team at Groote Schuur Hospital in Cape Town carried out the first human-to-human heart transplant. The patient, Louis Washkansky, lived for 18 days: the transplanted heart kept working, but the drugs suppressing his immune system left him unable to fight the pneumonia that killed him. The operation showed that organ transplantation could work and set off an international transplant race. Later advances in tissue matching and immunosuppression made heart transplantation a standard treatment for end-stage heart disease.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Heart_transplantation).",
   "links": [
    {
@@ -907,13 +929,12 @@
    "politics"
   ],
   "parent": "civil-rights",
+  "strong": [
+   "civil-rights-act"
+  ],
   "summary": "King was shot in Memphis while supporting a strike by sanitation workers; riots followed in over a hundred cities.",
   "body": "Part of [American civil rights movement](event:civil-rights). King was shot dead on 4 April 1968 at the Lorraine Motel in Memphis, Tennessee, where he had come to support a strike by the city's sanitation workers; James Earl Ray later pleaded guilty to the killing. Riots followed in more than a hundred American cities, and Congress passed the Fair Housing Act a week later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Assassination_of_Martin_Luther_King_Jr.).",
   "links": [
-   {
-    "label": "American civil rights movement",
-    "event": "civil-rights"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Assassination_of_Martin_Luther_King_Jr."
@@ -932,6 +953,12 @@
    "culture"
   ],
   "summary": "Police raided a gay bar in Greenwich Village; the community fought back, sparking the modern LGBTQ rights movement.",
+  "strong": [
+   "usa-marriage-equality"
+  ],
+  "weak": [
+   "civil-rights"
+  ],
   "body": "Police raids on gay bars were routine; on this night the crowd at the Stonewall Inn fought back, and the confrontation ran over several nights in Greenwich Village.\n\nThe first Pride marches were held on its anniversary a year later. The movement that grew from it won decriminalisation and, in much of the West, formal equality — including [marriage rights in the United States](event:usa-marriage-equality) in 2015.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Stonewall_riots).",
   "links": [
    {
@@ -972,6 +999,9 @@
    "science"
   ],
   "parent": "apollo-program",
+  "strong": [
+   "sputnik"
+  ],
   "summary": "Humans walked on another world for the first time; some 600 million people watched.",
   "body": "Part of [Apollo programme](event:apollo-program). *That's one small step for a man, one giant leap for mankind.* Armstrong and Aldrin spent 21 hours on the Sea of Tranquillity while Collins orbited above.\n\nIt was the culmination of the [Space Race](event:space-race), and the furthest humans have yet travelled.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_11).",
   "image": {
@@ -979,10 +1009,6 @@
    "caption": "Buzz Aldrin on the lunar surface"
   },
   "links": [
-   {
-    "label": "Apollo programme",
-    "event": "apollo-program"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Apollo_11"
@@ -1017,20 +1043,19 @@
    "technology"
   ],
   "summary": "A network of networks joined by common protocols, in which no central authority routes traffic and any connected machine can address any other.",
-  "body": "The founding idea is packet switching: break a message into pieces, let each find its own way, reassemble at the far end. It is robust because there is no exchange to destroy and no circuit to hold open, and it was demonstrated on [ARPANET](item:internet) in 1969 between four American universities.\n\nWhat made an internet rather than a network was TCP/IP, adopted in 1983, which let separately administered networks interconnect without agreeing on anything but the protocol. The design pushes intelligence to the endpoints and keeps the middle simple — which is why the [World Wide Web](item:www) could be added in 1990 without permission from anyone, and why everything since has followed the same route.\n\nThe machinery underneath is the [transistor](item:transistor), the [microprocessor](item:microprocessor) and the fibre-optic cable; the intellectual foundation runs back through [Turing's](item:alan-turing) definition of computation. Roughly two-thirds of humanity is now connected, mostly through devices in the tradition of the [smartphone](item:iphone), and the same properties that make the network hard to censor make it hard to police.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Internet).",
-  "related": [
+  "strong": [
    "internet",
-   "www",
-   "alan-turing"
+   "www"
   ],
+  "weak": [
+   "iphone",
+   "snowden-leaks"
+  ],
+  "body": "The founding idea is packet switching: break a message into pieces, let each find its own way, reassemble at the far end. It is robust because there is no exchange to destroy and no circuit to hold open, and it was demonstrated on [ARPANET](item:internet) in 1969 between four American universities.\n\nWhat made an internet rather than a network was TCP/IP, adopted in 1983, which let separately administered networks interconnect without agreeing on anything but the protocol. The design pushes intelligence to the endpoints and keeps the middle simple — which is why the [World Wide Web](item:www) could be added in 1990 without permission from anyone, and why everything since has followed the same route.\n\nThe machinery underneath is the [transistor](item:transistor), the [microprocessor](item:microprocessor) and the fibre-optic cable; the intellectual foundation runs back through [Turing's](item:alan-turing) definition of computation. Roughly two-thirds of humanity is now connected, mostly through devices in the tradition of the [smartphone](item:iphone), and the same properties that make the network hard to censor make it hard to police.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Internet).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Internet"
-   },
-   {
-    "label": "ARPANET and the Internet",
-    "event": "internet"
    }
   ],
   "priority": 78
@@ -1046,13 +1071,15 @@
    "exploration"
   ],
   "parent": "apollo-program",
+  "strong": [
+   "moon-landing"
+  ],
+  "weak": [
+   "titanic-sinks"
+  ],
   "summary": "An oxygen tank exploded on the way to the Moon; the crew improvised their way home in the lunar module.",
   "body": "Part of [Apollo programme](event:apollo-program). An oxygen tank in the service module ruptured on 13 April 1970, some 320,000 kilometres from Earth and two days out from the Moon. The crew — James Lovell, Jack Swigert and Fred Haise — abandoned the landing and used the lunar module as a lifeboat, improvising fixes for power, water and carbon dioxide with mission control. They returned safely on 17 April.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_13).",
   "links": [
-   {
-    "label": "Apollo programme",
-    "event": "apollo-program"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Apollo_13"
@@ -1074,10 +1101,6 @@
   "body": "Part of [Invention of the transistor](event:transistor). Intel's 4004, released in November 1971, put a whole central processing unit on a single chip. Successive designs — the 8008, 8080, 8086 and their descendants — grew steadily more capable while the cost of computation fell, making it cheap enough to put a computer inside consumer appliances, personal computers and, later, mobile phones. The microprocessor became the basic component of modern electronics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Microprocessor).",
   "links": [
    {
-    "label": "Invention of the transistor",
-    "event": "transistor"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Microprocessor"
    }
@@ -1094,6 +1117,12 @@
    "politics"
   ],
   "summary": "A burglary at Democratic Party headquarters in Washington unravelled into a scandal that forced Richard Nixon to resign, the only US president ever to do so.",
+  "strong": [
+   "snowden-leaks"
+  ],
+  "weak": [
+   "jfk-assassination"
+  ],
   "body": "Congressional hearings and press reporting traced the break-in of June 1972 back to the White House, exposing wiretapping, hush money and obstruction of justice. Nixon resigned in August 1974 rather than face impeachment.\n\nThe affair produced a wave of reform — campaign finance limits, the Ethics in Government Act, a stronger Freedom of Information Act — and a durable public distrust of the presidency.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Watergate_scandal).",
   "links": [
    {
@@ -1114,6 +1143,12 @@
    "politics"
   ],
   "summary": "Arab oil producers embargoed the West over its support for Israel; oil prices quadrupled and shortages wracked the developed world.",
+  "strong": [
+   "financial-crisis"
+  ],
+  "weak": [
+   "first-gulf-war"
+  ],
   "body": "Western economies relied on cheap oil; the embargo showed their vulnerability and sparked the first energy crisis. It prompted a shift toward nuclear power, fuel efficiency and eventually renewable energy development.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1973_oil_crisis).",
   "links": [
    {
@@ -1133,6 +1168,12 @@
    "politics"
   ],
   "summary": "School students in Soweto marched against compulsory teaching in Afrikaans; police opened fire, and the killings turned a protest into a national revolt against apartheid.",
+  "strong": [
+   "apartheid-end"
+  ],
+  "weak": [
+   "march-washington"
+  ],
   "body": "Estimates of the dead range from the official figure of 176 to several hundred. Photographs of the shootings circulated worldwide and hardened international opinion against the South African government.\n\nA generation radicalised by Soweto sustained the resistance through the 1980s, on the road that led to [the end of apartheid](event:apartheid-end).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Soweto_uprising).",
   "links": [
    {
@@ -1153,6 +1194,9 @@
    "science"
   ],
   "summary": "Two spacecraft toured the outer planets and are now the most distant human-made objects, in interstellar space.",
+  "strong": [
+   "curiosity-mars"
+  ],
   "body": "Voyager 2 launched on 20 August 1977 and Voyager 1 on 5 September, on a faster trajectory that took it past Jupiter and Saturn first. Both flew by Jupiter and Saturn; Voyager 2 went on to Uranus and Neptune, and remains the only spacecraft to have visited either. They returned the first close observations of the giant planets' atmospheres, magnetic fields and moons, and each carries a gold-plated record of sounds and images from Earth. Both have since crossed into interstellar space — Voyager 1 in 2012 and Voyager 2 in 2018 — and Voyager 1 is the most distant human-made object.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyager_program).",
   "links": [
    {
@@ -1172,6 +1216,9 @@
    "politics"
   ],
   "summary": "Egypt and Israel agreed a framework for peace after thirteen days of talks at the US presidential retreat, leading to a treaty signed the following year.",
+  "weak": [
+   "israel-hamas-war"
+  ],
   "body": "President Carter mediated between Anwar Sadat and Menachem Begin; the accords led to the Egypt-Israel peace treaty of 1979, the first between Israel and an Arab state, and the return of the Sinai to Egypt.\n\nSadat was widely condemned in the Arab world and was assassinated in 1981, but the treaty has held for more than four decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Camp_David_Accords).",
   "links": [
    {
@@ -1192,6 +1239,12 @@
    "religion"
   ],
   "summary": "The shah was overthrown; Ayatollah Khomeini led an Islamic revolution that transformed Iran and reshaped the Middle East.",
+  "strong": [
+   "arab-spring"
+  ],
+  "weak": [
+   "six-day-war"
+  ],
   "body": "Mass strikes and street protests forced Mohammad Reza Shah into exile in January 1979; Ayatollah Khomeini returned from exile weeks later, and a referendum established an Islamic republic.\n\nThe revolution inspired Islamist political movements across the region and turned Iran from an American ally into an adversary. The hostage crisis at the US embassy, the war with Iraq and decades of confrontation followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Iranian_Revolution).",
   "links": [
    {
@@ -1212,6 +1265,12 @@
    "technology"
   ],
   "summary": "A stuck valve and misread instruments led to a partial meltdown at a Pennsylvania reactor, the most serious accident in US commercial nuclear power.",
+  "strong": [
+   "chernobyl"
+  ],
+  "weak": [
+   "nuclear-fission"
+  ],
   "body": "Roughly half the reactor core melted, but the containment building held and measured radiation doses to the surrounding population were small. An advisory to pregnant women and small children prompted some 140,000 people to leave the area.\n\nThe accident was far smaller than [Chernobyl](event:chernobyl) seven years later, but it shattered American confidence in nuclear power: new reactor orders effectively stopped for three decades.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Three_Mile_Island_accident).",
   "links": [
    {
@@ -1232,13 +1291,13 @@
    "politics"
   ],
   "parent": "cold-war",
+  "strong": [
+   "soviet-collapse",
+   "afghanistan-war"
+  ],
   "summary": "Soviet troops invaded to prop up a faltering communist regime; a decade-long war and insurgency followed, draining the USSR.",
   "body": "Part of [The Cold War](event:cold-war). Soviet forces entered in December 1979 to prop up a communist government losing control of the countryside, and stayed for nine years.\n\nThe United States, Saudi Arabia and Pakistan armed and funded the mujahideen. Around a million Afghans died and millions more became refugees. The withdrawal in 1989 damaged the Soviet leadership's authority on the eve of [the union's collapse](event:soviet-collapse), and left Afghanistan in a civil war from which the Taliban emerged.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Soviet%E2%80%93Afghan_War).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Soviet%E2%80%93Afghan_War"
@@ -1256,13 +1315,12 @@
    "politics"
   ],
   "parent": "cold-war",
+  "strong": [
+   "berlin-wall-fall"
+  ],
   "summary": "Trade unionists led by Lech Walesa organised strikes and protests against communist rule; the movement eventually brought down the regime.",
   "body": "Part of [The Cold War](event:cold-war). Strikes at the Gdansk shipyard produced the first independent trade union in the Soviet bloc, led by the electrician Lech Walesa; within a year it claimed ten million members.\n\nMartial law drove it underground in 1981, but it survived. Round-table talks in 1989 led to partly free elections that Solidarity won overwhelmingly — the opening move in the year that ended with [the fall of the Berlin Wall](event:berlin-wall-fall).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Solidarity_(Polish_trade_union)).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Solidarity_(Polish_trade_union)"
@@ -1281,6 +1339,9 @@
    "disease"
   ],
   "summary": "The WHO declared smallpox eradicated — the only human disease ever deliberately eliminated.",
+  "strong": [
+   "covid"
+  ],
   "body": "A worldwide campaign of surveillance and ring [vaccination](event:smallpox-vaccine) ended a disease that had killed an estimated 300 million people in the twentieth century alone.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Smallpox).",
   "links": [
    {
@@ -1300,6 +1361,9 @@
    "disease"
   ],
   "summary": "US doctors reported clusters of rare infections in previously healthy young men, the first recognition of the disease later named AIDS.",
+  "strong": [
+   "covid"
+  ],
   "body": "The virus behind it, HIV, was identified in 1983. Spreading through blood and sexual contact, the epidemic had killed an estimated 40 million people worldwide by the early 2020s, with sub-Saharan Africa worst affected.\n\nAntiretroviral drugs from 1996 turned the infection into a manageable chronic condition where they were available. The epidemic reshaped public health practice, drug regulation and patient activism.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/HIV/AIDS).",
   "links": [
    {
@@ -1320,6 +1384,9 @@
    "politics"
   ],
   "summary": "Argentina invaded the British Falkland Islands; Britain retook them in a ten-week war fought thousands of miles from Europe.",
+  "strong": [
+   "latam-independence"
+  ],
   "body": "Argentina's military government seized the islands in April 1982; Britain sent a naval task force 8,000 miles south and retook them by mid-June. Some 650 Argentine and 255 British personnel died, along with three islanders.\n\nDefeat discredited the Argentine junta, which fell within a year, while the victory strengthened Margaret Thatcher's government in Britain.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Falklands_War).",
   "links": [
    {
@@ -1340,6 +1407,9 @@
    "technology"
   ],
   "summary": "A reactor test went catastrophically wrong, spreading radioactive fallout across Europe and forcing permanent evacuation.",
+  "strong": [
+   "fukushima-disaster"
+  ],
   "body": "A botched safety test at the Chernobyl nuclear plant in Soviet Ukraine on 26 April 1986 caused a power surge that destroyed reactor number four and set its graphite core burning. Radioactive material was carried across much of Europe. The surrounding area was evacuated and some 350,000 people were eventually resettled; thyroid cancer rates rose sharply among those exposed as children. Soviet authorities recorded 31 immediate deaths, and estimates of later deaths from radiation vary widely. The accident damaged Soviet credibility at home and abroad, and it reshaped nuclear safety policy worldwide.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chernobyl_disaster).",
   "links": [
    {
@@ -1360,6 +1430,9 @@
    "climate"
   ],
   "summary": "Every country agreed to phase out CFCs to protect the ozone layer — the most successful environmental treaty yet made.",
+  "strong": [
+   "kyoto-protocol"
+  ],
   "body": "The ozone hole is now measurably healing, and the treaty avoided a great deal of additional [warming](event:global-warming) as well.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Montreal_Protocol).",
   "links": [
    {
@@ -1379,6 +1452,12 @@
    "politics"
   ],
   "summary": "Students and workers occupied the centre of Beijing for seven weeks demanding reform; the army cleared the square by force, killing hundreds or more.",
+  "strong": [
+   "cultural-revolution"
+  ],
+  "weak": [
+   "berlin-wall-fall"
+  ],
   "body": "The protests spread to cities across China and were the largest challenge the Communist Party had faced since the [Cultural Revolution](event:cultural-revolution). Martial law was declared and troops moved in on the night of 3 June.\n\nDeath tolls remain disputed: official figures cite around 200, while other estimates run into the thousands. The crackdown brought international sanctions and ended a decade of political liberalisation, though economic reform continued.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1989_Tiananmen_Square_protests_and_massacre).",
   "links": [
    {
@@ -1401,10 +1480,6 @@
   "summary": "A confused press conference on 9 November sent crowds to the checkpoints, and the guards let them through.",
   "body": "Part of [The Cold War](event:cold-war). Within a year Germany was reunified; within two the [Soviet Union](event:soviet-collapse) had dissolved. Communist governments across Eastern Europe fell in the same few months.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_the_Berlin_Wall).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fall_of_the_Berlin_Wall"
@@ -1429,6 +1504,10 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/World_Wide_Web"
    }
+  ],
+  "parent": "internet",
+  "strong": [
+   "facebook-founded"
   ]
  },
  {
@@ -1442,6 +1521,9 @@
    "politics"
   ],
   "parent": "berlin-wall-fall",
+  "strong": [
+   "maastricht"
+  ],
   "summary": "East and West Germany merged less than a year after the Berlin Wall fell, reuniting a nation divided for forty-five years.",
   "body": "The [fall of the Berlin Wall](event:berlin-wall-fall) was followed by free elections in the east and a treaty settlement with the four wartime occupying powers. Reunification took formal effect on 3 October 1990.\n\nIntegration was swift but costly: eastern industry collapsed and regional disparities persist. Reunified Germany became the anchor of the [European Union](event:maastricht) and Europe's largest economy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/German_reunification).",
   "links": [
@@ -1463,6 +1545,9 @@
    "war"
   ],
   "summary": "Yugoslavia fragmented into separate states, and the wars that followed brought the worst violence in Europe since 1945.",
+  "strong": [
+   "soviet-collapse"
+  ],
   "body": "Slovenia and Croatia declared independence in June 1991, followed by Macedonia and Bosnia. The federal army and Serb paramilitaries fought to hold territory; the wars in Croatia and Bosnia brought sieges, mass expulsions and the massacre of some 8,000 Bosniak men and boys at Srebrenica in 1995.\n\nAround 130,000 people died and millions were displaced. The conflicts produced the first international war crimes tribunal since Nuremberg and reshaped European security policy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Breakup_of_Yugoslavia).",
   "links": [
    {
@@ -1483,6 +1568,9 @@
    "politics"
   ],
   "summary": "Iraq annexed Kuwait in 1990; a US-led coalition authorised by the UN drove its forces out in six weeks of air and ground warfare.",
+  "strong": [
+   "iraq-war"
+  ],
   "body": "Operation Desert Storm began in January 1991 with a five-week air campaign, followed by a ground offensive that ended in a hundred hours. Coalition losses were light; Iraqi military and civilian deaths ran to tens of thousands, and retreating troops set fire to Kuwait's oil wells.\n\nThe war confirmed American military primacy at the close of the [Cold War](event:cold-war). Sanctions, no-fly zones and a continued US military presence in the Gulf followed, and Saddam Hussein remained in power until [2003](event:iraq-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gulf_War).",
   "links": [
    {
@@ -1552,10 +1640,6 @@
   "body": "Part of [The Cold War](event:cold-war). Gorbachev's reforms, nationalist movements in the republics and a failed hard-line coup in August 1991 brought down the state founded by the [October Revolution](event:october-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dissolution_of_the_Soviet_Union).",
   "links": [
    {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Dissolution_of_the_Soviet_Union"
    }
@@ -1573,6 +1657,9 @@
    "economy"
   ],
   "summary": "The European Communities became the European Union, with a common currency to follow in 1999.",
+  "strong": [
+   "brexit-referendum"
+  ],
   "body": "Signed on 7 February 1992, the Maastricht Treaty turned the European Communities into the European Union, committed members to economic and monetary union and a common currency, and extended cooperation to foreign policy, justice and home affairs. It came into force on 1 November 1993 after ratification by all twelve member states. The euro followed as an accounting currency in 1999 and as notes and coins in 2002.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Maastricht_Treaty).",
   "links": [
    {
@@ -1594,6 +1681,12 @@
    "politics"
   ],
   "summary": "Some 800,000 Tutsi and moderate Hutu were murdered in a hundred days while the world looked away.",
+  "strong": [
+   "un-founded"
+  ],
+  "weak": [
+   "yugoslav-breakup"
+  ],
   "body": "The killing began on 7 April 1994, the day after the aircraft carrying President Juvénal Habyarimana was shot down over Kigali. Hutu militias, army units and local officials killed some 800,000 Tutsi and moderate Hutu in about a hundred days. The UN peacekeeping force in the country, UNAMIR, was left with a narrow mandate and few troops, and foreign governments declined to intervene. The genocide ended when the Tutsi-led Rwandan Patriotic Front took control of the country in July. It has shaped international argument about humanitarian intervention ever since.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rwandan_genocide).",
   "links": [
    {
@@ -1613,6 +1706,9 @@
    "politics"
   ],
   "summary": "Nelson Mandela, imprisoned for 27 years, was elected president in the country's first universal-suffrage election.",
+  "weak": [
+   "decolonisation"
+  ],
   "body": "The transition negotiated by [Nelson Mandela](item:nelson-mandela) and F. W. de Klerk, and the Truth and Reconciliation Commission that followed it, avoided the civil war many had predicted.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apartheid).",
   "links": [
    {
@@ -1633,6 +1729,12 @@
    "biology"
   ],
   "summary": "Scottish scientists cloned an adult sheep using nuclear transfer, proving that the genome of an adult cell could be reprogrammed.",
+  "strong": [
+   "crispr"
+  ],
+  "weak": [
+   "human-genome"
+  ],
   "body": "Dolly was born at the Roslin Institute in July 1996 and announced to the world the following February. She was created by transferring the nucleus of an adult mammary cell into an emptied egg.\n\nThe result overturned the assumption that specialised adult cells could not be reset, opening the way to stem-cell reprogramming and regenerative medicine, and prompting immediate debate about human cloning.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dolly_(sheep)).",
   "links": [
    {
@@ -1653,6 +1755,9 @@
    "climate"
   ],
   "summary": "Industrialised nations accepted binding limits on greenhouse gas emissions, the first treaty to put numbers on climate commitments.",
+  "strong": [
+   "paris-agreement"
+  ],
   "body": "The protocol bound developed countries to cut emissions below 1990 levels while exempting developing ones — a division that led the United States to sign but never ratify. It entered force in 2005 once Russia ratified.\n\nGlobal emissions kept rising, and the successor [Paris Agreement](event:paris-agreement) of 2015 replaced binding targets with national pledges. Both are responses to [modern global warming](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kyoto_Protocol).",
   "links": [
    {
@@ -1672,6 +1777,9 @@
    "politics"
   ],
   "parent": "troubles-begin",
+  "strong": [
+   "brexit-referendum"
+  ],
   "summary": "Ireland and Britain signed an agreement ending 30 years of sectarian violence in Northern Ireland, establishing a power-sharing government.",
   "body": "Part of the settlement of [the Troubles](event:troubles-begin). Multi-party talks produced power-sharing institutions in Belfast, cross-border bodies with the Republic, and provisions for prisoner release and paramilitary disarmament.\n\nVoters on both sides of the border approved it by referendum. Devolved government has been suspended several times since, and [Brexit](event:brexit-referendum) reopened the question of the Irish border, but the peace has held.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Good_Friday_Agreement).",
   "links": [
@@ -1714,6 +1822,9 @@
    "politics"
   ],
   "summary": "Hijacked airliners destroyed the World Trade Center and struck the Pentagon, killing nearly 3,000 people.",
+  "strong": [
+   "iraq-war"
+  ],
   "body": "The attacks triggered the wars in Afghanistan and Iraq, a global expansion of surveillance, and two decades of security policy still in force.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/September_11_attacks).",
   "links": [
    {
@@ -1734,6 +1845,9 @@
    "politics"
   ],
   "summary": "A US-led coalition invaded Iraq on the claim that it held weapons of mass destruction; none were found, and the occupation destabilised the region for years.",
+  "weak": [
+   "afghanistan-war"
+  ],
   "body": "Baghdad fell in three weeks and Saddam Hussein's government collapsed, but the occupation met a growing insurgency and a sectarian civil war. Estimates of the dead range from around 200,000 documented civilian deaths to survey figures several times higher.\n\nThe war divided the Western alliance, drew the largest anti-war protests in decades, and left a weakened Iraqi state in which the Islamic State later took root.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/2003_invasion_of_Iraq).",
   "links": [
    {
@@ -1754,6 +1868,9 @@
    "biology"
   ],
   "summary": "Thirteen years and three billion base pairs later, the human genetic sequence was published and placed in the public domain.",
+  "strong": [
+   "crispr"
+  ],
   "body": "Sequencing a genome cost about a billion dollars in 2003 and a few hundred today — one of the fastest cost collapses in the history of technology. See also [CRISPR](event:crispr).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Human_Genome_Project).",
   "links": [
    {
@@ -1773,6 +1890,9 @@
    "technology"
   ],
   "summary": "Mark Zuckerberg launched a social network from his Harvard dorm; it grew to billions of users and reshaped how humans communicate.",
+  "weak": [
+   "metoo-movement"
+  ],
   "body": "Started as a network for Harvard students, Facebook opened to the public in 2006 and passed a billion users in 2012, absorbing Instagram and WhatsApp along the way.\n\nIt made social networking the dominant form of online communication and advertising the dominant business model of the web. It also became the focus of arguments over privacy, algorithmic amplification, misinformation and the effects of social media on adolescents.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Facebook).",
   "links": [
    {
@@ -1793,6 +1913,12 @@
    "climate"
   ],
   "summary": "A hurricane that had peaked at Category 5 over the Gulf came ashore as a Category 3 and breached the levees protecting New Orleans, flooding most of the city.",
+  "strong": [
+   "global-warming"
+  ],
+  "weak": [
+   "fukushima-disaster"
+  ],
   "body": "More than 1,800 people died and over a million were displaced across the Gulf coast. Water covered around 80 per cent of New Orleans for weeks, and the failure of the federal and local relief effort became a national scandal.\n\nThe flooding fell hardest on the city's poorest neighbourhoods, and the storm became a reference point in arguments about extreme weather under [modern global warming](event:global-warming).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hurricane_Katrina).",
   "links": [
    {
@@ -1812,6 +1938,9 @@
    "technology"
   ],
   "summary": "The iPhone put a networked computer with a camera in a pocket, and within a decade most of humanity carried one.",
+  "strong": [
+   "microprocessor"
+  ],
   "body": "Apple released the first iPhone on 29 June 2007. It combined a multi-touch screen, a camera and internet access over Wi-Fi and mobile networks in a pocket-sized device running a version of the Macintosh operating system, OS X. The design set the pattern for the smartphones that followed, and within a decade most of humanity carried one, using it for communication, payment, entertainment and information.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/IPhone_(1st_generation)).",
   "links": [
    {
@@ -1831,6 +1960,9 @@
    "politics"
   ],
   "summary": "Obama became the first African-American US president, amid the worst financial crisis since the Great Depression.",
+  "weak": [
+   "civil-rights"
+  ],
   "body": "Obama won the presidency in the weeks after the [financial crisis](event:financial-crisis) broke, becoming the first African-American to hold the office.\n\nHis two terms brought a health insurance expansion, the nuclear agreement with Iran and the [Paris Agreement](event:paris-agreement) on climate. He faced sustained congressional opposition, and much of the programme was reversed by his successor.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Barack_Obama).",
   "links": [
    {
@@ -1851,6 +1983,12 @@
    "economy"
   ],
   "summary": "The collapse of the American mortgage market brought down banks worldwide and caused the deepest recession since the 1930s.",
+  "strong": [
+   "obama-elected"
+  ],
+  "weak": [
+   "great-depression"
+  ],
   "body": "Rising defaults in the American subprime mortgage market left banks holding mortgage-backed securities with heavy losses. The failure of Lehman Brothers on 15 September 2008 froze credit markets worldwide, and governments and central banks spent trillions on bank rescues and stimulus to prevent a wider collapse. Global output fell in 2009 and unemployment rose sharply across the developed world, in the deepest recession since the 1930s. The crisis brought tighter financial regulation and a long argument over monetary policy and inequality.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/2007–2008_financial_crisis).",
   "links": [
    {
@@ -1871,6 +2009,9 @@
    "politics"
   ],
   "summary": "Protests spread from Tunisia across the Arab world, toppling four governments and setting off civil wars in Syria, Libya and Yemen.",
+  "strong": [
+   "israel-hamas-war"
+  ],
   "body": "Protests that began in Tunisia in December 2010 spread across the Arab world during 2011, demanding political reform and the removal of long-established rulers. Four governments fell: Tunisia's in January 2011, Egypt's in February, Libya's after an armed uprising and NATO intervention later that year, and Yemen's in early 2012. Protests in Syria turned into a civil war, as did the conflicts in Libya and Yemen. Demonstrations in the Gulf states, Morocco and elsewhere brought limited concessions or none. Early hopes of democratic transition gave way to renewed authoritarian rule and prolonged war.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Arab_Spring).",
   "links": [
    {
@@ -1911,6 +2052,9 @@
    "science"
   ],
   "summary": "A one-tonne rover touched down in Gale Crater to explore whether Mars ever harboured life, beginning the most ambitious planetary survey yet.",
+  "strong": [
+   "moon-landing"
+  ],
   "body": "Launched from Cape Canaveral in November 2011, the one-tonne rover was lowered into Gale Crater by a rocket-powered sky crane in August 2012.\n\nCuriosity has outlasted its two-year primary mission many times over, finding ancient lakebed sediments and organic molecules that show Mars was once warmer, wetter and potentially habitable.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Curiosity_(rover)).",
   "links": [
    {
@@ -1930,6 +2074,12 @@
    "science"
   ],
   "summary": "The LHC at CERN found the particle that completes the Standard Model and explains how other particles acquire mass.",
+  "strong": [
+   "gravitational-waves"
+  ],
+  "weak": [
+   "jwst"
+  ],
   "body": "CERN announced on 4 July 2012 that the ATLAS and CMS experiments at the Large Hadron Collider had independently found a new particle matching the Higgs boson, the last particle predicted by the Standard Model to be observed. The boson is the signature of the Higgs field, through which other particles acquire mass; it was proposed in 1964 by Peter Higgs, François Englert and others. Higgs and Englert shared the Nobel Prize in Physics in 2013.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Higgs_boson).",
   "links": [
    {
@@ -1971,6 +2121,12 @@
    "science"
   ],
   "summary": "Neural networks trained on large datasets went from academic curiosity to general-purpose technology in about a decade.",
+  "strong": [
+   "chatgpt-released"
+  ],
+  "weak": [
+   "microprocessor"
+  ],
   "body": "AlexNet's 2012 win in an image-recognition contest started the boom; transformer models from 2017 led to systems that write, translate, code and reason across domains.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Deep_learning).",
   "links": [
    {
@@ -1991,6 +2147,12 @@
    "technology"
   ],
   "summary": "A former NSA contractor, speaking from Hong Kong, gave journalists documents showing that US and allied agencies collected phone and internet records on a mass scale.",
+  "strong": [
+   "facebook-founded"
+  ],
+  "weak": [
+   "www"
+  ],
   "body": "The disclosures described bulk telephone metadata collection, access to the records of major internet services and the tapping of undersea cables. Snowden was charged under the Espionage Act and took refuge in Russia.\n\nThe revelations forced a public argument about surveillance and civil liberties, prompted limited legal reform in the United States, and pushed the technology industry to encrypt traffic by default.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Edward_Snowden).",
   "links": [
    {
@@ -2090,6 +2252,12 @@
    "politics"
   ],
   "summary": "Women shared stories of sexual harassment and assault on social media, sparking a global reckoning with gender violence and workplace abuse.",
+  "strong": [
+   "usa-marriage-equality"
+  ],
+  "weak": [
+   "suffragette-movement"
+  ],
   "body": "The phrase, coined by the activist Tarana Burke in 2006, spread worldwide after allegations against the film producer Harvey Weinstein were published in October 2017.\n\nThe movement led to prosecutions and resignations across entertainment, media, politics and business, and to revised workplace conduct rules. It also prompted argument about due process and about how allegations should be handled.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Me_Too_movement).",
   "links": [
    {
@@ -2111,6 +2279,9 @@
    "disaster"
   ],
   "summary": "A novel coronavirus spread worldwide within months, killing an estimated 7–27 million people and shutting down much of the global economy.",
+  "weak": [
+   "population-8bn"
+  ],
   "body": "It produced the fastest vaccine development in history: mRNA vaccines were in arms within a year of the virus being sequenced. Comparisons were drawn throughout to the [1918 influenza pandemic](event:spanish-flu).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/COVID-19_pandemic).",
   "links": [
    {
@@ -2131,6 +2302,9 @@
    "exploration"
   ],
   "summary": "A 6.5-metre infrared telescope launched to a point 1.5 million km from Earth to observe the first galaxies.",
+  "strong": [
+   "voyager"
+  ],
   "body": "The James Webb Space Telescope launched on 25 December 2021 on an Ariane 5 from French Guiana and took up station at the Sun–Earth Lagrange point 2, about 1.5 million kilometres from Earth. Built by NASA with the European and Canadian space agencies, it carries a 6.5-metre primary mirror made of eighteen gold-coated beryllium segments and observes in the infrared, which lets it see the earliest galaxies as well as the atmospheres of planets around other stars. It succeeded Hubble as the main space observatory for deep observations.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/James_Webb_Space_Telescope).",
   "links": [
    {
@@ -2151,6 +2325,9 @@
    "science"
   ],
   "summary": "OpenAI released a conversational interface to a large language model; it reached a hundred million users within two months and made generative AI a mass technology.",
+  "weak": [
+   "internet"
+  ],
   "body": "The system built on the transformer architecture and the [deep learning](event:deep-learning) methods of the previous decade, but its chat interface put them in ordinary hands for the first time.\n\nIts release set off a wave of investment and competition, and arguments over copyright, misinformation, the future of skilled work and the governance of increasingly capable systems.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/ChatGPT).",
   "links": [
    {
@@ -2172,6 +2349,13 @@
    "politics"
   ],
   "summary": "Russia launched the largest land war in Europe since 1945, driving millions from their homes and reshaping European security.",
+  "strong": [
+   "soviet-collapse",
+   "nato-founded"
+  ],
+  "weak": [
+   "yugoslav-breakup"
+  ],
   "body": "Russia invaded Ukraine on 24 February 2022 with missile strikes and ground offensives on several fronts. Ukraine resisted with its armed forces and a general mobilisation; cities including Mariupol and Kharkiv were heavily damaged. More than six million Ukrainians left the country and millions more were displaced within it. NATO admitted Finland in 2023 and Sweden in 2024, European states raised defence spending, and Western governments supplied Ukraine with large quantities of weapons and money.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Russian_invasion_of_Ukraine).",
   "links": [
    {
@@ -2192,6 +2376,9 @@
    "biology"
   ],
   "summary": "The UN marked an eightfold increase in human numbers since 1800, with growth now slowing worldwide.",
+  "weak": [
+   "global-warming"
+  ],
   "body": "The United Nations marked 15 November 2022 as the day world population reached eight billion, roughly an eightfold increase since 1800, when it stood at about one billion. Growth has been slowing since its peak in the late 1960s and now runs below 1% a year. Rates differ sharply by region, with the fastest growth in sub-Saharan Africa and shrinking populations in parts of East Asia and Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_population).",
   "links": [
    {
@@ -2212,6 +2399,9 @@
    "politics"
   ],
   "summary": "Hamas-led fighters attacked southern Israel, killing about 1,200 people and taking some 250 hostages; Israel responded with an air and ground campaign in Gaza.",
+  "strong": [
+   "six-day-war"
+  ],
   "body": "The attack of 7 October 2023 was the deadliest day for Israelis since the state was founded. The Israeli campaign that followed killed tens of thousands of Palestinians according to Gaza health authorities, displaced most of the territory's population and left much of it in ruins.\n\nThe war brought accusations of war crimes against both sides before international courts, protests worldwide, and fighting that drew in armed groups in Lebanon and Yemen as well as Iran.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gaza_war).",
   "links": [
    {
@@ -2232,6 +2422,12 @@
    "geology"
   ],
   "summary": "A 7.8 magnitude earthquake killed over 50,000 in Turkey and Syria, one of the deadliest earthquakes in a century.",
+  "strong": [
+   "lisbon-earthquake"
+  ],
+  "weak": [
+   "kanto-earthquake"
+  ],
   "body": "The magnitude 7.8 shock struck before dawn near Gaziantep and was followed hours later by a second of magnitude 7.5. Around 60,000 people were killed and millions were left homeless.\n\nPoorly enforced building codes explained much of the collapse in Turkey, while in northern Syria a decade of war had already destroyed housing and hampered the relief effort.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/2023_Turkey%E2%80%93Syria_earthquakes).",
   "links": [
    {

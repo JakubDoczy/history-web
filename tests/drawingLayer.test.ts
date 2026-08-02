@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { BufferGeometry, Mesh, Scene, Vector3 } from 'three'
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import {
   DrawingLayer,
+  SURFACE_ALT,
   glyphShape,
   headOf,
   offsetPoint,
@@ -11,7 +13,7 @@ import {
   trimEnd,
 } from '../src/lib/drawingLayer'
 import type { Drawing } from '../src/lib/drawing'
-import type { GeoPath } from '../src/lib/paths'
+import { ROUTE_STYLE, flowPhase, type GeoPath } from '../src/lib/paths'
 
 const R = 100
 
@@ -306,6 +308,267 @@ describe('DrawingLayer', () => {
     centre.divideScalar(pos.count)
     // Moscow, within the glyph's own radius
     expect((centre.angleTo(globeCoords(55.75, 37.62)) * 180) / Math.PI).toBeLessThan(0.6)
+    layer.dispose()
+  })
+})
+
+describe('SURFACE_ALT', () => {
+  /**
+   * The number the "drawings shift against the ground" bug came down to. The
+   * geometry of it: an overlay at altitude h, seen at incidence angle θ from
+   * the surface normal, lands h·tanθ from the ground it names, and the offset
+   * swings as the camera orbits. Half a 50° field of view puts θ at 25° at the
+   * edge of the frame whatever the zoom, so the slip in *ground* units is a
+   * constant h·tan25° — and in *pixels* it is that over the framed width, which
+   * is worst zoomed all the way in.
+   */
+  const slipPx = (altR: number, framedKm: number, widthPx = 1100) =>
+    ((altR * 6371 * Math.tan((25 * Math.PI) / 180)) / framedKm) * widthPx
+
+  it('keeps a grounded overlay within a few pixels of its ground at any zoom', () => {
+    // what the shipped build did, for the record: a third of the screen at the
+    // closest the camera is allowed to come
+    expect(slipPx(0.0155, 172)).toBeGreaterThan(250)
+    // and what it does now — at the very edge of the tightest frame, and
+    // proportionally nothing anywhere else
+    expect(slipPx(SURFACE_ALT, 172)).toBeLessThan(12)
+    expect(slipPx(SURFACE_ALT, 172) / 1100).toBeLessThan(0.011)
+    expect(slipPx(SURFACE_ALT, 1921)).toBeLessThan(1.2)
+    // a factor of twenty-five, which is the whole of the reported bug
+    expect(slipPx(0.0155, 172) / slipPx(SURFACE_ALT, 172)).toBeGreaterThan(25)
+  })
+
+  it('still clears the sag of the chords the overlays are drawn as', () => {
+    // A 1° chord (ROUTE_SEGMENT_DEG) sags R(1-cos 0.5°) below the sphere. If the
+    // clearance were under that, a grounded line would sink into the planet
+    // between its own vertices — which is the floor on how low this can go.
+    const sagR = 1 - Math.cos((0.5 * Math.PI) / 180)
+    expect(SURFACE_ALT).toBeGreaterThan(sagR * 4)
+  })
+})
+
+describe('DrawingLayer routes', () => {
+  const oneway: Drawing = {
+    layers: [{ type: 'route', paths: [[[0, 0], [20, 5], [40, 0]]], direction: 'oneway' }],
+  }
+  const twoway: Drawing = {
+    layers: [{ type: 'route', paths: [[[0, 0], [20, 5], [40, 0]]], direction: 'twoway' }],
+  }
+
+  const strokes = (layer: DrawingLayer) =>
+    layer.object.children.filter(
+      (c): c is Line2 => c instanceof Line2 && (c.material as LineMaterial).dashed,
+    )
+  /** The route's own casing: solid, and long (the port dots are zero-length). */
+  const casings = (layer: DrawingLayer) =>
+    layer.object.children.filter(
+      (c): c is Line2 =>
+        c instanceof Line2 &&
+        !(c.material as LineMaterial).dashed &&
+        (c.material as LineMaterial).linewidth === ROUTE_STYLE.haloStroke,
+    )
+  /** The port dots: zero-length fat lines, which render as screen-space discs. */
+  const portDots = (layer: DrawingLayer) =>
+    layer.object.children.filter(
+      (c): c is Line2 =>
+        c instanceof Line2 &&
+        !(c.material as LineMaterial).dashed &&
+        (c.material as LineMaterial).linewidth !== ROUTE_STYLE.haloStroke,
+    )
+
+  it('puts a dot on each port, sized in screen pixels like the line', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(oneway, { color: '#e5a54d' })
+    // two ends, each a dark disc under a bright one
+    const dots = portDots(layer)
+    expect(dots).toHaveLength(4)
+    const widths = dots.map((d) => (d.material as LineMaterial).linewidth)
+    for (const w of widths) expect(w).toBeGreaterThan(ROUTE_STYLE.stroke)
+    // A zero-length fat line IS the disc: both of its vertices are the same
+    // point, which is what makes LineMaterial's round cap the whole primitive.
+    for (const d of dots) {
+      const g = d.geometry
+      const start = g.getAttribute('instanceStart')
+      const end = g.getAttribute('instanceEnd')
+      for (let i = 0; i < start.count; i++)
+        expect(
+          Math.hypot(start.getX(i) - end.getX(i), start.getY(i) - end.getY(i), start.getZ(i) - end.getZ(i)),
+        ).toBe(0)
+    }
+    layer.dispose()
+  })
+
+  it('draws one solid casing and a run of tapered pieces over it', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(oneway, { color: '#e5a54d' })
+    expect(casings(layer)).toHaveLength(1)
+    expect(strokes(layer)).toHaveLength(ROUTE_STYLE.taperPieces)
+    // the casing is wider than the stroke, and under it in paint order
+    const casing = casings(layer)[0]
+    expect((casing.material as LineMaterial).linewidth).toBeGreaterThan(ROUTE_STYLE.stroke)
+    expect(layer.object.children.indexOf(casing)).toBeLessThan(
+      layer.object.children.indexOf(strokes(layer)[0]),
+    )
+    layer.dispose()
+  })
+
+  it('brightens toward the destination on a one-way route', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(oneway, { color: '#e5a54d' })
+    const ops = strokes(layer).map((l) => (l.material as LineMaterial).opacity)
+    expect(ops[0]).toBeLessThan(ops[ops.length - 1])
+    expect(ops[0]).toBeCloseTo(
+      ROUTE_STYLE.tailOpacity + (1 - ROUTE_STYLE.tailOpacity) / (2 * ROUTE_STYLE.taperPieces),
+      2,
+    )
+    // monotone: a voyage does not flicker on its way across
+    for (let i = 1; i < ops.length; i++) expect(ops[i]).toBeGreaterThan(ops[i - 1])
+    layer.dispose()
+  })
+
+  it('fades away equally at both ends of a two-way route', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(twoway, { color: '#4c8dff' })
+    const ops = strokes(layer).map((l) => (l.material as LineMaterial).opacity)
+    for (let i = 0; i < ops.length; i++)
+      expect(ops[i], `piece ${i}`).toBeCloseTo(ops[ops.length - 1 - i], 6)
+    expect(Math.max(...ops)).toBeGreaterThan(Math.min(...ops))
+    layer.dispose()
+  })
+
+  it('spells ONE dash pattern across the pieces, whatever the joins are', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(twoway, { color: '#4c8dff' })
+    const pieces = strokes(layer)
+    const cycle = (m: LineMaterial) => m.dashSize + m.gapSize
+    // every piece runs the same pattern...
+    for (const p of pieces)
+      expect(cycle(p.material as LineMaterial)).toBeCloseTo(
+        cycle(pieces[0].material as LineMaterial),
+        6,
+      )
+    // ...and each is offset by where it starts, so the dashes cross the joins.
+    // The offsets are strictly increasing along the route, by the length of the
+    // piece before them.
+    const offs = pieces.map((p) => (p.material as LineMaterial).dashOffset)
+    for (let i = 1; i < offs.length; i++) expect(offs[i]).toBeGreaterThan(offs[i - 1])
+    expect(offs[0]).toBe(0)
+    layer.dispose()
+  })
+
+  it('only a ONE-WAY route asks for frames', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(twoway, { color: '#4c8dff' })
+    expect(layer.hasFlow, 'a trade network does not move').toBe(false)
+    layer.set(oneway, { color: '#e5a54d' })
+    expect(layer.hasFlow, 'a voyage does').toBe(true)
+    layer.set(undefined, { color: '#e5a54d' })
+    expect(layer.hasFlow, 'and nothing on screen asks for nothing').toBe(false)
+    layer.dispose()
+  })
+
+  it('puts the dash where the wall clock says, and never accumulates', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(oneway, { color: '#e5a54d' })
+    const first = strokes(layer)[0].material as LineMaterial
+    const cycle = first.dashSize + first.gapSize
+    const at = (t: number) => {
+      layer.setFlowPhase(t)
+      return first.dashOffset
+    }
+    // the same instant is the same picture, whatever was called in between
+    const a = at(0)
+    at(1234)
+    at(99999)
+    expect(at(0)).toBe(a)
+    // and one whole cycle later is the same place in the cycle
+    expect(at(ROUTE_STYLE.flowCycleMs)).toBeCloseTo(a, 9)
+    // it runs FORWARD along the line: within a cycle the offset decreases, which
+    // is what moves the pattern toward the destination
+    expect(at(ROUTE_STYLE.flowCycleMs / 4)).toBeLessThan(a)
+    expect(at(ROUTE_STYLE.flowCycleMs / 2)).toBeLessThan(at(ROUTE_STYLE.flowCycleMs / 4))
+    // a frame skipped entirely does not shift anything: the phase is the clock
+    expect(at(5000)).toBeCloseTo(-flowPhase(5000) * cycle, 9)
+    layer.dispose()
+  })
+
+  it('grounds everything it draws at the one altitude it was given', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      {
+        layers: [
+          { type: 'route', paths: [[[0, 0], [20, 5]]] },
+          { type: 'frontline', paths: [[[0, 1], [20, 6]]] },
+          { type: 'marker', pos: [10, 3], style: 'cross' },
+          { type: 'thrust', path: [[0, 2], [20, 7]] },
+        ],
+      },
+      { color: '#fff', altitude: SURFACE_ALT },
+    )
+    // Every solid mesh vertex sits at exactly the stated radius — no kind gets
+    // its own extra lift any more, because a lift is parallax.
+    for (const child of layer.object.children) {
+      if (child instanceof Line2) continue
+      const pos = ((child as Mesh).geometry as BufferGeometry)?.getAttribute('position')
+      if (!pos) continue
+      for (let i = 0; i < pos.count; i++)
+        expect(new Vector3().fromBufferAttribute(pos, i).length()).toBeCloseTo(
+          R * (1 + SURFACE_ALT),
+          4,
+        )
+    }
+    layer.dispose()
+  })
+
+  it('biases every overlay material in depth rather than in height', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      {
+        layers: [
+          { type: 'route', paths: [[[0, 0], [20, 5]]] },
+          { type: 'frontline', paths: [[[0, 1], [20, 6]]] },
+          { type: 'marker', pos: [10, 3] },
+          { type: 'thrust', path: [[0, 2], [20, 7]] },
+        ],
+      },
+      { color: '#fff' },
+    )
+    for (const child of layer.object.children) {
+      const m = (child as Mesh).material as LineMaterial | undefined
+      if (!m || !('polygonOffset' in m)) continue
+      expect(m.polygonOffset, child.type).toBe(true)
+      expect(m.polygonOffsetUnits, child.type).toBeLessThan(0)
+      // …and still no depth writing, so the kinds order by renderOrder alone
+      expect(m.depthWrite, child.type).toBe(false)
+    }
+    layer.dispose()
+  })
+
+  it('draws a route under a frontline under a marker, however it is authored', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      {
+        layers: [
+          { type: 'marker', pos: [10, 3] },
+          { type: 'frontline', paths: [[[0, 1], [20, 6]]] },
+          { type: 'route', paths: [[[0, 0], [20, 5]]] },
+        ],
+      },
+      { color: '#fff' },
+    )
+    const orders = layer.object.children.map((c) => c.renderOrder)
+    expect(orders).toEqual([...orders].sort((a, b) => a - b))
+    layer.dispose()
+  })
+
+  it('has nothing to draw for a route that is one point', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      { layers: [{ type: 'route', paths: [[[5, 5]] as unknown as GeoPath] }] },
+      { color: '#fff' },
+    )
+    expect(layer.object.children).toHaveLength(0)
+    expect(layer.hasFlow).toBe(false)
     layer.dispose()
   })
 })

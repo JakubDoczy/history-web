@@ -21,13 +21,14 @@ import {
 } from '../src/lib/events'
 import { type EventManifest } from '../src/lib/eventChunks'
 import {
-  ARROW_FRACTIONS,
   MAX_SEGMENT_DEG,
+  densifyPath,
   densifyPaths,
   directionOf,
+  routePolyline,
   isGeoPath,
 } from '../src/lib/paths'
-import { drawingPoints, isDrawing, routeDecorFor } from '../src/lib/drawing'
+import { drawingPoints, isDrawing, routeDrawingFor } from '../src/lib/drawing'
 import { FIT_FOV, MAX_FIT_ALTITUDE, POINT_CAP_DEG, altitudeForCapDeg, focusTargetFor } from '../src/lib/geoFocus'
 import { separationDeg } from '../src/lib/queryIndex'
 import { viewSpanDeg, visibleSpanDeg } from '../src/lib/detailImagery'
@@ -133,7 +134,8 @@ describe('items — dataset shape', () => {
 
   it('carries no unknown keys', () => {
     const common = [
-      'id', 'kind', 'name', 'priority', 'tags', 'summary', 'body', 'image', 'links', 'related',
+      'id', 'kind', 'name', 'priority', 'tags', 'summary', 'body', 'image', 'links',
+      'strong', 'weak',
     ]
     const allowed: Record<string, Set<string>> = {
       event: new Set([
@@ -485,6 +487,116 @@ describe('items — hierarchy', () => {
   })
 })
 
+/**
+ * The typed relation graph: `parent`, `strong`, `weak` (see `buildRelations` in
+ * src/lib/events.ts). These are the corpus's half of the contract — the shape
+ * the runtime is allowed to assume. The other half, that the index materialises
+ * the inverse and applies the precedence order, is in tests/events.test.ts.
+ */
+describe('items — relations', () => {
+  /** Every declared edge as an ordered pair, per field. */
+  const declared = (field: 'strong' | 'weak') =>
+    items.flatMap((e) => (e[field] ?? []).map((o) => [e.id, o] as const))
+  const strongPairs = declared('strong')
+  const weakPairs = declared('weak')
+  const key = (a: string, b: string) => [a, b].sort().join('|')
+  const strongKeys = new Set(strongPairs.map(([a, b]) => key(a, b)))
+  const family = new Set(
+    events.filter((e) => e.parent).flatMap((e) => [key(e.id, e.parent!)]),
+  )
+
+  it('has finished the migration: nothing still carries the old `related`', () => {
+    for (const e of items) expect('related' in e, `${e.id} still has related`).toBe(false)
+  })
+
+  it('resolves every strong and weak id, and relates nothing to itself', () => {
+    for (const [a, b] of [...strongPairs, ...weakPairs]) {
+      expect(byId.has(b), `${a} -> unknown ${b}`).toBe(true)
+      expect(b, `${a} relates to itself`).not.toBe(a)
+    }
+  })
+
+  it('never lists the same id twice in one field', () => {
+    for (const e of items)
+      for (const field of ['strong', 'weak'] as const) {
+        const ids = e[field] ?? []
+        expect(new Set(ids).size, `${e.id}.${field} repeats an id`).toBe(ids.length)
+      }
+  })
+
+  /**
+   * Symmetric relations are authored on ONE side. Writing both is not wrong —
+   * the index dedupes it — but it is the first step towards the two sides
+   * disagreeing, so the corpus is held to the convention.
+   */
+  it('declares each symmetric edge from one side only', () => {
+    for (const pairs of [strongPairs, weakPairs])
+      for (const [a, b] of pairs)
+        expect(
+          pairs.some(([x, y]) => x === b && y === a),
+          `${a} and ${b} both declare the relation — write it once`,
+        ).toBe(false)
+  })
+
+  /** One pair, one relation: containment beats strong, strong beats weak. */
+  it('never states a pair at two strengths at once', () => {
+    for (const [a, b] of [...strongPairs, ...weakPairs])
+      expect(family.has(key(a, b)), `${a} <-> ${b} is already parent/child`).toBe(false)
+    for (const [a, b] of weakPairs)
+      expect(strongKeys.has(key(a, b)), `${a} <-> ${b} is both strong and weak`).toBe(false)
+  })
+
+  /**
+   * The point of the rework: the corpus is a graph, not a list of islands. Every
+   * item is reachable from at least one other, and the strong tier is large
+   * enough to be the backbone rather than a handful of special cases.
+   */
+  it('leaves no item unrelated to anything', () => {
+    const degree = new Map<string, number>()
+    const bump = (id: string) => degree.set(id, (degree.get(id) ?? 0) + 1)
+    for (const e of events) if (e.parent) (bump(e.id), bump(e.parent))
+    for (const [a, b] of [...strongPairs, ...weakPairs]) (bump(a), bump(b))
+    const orphans = items.filter((e) => !degree.has(e.id)).map((e) => e.id)
+    expect(orphans, `${orphans.length} item(s) relate to nothing`).toEqual([])
+  })
+
+  it('carries a substantial graph in every tier', () => {
+    expect(strongPairs.length).toBeGreaterThanOrEqual(300)
+    expect(weakPairs.length).toBeGreaterThanOrEqual(150)
+    expect(events.filter((e) => e.parent).length).toBeGreaterThanOrEqual(200)
+  })
+
+  /**
+   * The upgrades the migration was for, spot-checked: a life and its signature
+   * work, a concept and the event that carries it, a treaty and the war it
+   * ended. Direction is not asserted — these are symmetric, and which side
+   * holds the array is an authoring choice.
+   */
+  it('binds the obvious pairs strongly', () => {
+    for (const [a, b] of [
+      ['albert-einstein', 'relativity'],
+      ['theory-of-relativity', 'relativity'],
+      ['charles-darwin', 'origin-species'],
+      ['isaac-newton', 'newton'],
+      ['johannes-gutenberg', 'printing-press'],
+      ['napoleon-bonaparte', 'waterloo'],
+      ['abraham-lincoln', 'emancipation'],
+      ['nelson-mandela', 'apartheid-end'],
+      ['versailles', 'ww2'], // the treaty and the war it seeded
+      ['peace-augsburg', 'westphalia'],
+      ['temujin-genghis-khan', 'genghis-khan'],
+      ['global-internet', 'www'],
+    ])
+      expect(strongKeys.has(key(a, b)), `${a} <-> ${b} is not strong`).toBe(true)
+  })
+
+  it('gives every battle a war to be part of', () => {
+    for (const id of ['stalingrad', 'waterloo', 'gettysburg', 'somme', 'agincourt', 'zama',
+      'kiev-pocket', 'battle-plassey'])
+      expect((byId.get(id) as HistoricalEvent).parent, `${id} has no parent`).toBeTruthy()
+  })
+})
+
 describe('items — rich content', () => {
   it('gives every item a body that renders', () => {
     for (const e of items) {
@@ -513,14 +625,6 @@ describe('items — rich content', () => {
     ).toBeGreaterThanOrEqual(50)
   })
 
-  it('resolves every related id', () => {
-    for (const e of items)
-      for (const id of e.related ?? []) {
-        expect(byId.has(id), `${e.id} -> unknown related ${id}`).toBe(true)
-        expect(id, `${e.id} lists itself as related`).not.toBe(e.id)
-      }
-  })
-
   it('points every item at an external reference', () => {
     for (const e of items) {
       const urls = (e.links ?? []).filter((l) => l.url)
@@ -529,11 +633,16 @@ describe('items — rich content', () => {
     }
   })
 
-  it('resolves every link entry that references an item', () => {
+  /**
+   * "Read more" points *out* of the corpus. An entry aimed at another item is
+   * how a relation used to be smuggled into the strip; there are now three
+   * typed fields for that, and the sections that render them sit above it.
+   */
+  it('keeps the read-more strip external, with a label and a url on every entry', () => {
     for (const e of items)
       for (const l of e.links ?? []) {
-        expect(Boolean(l.url) !== Boolean(l.event), `${e.id}: link needs exactly one target`).toBe(true)
-        if (l.event) expect(byId.has(l.event), `${e.id} -> ${l.event}`).toBe(true)
+        expect('event' in l, `${e.id}: a read-more link points at an item — relate it instead`).toBe(false)
+        expect(l.url, `${e.id}: link needs a url`).toBeTruthy()
         expect(l.label.length, e.id).toBeGreaterThan(0)
       }
   })
@@ -706,6 +815,21 @@ describe('items — behaviour through the query layer', () => {
     // …and the event's body was edited to point back
     expect(index.backlinksTo('albert-einstein').map((i) => i.id)).toContain('relativity')
   })
+
+  it('reads the real corpus through the relation maps, both ways', () => {
+    // Barbarossa's parts, chronological — and what focus mode pins
+    expect(index.childrenOf('barbarossa').map((e) => e.id)).toEqual([
+      'minsk-pocket', 'smolensk-1941', 'kiev-pocket', 'moscow-1941', 'leningrad-siege',
+    ])
+    // …reached from inside, the chain out to the war
+    expect(index.parentChain('kiev-pocket').map((e) => e.id)).toEqual(['barbarossa', 'ww2'])
+    // a strong pair navigates from the side that never declared it
+    expect(byId.get('ww2')!.strong ?? []).not.toContain('versailles')
+    expect(index.strongOf('ww2').map((i) => i.id)).toContain('versailles')
+    expect(index.strongOf('versailles').map((i) => i.id)).toContain('ww2')
+    // a life and the article about its work, both ways
+    expect(index.strongOf('relativity').map((i) => i.id)).toContain('albert-einstein')
+  })
 })
 
 describe('item chunks — manifest and spine', () => {
@@ -836,25 +960,39 @@ describe('items — route direction', () => {
       expect(dir(id), id).toBe('oneway')
   })
 
-  it('gives every one-way route its chevrons and every two-way route none', () => {
+  it('gives every route a route layer carrying its own direction', () => {
     for (const e of pathEvents) {
-      const decor = routeDecorFor(e)!
-      const arrows = decor.layers.filter((l) => l.type === 'marker' && l.style === 'arrow')
-      const dots = decor.layers.filter((l) => l.type === 'marker' && l.style === 'dot')
-      // both ends of every leg, always
-      expect(dots.length, e.id).toBe(e.paths!.length * 2)
-      expect(arrows.length, e.id).toBe(
-        directionOf(e) === 'oneway' ? e.paths!.length * ARROW_FRACTIONS.length : 0,
-      )
-      // and every glyph sits on the road it decorates
-      for (const l of [...arrows, ...dots]) {
-        const pos = (l as { pos: [number, number] }).pos
-        const nearest = Math.min(
-          ...densifyPaths(e.paths!, 2)
-            .flat()
-            .map(([lng, lat]) => separationDeg(pos[1], pos[0], lat, lng)),
-        )
-        expect(nearest, `${e.id} glyph is off its own route`).toBeLessThan(1)
+      const d = routeDrawingFor(e)!
+      const routes = d.layers.filter((l) => l.type === 'route')
+      expect(routes.length, e.id).toBe(1)
+      expect((routes[0] as { paths: unknown[] }).paths.length, e.id).toBe(e.paths!.length)
+      expect((routes[0] as { direction?: string }).direction, e.id).toBe(directionOf(e))
+      // the whole drawing is the route: ports are pixels the renderer draws, not
+      // degree-sized glyphs generated here
+      expect(d.layers.every((l) => l.type === 'route'), e.id).toBe(true)
+      expect(isDrawing(d), e.id).toBe(true)
+      // and the camera can still be framed on it — `geometryPointsOf` reads the
+      // drawing, so every authored waypoint has to be reachable through it
+      const pts = drawingPoints(d)
+      expect(pts.length, e.id).toBe(e.paths!.flat().length)
+    }
+  })
+
+  it('smooths every shipped route without sailing it onto land', () => {
+    // The redesign puts a Catmull-Rom curve through the authored waypoints, and
+    // the risk that buys is a spline bowing past a waypoint an author placed to
+    // clear a cape. Measured over the whole corpus the worst excursion is 0.42°
+    // (46 km, in the Java Sea on Zheng He's track); a degree and a half is the
+    // point at which a bow would start putting an ocean leg on a coastline.
+    for (const e of pathEvents) {
+      for (const path of e.paths!) {
+        const authored = densifyPath(path, 0.25)
+        for (const p of routePolyline(path)) {
+          const off = Math.min(
+            ...authored.map(([lng, lat]) => separationDeg(p[1], p[0], lat, lng)),
+          )
+          expect(off, `${e.id} bows ${off.toFixed(2)}° off its own waypoints`).toBeLessThan(1.5)
+        }
       }
     }
   })

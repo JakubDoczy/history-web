@@ -4,7 +4,6 @@ import {
   EventIndex,
   anchorYearOf,
   effectivePriority,
-  hasMapGeometry,
   isMinor,
   searchItems,
   type EventFilter,
@@ -44,25 +43,33 @@ const DATA = `${import.meta.env.BASE_URL}data/events/`
 /**
  * How many child pins focus mode will force onto the globe.
  *
- * The exemption is the selected-pin one widened by one generation (see
- * `visible`), and it needs a bound for the same reason the top-N cap exists:
- * "Part of this event" on World War II is a hundred entries, and forcing all of
- * them past the culling would replace one open article with a swarm. Fifteen is
- * about what a fitted frame holds without the pins colliding, and every real
- * operation in the corpus has fewer parts than that.
+ * In the mode the children are not competing for the screen — they *are* the
+ * screen (see `visible`) — so nothing else bounds them, and they need a bound
+ * for the same reason the top-N cap exists: "Contains" on World War II is a
+ * hundred entries, and putting all of them on the globe would replace one open
+ * article with a swarm. Fifteen is about what a fitted frame holds without the
+ * pins colliding, and every real operation in the corpus has fewer parts.
  */
 export const FOCUS_CHILD_CAP = 15
 
 /**
  * The children of an item, best first — what focus mode pins alongside it.
  *
- * Direct children only, not the whole subtree: the panel's own "Part of this
- * event" list is direct children, and the two should agree. A grandchild is one
- * click away, at which point it becomes the focus and brings its own.
+ * Direct children only, and *children only*: the pins a battle plan puts on the
+ * globe are the events the plan contains, never the things it merely relates to.
+ * A strong association is an article to read next, not a teardrop to draw on
+ * someone else's map, and the product asked for exactly this — "in a battle
+ * plan, show only child events".
+ *
+ * The panel's own "Contains" list is the same set, so the two agree. A grandchild
+ * is one click away, at which point it becomes the focus and brings its own.
+ *
+ * Sorted best-first here, though `EventIndex.childrenOf` hands them over
+ * chronologically: this is the list the cap bites into, and what it should keep
+ * is the battles that matter, not the earliest five.
  */
-const focusChildrenOf = (all: Item[], parentId: string, cap = FOCUS_CHILD_CAP): HistoricalEvent[] =>
-  all
-    .filter((e): e is HistoricalEvent => 'parent' in e && e.parent === parentId)
+const focusChildrenOf = (parentId: string, cap = FOCUS_CHILD_CAP): HistoricalEvent[] =>
+  [...index.childrenOf(parentId)]
     .sort((a, b) => b.priority - a.priority || a.start - b.start)
     .slice(0, cap)
 
@@ -112,15 +119,19 @@ export const useEventStore = defineStore('events', {
     /**
      * FOCUS MODE: the reader asked to *look at* something, not to read about it.
      *
-     * Entered by "Show on map" on an item that has real geometry — a drawing, a
-     * route or a footprint (see `hasMapGeometry`). Three things follow, and they
-     * are the whole feature:
+     * Entered by "Show on map" on *anything* the map can reach — a battle plan,
+     * a voyage, a footprint, a bare point event alike. Four things follow, and
+     * they are the whole feature:
      *
      *  · the panel minimises to a pill (EventPanel.vue), so the map is not
      *    behind an article;
      *  · the item's `drawing` renders (GlobeView.vue) — the one place it does;
-     *  · its child events get their pins forced on (see `visible`), so an
-     *    operation shows its battles.
+     *  · its child events get their pins (see `visible`), so an operation shows
+     *    its battles;
+     *  · and *nothing else* is on the globe: no unrelated pins, no nation
+     *    borders. That is the point of the mode, and the reason it applies to a
+     *    lone pin too — "show me this" is answered by a clear map with this on
+     *    it, whatever this happens to be.
      *
      * It is *not* the same thing as the selection, and keeping them apart is
      * what makes Escape do something sensible: Escape leaves the mode and gives
@@ -155,6 +166,32 @@ export const useEventStore = defineStore('events', {
       // property here still registers the dependency; only the value handed on
       // is unwrapped.
       const scope = view.scope && toRaw(view.scope)
+      // FOCUS MODE short-circuits the contest entirely. The reader asked to look
+      // at one thing, and the answer is that thing and the parts of it — not
+      // that thing *plus* whatever else the top-N budget happened to rank into
+      // the same frame. So the culling never runs: there is nothing to cull
+      // between, and skipping the query is also the cheapest this getter is all
+      // day.
+      //
+      // What survives from the normal path is the *user's* own statements: the
+      // timeline window and the tag/parent filters still gate every pin here
+      // (`admits`), exactly as they gate a selected one. What is dropped is the
+      // app's judgement — the top-N cap and the viewport scope — because a
+      // focused item and its children are not competing for the screen, they
+      // are the screen.
+      if (state.focus) {
+        const out: HistoricalEvent[] = []
+        // The MINOR filter is lifted for the whole set: a child battle is part
+        // of the thing already on the globe, and the focused item itself may
+        // well be the minor pin the reader had to search for to get here.
+        const focusFilter = { ...filter, minor: true }
+        for (const id of [state.focus.itemId, ...focusChildrenOf(state.focus.itemId).map((c) => c.id)]) {
+          if (out.some((e) => e.id === id)) continue
+          const kept = index.admits(id, selection.start, selection.end, focusFilter)
+          if (kept) out.push(kept)
+        }
+        return out
+      }
       const out = index.query(selection.start, selection.end, filter, maxEvents, scope)
       // The open panel's event keeps its pin. Panning away from it, or scrubbing
       // until it slips out of the top N, used to leave the panel describing an
@@ -166,20 +203,6 @@ export const useEventStore = defineStore('events', {
       if (state.selectedId && !out.some((e) => e.id === state.selectedId)) {
         const kept = index.admits(state.selectedId, selection.start, selection.end, filter)
         if (kept) out.push(kept)
-      }
-      // …and, in focus mode, its children keep theirs. Same exemption, one
-      // generation wider: the reader asked to look at an operation, and an
-      // operation is its battles. Capped (FOCUS_CHILD_CAP), appended rather
-      // than ranked in, and — unlike the selected pin — allowed past the MINOR
-      // filter, because a child is not competing for a place on the globe, it
-      // is part of the thing already on it.
-      if (state.focus) {
-        const childFilter = { ...filter, minor: true }
-        for (const c of focusChildrenOf(state.all, state.focus.itemId)) {
-          if (out.some((e) => e.id === c.id)) continue
-          const kept = index.admits(c.id, selection.start, selection.end, childFilter)
-          if (kept) out.push(kept)
-        }
       }
       return out
     },
@@ -212,8 +235,32 @@ export const useEventStore = defineStore('events', {
       return index.byId.get(derivedFrom ?? state.selectedId)
     },
     allTags: () => [...TAGS],
-    childrenOf: (s) => (id: string) =>
-      s.all.filter((e): e is HistoricalEvent => 'parent' in e && e.parent === id),
+    /* --- the typed relation graph, as the panel reads it ------------------
+       Four getters over one index (see `buildRelations` in lib/events.ts).
+       They are a precedence order, not four independent lists: the index has
+       already removed a parent or a child from the association maps, and a
+       strong pair from the weak one, so the same item never appears in two
+       sections of the same article. */
+    /** What this item is part of, innermost first: parent, grandparent, … */
+    parentChainOf: (s) => (id: string) => {
+      void s.revision
+      return index.parentChain(id)
+    },
+    /** Its direct children, chronological — what "Contains" lists. */
+    childrenOf: (s) => (id: string) => {
+      void s.revision
+      return index.childrenOf(id)
+    },
+    /** Its defining associations, both authoring directions merged. */
+    strongOf: (s) => (id: string) => {
+      void s.revision
+      return index.strongOf(id)
+    },
+    /** Its see-also associations — declared `weak` only. */
+    weakOf: (s) => (id: string) => {
+      void s.revision
+      return index.weakOf(id)
+    },
     byId: (s) => (id: string) => s.all.find((e) => e.id === id),
     /** A pin by id, derived pins included — what the globe and the panel jump to. */
     pinById: (s) => (id: string) => {
@@ -248,6 +295,33 @@ export const useEventStore = defineStore('events', {
       }
       return [...out.values()].sort((a, b) => b.priority - a.priority)
     },
+    /**
+     * "See also": the declared `weak` edges, then everything the prose is
+     * already tied to that no stronger relation has claimed.
+     *
+     * Body links are not a fourth relation type — they are sentences, and an
+     * article that mentions the Black Death in passing has not declared
+     * anything. But the pair *is* worth offering, so it lands at the bottom of
+     * the softest section rather than in a machine-y "Linked" list of its own.
+     * Deduped against the three sections above it, in their precedence order,
+     * so nothing is offered twice under two different headings.
+     */
+    seeAlsoOf(state) {
+      return (id: string): Item[] => {
+        void state.revision
+        const out: Item[] = []
+        const taken = new Set<string>([id])
+        for (const i of index.parentChain(id)) taken.add(i.id)
+        for (const i of index.childrenOf(id)) taken.add(i.id)
+        for (const i of index.strongOf(id)) taken.add(i.id)
+        for (const i of [...index.weakOf(id), ...this.linkedTo(id)])
+          if (!taken.has(i.id)) {
+            taken.add(i.id)
+            out.push(i)
+          }
+        return out
+      }
+    },
     search: (s) => (q: string) => {
       void s.revision
       return searchItems(s.all, q)
@@ -259,7 +333,8 @@ export const useEventStore = defineStore('events', {
     },
     /** The child events focus mode is forcing onto the globe. */
     focusChildren(state): HistoricalEvent[] {
-      return state.focus ? focusChildrenOf(state.all, state.focus.itemId) : []
+      void state.revision
+      return state.focus ? focusChildrenOf(state.focus.itemId) : []
     },
     /** Is the panel currently the compact pill rather than the article? */
     panelMinimised(state): boolean {
@@ -363,36 +438,40 @@ export const useEventStore = defineStore('events', {
      * wherever the reader arrived from — a search hit, a link inside an article,
      * a minor item nothing would have pinned.
      *
-     * Three things have to be true afterwards, and each is one line here:
+     * Four things have to be true afterwards, and each is one line here:
      *
-     *  · it is **selected**, which is what keeps its pin (the store re-adds a
-     *    selected pin the culling dropped) and what draws its area and its
-     *    routes;
+     *  · it is **selected**, which is what keeps its pin and what draws its area
+     *    and its routes;
      *  · the **timeline** contains it — `focusTime` recentres the window if the
      *    year is outside it and then extends the selection band onto the year,
      *    which is the same extendSelectionTo rule a scrub obeys;
      *  · the **camera** frames its whole geometry (lib/geoFocus.ts): a point
-     *    from a sensible height, a footprint or a route fitted with margin.
+     *    from a sensible height, a footprint or a route fitted with margin;
+     *  · and the app is in **focus mode**: the article folds to a pill and the
+     *    globe clears down to this item, its children and its ink (see `focus`).
+     *
+     * That last one has no exceptions. It used to require real geometry, on the
+     * reasoning that minimising an article to reveal a single teardrop is a
+     * worse view of the same thing — but that is only true on a globe still
+     * covered in other people's pins. Now that the mode empties the map, a bare
+     * point event gets the same answer everything else does: the thing you asked
+     * for, alone, with the camera on it.
      *
      * The selection is left alone when the panel is already showing this item,
      * so pressing it from a birth pin does not swap the pin out from under the
      * article it opened.
      */
     showOnMap(id: string) {
+      // The one thing that can still refuse: an item with nowhere to go at all,
+      // which is a concept. The panel hides the button in that case, so this is
+      // the guard rather than the behaviour.
       const target = this.mapTarget(id)
       if (!target) return
       if (this.selected?.id !== id) this.select(id)
       const year = this.focusYear(id)
       if (year !== undefined) useTimeStore().focusTime(year)
       this.lookAt(target.lat, target.lng, target.altitude)
-      // …and, when there is something on the map worth the screen, get the
-      // article out of the way (see `focus`). An item that is only a pin does
-      // not qualify: minimising the panel to reveal one teardrop would be a
-      // worse view of the same thing, so this also *leaves* the mode when the
-      // reader shows a plain item while focused on a rich one.
-      const item = this.byId(id) ?? this.pinById(id)
-      if (item && hasMapGeometry(item)) this.enterFocus(id)
-      else this.exitFocus()
+      this.enterFocus(id)
     },
     /** The year to put the timeline on when an item is opened from a link. */
     focusYear(id: string): number | undefined {

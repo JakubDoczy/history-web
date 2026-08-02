@@ -12,13 +12,15 @@
    "politics"
   ],
   "parent": "age-of-discovery",
+  "strong": [
+   "slave-trade"
+  ],
+  "weak": [
+   "latam-independence"
+  ],
   "summary": "Portugal claimed and settled Brazil, which became the largest Portuguese-speaking nation and the mainstay of its colonial empire.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). Brazil was initially neglected; the [spice trade](event:da-gama) was considered the more valuable prize. Sugar plantations and the labour of enslaved people eventually made Brazil highly profitable. By 1800 it was the empire's most valuable possession, with hundreds of thousands of enslaved Africans having been transported there.\n\nThe colony developed a distinct identity through the mixing of Portuguese, Indigenous, and African populations in ways that differed from the mainland, creating conditions for its independence in 1822.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Colonial_Brazil).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Colonial_Brazil"
@@ -38,6 +40,9 @@
    "culture"
   ],
   "summary": "East African merchant cities from Mogadishu to Kilwa traded gold, ivory, and spices across the Indian Ocean, developing a distinct blend of African and Arab elements.",
+  "strong": [
+   "manila-galleon"
+  ],
   "body": "The Swahili coast was a sophisticated merchant civilization with its own ships, cities and rulers, rather than a European outpost. Portuguese traders arrived in the 1500s and attempted to monopolise the trade, but Arab, Persian and Indian merchants continued to operate, and the culture remained fundamentally African.\n\nSwahili, still widely spoken today, is a Bantu language carrying heavy Arabic and Persian borrowing, the linguistic trace of centuries of Indian Ocean commerce.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Swahili_city-states).",
   "links": [
    {
@@ -59,6 +64,13 @@
    "culture"
   ],
   "summary": "Persia under the Safavids became a Shia Islamic empire and a major power competing with the Ottoman and Mughal empires.",
+  "strong": [
+   "ottoman-empire",
+   "mughal-empire"
+  ],
+  "weak": [
+   "iranian-revolution"
+  ],
   "body": "From Isfahan to the Caspian, Persian culture produced notable works in carpets, calligraphy, poetry, and architecture. The Safavids adopted Shia Islam as the state religion, a decision that shaped Iran's religious identity into the modern period.\n\nPressed between Ottoman, Russian and Mughal powers, the Safavid state declined due to internal conflicts and external pressure. The empire fell in 1736, though its cultural legacy persisted in Persian art, literature, and philosophy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Safavid_Empire).",
   "links": [
    {
@@ -79,13 +91,12 @@
    "culture"
   ],
   "parent": "renaissance",
+  "strong": [
+   "sistine-chapel"
+  ],
   "summary": "Leonardo da Vinci's portrait of Lisa Gherardini became one of the world's most recognizable paintings.",
   "body": "Part of [The Renaissance](event:renaissance). Painted between about 1503 and 1506, the oil portrait measures 77 by 53 centimetres and depicts Lisa Gherardini, the wife of a Florentine merchant. [Leonardo](item:leonardo-da-vinci)'s use of sfumato, which softens the transitions between tones, and the sitter's ambiguous expression have been central to the painting's reputation, and it is now among the most widely recognised works of art in the world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mona_Lisa).",
   "links": [
-   {
-    "label": "The Renaissance",
-    "event": "renaissance"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Mona_Lisa"
@@ -108,10 +119,6 @@
   "summary": "Michelangelo painted the ceiling of the Sistine Chapel over four years, creating some of the most recognised works of Renaissance art.",
   "body": "Part of [The Renaissance](event:renaissance). Michelangelo worked from 1508 to 1512, painting the roughly 500-square-metre ceiling of the Vatican's Sistine Chapel. The fresco depicts scenes from the Book of Genesis, of which the Creation of Adam is the best known. The work was physically demanding: the artist painted on wet plaster while standing on scaffolding beneath the vault.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sistine_Chapel_ceiling).",
   "links": [
-   {
-    "label": "The Renaissance",
-    "event": "renaissance"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Sistine_Chapel_ceiling"
@@ -136,7 +143,8 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Portuguese_conquest_of_Goa"
    }
-  ]
+  ],
+  "parent": "age-of-discovery"
  },
  {
   "id": "las-casas",
@@ -151,6 +159,12 @@
    "religion"
   ],
   "summary": "A Spanish Dominican friar documented the atrocities of conquest and argued that Indigenous people were fully human and should not be enslaved.",
+  "strong": [
+   "spanish-conquest"
+  ],
+  "weak": [
+   "slave-trade"
+  ],
   "body": "Las Casas spent forty years in the Americas and witnessed the [epidemics](event:americas-epidemics) and violence of [Spanish conquest](event:spanish-conquest). He wrote *A Short Account of the Destruction of the Indies*, a critical account of Spanish colonial practices that reached the Spanish Crown.\n\nAlthough his advocacy did not halt slavery or conquest, it established the argument that colonised peoples possessed rights that should not be violated. This principle influenced subsequent debates about Indigenous rights and colonialism.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bartolomé_de_las_Casas).",
   "links": [
    {
@@ -172,6 +186,9 @@
    "politics"
   ],
   "summary": "Western Christianity split into Catholic and Protestant churches, and the political order of Europe was realigned.",
+  "strong": [
+   "printing-press"
+  ],
   "body": "Luther's [Ninety-five Theses](event:95-theses) were distributed across Germany by the [printing press](event:printing-press) within weeks of 1517. Calvin, Zwingli, and Henry VIII promoted additional theological breaks; the Catholic Church responded with the Council of Trent.\n\nReligious conflicts lasted for over a century, reaching their peak in the [Thirty Years' War](event:thirty-years-war). The [Peace of Westphalia](event:westphalia) concluded the conflict and established the sovereign state as the fundamental unit of European political order.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reformation).",
   "links": [
    {
@@ -191,13 +208,12 @@
    "religion"
   ],
   "parent": "reformation",
+  "strong": [
+   "trent"
+  ],
   "summary": "Martin Luther's objections to the sale of indulgences were distributed widely and sparked the Protestant Reformation.",
   "body": "Part of [Protestant Reformation](event:reformation). In 1517 the Augustinian friar Martin Luther set out ninety-five theses objecting to the sale of indulgences and sent them to his archbishop, Albert of Mainz. Intended for academic debate, they were translated, printed and circulated across Germany within weeks, and the controversy they provoked became the starting point of the Reformation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ninety-five_Theses).",
   "links": [
-   {
-    "label": "Protestant Reformation",
-    "event": "reformation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Ninety-five_Theses"
@@ -216,13 +232,12 @@
    "exploration"
   ],
   "parent": "age-of-discovery",
+  "strong": [
+   "da-gama"
+  ],
   "summary": "Magellan's expedition sailed west around South America and across the Pacific; one of five ships returned under Juan Sebastian Elcano.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). Magellan was killed in the Philippines in 1521, and one of the five ships completed the voyage under Juan Sebastián Elcano. The survivors demonstrated that the world could be circled by sea through one continuous ocean, and on their return found that their carefully kept logbooks were a day behind the calendar in Spain, an effect later resolved by the international date line.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Magellan_expedition).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Magellan_expedition"
@@ -435,6 +450,9 @@
    "exploration"
   ],
   "summary": "Spanish forces, in alliance with Indigenous rivals and aided by epidemic disease, conquered the Aztec and Inca empires.",
+  "strong": [
+   "americas-epidemics"
+  ],
   "body": "[Tenochtitlan](event:tenochtitlan) fell in 1521 and [Cusco](event:inca-conquest) in 1533. The Spanish forces numbered only in the hundreds and succeeded through a combination of military technology, alliances with Indigenous states opposed to Aztec and Inca rule, and the effect of Old World diseases on populations with no prior exposure. Silver from the mines at Potosí and Zacatecas then financed Habsburg Spain and flowed on to China.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_colonization_of_the_Americas).",
   "links": [
    {
@@ -506,10 +524,6 @@
   "body": "Part of [The Columbian Exchange](event:columbian-exchange). Indigenous populations with no prior exposure to Eurasian diseases collapsed within decades, often ahead of European settlement itself. The depopulation was so extensive that the regrowth of forest on abandoned farmland may have measurably lowered global carbon dioxide levels in the early 1600s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Population_history_of_Indigenous_peoples_of_the_Americas).",
   "links": [
    {
-    "label": "The Columbian Exchange",
-    "event": "columbian-exchange"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Population_history_of_Indigenous_peoples_of_the_Americas"
    }
@@ -528,6 +542,9 @@
    "culture"
   ],
   "parent": "ottoman-empire",
+  "strong": [
+   "lepanto"
+  ],
   "summary": "Under Suleiman, the Ottoman Empire reached its greatest territorial extent, spanning from North Africa to the Persian Gulf and into Hungary.",
   "body": "Part of [Ottoman Empire](event:ottoman-empire). Suleiman was known as *Kanuni*, the Lawgiver, for his codification of Ottoman law, and his reign from 1520 to 1566 took the empire to its greatest extent. The Ottomans controlled the eastern Mediterranean trade, the Silk Road and the hajj pilgrimage routes.\n\nOttoman power declined gradually after his death, though the empire remained a great power until its dissolution in 1918.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Suleiman_the_Magnificent).",
   "links": [
@@ -548,13 +565,12 @@
    "war"
   ],
   "parent": "spanish-conquest",
+  "weak": [
+   "americas-epidemics"
+  ],
   "summary": "After a 93-day siege, Hernán Cortés and tens of thousands of Tlaxcalan allies destroyed the Aztec capital.",
   "body": "Part of [Spanish conquest of the Americas](event:spanish-conquest). Cortés combined a small Spanish force with tens of thousands of Indigenous allies from rival city-states, above all the Tlaxcalans. After a 93-day siege the city fell in 1521 and was largely destroyed, ending Aztec imperial authority in Mesoamerica.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Tenochtitlan).",
   "links": [
-   {
-    "label": "Spanish conquest of the Americas",
-    "event": "spanish-conquest"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fall_of_Tenochtitlan"
@@ -613,6 +629,13 @@
    "disaster"
   ],
   "summary": "Approximately 12.5 million Africans were transported across the Atlantic in enslavement; nearly two million died during transit.",
+  "strong": [
+   "columbian-exchange",
+   "haitian-revolution"
+  ],
+  "weak": [
+   "emancipation"
+  ],
   "body": "The trade supplied enslaved labour for sugar, tobacco, and cotton plantations in Brazil, the Caribbean, and North America. European and colonial ports from Lisbon to Liverpool benefited economically. The slave trade depopulated regions of West and Central Africa and contributed to the establishment of racial categories that structured Atlantic colonial societies.\n\nBritain prohibited the slave trade in 1807 and abolished slavery in its territories in 1833; Brazil, which imported the largest number of enslaved people, abolished slavery in 1888. See also the [American Civil War](event:us-civil-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_slave_trade).",
   "links": [
    {
@@ -743,6 +766,9 @@
    "culture"
   ],
   "summary": "Babur's descendants ruled most of the Indian subcontinent and presided, at their height, over the richest state in the world.",
+  "strong": [
+   "british-raj"
+  ],
   "body": "The empire's high point is associated with [Akbar](event:akbar-great)'s administrative reforms and religious tolerance and with the architecture of Shah Jahan, including the [Taj Mahal](event:taj-mahal). In the 18th century the empire fragmented politically, and the [British East India Company](event:british-raj) expanded its influence over the declining Mughal territories.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mughal_Empire).",
   "links": [
    {
@@ -765,6 +791,9 @@
    "politics"
   ],
   "summary": "The Christian Ethiopian empire and the Muslim Sultanate of Adal fought a war between 1529 and 1543, with Ottoman and Portuguese forces intervening on opposing sides.",
+  "strong": [
+   "ottoman-empire"
+  ],
   "body": "Imam Ahmad ibn Ibrahim al-Ghazi of Adal invaded the Ethiopian highlands in 1529 and gained control of much of the empire through military campaigns. Ottoman firearms and troops supported the Adali forces. Ethiopia sought assistance from Portugal, which sent a military force in 1541. Ahmad ibn Ibrahim al-Ghazi was killed at the Battle of Wayna Daga in 1543, after which the Adali invasion collapsed.\n\nThe war exhausted both the Ethiopian and Adali states, and the highlands experienced significant depopulation. However, the Ethiopian monarchy and its Orthodox Christian church remained in power. Ottoman control was limited to the Red Sea coast, and Ethiopia maintained its independence.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ethiopian%E2%80%93Adal_War).",
   "links": [
    {
@@ -785,13 +814,12 @@
    "war"
   ],
   "parent": "spanish-conquest",
+  "weak": [
+   "tenochtitlan"
+  ],
   "summary": "Francisco Pizarro captured the Inca emperor Atahualpa at Cajamarca in 1532, held him for ransom, and executed him.",
   "body": "Part of [Spanish conquest of the Americas](event:spanish-conquest). Pizarro and a small Spanish force ambushed the Inca emperor Atahualpa at Cajamarca in 1532. Atahualpa was held for ransom, and a room filled with gold and silver objects was collected as payment. Despite the ransom payment, Pizarro ordered the emperor's execution. The capture and death of Atahualpa marked the beginning of the collapse of Inca imperial authority and Spanish conquest of the Andean region.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_conquest_of_the_Inca_Empire).",
   "links": [
-   {
-    "label": "Spanish conquest of the Americas",
-    "event": "spanish-conquest"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Spanish_conquest_of_the_Inca_Empire"
@@ -810,13 +838,15 @@
    "politics"
   ],
   "parent": "reformation",
+  "strong": [
+   "95-theses"
+  ],
+  "weak": [
+   "edict-of-nantes"
+  ],
   "summary": "England's king rejected papal authority, dissolved the monasteries and established himself as Supreme Head of the Church of England.",
   "body": "Part of [Protestant Reformation](event:reformation). Henry VIII sought a papal annulment of his marriage to Catherine of Aragon, wanting a male heir; when the Pope refused, Henry rejected papal jurisdiction and declared himself the final authority over the English church. The break was more a matter of power than of theology, and Henry remained Catholic in his own beliefs.\n\nHe confiscated monastic lands and property, which enriched the Crown and a new landowning aristocracy. These changes reshaped English society and politics and laid the groundwork for the English Reformation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Break_with_Rome).",
   "links": [
-   {
-    "label": "Protestant Reformation",
-    "event": "reformation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Break_with_Rome"
@@ -835,6 +865,9 @@
    "science"
   ],
   "summary": "Europeans adopted mathematics and experimental methods as the basis for understanding nature, replacing reliance on inherited authority.",
+  "strong": [
+   "enlightenment"
+  ],
   "body": "The Scientific Revolution extended from [Copernicus](event:copernicus) and Vesalius through [Galileo](event:galileo), Kepler, Bacon, and Descartes to [Newton's *Principia*](event:newton). This period established that mathematical laws govern both terrestrial phenomena such as falling objects and celestial phenomena such as planetary motion.\n\nThe systematic practices of publishing findings, subjecting them to scrutiny, and repeating experiments became standard methods in scientific inquiry and have continued to the present.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scientific_Revolution).",
   "links": [
    {
@@ -854,13 +887,16 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "galileo",
+   "kepler"
+  ],
+  "weak": [
+   "decimal-numerals"
+  ],
   "summary": "Copernicus's *De revolutionibus orbium coelestium* proposed that the Earth orbits the Sun rather than remaining stationary at the centre of the cosmos.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). Copernicus set out a heliocentric model of the solar system in *De revolutionibus orbium coelestium*, published in 1543 as its author lay dying. The model contradicted both Ptolemaic astronomy and the scriptural interpretation then prevailing in Europe.\n\nDisplacing the Earth from the centre of the cosmos was the first of the great revisions of humanity's place in the universe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nicolaus_Copernicus).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Nicolaus_Copernicus"
@@ -880,6 +916,10 @@
    "politics"
   ],
   "summary": "The silver mountain of Potosí in Upper Peru (modern Bolivia) produced a large share of the world's silver, reshaping global trade at an enormous human cost.",
+  "strong": [
+   "manila-galleon",
+   "spanish-conquest"
+  ],
   "body": "Between 1545 and 1810 Potosí produced roughly two-fifths of the world's silver. The bullion was shipped to Spain, financed its wars, and passed from there into Amsterdam, Venice and the Asian trade; Potosí silver was one of the first genuinely global currencies.\n\nMining depended on conscripted labour drawn from Indigenous communities through the Spanish *mita* system and on enslaved Africans. Accidents, cave-ins and mercury poisoning from the refining process killed large numbers of workers, though historians' estimates of the total vary widely.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Potos%C3%AD).",
   "links": [
    {
@@ -900,13 +940,12 @@
    "religion"
   ],
   "parent": "reformation",
+  "weak": [
+   "nicaea"
+  ],
   "summary": "The Catholic Church convened the Council of Trent to define orthodox doctrine and institute clerical reforms in response to Protestant criticism.",
   "body": "Part of [Protestant Reformation](event:reformation). The Council of Trent, held between 1545 and 1563, formulated Catholic responses to Protestant theological positions. The council reaffirmed Catholic doctrines on the Eucharist, penance, and salvation, and it instituted reforms to address clerical misconduct and improve the education of priests. These decisions consolidated Catholic identity and attempted to counter Protestant expansion.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Council_of_Trent).",
   "links": [
-   {
-    "label": "Protestant Reformation",
-    "event": "reformation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Council_of_Trent"
@@ -925,13 +964,12 @@
    "politics"
   ],
   "parent": "reformation",
+  "strong": [
+   "westphalia"
+  ],
   "summary": "Catholic and Protestant princes agreed to end religious conflict in the Holy Roman Empire through the principle cuius regio, eius religio, whereby the ruler determined the faith of his subjects.",
   "body": "Part of [Protestant Reformation](event:reformation). The Peace of Augsburg in 1555 established that each German territory's ruler could choose whether his subjects would follow Catholicism or Lutheranism. This arrangement ended decades of religious conflict within the Holy Roman Empire, though it did not allow for religious freedom for individuals; religious minorities were often required to emigrate or conform.\n\nThe settlement remained in effect until the outbreak of the [Thirty Years' War](event:thirty-years-war) in 1618 reopened religious conflict.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Peace_of_Augsburg).",
   "links": [
-   {
-    "label": "Protestant Reformation",
-    "event": "reformation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Peace_of_Augsburg"
@@ -951,13 +989,12 @@
    "culture"
   ],
   "parent": "mughal-empire",
+  "weak": [
+   "suleiman-magnificent"
+  ],
   "summary": "Akbar expanded the Mughal Empire to encompass most of the Indian subcontinent and implemented administrative reforms that accommodated religious diversity.",
   "body": "Part of [Mughal Empire](event:mughal-empire). Akbar was illiterate but a keen patron of learning. He abolished the jizya tax on non-Muslims, married a Hindu princess and appointed Hindus to senior administrative posts. His court at Agra became a centre of art and scholarship in which Hindu and Islamic traditions mixed.\n\nHis reign set the pattern of Mughal grandeur later seen in the [Taj Mahal](event:taj-mahal), and his approach to religious diversity was an unusual model of imperial governance in the sixteenth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Akbar).",
   "links": [
-   {
-    "label": "Mughal Empire",
-    "event": "mughal-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Akbar"
@@ -984,19 +1021,17 @@
    "culture"
   ],
   "summary": "English playwright, poet and actor whose thirty-odd plays are the most performed and most translated body of work in any language.",
-  "body": "Shakespeare was born at Stratford-upon-Avon, the son of a glover, and married Anne Hathaway at eighteen. By the early 1590s he was in London as an actor and writer, and he became a shareholder in the Lord Chamberlain's Men — later the King's Men — which built the Globe on the south bank of the Thames.\n\n[The plays](item:shakespeare) run from farce to the late romances by way of the English histories and the four great tragedies. Their reputation rests less on their plots, most of them borrowed, than on the invention of characters who appear to think in front of the audience, and on a use of English so productive that a few hundred words entered the language with them.\n\nHe wrote for a commercial theatre and seems not to have troubled about publication; half the plays survive only because two colleagues collected them in the First Folio of 1623, seven years after his death. He retired to Stratford as a prosperous man and is buried in the parish church there.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Shakespeare).",
-  "related": [
-   "shakespeare",
+  "strong": [
+   "shakespeare"
+  ],
+  "weak": [
    "printing"
   ],
+  "body": "Shakespeare was born at Stratford-upon-Avon, the son of a glover, and married Anne Hathaway at eighteen. By the early 1590s he was in London as an actor and writer, and he became a shareholder in the Lord Chamberlain's Men — later the King's Men — which built the Globe on the south bank of the Thames.\n\n[The plays](item:shakespeare) run from farce to the late romances by way of the English histories and the four great tragedies. Their reputation rests less on their plots, most of them borrowed, than on the invention of characters who appear to think in front of the audience, and on a use of English so productive that a few hundred words entered the language with them.\n\nHe wrote for a commercial theatre and seems not to have troubled about publication; half the plays survive only because two colleagues collected them in the First Folio of 1623, seven years after his death. He retired to Stratford as a prosperous man and is buried in the parish church there.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Shakespeare).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/William_Shakespeare"
-   },
-   {
-    "label": "Shakespeare's plays",
-    "event": "shakespeare"
    }
   ],
   "priority": 70
@@ -1166,6 +1201,10 @@
    "politics"
   ],
   "summary": "The Low Countries rebelled against Spanish rule and fought an eighty-year war for independence, eventually emerging as a republic and major commercial power.",
+  "strong": [
+   "dutch-east-india",
+   "spanish-armada"
+  ],
   "body": "Resistance to Spanish taxation and to the enforcement of Catholicism grew into a war for independence, and the northern provinces formed a republic governed by merchant oligarchies under a federal constitution. The fighting lasted from 1568 to 1648 and showed that a wealthy merchant republic could hold out against an empire, though at the cost of eighty years of bloodshed.\n\nIndependence was formally recognised at the [Peace of Westphalia](event:westphalia) in 1648, after which the Dutch Republic became the leading trading power of the seventeenth century, rivalling England and Portugal in every ocean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eighty_Years%27_War).",
   "links": [
    {
@@ -1189,10 +1228,6 @@
   "body": "Part of [Ottoman Empire](event:ottoman-empire). The Battle of Lepanto in October 1571 pitted a fleet of the Holy League, an alliance of Catholic maritime states, against the Ottoman navy in the Gulf of Patras. The Christian coalition achieved a decisive victory, destroying many Ottoman ships and killing a large number of Ottoman sailors and soldiers.\n\nDespite the magnitude of the victory, the Ottoman navy rebuilt its fleet within a year. However, the battle remained historically significant as a demonstration of Christian naval capability and one of the final major galley fleet engagements.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Lepanto).",
   "links": [
    {
-    "label": "Ottoman Empire",
-    "event": "ottoman-empire"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Lepanto"
    }
@@ -1209,13 +1244,12 @@
    "war"
   ],
   "parent": "reformation",
+  "weak": [
+   "trafalgar"
+  ],
   "summary": "A Spanish invasion fleet sent by Philip II was defeated by English naval forces and adverse weather in 1588.",
   "body": "Part of [Protestant Reformation](event:reformation). In 1588, Philip II of Spain dispatched an armada of approximately 130 ships to transport troops for the invasion of England. English naval forces, commanded by figures including Sir Francis Drake, engaged the Spanish fleet in the English Channel. Fireships launched by the English caused disruption, and strong Atlantic storms dispersed the Spanish fleet. Many Spanish ships were wrecked or captured; approximately half of the original force was lost.\n\nThe defeat demonstrated English naval capability and contributed to the survival of Protestant England as an independent power.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_Armada).",
   "links": [
-   {
-    "label": "Protestant Reformation",
-    "event": "reformation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Spanish_Armada"
@@ -1234,6 +1268,12 @@
    "culture"
   ],
   "summary": "William Shakespeare wrote 37 plays for London theatres between approximately 1589 and 1613, establishing works of fundamental importance in English-language literature.",
+  "strong": [
+   "goethe-literature"
+  ],
+  "weak": [
+   "printing-press"
+  ],
   "body": "[Shakespeare](item:william-shakespeare) wrote comedies, tragedies, and histories that were performed at venues including the Globe Theatre. His works, including *Hamlet*, *Macbeth*, *Othello*, and *A Midsummer Night's Dream*, employ complex characterisation and language. The plays dealt with political, personal, and moral themes and were performed for diverse audiences.\n\nAfter his death in 1616, his plays continued to be performed and studied, becoming foundational texts in English literature and education.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Shakespeare).",
   "links": [
    {
@@ -1254,13 +1294,12 @@
    "politics"
   ],
   "parent": "reformation",
+  "strong": [
+   "peace-augsburg"
+  ],
   "summary": "Henry IV of France granted religious toleration to Huguenots (French Protestants), ending decades of civil war.",
   "body": "Part of [Protestant Reformation](event:reformation). The Edict of Nantes, issued in 1598, allowed Huguenots to worship in designated places and promised them equality before the law, a rare concession in an age when religious conformity was usually enforced by the sword.\n\nLouis XIV revoked the Edict in 1685, removing those protections and driving hundreds of thousands of Huguenots into exile in other European countries and in America.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Edict_of_Nantes).",
   "links": [
-   {
-    "label": "Protestant Reformation",
-    "event": "reformation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Edict_of_Nantes"
@@ -1279,6 +1318,10 @@
    "politics"
   ],
   "summary": "Elizabeth I chartered the East India Company as a joint-stock company for Asian trade; it evolved into a political and military power in India.",
+  "strong": [
+   "dutch-east-india",
+   "british-raj"
+  ],
   "body": "The East India Company began as a trading venture but took on the functions of a government, issuing currency, maintaining armies, making treaties with Indian rulers and collecting taxes. It found that political control was necessary for stable trade, and expanded from coastal factories into territorial rule.\n\nBy 1800 the Company governed Bengal outright and dominated much of the coast: a private corporation exercising sovereign power over large populations under a distant Crown.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/East_India_Company).",
   "links": [
    {
@@ -1319,6 +1362,12 @@
    "politics"
   ],
   "summary": "The Tokugawa shogunate controlled Japan for approximately 250 years, maintaining internal peace and restricting foreign contact.",
+  "strong": [
+   "meiji"
+  ],
+  "weak": [
+   "manila-galleon"
+  ],
   "body": "Beginning in 1603, the Tokugawa shoguns centralised political authority and implemented policies restricting foreign trade and contact. A single Dutch trading post at Nagasaki was permitted, while Japanese subjects were generally prohibited from traveling abroad. This sakoku (closed country) policy lasted until the mid-19th century.\n\nIn the 1850s, American naval expeditions under Commodore Perry forced Japan to open trade ports, ending the isolation policy and contributing to the political upheaval that led to the [Meiji Restoration](event:meiji) in 1868.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Edo_period).",
   "links": [
    {
@@ -1339,13 +1388,15 @@
    "politics"
   ],
   "parent": "age-of-discovery",
+  "strong": [
+   "quebec-founded"
+  ],
+  "weak": [
+   "slave-trade"
+  ],
   "summary": "Jamestown, established in 1607, was the first permanent English settlement in North America and became the foundation of the Virginia colony.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). The early years were disastrous: about half the colonists died in the first year from disease, malnutrition and conflict with Indigenous peoples. Tobacco cultivation for export eventually made the colony viable, worked first by indentured servants and later by enslaved Africans. The Powhatan Confederacy, the dominant Indigenous power in the region, resisted English expansion but was gradually driven back by warfare and disease.\n\nJamestown served as the capital of Virginia, which became a cornerstone of English North America and, in time, of the United States.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Jamestown,_Virginia).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Jamestown,_Virginia"
@@ -1364,13 +1415,12 @@
    "politics"
   ],
   "parent": "age-of-discovery",
+  "weak": [
+   "seven-years-war"
+  ],
   "summary": "Samuel de Champlain founded Quebec in 1608 as the centre of French colonial settlement in North America, based on the fur trade and Indigenous alliances.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). Unlike [Jamestown](event:jamestown), which expanded by conquest, Quebec grew through commercial partnership with Indigenous nations: the French depended on Indigenous hunters to supply the furs that were the colony's main export. That relationship produced more intermarriage and gave rise to métis (mixed-ancestry) populations.\n\nQuebec became the capital of New France and the foundation of Francophone North America.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Quebec_City#Colonial_era).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Quebec_City"
@@ -1389,13 +1439,12 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "weak": [
+   "galileo"
+  ],
   "summary": "Johannes Kepler formulated mathematical laws describing planetary motion, replacing circular orbits with ellipses.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). Kepler's first law stated that planetary orbits are elliptical, not circular as previously believed. His second law established that planets sweep equal areas in equal times as they orbit the sun. His third law provided a mathematical relationship between a planet's orbital period and its distance from the sun. These laws provided the first mathematically precise description of planetary motion and supported [Copernicus](event:copernicus)'s heliocentric model.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kepler%27s_laws_of_planetary_motion).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Kepler%27s_laws_of_planetary_motion"
@@ -1413,13 +1462,15 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "newton"
+  ],
+  "weak": [
+   "scopes-trial"
+  ],
   "summary": "Galileo's telescope revealed moons around Jupiter, the phases of Venus and mountains on the Moon: the heavens were neither perfect nor Earth-centred.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). Using one of the first astronomical telescopes, Galileo observed four moons orbiting Jupiter, which showed that not everything circled the Earth; the phases of Venus, which fitted a Sun-centred system; and mountains and craters on the Moon, which told against the doctrine of perfect celestial bodies. His published support for [Copernicus](event:copernicus) brought him before the Inquisition in 1633, and he spent the rest of his life under house arrest until his death in 1642.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Galileo_Galilei).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Galileo_Galilei"
@@ -1477,13 +1528,12 @@
    "religion"
   ],
   "parent": "reformation",
+  "weak": [
+   "ww1"
+  ],
   "summary": "The Thirty Years' War began in Bohemia as a religious conflict and expanded into a major European conflict lasting from 1618 to 1648.",
   "body": "Part of [Protestant Reformation](event:reformation). The war originated in disputes between Catholic and Protestant powers within the Holy Roman Empire. The conflict expanded as Denmark, Sweden, France, and other states intervened to advance their interests. The war involved combat across Central Europe, resulting in massive casualties through military action, disease, and famine.\n\nEstimates suggest that approximately one-third of the population in German territories died during the war. The [Peace of Westphalia](event:westphalia) ended the conflict in 1648, establishing a new system of sovereign states and religious settlement in the Holy Roman Empire.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Thirty_Years%27_War).",
   "links": [
-   {
-    "label": "Protestant Reformation",
-    "event": "reformation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Thirty_Years%27_War"
@@ -1501,13 +1551,12 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "hooke-cells"
+  ],
   "summary": "William Harvey demonstrated that blood circulates continuously through the body, propelled by the heart, contradicting ancient medical theory.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). Harvey used measurement and dissection to show that the blood moves in a closed loop driven by the heart, rather than ebbing and flowing as Galen had taught for 1,500 years. His *De motu cordis* appeared in 1628, when he was 50 and serving as physician to Charles I.\n\nThe discovery opened a new physiology and became the foundation on which cardiovascular medicine was built.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/William_Harvey).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/William_Harvey"
@@ -1526,13 +1575,12 @@
    "culture"
   ],
   "parent": "mughal-empire",
+  "strong": [
+   "akbar-great"
+  ],
   "summary": "Shah Jahan commissioned the Taj Mahal as a mausoleum for his wife Mumtaz Mahal, beginning construction in 1632.",
   "body": "Part of [Mughal Empire](event:mughal-empire). The Taj Mahal was built on the banks of the Yamuna River in Agra between 1632 and 1653. The structure consists of a white marble dome resting on a square base, with four minarets at the corners. The building incorporates Islamic and Persian architectural elements and features inlay work with semi-precious stones.\n\nThe Taj Mahal represents a significant achievement of Mughal architecture and remains one of the most widely recognised buildings in the world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Taj_Mahal).",
   "links": [
-   {
-    "label": "Mughal Empire",
-    "event": "mughal-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Taj_Mahal"
@@ -1552,6 +1600,12 @@
    "politics"
   ],
   "summary": "Civil war between Parliament and King Charles I resulted in Parliament's military victory and the king's execution in 1649.",
+  "strong": [
+   "glorious-revolution"
+  ],
+  "weak": [
+   "american-revolution"
+  ],
   "body": "Conflict between Parliament and Charles I over taxation and religious policy led to civil war from 1642 to 1651. Parliamentarian armies, in which Oliver Cromwell rose to command, defeated the Royalists. Charles was captured, tried for treason and beheaded on 30 January 1649, the first European monarch tried and executed by his own subjects.\n\nEngland was then governed as a commonwealth without a monarch until the Restoration in 1660.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/English_Civil_War).",
   "links": [
    {
@@ -1580,20 +1634,19 @@
    "science"
   ],
   "summary": "English mathematician and physicist who set out the laws of motion and universal gravitation, and who invented the calculus independently of Leibniz.",
-  "body": "Newton was born at Woolsthorpe in Lincolnshire on Christmas Day 1642 by the calendar then used in England, which is 4 January 1643 by the one used now. He went up to Trinity College, Cambridge, and did much of his most original work in 1665–67, when plague closed the university and he returned home.\n\nThe *[Principia](item:newton)* of 1687 gave three laws of motion and a law of universal gravitation, and showed that the same mathematics governs a falling apple, the tides, comets and the orbits of the planets. It is the central text of the [Scientific Revolution](item:scientific-revolution). To carry out the work he developed what he called fluxions — the [calculus](item:calculus), which Gottfried Wilhelm Leibniz reached independently and published first, provoking a bitter priority dispute.\n\nHe also wrote the *Opticks*, demonstrated that white light is a mixture of colours, built the first reflecting telescope, spent decades on alchemy and biblical chronology, sat in Parliament, and ran the Royal Mint, where he pursued counterfeiters with some enthusiasm. He was President of the Royal Society from 1703 until his death.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Isaac_Newton).",
-  "related": [
-   "calculus",
+  "strong": [
    "newton",
+   "calculus",
    "scientific-revolution"
   ],
+  "weak": [
+   "kepler"
+  ],
+  "body": "Newton was born at Woolsthorpe in Lincolnshire on Christmas Day 1642 by the calendar then used in England, which is 4 January 1643 by the one used now. He went up to Trinity College, Cambridge, and did much of his most original work in 1665–67, when plague closed the university and he returned home.\n\nThe *[Principia](item:newton)* of 1687 gave three laws of motion and a law of universal gravitation, and showed that the same mathematics governs a falling apple, the tides, comets and the orbits of the planets. It is the central text of the [Scientific Revolution](item:scientific-revolution). To carry out the work he developed what he called fluxions — the [calculus](item:calculus), which Gottfried Wilhelm Leibniz reached independently and published first, provoking a bitter priority dispute.\n\nHe also wrote the *Opticks*, demonstrated that white light is a mixture of colours, built the first reflecting telescope, spent decades on alchemy and biblical chronology, sat in Parliament, and ran the Royal Mint, where he pursued counterfeiters with some enthusiasm. He was President of the Royal Society from 1703 until his death.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Isaac_Newton).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Isaac_Newton"
-   },
-   {
-    "label": "Newton's Principia",
-    "event": "newton"
    }
   ],
   "priority": 90
@@ -1610,6 +1663,9 @@
    "politics"
   ],
   "summary": "The Qing dynasty, established by Manchu conquerors in 1644, ruled China and expanded its territory to its greatest extent before declining.",
+  "strong": [
+   "ming-dynasty"
+  ],
   "body": "The Manchu Qing conquered Ming China and, through a long series of campaigns, brought Mongolia, Xinjiang, Tibet and Taiwan under their control, giving the empire its greatest territorial extent. The 18th century saw sustained economic development and rapid population growth, after which the dynasty faced fiscal strain, rebellion and foreign military pressure.\n\nThe [Taiping Rebellion](event:taiping) of the mid-19th century caused enormous destruction, and the [Opium Wars](event:opium-wars) exposed the gap between Qing and European military technology. These conflicts hollowed out dynastic authority, and the Qing fell in 1912, replaced by the Republic of China.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Qing_dynasty).",
   "links": [
    {
@@ -1629,13 +1685,12 @@
    "politics"
   ],
   "parent": "thirty-years-war",
+  "weak": [
+   "maastricht"
+  ],
   "summary": "The Peace of Westphalia in 1648 concluded the Thirty Years' War and established principles for the European state system.",
   "body": "Part of [Thirty Years' War](event:thirty-years-war). The Peace of Westphalia consisted of two treaties signed in 1648 that ended the Thirty Years' War and related conflicts. The treaties recognised the sovereignty of individual European states and established that international relations would be conducted between sovereign powers rather than under the authority of the Holy Roman Emperor or the Pope.\n\nThe settlement established principles of state sovereignty and the legal equality of states in international relations, concepts that became foundational to the modern international system.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Peace_of_Westphalia).",
   "links": [
-   {
-    "label": "Thirty Years' War",
-    "event": "thirty-years-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Peace_of_Westphalia"
@@ -1655,13 +1710,15 @@
    "war"
   ],
   "parent": "mughal-empire",
+  "strong": [
+   "akbar-great"
+  ],
+  "weak": [
+   "british-raj"
+  ],
   "summary": "The last of the great Mughal emperors conquered southern India but alienated Hindu subjects through religious orthodoxy, contributing to the empire's decline.",
   "body": "Part of [Mughal Empire](event:mughal-empire). Aurangzeb, who reigned from 1658 to 1707, reversed [Akbar](event:akbar-great)'s policy of accommodation, enforced Islamic law strictly and taxed Hindus discriminatorily. His long wars in the south added territory and brought in revenue, but their cost drained the treasury, and by his death the empire was overextended.\n\nWithout his military leadership the Mughal state fragmented into semi-autonomous provincial kingdoms, which the [East India Company](event:english-east-india) was able to divide and absorb.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aurangzeb).",
   "links": [
-   {
-    "label": "Mughal Empire",
-    "event": "mughal-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Aurangzeb"
@@ -1681,13 +1738,12 @@
    "culture"
   ],
   "parent": "qing-dynasty",
+  "strong": [
+   "yongzheng-reforms"
+  ],
   "summary": "The Kangxi Emperor ruled the Qing dynasty from 1661 to 1722, extending territorial control and overseeing economic and cultural development.",
   "body": "Part of [Qing dynasty](event:qing-dynasty). Kangxi was a scholar-emperor with interests in poetry, calligraphy and learning. He toured his realm extensively, took an interest in the welfare of ordinary subjects, and filled his court with capable administrators.\n\nDuring his reign the Qing extended control over Mongolia, Taiwan and Tibet. The empire was largely peaceful and prosperous and its population grew rapidly, and he left the dynasty at its height on his death in 1722.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kangxi_Emperor).",
   "links": [
-   {
-    "label": "Qing dynasty",
-    "event": "qing-dynasty"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Kangxi_Emperor"
@@ -1705,13 +1761,12 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "periodic-table"
+  ],
   "summary": "Robert Boyle showed that the pressure and volume of a gas are inversely related, laying groundwork for chemistry and thermodynamics.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). Boyle's law, published in 1662, states that the pressure of a fixed quantity of gas varies inversely with its volume at constant temperature, so that pressure multiplied by volume is constant. It was the first mathematical law governing the behaviour of matter itself, and it showed that gases obey the same natural laws as solids and liquids.\n\nIt was among the first successes of the experimental method and helped establish chemistry as a quantitative science.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Boyle%27s_law).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Boyle%27s_law"
@@ -1729,13 +1784,12 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "leeuwenhoek-microscope"
+  ],
   "summary": "Robert Hooke used a microscope to observe plant tissue structures and introduced the term 'cell' to describe the compartments he observed.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). Hooke examined thin sections of cork under a compound microscope and observed a repeating pattern of compartments. He named these structures 'cells' due to their resemblance to monastery cells. His observations were documented in *Micrographia* (1665), a heavily illustrated book describing microscopic structures and organisms.\n\nCell theory did not fully develop until the 19th century, but Hooke's observations and nomenclature proved foundational to later biological research.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Robert_Hooke).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Robert_Hooke"
@@ -1751,20 +1805,17 @@
    "science"
   ],
   "summary": "The mathematics of change: differentiation, which measures rates, and integration, which accumulates them — and the theorem that the two are inverse operations.",
-  "body": "Areas and tangents had been attacked for two thousand years, by Archimedes with exhaustion arguments and by Fermat, Cavalieri and Barrow with methods that worked case by case. What [Newton](item:isaac-newton) and Gottfried Wilhelm Leibniz supplied in the 1660s and 1670s was a general calculus: a notation and a set of rules that made the problems routine, and the fundamental theorem linking the two operations.\n\nNewton developed his fluxions first and used them in the *[Principia](item:newton)*, though he presented the results there in classical geometry. Leibniz published first, and his notation — dx, dy and the integral sign — is the one still in use. The priority dispute between them, and between their national followers, was long and unedifying.\n\nThe foundations were shaky for a century and a half: infinitesimals were quantities that had to be non-zero and then zero, an objection Bishop Berkeley put memorably. Cauchy and Weierstrass replaced them with limits in the nineteenth century. Meanwhile the calculus had become the language of physics and engineering — the [Scientific Revolution's](item:scientific-revolution) most durable instrument, and the basis of every differential equation used to describe a continuous process.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Calculus).",
-  "related": [
-   "isaac-newton",
-   "newton",
+  "strong": [
+   "newton"
+  ],
+  "weak": [
    "scientific-revolution"
   ],
+  "body": "Areas and tangents had been attacked for two thousand years, by Archimedes with exhaustion arguments and by Fermat, Cavalieri and Barrow with methods that worked case by case. What [Newton](item:isaac-newton) and Gottfried Wilhelm Leibniz supplied in the 1660s and 1670s was a general calculus: a notation and a set of rules that made the problems routine, and the fundamental theorem linking the two operations.\n\nNewton developed his fluxions first and used them in the *[Principia](item:newton)*, though he presented the results there in classical geometry. Leibniz published first, and his notation — dx, dy and the integral sign — is the one still in use. The priority dispute between them, and between their national followers, was long and unedifying.\n\nThe foundations were shaky for a century and a half: infinitesimals were quantities that had to be non-zero and then zero, an objection Bishop Berkeley put memorably. Cauchy and Weierstrass replaced them with limits in the nineteenth century. Meanwhile the calculus had become the language of physics and engineering — the [Scientific Revolution's](item:scientific-revolution) most durable instrument, and the basis of every differential equation used to describe a continuous process.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Calculus).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Calculus"
-   },
-   {
-    "label": "Isaac Newton",
-    "event": "isaac-newton"
    }
   ],
   "priority": 90
@@ -1781,13 +1832,12 @@
    "technology"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "germ-theory"
+  ],
   "summary": "Antonie van Leeuwenhoek ground tiny lenses that magnified about 200-fold and used them to discover bacteria, protozoa and blood cells.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). Leeuwenhoek was a self-taught lens grinder rather than a university man, but his hand-built microscopes, magnifying some 200 times, outperformed every competitor. Examining water, blood and other samples, he described bacteria, protozoa and red blood cells, none of which had been seen before.\n\nHe reported his observations over several decades in hundreds of letters to the Royal Society in London, establishing that life extended far below the threshold of the naked eye.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Antonie_van_Leeuwenhoek).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Antonie_van_Leeuwenhoek"
@@ -1806,6 +1856,12 @@
    "culture"
   ],
   "summary": "Christopher Wren designed a new St. Paul's Cathedral after the Great Fire of London in 1666, reconstructing it between 1675 and 1711.",
+  "strong": [
+   "sistine-chapel"
+  ],
+  "weak": [
+   "bach-baroque"
+  ],
   "body": "The Great Fire of 1666 destroyed the medieval St Paul's, and Wren designed a replacement in the English baroque style. Construction took 35 years and consumed vast resources during [the Glorious Revolution](event:glorious-revolution) and the wars with Louis XIV. Its dome became one of the defining images of London.\n\nWren designed more than fifty other City churches after the fire, developing an English baroque more restrained and mathematical than its Continental counterpart.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/St_Paul%27s_Cathedral).",
   "links": [
    {
@@ -1827,6 +1883,9 @@
    "culture"
   ],
   "summary": "Peter the Great reigned from 1682 to 1725, implementing administrative, cultural, and military reforms that transformed Russia into a major European power.",
+  "weak": [
+   "meiji"
+  ],
   "body": "Peter travelled incognito in Western Europe to study shipbuilding and military technology and returned determined to transform Russia. He curtailed the independence of the Orthodox Church, ordered nobles to cut off their beards and adopt Western dress, reformed the alphabet, and moved the capital from Moscow to [St. Petersburg](event:st-petersburg-founded) on the Baltic.\n\nHe fought Sweden for access to the sea and campaigned against the Ottomans, and his victories established Russia as a European power. Opposition was suppressed harshly: a revolt of the streltsy guard was put down with mass public executions.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Peter_the_Great).",
   "links": [
    {
@@ -1846,13 +1905,12 @@
    "war"
   ],
   "parent": "ottoman-empire",
+  "strong": [
+   "lepanto"
+  ],
   "summary": "An Ottoman army besieged Vienna in 1683 but was defeated by a relief force led by Polish and German troops.",
   "body": "Part of [Ottoman Empire](event:ottoman-empire). The Ottoman grand vizier Kara Mustafa Pasha besieged Vienna from July 1683. King John III Sobieski of Poland led a relief army of Polish, German and Austrian troops that defeated the Ottoman forces outside the city in September and broke the siege.\n\nThe failure at Vienna marked the high-water mark of Ottoman expansion in Europe. Ottoman power in the region receded over the following decades, and Austria emerged as the dominant force in central Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Vienna).",
   "links": [
-   {
-    "label": "Ottoman Empire",
-    "event": "ottoman-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Vienna"
@@ -1871,6 +1929,9 @@
    "culture"
   ],
   "summary": "Johann Sebastian Bach composed over 1,000 works including fugues, cantatas, concertos, and suites using complex counterpoint and mathematical structures.",
+  "strong": [
+   "mozart-symphonies"
+  ],
   "body": "Bach worked in provincial German courts, churches and towns, serving as Cantor of St Thomas's Church in Leipzig from 1723 until his death, and never travelled far. He composed instrumental works including the *Art of Fugue*, the *Well-Tempered Clavier* and the *Brandenburg Concertos*, together with more than 200 church cantatas.\n\nHe was little known outside Germany in his own lifetime, and after his death in 1750 his music fell into obscurity until the revival of the 19th century. He is now regarded as the summit of baroque music.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Johann_Sebastian_Bach).",
   "links": [
    {
@@ -1912,13 +1973,12 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "relativity"
+  ],
   "summary": "Three laws of motion and universal gravitation explained falling bodies, tides, comets and planetary orbits within a single system.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). [Newton](item:isaac-newton) published the *Principia* in 1687, setting out three laws of motion and the law of universal gravitation and applying them to falling bodies, the tides, comets and the orbits of the planets. He developed the calculus needed to carry out the work.\n\nThe *Principia* is among the most influential scientific books ever written, and it made physics the model to which the other sciences aspired for two centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica"
@@ -1936,6 +1996,12 @@
    "politics"
   ],
   "summary": "In 1688, Parliament invited William of Orange to replace King James II, and established a Bill of Rights limiting royal authority.",
+  "strong": [
+   "act-of-union-1707"
+  ],
+  "weak": [
+   "us-constitution"
+  ],
   "body": "Political tensions between James II and Parliament over religious policy and royal prerogative led Parliament to invite William of Orange and his wife Mary to England. William landed with military forces in November 1688, and James II fled England. Parliament established William and Mary as joint monarchs and passed the Bill of Rights in 1689, defining parliamentary powers and limiting the monarch's authority.\n\nThis settlement established constitutional monarchy in England and asserted parliamentary supremacy in legislation. The Bank of England was subsequently established in 1694 as part of the financial reorganisation following these political changes.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Glorious_Revolution).",
   "links": [
    {
@@ -1957,13 +2023,12 @@
    "politics"
   ],
   "parent": "enlightenment",
+  "strong": [
+   "hume-philosophy"
+  ],
   "summary": "Voltaire criticised superstition, censorship, and religious intolerance through his prolific writings, becoming a leading figure of the Enlightenment.",
   "body": "Part of [The Enlightenment](event:enlightenment). Voltaire wrote extensively in multiple genres including poetry, philosophy, history, and satire. His work *Candide* (1759) used satire to critique philosophical optimism and social conditions. His writings were widely circulated across Europe, distributed through both authorised publication and clandestine channels. Voltaire was imprisoned and exiled by authorities for his criticisms of the monarchy and the Catholic Church.\n\nDuring his lifetime, Voltaire became widely recognised as a major intellectual figure. He died in Paris in 1778, having achieved significant influence on Enlightenment thought and 18th-century intellectual discourse.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voltaire).",
   "links": [
-   {
-    "label": "The Enlightenment",
-    "event": "enlightenment"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Voltaire"
@@ -1985,10 +2050,6 @@
   "body": "Part of [Peter the Great](event:peter-the-great)'s modernisation. St. Petersburg was laid out on the Neva delta in a European style, with straight streets and grand buildings intended to rival Western cities. Thousands of workers died in the swamps during construction, and the city cost a vast sum.\n\nIt served as Russia's capital until 1918 and became the country's window on the West and a centre of Russian culture and administration.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Saint_Petersburg).",
   "links": [
    {
-    "label": "Peter the Great",
-    "event": "peter-the-great"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Saint_Petersburg"
    }
@@ -2005,6 +2066,9 @@
    "politics"
   ],
   "summary": "The Acts of Union in 1707 merged the parliaments of England and Scotland, creating the Kingdom of Great Britain with a unified political structure.",
+  "weak": [
+   "brexit-referendum"
+  ],
   "body": "England and Scotland had shared a monarch since 1603, when James VI of Scotland succeeded to the English throne as James I; the Acts of Union of 1707 joined their parliaments as well. The motives were partly economic (Scotland gained access to English colonial markets), partly religious (both kingdoms were Protestant) and partly practical, since one monarch, one parliament and one army and navy could project power farther than two rival realms.\n\nThe union held the British Isles together for colonial expansion, and by 1800 Britain was the world's foremost imperial power.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Acts_of_Union_1707).",
   "links": [
    {
@@ -2030,10 +2094,6 @@
   "body": "Part of [Qing dynasty](event:qing-dynasty). Yongzheng succeeded his father [Kangxi](event:kangxi-emperor) and proved an even more meticulous administrator. He created a secret memorial system that let the emperor receive reports outside the normal bureaucratic channels, settled border disputes, curbed official corruption and raised agricultural productivity and state revenues.\n\nHis reign lasted only thirteen years but was decisive in stabilising Qing power, leaving his successors a stable empire of some 300 million people.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Yongzheng_Emperor).",
   "links": [
    {
-    "label": "Qing dynasty",
-    "event": "qing-dynasty"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Yongzheng_Emperor"
    }
@@ -2051,13 +2111,12 @@
    "culture"
   ],
   "parent": "enlightenment",
+  "weak": [
+   "wealth-of-nations"
+  ],
   "summary": "David Hume developed an empiricist philosophy arguing that sensory experience rather than reason provides the foundation for human knowledge.",
   "body": "Part of [The Enlightenment](event:enlightenment). Hume published his *Treatise of Human Nature* in 1739, advancing empiricism as a philosophical position. He argued that knowledge and understanding derive from sensory impressions rather than abstract reasoning. Hume questioned the possibility of acquiring knowledge about God, causation, and the nature of the self beyond what sensory experience could demonstrate.\n\nHume's philosophy challenged prevailing metaphysical assumptions and influenced subsequent philosophical and scientific thought, contributing to debates about the nature of knowledge and the methods appropriate to natural philosophy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/David_Hume).",
   "links": [
-   {
-    "label": "The Enlightenment",
-    "event": "enlightenment"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/David_Hume"
@@ -2077,13 +2136,15 @@
    "culture"
   ],
   "parent": "enlightenment",
+  "strong": [
+   "peter-the-great"
+  ],
+  "weak": [
+   "french-revolution"
+  ],
   "summary": "Enlightened absolute monarchs including Frederick the Great and Maria Theresa implemented administrative and legal reforms based on Enlightenment principles while maintaining centralised authority.",
   "body": "Part of [The Enlightenment](event:enlightenment). Rulers such as Frederick the Great of Prussia and Maria Theresa of Austria introduced reformed legal codes, measures of religious toleration and expanded schooling while retaining absolute authority; the approach was later summarised in the phrase 'everything for the people, nothing by the people'. Frederick reformed the law, promoted science and invited philosophers such as Voltaire to his court.\n\nEnlightened absolutism showed that Enlightenment ideas could be imposed from above, but the emphasis on reason and individual rights sat uneasily with absolute monarchy, a tension that broke open in the [French Revolution](event:french-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Enlightened_absolutism).",
   "links": [
-   {
-    "label": "The Enlightenment",
-    "event": "enlightenment"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Enlightened_absolutism"
@@ -2102,13 +2163,12 @@
    "politics"
   ],
   "parent": "enlightenment",
+  "strong": [
+   "us-constitution"
+  ],
   "summary": "Montesquieu's *The Spirit of the Laws* argued that political liberty depends on dividing governmental authority among legislative, executive, and judicial branches.",
   "body": "Part of [The Enlightenment](event:enlightenment). Montesquieu's treatise *The Spirit of the Laws*, published in 1748, circulated widely throughout Europe and influenced the design of the [American Constitution](event:us-constitution). The principle of separated powers, in which different governmental branches check and balance each other, became foundational to subsequent constitutional design.\n\nMontesquieu also argued that physical geography, climate, and social conditions influenced the types of government appropriate to different societies. This contributed to comparative approaches in studying political systems.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Montesquieu).",
   "links": [
-   {
-    "label": "The Enlightenment",
-    "event": "enlightenment"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Montesquieu"
@@ -2128,13 +2188,12 @@
    "technology"
   ],
   "parent": "enlightenment",
+  "strong": [
+   "printing"
+  ],
   "summary": "Diderot edited the *Encyclopédie*, a comprehensive encyclopedia in 28 volumes covering arts, sciences, trades, philosophy, and other fields of knowledge.",
   "body": "Part of [The Enlightenment](event:enlightenment). The *Encyclopédie* compilation was edited by Denis Diderot and included contributions from [Voltaire](event:voltaire-enlightenment), [Rousseau](event:rousseau-social), and numerous other writers. The work covered diverse subjects including philosophy, technical trades, natural science, politics, and the arts. Publication occurred between 1751 and 1772, and authorities repeatedly attempted to suppress distribution, citing concerns about subversive content.\n\nThe work represented a major effort to compile and disseminate knowledge from diverse fields, making information available to educated readers.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Encyclopédie).",
   "links": [
-   {
-    "label": "The Enlightenment",
-    "event": "enlightenment"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Encyclopédie"
@@ -2153,6 +2212,9 @@
    "war"
   ],
   "summary": "The Konbaung dynasty, founded by Alaungpaya in 1752, reunified Burma and expanded it to its greatest territorial extent.",
+  "strong": [
+   "chakri-dynasty"
+  ],
   "body": "Burma was divided among competing regional powers before Alaungpaya's rise. His campaigns reunified the country and carried Burmese forces into Siam, and his successors repelled four Qing invasions. Under Konbaung rule Burma expanded to its greatest extent, controlling territory from the Andaman Sea to the hills of Assam.\n\nThe British conquered Burma in three wars between 1824 and 1885, but the Konbaung had welded scattered kingdoms into a Burmese state.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Konbaung_Dynasty).",
   "links": [
    {
@@ -2172,6 +2234,9 @@
    "disaster"
   ],
   "summary": "A major earthquake struck Lisbon on November 1, 1755, followed by tsunami waves and fire, causing extensive destruction and loss of life.",
+  "strong": [
+   "enlightenment"
+  ],
   "body": "The earthquake occurred on All Saints' Day and triggered a tsunami that affected the Portuguese coast. Fires spread through the damaged city. Tens of thousands of people died in the disaster, with estimates varying depending on the source. The earthquake and its consequences raised philosophical questions about natural evil and divine providence, influencing contemporary thinkers including Voltaire, who addressed the event in his writings including *Candide*. The disaster prompted systematic scientific investigation of earthquake phenomena, marking an early instance of methodical study of seismic events.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/1755_Lisbon_earthquake).",
   "links": [
    {
@@ -2192,6 +2257,9 @@
    "culture"
   ],
   "summary": "Wolfgang Amadeus Mozart composed more than 600 works across multiple genres including symphonies, operas, chamber works, and concertos.",
+  "weak": [
+   "goethe-literature"
+  ],
   "body": "Mozart was a prodigy who was touring Europe by the age of six and wrote his first symphony at eight. His works include 41 numbered symphonies, concertos for piano and violin, operas such as *The Magic Flute* and *Don Giovanni*, chamber music and sacred works, combining formal precision with emotional range.\n\nHe died in Vienna in 1791 at the age of 35 and was buried in a common grave, but his music outlasted the princes and bishops he served and shaped the composers who followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart).",
   "links": [
    {
@@ -2212,6 +2280,9 @@
    "war"
   ],
   "summary": "A war fought in Europe, North America, the Caribbean, West Africa, India and the Philippines, often described as the first global conflict.",
+  "strong": [
+   "american-revolution"
+  ],
   "body": "Britain and Prussia fought France, Austria, Russia and later Spain, with campaigns in Europe, North America, the Caribbean, West Africa, India and the Philippines. Britain took Canada from France and gained effective control of Bengal, and French power in North America was largely eliminated.\n\nThe war left Britain with heavy debts, and its attempts to recover the cost by taxing the American colonies had consequences it did not expect. France emerged with territorial losses and strained finances that contributed to the crisis preceding the French Revolution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Seven_Years%27_War).",
   "links": [
    {
@@ -2238,6 +2309,10 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Plassey"
    }
+  ],
+  "parent": "seven-years-war",
+  "strong": [
+   "english-east-india"
   ]
  },
  {
@@ -2273,13 +2348,12 @@
    "politics"
   ],
   "parent": "enlightenment",
+  "strong": [
+   "french-revolution"
+  ],
   "summary": "Jean-Jacques Rousseau's *The Social Contract* argued that political legitimacy derives from the consent of the governed and the expression of a collective 'general will'.",
   "body": "Part of [The Enlightenment](event:enlightenment). Where [Voltaire](event:voltaire-enlightenment) attacked religion, Rousseau attacked society itself as corrupting a natural human goodness. *The Social Contract* argued that legitimate authority arises when citizens agree to form a political body expressing a collective 'general will', a democratic account of the contract rather than a justification of monarchy.\n\nHis arguments were taken up by the [French Revolution](event:french-revolution) and later by authoritarian regimes that claimed to embody the general will, and they remain contested in political philosophy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Social_Contract).",
   "links": [
-   {
-    "label": "The Enlightenment",
-    "event": "enlightenment"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/The_Social_Contract"
@@ -2297,13 +2371,15 @@
    "technology"
   ],
   "parent": "industrial-revolution",
+  "strong": [
+   "watt-engine"
+  ],
+  "weak": [
+   "bessemer-steel"
+  ],
   "summary": "The spinning jenny and water frame were mechanised textile machines that increased the productivity of individual workers.",
   "body": "Part of [Industrial Revolution](event:industrial-revolution). James Hargreaves developed the spinning jenny in 1764, a machine that allowed one worker to spin multiple threads simultaneously rather than one at a time. Richard Arkwright developed the water frame in 1769, a larger machine powered by water wheels that could produce thread continuously.\n\nThese machines substantially increased output per worker in textile production, making cloth manufacturing more efficient and reducing production costs. The widespread adoption of these technologies created demand for raw materials and contributed to the growth of textile manufacturing as an industrial sector.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spinning_jenny).",
   "links": [
-   {
-    "label": "Industrial Revolution",
-    "event": "industrial-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Spinning_jenny"
@@ -2331,20 +2407,21 @@
    "politics"
   ],
   "summary": "French general who made himself emperor, dominated Europe for a decade, and left behind a legal code still in use across much of the world.",
-  "body": "Born on Corsica a year after France annexed it, Napoleon was trained at French military schools and made his name in the artillery during [the Revolution](item:french-revolution). Command in Italy and an expedition to Egypt built his reputation; in 1799 he [seized power](item:napoleon-coup) in a coup, and in 1804 crowned himself emperor.\n\nAs a commander he moved armies faster than his opponents could react and concentrated force at the decisive point; [Austerlitz](item:austerlitz) in 1805 is the usual textbook example. [The wars](item:napoleonic-wars) that carry his name put most of Europe under French control or influence, but Britain held the sea after [Trafalgar](item:trafalgar), Spain became an unwinnable guerrilla war, and [the invasion of Russia](item:russia-1812) in 1812 destroyed the Grande Armée. He abdicated in 1814, returned for a hundred days, and was beaten at [Waterloo](item:waterloo).\n\nHe died in British custody on Saint Helena. The Napoleonic Code, a centralised administration, the metric system and conscription outlasted him, and the nationalism his campaigns provoked shaped Europe for a century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleon).",
-  "related": [
+  "strong": [
+   "napoleon-coup",
    "napoleonic-wars",
-   "french-revolution",
-   "waterloo"
+   "waterloo",
+   "french-revolution"
   ],
+  "weak": [
+   "austerlitz",
+   "trafalgar"
+  ],
+  "body": "Born on Corsica a year after France annexed it, Napoleon was trained at French military schools and made his name in the artillery during [the Revolution](item:french-revolution). Command in Italy and an expedition to Egypt built his reputation; in 1799 he [seized power](item:napoleon-coup) in a coup, and in 1804 crowned himself emperor.\n\nAs a commander he moved armies faster than his opponents could react and concentrated force at the decisive point; [Austerlitz](item:austerlitz) in 1805 is the usual textbook example. [The wars](item:napoleonic-wars) that carry his name put most of Europe under French control or influence, but Britain held the sea after [Trafalgar](item:trafalgar), Spain became an unwinnable guerrilla war, and [the invasion of Russia](item:russia-1812) in 1812 destroyed the Grande Armée. He abdicated in 1814, returned for a hundred days, and was beaten at [Waterloo](item:waterloo).\n\nHe died in British custody on Saint Helena. The Napoleonic Code, a centralised administration, the metric system and conscription outlasted him, and the nationalism his campaigns provoked shaped Europe for a century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleon).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Napoleon"
-   },
-   {
-    "label": "Napoleonic Wars",
-    "event": "napoleonic-wars"
    }
   ],
   "priority": 88
@@ -2382,6 +2459,9 @@
    "war"
   ],
   "summary": "The American Revolution (1775–1783) resulted in the thirteen British colonies achieving independence and establishing a new nation.",
+  "strong": [
+   "french-revolution"
+  ],
   "body": "Disputes between the British Crown and the thirteen colonies over taxation and political autonomy escalated into war in 1775. The Continental Congress adopted the [Declaration of Independence](event:declaration-independence) in 1776, asserting that governments derive their just powers from the consent of the governed. French military and naval support from 1778 helped the Continental forces to victory at [Yorktown](event:yorktown) in 1781.\n\nThe Treaty of Paris of 1783 recognised American independence, and after the Articles of Confederation proved inadequate the [Constitution](event:us-constitution) of 1787 turned the new states into a working federal republic. The example of a successful colonial revolution, and the debts France ran up supporting it, helped bring on the [French Revolution](event:french-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/American_Revolution).",
   "links": [
    {
@@ -2402,13 +2482,12 @@
    "culture"
   ],
   "parent": "enlightenment",
+  "strong": [
+   "industrial-revolution"
+  ],
   "summary": "Adam Smith's *The Wealth of Nations* established foundational principles of political economy emphasising division of labour and market exchange.",
   "body": "Part of [The Enlightenment](event:enlightenment). Smith published *An Inquiry into the Nature and Causes of the Wealth of Nations* in 1776. The work argued that national prosperity derived from productive labour and free exchange rather than from hoarding precious metals or imperial dominance. Smith analyzed the benefits of specialisation and division of labour in increasing productivity. He discussed the role of self-interest and market mechanisms in coordinating economic activity.\n\nSmith's work became foundational to the development of economic theory and influenced subsequent economic policy and thought. His arguments against mercantilist policies and for free trade circulated widely in intellectual and policy circles.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Wealth_of_Nations).",
   "links": [
-   {
-    "label": "The Enlightenment",
-    "event": "enlightenment"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/The_Wealth_of_Nations"
@@ -2430,10 +2509,6 @@
   "body": "Part of [Industrial Revolution](event:industrial-revolution). Earlier engines, notably Thomas Newcomen's, were used mainly to pump water out of mines. Watt added a separate condenser, which greatly reduced heat loss and improved fuel efficiency, and made the steam engine practical for driving textile machinery and other industrial equipment.\n\nIn partnership with Matthew Boulton, Watt manufactured engines that could power factories anywhere rather than only at the pithead, and the improved steam engine became a central technology of the Industrial Revolution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Watt_steam_engine).",
   "links": [
    {
-    "label": "Industrial Revolution",
-    "event": "industrial-revolution"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Watt_steam_engine"
    }
@@ -2450,13 +2525,12 @@
    "politics"
   ],
   "parent": "american-revolution",
+  "strong": [
+   "rights-of-man"
+  ],
   "summary": "The Declaration of Independence, adopted by the Continental Congress in 1776, announced the colonies' separation from Britain and articulated principles of natural rights.",
   "body": "Part of [American Revolution](event:american-revolution). Thomas Jefferson drafted the Declaration, which the Continental Congress adopted on 4 July 1776. It asserted that the thirteen colonies were independent states, that all men are created equal and endowed with unalienable rights among them life, liberty and the pursuit of happiness, and that governments derive their just powers from the consent of the governed.\n\nThe document also listed grievances against George III. It served as the formal announcement of separation from Britain and became an influential statement of natural rights and popular sovereignty.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/United_States_Declaration_of_Independence).",
   "links": [
-   {
-    "label": "American Revolution",
-    "event": "american-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/United_States_Declaration_of_Independence"
@@ -2476,6 +2550,9 @@
    "politics"
   ],
   "summary": "The Tay Son Rebellion in Vietnam (1778–1802) involved peasant rebels who challenged feudal lords, achieved territorial unification, and redistributed land.",
+  "strong": [
+   "konbaung-dynasty"
+  ],
   "body": "The Tay Son were peasants who rebelled against both the Nguyen lords of the south and the Trinh lords of the north, winning repeated victories despite being outnumbered. They redistributed confiscated aristocratic land to the poor and recruited officials by ability rather than birth.\n\nThey routed a Qing invasion in 1789, but after their leader Nguyen Hue died in 1792 the movement fractured. Nguyen Anh, an aristocratic survivor backed by French advisers, reconquered the country by 1802 and founded the Nguyen dynasty, though the Tay Son legacy of peasant revolt echoed into the 20th century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tây_Sơn_dynasty).",
   "links": [
    {
@@ -2495,13 +2572,12 @@
    "war"
   ],
   "parent": "american-revolution",
+  "weak": [
+   "declaration-independence"
+  ],
   "summary": "The Siege of Yorktown in 1781 resulted in the surrender of a British army to Franco-American forces, effectively concluding major fighting in the Revolutionary War.",
   "body": "Part of [American Revolution](event:american-revolution). British General Lord Cornwallis led approximately 8,000 soldiers at Yorktown, Virginia. A combined Franco-American force under the command of George Washington and French General Rochambeau besieged the British position. A French fleet prevented British naval relief of the besieged garrison. After approximately three weeks of siege operations, Cornwallis surrendered on October 19, 1781.\n\nThe British loss of a substantial army and failure to relieve or escape the siege demonstrated British military difficulties in maintaining control of the colonies. While some fighting continued after Yorktown, the battle effectively concluded major military campaigns, leading toward negotiations for peace.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Yorktown).",
   "links": [
-   {
-    "label": "American Revolution",
-    "event": "american-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Siege_of_Yorktown"
@@ -2538,13 +2614,12 @@
    "politics"
   ],
   "parent": "american-revolution",
+  "strong": [
+   "rights-of-man"
+  ],
   "summary": "The United States Constitution, drafted in 1787 and ratified in 1788, established a federal system with separated governmental powers.",
   "body": "Part of [American Revolution](event:american-revolution). The Constitution created a federal government divided into legislative, executive and judicial branches and split authority between the national government and the states, setting out rules for representation, taxation and interstate commerce. The first ten amendments, the Bill of Rights, were ratified in 1791.\n\nIt is the oldest national constitution still in force and the model for most written constitutions since, and it has been amended twenty-seven times.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Constitution_of_the_United_States).",
   "links": [
-   {
-    "label": "American Revolution",
-    "event": "american-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Constitution_of_the_United_States"
@@ -2582,13 +2657,12 @@
    "politics"
   ],
   "parent": "french-revolution",
+  "weak": [
+   "rights-of-man"
+  ],
   "summary": "On July 14, 1789, a Parisian crowd stormed the Bastille fortress-prison, an act that became a symbol of revolutionary popular action.",
   "body": "Part of [French Revolution](event:french-revolution). The Bastille was a medieval fortress and state prison. On July 14, 1789, following a period of political crisis and military mobilisation, Parisian crowds attacked the fortress. The garrison surrendered, and the crowd killed several military officers. The fortress was then demolished.\n\nThe storming of the Bastille symbolised popular revolt against royal authority and became the defining image of the French Revolution. July 14 is observed in France as Bastille Day, the national holiday commemorating the revolution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Storming_of_the_Bastille).",
   "links": [
-   {
-    "label": "French Revolution",
-    "event": "french-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Storming_of_the_Bastille"
@@ -2610,10 +2684,6 @@
   "body": "Part of [French Revolution](event:french-revolution). The Declaration enumerated natural rights considered universal, including liberty, property, security, and resistance to oppression. It asserted that government authority derives from the people and that laws must express the general will of citizens. The document affirmed equality before the law and specified protections for personal freedom and private property.\n\nThe Declaration drew on Enlightenment philosophical principles and influenced subsequent declarations of rights. However, the Declaration's application in practice proved contested, and the meaning of its principles including equality and liberty remained disputed throughout the Revolutionary period.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Declaration_of_the_Rights_of_Man_and_of_the_Citizen).",
   "links": [
    {
-    "label": "French Revolution",
-    "event": "french-revolution"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Declaration_of_the_Rights_of_Man_and_of_the_Citizen"
    }
@@ -2632,6 +2702,10 @@
    "war"
   ],
   "summary": "Enslaved people in France's richest colony overthrew their masters, abolished slavery and founded the first Black republic.",
+  "strong": [
+   "french-revolution",
+   "latam-independence"
+  ],
   "body": "From 1791 enslaved people and free people of colour in the French colony of Saint-Domingue rose against colonial rule and slavery. Toussaint Louverture emerged as the leading commander, and the revolutionary armies defeated Spanish, British and French forces in turn. Haiti became independent in 1804 and slavery was abolished there.\n\nIt is the only successful large-scale slave revolt in modern history, and its success alarmed slaveholding societies throughout the Atlantic world. See also the [Atlantic slave trade](event:slave-trade).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Haitian_Revolution).",
   "links": [
    {
@@ -2653,13 +2727,12 @@
    "war"
   ],
   "parent": "french-revolution",
+  "weak": [
+   "napoleon-coup"
+  ],
   "summary": "The Reign of Terror (1793–1794) was a period of political violence during the French Revolution when the Committee of Public Safety executed thousands.",
   "body": "Part of [French Revolution](event:french-revolution). During the Reign of Terror, the Committee of Public Safety, led by Maximilien Robespierre, employed revolutionary courts and mass executions against perceived enemies of the revolution. Victims included members of the royal family, the nobility, clergy, political opponents, and ordinary citizens. Estimates place the number of executions at approximately 17,000, with many more dying in prisons or from other violence.\n\nThe Terror ended in July 1794 with the execution of Robespierre and other leaders of the Committee, known as the Thermidorian Reaction. The period remains controversial in historical debates about revolutionary politics and the use of violence for political ends.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reign_of_Terror).",
   "links": [
-   {
-    "label": "French Revolution",
-    "event": "french-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Reign_of_Terror"
@@ -2677,6 +2750,9 @@
    "science"
   ],
   "summary": "Edward Jenner demonstrated that inoculation with cowpox virus conferred immunity to smallpox, establishing the principle of vaccination.",
+  "strong": [
+   "smallpox-eradication"
+  ],
   "body": "Jenner noticed that milkmaids who had caught cowpox appeared to be protected against smallpox. In 1796 he inoculated a boy with cowpox material and then exposed him to smallpox, showing that the cowpox inoculation prevented infection and establishing that exposure to a milder related disease could confer immunity.\n\nThe technique, which he called vaccination, gradually gained acceptance and became the basis of smallpox control. Mass vaccination campaigns eventually [eradicated smallpox](event:smallpox-eradication), the only human disease ever deliberately wiped out.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Smallpox_vaccine).",
   "links": [
    {
@@ -2699,10 +2775,6 @@
   "summary": "On November 9, 1799 (18 Brumaire in the Revolutionary calendar), Napoleon Bonaparte seized political power, ending the Directory government.",
   "body": "Part of [French Revolution](event:french-revolution). The Directory government faced political instability, military setbacks, and financial difficulties. Napoleon, returning from military campaigns in Egypt, organised a coup that displaced the Directory and established him as First Consul of a new Consulate government. The coup was presented as necessary to restore order and stability.\n\nAs First Consul, Bonaparte consolidated power and reorganised French government. In 1804, he crowned himself Emperor of the French, formally ending the Republic. His government initiated the [Napoleonic Wars](event:napoleonic-wars), which reshaped European politics and territories.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Coup_of_18_Brumaire).",
   "links": [
-   {
-    "label": "French Revolution",
-    "event": "french-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Coup_of_18_Brumaire"

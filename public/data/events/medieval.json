@@ -11,6 +11,9 @@
    "politics"
   ],
   "summary": "The Byzantine emperor Justinian I codified Roman law and briefly reconquered Italy, North Africa and southern Spain.",
+  "strong": [
+   "rome-fall"
+  ],
   "body": "The *Corpus Juris Civilis* became the foundation of civil law systems in Europe and Latin America. His reconquests were undone by the [plague](event:justinian-plague) and by the exhaustion of a long war.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Justinian_I).",
   "links": [
    {
@@ -36,10 +39,6 @@
   "body": "Part of [Reign of Justinian](event:justinian). The Italian campaign lasted nearly twenty years and left the peninsula devastated. The [plague](event:justinian-plague) and renewed conflict with Persia drained imperial resources, and most western territorial gains were abandoned within a generation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gothic_War_(535%E2%80%93554)).",
   "links": [
    {
-    "label": "Reign of Justinian",
-    "event": "justinian"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Gothic_War_(535%E2%80%93554)"
    }
@@ -57,13 +56,12 @@
    "religion"
   ],
   "parent": "justinian",
+  "strong": [
+   "fall-constantinople"
+  ],
   "summary": "The domed basilica in Constantinople was completed, becoming the largest enclosed space in the world for nearly a thousand years.",
   "body": "Part of [Reign of Justinian](event:justinian). The dome, carried on pendentives, covered an interior unobstructed by internal supports; it remained the largest enclosed space in the world for nearly a thousand years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hagia_Sophia).",
   "links": [
-   {
-    "label": "Reign of Justinian",
-    "event": "justinian"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hagia_Sophia"
@@ -124,13 +122,12 @@
    "disease"
   ],
   "parent": "justinian",
+  "strong": [
+   "black-death"
+  ],
   "summary": "The first recorded pandemic of bubonic plague killed an estimated 15–50 million people around the Mediterranean.",
   "body": "Part of [Reign of Justinian](event:justinian). The disease was caused by the same bacterium, *Yersinia pestis*, as the later [Black Death](event:black-death). It struck Constantinople at the height of Justinian's reconquest and helped ensure that the reconquest did not last.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Plague_of_Justinian).",
   "links": [
-   {
-    "label": "Reign of Justinian",
-    "event": "justinian"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Plague_of_Justinian"
@@ -150,6 +147,9 @@
    "culture"
   ],
   "summary": "A cosmopolitan Chinese golden age of poetry, Buddhism and long-distance trade, with Chang'an the largest city on Earth.",
+  "strong": [
+   "song-dynasty"
+  ],
   "body": "Li Bai and Du Fu wrote in this period, the imperial examination system matured, [woodblock printing](event:woodblock-printing) appeared, and Buddhism spread widely.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tang_dynasty).",
   "links": [
    {
@@ -170,6 +170,9 @@
    "politics"
   ],
   "summary": "Muhammad and his followers migrated from Mecca to Medina, establishing the first Muslim community; year one of the Islamic calendar.",
+  "weak": [
+   "zoroastrianism"
+  ],
   "body": "Within a decade the new faith had united the Arabian peninsula, and within a century its armies and merchants had carried it from Spain to the Indus in the [early Muslim conquests](event:islamic-conquests).\n\nIslam is today the second largest religion in the world, and shaped law, science and art across three continents.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hijrah).",
   "links": [
    {
@@ -246,13 +249,13 @@
    "politics"
   ],
   "parent": "hijra",
+  "strong": [
+   "reconquista",
+   "islamic-golden-age"
+  ],
   "summary": "Arab armies took Persia, Egypt, the Levant, North Africa and Spain within roughly a century.",
   "body": "Part of [The Hijra and the founding of Islam](event:hijra). The Sasanian empire was destroyed outright, and Byzantium lost its richest provinces after the defeat at [Yarmouk](event:yarmouk). The advance into Western Europe was checked at [Tours](event:tours) in 732.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Muslim_conquests).",
   "links": [
-   {
-    "label": "The Hijra and the founding of Islam",
-    "event": "hijra"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Early_Muslim_conquests"
@@ -270,13 +273,12 @@
    "war"
   ],
   "parent": "islamic-conquests",
+  "weak": [
+   "tours"
+  ],
   "summary": "An Arab victory over the Byzantine field army opened Syria and Palestine to Muslim rule.",
   "body": "Part of [Early Muslim conquests](event:islamic-conquests). Arab forces destroyed the Byzantine field army, and Syria and Palestine passed to Muslim rule within a few years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_the_Yarmuk).",
   "links": [
-   {
-    "label": "Early Muslim conquests",
-    "event": "islamic-conquests"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_the_Yarmuk"
@@ -296,6 +298,9 @@
    "religion"
   ],
   "summary": "Christian kingdoms took the Iberian peninsula from Muslim rule over nearly eight centuries.",
+  "weak": [
+   "spanish-conquest"
+  ],
   "body": "It ended with the surrender of [Granada](event:granada) in January 1492, months before [Columbus](event:columbus) sailed with Castilian backing.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reconquista).",
   "links": [
    {
@@ -315,13 +320,12 @@
    "war"
   ],
   "parent": "islamic-conquests",
+  "strong": [
+   "charlemagne"
+  ],
   "summary": "Charles Martel's Franks halted an Umayyad raiding army between Tours and Poitiers.",
   "body": "Part of [Early Muslim conquests](event:islamic-conquests). A Frankish army commanded by Charles Martel halted an Umayyad raiding force between Tours and Poitiers.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Tours).",
   "links": [
-   {
-    "label": "Early Muslim conquests",
-    "event": "islamic-conquests"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Tours"
@@ -344,10 +348,6 @@
   "summary": "The Abbasid caliph Harun al-Rashid ruled while Baghdad served as a centre of commerce and intellectual activity, sponsoring scholarship and diplomatic exchanges.",
   "body": "Part of [Islamic Golden Age](event:islamic-golden-age). Harun's court sponsored the translation of Greek and Persian works that his successors would gather into the House of Wisdom. The *Thousand and One Nights* later cast his reign as a legendary age of marvels.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Harun_al-Rashid).",
   "links": [
-   {
-    "label": "Islamic Golden Age",
-    "event": "islamic-golden-age"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Harun_al-Rashid"
@@ -388,6 +388,9 @@
    "exploration"
   ],
   "summary": "Scandinavian raiders, traders and settlers ranged from Newfoundland to Baghdad for nearly three centuries.",
+  "strong": [
+   "hastings"
+  ],
   "body": "Norse raiders sacked [Lindisfarne](event:lindisfarne), settled Iceland and Greenland and briefly [Vinland](event:vinland), founded Dublin and Kyiv, and conquered Normandy; their descendants in turn conquered [England](event:hastings).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Viking_Age).",
   "links": [
    {
@@ -407,13 +410,12 @@
    "war"
   ],
   "parent": "viking-age",
+  "weak": [
+   "hastings"
+  ],
   "summary": "Norse raiders sacked the Northumbrian monastery, conventionally taken as the opening of the Viking Age in Europe.",
   "body": "Part of [Viking Age](event:viking-age). The sack of the monastery at Lindisfarne is conventionally taken as the opening of the Viking Age in western Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Lindisfarne).",
   "links": [
-   {
-    "label": "Viking Age",
-    "event": "viking-age"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Lindisfarne"
@@ -433,6 +435,9 @@
    "politics"
   ],
   "summary": "A period of aristocratic court culture in Japan that produced some of the world's earliest novels and poetry, before the rise of the samurai.",
+  "strong": [
+   "edo-japan"
+  ],
   "body": "The Fujiwara regents ruled from Kyoto. The court produced *The Tale of Genji*, Japan's first great novel, and developed distinctive traditions of calligraphy and landscape art.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Heian_period).",
   "links": [
    {
@@ -453,6 +458,9 @@
    "religion"
   ],
   "summary": "The pope crowned the Frankish king Charlemagne emperor in Rome, reviving an imperial title in the west after 324 years.",
+  "weak": [
+   "great-schism"
+  ],
   "body": "Charlemagne's realm covered most of western Europe, and his court sponsored a revival of learning and a legible new script, Carolingian minuscule. Its division among his grandsons sketched the outlines of France and Germany.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charlemagne).",
   "links": [
    {
@@ -472,13 +480,12 @@
    "science"
   ],
   "parent": "islamic-golden-age",
+  "weak": [
+   "university-bologna"
+  ],
   "summary": "Al-Khwarizmi's treatise on balancing equations gave algebra its name, and the Latin form of his own name gave rise to \"algorithm\".",
   "body": "Part of [Islamic Golden Age](event:islamic-golden-age). His treatise on balancing equations (*al-jabr*) gave algebra both its methods and its name, and the Latinised form of his name, *Algoritmi*, produced the word \"algorithm\".\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Al-Khwarizmi).",
   "links": [
-   {
-    "label": "Islamic Golden Age",
-    "event": "islamic-golden-age"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Al-Khwarizmi"
@@ -497,6 +504,12 @@
    "war"
   ],
   "summary": "Chinese alchemists seeking an elixir of immortality found a mixture that burned explosively.",
+  "strong": [
+   "song-dynasty"
+  ],
+  "weak": [
+   "great-wall"
+  ],
   "body": "By the thirteenth century gunpowder was used in bombs and rockets. Carried west along the [Silk Road](event:silk-road), it produced the cannon that would bring down [Constantinople](event:fall-constantinople) and, in time, the castle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_gunpowder).",
   "links": [
    {
@@ -517,13 +530,12 @@
    "culture"
   ],
   "parent": "tang-dynasty",
+  "strong": [
+   "korea-movable-type"
+  ],
   "summary": "The Diamond Sutra, printed in China in 868, is the oldest dated printed book that survives.",
   "body": "Part of [Tang dynasty](event:tang-dynasty). A colophon dates the printing of this Buddhist text to 868, making it the oldest surviving printed book with a firm date.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Woodblock_printing).",
   "links": [
-   {
-    "label": "Tang dynasty",
-    "event": "tang-dynasty"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Woodblock_printing"
@@ -543,6 +555,9 @@
    "religion"
   ],
   "summary": "A rival Shiite caliphate ruling North Africa and Egypt, competing with the Sunni Abbasids for religious authority and territory.",
+  "strong": [
+   "islamic-golden-age"
+  ],
   "body": "Founded in Ifriqiya and ruling from Cairo after 969, the Fatimids built a Shia counter-caliphate to the Sunni Abbasids and drew wealth from Red Sea trade. Saladin ended the dynasty in 1171 and returned Egypt to Abbasid allegiance.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fatimid_Caliphate).",
   "links": [
    {
@@ -565,6 +580,9 @@
    "science"
   ],
   "summary": "A Chinese dynasty known for landscape painting, poetry, printing and paper money, as well as technological and commercial development.",
+  "strong": [
+   "ming-dynasty"
+  ],
   "body": "The Northern Song ruled from Kaifeng until the Jurchen conquest of 1127 pushed the court south to Hangzhou. Advances in irrigation, printing, credit and shipbuilding supported dense cities, while Neo-Confucian philosophy reshaped Chinese thought.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Song_dynasty).",
   "links": [
    {
@@ -586,13 +604,12 @@
    "culture"
   ],
   "parent": "islamic-golden-age",
+  "weak": [
+   "university-bologna"
+  ],
   "summary": "The Persian polymath Avicenna wrote the *Canon of Medicine*, the standard medical text in both the Islamic and Christian worlds for half a millennium.",
   "body": "Part of [Islamic Golden Age](event:islamic-golden-age). Born near Bukhara and dying at Hamadan, [Avicenna](item:ibn-sina) drew Greek, Indian and Islamic medicine into a single system; the *Canon* was still taught in European universities in the 1600s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Avicenna).",
   "links": [
-   {
-    "label": "Islamic Golden Age",
-    "event": "islamic-golden-age"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Avicenna"
@@ -620,19 +637,18 @@
    "culture"
   ],
   "summary": "Persian physician and philosopher, known in Europe as Avicenna, whose Canon of Medicine was a standard text for six centuries.",
-  "body": "Ibn Sina was born near Bukhara in the Samanid realm and was, by his own account, teaching physicians by the age of eighteen. He spent his life as a court doctor and administrator in a succession of Persian principalities, writing at night and while travelling, and produced some 240 surviving works.\n\nThe *Canon of Medicine* organised Greek, Indian and Islamic practice into a single system, with clear rules for testing a drug's effect and an insistence that disease has natural causes. Translated into Latin in the twelfth century, it was taught in European universities into the 1600s. His *Book of Healing* did the same for philosophy and natural science, and his arguments about necessary and contingent existence were taken up by Aquinas and by Jewish and Islamic thinkers alike.\n\nHe belongs to the [Islamic Golden Age](item:islamic-golden-age), whose scholars preserved and extended Greek learning while Europe had largely lost it — see also the entry on [Avicenna and medieval medicine](item:avicenna).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Avicenna).",
-  "related": [
+  "strong": [
    "avicenna",
    "islamic-golden-age"
   ],
+  "weak": [
+   "scholasticism"
+  ],
+  "body": "Ibn Sina was born near Bukhara in the Samanid realm and was, by his own account, teaching physicians by the age of eighteen. He spent his life as a court doctor and administrator in a succession of Persian principalities, writing at night and while travelling, and produced some 240 surviving works.\n\nThe *Canon of Medicine* organised Greek, Indian and Islamic practice into a single system, with clear rules for testing a drug's effect and an insistence that disease has natural causes. Translated into Latin in the twelfth century, it was taught in European universities into the 1600s. His *Book of Healing* did the same for philosophy and natural science, and his arguments about necessary and contingent existence were taken up by Aquinas and by Jewish and Islamic thinkers alike.\n\nHe belongs to the [Islamic Golden Age](item:islamic-golden-age), whose scholars preserved and extended Greek learning while Europe had largely lost it — see also the entry on [Avicenna and medieval medicine](item:avicenna).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Avicenna).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Avicenna"
-   },
-   {
-    "label": "Islamic Golden Age",
-    "event": "islamic-golden-age"
    }
   ],
   "priority": 0
@@ -650,13 +666,12 @@
    "religion"
   ],
   "parent": "song-dynasty",
+  "strong": [
+   "scholasticism"
+  ],
   "summary": "Philosophers combined Confucian ethics with Buddhist and Daoist metaphysics, creating a system that shaped East Asian thought for centuries.",
   "body": "Part of [Song Dynasty](event:song-dynasty). Zhu Xi synthesised these traditions into a philosophy of cosmic principle (*li*) that became the orthodox teaching throughout the Confucian world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neo-Confucianism).",
   "links": [
-   {
-    "label": "Song Dynasty",
-    "event": "song-dynasty"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Neo-Confucianism"
@@ -676,6 +691,9 @@
    "culture"
   ],
   "summary": "A pre-Inca Peruvian empire known for textiles, metalwork and an extensive road system that the Inca later inherited.",
+  "strong": [
+   "inca-empire"
+  ],
   "body": "The Chimú were skilled workers of silver and gold, and their capital Chan Chan was the largest city in pre-Columbian South America. The Inca absorbed their technology and aesthetics.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chimor).",
   "links": [
    {
@@ -695,13 +713,15 @@
    "exploration"
   ],
   "parent": "viking-age",
+  "strong": [
+   "columbus"
+  ],
+  "weak": [
+   "sahul"
+  ],
   "summary": "Norse settlers under Leif Erikson built a small settlement at L'Anse aux Meadows in Newfoundland, five centuries before Columbus.",
   "body": "Part of [Viking Age](event:viking-age). Tree-ring dating of the timbers places occupation at 1021 CE. The settlement lasted only a few years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Norse_colonization_of_North_America).",
   "links": [
-   {
-    "label": "Viking Age",
-    "event": "viking-age"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Norse_colonization_of_North_America"
@@ -721,6 +741,12 @@
    "war"
   ],
   "summary": "Nomadic Turks from Central Asia conquered much of the Islamic world and Anatolia, becoming patrons of Persian culture and a proximate cause of the Crusades.",
+  "strong": [
+   "manzikert"
+  ],
+  "weak": [
+   "ottoman-empire"
+  ],
   "body": "At their height the Seljuk sultans ruled from Anatolia to Central Asia, governing through Persian bureaucrats from Isfahan while keeping the Abbasid caliph in Baghdad as a figurehead. Their victory at [Manzikert](event:manzikert) alarmed Byzantium, whose appeal to the Latin west helped prompt [the Crusades](event:crusades).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Seljuk_Empire).",
   "links": [
    {
@@ -742,6 +768,9 @@
    "culture"
   ],
   "summary": "A Mississippian city near present-day St. Louis rose and fell, leaving massive earthen mounds and unanswered questions.",
+  "weak": [
+   "tenochtitlan-founded"
+  ],
   "body": "At its peak around 1100 CE, Cahokia may have held 10,000–20,000 residents, comparable to the largest European cities of the day. Its gradual abandonment is not fully explained; climate stress, resource depletion and political fragmentation have all been proposed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cahokia).",
   "links": [
    {
@@ -761,6 +790,12 @@
    "religion"
   ],
   "summary": "Mutual excommunications between Rome and Constantinople formalised the split between the Catholic and Orthodox churches.",
+  "strong": [
+   "fourth-crusade"
+  ],
+  "weak": [
+   "reformation"
+  ],
   "body": "Disputes over papal authority, doctrine and church practice led the pope and the patriarch of Constantinople to excommunicate one another, formalising the split between the Catholic and Orthodox churches.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/East–West_Schism).",
   "links": [
    {
@@ -782,13 +817,15 @@
    "culture"
   ],
   "parent": "islamic-golden-age",
+  "strong": [
+   "avicenna"
+  ],
+  "weak": [
+   "scholasticism"
+  ],
   "summary": "The Persian theologian absorbed Greek logic into Islamic scholarship while attacking the metaphysics of the philosophers, reshaping Sunni thought for centuries.",
   "body": "Part of [Islamic Golden Age](event:islamic-golden-age). His *Incoherence of the Philosophers* challenged Avicennan metaphysics, while his synthesis of law, theology and Sufism became mainstream Sunni teaching. His autobiography, *al-Munqidh*, describing a crisis of doubt, is a classic of spiritual literature.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Al-Ghazali).",
   "links": [
-   {
-    "label": "Islamic Golden Age",
-    "event": "islamic-golden-age"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Al-Ghazali"
@@ -807,6 +844,9 @@
    "politics"
   ],
   "summary": "William of Normandy defeated the Saxon king Harold at Hastings and established Norman rule over England.",
+  "strong": [
+   "magna-carta"
+  ],
   "body": "The conquest replaced the English aristocracy almost wholesale and poured French vocabulary into the language. William also ordered the Domesday Book, the most detailed survey of any medieval kingdom.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Norman_Conquest).",
   "links": [
    {
@@ -826,6 +866,9 @@
    "war"
   ],
   "summary": "A Byzantine army under the emperor was defeated by Seljuk forces, resulting in the loss of Byzantine control of central Anatolia.",
+  "strong": [
+   "crusades"
+  ],
   "body": "The defeat opened the Anatolian plateau to Turkish settlement and began the slow displacement of the Greeks — a process that culminated in the [fall of Constantinople](event:fall-constantinople) nearly four centuries later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Manzikert).",
   "links": [
    {
@@ -846,13 +889,12 @@
    "culture"
   ],
   "parent": "hastings",
+  "strong": [
+   "magna-carta"
+  ],
   "summary": "William I's survey of England recorded land and taxes village by village, the most detailed census of any medieval kingdom.",
   "body": "Part of [Norman conquest of England](event:hastings). Royal commissioners recorded holdings, ploughs and tenants shire by shire; the returns let William assess what he had conquered and tax it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Domesday_Book).",
   "links": [
-   {
-    "label": "Norman conquest of England",
-    "event": "hastings"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Domesday_Book"
@@ -871,6 +913,9 @@
    "science"
   ],
   "summary": "Bologna, then Paris and Oxford, organised teachers and students into self-governing corporations.",
+  "strong": [
+   "scholasticism"
+  ],
   "body": "Bologna, followed by Paris and Oxford, organised teachers and students into self-governing corporations that granted degrees and set their own curricula.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/University_of_Bologna).",
   "links": [
    {
@@ -913,13 +958,12 @@
    "religion"
   ],
   "parent": "crusades",
+  "weak": [
+   "reconquista"
+  ],
   "summary": "A Latin army marched across Anatolia and took Jerusalem after a five-week siege, massacring much of its population.",
   "body": "Part of [The Crusades](event:crusades). A Latin army crossed Anatolia and besieged Jerusalem for five weeks before taking the city, then massacred much of its Muslim and Jewish population.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_Crusade).",
   "links": [
-   {
-    "label": "The Crusades",
-    "event": "crusades"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/First_Crusade"
@@ -939,6 +983,9 @@
    "economy"
   ],
   "summary": "A Shona city-state built monumental stone walls and controlled the gold and ivory trade with the Indian Ocean world.",
+  "strong": [
+   "swahili-trade"
+  ],
   "body": "Its stone enclosures were built without mortar by Shona builders, and gold and ivory passed from here to Swahili ports on the Indian Ocean. The reasons for its decline are debated: exhausted soils and pasture, shifting trade routes and political fragmentation have all been proposed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Zimbabwe).",
   "links": [
    {
@@ -960,6 +1007,12 @@
    "war"
   ],
   "summary": "Two Italian maritime republics fought for control of Mediterranean and Black Sea trade, developing banking, double-entry accounting and marine insurance along the way.",
+  "strong": [
+   "medici-banking"
+  ],
+  "weak": [
+   "black-death"
+  ],
   "body": "Genoese and Venetian galleys competed for the routes to Alexandria, the Levant and the Black Sea, fighting four wars between 1256 and 1381. Their commercial techniques, from bills of exchange to insurance contracts and double-entry accounting, outlasted the rivalry itself.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Venetian%E2%80%93Genoese_wars).",
   "links": [
    {
@@ -981,6 +1034,9 @@
    "religion"
   ],
   "summary": "The Khmer kings raised the largest religious monument in the world, first Hindu and later Buddhist.",
+  "strong": [
+   "majapahit"
+  ],
   "body": "The Khmer kings raised what remains the largest religious monument in the world, built for the Hindu god Vishnu and converted to Buddhist use in later centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Angkor_Wat).",
   "links": [
    {
@@ -1003,13 +1059,12 @@
    "economy"
   ],
   "parent": "crusades",
+  "strong": [
+   "first-crusade"
+  ],
   "summary": "A military-monastic order founded to protect pilgrims and wage crusade; its brothers became bankers and landholders across Christendom.",
   "body": "Part of [The Crusades](event:crusades). Founded to guard pilgrims to Jerusalem, the Templars grew into landholders and lenders across Christendom. Philip IV of France, deeply in their debt, had the French brothers arrested in 1307, and Pope Clement V dissolved the order in 1312.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Knights_Templar).",
   "links": [
-   {
-    "label": "The Crusades",
-    "event": "crusades"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Knights_Templar"
@@ -1029,6 +1084,12 @@
    "religion"
   ],
   "summary": "After Aksum's decline, Christian rule shifted to the Ethiopian highlands under the Zagwe kings, who cut the rock-hewn churches of Lalibela.",
+  "strong": [
+   "ethiopian-ottoman"
+  ],
+  "weak": [
+   "nubian-kush"
+  ],
   "body": "The Zagwe, and after 1270 the Solomonic dynasty, held a Christian kingdom in the highlands while Islam spread along the coast and in the lowlands. The Ethiopian Orthodox Tewahedo Church that resulted survives to the present day.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zagwe_dynasty).",
   "links": [
    {
@@ -1058,20 +1119,18 @@
    "politics"
   ],
   "summary": "Mongol ruler who united the steppe tribes and founded the largest contiguous land empire in history.",
-  "body": "Born Temüjin, the son of a minor chieftain poisoned when the boy was nine, he grew up in poverty and captivity on the eastern steppe. Through alliance, patronage and a series of steppe wars he united the Mongol and Turkic tribes, and in 1206 an assembly [proclaimed him Genghis Khan](item:genghis-khan), universal ruler.\n\nHe reorganised his followers into decimal units that cut across tribal loyalties, promoted officers on merit, adopted a written script for the Mongol language and issued a body of law, the *yassa*. The armies that resulted took northern China, Central Asia and Persia within two decades; the [campaigns](item:mongol-conquests) were extraordinarily destructive, and the sack of cities that resisted was policy rather than accident.\n\nThe empire he left reached from Korea to the Caspian and, under his successors, from Hungary to the Pacific. Mongol control of the [trade routes across Eurasia](item:silk-roads) moved goods, techniques and — in all likelihood — the plague that became the [Black Death](item:black-death). His burial place is unknown.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
-  "related": [
+  "strong": [
    "genghis-khan",
-   "mongol-conquests",
-   "silk-roads"
+   "mongol-conquests"
   ],
+  "weak": [
+   "baghdad-1258"
+  ],
+  "body": "Born Temüjin, the son of a minor chieftain poisoned when the boy was nine, he grew up in poverty and captivity on the eastern steppe. Through alliance, patronage and a series of steppe wars he united the Mongol and Turkic tribes, and in 1206 an assembly [proclaimed him Genghis Khan](item:genghis-khan), universal ruler.\n\nHe reorganised his followers into decimal units that cut across tribal loyalties, promoted officers on merit, adopted a written script for the Mongol language and issued a body of law, the *yassa*. The armies that resulted took northern China, Central Asia and Persia within two decades; the [campaigns](item:mongol-conquests) were extraordinarily destructive, and the sack of cities that resisted was policy rather than accident.\n\nThe empire he left reached from Korea to the Caspian and, under his successors, from Hungary to the Pacific. Mongol control of the [trade routes across Eurasia](item:silk-roads) moved goods, techniques and — in all likelihood — the plague that became the [Black Death](item:black-death). His burial place is unknown.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Genghis_Khan"
-   },
-   {
-    "label": "Mongol conquests",
-    "event": "mongol-conquests"
    }
   ],
   "priority": 93
@@ -1089,13 +1148,12 @@
    "religion"
   ],
   "parent": "crusades",
+  "strong": [
+   "first-crusade"
+  ],
   "summary": "The Kurdish general united much of the Islamic world against the crusaders, retook Jerusalem and founded the Ayyubid dynasty.",
   "body": "Part of [The Crusades](event:crusades). Saladin's defeat of the crusaders at Hattin in 1187 and his recovery of Jerusalem made him a celebrated figure in both Islamic and Western tradition.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Saladin).",
   "links": [
-   {
-    "label": "The Crusades",
-    "event": "crusades"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Saladin"
@@ -1115,6 +1173,12 @@
    "culture"
   ],
   "summary": "Military rule by the shoguns began in Japan; the samurai became the ruling class and Zen Buddhism took root.",
+  "strong": [
+   "heian-period"
+  ],
+  "weak": [
+   "mongol-conquests"
+  ],
   "body": "Minamoto no Yoritomo established a warrior government at Kamakura while the emperor remained in Kyoto. Warrior families became the ruling class, Zen Buddhism took root, and the shogunate twice repelled Mongol invasions before falling in 1333.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kamakura_shogunate).",
   "links": [
    {
@@ -1136,13 +1200,12 @@
    "climate"
   ],
   "parent": "angkor-wat",
+  "weak": [
+   "sukhothai"
+  ],
   "summary": "The Khmer empire that built Angkor gradually abandoned it, amid drought, war with Ayutthaya and a shift of power downriver.",
   "body": "Tree-ring records show severe droughts alternating with heavy monsoons in the 14th and 15th centuries, straining the waterworks that fed [Angkor](event:angkor-wat). After the Siamese sack of 1431 the Khmer court moved toward Phnom Penh, while monks continued to maintain the temples.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Khmer_Empire).",
   "links": [
-   {
-    "label": "Angkor Wat",
-    "event": "angkor-wat"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Khmer_Empire"
@@ -1162,6 +1225,9 @@
    "science"
   ],
   "summary": "Medieval university philosophers used logic to reconcile faith and reason, culminating in the systems of Aquinas and Duns Scotus.",
+  "strong": [
+   "dominicans"
+  ],
   "body": "Working in the new universities, Thomas Aquinas, Albertus Magnus and Duns Scotus applied Aristotelian logic to Christian doctrine. The disputation method they refined shaped European teaching long after their metaphysics fell out of favour.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scholasticism).",
   "links": [
    {
@@ -1182,13 +1248,12 @@
    "religion"
   ],
   "parent": "crusades",
+  "weak": [
+   "fall-constantinople"
+  ],
   "summary": "Diverted by Venetian debts and dynastic politics, the crusaders stormed and looted Constantinople, the largest Christian city in the world.",
   "body": "Part of [The Crusades](event:crusades). Byzantium never fully recovered, which made the [fall of the city](event:fall-constantinople) in 1453 far easier.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fourth_Crusade).",
   "links": [
-   {
-    "label": "The Crusades",
-    "event": "crusades"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fourth_Crusade"
@@ -1258,6 +1323,9 @@
    "politics"
   ],
   "summary": "The largest contiguous land empire in history was assembled in three generations, from Korea to Hungary.",
+  "strong": [
+   "silk-road"
+  ],
   "body": "[Genghis Khan](event:genghis-khan) united the steppe tribes and turned them into a disciplined army of mounted archers; his sons and grandsons destroyed the Jin, Khwarazmian and Abbasid states — [Baghdad](event:baghdad-1258) in 1258 — and founded the [Yuan dynasty](event:yuan-dynasty) in China.\n\nThe destruction was immense, but the *Pax Mongolica* also made Eurasia briefly safe for travellers such as [Marco Polo](event:marco-polo) — and for the [plague](event:black-death).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mongol_conquests).",
   "links": [
    {
@@ -1278,13 +1346,12 @@
    "war"
   ],
   "parent": "mongol-conquests",
+  "weak": [
+   "alexander-conquests"
+  ],
   "summary": "Temüjin was proclaimed supreme ruler of the Mongol confederacy at an assembly (kurultai) and took the title Genghis Khan.",
   "body": "Part of [Mongol conquests](event:mongol-conquests). Having united the Mongol tribes, [Temüjin](item:temujin-genghis-khan) was acclaimed universal ruler at a kurultai on the Onon river and took the title Genghis Khan.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
   "links": [
-   {
-    "label": "Mongol conquests",
-    "event": "mongol-conquests"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Genghis_Khan"
@@ -1302,6 +1369,12 @@
    "politics"
   ],
   "summary": "English barons forced King John to accept written limits on royal power at Runnymede.",
+  "strong": [
+   "us-constitution"
+  ],
+  "weak": [
+   "declaration-independence"
+  ],
   "body": "Most of its clauses concerned feudal grievances, but the principle that the ruler is subject to law, and the promise of judgement by peers, were quoted for centuries afterwards, including by the framers of the [American constitution](event:us-constitution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Magna_Carta).",
   "links": [
    {
@@ -1322,6 +1395,9 @@
    "culture"
   ],
   "summary": "Dominic founded an order of friars to preach against heresy; it became a major intellectual force in the medieval Church.",
+  "weak": [
+   "university-bologna"
+  ],
   "body": "Dominic founded the order at Toulouse to preach against the Cathars; it grew into the leading teaching order of the medieval church, with Thomas Aquinas among its members. Dominicans also staffed much of the medieval Inquisition.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dominican_Order).",
   "links": [
    {
@@ -1344,6 +1420,10 @@
    "culture"
   ],
   "summary": "A West African kingdom that controlled the trans-Saharan trade in gold and salt, and made Timbuktu a centre of Islamic learning.",
+  "strong": [
+   "mansa-musa",
+   "songhai-empire"
+  ],
   "body": "Sundiata Keita united the Mandé chiefdoms in the 13th century, and the empire grew rich on the gold of Bambuk and Bure and the salt of the Sahara. [Mansa Musa's pilgrimage](event:mansa-musa) put Mali on European maps, and Timbuktu became a centre of Islamic scholarship before Songhai took its place.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mali_Empire).",
   "links": [
    {
@@ -1365,6 +1445,9 @@
    "culture"
   ],
   "summary": "A Thai kingdom in the north produced a distinctive art style and the earliest known Thai writing, which survives today.",
+  "strong": [
+   "chakri-dynasty"
+  ],
   "body": "Sukhothai's bronze Buddhas and celadon ware are among Southeast Asia's finest, and an inscription attributed to King Ramkhamhaeng carries the earliest known Thai script. The kingdom was absorbed by Ayutthaya in the 15th century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sukhothai_Kingdom).",
   "links": [
    {
@@ -1384,13 +1467,12 @@
    "war"
   ],
   "parent": "mongol-conquests",
+  "strong": [
+   "islamic-golden-age"
+  ],
   "summary": "Hulagu's army destroyed the Abbasid capital, killed the caliph and ended the [Islamic Golden Age](event:islamic-golden-age) in Iraq.",
   "body": "Part of [Mongol conquests](event:mongol-conquests). Hulagu's army besieged and sacked Baghdad, killed the caliph and destroyed much of the city, ending the [Islamic Golden Age](event:islamic-golden-age) in Iraq.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Baghdad_(1258)).",
   "links": [
-   {
-    "label": "Mongol conquests",
-    "event": "mongol-conquests"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Siege_of_Baghdad_(1258)"
@@ -1409,13 +1491,12 @@
    "politics"
   ],
   "parent": "mongol-conquests",
+  "strong": [
+   "ming-dynasty"
+  ],
   "summary": "Kublai Khan completed the conquest of Song China and ruled it as a Chinese emperor from Dadu, modern Beijing.",
   "body": "Part of [Mongol conquests](event:mongol-conquests). Kublai Khan completed the conquest of Song China, proclaimed the Yuan dynasty and ruled as a Chinese emperor from Dadu, modern Beijing, adopting much of the existing imperial administration.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Yuan_dynasty).",
   "links": [
-   {
-    "label": "Mongol conquests",
-    "event": "mongol-conquests"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Yuan_dynasty"
@@ -1434,13 +1515,15 @@
    "exploration"
   ],
   "parent": "mongol-conquests",
+  "strong": [
+   "columbus"
+  ],
+  "weak": [
+   "zheng-he"
+  ],
   "summary": "A Venetian merchant's account of twenty years in Asia became medieval Europe's main window on China.",
   "body": "Part of [Mongol conquests](event:mongol-conquests). Polo travelled through Central Asia and served at the court of Kublai Khan; his account was dictated to a fellow prisoner in Genoa. The book was widely doubted and widely read — [Columbus](event:columbus) owned an annotated copy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Marco_Polo).",
   "links": [
-   {
-    "label": "Mongol conquests",
-    "event": "mongol-conquests"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Marco_Polo"
@@ -1462,10 +1545,6 @@
   "body": "Part of [The Crusades](event:crusades). After a siege, Mamluk forces took Acre, ending the last crusader foothold on the Levantine mainland.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Acre_(1291)).",
   "links": [
    {
-    "label": "The Crusades",
-    "event": "crusades"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Siege_of_Acre_(1291)"
    }
@@ -1484,6 +1563,9 @@
    "economy"
   ],
   "summary": "A Javanese maritime power dominated much of the Indonesian archipelago, drawing tribute and trade from ports across the Java Sea.",
+  "strong": [
+   "swahili-trade"
+  ],
   "body": "At its height under Hayam Wuruk and the minister Gajah Mada, Majapahit claimed authority over ports from Sumatra to the Moluccas. Its literature, law and Hindu-Buddhist art shaped Javanese culture long after the empire fragmented.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Majapahit).",
   "links": [
    {
@@ -1505,6 +1587,9 @@
    "war"
   ],
   "summary": "From a frontier beylik in Anatolia the Ottomans built an empire spanning the Balkans, the Middle East and North Africa for six centuries.",
+  "strong": [
+   "fall-constantinople"
+  ],
   "body": "The empire reached its greatest extent under Suleiman the Magnificent in the 16th century and lost ground steadily in the 18th and 19th. Its collapse after [the First World War](event:ww1) created the modern map of the Middle East.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ottoman_Empire).",
   "links": [
    {
@@ -1525,6 +1610,13 @@
    "climate"
   ],
   "summary": "A few tenths of a degree of cooling brought advancing glaciers, frozen rivers and repeated harvest failures across the northern hemisphere.",
+  "strong": [
+   "year-without-summer"
+  ],
+  "weak": [
+   "black-death",
+   "global-warming"
+  ],
   "body": "Solar minima, volcanic eruptions and possibly American [reforestation after depopulation](event:americas-epidemics) all contributed. The Thames froze hard enough for frost fairs, and Norse Greenland was abandoned.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Little_Ice_Age).",
   "links": [
    {
@@ -1545,6 +1637,10 @@
    "religion"
   ],
   "summary": "The ruler of Mali crossed the Sahara on pilgrimage with so much gold that he depressed its price in Cairo for years.",
+  "weak": [
+   "songhai-empire",
+   "swahili-trade"
+  ],
   "body": "Mali's wealth put Timbuktu on European maps and made it a centre of Islamic scholarship.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mansa_Musa).",
   "links": [
    {
@@ -1565,12 +1661,11 @@
    "culture"
   ],
   "summary": "The Mexica built their capital on an island in Lake Texcoco; it became one of the largest cities in the world.",
+  "strong": [
+   "aztec-empire"
+  ],
   "body": "Mexica tradition holds that the city was founded where an eagle perched on a cactus, the sign promised by their god. Built on an island in Lake Texcoco and extended with causeways and chinampas, it became the capital of the [Aztec Empire](event:aztec-empire) and, by 1500, one of the largest cities in the world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tenochtitlan).",
   "links": [
-   {
-    "label": "Aztec Empire",
-    "event": "aztec-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Tenochtitlan"
@@ -1611,13 +1706,12 @@
    "religion"
   ],
   "parent": "reconquista",
+  "strong": [
+   "granada"
+  ],
   "summary": "The Nasrid emirs of Granada built a palace complex that combined Islamic architecture with local Iberian craft traditions.",
   "body": "Part of [The Reconquista](event:reconquista). The Alhambra's stucco work, calligraphy and water features represent the high point of Islamic art in medieval Europe. The palace passed to the Castilian crown with the conquest of Granada in 1492 and still stands.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Alhambra).",
   "links": [
-   {
-    "label": "The Reconquista",
-    "event": "reconquista"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Alhambra"
@@ -1687,6 +1781,9 @@
    "disaster"
   ],
   "summary": "The deadliest pandemic in recorded history killed an estimated third to half of Europe's population in six years.",
+  "weak": [
+   "spanish-flu"
+  ],
   "body": "Plague travelled west along the [Silk Road](event:silk-road) and Genoese trade routes, reaching Sicily in 1347 and Scandinavia by 1350. Contemporaries did not know what caused it; the bacterium *Yersinia pestis* was identified only in 1894.\n\nThe survivors inherited a labour shortage that broke serfdom in much of western Europe, raised wages, and shook the authority of the Church — conditions in which the [Renaissance](event:renaissance) took root.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Black_Death).",
   "links": [
    {
@@ -1706,13 +1803,12 @@
    "war"
   ],
   "parent": "hundred-years-war",
+  "strong": [
+   "agincourt"
+  ],
   "summary": "English longbowmen destroyed the French cavalry, an early sign that armoured knights were losing their dominance.",
   "body": "Part of [Hundred Years' War](event:hundred-years-war). Massed English longbowmen broke repeated charges by the French cavalry, an early sign that armoured knights were losing their dominance of the battlefield.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Crécy).",
   "links": [
-   {
-    "label": "Hundred Years' War",
-    "event": "hundred-years-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Crécy"
@@ -1732,6 +1828,9 @@
    "culture"
   ],
   "summary": "A wealthy principality between France and the Holy Roman Empire, Burgundy became a centre of art, music and courtly culture.",
+  "strong": [
+   "hundred-years-war"
+  ],
   "body": "The dukes of Burgundy were patrons of the Early Flemish painters and composers. The duchy fell to France in 1477 when its last duke, Charles the Bold, died without a male heir.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Duchy_of_Burgundy).",
   "links": [
    {
@@ -1781,19 +1880,18 @@
    "exploration"
   ],
   "summary": "Ming admiral who commanded seven state expeditions across the Indian Ocean, reaching Arabia and the East African coast.",
-  "body": "Born Ma He into a Muslim family in Yunnan, he was captured as a boy during the Ming conquest of the province, castrated, and placed in the household of the prince who became the Yongle Emperor. He rose to command the imperial fleet and was given the name Zheng He.\n\nBetween 1405 and 1433 he led [seven voyages](item:zheng-he) with fleets of up to 300 vessels and 27,000 men — an order of magnitude beyond anything Europe would send to sea for centuries. The purpose was diplomatic rather than territorial: to enrol distant rulers in the tribute system, to carry envoys, and to display the reach of the [Ming](item:ming-dynasty). The fleets touched Java, Sri Lanka, Calicut, Hormuz, Aden and Malindi, and returned with ambassadors, spices and a giraffe.\n\nHe died on the last voyage and was buried at sea. The court, facing costs and a renewed Mongol threat on the northern frontier, abandoned the expeditions and let the records lapse — a withdrawal from the [maritime routes](item:silk-roads) that the Portuguese would enter seventy years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zheng_He).",
-  "related": [
+  "strong": [
    "zheng-he",
+   "ming-dynasty"
+  ],
+  "weak": [
    "age-of-discovery"
   ],
+  "body": "Born Ma He into a Muslim family in Yunnan, he was captured as a boy during the Ming conquest of the province, castrated, and placed in the household of the prince who became the Yongle Emperor. He rose to command the imperial fleet and was given the name Zheng He.\n\nBetween 1405 and 1433 he led [seven voyages](item:zheng-he) with fleets of up to 300 vessels and 27,000 men — an order of magnitude beyond anything Europe would send to sea for centuries. The purpose was diplomatic rather than territorial: to enrol distant rulers in the tribute system, to carry envoys, and to display the reach of the [Ming](item:ming-dynasty). The fleets touched Java, Sri Lanka, Calicut, Hormuz, Aden and Malindi, and returned with ambassadors, spices and a giraffe.\n\nHe died on the last voyage and was buried at sea. The court, facing costs and a renewed Mongol threat on the northern frontier, abandoned the expeditions and let the records lapse — a withdrawal from the [maritime routes](item:silk-roads) that the Portuguese would enter seventy years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Zheng_He).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Zheng_He"
-   },
-   {
-    "label": "Voyages of Zheng He",
-    "event": "zheng-he"
    }
   ],
   "priority": 0
@@ -1810,6 +1908,9 @@
    "culture"
   ],
   "summary": "Korean foundries cast movable metal type; the *Jikji* of 1377 is the oldest surviving book printed with it, decades before Gutenberg.",
+  "strong": [
+   "printing-press"
+  ],
   "body": "Woodblock printing came from China, but Goryeo craftsmen cast type in bronze. Records describe metal-type printing as early as 1234, and the surviving *Jikji* was printed at Cheongju in 1377. Joseon foundries continued the technique, though it never displaced woodblocks for long print runs.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Jikji).",
   "links": [
    {
@@ -1832,6 +1933,9 @@
    "culture"
   ],
   "summary": "The Medici family turned banking wealth into political control of Florence and into patronage that shaped Renaissance taste.",
+  "strong": [
+   "renaissance"
+  ],
   "body": "Cosimo and later Lorenzo the Magnificent converted banking wealth into political control of Florence and into patronage: Brunelleschi and Donatello worked for the early Medici, Botticelli and the young Michelangelo for Lorenzo. The bank itself collapsed shortly before the family's expulsion in 1494.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/House_of_Medici).",
   "links": [
    {
@@ -1852,6 +1956,9 @@
    "culture"
   ],
   "summary": "A revival of classical learning and a transformation of European art, architecture and thought, beginning in Florence.",
+  "strong": [
+   "printing-press"
+  ],
   "body": "Perspective, anatomy, humanist scholarship and patronage by bankers and popes produced [Leonardo](event:mona-lisa), [Michelangelo](event:sistine-chapel), Raphael and Brunelleschi's dome.\n\nThe recovery of Greek texts — accelerated by scholars fleeing the [fall of Constantinople](event:fall-constantinople) — and cheap books from the [printing press](event:printing-press) spread the movement across Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Renaissance).",
   "links": [
    {
@@ -1881,19 +1988,15 @@
    "culture"
   ],
   "summary": "German goldsmith who assembled movable metal type, oil-based ink and the press into a system for printing books in quantity.",
-  "body": "Little is documented about Gutenberg beyond lawsuits. Born in Mainz to a patrician family, he worked as a goldsmith at Strasbourg, returned to Mainz, and borrowed heavily from Johann Fust to finance a secret enterprise.\n\nThe achievement was not any single component — [block printing](item:woodblock-printing) and [movable type in Korea](item:korea-movable-type) both came earlier — but the combination: a hand mould that cast identical letters in a lead alloy at speed, an oil-based ink that would adhere to metal, and a screw press adapted from wine-making. Together they made [printing](item:printing) an industry rather than a craft.\n\nThe [42-line Bible](item:gutenberg-42-line) of about 1455 proved it worked. Fust foreclosed the same year and took over the workshop, leaving Gutenberg with little; he died in Mainz with a small pension from the archbishop. Within fifty years [the press](item:printing-press) had spread across Europe and printed perhaps twenty million books.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Johannes_Gutenberg).",
-  "related": [
-   "printing",
-   "printing-press"
+  "strong": [
+   "printing-press",
+   "gutenberg-42-line"
   ],
+  "body": "Little is documented about Gutenberg beyond lawsuits. Born in Mainz to a patrician family, he worked as a goldsmith at Strasbourg, returned to Mainz, and borrowed heavily from Johann Fust to finance a secret enterprise.\n\nThe achievement was not any single component — [block printing](item:woodblock-printing) and [movable type in Korea](item:korea-movable-type) both came earlier — but the combination: a hand mould that cast identical letters in a lead alloy at speed, an oil-based ink that would adhere to metal, and a screw press adapted from wine-making. Together they made [printing](item:printing) an industry rather than a craft.\n\nThe [42-line Bible](item:gutenberg-42-line) of about 1455 proved it worked. Fust foreclosed the same year and took over the workshop, leaving Gutenberg with little; he died in Mainz with a small pension from the archbishop. Within fifty years [the press](item:printing-press) had spread across Europe and printed perhaps twenty million books.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Johannes_Gutenberg).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Johannes_Gutenberg"
-   },
-   {
-    "label": "Gutenberg's printing press",
-    "event": "printing-press"
    }
   ],
   "priority": 0
@@ -1910,13 +2013,12 @@
    "exploration"
   ],
   "parent": "ming-dynasty",
+  "weak": [
+   "da-gama"
+  ],
   "summary": "Ming treasure fleets of hundreds of ships sailed to India, Arabia and East Africa decades before the Portuguese.",
   "body": "Part of [Ming dynasty](event:ming-dynasty). The fleets were commanded by [Zheng He](item:zheng-he-admiral). The largest ships dwarfed anything then sailing in Europe. After 1433 the voyages were halted and the records suppressed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ming_treasure_voyages).",
   "links": [
-   {
-    "label": "Ming dynasty",
-    "event": "ming-dynasty"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Ming_treasure_voyages"
@@ -2043,13 +2145,12 @@
    "politics"
   ],
   "parent": "ming-dynasty",
+  "strong": [
+   "great-wall"
+  ],
   "summary": "The Ming emperor built a palace complex at the heart of Beijing, its layout mirroring cosmic order and containing nearly 1,000 buildings.",
   "body": "Part of [Ming dynasty](event:ming-dynasty). The Forbidden City was closed to commoners for five centuries and is now a museum of imperial life.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Forbidden_City).",
   "links": [
-   {
-    "label": "Ming dynasty",
-    "event": "ming-dynasty"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Forbidden_City"
@@ -2071,10 +2172,6 @@
   "body": "Part of [Hundred Years' War](event:hundred-years-war). Henry V's outnumbered and exhausted army routed the French in a muddy defile, where the narrow ground blunted the French cavalry and exposed it to English longbowmen.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Agincourt).",
   "links": [
    {
-    "label": "Hundred Years' War",
-    "event": "hundred-years-war"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Agincourt"
    }
@@ -2092,6 +2189,9 @@
    "exploration"
   ],
   "summary": "European ships opened sea routes to Africa, Asia and the Americas, joining the world's hemispheres into a single system.",
+  "strong": [
+   "columbian-exchange"
+  ],
   "body": "Portuguese caravels worked their way down the African coast for decades before [Dias](event:dias) rounded the Cape and [da Gama](event:da-gama) reached India. [Columbus](event:columbus) sailed west and found a continent nobody in Europe expected, and [Magellan's expedition](event:magellan) went all the way round.\n\nWhat followed was the [Columbian Exchange](event:columbian-exchange), the [conquest of the Americas](event:spanish-conquest) and the [Atlantic slave trade](event:slave-trade) — the beginning of a genuinely global economy, built on conquest and forced labour.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Discovery).",
   "links": [
    {
@@ -2113,13 +2213,12 @@
    "politics"
   ],
   "parent": "age-of-discovery",
+  "strong": [
+   "dias"
+  ],
   "summary": "The Portuguese prince sponsored voyages down the Atlantic coast of Africa and the settlement of Madeira and the Azores.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). Henry's captains passed Cape Bojador in 1434 and had reached Sierra Leone by the time of his death, bringing back gold and enslaved Africans, a trade Portugal would expand for centuries. The caravel and the improved navigation developed under his patronage made the later routes to India possible.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Prince_Henry_the_Navigator).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Prince_Henry_the_Navigator"
@@ -2138,6 +2237,9 @@
    "politics"
   ],
   "summary": "The Triple Alliance ruled central Mexico from Tenochtitlan, a lake city of perhaps 200,000 people.",
+  "strong": [
+   "spanish-conquest"
+  ],
   "body": "The Triple Alliance of Tenochtitlan, Texcoco and Tlacopan ruled central Mexico, drawing tribute from subject city-states. Tenochtitlan, built on an island in Lake Texcoco, held perhaps 200,000 people.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Aztec_Empire).",
   "links": [
    {
@@ -2163,10 +2265,6 @@
   "body": "Part of [Hundred Years' War](event:hundred-years-war). Joan of Arc, claiming to hear divine voices, helped lift the siege of Orléans and saw the dauphin crowned Charles VII at Reims. She was captured, tried for heresy and burned in 1431.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Joan_of_Arc).",
   "links": [
    {
-    "label": "Hundred Years' War",
-    "event": "hundred-years-war"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Joan_of_Arc"
    }
@@ -2184,6 +2282,9 @@
    "politics"
   ],
   "summary": "Tawantinsuyu stretched 4,000 km along the Andes, bound by roads, terraces and knotted-string records, without wheels or writing.",
+  "strong": [
+   "inca-conquest"
+  ],
   "body": "The empire extended some 4,000 km along the Andes. It was held together by a road network, agricultural terracing and the khipu, a knotted-string recording system. The Inca used neither the wheel nor writing.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Inca_Empire).",
   "links": [
    {
@@ -2225,13 +2326,12 @@
    "religion"
   ],
   "parent": "renaissance",
+  "strong": [
+   "medici-banking"
+  ],
   "summary": "The pope patronised humanists, collected manuscripts and began rebuilding St. Peter's Basilica, making Rome a centre of the Renaissance.",
   "body": "Part of [The Renaissance](event:renaissance). Nicholas bought and copied Greek and Latin manuscripts on a scale no one had attempted, founding the collection that became the Vatican Library, and began the rebuilding of St Peter's.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pope_Nicholas_V).",
   "links": [
-   {
-    "label": "The Renaissance",
-    "event": "renaissance"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Pope_Nicholas_V"
@@ -2248,20 +2348,20 @@
    "culture"
   ],
   "summary": "The reproduction of text and images by mechanical means, which turned the copying of knowledge from a bottleneck into a commodity.",
-  "body": "Printing is older than the printing press. [Woodblock printing](item:woodblock-printing) was in use in Tang China by the seventh century, and [movable type](item:korea-movable-type) — ceramic under the Song, metal in Goryeo Korea by 1234 — preceded Europe by two centuries. What limited them was the script: a font of Chinese characters runs to thousands of sorts, and a scribe was often the cheaper option.\n\nAn alphabet changes that arithmetic, and [Gutenberg's](item:johannes-gutenberg) combination of a type mould, oil-based ink and the [screw press](item:printing-press) made the copying of a book a matter of hours. The [42-line Bible](item:gutenberg-42-line) demonstrated it; by 1500 some 20 million volumes had been printed in Europe.\n\nThe consequences were less about books than about control. An idea in print could not be suppressed by burning one copy, which is why the [Reformation](item:reformation) spread as it did; standardised texts made the [Scientific Revolution's](item:scientific-revolution) accumulation of results possible; fixed spellings and vernacular Bibles hardened national languages. Every later reproduction technology, down to the network, has followed the same pattern: cheap copying redistributes authority.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_printing).",
-  "related": [
-   "johannes-gutenberg",
+  "strong": [
    "printing-press",
+   "johannes-gutenberg",
+   "woodblock-printing",
+   "korea-movable-type"
+  ],
+  "weak": [
    "reformation"
   ],
+  "body": "Printing is older than the printing press. [Woodblock printing](item:woodblock-printing) was in use in Tang China by the seventh century, and [movable type](item:korea-movable-type) — ceramic under the Song, metal in Goryeo Korea by 1234 — preceded Europe by two centuries. What limited them was the script: a font of Chinese characters runs to thousands of sorts, and a scribe was often the cheaper option.\n\nAn alphabet changes that arithmetic, and [Gutenberg's](item:johannes-gutenberg) combination of a type mould, oil-based ink and the [screw press](item:printing-press) made the copying of a book a matter of hours. The [42-line Bible](item:gutenberg-42-line) demonstrated it; by 1500 some 20 million volumes had been printed in Europe.\n\nThe consequences were less about books than about control. An idea in print could not be suppressed by burning one copy, which is why the [Reformation](item:reformation) spread as it did; standardised texts made the [Scientific Revolution's](item:scientific-revolution) accumulation of results possible; fixed spellings and vernacular Bibles hardened national languages. Every later reproduction technology, down to the network, has followed the same pattern: cheap copying redistributes authority.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_printing).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/History_of_printing"
-   },
-   {
-    "label": "Gutenberg's printing press",
-    "event": "printing-press"
    }
   ],
   "priority": 92
@@ -2287,19 +2387,18 @@
    "science"
   ],
   "summary": "Florentine painter, engineer and anatomist whose notebooks and few finished paintings define the range of the Italian Renaissance.",
-  "body": "Leonardo was the illegitimate son of a notary, apprenticed at about fourteen to Andrea del Verrocchio in Florence. He worked for the Sforza in Milan, for Cesare Borgia as a military engineer, for the Republic of Florence and finally for Francis I of France, who gave him a manor house near Amboise.\n\nHe finished very little. *The Last Supper* and the [*Mona Lisa*](item:mona-lisa) are among perhaps fifteen surviving paintings, and both changed how European artists handled gesture, atmosphere and the modelling of light. The [Renaissance](item:renaissance) produced no better demonstration that painting could be an intellectual discipline.\n\nHis notebooks — some 7,000 surviving pages in mirror writing — range over anatomy from dissection, the flight of birds, water, geology, optics and machines from a diving suit to a helical rotor. Almost none of it was published in his lifetime, so its influence on later science was slight; as a record of one person's curiosity it is unmatched.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Leonardo_da_Vinci).",
-  "related": [
+  "strong": [
    "mona-lisa",
    "renaissance"
   ],
+  "weak": [
+   "sistine-chapel"
+  ],
+  "body": "Leonardo was the illegitimate son of a notary, apprenticed at about fourteen to Andrea del Verrocchio in Florence. He worked for the Sforza in Milan, for Cesare Borgia as a military engineer, for the Republic of Florence and finally for Francis I of France, who gave him a manor house near Amboise.\n\nHe finished very little. *The Last Supper* and the [*Mona Lisa*](item:mona-lisa) are among perhaps fifteen surviving paintings, and both changed how European artists handled gesture, atmosphere and the modelling of light. The [Renaissance](item:renaissance) produced no better demonstration that painting could be an intellectual discipline.\n\nHis notebooks — some 7,000 surviving pages in mirror writing — range over anatomy from dissection, the flight of birds, water, geology, optics and machines from a diving suit to a helical rotor. Almost none of it was published in his lifetime, so its influence on later science was slight; as a record of one person's curiosity it is unmatched.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Leonardo_da_Vinci).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Leonardo_da_Vinci"
-   },
-   {
-    "label": "Mona Lisa",
-    "event": "mona-lisa"
    }
   ],
   "priority": 91
@@ -2317,6 +2416,9 @@
    "religion"
   ],
   "summary": "Ottoman cannon breached the Theodosian walls and the last Roman emperor died fighting; the Byzantine Empire ended after 1,100 years.",
+  "strong": [
+   "renaissance"
+  ],
   "body": "Mehmed II made the city his capital and Hagia Sophia a mosque. Greek scholars fled west with their manuscripts, feeding the [Renaissance](event:renaissance), while Ottoman control of the eastern trade routes sharpened European interest in finding a [sea route to Asia](event:age-of-discovery).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Constantinople).",
   "links": [
    {
@@ -2337,13 +2439,12 @@
    "culture"
   ],
   "parent": "printing-press",
+  "weak": [
+   "latin-vulgate"
+  ],
   "summary": "The first major book printed with movable type was a Latin Bible, made in Mainz in an edition of about 180 copies.",
   "body": "Part of [Gutenberg's printing press](event:printing-press). The 42-line Bible, printed at Mainz in an edition of about 180 copies, showed that printing was economically viable and could match handwritten books in quality.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gutenberg_Bible).",
   "links": [
-   {
-    "label": "Gutenberg's printing press",
-    "event": "printing-press"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Gutenberg_Bible"
@@ -2363,6 +2464,9 @@
    "economy"
   ],
   "summary": "The successor to Mali, Songhai became the largest empire in medieval West Africa before being conquered by Morocco.",
+  "weak": [
+   "scramble-africa"
+  ],
   "body": "Sunni Ali took Timbuktu and Djenné from the declining Mali, and Askia Muhammad extended the empire to its greatest reach. Its defeat by a Moroccan expedition armed with firearms in 1591 broke the last of the great Sahelian empires.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Songhai_Empire).",
   "links": [
    {
@@ -2382,13 +2486,12 @@
    "exploration"
   ],
   "parent": "age-of-discovery",
+  "strong": [
+   "da-gama"
+  ],
   "summary": "Bartolomeu Dias led a Portuguese expedition that sailed around the southern tip of Africa, demonstrating a sea route to the Indian Ocean.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). Dias rounded the southern tip of Africa and proved that the Atlantic and Indian oceans connect, opening the way to a sea route from Europe to India.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bartolomeu_Dias).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Bartolomeu_Dias"
@@ -2480,13 +2583,12 @@
    "religion"
   ],
   "parent": "reconquista",
+  "strong": [
+   "columbus"
+  ],
   "summary": "The last Muslim emirate in Spain surrendered to Ferdinand and Isabella; Jews were expelled from Spain the same year.",
   "body": "Part of [The Reconquista](event:reconquista). Granada surrendered to Ferdinand and Isabella after a long campaign. In the same year the crown ordered the expulsion of Jews from Spain.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Granada_War).",
   "links": [
-   {
-    "label": "The Reconquista",
-    "event": "reconquista"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Granada_War"
@@ -2504,13 +2606,12 @@
    "exploration"
   ],
   "parent": "age-of-discovery",
+  "strong": [
+   "columbian-exchange"
+  ],
   "summary": "Three Spanish ships made landfall in the Bahamas, beginning sustained contact between the Old World and the New.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). Columbus was looking for Asia and died insisting he had found it. The consequences — [the Columbian Exchange](event:columbian-exchange), the collapse of Indigenous populations under [epidemic disease](event:americas-epidemics), and centuries of colonisation — reshaped both hemispheres and were catastrophic for the Americas.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus"
@@ -2609,6 +2710,9 @@
    "economy"
   ],
   "summary": "Crops, animals and diseases moved between hemispheres, transforming diets and populations on every continent.",
+  "weak": [
+   "green-revolution"
+  ],
   "body": "Maize, potatoes, tomatoes, cassava, chillies and tobacco went east; wheat, sugar, horses, cattle and — devastatingly — [smallpox and measles](event:americas-epidemics) went west.\n\nThe potato and maize eventually supported large population growth in Europe, Africa and China; the exchange is one reason the world could feed the [Industrial Revolution](event:industrial-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Columbian_exchange).",
   "links": [
    {
@@ -2635,6 +2739,10 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Treaty_of_Tordesillas"
    }
+  ],
+  "parent": "age-of-discovery",
+  "strong": [
+   "columbus"
   ]
  },
  {
@@ -2648,13 +2756,12 @@
    "exploration"
   ],
   "parent": "age-of-discovery",
+  "strong": [
+   "portuguese-goa"
+  ],
   "summary": "Da Gama opened the first sea route from Europe to India, breaking the Venetian and Ottoman monopoly on the spice trade.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). Sailing round Africa, da Gama reached Calicut in 1498. The route broke the Venetian and Ottoman hold on the spice trade and gave Portugal direct access to Asian markets.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Vasco_da_Gama).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Vasco_da_Gama"

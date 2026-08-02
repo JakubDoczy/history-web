@@ -1,16 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import {
-  MARKER_SIZE_DEG,
-  decorSizeDeg,
   drawingPoints,
   isDrawing,
   isDrawingSpec,
-  routeDecorFor,
+  routeDrawingFor,
   type Drawing,
   type DrawingSpec,
 } from '../src/lib/drawing'
-import { ARROW_FRACTIONS, pointAlongPath, type GeoPath } from '../src/lib/paths'
-import { separationDeg } from '../src/lib/queryIndex'
+import { type GeoPath } from '../src/lib/paths'
 
 const line: GeoPath = [
   [0, 0],
@@ -20,6 +17,7 @@ const line: GeoPath = [
 describe('isDrawingSpec', () => {
   it('accepts one of each kind, at its minimum', () => {
     const specs: DrawingSpec[] = [
+      { type: 'route', paths: [line] },
       { type: 'frontline', paths: [line] },
       { type: 'thrust', path: line },
       { type: 'marker', pos: [5, 5] },
@@ -102,125 +100,87 @@ describe('drawingPoints', () => {
   })
 })
 
-describe('routeDecorFor', () => {
+describe('routeDrawingFor', () => {
   const outward: GeoPath = [
     [-6.35, 36.79],
     [-15.4, 28.1],
     [-59.6, 13.1],
   ]
 
-  it('marks both ends of every route, whichever way it runs', () => {
+  it('draws the route itself, carrying the AUTHORED waypoints and the direction', () => {
     for (const direction of ['oneway', 'twoway'] as const) {
-      const d = routeDecorFor({ paths: [outward], direction })!
-      const dots = d.layers.filter((l) => l.type === 'marker' && l.style === 'dot')
-      expect(dots, direction).toHaveLength(2)
-      expect(dots.map((l) => (l as { pos: [number, number] }).pos)).toEqual([
-        outward[0],
-        outward[outward.length - 1],
-      ])
+      const d = routeDrawingFor({ paths: [outward], direction })!
+      const routes = d.layers.filter(
+        (l): l is Extract<DrawingSpec, { type: 'route' }> => l.type === 'route',
+      )
+      expect(routes, direction).toHaveLength(1)
+      // not a smoothed or densified polyline: the curve is the renderer's job,
+      // so the spec stays the thing the data actually said
+      expect(routes[0].paths).toEqual([outward])
+      expect(routes[0].direction).toBe(direction)
     }
-  })
-
-  it('puts two chevrons on a one-way route, and none on a two-way one', () => {
-    const one = routeDecorFor({ paths: [outward], direction: 'oneway' })!
-    const arrows = one.layers.filter((l) => l.type === 'marker' && l.style === 'arrow')
-    expect(arrows).toHaveLength(ARROW_FRACTIONS.length)
-    for (const a of arrows) expect(Number.isFinite((a as { bearing?: number }).bearing)).toBe(true)
-
-    const two = routeDecorFor({ paths: [outward], direction: 'twoway' })!
-    expect(two.layers.every((l) => l.type !== 'marker' || l.style !== 'arrow')).toBe(true)
   })
 
   it('defaults to one-way, so a voyage that forgot to say so still points', () => {
-    const d = routeDecorFor({ paths: [outward] })!
-    expect(d.layers.some((l) => l.type === 'marker' && l.style === 'arrow')).toBe(true)
+    const d = routeDrawingFor({ paths: [outward] })!
+    const route = d.layers.find((l) => l.type === 'route') as Extract<
+      DrawingSpec,
+      { type: 'route' }
+    >
+    expect(route.direction).toBe('oneway')
   })
 
-  it('points its chevrons the way the route is travelled', () => {
-    // due east along the equator: every bearing is 90
-    const d = routeDecorFor({ paths: [[[0, 0], [40, 0]]], direction: 'oneway' })!
-    for (const a of d.layers.filter((l) => l.type === 'marker' && l.style === 'arrow'))
-      expect((a as { bearing: number }).bearing).toBeCloseTo(90, 6)
-    // and reversing the route reverses them
-    const back = routeDecorFor({ paths: [[[40, 0], [0, 0]]], direction: 'oneway' })!
-    for (const a of back.layers.filter((l) => l.type === 'marker' && l.style === 'arrow'))
-      expect((a as { bearing: number }).bearing).toBeCloseTo(270, 6)
+  it('puts no glyph on anything: the line is the whole drawing', () => {
+    // Ports and direction used to be `marker` layers generated here — dots at
+    // the termini, chevrons a third and two-thirds along. Both are gone: a
+    // marker is sized in degrees of arc, which is the wrong unit for a symbol on
+    // a map, and the renderer draws the ports in pixels as part of the line.
+    for (const direction of ['oneway', 'twoway'] as const) {
+      const d = routeDrawingFor({ paths: [outward], direction })!
+      expect(d.layers.every((l) => l.type === 'route'), direction).toBe(true)
+    }
   })
 
-  it('places the chevrons a third and two-thirds along, by ARC LENGTH', () => {
-    // A route authored with all its detail at one end: by waypoint index the
-    // chevrons would cluster there; by arc length they do not.
-    const lopsided: GeoPath = [
-      [0, 0], [0.5, 0], [1, 0], [1.5, 0], [2, 0], [60, 0],
-    ]
-    const d = routeDecorFor({ paths: [lopsided], direction: 'oneway' })!
-    const arrows = d.layers.filter(
-      (l): l is Extract<DrawingSpec, { type: 'marker' }> => l.type === 'marker' && l.style === 'arrow',
-    )
-    expect(arrows[0].pos[0]).toBeCloseTo(20, 4)
-    expect(arrows[1].pos[0]).toBeCloseTo(40, 4)
+  it('draws every route of a network, not only the first', () => {
+    const d = routeDrawingFor({ paths: [outward, [[0, 0], [10, 10]], [[20, 20], [30, 30]]] })!
+    const route = d.layers.find((l) => l.type === 'route') as Extract<
+      DrawingSpec,
+      { type: 'route' }
+    >
+    expect(route.paths).toHaveLength(3)
   })
 
-  it('decorates every route of a network, not only the first', () => {
-    const d = routeDecorFor({ paths: [outward, [[0, 0], [10, 10]], [[20, 20], [30, 30]]] })!
-    expect(d.layers.filter((l) => l.type === 'marker' && l.style === 'dot')).toHaveLength(6)
-    expect(d.layers.filter((l) => l.type === 'marker' && l.style === 'arrow')).toHaveLength(6)
+  it('is a valid drawing, so the renderer needs no special case for it', () => {
+    expect(isDrawing(routeDrawingFor({ paths: [outward] }))).toBe(true)
   })
 
   it('has nothing to say about an event with no routes', () => {
-    expect(routeDecorFor({})).toBeUndefined()
-    expect(routeDecorFor({ paths: [] })).toBeUndefined()
+    expect(routeDrawingFor({})).toBeUndefined()
+    expect(routeDrawingFor({ paths: [] })).toBeUndefined()
     // a "route" of one point is not a route
-    expect(routeDecorFor({ paths: [[[0, 0]] as unknown as GeoPath] })).toBeUndefined()
+    expect(routeDrawingFor({ paths: [[[0, 0]] as unknown as GeoPath] })).toBeUndefined()
   })
 })
 
-describe('decorSizeDeg', () => {
-  it('scales with the route, and stays inside its bounds', () => {
-    const hop = decorSizeDeg([[[0, 0], [1, 0]]])
-    const ocean = decorSizeDeg([[[-6, 36], [-60, 13]]])
-    const world = decorSizeDeg([[[-70, -53], [120, 10]]])
-    expect(hop).toBeLessThan(ocean)
-    expect(ocean).toBeLessThan(world)
-    for (const s of [hop, ocean, world]) {
-      expect(s).toBeGreaterThanOrEqual(0.4)
-      expect(s).toBeLessThanOrEqual(1.8)
-    }
-    // a glyph is never so big it stops being a glyph
-    expect(world).toBeLessThan(MARKER_SIZE_DEG * 4)
-  })
-
-  it('never gives a zero-length route a zero-size glyph', () => {
-    expect(decorSizeDeg([[[5, 5], [5, 5]]])).toBeGreaterThan(0)
-  })
-})
-
-describe('the chevrons agree with the dashes', () => {
+describe('drawingPoints reaches a route', () => {
   /**
-   * The dash animation runs from the first waypoint to the last (three-globe
-   * advances `dashOffset` in that direction on a fat line), and the chevrons are
-   * placed on the same forward tangent. If either flipped, a route would say two
-   * opposite things at once — so this pins the shared assumption.
+   * `geometryPointsOf` frames the camera on everything a drawing occupies, and a
+   * route drawing IS the drawing for a path event. If its waypoints were not
+   * reachable here, "Show on map" would fit the camera to the terminus dots and
+   * cut the middle of the voyage out of frame.
    */
-  it('faces the direction travel is going at each chevron', () => {
-    const route: GeoPath = [
-      [-9.14, 38.7],
-      [-17.5, 14.7],
-      [18.4, -34.0],
-    ]
-    for (const t of ARROW_FRACTIONS) {
-      const at = pointAlongPath(route, t)!
-      const ahead = pointAlongPath(route, Math.min(1, t + 0.05))!
-      // the point a little further along the route is roughly where the chevron
-      // is pointing
-      const forward = separationDeg(at.lat, at.lng, ahead.lat, ahead.lng)
-      expect(forward).toBeGreaterThan(0)
-      const dLng = ahead.lng - at.lng
-      const dLat = ahead.lat - at.lat
-      const bearingAhead =
-        (Math.atan2(dLng * Math.cos((at.lat * Math.PI) / 180), dLat) * 180) / Math.PI
-      const diff = Math.abs((((at.bearing - bearingAhead + 540) % 360) - 180))
-      expect(diff, `t=${t}`).toBeLessThan(20)
-    }
+  it('counts every waypoint of every route', () => {
+    const d = routeDrawingFor({
+      paths: [
+        [
+          [0, 0],
+          [10, 5],
+          [20, 0],
+        ],
+      ],
+    })!
+    const pts = drawingPoints(d)
+    for (const p of [[0, 0], [10, 5], [20, 0]])
+      expect(pts.some((q) => q[0] === p[0] && q[1] === p[1]), `${p}`).toBe(true)
   })
 })

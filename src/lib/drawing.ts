@@ -1,13 +1,4 @@
-import { separationDeg } from './queryIndex'
-import {
-  ARROW_FRACTIONS,
-  directionOf,
-  isGeoPath,
-  pathTermini,
-  pointAlongPath,
-  type GeoPath,
-  type PathDirection,
-} from './paths'
+import { directionOf, isGeoPath, type GeoPath, type PathDirection } from './paths'
 
 /**
  * CUSTOM MAP DRAWINGS — the "battle plan" overlay.
@@ -21,9 +12,14 @@ import {
  * coordinates, rendered by lib/drawingLayer.ts in the app's own colours at
  * whatever angle the camera happens to be at.
  *
- * The four kinds are the vocabulary of an operational map, and deliberately no
- * more than that:
+ * The kinds are the vocabulary of an operational map, and deliberately no more
+ * than that:
  *
+ *  · `route`     — a voyage or a trade road. Smoothed, grounded, tapered, and
+ *                  (one-way, motion allowed) flowing the way it was travelled.
+ *                  Not authored in the data: it is generated from an event's
+ *                  `paths` by `routeDrawingFor`, so that ONE renderer owns every
+ *                  line this globe draws over its map.
  *  · `frontline` — polylines. A line at a moment: where the front was.
  *  · `thrust`    — one polyline read as an arrow. An axis of advance.
  *  · `marker`    — a point with a glyph: a battle cross, a star, a dot, a
@@ -60,6 +56,22 @@ export interface DrawingCommon {
   at?: number
   /** Shown in the layer's own label, and by the renderer's hit label. */
   label?: string
+}
+
+/**
+ * A drawn route: the Silk Road's branches, the Atlantic triangle, Magellan.
+ *
+ * `paths` are the AUTHORED waypoints, not a drawn polyline — the smoothing and
+ * the great-circle densification happen in the renderer (see `routePolyline` in
+ * lib/paths.ts), so the spec stays the small honest thing the data says and the
+ * curve stays one decision in one place.
+ */
+export interface RouteSpec extends DrawingCommon {
+  type: 'route'
+  /** One or more polylines. See lib/paths.ts for why it is always a list. */
+  paths: GeoPath[]
+  /** Default `oneway`; see `directionOf`. */
+  direction?: PathDirection
 }
 
 /** A battle line at a moment. One or more polylines. */
@@ -115,7 +127,7 @@ export interface LabelSpec extends DrawingCommon {
   size?: 'sm' | 'md'
 }
 
-export type DrawingSpec = FrontlineSpec | ThrustSpec | MarkerSpec | LabelSpec
+export type DrawingSpec = RouteSpec | FrontlineSpec | ThrustSpec | MarkerSpec | LabelSpec
 
 export interface Drawing {
   layers: DrawingSpec[]
@@ -137,7 +149,7 @@ export const MARKER_SIZE_DEG = 0.8
 export const THRUST_HEAD_SCALE = 2.4
 
 /** The layer kinds, in draw order — later kinds paint over earlier ones. */
-export const DRAWING_KINDS = ['frontline', 'thrust', 'marker', 'label'] as const
+export const DRAWING_KINDS = ['route', 'frontline', 'thrust', 'marker', 'label'] as const
 
 /* ------------------------------------------------------------ validation */
 
@@ -160,6 +172,13 @@ export function isDrawingSpec(l: unknown): l is DrawingSpec {
   if (s.at !== undefined && !Number.isFinite(s.at)) return false
   if (s.label !== undefined && typeof s.label !== 'string') return false
   switch (s.type) {
+    case 'route':
+      return (
+        Array.isArray(s.paths) &&
+        s.paths.length > 0 &&
+        s.paths.every(isGeoPath) &&
+        (s.direction === undefined || s.direction === 'oneway' || s.direction === 'twoway')
+      )
     case 'frontline':
       return (
         Array.isArray(s.paths) &&
@@ -210,85 +229,41 @@ export function drawingPoints(d: Drawing | undefined): GeoPath {
   if (!d) return []
   const out: GeoPath = []
   for (const l of d.layers) {
-    if (l.type === 'frontline') for (const p of l.paths) out.push(...p)
+    if (l.type === 'frontline' || l.type === 'route') for (const p of l.paths) out.push(...p)
     else if (l.type === 'thrust') out.push(...l.path)
     else out.push(l.pos)
   }
   return out
 }
 
-/* ------------------------------------------------------------ route decor */
+/* ------------------------------------------------------------ route drawing */
 
 /**
- * The dots and arrowheads that decorate a drawn route, expressed as a drawing.
+ * An event's routes, expressed as a drawing.
  *
- * Two things follow from generating a `Drawing` rather than a bespoke overlay:
- * there is exactly ONE renderer of glyphs on this globe, and the route
- * decoration is a pure function of the route — testable without a scene, and
- * impossible to leave behind when the routes change, because it is rebuilt from
- * them.
+ * Going through `Drawing` rather than a layer of its own is the point. There is
+ * exactly ONE renderer of geometry on this globe's map — the same code that puts
+ * a frontline on the Dnieper puts Magellan in the Pacific, at the same altitude,
+ * with the same depth handling, in the same units. The old arrangement had
+ * routes in globe.gl's paths layer and their decoration here, which is how the
+ * routes ended up 90 km above a battle plan's 98 km with neither number written
+ * down anywhere near the other.
  *
- *  · a **dot at every terminus**: the ports. Both directions get these — a road
- *    has ends whichever way you walk it.
- *  · **two chevrons per route, at a third and two-thirds along**, ONE-WAY ONLY.
- *    The fat-line dash animation already runs from the first waypoint to the
- *    last (three-globe advances `dashOffset` in that direction), so the dashes
- *    and the chevrons agree by construction; the chevrons are what makes the
- *    direction legible in a screenshot, in reduced motion, and on the half of
- *    the route that is behind the planet's limb.
+ * It is also a pure function of the event, so the route drawing is testable
+ * without a scene and cannot go stale: it is rebuilt from the paths.
  *
- * Size scales with the route's own extent (see `decorSizeDeg`): a chevron sized
- * for the Atlantic triangle is invisible on the Bosporus, and one sized for the
- * Bosporus is a blot on a circumnavigation.
+ * ONE layer, and no glyphs. The ports used to be `marker` layers generated here,
+ * sized in degrees of arc off the route's own extent — which meant a dot that
+ * was three pixels across at the zoom the route is framed at and eighty across
+ * one zoom further in, because a marker is a thing on the ground and a port
+ * marker wants to be a symbol on a map. The renderer draws them instead, in
+ * screen pixels, as part of drawing the line they end.
  */
-export function routeDecorFor(e: {
+export const routeDrawingFor = (e: {
   paths?: GeoPath[]
   direction?: PathDirection
-}): Drawing | undefined {
+}): Drawing | undefined => {
   const paths = e.paths?.filter((p) => p.length >= 2) ?? []
   if (!paths.length) return undefined
-  const size = decorSizeDeg(paths)
-  const layers: DrawingSpec[] = pathTermini(paths).map((pos) => ({
-    type: 'marker' as const,
-    pos,
-    style: 'dot' as const,
-    // A port is a smaller mark than a direction: the dot says "the route ends
-    // here", which the line already half-said, while the chevron is carrying
-    // information nothing else on the map carries.
-    size: size * 0.45,
-  }))
-  if (directionOf(e) === 'oneway') {
-    for (const path of paths) {
-      for (const t of ARROW_FRACTIONS) {
-        const at = pointAlongPath(path, t)
-        if (!at) continue
-        layers.push({
-          type: 'marker',
-          pos: [at.lng, at.lat],
-          style: 'arrow',
-          bearing: at.bearing,
-          size,
-        })
-      }
-    }
-  }
-  return layers.length ? { layers } : undefined
-}
-
-/**
- * How big a route's decoration should be, in degrees of arc.
- *
- * Measured off the spread of the termini rather than the point count: what
- * matters is how far out the camera will have to be to hold the route, and the
- * fit is computed from exactly that spread (lib/geoFocus.ts). The floor keeps a
- * short hop's chevron from vanishing; the ceiling keeps a circumnavigation's
- * from covering Java.
- */
-export function decorSizeDeg(paths: GeoPath[]): number {
-  const ends = pathTermini(paths)
-  let spread = 0
-  for (let i = 0; i < ends.length; i++)
-    for (let j = i + 1; j < ends.length; j++)
-      spread = Math.max(spread, separationDeg(ends[i][1], ends[i][0], ends[j][1], ends[j][0]))
-  return Math.max(0.4, Math.min(1.8, spread * 0.028))
+  return { layers: [{ type: 'route', paths, direction: directionOf(e) }] }
 }

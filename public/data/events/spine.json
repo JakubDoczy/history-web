@@ -11,6 +11,9 @@
    "geology"
   ],
   "summary": "The Earth formed approximately 4.54 billion years ago by accretion of material from the solar nebula.",
+  "strong": [
+   "theia-impact"
+  ],
   "body": "Dust and rock orbiting the young Sun accumulated into planetesimals and then into the proto-Earth over tens of millions of years. Heat from accretion and radioactive decay melted the surface, allowing iron to sink toward the core while lighter silicates rose to form the mantle and early crust.\n\nRadiometric dating of meteorites and the oldest terrestrial zircons establishes the age as approximately **4.54 billion years**.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Earth).",
   "links": [
    {
@@ -30,6 +33,9 @@
    "geology"
   ],
   "summary": "A Mars-sized body, Theia, collided with the proto-Earth; debris from the impact coalesced into the Moon.",
+  "weak": [
+   "first-oceans"
+  ],
   "body": "The collision melted much of the planet and stripped away a large fraction of the mantle, leaving Earth with an unusually large satellite and a pronounced axial tilt.\n\nThe Moon's gravitational effect has stabilised Earth's axial obliquity, maintaining relatively stable climate conditions over billions of years, a requirement for the [origin of life](event:abiogenesis).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Giant-impact_hypothesis).",
   "links": [
    {
@@ -50,6 +56,9 @@
    "biology"
   ],
   "summary": "Self-replicating chemical systems emerged, likely around hydrothermal vents, forming the first cellular life.",
+  "strong": [
+   "first-oceans"
+  ],
   "body": "The earliest widely accepted evidence for life consists of carbon-isotope signatures in rocks approximately **3.8 billion years old**, followed by microfossils and [stromatolites](event:stromatolites).\n\nAll organisms alive today derive from a single ancestral population, the last universal common ancestor.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abiogenesis).",
   "links": [
    {
@@ -69,6 +78,9 @@
    "biology"
   ],
   "summary": "Cyanobacteria evolved the ability to split water molecules using light energy, producing free oxygen as a byproduct.",
+  "strong": [
+   "great-oxidation"
+  ],
   "body": "This metabolic innovation eventually transformed the atmosphere, oceans, and crustal chemistry, precipitating the [Great Oxidation Event](event:great-oxidation).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Photosynthesis).",
   "links": [
    {
@@ -91,6 +103,9 @@
    "biology"
   ],
   "summary": "Free oxygen accumulated in the atmosphere for the first time, proving toxic to most existing life and oxidising iron across the planet's surface.",
+  "strong": [
+   "banded-iron-formations-peak"
+  ],
   "body": "Oxygen produced by [cyanobacteria](event:oxygenic-photosynthesis) had been absorbed by dissolved iron for hundreds of millions of years, forming banded iron formations. Once these iron sinks became saturated, oxygen began accumulating in the atmosphere.\n\nThis change led to ozone layer formation, collapse of methane-driven greenhouse warming causing the [Huronian glaciation](event:huronian-glaciation), and the emergence of aerobic respiration, which provided greater energy yields than fermentation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Oxidation_Event).",
   "links": [
    {
@@ -110,6 +125,9 @@
    "biology"
   ],
   "summary": "A cell engulfed another cell, retaining it as an internal organelle; this established the compartmented eukaryotic cell with mitochondria.",
+  "strong": [
+   "multicellular-eukaryotes"
+  ],
   "body": "Endosymbiosis provided eukaryotes with enhanced energy production capability, supporting larger genomes, larger cell sizes, and eventually multicellular bodies. Chloroplasts were acquired through a similar process at a later stage.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eukaryote).",
   "links": [
    {
@@ -131,6 +149,9 @@
    "geology"
   ],
   "summary": "Glaciers advanced toward the equator, possibly covering the entire ocean surface, during the Cryogenian period.",
+  "strong": [
+   "ediacaran"
+  ],
   "body": "The Sturtian and Marinoan glaciations covered much of the planet in ice for tens of millions of years. Volcanic carbon dioxide accumulated beneath the ice cover until a runaway greenhouse effect rapidly thawed global conditions.\n\nThese extreme climate fluctuations preceded the appearance of the [Ediacaran biota](event:ediacaran) and the [Cambrian explosion](event:cambrian-explosion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Snowball_Earth).",
   "links": [
    {
@@ -151,6 +172,9 @@
    "biology"
   ],
   "summary": "Nearly all modern animal body plans appeared in the fossil record within a period of tens of millions of years.",
+  "weak": [
+   "ordovician-reef-ecosystems"
+  ],
   "body": "Eyes, hard shells, jointed limbs, and predatory behaviour all appear together in the record. The Burgess Shale of British Columbia and the Chengjiang fauna of Yunnan preserve exceptional detail of this radiation.\n\nProposed causes include rising oxygen levels following [Snowball Earth](event:snowball-earth), the evolution of predation, and innovations in developmental genetic regulation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cambrian_explosion).",
   "links": [
    {
@@ -171,6 +195,10 @@
    "biology"
   ],
   "summary": "Spore-bearing plants colonized terrestrial environments, beginning the development of continental vegetation.",
+  "strong": [
+   "silurian-land-colonisation",
+   "carboniferous-forests"
+  ],
   "body": "Root systems enhanced chemical weathering and reduced atmospheric CO2 levels, enabling soil formation and the establishment of terrestrial ecosystems.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Evolutionary_history_of_plants).",
   "links": [
    {
@@ -212,6 +240,9 @@
    "geology"
   ],
   "summary": "Approximately 81% of marine species and 70% of land vertebrates went extinct in Earth's most severe biotic crisis.",
+  "strong": [
+   "first-dinosaurs"
+  ],
   "body": "Volcanism from the [Siberian Traps](event:siberian-traps) released large volumes of carbon dioxide and sulphur into the atmosphere, causing warming, ocean acidification, and widespread oxygen depletion.\n\nEcological recovery required approximately **10 million years**, and the depleted world that followed was the one in which the [first dinosaurs](event:first-dinosaurs) arose.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Permian–Triassic_extinction_event).",
   "links": [
    {
@@ -232,6 +263,10 @@
    "biology"
   ],
   "summary": "Approximately 75% of all species, including all non-avian dinosaurs, went extinct during a geologically brief interval.",
+  "strong": [
+   "deccan-traps",
+   "placental-radiation"
+  ],
   "body": "The [Chicxulub impact](event:chicxulub) was the primary cause, with impact ejecta depositing an iridium-rich layer globally recognised at the boundary; the [Deccan Traps](event:deccan-traps) eruptions were already stressing ecosystems beforehand.\n\nThe extinction created ecological space for mammalian diversification, eventually leading to [primate](event:hominin-split) evolution.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous–Paleogene_extinction_event).",
   "links": [
    {
@@ -278,13 +313,12 @@
    "disaster"
   ],
   "parent": "kpg-extinction",
+  "weak": [
+   "toba"
+  ],
   "summary": "A 10-kilometre-diameter asteroid impacted the Yucatán platform, releasing energy equivalent to billions of Hiroshima bombs.",
   "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). The impact excavated a crater 180 km across into sulphur-rich carbonate rock, launching a global cloud of dust and sulphate aerosols that shut down photosynthesis for years.\n\nThe crater was identified through gravity data in the 1970s and confirmed in 1991.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chicxulub_crater).",
   "links": [
-   {
-    "label": "Cretaceous–Paleogene extinction",
-    "event": "kpg-extinction"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Chicxulub_crater"
@@ -303,6 +337,9 @@
    "technology"
   ],
   "summary": "Hominins began deliberately producing stone cutting tools, initiating the archaeological record.",
+  "strong": [
+   "fire-control"
+  ],
   "body": "The Lomekwi 3 site in Kenya documents toolmaking at 3.3 million years ago; the Oldowan industry from approximately 2.6 million years ago is the first widespread tool tradition.\n\nStone tools provided access to meat and bone marrow, high-energy food sources associated with subsequent brain size increases.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oldowan).",
   "links": [
    {
@@ -341,6 +378,10 @@
    "biology"
   ],
   "summary": "Anatomically modern humans originated in Africa, with the oldest known fossils from Jebel Irhoud, Morocco.",
+  "strong": [
+   "out-of-africa",
+   "cave-art"
+  ],
   "body": "Genetic and paleontological evidence indicates a pan-African origin rather than a single population center, with gene exchange among African populations over tens of thousands of years preceding the [dispersal out of Africa](event:out-of-africa).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
   "links": [
    {
@@ -362,6 +403,9 @@
    "biology"
   ],
   "summary": "Modern humans dispersed from Africa and colonized every habitable continent within tens of thousands of years.",
+  "weak": [
+   "toba"
+  ],
   "body": "Descendants of a relatively small founding population supplanted or assimilated all other human groups, with genetic exchange occurring with [Neanderthals](event:neanderthals) and Denisovans.\n\nBy 65,000 years ago humans had reached [Australia](event:sahul); by 16,000 years ago they had colonized [the Americas](event:americas-peopling).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_human_migrations).",
   "links": [
    {
@@ -384,6 +428,9 @@
    "biology"
   ],
   "summary": "Farming was developed independently in several regions, beginning with the Fertile Crescent, and permanently changed how humans live.",
+  "strong": [
+   "uruk"
+  ],
   "body": "Wheat, barley, peas, sheep and goats were domesticated in the hills of the Levant and upper Mesopotamia; rice in the Yangtze valley, maize in Mexico, potatoes in the Andes.\n\nFood surpluses supported permanent villages, storable wealth, occupational specialisation and eventually cities. They also brought poorer diets, epidemic disease and social hierarchy. Developments from [writing](event:writing) to the [Industrial Revolution](event:industrial-revolution) rest on this foundation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neolithic_Revolution).",
   "links": [
    {
@@ -404,6 +451,10 @@
    "technology"
   ],
   "summary": "Cuneiform accounting marks in Sumer became the first true writing system, with Egyptian hieroglyphs following within a century or two.",
+  "strong": [
+   "phoenician-alphabet",
+   "oracle-bones"
+  ],
   "body": "What began as tokens for counting grain and livestock became, within a few centuries, a full script able to record law, literature and history — and with it the first records that historians can read directly.\n\nWriting was invented independently at least three more times: in China, in Mesoamerica, and probably in the Indus valley.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_writing).",
   "links": [
    {
@@ -423,6 +474,9 @@
    "politics"
   ],
   "summary": "Upper and Lower Egypt were unified under a single king, traditionally Narmer, beginning three millennia of pharaonic civilisation.",
+  "strong": [
+   "middle-kingdom-egypt"
+  ],
   "body": "The Narmer Palette shows the king wearing the crowns of both lands. The state that emerged, bound together by the Nile, outlasted every one of its Bronze Age contemporaries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Dynastic_Period_(Egypt)).",
   "links": [
    {
@@ -444,13 +498,12 @@
    "technology"
   ],
   "parent": "egypt-unification",
+  "weak": [
+   "stonehenge"
+  ],
   "summary": "Khufu's tomb, 146 metres tall and built from over two million blocks, was the tallest structure on Earth for 3,800 years.",
   "body": "Part of [Unification of Egypt](event:egypt-unification). It is the only one of the Seven Wonders of the Ancient World still standing, and was raised by a paid, organised workforce rather than by slaves.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza).",
   "links": [
-   {
-    "label": "Unification of Egypt",
-    "event": "egypt-unification"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza"
@@ -469,6 +522,12 @@
    "religion"
   ],
   "summary": "Siddhartha Gautama taught in the Ganges plain, founding one of the world's great religious and philosophical traditions.",
+  "strong": [
+   "maurya-empire"
+  ],
+  "weak": [
+   "hinduism-solidifies"
+  ],
   "body": "His teaching — the Four Noble Truths and the Eightfold Path — spread with merchants and, later, with the patronage of [Ashoka](event:maurya-empire) across South, Central and East Asia.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Gautama_Buddha).",
   "links": [
    {
@@ -490,6 +549,9 @@
    "religion"
   ],
   "summary": "Kong Qiu taught an ethic of duty, ritual propriety and learning that shaped Chinese government and society for two millennia.",
+  "strong": [
+   "neo-confucianism"
+  ],
   "body": "Confucian texts became the syllabus of the imperial examinations, making his thought the working philosophy of the Chinese state from the [Han](event:han-dynasty) onward.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Confucius).",
   "links": [
    {
@@ -510,6 +572,9 @@
    "politics"
   ],
   "summary": "Cyrus the Great and his successors ruled from the Aegean to the Indus, the largest empire the world had seen.",
+  "strong": [
+   "alexander-conquests"
+  ],
   "body": "The Persians governed through satrapies, a royal road, a standardised coinage and a policy of religious tolerance — Cyrus is remembered in the Hebrew Bible for allowing the Judean exiles to return.\n\nIt fell to [Alexander](event:alexander-conquests) in 330 BCE.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Achaemenid_Empire).",
   "links": [
    {
@@ -530,6 +595,9 @@
    "politics"
   ],
   "summary": "The reforms of Cleisthenes gave political power to the assembly of citizens, inventing direct democracy.",
+  "strong": [
+   "peloponnesian-war"
+  ],
   "body": "Roughly 30,000 adult male citizens could vote; women, resident foreigners and a very large enslaved population could not. Even so, the idea that ordinary people should decide public matters — [democracy](item:democracy) — begins here.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Athenian_democracy).",
   "links": [
    {
@@ -547,20 +615,21 @@
    "politics"
   ],
   "summary": "Rule by the people: the principle that political authority derives from those subject to it, and the institutions built to make that workable.",
-  "body": "The word is Greek and so is the first working example. The reforms of Cleisthenes in 508 BCE reorganised [Athens](item:athenian-democracy) so that policy was decided by an assembly of citizens and offices were filled largely by lot. It was direct, not representative, and the citizen body excluded women, resident foreigners and a very large enslaved population — perhaps a seventh of the adults present had a vote.\n\nWhat survived antiquity was not the institution but the argument. Roman republicanism, the limits placed on a king by [Magna Carta](item:magna-carta), and the Dutch and English revolutions supplied the vocabulary of consent, representation and the rule of law; the [American](item:us-constitution) and [French](item:rights-of-man) revolutions turned it into written constitutions asserting rights against the state.\n\nThe franchise widened slowly and unevenly — property qualifications, then [women's suffrage](item:finland-suffrage) from 1906, then the [American civil rights](item:civil-rights-act) legislation of the 1960s and the [end of apartheid](item:apartheid-end) in 1994. The count of electoral democracies rose through the twentieth century and has fallen back since about 2010, which is a reminder that the arrangement is maintained rather than achieved.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Democracy).",
-  "related": [
+  "strong": [
    "athenian-democracy",
-   "abraham-lincoln",
-   "nelson-mandela"
+   "us-constitution",
+   "rights-of-man",
+   "magna-carta"
   ],
+  "weak": [
+   "suffragette-movement",
+   "revolutions-1848"
+  ],
+  "body": "The word is Greek and so is the first working example. The reforms of Cleisthenes in 508 BCE reorganised [Athens](item:athenian-democracy) so that policy was decided by an assembly of citizens and offices were filled largely by lot. It was direct, not representative, and the citizen body excluded women, resident foreigners and a very large enslaved population — perhaps a seventh of the adults present had a vote.\n\nWhat survived antiquity was not the institution but the argument. Roman republicanism, the limits placed on a king by [Magna Carta](item:magna-carta), and the Dutch and English revolutions supplied the vocabulary of consent, representation and the rule of law; the [American](item:us-constitution) and [French](item:rights-of-man) revolutions turned it into written constitutions asserting rights against the state.\n\nThe franchise widened slowly and unevenly — property qualifications, then [women's suffrage](item:finland-suffrage) from 1906, then the [American civil rights](item:civil-rights-act) legislation of the 1960s and the [end of apartheid](item:apartheid-end) in 1994. The count of electoral democracies rose through the twentieth century and has fallen back since about 2010, which is a reminder that the arrangement is maintained rather than achieved.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Democracy).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Democracy"
-   },
-   {
-    "label": "Athenian democracy",
-    "event": "athenian-democracy"
    }
   ],
   "priority": 85
@@ -579,6 +648,9 @@
    "exploration"
   ],
   "summary": "In eleven years Alexander destroyed the Persian Empire and led an army from Greece to the Punjab.",
+  "weak": [
+   "maurya-empire"
+  ],
   "body": "He founded some twenty cities, [Alexandria](event:alexandria) chief among them, and after his death at 32 his generals carved the conquests into the Hellenistic kingdoms.\n\nGreek language, art and civic forms spread from Egypt to Afghanistan and outlasted the empire that carried them there.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wars_of_Alexander_the_Great).",
   "links": [
    {
@@ -598,6 +670,9 @@
    "politics"
   ],
   "summary": "Ying Zheng conquered the warring states and declared himself Qin Shi Huang, first emperor of a unified China.",
+  "strong": [
+   "han-dynasty"
+  ],
   "body": "He standardised script, coinage, weights and axle widths, linked frontier walls into an early [Great Wall](event:great-wall), and was buried with the [Terracotta Army](event:terracotta-army). The dynasty lasted fifteen years; the unified state it created has recurred ever since.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Qin_dynasty).",
   "links": [
    {
@@ -619,6 +694,9 @@
    "exploration"
   ],
   "summary": "Caravan routes linked China, Central Asia, Persia, India and the Mediterranean for some fifteen centuries.",
+  "strong": [
+   "spread-buddhism"
+  ],
   "body": "Silk, spices, paper, gunpowder, religions and — devastatingly — the [Black Death](event:black-death) all travelled these roads. On the network as a whole, see [the Silk Roads](item:silk-roads). The Han envoy Zhang Qian's mission west is the conventional starting point.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
   "links": [
    {
@@ -794,20 +872,21 @@
    "exploration"
   ],
   "summary": "The overland and maritime routes that connected China, India, Persia and the Mediterranean, and the exchange of goods, technologies, religions and disease along them.",
-  "body": "The name is a nineteenth-century coinage for something that was never a single road. [The routes](item:silk-road) were a shifting web of caravan stages and sea lanes, worked in relays by merchants who rarely travelled their whole length; a bolt of silk might change hands twenty times between Chang'an and Antioch.\n\nGoods moved in both directions — silk, porcelain and rhubarb west; horses, glass, silver and cotton east — but the more consequential cargo was intangible. [Paper](item:paper-invention) reached Samarkand and then the Islamic world and Europe; [Buddhism](item:spread-buddhism) travelled from India into Central Asia and China; gunpowder, the compass and Indian numerals followed the same channels. The [Han](item:han-dynasty) mission of Zhang Qian in 130 BCE is the conventional starting point, and the *Pax Mongolica* under [Genghis Khan's](item:temujin-genghis-khan) successors its safest period, when [Marco Polo](item:marco-polo) made the journey.\n\nDisease used the roads too: the [Black Death](item:black-death) almost certainly reached Europe along them. The overland trade declined as the Ming turned inward after [Zheng He](item:zheng-he-admiral) and as Portuguese ships opened a sea route to the Indies, but the maritime leg never stopped.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
-  "related": [
+  "strong": [
    "silk-road",
-   "temujin-genghis-khan",
-   "zheng-he-admiral"
+   "marco-polo",
+   "spread-buddhism"
   ],
+  "weak": [
+   "temujin-genghis-khan",
+   "zheng-he-admiral",
+   "black-death"
+  ],
+  "body": "The name is a nineteenth-century coinage for something that was never a single road. [The routes](item:silk-road) were a shifting web of caravan stages and sea lanes, worked in relays by merchants who rarely travelled their whole length; a bolt of silk might change hands twenty times between Chang'an and Antioch.\n\nGoods moved in both directions — silk, porcelain and rhubarb west; horses, glass, silver and cotton east — but the more consequential cargo was intangible. [Paper](item:paper-invention) reached Samarkand and then the Islamic world and Europe; [Buddhism](item:spread-buddhism) travelled from India into Central Asia and China; gunpowder, the compass and Indian numerals followed the same channels. The [Han](item:han-dynasty) mission of Zhang Qian in 130 BCE is the conventional starting point, and the *Pax Mongolica* under [Genghis Khan's](item:temujin-genghis-khan) successors its safest period, when [Marco Polo](item:marco-polo) made the journey.\n\nDisease used the roads too: the [Black Death](item:black-death) almost certainly reached Europe along them. The overland trade declined as the Ming turned inward after [Zheng He](item:zheng-he-admiral) and as Portuguese ships opened a sea route to the Indies, but the maritime leg never stopped.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silk_Road).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Silk_Road"
-   },
-   {
-    "label": "Silk Road trade network",
-    "event": "silk-road"
    }
   ],
   "priority": 85
@@ -823,6 +902,9 @@
    "politics"
   ],
   "summary": "The Senate granted Octavian the name Augustus and effective sole power, beginning two centuries of Roman peace.",
+  "weak": [
+   "ottoman-empire"
+  ],
   "body": "The *Pax Romana* united the Mediterranean under one law, one currency and a road network that would not be matched in Europe for well over a millennium.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Roman_Empire).",
   "links": [
    {
@@ -842,6 +924,9 @@
    "religion"
   ],
   "summary": "Jesus of Nazareth was executed in Roman Judaea; his followers' claim that he rose again founded Christianity.",
+  "strong": [
+   "hebrew-bible-canon"
+  ],
   "body": "Within three centuries the movement had spread across the empire that killed him, and after [Constantine](event:constantine) it became the religion of the Roman state.\n\nChristianity is today the largest religion in the world, and the Western calendar still counts from an estimate of his birth.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Crucifixion_of_Jesus).",
   "links": [
    {
@@ -865,10 +950,6 @@
   "summary": "The Edict of Milan ended the persecution of Christians and set the empire on the path to a Christian state.",
   "body": "Part of [Founding of the Roman Empire](event:roman-empire). Constantine also founded [Constantinople](event:constantinople-founded) and summoned the [Council of Nicaea](event:nicaea); by 380 Christianity was the official religion of Rome.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Edict_of_Milan).",
   "links": [
-   {
-    "label": "Founding of the Roman Empire",
-    "event": "roman-empire"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Edict_of_Milan"
@@ -948,6 +1029,9 @@
    "politics"
   ],
   "summary": "Muhammad and his followers migrated from Mecca to Medina, establishing the first Muslim community; year one of the Islamic calendar.",
+  "weak": [
+   "zoroastrianism"
+  ],
   "body": "Within a decade the new faith had united the Arabian peninsula, and within a century its armies and merchants had carried it from Spain to the Indus in the [early Muslim conquests](event:islamic-conquests).\n\nIslam is today the second largest religion in the world, and shaped law, science and art across three continents.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hijrah).",
   "links": [
    {
@@ -1024,13 +1108,13 @@
    "politics"
   ],
   "parent": "hijra",
+  "strong": [
+   "reconquista",
+   "islamic-golden-age"
+  ],
   "summary": "Arab armies took Persia, Egypt, the Levant, North Africa and Spain within roughly a century.",
   "body": "Part of [The Hijra and the founding of Islam](event:hijra). The Sasanian empire was destroyed outright, and Byzantium lost its richest provinces after the defeat at [Yarmouk](event:yarmouk). The advance into Western Europe was checked at [Tours](event:tours) in 732.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Muslim_conquests).",
   "links": [
-   {
-    "label": "The Hijra and the founding of Islam",
-    "event": "hijra"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Early_Muslim_conquests"
@@ -1079,20 +1163,18 @@
    "politics"
   ],
   "summary": "Mongol ruler who united the steppe tribes and founded the largest contiguous land empire in history.",
-  "body": "Born Temüjin, the son of a minor chieftain poisoned when the boy was nine, he grew up in poverty and captivity on the eastern steppe. Through alliance, patronage and a series of steppe wars he united the Mongol and Turkic tribes, and in 1206 an assembly [proclaimed him Genghis Khan](item:genghis-khan), universal ruler.\n\nHe reorganised his followers into decimal units that cut across tribal loyalties, promoted officers on merit, adopted a written script for the Mongol language and issued a body of law, the *yassa*. The armies that resulted took northern China, Central Asia and Persia within two decades; the [campaigns](item:mongol-conquests) were extraordinarily destructive, and the sack of cities that resisted was policy rather than accident.\n\nThe empire he left reached from Korea to the Caspian and, under his successors, from Hungary to the Pacific. Mongol control of the [trade routes across Eurasia](item:silk-roads) moved goods, techniques and — in all likelihood — the plague that became the [Black Death](item:black-death). His burial place is unknown.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
-  "related": [
+  "strong": [
    "genghis-khan",
-   "mongol-conquests",
-   "silk-roads"
+   "mongol-conquests"
   ],
+  "weak": [
+   "baghdad-1258"
+  ],
+  "body": "Born Temüjin, the son of a minor chieftain poisoned when the boy was nine, he grew up in poverty and captivity on the eastern steppe. Through alliance, patronage and a series of steppe wars he united the Mongol and Turkic tribes, and in 1206 an assembly [proclaimed him Genghis Khan](item:genghis-khan), universal ruler.\n\nHe reorganised his followers into decimal units that cut across tribal loyalties, promoted officers on merit, adopted a written script for the Mongol language and issued a body of law, the *yassa*. The armies that resulted took northern China, Central Asia and Persia within two decades; the [campaigns](item:mongol-conquests) were extraordinarily destructive, and the sack of cities that resisted was policy rather than accident.\n\nThe empire he left reached from Korea to the Caspian and, under his successors, from Hungary to the Pacific. Mongol control of the [trade routes across Eurasia](item:silk-roads) moved goods, techniques and — in all likelihood — the plague that became the [Black Death](item:black-death). His burial place is unknown.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Genghis_Khan).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Genghis_Khan"
-   },
-   {
-    "label": "Mongol conquests",
-    "event": "mongol-conquests"
    }
   ],
   "priority": 93
@@ -1160,6 +1242,9 @@
    "politics"
   ],
   "summary": "The largest contiguous land empire in history was assembled in three generations, from Korea to Hungary.",
+  "strong": [
+   "silk-road"
+  ],
   "body": "[Genghis Khan](event:genghis-khan) united the steppe tribes and turned them into a disciplined army of mounted archers; his sons and grandsons destroyed the Jin, Khwarazmian and Abbasid states — [Baghdad](event:baghdad-1258) in 1258 — and founded the [Yuan dynasty](event:yuan-dynasty) in China.\n\nThe destruction was immense, but the *Pax Mongolica* also made Eurasia briefly safe for travellers such as [Marco Polo](event:marco-polo) — and for the [plague](event:black-death).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mongol_conquests).",
   "links": [
    {
@@ -1231,6 +1316,9 @@
    "disaster"
   ],
   "summary": "The deadliest pandemic in recorded history killed an estimated third to half of Europe's population in six years.",
+  "weak": [
+   "spanish-flu"
+  ],
   "body": "Plague travelled west along the [Silk Road](event:silk-road) and Genoese trade routes, reaching Sicily in 1347 and Scandinavia by 1350. Contemporaries did not know what caused it; the bacterium *Yersinia pestis* was identified only in 1894.\n\nThe survivors inherited a labour shortage that broke serfdom in much of western Europe, raised wages, and shook the authority of the Church — conditions in which the [Renaissance](event:renaissance) took root.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Black_Death).",
   "links": [
    {
@@ -1251,6 +1339,9 @@
    "culture"
   ],
   "summary": "A revival of classical learning and a transformation of European art, architecture and thought, beginning in Florence.",
+  "strong": [
+   "printing-press"
+  ],
   "body": "Perspective, anatomy, humanist scholarship and patronage by bankers and popes produced [Leonardo](event:mona-lisa), [Michelangelo](event:sistine-chapel), Raphael and Brunelleschi's dome.\n\nThe recovery of Greek texts — accelerated by scholars fleeing the [fall of Constantinople](event:fall-constantinople) — and cheap books from the [printing press](event:printing-press) spread the movement across Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Renaissance).",
   "links": [
    {
@@ -1271,6 +1362,9 @@
    "exploration"
   ],
   "summary": "European ships opened sea routes to Africa, Asia and the Americas, joining the world's hemispheres into a single system.",
+  "strong": [
+   "columbian-exchange"
+  ],
   "body": "Portuguese caravels worked their way down the African coast for decades before [Dias](event:dias) rounded the Cape and [da Gama](event:da-gama) reached India. [Columbus](event:columbus) sailed west and found a continent nobody in Europe expected, and [Magellan's expedition](event:magellan) went all the way round.\n\nWhat followed was the [Columbian Exchange](event:columbian-exchange), the [conquest of the Americas](event:spanish-conquest) and the [Atlantic slave trade](event:slave-trade) — the beginning of a genuinely global economy, built on conquest and forced labour.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Age_of_Discovery).",
   "links": [
    {
@@ -1309,20 +1403,20 @@
    "culture"
   ],
   "summary": "The reproduction of text and images by mechanical means, which turned the copying of knowledge from a bottleneck into a commodity.",
-  "body": "Printing is older than the printing press. [Woodblock printing](item:woodblock-printing) was in use in Tang China by the seventh century, and [movable type](item:korea-movable-type) — ceramic under the Song, metal in Goryeo Korea by 1234 — preceded Europe by two centuries. What limited them was the script: a font of Chinese characters runs to thousands of sorts, and a scribe was often the cheaper option.\n\nAn alphabet changes that arithmetic, and [Gutenberg's](item:johannes-gutenberg) combination of a type mould, oil-based ink and the [screw press](item:printing-press) made the copying of a book a matter of hours. The [42-line Bible](item:gutenberg-42-line) demonstrated it; by 1500 some 20 million volumes had been printed in Europe.\n\nThe consequences were less about books than about control. An idea in print could not be suppressed by burning one copy, which is why the [Reformation](item:reformation) spread as it did; standardised texts made the [Scientific Revolution's](item:scientific-revolution) accumulation of results possible; fixed spellings and vernacular Bibles hardened national languages. Every later reproduction technology, down to the network, has followed the same pattern: cheap copying redistributes authority.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_printing).",
-  "related": [
-   "johannes-gutenberg",
+  "strong": [
    "printing-press",
+   "johannes-gutenberg",
+   "woodblock-printing",
+   "korea-movable-type"
+  ],
+  "weak": [
    "reformation"
   ],
+  "body": "Printing is older than the printing press. [Woodblock printing](item:woodblock-printing) was in use in Tang China by the seventh century, and [movable type](item:korea-movable-type) — ceramic under the Song, metal in Goryeo Korea by 1234 — preceded Europe by two centuries. What limited them was the script: a font of Chinese characters runs to thousands of sorts, and a scribe was often the cheaper option.\n\nAn alphabet changes that arithmetic, and [Gutenberg's](item:johannes-gutenberg) combination of a type mould, oil-based ink and the [screw press](item:printing-press) made the copying of a book a matter of hours. The [42-line Bible](item:gutenberg-42-line) demonstrated it; by 1500 some 20 million volumes had been printed in Europe.\n\nThe consequences were less about books than about control. An idea in print could not be suppressed by burning one copy, which is why the [Reformation](item:reformation) spread as it did; standardised texts made the [Scientific Revolution's](item:scientific-revolution) accumulation of results possible; fixed spellings and vernacular Bibles hardened national languages. Every later reproduction technology, down to the network, has followed the same pattern: cheap copying redistributes authority.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_printing).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/History_of_printing"
-   },
-   {
-    "label": "Gutenberg's printing press",
-    "event": "printing-press"
    }
   ],
   "priority": 92
@@ -1348,19 +1442,18 @@
    "science"
   ],
   "summary": "Florentine painter, engineer and anatomist whose notebooks and few finished paintings define the range of the Italian Renaissance.",
-  "body": "Leonardo was the illegitimate son of a notary, apprenticed at about fourteen to Andrea del Verrocchio in Florence. He worked for the Sforza in Milan, for Cesare Borgia as a military engineer, for the Republic of Florence and finally for Francis I of France, who gave him a manor house near Amboise.\n\nHe finished very little. *The Last Supper* and the [*Mona Lisa*](item:mona-lisa) are among perhaps fifteen surviving paintings, and both changed how European artists handled gesture, atmosphere and the modelling of light. The [Renaissance](item:renaissance) produced no better demonstration that painting could be an intellectual discipline.\n\nHis notebooks — some 7,000 surviving pages in mirror writing — range over anatomy from dissection, the flight of birds, water, geology, optics and machines from a diving suit to a helical rotor. Almost none of it was published in his lifetime, so its influence on later science was slight; as a record of one person's curiosity it is unmatched.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Leonardo_da_Vinci).",
-  "related": [
+  "strong": [
    "mona-lisa",
    "renaissance"
   ],
+  "weak": [
+   "sistine-chapel"
+  ],
+  "body": "Leonardo was the illegitimate son of a notary, apprenticed at about fourteen to Andrea del Verrocchio in Florence. He worked for the Sforza in Milan, for Cesare Borgia as a military engineer, for the Republic of Florence and finally for Francis I of France, who gave him a manor house near Amboise.\n\nHe finished very little. *The Last Supper* and the [*Mona Lisa*](item:mona-lisa) are among perhaps fifteen surviving paintings, and both changed how European artists handled gesture, atmosphere and the modelling of light. The [Renaissance](item:renaissance) produced no better demonstration that painting could be an intellectual discipline.\n\nHis notebooks — some 7,000 surviving pages in mirror writing — range over anatomy from dissection, the flight of birds, water, geology, optics and machines from a diving suit to a helical rotor. Almost none of it was published in his lifetime, so its influence on later science was slight; as a record of one person's curiosity it is unmatched.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Leonardo_da_Vinci).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Leonardo_da_Vinci"
-   },
-   {
-    "label": "Mona Lisa",
-    "event": "mona-lisa"
    }
   ],
   "priority": 91
@@ -1378,6 +1471,9 @@
    "religion"
   ],
   "summary": "Ottoman cannon breached the Theodosian walls and the last Roman emperor died fighting; the Byzantine Empire ended after 1,100 years.",
+  "strong": [
+   "renaissance"
+  ],
   "body": "Mehmed II made the city his capital and Hagia Sophia a mosque. Greek scholars fled west with their manuscripts, feeding the [Renaissance](event:renaissance), while Ottoman control of the eastern trade routes sharpened European interest in finding a [sea route to Asia](event:age-of-discovery).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Constantinople).",
   "links": [
    {
@@ -1397,13 +1493,12 @@
    "exploration"
   ],
   "parent": "age-of-discovery",
+  "strong": [
+   "columbian-exchange"
+  ],
   "summary": "Three Spanish ships made landfall in the Bahamas, beginning sustained contact between the Old World and the New.",
   "body": "Part of [Age of Discovery](event:age-of-discovery). Columbus was looking for Asia and died insisting he had found it. The consequences — [the Columbian Exchange](event:columbian-exchange), the collapse of Indigenous populations under [epidemic disease](event:americas-epidemics), and centuries of colonisation — reshaped both hemispheres and were catastrophic for the Americas.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus).",
   "links": [
-   {
-    "label": "Age of Discovery",
-    "event": "age-of-discovery"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Voyages_of_Christopher_Columbus"
@@ -1502,6 +1597,9 @@
    "economy"
   ],
   "summary": "Crops, animals and diseases moved between hemispheres, transforming diets and populations on every continent.",
+  "weak": [
+   "green-revolution"
+  ],
   "body": "Maize, potatoes, tomatoes, cassava, chillies and tobacco went east; wheat, sugar, horses, cattle and — devastatingly — [smallpox and measles](event:americas-epidemics) went west.\n\nThe potato and maize eventually supported large population growth in Europe, Africa and China; the exchange is one reason the world could feed the [Industrial Revolution](event:industrial-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Columbian_exchange).",
   "links": [
    {
@@ -1523,6 +1621,9 @@
    "politics"
   ],
   "summary": "Western Christianity split into Catholic and Protestant churches, and the political order of Europe was realigned.",
+  "strong": [
+   "printing-press"
+  ],
   "body": "Luther's [Ninety-five Theses](event:95-theses) were distributed across Germany by the [printing press](event:printing-press) within weeks of 1517. Calvin, Zwingli, and Henry VIII promoted additional theological breaks; the Catholic Church responded with the Council of Trent.\n\nReligious conflicts lasted for over a century, reaching their peak in the [Thirty Years' War](event:thirty-years-war). The [Peace of Westphalia](event:westphalia) concluded the conflict and established the sovereign state as the fundamental unit of European political order.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Reformation).",
   "links": [
    {
@@ -1544,6 +1645,9 @@
    "exploration"
   ],
   "summary": "Spanish forces, in alliance with Indigenous rivals and aided by epidemic disease, conquered the Aztec and Inca empires.",
+  "strong": [
+   "americas-epidemics"
+  ],
   "body": "[Tenochtitlan](event:tenochtitlan) fell in 1521 and [Cusco](event:inca-conquest) in 1533. The Spanish forces numbered only in the hundreds and succeeded through a combination of military technology, alliances with Indigenous states opposed to Aztec and Inca rule, and the effect of Old World diseases on populations with no prior exposure. Silver from the mines at Potosí and Zacatecas then financed Habsburg Spain and flowed on to China.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_colonization_of_the_Americas).",
   "links": [
    {
@@ -1615,10 +1719,6 @@
   "body": "Part of [The Columbian Exchange](event:columbian-exchange). Indigenous populations with no prior exposure to Eurasian diseases collapsed within decades, often ahead of European settlement itself. The depopulation was so extensive that the regrowth of forest on abandoned farmland may have measurably lowered global carbon dioxide levels in the early 1600s.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Population_history_of_Indigenous_peoples_of_the_Americas).",
   "links": [
    {
-    "label": "The Columbian Exchange",
-    "event": "columbian-exchange"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Population_history_of_Indigenous_peoples_of_the_Americas"
    }
@@ -1676,6 +1776,13 @@
    "disaster"
   ],
   "summary": "Approximately 12.5 million Africans were transported across the Atlantic in enslavement; nearly two million died during transit.",
+  "strong": [
+   "columbian-exchange",
+   "haitian-revolution"
+  ],
+  "weak": [
+   "emancipation"
+  ],
   "body": "The trade supplied enslaved labour for sugar, tobacco, and cotton plantations in Brazil, the Caribbean, and North America. European and colonial ports from Lisbon to Liverpool benefited economically. The slave trade depopulated regions of West and Central Africa and contributed to the establishment of racial categories that structured Atlantic colonial societies.\n\nBritain prohibited the slave trade in 1807 and abolished slavery in its territories in 1833; Brazil, which imported the largest number of enslaved people, abolished slavery in 1888. See also the [American Civil War](event:us-civil-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_slave_trade).",
   "links": [
    {
@@ -1805,6 +1912,9 @@
    "science"
   ],
   "summary": "Europeans adopted mathematics and experimental methods as the basis for understanding nature, replacing reliance on inherited authority.",
+  "strong": [
+   "enlightenment"
+  ],
   "body": "The Scientific Revolution extended from [Copernicus](event:copernicus) and Vesalius through [Galileo](event:galileo), Kepler, Bacon, and Descartes to [Newton's *Principia*](event:newton). This period established that mathematical laws govern both terrestrial phenomena such as falling objects and celestial phenomena such as planetary motion.\n\nThe systematic practices of publishing findings, subjecting them to scrutiny, and repeating experiments became standard methods in scientific inquiry and have continued to the present.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Scientific_Revolution).",
   "links": [
    {
@@ -1824,13 +1934,16 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "galileo",
+   "kepler"
+  ],
+  "weak": [
+   "decimal-numerals"
+  ],
   "summary": "Copernicus's *De revolutionibus orbium coelestium* proposed that the Earth orbits the Sun rather than remaining stationary at the centre of the cosmos.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). Copernicus set out a heliocentric model of the solar system in *De revolutionibus orbium coelestium*, published in 1543 as its author lay dying. The model contradicted both Ptolemaic astronomy and the scriptural interpretation then prevailing in Europe.\n\nDisplacing the Earth from the centre of the cosmos was the first of the great revisions of humanity's place in the universe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nicolaus_Copernicus).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Nicolaus_Copernicus"
@@ -1857,20 +1970,19 @@
    "science"
   ],
   "summary": "English mathematician and physicist who set out the laws of motion and universal gravitation, and who invented the calculus independently of Leibniz.",
-  "body": "Newton was born at Woolsthorpe in Lincolnshire on Christmas Day 1642 by the calendar then used in England, which is 4 January 1643 by the one used now. He went up to Trinity College, Cambridge, and did much of his most original work in 1665–67, when plague closed the university and he returned home.\n\nThe *[Principia](item:newton)* of 1687 gave three laws of motion and a law of universal gravitation, and showed that the same mathematics governs a falling apple, the tides, comets and the orbits of the planets. It is the central text of the [Scientific Revolution](item:scientific-revolution). To carry out the work he developed what he called fluxions — the [calculus](item:calculus), which Gottfried Wilhelm Leibniz reached independently and published first, provoking a bitter priority dispute.\n\nHe also wrote the *Opticks*, demonstrated that white light is a mixture of colours, built the first reflecting telescope, spent decades on alchemy and biblical chronology, sat in Parliament, and ran the Royal Mint, where he pursued counterfeiters with some enthusiasm. He was President of the Royal Society from 1703 until his death.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Isaac_Newton).",
-  "related": [
-   "calculus",
+  "strong": [
    "newton",
+   "calculus",
    "scientific-revolution"
   ],
+  "weak": [
+   "kepler"
+  ],
+  "body": "Newton was born at Woolsthorpe in Lincolnshire on Christmas Day 1642 by the calendar then used in England, which is 4 January 1643 by the one used now. He went up to Trinity College, Cambridge, and did much of his most original work in 1665–67, when plague closed the university and he returned home.\n\nThe *[Principia](item:newton)* of 1687 gave three laws of motion and a law of universal gravitation, and showed that the same mathematics governs a falling apple, the tides, comets and the orbits of the planets. It is the central text of the [Scientific Revolution](item:scientific-revolution). To carry out the work he developed what he called fluxions — the [calculus](item:calculus), which Gottfried Wilhelm Leibniz reached independently and published first, provoking a bitter priority dispute.\n\nHe also wrote the *Opticks*, demonstrated that white light is a mixture of colours, built the first reflecting telescope, spent decades on alchemy and biblical chronology, sat in Parliament, and ran the Royal Mint, where he pursued counterfeiters with some enthusiasm. He was President of the Royal Society from 1703 until his death.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Isaac_Newton).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Isaac_Newton"
-   },
-   {
-    "label": "Newton's Principia",
-    "event": "newton"
    }
   ],
   "priority": 90
@@ -1884,20 +1996,17 @@
    "science"
   ],
   "summary": "The mathematics of change: differentiation, which measures rates, and integration, which accumulates them — and the theorem that the two are inverse operations.",
-  "body": "Areas and tangents had been attacked for two thousand years, by Archimedes with exhaustion arguments and by Fermat, Cavalieri and Barrow with methods that worked case by case. What [Newton](item:isaac-newton) and Gottfried Wilhelm Leibniz supplied in the 1660s and 1670s was a general calculus: a notation and a set of rules that made the problems routine, and the fundamental theorem linking the two operations.\n\nNewton developed his fluxions first and used them in the *[Principia](item:newton)*, though he presented the results there in classical geometry. Leibniz published first, and his notation — dx, dy and the integral sign — is the one still in use. The priority dispute between them, and between their national followers, was long and unedifying.\n\nThe foundations were shaky for a century and a half: infinitesimals were quantities that had to be non-zero and then zero, an objection Bishop Berkeley put memorably. Cauchy and Weierstrass replaced them with limits in the nineteenth century. Meanwhile the calculus had become the language of physics and engineering — the [Scientific Revolution's](item:scientific-revolution) most durable instrument, and the basis of every differential equation used to describe a continuous process.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Calculus).",
-  "related": [
-   "isaac-newton",
-   "newton",
+  "strong": [
+   "newton"
+  ],
+  "weak": [
    "scientific-revolution"
   ],
+  "body": "Areas and tangents had been attacked for two thousand years, by Archimedes with exhaustion arguments and by Fermat, Cavalieri and Barrow with methods that worked case by case. What [Newton](item:isaac-newton) and Gottfried Wilhelm Leibniz supplied in the 1660s and 1670s was a general calculus: a notation and a set of rules that made the problems routine, and the fundamental theorem linking the two operations.\n\nNewton developed his fluxions first and used them in the *[Principia](item:newton)*, though he presented the results there in classical geometry. Leibniz published first, and his notation — dx, dy and the integral sign — is the one still in use. The priority dispute between them, and between their national followers, was long and unedifying.\n\nThe foundations were shaky for a century and a half: infinitesimals were quantities that had to be non-zero and then zero, an objection Bishop Berkeley put memorably. Cauchy and Weierstrass replaced them with limits in the nineteenth century. Meanwhile the calculus had become the language of physics and engineering — the [Scientific Revolution's](item:scientific-revolution) most durable instrument, and the basis of every differential equation used to describe a continuous process.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Calculus).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Calculus"
-   },
-   {
-    "label": "Isaac Newton",
-    "event": "isaac-newton"
    }
   ],
   "priority": 90
@@ -1935,13 +2044,12 @@
    "science"
   ],
   "parent": "scientific-revolution",
+  "strong": [
+   "relativity"
+  ],
   "summary": "Three laws of motion and universal gravitation explained falling bodies, tides, comets and planetary orbits within a single system.",
   "body": "Part of [The Scientific Revolution](event:scientific-revolution). [Newton](item:isaac-newton) published the *Principia* in 1687, setting out three laws of motion and the law of universal gravitation and applying them to falling bodies, the tides, comets and the orbits of the planets. He developed the calculus needed to carry out the work.\n\nThe *Principia* is among the most influential scientific books ever written, and it made physics the model to which the other sciences aspired for two centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica).",
   "links": [
-   {
-    "label": "The Scientific Revolution",
-    "event": "scientific-revolution"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Philosophiæ_Naturalis_Principia_Mathematica"
@@ -1990,20 +2098,21 @@
    "politics"
   ],
   "summary": "French general who made himself emperor, dominated Europe for a decade, and left behind a legal code still in use across much of the world.",
-  "body": "Born on Corsica a year after France annexed it, Napoleon was trained at French military schools and made his name in the artillery during [the Revolution](item:french-revolution). Command in Italy and an expedition to Egypt built his reputation; in 1799 he [seized power](item:napoleon-coup) in a coup, and in 1804 crowned himself emperor.\n\nAs a commander he moved armies faster than his opponents could react and concentrated force at the decisive point; [Austerlitz](item:austerlitz) in 1805 is the usual textbook example. [The wars](item:napoleonic-wars) that carry his name put most of Europe under French control or influence, but Britain held the sea after [Trafalgar](item:trafalgar), Spain became an unwinnable guerrilla war, and [the invasion of Russia](item:russia-1812) in 1812 destroyed the Grande Armée. He abdicated in 1814, returned for a hundred days, and was beaten at [Waterloo](item:waterloo).\n\nHe died in British custody on Saint Helena. The Napoleonic Code, a centralised administration, the metric system and conscription outlasted him, and the nationalism his campaigns provoked shaped Europe for a century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleon).",
-  "related": [
+  "strong": [
+   "napoleon-coup",
    "napoleonic-wars",
-   "french-revolution",
-   "waterloo"
+   "waterloo",
+   "french-revolution"
   ],
+  "weak": [
+   "austerlitz",
+   "trafalgar"
+  ],
+  "body": "Born on Corsica a year after France annexed it, Napoleon was trained at French military schools and made his name in the artillery during [the Revolution](item:french-revolution). Command in Italy and an expedition to Egypt built his reputation; in 1799 he [seized power](item:napoleon-coup) in a coup, and in 1804 crowned himself emperor.\n\nAs a commander he moved armies faster than his opponents could react and concentrated force at the decisive point; [Austerlitz](item:austerlitz) in 1805 is the usual textbook example. [The wars](item:napoleonic-wars) that carry his name put most of Europe under French control or influence, but Britain held the sea after [Trafalgar](item:trafalgar), Spain became an unwinnable guerrilla war, and [the invasion of Russia](item:russia-1812) in 1812 destroyed the Grande Armée. He abdicated in 1814, returned for a hundred days, and was beaten at [Waterloo](item:waterloo).\n\nHe died in British custody on Saint Helena. The Napoleonic Code, a centralised administration, the metric system and conscription outlasted him, and the nationalism his campaigns provoked shaped Europe for a century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleon).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Napoleon"
-   },
-   {
-    "label": "Napoleonic Wars",
-    "event": "napoleonic-wars"
    }
   ],
   "priority": 88
@@ -2021,6 +2130,9 @@
    "war"
   ],
   "summary": "The American Revolution (1775–1783) resulted in the thirteen British colonies achieving independence and establishing a new nation.",
+  "strong": [
+   "french-revolution"
+  ],
   "body": "Disputes between the British Crown and the thirteen colonies over taxation and political autonomy escalated into war in 1775. The Continental Congress adopted the [Declaration of Independence](event:declaration-independence) in 1776, asserting that governments derive their just powers from the consent of the governed. French military and naval support from 1778 helped the Continental forces to victory at [Yorktown](event:yorktown) in 1781.\n\nThe Treaty of Paris of 1783 recognised American independence, and after the Articles of Confederation proved inadequate the [Constitution](event:us-constitution) of 1787 turned the new states into a working federal republic. The example of a successful colonial revolution, and the debts France ran up supporting it, helped bring on the [French Revolution](event:french-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/American_Revolution).",
   "links": [
    {
@@ -2066,10 +2178,6 @@
   "body": "Part of [French Revolution](event:french-revolution). [Napoleon's](item:napoleon-bonaparte) empire met its limits at sea: Nelson's victory at [Trafalgar](event:trafalgar) secured British command of the sea; the [invasion of Russia](event:russia-1812) destroyed the Grande Armée; [Waterloo](event:waterloo) ended the adventure.\n\nThe wars spread the Napoleonic Code, conscription and nationalism across Europe, and the peace that followed at Vienna held the great powers back from general war for a century — until [1914](event:ww1).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Napoleonic_Wars).",
   "links": [
    {
-    "label": "French Revolution",
-    "event": "french-revolution"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Napoleonic_Wars"
    }
@@ -2096,19 +2204,18 @@
    "science"
   ],
   "summary": "English naturalist who established that species descend with modification from common ancestors, and proposed natural selection as the mechanism.",
-  "body": "Darwin abandoned medicine at Edinburgh and read for the clergy at Cambridge before sailing as naturalist on HMS *Beagle* in 1831. The five-year voyage took him along the coasts of South America and to the Galápagos, and the fossils, geology and island species he collected there occupied him for the rest of his life.\n\nHe worked out the principle of [natural selection](item:natural-selection) by 1838 but published nothing for twenty years, spending them instead on barnacles, orchids and correspondence. In 1858 Alfred Russel Wallace sent him an essay reaching the same conclusion; their work was read jointly to the Linnean Society, and [*On the Origin of Species*](item:origin-species) followed in 1859.\n\nLater books extended the argument to human ancestry, to sexual selection and to the expression of emotion. Darwin lived quietly at Down House in Kent, in poor health, and is buried in Westminster Abbey. Descent with modification is now the organising principle of biology, and its union with genetics after the [structure of DNA](item:dna-structure) was established has left the core of his argument intact.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charles_Darwin).",
-  "related": [
-   "natural-selection",
-   "origin-species"
+  "strong": [
+   "origin-species",
+   "natural-selection"
   ],
+  "weak": [
+   "human-genome"
+  ],
+  "body": "Darwin abandoned medicine at Edinburgh and read for the clergy at Cambridge before sailing as naturalist on HMS *Beagle* in 1831. The five-year voyage took him along the coasts of South America and to the Galápagos, and the fossils, geology and island species he collected there occupied him for the rest of his life.\n\nHe worked out the principle of [natural selection](item:natural-selection) by 1838 but published nothing for twenty years, spending them instead on barnacles, orchids and correspondence. In 1858 Alfred Russel Wallace sent him an essay reaching the same conclusion; their work was read jointly to the Linnean Society, and [*On the Origin of Species*](item:origin-species) followed in 1859.\n\nLater books extended the argument to human ancestry, to sexual selection and to the expression of emotion. Darwin lived quietly at Down House in Kent, in poor health, and is buried in Westminster Abbey. Descent with modification is now the organising principle of biology, and its union with genetics after the [structure of DNA](item:dna-structure) was established has left the core of his argument intact.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Charles_Darwin).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Charles_Darwin"
-   },
-   {
-    "label": "On the Origin of Species",
-    "event": "origin-species"
    }
   ],
   "priority": 92
@@ -2133,20 +2240,20 @@
    "politics"
   ],
   "summary": "Sixteenth president of the United States, who led the Union through the Civil War and made the abolition of slavery its object.",
-  "body": "Lincoln was born in a Kentucky log cabin, had perhaps a year of formal schooling, and taught himself law in Illinois. A Whig legislator and one-term congressman, he returned to politics over the extension of slavery into the territories, lost a Senate race to Stephen Douglas in 1858 after a celebrated series of debates, and was elected president in 1860 on the new Republican ticket.\n\nSeven states seceded before he took office and [war](item:us-civil-war) began within six weeks. He held the border states, blockaded the South, and cycled through commanders until he found Grant. The [Emancipation Proclamation](item:emancipation) of 1863 turned the war for the Union into a war against slavery and opened the army to black soldiers; his address at [Gettysburg](item:gettysburg) that November restated the war as a test of whether government by consent could survive.\n\nRe-elected in 1864, he pressed the Thirteenth Amendment through Congress and argued for a lenient peace. Five days after Lee's surrender he was [shot at Ford's Theatre](item:lincoln-assassination), the first American president to be assassinated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abraham_Lincoln).",
-  "related": [
+  "strong": [
    "us-civil-war",
    "emancipation",
+   "lincoln-assassination",
+   "gettysburg"
+  ],
+  "weak": [
    "democracy"
   ],
+  "body": "Lincoln was born in a Kentucky log cabin, had perhaps a year of formal schooling, and taught himself law in Illinois. A Whig legislator and one-term congressman, he returned to politics over the extension of slavery into the territories, lost a Senate race to Stephen Douglas in 1858 after a celebrated series of debates, and was elected president in 1860 on the new Republican ticket.\n\nSeven states seceded before he took office and [war](item:us-civil-war) began within six weeks. He held the border states, blockaded the South, and cycled through commanders until he found Grant. The [Emancipation Proclamation](item:emancipation) of 1863 turned the war for the Union into a war against slavery and opened the army to black soldiers; his address at [Gettysburg](item:gettysburg) that November restated the war as a test of whether government by consent could survive.\n\nRe-elected in 1864, he pressed the Thirteenth Amendment through Congress and argued for a lenient peace. Five days after Lee's surrender he was [shot at Ford's Theatre](item:lincoln-assassination), the first American president to be assassinated.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abraham_Lincoln).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Abraham_Lincoln"
-   },
-   {
-    "label": "American Civil War",
-    "event": "us-civil-war"
    }
   ],
   "priority": 86
@@ -2163,6 +2270,9 @@
    "biology"
   ],
   "summary": "Natural selection explained the diversity and design of life without a designer.",
+  "strong": [
+   "scopes-trial"
+  ],
   "body": "[Darwin](item:charles-darwin) had sat on the idea for twenty years; Alfred Russel Wallace's independent arrival at the same conclusion forced publication. The theory unified all of biology and, with [genetics](event:dna-structure), remains its central organising principle.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/On_the_Origin_of_Species).",
   "links": [
    {
@@ -2181,20 +2291,17 @@
    "science"
   ],
   "summary": "The explanation of adaptation without design: heritable variation plus differential survival and reproduction, repeated over generations.",
-  "body": "The argument has three premises and one conclusion. Organisms vary; some of that variation is inherited; more offspring are produced than can survive. It follows that variants which happen to leave more descendants become more common, and that populations change over time in ways that look designed but are not.\n\n[Darwin](item:charles-darwin) and Alfred Russel Wallace arrived at it independently and published jointly in 1858; [*On the Origin of Species*](item:origin-species) set out the evidence the following year. Its weakest point was heredity — Darwin had no mechanism — and it was resolved only when Mendelian genetics was combined with selection in the modern synthesis of the 1930s and 40s, and again by the [structure of DNA](item:dna-structure) and the reading of [whole genomes](item:human-genome).\n\nNatural selection is not the only evolutionary process: drift, migration and mutation all change populations, and much molecular change is effectively neutral. It is, however, the only known process that produces adaptation, and it applies wherever there is heritable variation in reproductive success — including to bacteria acquiring antibiotic resistance and to viruses evolving during an epidemic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Natural_selection).",
-  "related": [
-   "charles-darwin",
-   "origin-species",
-   "germ-theory-of-disease"
+  "strong": [
+   "origin-species"
   ],
+  "weak": [
+   "crispr"
+  ],
+  "body": "The argument has three premises and one conclusion. Organisms vary; some of that variation is inherited; more offspring are produced than can survive. It follows that variants which happen to leave more descendants become more common, and that populations change over time in ways that look designed but are not.\n\n[Darwin](item:charles-darwin) and Alfred Russel Wallace arrived at it independently and published jointly in 1858; [*On the Origin of Species*](item:origin-species) set out the evidence the following year. Its weakest point was heredity — Darwin had no mechanism — and it was resolved only when Mendelian genetics was combined with selection in the modern synthesis of the 1930s and 40s, and again by the [structure of DNA](item:dna-structure) and the reading of [whole genomes](item:human-genome).\n\nNatural selection is not the only evolutionary process: drift, migration and mutation all change populations, and much molecular change is effectively neutral. It is, however, the only known process that produces adaptation, and it applies wherever there is heritable variation in reproductive success — including to bacteria acquiring antibiotic resistance and to viruses evolving during an epidemic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Natural_selection).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Natural_selection"
-   },
-   {
-    "label": "Charles Darwin",
-    "event": "charles-darwin"
    }
   ],
   "priority": 91
@@ -2241,20 +2348,20 @@
    "religion"
   ],
   "summary": "Leader of the Indian independence movement, who made non-violent mass civil disobedience an instrument of political change.",
-  "body": "Gandhi trained as a barrister in London and spent twenty years in South Africa, where discrimination against Indian residents led him to develop *satyagraha* — a discipline of open, non-violent refusal to comply with unjust law, accepting the penalty rather than evading it.\n\nReturning to India in 1915, he turned the Congress from a body of professionals into a mass movement. He organised peasants and mill workers, launched non-cooperation with [British rule](item:british-raj), and in 1930 walked 385 kilometres to the sea to make salt in defiance of the government monopoly; the [Salt March](item:salt-march) drew tens of thousands into civil disobedience and made the Raj's position visibly untenable. The [Quit India](item:quit-india) movement of 1942 brought him and most of the Congress leadership to prison.\n\nHe campaigned against untouchability and for Hindu-Muslim unity, and regarded [the partition](item:partition) that accompanied [independence](item:indian-independence) in 1947 as a defeat. He was shot in Delhi in January 1948 by a Hindu nationalist who thought him too conciliatory towards Muslims. His methods were studied closely by later movements, among them the [American civil rights campaign](item:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mahatma_Gandhi).",
-  "related": [
+  "strong": [
    "salt-march",
-   "indian-independence",
-   "nelson-mandela"
+   "quit-india",
+   "indian-independence"
   ],
+  "weak": [
+   "nelson-mandela",
+   "civil-rights"
+  ],
+  "body": "Gandhi trained as a barrister in London and spent twenty years in South Africa, where discrimination against Indian residents led him to develop *satyagraha* — a discipline of open, non-violent refusal to comply with unjust law, accepting the penalty rather than evading it.\n\nReturning to India in 1915, he turned the Congress from a body of professionals into a mass movement. He organised peasants and mill workers, launched non-cooperation with [British rule](item:british-raj), and in 1930 walked 385 kilometres to the sea to make salt in defiance of the government monopoly; the [Salt March](item:salt-march) drew tens of thousands into civil disobedience and made the Raj's position visibly untenable. The [Quit India](item:quit-india) movement of 1942 brought him and most of the Congress leadership to prison.\n\nHe campaigned against untouchability and for Hindu-Muslim unity, and regarded [the partition](item:partition) that accompanied [independence](item:indian-independence) in 1947 as a defeat. He was shot in Delhi in January 1948 by a Hindu nationalist who thought him too conciliatory towards Muslims. His methods were studied closely by later movements, among them the [American civil rights campaign](item:civil-rights).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mahatma_Gandhi).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Mahatma_Gandhi"
-   },
-   {
-    "label": "Salt March",
-    "event": "salt-march"
    }
   ],
   "priority": 86
@@ -2279,20 +2386,19 @@
    "science"
   ],
   "summary": "Theoretical physicist whose work on relativity, light quanta and statistical mechanics reshaped the physics of space, time, matter and energy.",
-  "body": "Einstein was born at Ulm and educated in Munich, Aarau and Zurich. Unable to find an academic post, he took work at the Swiss patent office in Bern, and in 1905 — his *annus mirabilis* — published four papers in a single year: on the photoelectric effect, on Brownian motion, on the electrodynamics of moving bodies, and on the equivalence of mass and energy.\n\nThe third and fourth of these are [special relativity](item:relativity), which abandoned absolute time in favour of a fixed speed of light. Ten years later general relativity recast gravity as the curvature of spacetime; the bending of starlight measured during the 1919 eclipse made him famous outside physics. The theory's later predictions include black holes and [gravitational waves](item:gravitational-waves), detected a century after he wrote it down. See also the article on [relativity](item:theory-of-relativity).\n\nHe received the 1921 Nobel Prize in Physics for the photoelectric effect rather than for relativity. A Jewish pacifist, he left Germany when [Hitler took power](item:hitler-chancellor) and settled at Princeton, where he spent his last two decades on an unsuccessful search for a unified field theory. In 1939 he signed a letter to President Roosevelt warning that [nuclear fission](item:nuclear-fission) might make a bomb possible — a step he later described as his one great mistake.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Albert_Einstein).",
-  "related": [
-   "theory-of-relativity",
+  "strong": [
    "relativity",
-   "marie-curie"
+   "theory-of-relativity"
   ],
+  "weak": [
+   "gravitational-waves",
+   "trinity"
+  ],
+  "body": "Einstein was born at Ulm and educated in Munich, Aarau and Zurich. Unable to find an academic post, he took work at the Swiss patent office in Bern, and in 1905 — his *annus mirabilis* — published four papers in a single year: on the photoelectric effect, on Brownian motion, on the electrodynamics of moving bodies, and on the equivalence of mass and energy.\n\nThe third and fourth of these are [special relativity](item:relativity), which abandoned absolute time in favour of a fixed speed of light. Ten years later general relativity recast gravity as the curvature of spacetime; the bending of starlight measured during the 1919 eclipse made him famous outside physics. The theory's later predictions include black holes and [gravitational waves](item:gravitational-waves), detected a century after he wrote it down. See also the article on [relativity](item:theory-of-relativity).\n\nHe received the 1921 Nobel Prize in Physics for the photoelectric effect rather than for relativity. A Jewish pacifist, he left Germany when [Hitler took power](item:hitler-chancellor) and settled at Princeton, where he spent his last two decades on an unsuccessful search for a unified field theory. In 1939 he signed a letter to President Roosevelt warning that [nuclear fission](item:nuclear-fission) might make a bomb possible — a step he later described as his one great mistake.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Albert_Einstein).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Albert_Einstein"
-   },
-   {
-    "label": "Einstein's theory of relativity",
-    "event": "relativity"
    }
   ],
   "priority": 89
@@ -2310,6 +2416,14 @@
    "disaster"
   ],
   "summary": "Greenhouse gases released since the Industrial Revolution have warmed the planet by about 1.3 °C, and the rate is increasing.",
+  "strong": [
+   "industrial-revolution",
+   "kyoto-protocol",
+   "paris-agreement"
+  ],
+  "weak": [
+   "quaternary-ice-ages"
+  ],
   "body": "Atmospheric CO2 has risen from about 280 ppm before the [Industrial Revolution](event:industrial-revolution) to over 420 ppm. Ice sheets and glaciers are losing mass, sea level is rising, and extreme heat has become measurably more frequent.\n\nThe [Montreal Protocol](event:montreal-protocol) and the [Paris Agreement](event:paris-agreement) are the main treaty responses; the geological analogue is the [PETM](event:petm), 56 million years ago.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Global_warming).",
   "links": [
    {
@@ -2330,6 +2444,9 @@
    "science"
   ],
   "summary": "Einstein's relativity described space and time as aspects of a single flexible geometry, and mass as a form of energy.",
+  "weak": [
+   "higgs"
+  ],
   "body": "Special relativity (1905), the work of [Albert Einstein](item:albert-einstein), resolved the incompatibility between mechanics and electromagnetism. General relativity (1915) recast gravity as the curvature of spacetime, and was confirmed in 1919 by observations of starlight bending around the sun.\n\nGPS, black holes, cosmology and [gravitational waves](event:gravitational-waves) all follow from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
   "links": [
    {
@@ -2347,20 +2464,15 @@
    "science"
   ],
   "summary": "The theory that space and time form a single flexible geometry, that the speed of light is the same for every observer, and that gravity is the curvature of that geometry.",
-  "body": "Special relativity, published by [Einstein](item:albert-einstein) in 1905, begins from two propositions: the laws of physics are the same for all observers in uniform motion, and light travels at the same speed for all of them. Absolute simultaneity, absolute length and absolute time do not survive. Moving clocks run slow, moving lengths contract, and mass and energy turn out to be the same quantity in different units.\n\nGeneral relativity followed in 1915. Gravity is not a force acting across space but the curvature of spacetime produced by mass and energy; bodies in free fall follow the straightest available paths through it. The theory predicted the precession of Mercury's orbit, the bending of starlight confirmed in 1919, and the slowing of clocks in a gravitational field that satellite navigation must correct for.\n\nIts stranger predictions took a century to confirm: black holes, the expansion of the universe, and [gravitational waves](item:gravitational-waves), first detected in 2015. Relativity remains untouched by experiment and irreconcilable with quantum mechanics, which is where most of contemporary theoretical physics lives — see the entry on [Einstein's theory of relativity](item:relativity).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
-  "related": [
-   "albert-einstein",
+  "strong": [
    "relativity",
    "gravitational-waves"
   ],
+  "body": "Special relativity, published by [Einstein](item:albert-einstein) in 1905, begins from two propositions: the laws of physics are the same for all observers in uniform motion, and light travels at the same speed for all of them. Absolute simultaneity, absolute length and absolute time do not survive. Moving clocks run slow, moving lengths contract, and mass and energy turn out to be the same quantity in different units.\n\nGeneral relativity followed in 1915. Gravity is not a force acting across space but the curvature of spacetime produced by mass and energy; bodies in free fall follow the straightest available paths through it. The theory predicted the precession of Mercury's orbit, the bending of starlight confirmed in 1919, and the slowing of clocks in a gravitational field that satellite navigation must correct for.\n\nIts stranger predictions took a century to confirm: black holes, the expansion of the universe, and [gravitational waves](item:gravitational-waves), first detected in 2015. Relativity remains untouched by experiment and irreconcilable with quantum mechanics, which is where most of contemporary theoretical physics lives — see the entry on [Einstein's theory of relativity](item:relativity).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theory_of_relativity).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Theory_of_relativity"
-   },
-   {
-    "label": "Albert Einstein",
-    "event": "albert-einstein"
    }
   ],
   "priority": 89
@@ -2377,6 +2489,9 @@
    "war"
   ],
   "summary": "Four years of industrial-scale war killed some 20 million people and destroyed four empires.",
+  "strong": [
+   "ww2"
+  ],
   "body": "An [assassination in Sarajevo](event:sarajevo) triggered interlocking alliances; machine guns and artillery made the [Western Front](event:somme) a stalemate of trenches for four years. Russia collapsed into [revolution](event:russian-revolution); the United States entered in 1917.\n\nThe [Treaty of Versailles](event:versailles) redrew Europe and the Middle East, and left grievances that contributed directly to [the next war](event:ww2).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/World_War_I).",
   "links": [
    {
@@ -2419,6 +2534,12 @@
    "disaster"
   ],
   "summary": "An H1N1 influenza pandemic infected perhaps a third of humanity and killed 50 million or more.",
+  "strong": [
+   "covid"
+  ],
+  "weak": [
+   "ww1"
+  ],
   "body": "It spread along the troop movements of [the First World War](event:ww1), and unusually killed healthy young adults. Wartime censorship kept it out of the news everywhere except neutral Spain — hence the misleading name.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_flu).",
   "links": [
    {
@@ -2485,13 +2606,15 @@
    "disaster"
   ],
   "parent": "ww2",
+  "strong": [
+   "rwanda-genocide"
+  ],
+  "weak": [
+   "israel-founded"
+  ],
   "summary": "Nazi Germany murdered six million Jews, along with Roma, disabled people, Soviet prisoners and political opponents.",
   "body": "Part of [World War II](event:ww2). Mass shootings by the Einsatzgruppen gave way to industrialised killing at extermination camps, of which Auschwitz-Birkenau was the largest. The word *genocide* was coined to describe it, and the Genocide Convention of 1948 followed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/The_Holocaust).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/The_Holocaust"
@@ -2510,13 +2633,12 @@
    "science"
   ],
   "parent": "ww2",
+  "strong": [
+   "cold-war"
+  ],
   "summary": "Two atomic bombs killed well over 100,000 people; Japan surrendered within days.",
   "body": "Part of [World War II](event:ww2). They remain the only use of nuclear weapons in war. The threat of their use structured the entire [Cold War](event:cold-war).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atomic_bombings_of_Hiroshima_and_Nagasaki).",
   "links": [
-   {
-    "label": "World War II",
-    "event": "ww2"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Atomic_bombings_of_Hiroshima_and_Nagasaki"
@@ -2537,10 +2659,6 @@
   "summary": "Britain withdrew from South Asia, and the subcontinent was divided into two states.",
   "body": "Part of [Decolonisation](event:decolonisation). Independence was the culmination of decades of mass campaigning, including [Gandhi's Salt March](event:salt-march). [Partition](event:partition) accompanied it: 10–20 million displaced and perhaps a million killed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Indian_independence_movement).",
   "links": [
-   {
-    "label": "Decolonisation",
-    "event": "decolonisation"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Indian_independence_movement"
@@ -2580,6 +2698,10 @@
    "biology"
   ],
   "summary": "Watson and Crick, using Rosalind Franklin's X-ray data, described the double helix — and with it, how genes copy themselves.",
+  "strong": [
+   "human-genome",
+   "crispr"
+  ],
   "body": "Molecular biology, genetic engineering, [the Human Genome Project](event:human-genome) and [CRISPR](event:crispr) all follow from this two-page paper.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Nucleic_acid_double_helix).",
   "links": [
    {
@@ -2605,10 +2727,6 @@
   "body": "Part of [The Cold War](event:cold-war). It ran from [Sputnik](event:sputnik) through [Gagarin](event:gagarin) to the [Apollo programme](event:apollo-program), and ended symbolically with a US–Soviet docking in orbit in 1975.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Space_Race).",
   "links": [
    {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Space_Race"
    }
@@ -2626,6 +2744,9 @@
    "science"
   ],
   "parent": "apollo-program",
+  "strong": [
+   "sputnik"
+  ],
   "summary": "Humans walked on another world for the first time; some 600 million people watched.",
   "body": "Part of [Apollo programme](event:apollo-program). *That's one small step for a man, one giant leap for mankind.* Armstrong and Aldrin spent 21 hours on the Sea of Tranquillity while Collins orbited above.\n\nIt was the culmination of the [Space Race](event:space-race), and the furthest humans have yet travelled.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Apollo_11).",
   "image": {
@@ -2633,10 +2754,6 @@
    "caption": "Buzz Aldrin on the lunar surface"
   },
   "links": [
-   {
-    "label": "Apollo programme",
-    "event": "apollo-program"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Apollo_11"
@@ -2657,10 +2774,6 @@
   "summary": "A confused press conference on 9 November sent crowds to the checkpoints, and the guards let them through.",
   "body": "Part of [The Cold War](event:cold-war). Within a year Germany was reunified; within two the [Soviet Union](event:soviet-collapse) had dissolved. Communist governments across Eastern Europe fell in the same few months.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_the_Berlin_Wall).",
   "links": [
-   {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fall_of_the_Berlin_Wall"
@@ -2685,6 +2798,10 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/World_Wide_Web"
    }
+  ],
+  "parent": "internet",
+  "strong": [
+   "facebook-founded"
   ]
  },
  {
@@ -2748,10 +2865,6 @@
   "body": "Part of [The Cold War](event:cold-war). Gorbachev's reforms, nationalist movements in the republics and a failed hard-line coup in August 1991 brought down the state founded by the [October Revolution](event:october-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dissolution_of_the_Soviet_Union).",
   "links": [
    {
-    "label": "The Cold War",
-    "event": "cold-war"
-   },
-   {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Dissolution_of_the_Soviet_Union"
    }
@@ -2769,6 +2882,9 @@
    "politics"
   ],
   "summary": "Hijacked airliners destroyed the World Trade Center and struck the Pentagon, killing nearly 3,000 people.",
+  "strong": [
+   "iraq-war"
+  ],
   "body": "The attacks triggered the wars in Afghanistan and Iraq, a global expansion of surveillance, and two decades of security policy still in force.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/September_11_attacks).",
   "links": [
    {
@@ -2790,6 +2906,9 @@
    "disaster"
   ],
   "summary": "A novel coronavirus spread worldwide within months, killing an estimated 7–27 million people and shutting down much of the global economy.",
+  "weak": [
+   "population-8bn"
+  ],
   "body": "It produced the fastest vaccine development in history: mRNA vaccines were in arms within a year of the virus being sequenced. Comparisons were drawn throughout to the [1918 influenza pandemic](event:spanish-flu).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/COVID-19_pandemic).",
   "links": [
    {

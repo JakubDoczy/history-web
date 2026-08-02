@@ -188,6 +188,67 @@ describe('the store as an item store', () => {
     expect(events.linkedTo('relativity').map((i) => i.id)).toEqual(['einstein'])
   })
 
+  /* --- the typed relation getters, as the panel's four sections read them --- */
+  describe('relation getters', () => {
+    const graph = (): Item[] => [
+      { id: 'war', name: 'War', start: 1939, lat: 0, lng: 0, priority: 96, tags: [], summary: '' },
+      { id: 'operation', name: 'Operation', start: 1941, lat: 0, lng: 0, priority: 80, tags: [], summary: '', parent: 'war' },
+      { id: 'later-battle', name: 'Later battle', start: 1943, lat: 0, lng: 0, priority: 60, tags: [], summary: '', parent: 'operation' },
+      { id: 'first-battle', name: 'First battle', start: 1941, lat: 0, lng: 0, priority: 40, tags: [], summary: '', parent: 'operation', weak: ['aside'] },
+      { id: 'treaty', name: 'Treaty', start: 1945, lat: 0, lng: 0, priority: 70, tags: [], summary: '', strong: ['war'] },
+      { id: 'aside', name: 'Aside', start: 1950, lat: 0, lng: 0, priority: 10, tags: [], summary: '', body: 'see [the war](item:war)' },
+    ]
+
+    it('gives the chain an item is part of, innermost first', () => {
+      const events = useEventStore()
+      events.adopt(graph())
+      expect(events.parentChainOf('later-battle').map((i) => i.id)).toEqual(['operation', 'war'])
+      expect(events.parentChainOf('war')).toEqual([])
+    })
+
+    it('gives the direct children, in the order they happened', () => {
+      const events = useEventStore()
+      events.adopt(graph())
+      expect(events.childrenOf('operation').map((i) => i.id)).toEqual(['first-battle', 'later-battle'])
+      expect(events.childrenOf('war').map((i) => i.id)).toEqual(['operation'])
+    })
+
+    it('reads a strong edge from the side that did not declare it', () => {
+      const events = useEventStore()
+      events.adopt(graph())
+      expect(events.strongOf('war').map((i) => i.id)).toEqual(['treaty'])
+      expect(events.strongOf('treaty').map((i) => i.id)).toEqual(['war'])
+    })
+
+    it('reads weak edges both ways too', () => {
+      const events = useEventStore()
+      events.adopt(graph())
+      expect(events.weakOf('aside').map((i) => i.id)).toEqual(['first-battle'])
+    })
+
+    /**
+     * "See also" is the softest section, and the only one that is assembled
+     * rather than declared: weak edges first, then whatever the prose links to
+     * that no stronger relation already claimed.
+     */
+    it('folds body links into see-also, behind the weak edges', () => {
+      const events = useEventStore()
+      events.adopt(graph())
+      // `aside` links to `war` in its body, and is weakly tied to `first-battle`
+      expect(events.seeAlsoOf('aside').map((i) => i.id)).toEqual(['first-battle', 'war'])
+    })
+
+    it('never offers the same item under two headings', () => {
+      const events = useEventStore()
+      events.adopt(graph())
+      // the war is `aside`'s body link, but it is `treaty`'s strong relation and
+      // `operation`'s parent — so it appears in exactly one section of each
+      expect(events.seeAlsoOf('treaty').map((i) => i.id)).toEqual([])
+      expect(events.seeAlsoOf('operation').map((i) => i.id)).toEqual([])
+      expect(events.strongOf('operation').map((i) => i.id)).toEqual([])
+    })
+  })
+
   it('searches every kind, and finds a person by name', () => {
     const events = useEventStore()
     events.adopt(seed())
@@ -435,7 +496,7 @@ describe('the selected event keeps its pin', () => {
 })
 
 /**
- * FOCUS MODE — "Show on map" on something with geometry worth the screen.
+ * FOCUS MODE — "Show on map" on anything the map can reach.
  *
  * The mode is deliberately separate from the selection (see `focus` in
  * stores/events.ts), and most of these tests are about that seam: what enters
@@ -485,19 +546,38 @@ describe('focus mode', () => {
     expect(events.focus?.itemId).toBe('region')
   })
 
-  it('does NOT enter for a bare pin: hiding the article would reveal one teardrop', () => {
+  /**
+   * And for a bare pin. This used to be the one case that stayed out of the
+   * mode, on the reasoning that minimising an article to reveal a single
+   * teardrop is a worse view of the same thing — but the mode now empties the
+   * globe of everything else, so a lone pin on a clean map is exactly the view
+   * "show me this" was asking for.
+   */
+  it('enters for a bare point event with no geometry and no children', () => {
     const events = useEventStore()
     events.adopt([plan('bare', { drawing: undefined })])
     events.showOnMap('bare')
-    expect(events.focus).toBeUndefined()
-    expect(events.panelMinimised).toBe(false)
+    expect(events.focus).toEqual({ itemId: 'bare' })
+    expect(events.panelMinimised).toBe(true)
+    expect(events.focusChildren).toEqual([])
+    expect(events.visible.map((e) => e.id)).toEqual(['bare'])
   })
 
-  it('leaves when Show on map is used on a plain item next', () => {
+  it('moves to the plain item when Show on map is used on one next', () => {
     const events = useEventStore()
     events.adopt([plan('barbarossa'), plan('bare', { drawing: undefined })])
     events.showOnMap('barbarossa')
     events.showOnMap('bare')
+    expect(events.focus).toEqual({ itemId: 'bare' })
+  })
+
+  /** A concept has nowhere to go, so the action is inert — and so is the mode. */
+  it('does not enter for an item the map cannot reach at all', () => {
+    const events = useEventStore()
+    events.adopt([
+      { id: 'idea', kind: 'concept', name: 'An idea', anchorYear: 1941, priority: 70, tags: ['science'], summary: '' },
+    ])
+    events.showOnMap('idea')
     expect(events.focus).toBeUndefined()
   })
 
@@ -555,7 +635,7 @@ describe('focus mode', () => {
     expect(events.focusExpanded).toBe(false)
   })
 
-  it('forces the children onto the globe, minor ones included', () => {
+  it('puts the children on the globe, minor ones included', () => {
     const events = useEventStore()
     const settings = useSettingsStore()
     settings.maxEvents = 1
@@ -575,6 +655,94 @@ describe('focus mode', () => {
     expect(ids).not.toContain('elsewhere')
     events.exitFocus()
     expect(events.visible.map((e) => e.id)).not.toContain('minsk')
+  })
+
+  /**
+   * The other half of the same rule, and the point of the whole mode: the globe
+   * shows the focused item and its parts, and NOTHING ELSE. Not the top-ranked
+   * events of the era, not the ones that would have won the frame on merit —
+   * the reader asked to look at one thing.
+   */
+  it('clears every unrelated pin off the globe while it lasts', () => {
+    const events = useEventStore()
+    events.adopt([
+      plan('barbarossa'),
+      child('minsk', 'barbarossa', 60),
+      // two events that would comfortably out-rank the plan on their own
+      { ...child('pearl-harbor', 'ww2', 99), start: 1941 },
+      { ...child('midway', 'ww2', 98), start: 1941 },
+    ])
+    const before = events.visible.map((e) => e.id).sort()
+    expect(before).toEqual(['barbarossa', 'midway', 'minsk', 'pearl-harbor'])
+    events.showOnMap('barbarossa')
+    expect(events.visible.map((e) => e.id).sort()).toEqual(['barbarossa', 'minsk'])
+    // and leaving puts the globe back exactly as it was
+    events.exitFocus()
+    expect(events.visible.map((e) => e.id).sort()).toEqual(before)
+  })
+
+  /**
+   * The user's own statements still hold inside the mode. The cap and the
+   * viewport are the app's judgement about what fits, and the focused item
+   * outranks both; a tag filter is the reader saying what they want to see, and
+   * nothing about "show me this" contradicts it.
+   */
+  it('still obeys the tag filter, on the focused item and on its children', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa'), child('minsk', 'barbarossa', 60)])
+    events.showOnMap('barbarossa')
+    events.toggleTag('science') // nothing here is science
+    expect(events.visible).toEqual([])
+    events.toggleTag('science')
+    expect(events.visible.map((e) => e.id).sort()).toEqual(['barbarossa', 'minsk'])
+  })
+
+  /**
+   * The pipeline downstream of `visible` is untouched by the mode — it is the
+   * same tier cut and the same clustering over a shorter list — but "untouched"
+   * is worth one assertion, since a reduced set that produced no tiers would
+   * silently render every pin at the same weight.
+   */
+  it('grades the reduced set: every pin still gets a tier', () => {
+    const events = useEventStore()
+    events.adopt([
+      plan('barbarossa'),
+      child('minsk', 'barbarossa', 60),
+      child('kiev', 'barbarossa', 10),
+    ])
+    events.showOnMap('barbarossa')
+    expect([...events.tiers.keys()].sort()).toEqual(['barbarossa', 'kiev', 'minsk'])
+  })
+
+  /** The camera cannot hide the thing the camera was just flown to. */
+  it('ignores the viewport scope: a child off-frame keeps its pin', () => {
+    const events = useEventStore()
+    events.adopt([plan('barbarossa'), { ...child('faraway', 'barbarossa', 60), lat: -40, lng: 170 }])
+    useViewStore().scope = { lat: 54, lng: 28, radiusDeg: 8 }
+    events.showOnMap('barbarossa')
+    expect(events.visible.map((e) => e.id).sort()).toEqual(['barbarossa', 'faraway'])
+  })
+
+  /**
+   * A battle plan shows its battles and nothing else. Associations are things
+   * to read next, not pins to scatter over someone else's map — which is what
+   * the product asked for in so many words.
+   */
+  it('pins children only: a strong relation is not part of the plan', () => {
+    const events = useEventStore()
+    useSettingsStore().maxEvents = 1
+    events.adopt([
+      plan('barbarossa', { strong: ['pact'], weak: ['winter'] }),
+      child('minsk', 'barbarossa'),
+      { ...child('pact', 'other-war'), name: 'pact' },
+      { ...child('winter', 'other-war'), name: 'winter' },
+    ])
+    events.showOnMap('barbarossa')
+    const ids = events.visible.map((e) => e.id)
+    expect(ids).toContain('minsk')
+    expect(ids).not.toContain('pact')
+    expect(ids).not.toContain('winter')
+    expect(events.focusChildren.map((e) => e.id)).toEqual(['minsk'])
   })
 
   it('caps how many children it will force on', () => {
