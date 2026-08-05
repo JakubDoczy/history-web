@@ -28,7 +28,6 @@ import {
   visibleSpanDeg,
   viewSpanDeg,
   minAltitudeFor,
-  patchPixelCap,
 } from '../lib/detailImagery'
 import { cloudFadeFor, cloudSharpenFor, cloudIdleIntervalMs } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
@@ -626,16 +625,11 @@ onMounted(() => {
   // rebuild re-smooths every voyage on it.
   drawing = new DrawingLayer(globe.scene(), radius)
   routes = new DrawingLayer(globe.scene(), radius)
-  // A patch at the 4096 ceiling is a 33 MB texture upload, and the composite is
-  // re-uploaded whenever the view moves — so what the device can afford, not
-  // what GL permits, is the right ceiling. See patchPixelCap.
-  detail = new DetailImagery({
-    maxPx: patchPixelCap({
-      maxTextureSize: globe.renderer().capabilities.maxTextureSize,
-      devicePixelRatio: window.devicePixelRatio,
-      deviceMemoryGb: (navigator as { deviceMemory?: number }).deviceMemory,
-    }),
-  })
+  // The renderer is what the atlas needs and all it needs: one immutable 4096
+  // texture allocated once, written a slot at a time. There is no per-device
+  // pixel cap any more because there is no full-texture upload to size — see
+  // fitLevel for what is left of that ceiling.
+  detail = new DetailImagery({ renderer: globe.renderer() })
   // dev-only handle, alongside __globe: the streaming pipeline's failures are
   // all "what is on screen now versus a moment ago" questions, and without a
   // way to read the loader's own state a screenshot cannot tell a patch that
@@ -650,8 +644,8 @@ onMounted(() => {
     view.detailSource = detail!.sourceLabel
     view.detailAttribution = detail!.attribution
     view.detailGroundRes = detail!.groundRes
-    surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
-    wake() // a patch that arrived while the globe was parked still has to appear
+    surface!.setDetail(detail!.atlas, detail!.index, detail!.mix)
+    wake() // a tile that arrived while the globe was parked still has to appear
   }
 
   /**
@@ -672,7 +666,7 @@ onMounted(() => {
    */
   const syncDetail = (pov: { lat: number; lng: number; altitude: number }) => {
     if (!detailAllowed()) {
-      surface!.setDetail(null, detail!.rect, 0)
+      surface!.setDetail(null, undefined, 0)
       return
     }
     // device pixels, not CSS pixels: the globe renders at the device ratio
@@ -682,7 +676,7 @@ onMounted(() => {
     // the camera's own fov, so the patch is cut to the frame rather than to the
     // horizon — close in those differ by more than an order of magnitude
     detail!.update(pov.lat, pov.lng, pov.altitude, h * dpr, w / h, view.fov)
-    surface!.setDetail(detail!.texture ?? null, detail!.rect, detail!.mix, detail!.lod)
+    surface!.setDetail(detail!.atlas, detail!.index, detail!.mix)
   }
 
   /** 0 far out, 1 close in — drives detail streaming and retires the sky effects. */
@@ -1049,16 +1043,24 @@ onMounted(() => {
       }
     }
 
+    // Tiles still queued for a slot (two a frame) and slots still dissolving in
+    // are the picture changing on the clock rather than on the camera, so they
+    // buy their own frames. This has to come *before* the sync below reads
+    // `pump.running`, and that ordering is load-bearing: a wake(0) issued after
+    // the read only takes effect on the following tick, which then parks again
+    // at the end of it — so the loop alternated between waking and never
+    // syncing, and a view stopped at whatever tiles it had when the camera
+    // stopped (measured: 12 slots of a 21-tile view, backlog stuck at 9).
+    if (detail!.animating) wake(0)
     if (pump.running) {
       // streaming is a function of where the camera is, and the camera cannot
-      // move while the loop is parked; the settle timer inside DetailImagery is
-      // already armed and lands the sharp patch on its own
+      // move while the loop is parked
       const pov = globe!.pointOfView()
       if (povMoved(lastSync, pov)) {
         lastSync = { ...pov }
         movedAt = now
         syncDetail(pov)
-      }
+      } else if (detail!.animating) syncDetail(pov)
     }
     // deferred work waits for a still camera as well as an idle browser
     const still2 = now - movedAt >= STILL_MS

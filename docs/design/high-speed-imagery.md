@@ -1,7 +1,8 @@
 # High-speed imagery architecture
 
-Status: phase 1 in progress. Author: architect session. This document is the
-contract; implementations adapt naming to the codebase but not the shape.
+Status: phase 1 and phase 2 landed. Author: architect session. This document is
+the contract; implementations adapt naming to the codebase but not the shape.
+Deviations taken in phase 2 are recorded at the end.
 
 ## Diagnosis
 
@@ -97,6 +98,73 @@ Eliminate the composite-and-full-upload from the interactive path entirely:
   dissolve, not a pop.
 - The composite canvas, scratch canvas, feathering, and full-texture publish
   path are deleted once this lands.
+
+## Phase 2 as built — deviations, and why
+
+Shape kept: one immutable `texStorage2D` atlas of 8×8 slots of 512, one
+512-px `texSubImage2D` per tile, ≤ 2 slots a frame, no `generateMipmap` on the
+atlas, a per-frame index resolving target → parent → base map, and a 200 ms
+per-slot dissolve. Measured on the scripted route: 0 full-texture uploads and 0
+`generateMipmap` at interaction time, against 1 of each per gesture before;
+2.03 MB the most any frame uploads; draw calls unchanged at 7.
+
+Four things the contract did not say, and one it did:
+
+1. **A second, small atlas for the blurred tap.** The shader does not paint the
+   patch on; it divides a sharp tap by one blurred to the base map's own density
+   and multiplies the base map by the ratio, which is what keeps NASA's colour
+   under Sentinel's structure. That blurred tap used to be mip `z − 3` of the
+   composite, and "no mips on the atlas" removes it. Each tile is therefore held
+   twice: 512 sharp, and 64 reduced to `4096 / 2^z` texels (the base map's scale)
+   and blown back out to the slot. 1 MB of texture, one 64² upload per tile,
+   exact for `z ≥ 6`; below that the reduction bottoms out and the ratio
+   transfers up to two octaves the base map already has, bounded by the existing
+   `[0.55, 1.8]` clamp. A per-slot manual mip chain would have cost the same
+   memory and been less exact.
+2. **A clamped gutter, not an inset one.** Insetting the sample *rect* rescales
+   the tile by 511/512 and leaves neighbours a texel out of register at the join.
+   Clamping the in-tile coordinate to `[0.5, 511.5]` texels is exactly
+   CLAMP_TO_EDGE for a standalone tile: interior geometry untouched, only the
+   outer half texel held.
+3. **`fitLevel` replaces `patchPixelCap`.** The atlas is the same 4096² the
+   composite was capped at, so the cap survives — as "the finest level whose
+   grid and its parent fit 64 slots and the 16×8 index" rather than as a canvas
+   size. It is the only place resolution is given up.
+4. **The upload budget is a token bucket on the clock, not a per-call count.**
+   `update` is reached more than once per animation frame (the camera-change
+   handler and the render tick both go through it; a zoom, three times), and
+   counting calls spent two and three budgets in one frame — measured at 4.26 MB
+   and 6.39 MB before the bucket, exactly 2× and 3× the intent.
+5. **The exact-2× terminal upscale is not implemented.** Left out on measurement,
+   not on effort: `MIN_ALTITUDE_DETAIL` is a 100 km *horizon*, which is 196 m of
+   altitude and a 168 m frame — 0.22 m per screen pixel against level 12's
+   19.1 m, i.e. the terminal tile is already magnified 87×. One CPU octave of
+   Lanczos costs 4 slots per terminal tile (the atlas holds 16 instead of 64) and
+   ~40 ms of worker time each, and buys a visible difference only over the single
+   octave where the magnification is 2–4×. If the zoom floor is ever raised so
+   that the terminal range is where people actually look, this becomes worth
+   revisiting; the kernel is already there.
+
+Deleted with the composite, as the contract required: the composite canvas, the
+scratch canvas, feathering and `absentNeighbours`, `compositeCanvasSize` /
+`snapCompositeSize` / `patchPixelCap`, the view-scale Lanczos path and
+`lib/patchResample.ts` with it, `publish` / `recomposite` / `coversView` /
+`viewCoverage` / `movedEnough` / `PAN_MIN_COVER` / `PAN_PUBLISH_MS` /
+`TILE_COALESCE_MS` / `detailLod` / `bboxToUvRect`.
+
+Of commit 96954fe's slow-pan work, what survives is the classification itself —
+`viewMotion` integrated from the last view that counted as a move, against
+`MOTION_EPS` — on one caller: the prefetch ring, which may still only be spent on
+a still camera. Nothing is published any more, so nothing is deferred, and the
+escape hatch that bounded the deferral went with it.
+
+One pre-existing finding the instrument turned up, unrelated to this work:
+globe.gl re-derives `controls.minDistance` from the camera's own near plane on
+every zoom event, and `GlobeView` tracks `near` to the altitude — so a scripted
+jump straight to a low altitude is clamped to the floor the *previous* near
+plane implied, the point of view then does not change, `applyPov` early-returns
+on that, and the descent stalls. A wheel zoom, which moves less than 0.385× per
+notch, never trips it.
 
 ## Invariants to preserve
 

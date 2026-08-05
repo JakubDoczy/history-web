@@ -43,9 +43,10 @@ describe('shader hygiene', () => {
 })
 
 /**
- * The streamed-patch block, which is where the reported colour shifts came
- * from. These are text checks on the GLSL because there is no GL in a unit
- * test, and every one of them stands for a bug that shipped.
+ * The streamed-imagery block, which is where the reported colour shifts came
+ * from and where the tile atlas is resolved. These are text checks on the GLSL
+ * because there is no GL in a unit test, and every one of them stands for a bug
+ * that shipped or a rule the atlas depends on.
  */
 describe('detail patch shading', () => {
   const glsl = shaderBlocks(readFileSync('src/lib/globeSurface.ts', 'utf8')).join('\n')
@@ -59,8 +60,8 @@ describe('detail patch shading', () => {
   it('matches colour on luminance, so a patch cannot move a hue', () => {
     // one scalar scales all three channels together; a per-channel ratio
     // transferred the other sensor's chroma as well
-    expect(glsl).toMatch(/float k = clamp\(\(dot\(hi, luma\)/)
-    expect(glsl).toMatch(/detailGain = mix\(1\.0, k,/)
+    expect(glsl).toMatch(/float k = clamp\(\(dot\(hiT, luma\)/)
+    expect(glsl).toMatch(/detailGain = mix\(1\.0, stack, uDetailMix\)/)
   })
 
   it('applies the patch after the grade, not before it', () => {
@@ -85,26 +86,36 @@ describe('detail patch shading', () => {
     expect(Number(m![2])).toBeLessThanOrEqual(2)
   })
 
-  it('never point-samples the patch at mip 0 regardless of minification', () => {
-    // an explicit level 0 on a minified texture is an aliased sample, and
-    // dividing one by a blurred one turned highlights into dark smears
-    expect(glsl).not.toMatch(/textureLod\(uDetail, dc, 0\.0\)/)
-    expect(glsl).toMatch(/lodPix/)
+  it('never samples a mip level of the atlas', () => {
+    // A mip chain over 8x8 slots averages unrelated ground into every texel
+    // above level 0, so the atlas has none — which is also why the blurred tap
+    // is a second texture rather than a level of the first one.
+    expect(glsl).not.toMatch(/textureLod\(uDetail[,\s]/)
+    expect(glsl).toMatch(/atlasTap\(uDetailLow,/)
   })
 
-  it('never lets the blurred tap be sharper than the sharp one', () => {
-    expect(glsl).toMatch(/float lodLo = max\(uDetailLod, lodPix\)/)
+  it('holds every atlas sample inside its own slot by half a texel', () => {
+    // Without mips the only bleed left is bilinear reaching one texel past a
+    // slot's edge; clamping the in-tile coordinate is exactly CLAMP_TO_EDGE for
+    // a standalone tile, so the tile's own geometry is untouched.
+    expect(glsl).toMatch(/clamp\(inTile, gutter, 1\.0 - gutter\)/)
+    // 512 px slots and 64 px reductions: half a texel of each
+    expect(glsl).toContain('${f(0.5 / TILE_PX)}')
+    expect(glsl).toContain('${f(0.5 / LOW_PX)}')
   })
 
-  it('divides both taps by their own alpha', () => {
-    // a composite is transparent where no cached patch reached, and the mip
-    // chain averages that transparent black into the colour
-    expect(glsl).toMatch(/det\.rgb \/ max\(det\.a/)
-    expect(glsl).toMatch(/low\.rgb \/ max\(low\.a/)
+  it('falls through to the parent level where the target has not arrived', () => {
+    // Coarse but present beats sharp but absent: a pan shows soft imagery rather
+    // than a hole, and a tile arriving dissolves into the coarse level it is
+    // replacing rather than through the bare base map.
+    expect(glsl).toMatch(/float stack = mix\(mix\(1\.0, kP, onP\), k, onT\)/)
   })
 
-  it('softens the coverage edge instead of stepping at it', () => {
-    expect(glsl).toMatch(/float cover = smoothstep\(/)
+  it('reads the index with an integer fetch, never a filtered one', () => {
+    // A slot number bilinearly interpolated between two cells is a slot number
+    // that addresses neither of them.
+    expect(glsl).toMatch(/texelFetch\(uDetailIndex/)
+    expect(glsl).not.toMatch(/texture\(uDetailIndex/)
   })
 
   it('does not sample the second era map when nothing is crossfading', () => {

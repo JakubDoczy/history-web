@@ -1,13 +1,11 @@
-import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Texture } from 'three'
+import type { WebGLRenderer } from 'three'
 import {
   TILE_MEMORY_BUDGET,
   TILE_PX,
   TileCache,
   bboxOf,
-  childrenOf,
   maxLevel,
   parentOf,
-  placeOnCanvas,
   targetLevel,
   tileKey,
   tilePlan,
@@ -16,15 +14,17 @@ import {
   type TilePlan,
 } from './tilePyramid'
 import {
-  createPatchResampler,
-  upscaleFits,
-  type Crop,
-  type PatchResampler,
-} from './patchResample'
+  ATLAS_UPLOADS_PER_FRAME,
+  UPLOAD_WINDOW_MS,
+  TileAtlas,
+  buildIndex,
+  fitLevel,
+  type AtlasIndex,
+} from './tileAtlas'
 
 /**
  * High-resolution imagery for the region being looked at, streamed as a pyramid
- * of fixed WMS tiles and composited onto one canvas for the shader.
+ * of fixed WMS tiles and handed to the shader as a GPU-resident atlas.
  *
  * The first version stitched WMTS tiles and got the index arithmetic wrong; the
  * second asked for one arbitrary rectangle per settled view, which could not
@@ -33,12 +33,33 @@ import {
  * it could prefetch nothing, and it spent a full-resolution request on a view
  * the camera was about to leave.
  *
- * So the grid is back, but as `lib/tilePyramid.ts`: pure functions with their
- * own tests, aligned to the sphere, wrapping in longitude and clamping in
- * latitude in one tested place rather than in this file. What that buys is what
- * Maps has always had — canonical cacheable URLs, a prefetch ring, no refetch of
- * ground already paid for, and a coarser level resident under every pixel so a
- * gesture shows soft imagery instead of a hole.
+ * So the grid came back, as `lib/tilePyramid.ts`: pure functions with their own
+ * tests, aligned to the sphere, wrapping in longitude and clamping in latitude
+ * in one tested place rather than in this file. What that buys is what Maps has
+ * always had — canonical cacheable URLs, a prefetch ring, no refetch of ground
+ * already paid for, and a coarser level resident under every pixel so a gesture
+ * shows soft imagery instead of a hole.
+ *
+ * What has gone since is everything between the tiles and the screen. Those
+ * tiles used to be composited onto one canvas per view, and the canvas uploaded
+ * whole with `generateMipmap` — 111 ms per publish, which is why publishing had
+ * to be deferred through a gesture, coalesced across arrivals, feathered at the
+ * joins, re-sized on a ladder, and sharpened by a Lanczos pass at rest. Every
+ * one of those rules existed to make a full upload affordable. A tile now costs
+ * one 512² `texSubImage2D` into `lib/tileAtlas.ts` and the shader assembles the
+ * picture from an index, so the composite canvas, the scratch canvas, the
+ * feathering, the view-scale Lanczos, the publish path and the whole deferral
+ * grammar around them are gone rather than tuned.
+ *
+ * What survives from that era, and why:
+ *
+ *  - `detailWanted`'s hysteresis, the era gate and the pre-era zoom clamp: they
+ *    are about *whether* imagery belongs on screen, which no upload path
+ *    changes.
+ *  - the motion detector (`viewMotion` / `MOTION_EPS`), on one caller instead of
+ *    four: the prefetch ring is still spent only when the camera is still,
+ *    because during a gesture every byte belongs to ground that is on screen
+ *    now. Publishing no longer consults it — there is nothing left to defer.
  */
 
 /**
@@ -183,204 +204,17 @@ export function viewBbox(
   return { minLat, minLng, maxLat, maxLng }
 }
 
-/** The bbox expressed in the globe's UV space: u=(lng+180)/360, v=(lat+90)/180. */
-export const bboxToUvRect = (b: Bbox): [number, number, number, number] => [
-  (b.minLng + 180) / 360,
-  (b.minLat + 90) / 180,
-  (b.maxLng - b.minLng) / 360,
-  (b.maxLat - b.minLat) / 180,
-]
-
-/** Hard ceiling per axis. 4096 is the smallest max-texture-size in the field. */
-export const MAX_PATCH_PX = 4096
-
 /**
- * The composite canvas is one size, and never shrinks under a moving camera.
+ * There is no composite canvas any more, and with it went every constant that
+ * described one: the size ladder, the device pixel cap, the aspect-matched
+ * allocation, the two Lanczos bounds and the feather width.
  *
- * There used to be two: a half-scale one while the camera moved and a
- * full-scale one at rest, on the reasoning that a picture replaced within a
- * frame or two need not be sharp. The reasoning is sound and the behaviour is
- * not. A wheel zoom is a burst of small movements with pauses between them, and
- * the settle timer fires in every pause — so the canvas halved and doubled
- * several times a second, and each doubling is imagery visibly snapping back
- * into focus. That is the "replaced by lower and then back by higher" half of
- * the field report, and it is worse than the cost it was avoiding: the display
- * rule is that effective resolution must not go backward over ground the camera
- * is already looking at, and a canvas that shrinks breaks it everywhere at once.
- *
- * What is left of the saving is the part that costs nothing to look at: the
- * size ladder (COMPOSITE_SIZE_STEP) and the redraw dedupe mean one allocation
- * and one upload per distinct picture, rather than one per frame.
+ * They were all answers to the same question — how large a rectangle of pixels
+ * can this device afford to re-upload and re-mip on every arrival — and the
+ * atlas does not ask it. What is left of the ceiling is `ATLAS_SLOTS`, which
+ * bounds the same 4096² of texture as whole tiles rather than as a canvas, and
+ * `fitLevel`, which is where a dense screen now gives up resolution.
  */
-
-/**
- * Granularity of a composite canvas's size.
- *
- * The size a zoom asks for drifts by a pixel or two per frame — 1462, 1430,
- * 1417, 1413, 1406 — and every distinct size is a fresh GL allocation and a
- * fresh mip chain, on the main thread, several times a second. Snapping to a
- * ladder turns a whole zoom into one allocation.
- *
- * The canvas need not match the target rectangle's aspect for the geometry to
- * be right: `placeOnCanvas` and `bboxToUvRect` are both expressed in the target
- * bbox, so snapping the two axes independently changes only how square the
- * texels are, which the shader already accounts for through uDetailSize.
- */
-export const COMPOSITE_SIZE_STEP = 128
-
-/** Snap a composite axis up to the ladder, without passing the ceiling. */
-export const snapCompositeSize = (px: number, maxPx: number, step = COMPOSITE_SIZE_STEP): number =>
-  Math.max(step, Math.min(maxPx, Math.ceil(px / step) * step))
-
-/**
- * How large the composite canvas is — a function of the screen and the ceiling,
- * and of nothing else.
- *
- * It used to be derived from the target rectangle and from how much resolution
- * the cached imagery actually held, which is the economical answer and the wrong
- * one. Both inputs change continuously as the camera moves, so the canvas
- * changed size on almost every composite, and a texture whose image changes
- * shape cannot be re-uploaded into its existing GL storage — every one of those
- * is a fresh allocation, a fresh upload and a fresh mip chain on the main
- * thread. Measured across the scripted sequence: twelve reallocations for
- * fifteen composites, and 10–20 seconds of blocking time.
- *
- * Sizing to the screen instead gives exactly two sizes for a session — one for
- * motion, one for rest — so the texture is allocated twice and re-uploaded in
- * place thereafter. At wide zoom the canvas then holds more pixels than the
- * imagery in it contains, which costs memory and cannot cost quality: the
- * shader's mip level is derived from the texture's own width, so a canvas drawn
- * larger than its source is described honestly.
- *
- * The canvas need not share the target rectangle's aspect for the geometry to
- * be right — `placeOnCanvas` and `bboxToUvRect` are both expressed in the target
- * bbox — so both axes snap independently and only the texel shape changes.
- */
-export function compositeCanvasSize(
-  screenPx: number,
-  aspect: number,
-  maxPx: number,
-): { width: number; height: number } {
-  const height = snapCompositeSize(screenPx * PATCH_MARGIN, maxPx)
-  const width = snapCompositeSize(screenPx * PATCH_MARGIN * clamp(aspect, 0.35, 3), maxPx)
-  return { width, height }
-}
-
-/**
- * What this device should be asked to hold for one patch.
- *
- * The 4096 ceiling is a statement about GL limits, not about whether uploading
- * 33 MB of texture per composite is a reasonable thing to do to a phone. Two
- * things bound it in practice: the driver's own maximum, and how much memory
- * the device has to lose — a patch at the ceiling costs its own bytes plus a
- * third again for mips, and it is competing with an 8192-wide cloud mask and
- * three 4096 base maps.
- *
- * `deviceMemory` is coarse (and absent on Safari), so a very dense screen with
- * no memory hint is assumed to be a phone rather than a workstation: that is
- * the way round where guessing wrong is cheap — a slightly softer patch — while
- * the other way is a stall the user feels.
- */
-export function patchPixelCap(
-  opts: { maxTextureSize?: number; devicePixelRatio?: number; deviceMemoryGb?: number } = {},
-): number {
-  const limit = Math.min(opts.maxTextureSize ?? MAX_PATCH_PX, MAX_PATCH_PX)
-  const memory = opts.deviceMemoryGb ?? ((opts.devicePixelRatio ?? 1) >= 2.5 ? 4 : 8)
-  const budget = memory <= 2 ? 1536 : memory <= 4 ? 2048 : memory <= 8 ? 3072 : MAX_PATCH_PX
-  return Math.max(512, Math.min(limit, budget))
-}
-
-/**
- * Bounds on the Lanczos-3 upscale of a held patch (see DetailImagery.magnified).
- *
- * Measured in Chromium on the build machine, the compiled kernel runs about
- * 50 ms per megapixel of output, so two megapixels is a ~100 ms budget: one
- * dropped frame at the moment the camera stops moving, paid once per patch and
- * only while imagery is being magnified anyway. Above the cap the composite
- * falls back to bilinear, which is what it always did.
- */
-export const RESAMPLE_MAX_PX = 2_000_000
-/** Below this magnification, Lanczos-3 and bilinear are the same picture. */
-export const RESAMPLE_MIN_SCALE = 1.25
-
-
-/**
- * Has the view left the patch we hold (or asked for) by enough to be worth a
- * new request?
- *
- * Each axis is judged against its *own* span. Measuring an east–west move
- * against the latitude span looks equivalent and is not: the patch is ~3× wider
- * than it is tall at 70° N, and narrower than it is tall on a portrait phone at
- * the equator. The first case refetched on almost any pan; the second let the
- * view slide more than half a patch-width off the imagery without refetching.
- */
-export const movedEnough = (a: Bbox | undefined, b: Bbox) => {
-  if (!a) return true
-  const latSpan = b.maxLat - b.minLat
-  const lngSpan = b.maxLng - b.minLng
-  return (
-    Math.abs(a.minLat - b.minLat) > latSpan * 0.2 ||
-    Math.abs(a.minLng - b.minLng) > lngSpan * 0.2 ||
-    Math.abs(a.maxLat - a.minLat - latSpan) > latSpan * 0.1
-  )
-}
-
-/**
- * Does the rectangle already composited cover all of the one now wanted?
- *
- * Every publish is a full re-upload of the composite canvas *and* a full
- * `generateMipmap` over it — there is no partial mip regeneration in WebGL, so
- * the chain is rebuilt whatever fraction of the pixels changed. Measured over
- * one scripted zoom-in: sixteen uploads and eighteen chain rebuilds, 29 MB at a
- * 640-px viewport and ~130 MB at a desktop one.
- *
- * On a zoom-in every one of those was wasted. The composite is published with
- * its own rectangle (`uDetailRect`), and the shader maps it onto the globe by
- * that rectangle — so a composite of a *wider* box is still exactly where it
- * belongs over the ground, it simply extends past the frame. Redrawing it onto
- * the narrower box adds no ground at all; it only spends canvas pixels on less
- * of it, which is what the settle-time pass does anyway, sharper, 280 ms later.
- *
- * A pan or a zoom-out exposes ground the held rectangle does not have, so this
- * returns false and the fast redraw happens as before. A zoom-out therefore
- * still redraws about every 10% of span growth — 32 publishes across a
- * 90-frame gesture, measured. Compositing onto a rectangle half again as wide
- * as the frame cuts that to 9 and was tried and rejected: the same canvas over
- * more ground is a coarser picture of the ground already on screen, and "the
- * effective resolution must not go backward over ground the camera is already
- * looking at" is the rule the composite sizing exists to keep. Zoom-out was
- * also not what anyone reported; zoom-in was, and this fixes that outright.
- *
- * Plain comparisons are safe because no rectangle here wraps: `viewBbox` clamps
- * longitude into -180..180, and the composite is always cut to one of those.
- *
- * It also now answers a question it could only approximate before. Every
- * composite is drawn over a complete fallback level, so a rectangle that
- * contains the view has imagery on every pixel of it — which is what retired
- * the union-coverage scan that used to be the top row of a pan profile.
- */
-export const coversView = (held: Bbox | undefined, want: Bbox): held is Bbox =>
-  !!held &&
-  held.minLat <= want.minLat &&
-  held.maxLat >= want.maxLat &&
-  held.minLng <= want.minLng &&
-  held.maxLng >= want.maxLng
-
-/**
- * How much of the wanted rectangle the held one actually covers, 0 to 1.
- *
- * Degrees squared, not real area: both rectangles are the same view a moment
- * apart, so the cosine that would turn this into ground area divides out of the
- * ratio.
- */
-export const viewCoverage = (held: Bbox | undefined, want: Bbox): number => {
-  if (!held) return 0
-  const lat = Math.min(held.maxLat, want.maxLat) - Math.max(held.minLat, want.minLat)
-  const lng = Math.min(held.maxLng, want.maxLng) - Math.max(held.minLng, want.minLng)
-  if (lat <= 0 || lng <= 0) return 0
-  const area = (want.maxLat - want.minLat) * (want.maxLng - want.minLng)
-  return area > 0 ? Math.min(1, (lat * lng) / area) : 0
-}
 
 /**
  * How far the view has moved from a reference rectangle, as a fraction of its
@@ -425,70 +259,22 @@ export const viewMotion = (a: Bbox | undefined, b: Bbox): number => {
  * pan (tests/e2e/slowPan.e2e.mjs): at 0.0019 span/frame — 1.7 mouse px, just
  * under the old limit — 113 frames read as still, and the still-camera pipeline
  * ran inside the gesture 399 times: 523 megapixels of texture upload and
- * `generateMipmap`, and 526 Lanczos jobs. The same pan at 0.0078 span/frame
- * published once, and a flick three times. The user's report was exactly this
- * way round, and now all three publish once or less.
+ * `generateMipmap`, and 526 Lanczos jobs.
  *
  * Measured instead from the last view that *counted* as a move, the same 0.002
  * is a displacement rather than a speed: any drift crossing it inside SETTLE_MS
  * re-arms the settle, so the whole crawl is one gesture. A decaying motion still
  * converges — orbit damping leaves a finite distance to travel, so the crossings
  * thin out and stop — and a parked camera never crosses at all.
+ *
+ * The pipeline that made this urgent is gone: nothing is published any more, so
+ * nothing has to be deferred. What is still measured against it is the prefetch
+ * ring, which may only be spent on a still camera — during a gesture every byte
+ * belongs to ground that is on screen now. That is the whole of what commit
+ * 96954fe's semantics still govern, and it is governed by the same integrating
+ * form for the same reason: a crawl is a gesture, not a series of rests.
  */
 export const MOTION_EPS = 0.002
-
-/**
- * The escape hatch on motion-deferred publishing: how little of the view the
- * published rectangle may still cover, and how often the hatch may fire.
- *
- * Nothing is published while the camera is moving. A publish is a full texture
- * upload plus a full `generateMipmap` — 111 ms measured at a desktop composite
- * size — and during a drag it buys only the strip of ground that has just come
- * into view, for one frame, before the next drag frame moves on. Eight of them
- * across a 2.5 s pan is the staggered motion that was reported, and the right
- * answer is to spend none of them: the patch already on the GPU is mapped to
- * its own ground rectangle by the shader, so it pans with the globe for free
- * and stays exactly where it belongs. What the user gives up is imagery on the
- * newly exposed edge until the camera rests, which is the trade that was asked
- * for.
- *
- * The hatch exists so a long drag cannot leave the view with no imagery at all.
- * A third is about where the held rectangle has slid off far enough for the
- * basemap to be most of what is on screen; below that, one composite is worth
- * one hitch. The interval then bounds a flick, which can cross the threshold
- * several times in a second.
- */
-export const PAN_MIN_COVER = 0.35
-export const PAN_PUBLISH_MS = 800
-
-/**
- * There is no "how much of the view must have imagery" threshold any more, and
- * its absence is the point.
- *
- * There used to be one (`REST_MIN_COVER`, 0.99), tested against the *union* of
- * the cached rectangles, because a composite cut to a rectangle it did not fill
- * left ground with no imagery on it and nothing else could tell. Computing that
- * union meant sorting the cache, ranking each patch by what it uniquely
- * contributed and cutting the survivors against each other on both axes: the
- * most expensive thing in this file per frame, and the top row of a pan profile.
- *
- * The fallback level makes the question vacuous. Every composite draws a
- * complete cover of its own rectangle before anything sharper goes on top, so
- * "does the composite reach this corner" is answered by comparing two
- * rectangles — `coversView` — and the union scan, the plan, the draw ranking and
- * the patch cache that fed them all go with it.
- */
-
-/**
- * How wide the crossfade between two patches inside a composite is, as a
- * fraction of the smaller side of the patch being laid down.
- *
- * A fraction rather than a fixed count so it reads the same at every zoom, and
- * clamped at both ends in DetailImagery.feathered: below about four pixels a
- * ramp is a hard edge with extra steps, and above about sixty it starts eating
- * into ground the patch is there to show.
- */
-export const FEATHER_FRACTION = 0.04
 
 /**
  * Imagery is fetched in two stages.
@@ -573,34 +359,16 @@ export function wmsUrl(src: ImagerySource, b: Bbox, width: number, height: numbe
 export const BASE_TEXTURE_PX_PER_DEG = 4096 / 360
 
 /**
- * Mip level of the patch whose blur matches the base map's own sharpness.
+ * The blurred tap the detail ratio is divided by used to be a *mip level* of the
+ * composite — `detailLod`, derived from the texture's own width so that a canvas
+ * drawn at three times its source's density asked for a level 1.6 higher.
  *
- * Dividing the patch by this blurred copy isolates exactly the detail the base
- * map lacks; multiplying that back onto the base map's luminance transfers
- * Sentinel-2's structure while keeping NASA's palette.
- *
- * `imageWidthPx` is the width of the *texture handed to the shader*, not of the
- * imagery inside it. That distinction is the whole point: a mip index addresses
- * a texture's own grid, so a composite canvas drawn at three times its source's
- * density needs a level 1.6 higher to reach the same ground scale, however
- * little real detail it contains. Deriving it from the source's size instead
- * left the blurred tap sharper than the base map, and the patch then fought the
- * base map for a frequency band they both already had.
- *
- * The floor is 0, not 1. A patch no finer than the base map has nothing to
- * contribute, and at level 0 the two taps are the same sample, the ratio is
- * exactly 1, and the patch quietly becomes a no-op — which is the honest
- * answer. Forcing it to 1 instead handed the shader a blurred tap *coarser*
- * than the base map, and the difference between them was transferred twice.
+ * The atlas has no mip chain to index into (mips bleed across slots), so the
+ * blurred tap is a real reduction of each tile to the base map's own density,
+ * held in a second small atlas. `lowTapPx` in lib/tileAtlas.ts is the same
+ * arithmetic expressed as texels rather than as an octave count, and it is exact
+ * rather than clamped into a 0..7 range.
  */
-export const detailLod = (
-  imageWidthPx: number,
-  lngSpanDeg: number,
-  basePxPerDeg = BASE_TEXTURE_PX_PER_DEG,
-): number => {
-  const ratio = imageWidthPx / Math.max(lngSpanDeg, 1e-6) / basePxPerDeg
-  return clamp(Math.log2(Math.max(ratio, 1)), 0, 7)
-}
 
 /**
  * Ground degrees covered by one device pixel at the centre of the view.
@@ -720,28 +488,27 @@ export const SETTLE_MS = 280
 export const TILE_INFLIGHT = 6
 
 /**
- * How long an arriving tile waits for its neighbours before the composite is
- * redrawn.
+ * Arrivals no longer need collecting.
  *
- * The old pipeline saw one arrival per settled view, so compositing on each one
- * was compositing once. A view now wants tens of tiles and they land within
- * milliseconds of each other, and every composite is a full canvas upload plus
- * a full `generateMipmap` — 48 of them across one scripted pan and zoom against
- * the mock service, where the number of distinct pictures involved was six.
- *
- * One frame of delay collects a burst into one upload. It has to be a timer and
- * not "composite on the next update": the render loop parks when nothing is
- * moving, and it is the publish that wakes it.
+ * `TILE_COALESCE_MS` existed because a view wants tens of tiles, they land
+ * within milliseconds of each other, and every one of them used to trigger a
+ * whole-canvas upload and a `generateMipmap` — 48 of those across one scripted
+ * pan and zoom, for six distinct pictures. A tile now costs one 512 texSubImage,
+ * so a burst of sixteen is sixteen cheap uploads spread two to a frame rather
+ * than one expensive upload that had to be timed.
  */
-export const TILE_COALESCE_MS = 16
-
 
 export interface DetailImageryOptions {
-  maxPx?: number
-  /** Where the Lanczos magnification runs; a worker by default. */
-  resampler?: PatchResampler
+  /**
+   * Where the atlas lives. Without one the class is pure bookkeeping — slots are
+   * still allocated and the index still built — which is what lets the whole
+   * scheduler and fallback story be tested away from a GPU.
+   */
+  renderer?: WebGLRenderer
   /** Bytes of decoded tiles to hold. See TILE_MEMORY_BUDGET. */
   tileBudget?: number
+  /** Slots in the atlas; the tests use a small one to reach eviction. */
+  atlasSlots?: number
 }
 
 /** What the live camera wants: recomputed from scratch on every frame. */
@@ -750,143 +517,72 @@ interface Wanted {
   plan: TilePlan
 }
 
-/** A cached tile with its place on the composite canvas already worked out. */
-interface Drawn {
-  tile: Tile
-  image: CanvasImageSource
-  x: number
-  y: number
-  w: number
-  h: number
-}
-
-/** Which of a tile's four edges are ramped out; see DetailImagery.feathered. */
-interface Inset {
-  left: boolean
-  right: boolean
-  top: boolean
-  bottom: boolean
-}
-
-/** The fallback level's own joins: none of them, ever. See recomposite. */
-const NO_INSET: Inset = { left: false, right: false, top: false, bottom: false }
-
-/**
- * The edges of a tile that face ground its own level does not have.
- *
- * Only these are ramped, and that is the whole feathering rule now. An edge with
- * a sibling drawn beside it is a butt joint between two images of the same
- * resolution, aligned to the same grid — invisible, where a ramp would show as a
- * band of the coarser level bleeding up through the join. An edge with nothing
- * beside it is a step down a level, which is exactly what a crossfade is for.
- *
- * The neighbours are keyed without a source because the set they are tested
- * against is built the same way; one composite is one source (see
- * sourceForLevel), so the label carries no information here.
- */
-const absentNeighbours = (t: Tile, present: Set<string>): Inset => ({
-  left: !present.has(tileKey({ z: t.z, x: t.x - 1, y: t.y }, '')),
-  right: !present.has(tileKey({ z: t.z, x: t.x + 1, y: t.y }, '')),
-  top: !present.has(tileKey({ z: t.z, x: t.x, y: t.y - 1 }, '')),
-  bottom: !present.has(tileKey({ z: t.z, x: t.x, y: t.y + 1 }, '')),
-})
-
 export class DetailImagery {
-  texture?: Texture
-  rect: [number, number, number, number] = [0, 0, 1, 1]
+  /** The atlas the shader samples, and the index that addresses it. */
+  readonly atlas: TileAtlas
+  index?: AtlasIndex
   mix = 0
   status: 'idle' | 'loading' | 'ready' | 'unavailable' = 'idle'
   sourceLabel = '—'
   attribution = ''
-  /** Mip level at which the patch matches the base map's blur. */
-  lod = 4
   /** Ground resolution of the imagery on screen, in metres per pixel. */
   groundRes = 0
   onReady?: () => void
 
-  private maxPx: number
   /**
    * Bumped when everything in flight stops being relevant — the camera left the
    * streaming range, imagery was switched off, the component went away.
    *
    * It never marks a request as merely superseded, and that is deliberate. A
    * late tile is not wrong, only coarse or off to one side: it covers the ground
-   * it covers and the composite draws it exactly where it belongs, or does not
-   * draw it at all. Arrival order decides nothing; geometry does. (Before that
-   * rule, a zoom threw away everything it fetched — 31 megapixels across a
-   * fourteen-second zoom to put one patch on screen.)
+   * it covers, and the index either addresses it or does not. Arrival order
+   * decides nothing; geometry does. (Before that rule, a zoom threw away
+   * everything it fetched — 31 megapixels across a fourteen-second zoom to put
+   * one patch on screen.)
    */
   private generation = 0
+  /** Re-pumps once the camera has actually stopped, so the ring gets spent. */
   private settle?: ReturnType<typeof setTimeout>
-  /** …and the one that collects a burst of arrivals into one composite. */
-  private due?: ReturnType<typeof setTimeout>
   private strikes = 0
   private sharpStrikes = 0
   private sharpDisabled = false
   private shown = false
   private disabled = false
-  /** Provenance of the texture we hold, kept across a hide so it can be restored. */
-  private heldLabel = ''
-  private heldAttribution = ''
   /** Decoded tiles, bounded by bytes — see lib/tilePyramid.ts. */
   private tiles: TileCache<CanvasImageSource>
   private tileBudget: number
   /** Tile keys on the wire, and the ones their source has already refused. */
   private inflight = new Set<string>()
   private refused = new Set<string>()
-  /** The wanted set the scheduler is spending on and the composite is drawing. */
+  /** The wanted set the scheduler is spending on and the index is built from. */
   private want?: Wanted
-  /** The rectangle the texture we currently hold covers. */
-  private composited?: Bbox
-  /**
-   * …and whether it was drawn over a *complete* fallback level.
-   *
-   * This is what lets a rectangle comparison stand in for the union-coverage
-   * scan that used to run every frame: a composite with every fallback tile
-   * under it has imagery on every one of its pixels, so containing the view is
-   * the same statement as covering it. Without that, it is not.
-   */
-  private solid = false
-  /** The rectangle of the last composite; what `movedEnough` is measured against. */
-  private current?: Bbox
-  private canvas?: HTMLCanvasElement
-  /** …and its context, held so a composite is not a fresh `getContext` call. */
-  private ctx?: CanvasRenderingContext2D
-  /** Lanczos upscales, keyed by the image they came from; dies with the tile. */
-  private upscaled = new WeakMap<
-    CanvasImageSource & object,
-    { canvas: CanvasImageSource; w: number; h: number; crop: Crop }
-  >()
-  /** Tiles whose upscale is being computed elsewhere; one job each. */
-  private upscaling = new Set<CanvasImageSource>()
-  private resampler: PatchResampler
-  /** What the last composite actually drew; an identical one is not redrawn. */
-  private lastDraw = ''
-  /** Pixel size of the image last handed to the shader; see publish(). */
-  private published?: { w: number; h: number }
-  /** When the shader was last handed pixels; see PAN_PUBLISH_MS. */
-  private publishedAt = 0
   /** The view the camera is judged to have moved *from*, and when; see MOTION_EPS. */
   private restingAt?: Bbox
   private movedAt = 0
-  /** When detail last became wanted; the deadline for the first picture. */
-  private wantedAt = 0
-  /** The screen the composite canvas is cut for; see compositeCanvasSize. */
-  private viewport = { px: 900, aspect: 1 }
-  /** Bumped when a Lanczos upscale lands, so the same plan is drawn again. */
-  private upscaleEpoch = 0
+  /** Wanted tiles that are decoded but not yet in a slot; see `animating`. */
+  private backlog = 0
+  /** The upload budget, and when it was last topped up. See UPLOAD_WINDOW_MS. */
+  private credit = ATLAS_UPLOADS_PER_FRAME
+  private creditAt = 0
   /** Attribution text by source label, so the panel can describe what is shown. */
   private attributions = new Map<string, string>()
-  /** Reused scratch canvas for feathering a tile into the composite. */
-  private scratch?: HTMLCanvasElement
-  /** …and its context, on the same terms as the composite's. */
-  private scratchCtx?: CanvasRenderingContext2D
 
   constructor(opts: DetailImageryOptions = {}) {
-    this.maxPx = opts.maxPx ?? MAX_PATCH_PX
     this.tileBudget = opts.tileBudget ?? TILE_MEMORY_BUDGET
-    this.tiles = new TileCache(this.tileBudget, (img) => this.forget(img))
-    this.resampler = opts.resampler ?? createPatchResampler()
+    this.tiles = new TileCache(this.tileBudget, (img) => this.release(img))
+    this.atlas = new TileAtlas(opts.renderer, opts.atlasSlots)
+  }
+
+  /**
+   * Is there work left that the clock, rather than the camera, will finish?
+   *
+   * Two kinds: tiles decoded but not yet uploaded (the budget spreads them over
+   * frames), and slots still dissolving in. Both change the picture without
+   * anyone touching the globe, so the render pump has to keep drawing — the same
+   * contract the cloud drift and the map fades are under.
+   */
+  get animating(): boolean {
+    return this.backlog > 0 || !!this.index?.fading
   }
 
   update(
@@ -906,7 +602,6 @@ export class DetailImagery {
       // tiles already on the wire must not land and adopt themselves onto a view
       // nobody is looking at any more
       this.cancelQueued()
-      this.wantedAt = 0
       if (this.shown) {
         this.shown = false
         this.mix = 0
@@ -919,25 +614,19 @@ export class DetailImagery {
 
     // Three numbers describe everything the pipeline does with this frame: the
     // ground in view, the pyramid level that matches the screen's density, and
-    // the tiles that follow from the two. All pure, all in lib/tilePyramid.ts.
+    // the tiles that follow from the two. All pure, all in lib/tilePyramid.ts
+    // and lib/tileAtlas.ts.
     const target = viewBbox(lat, lng, altitude, aspect, PATCH_MARGIN, fovDeg)
-    const z = targetLevel(baseTexelsPerScreenPx(altitude, screenPx, fovDeg), Z_MAX)
-    // the composite canvas is cut to the screen, not to the tiles
-    this.viewport = { px: screenPx, aspect }
+    // `fitLevel` is the only place resolution is ever given up, and it is the
+    // atlas's 64 slots doing the giving — the same 4096² ceiling `patchPixelCap`
+    // used to enforce on a canvas.
+    const z = fitLevel(target, targetLevel(baseTexelsPerScreenPx(altitude, screenPx, fovDeg), Z_MAX))
     this.want = { target, plan: tilePlan(target, z) }
 
-    if (this.wantedAt === 0) this.wantedAt = Date.now()
-
-    // Is the camera moving *at all*? Recorded before every early return below,
-    // because the answer has to be about the camera and not about whether the
-    // view has moved far enough to be worth anything.
-    //
-    // Measured from where the camera last counted as having moved, never from
-    // the previous frame: a gesture is a displacement over a window of time, and
-    // a per-frame comparison can only see a speed. Creeping east at a tenth of
-    // the threshold per frame trips this every tenth frame — ten times inside
-    // one settle — so the crawl is one gesture, publishes defer, and the ring
-    // waits. See MOTION_EPS for what the per-frame form cost.
+    // Is the camera moving *at all*? Measured from where it last counted as
+    // having moved, never from the previous frame: a gesture is a displacement
+    // over a window of time, and a per-frame comparison can only see a speed.
+    // See MOTION_EPS. The one thing that still reads it is the prefetch ring.
     if (viewMotion(this.restingAt, target) > MOTION_EPS) {
       this.movedAt = Date.now()
       this.restingAt = target
@@ -946,75 +635,22 @@ export class DetailImagery {
     // Asking for a tile is idempotent — the cache and the in-flight set dedupe
     // by key — so there is no "has the view moved enough to be worth a request"
     // question left to get wrong, and no request to cancel when it moves again.
-    // That whole class of bug (a strip of base map along an edge that no later
-    // frame would ever fill, because nothing had moved *enough*) is gone with it.
     this.pin()
     this.pump()
-
-    // The imagery we already hold may still cover the view — show it again
-    // rather than redrawing the same pixels onto a texture that is re-uploaded
-    // in full, mip chain and all, every time it is published.
-    //
-    // Against what is *on screen*, not against the padded rectangle we would
-    // request. Both are grown by PATCH_MARGIN, so asking whether the held one
-    // contains the wanted one is asking whether the camera has moved by exactly
-    // zero — the test failed on a hair's drift and sent every frame of a slow
-    // move down the expensive path. The margin exists to buy ground ahead of
-    // the camera; spending it is what it is for. What the shader needs is
-    // imagery under every screen pixel, which is this question, and the answer
-    // now holds for an eighth of a span of travel instead of for nothing.
-    const onScreen = viewBbox(lat, lng, altitude, aspect, 1, fovDeg)
-    if (
-      this.texture &&
-      this.solid &&
-      !movedEnough(this.current, target) &&
-      coversView(this.composited, onScreen)
-    ) {
-      if (!this.shown || this.mix !== 1) {
-        this.shown = true
-        this.mix = 1
-        this.status = 'ready'
-        // the label belongs to the texture we are re-showing, not to whichever
-        // source happens to be the fallback — hiding the patch cleared it
-        this.sourceLabel = this.heldLabel || BASE_SOURCE.label
-        this.attribution = this.heldAttribution
-        this.onReady?.()
-      }
-      return
-    }
-
-    // Everything below this line runs *while the camera is moving*. So nothing
-    // here publishes: see PAN_MIN_COVER for why a composite mid-gesture is a
-    // hitch the user feels and imagery they do not.
-    //
-    // The one exception is a drag long enough to leave the held rectangle behind
-    // altogether. That is a mid-drag settle without the expensive half: redraw
-    // what we hold onto the view that has outrun it, but no Lanczos — the
-    // sharpening pass is what waits for rest.
-    if (
-      // nothing published yet is not a stale view, it is a cold start: the first
-      // picture belongs to the settle path like any other
-      this.composited &&
-      !coversView(this.composited, target) &&
-      viewCoverage(this.composited, target) < PAN_MIN_COVER &&
-      Date.now() - this.publishedAt >= PAN_PUBLISH_MS
-    ) {
-      this.recomposite()
-    }
-    clearTimeout(this.settle)
+    const now = Date.now()
+    this.absorb(now)
+    this.reindex(now)
     this.arm()
   }
 
   /**
    * Is the camera at rest?
    *
-   * `this.settle === undefined` looks like it answers this and does not: the
-   * timer is only armed once the fast path above has missed, so through the
-   * first frames of a drag it reads "still" while the camera is plainly moving.
-   * `movedAt` is written on every frame the view changes at all, ahead of every
-   * early return, so it has no such hole.
+   * Public because it is a fact about the pipeline worth asserting from outside
+   * it: this is the one classification commit 96954fe was about, and the ring —
+   * the only thing left that reads it — is hard to observe directly.
    */
-  private get still(): boolean {
+  get still(): boolean {
     return Date.now() - this.movedAt >= SETTLE_MS
   }
 
@@ -1026,11 +662,11 @@ export class DetailImagery {
    * is still wanted is a fetch loop a still camera never leaves: the tile is
    * fetched, trimmed for want of budget, wanted again on the very next frame,
    * fetched again. Measured against the mock service before this line existed —
-   * 907 requests for 140 distinct tiles across one scripted pan and zoom, the
-   * exact opposite of what a fixed grid is for.
+   * 907 requests for 140 distinct tiles across one scripted pan and zoom.
    *
-   * Pinning is also the cache's only notion of recency (see TileCache), so this
-   * doubles as "these are the tiles in use now".
+   * The atlas is pinned on the narrower set: only the two levels the index
+   * addresses. A ring tile is worth holding *decoded* against the pan that is
+   * about to want it, and worth no slot until that pan happens.
    */
   private pin() {
     const w = this.want
@@ -1043,6 +679,14 @@ export class DetailImagery {
       keys.add(tileKey(parentOf(t), label))
     }
     this.tiles.pin(keys)
+    this.atlas.slots.pin(this.indexed(label))
+  }
+
+  /** The tiles the index addresses this frame — fallback first, then the level. */
+  private indexed(label: string): string[] {
+    const w = this.want
+    if (!w) return []
+    return [...w.plan.fallback, ...w.plan.level].map((t) => tileKey(t, label))
   }
 
   /**
@@ -1076,16 +720,16 @@ export class DetailImagery {
   /**
    * One tile, at the pyramid's own size, through the same WMS path as before.
    *
-   * The URL is now canonical — the same ground at the same level is the same
-   * string forever — so the browser's HTTP cache and the service's both start
-   * hitting, which an arbitrary bbox per view never allowed.
+   * The URL is canonical — the same ground at the same level is the same string
+   * forever — so the browser's HTTP cache and the service's both hit, which an
+   * arbitrary bbox per view never allowed.
    */
   private request(tile: Tile, key: string, src: ImagerySource) {
     const gen = this.generation
     this.inflight.add(key)
     // Only while there is nothing to look at. The prefetch ring goes out *after*
-    // a composite is published and would otherwise leave the panel reading
-    // "loading" over a picture that is finished.
+    // the view is covered and would otherwise leave the panel reading "loading"
+    // over a picture that is finished.
     if (!this.shown) this.status = 'loading'
     const img = new Image()
     img.crossOrigin = 'anonymous'
@@ -1096,9 +740,8 @@ export class DetailImagery {
     img.onload = () => {
       // Decoding to an ImageBitmap moves the pixel work off the main thread and
       // gives eviction something it can free on demand rather than when the
-      // collector feels like it. A platform without it keeps the element the
-      // loader already decoded, which draws identically and only costs a
-      // re-decode per composite — the behaviour this file always had.
+      // collector feels like it. It is also what makes the atlas upload cheap:
+      // an ImageBitmap is already in the form the driver wants.
       if (typeof createImageBitmap === 'function') {
         createImageBitmap(img).then(arrived, () => arrived(img))
       } else arrived(img)
@@ -1136,17 +779,10 @@ export class DetailImagery {
    * Take up an arriving tile.
    *
    * It always enters the cache, whatever has happened since it was asked for —
-   * see `generation`. What it does *not* do is reach the screen while the camera
-   * is moving: a publish is a full texture upload plus a full `generateMipmap`
-   * (111 ms measured at a desktop composite size), bought to show one frame of a
-   * picture the next frame replaces. Measured before this rule, a zoom spent
-   * seven to fourteen of them across three seconds.
-   *
-   * Nothing is lost by waiting: the tile is in the cache, the settle's own
-   * recomposite reads the cache, and the settle always comes — `arm` is
-   * re-armed by motion and converges the moment the camera stops. But an arrival
-   * can also land *after* the last settle has fired, so it arms one if there is
-   * none, which costs nothing when a settle is already due.
+   * see `generation`. What it no longer does is wait: there is no publish to
+   * defer, no burst to coalesce and no settle to arm, because reaching the
+   * screen now costs one 512 upload out of a per-frame budget. All this has to
+   * do is mark the pipeline as having work, which is what wakes the render loop.
    */
   private adopt(key: string, image: CanvasImageSource, src: ImagerySource, gen: number) {
     this.tiles.set(key, image)
@@ -1154,459 +790,125 @@ export class DetailImagery {
     this.strikes = 0
     if (gen !== this.generation) return
     this.pump() // a slot came free
-    if (!this.still) {
-      if (this.settle === undefined) this.arm()
-      return
-    }
-    if (this.due !== undefined) return
-    this.due = setTimeout(() => {
-      this.due = undefined
-      this.recomposite(true)
-    }, TILE_COALESCE_MS)
+    this.backlog = Math.max(this.backlog, 1)
+    this.onReady?.()
   }
 
   /**
-   * Arm the settle timer, and keep re-arming it until the camera is actually
-   * still.
+   * Keep asking, until the camera has actually stopped.
    *
-   * `SETTLE_MS` after the last significant move is not the same thing as a still
-   * camera, and the difference was the whole of the pan problem: an ordinary
-   * drag tripped the old re-arm about every 300 ms, and 300 is more than 280, so
-   * the timer elapsed *between the trips of a continuous gesture* and ran the
-   * rest pipeline — composite, publish, upload, mip chain, Lanczos — eight times
-   * across one 2.5 s pan.
-   *
-   * So the timer asks a second question when it fires: has the view been
-   * genuinely motionless for `SETTLE_MS`? `movedAt` is written on every frame
-   * the view moves at all, so this converges the moment the camera does.
+   * The only thing left that waits for stillness is the prefetch ring, and the
+   * render loop cannot be relied on to ask for it: `update` runs on frames the
+   * camera moves, and by definition the ring is wanted on the first frame it
+   * does not. So one timer, re-armed while the view is still drifting, and a
+   * `pump` when it is not.
    */
   private arm() {
-    const now = Date.now()
-    const left = SETTLE_MS - (now - this.movedAt)
-    // A camera that never stops still has to get a *first* picture. Auto-rotate
-    // is what makes this reachable: the view drifts by more than MOTION_EPS
-    // every frame forever, so the wait for stillness would never end — and with
-    // nothing ever published there is no rectangle for the escape hatch to find
-    // having slid away either, so the deferral would be permanent. So until
-    // something is on the GPU the wait is one SETTLE_MS of wall clock rather
-    // than of stillness; after that the hatch bounds staleness at PAN_PUBLISH_MS.
-    const overdue = this.publishedAt === 0 && now - this.wantedAt >= SETTLE_MS
-    if (left > 0 && !overdue) {
-      this.settle = setTimeout(() => this.arm(), left)
-      return
-    }
-    this.settle = undefined
-    if (!this.want) return
-    // The camera has stopped. Now — and only now — is the prefetch ring worth
-    // bandwidth, and what we hold worth magnifying properly: during the move the
-    // next frame would have replaced the result anyway.
-    this.pump()
-    this.recomposite(true)
-  }
-
-  /** A canvas, or undefined where there is no DOM (tests, SSR). */
-  private surface(width: number, height: number) {
-    if (typeof document === 'undefined') return undefined
-    const c = this.canvas ?? document.createElement('canvas')
-    this.canvas = c
-    // Only when it really changed. Assigning `width`/`height` at all reallocates
-    // the backing store and resets every piece of context state, *including*
-    // when the value assigned is the one already there — the spec says so, and
-    // the profiler agreed: across one scripted pan this line and the
-    // `getContext` after it were seconds of main thread, for a canvas whose size
-    // is deliberately fixed for the session (see compositeCanvasSize). The
-    // composite clears the canvas itself, so nothing here relied on the reset.
-    if (c.width !== width || c.height !== height) {
-      c.width = width
-      c.height = height
-      this.ctx = undefined // the reset drops the smoothing flag set below
-    }
-    const ctx = this.ctx ?? c.getContext('2d') ?? undefined
-    this.ctx = ctx
-    if (ctx) {
-      // Bilinear, explicitly. Skia's default for a magnifying drawImage is a
-      // high-quality resample, and the composite magnifies whenever a fallback
-      // tile is drawn at its children's scale — which is every composite. That
-      // one flag is the difference between a composite costing tens of
-      // milliseconds and costing seconds. Nothing is lost: this draw is the
-      // deliberately cheap one, and the sharp version arrives from the Lanczos
-      // resampler already at its final size.
-      ctx.imageSmoothingQuality = 'low'
-    }
-    return ctx ? { canvas: c, ctx } : undefined
+    if (this.settle !== undefined) return
+    this.settle = setTimeout(() => {
+      this.settle = undefined
+      if (this.still) this.pump()
+      else this.arm()
+    }, SETTLE_MS)
   }
 
   /**
-   * Natural pixel size of a cached image, or undefined where it cannot be read.
+   * Move decoded tiles into atlas slots, at most `ATLAS_UPLOADS_PER_FRAME` a
+   * frame.
    *
-   * Deliberately tolerant: the cache holds whatever `CanvasImageSource` the
-   * platform gave us, and a stub in a test has none of these properties.
+   * Derived from the wanted set rather than from an arrival queue, and that is
+   * deliberate: a slot can also be lost to eviction while its tile is still in
+   * the decoded cache, and "wanted, decoded, no slot" is the one condition that
+   * covers both cases. Fallback level first, then the target level centre
+   * outward, which is the order the plan already comes in.
    */
-  private static naturalSize(img: CanvasImageSource): { w: number; h: number } | undefined {
-    const src = img as { naturalWidth?: number; naturalHeight?: number; width?: number; height?: number }
-    const w = src.naturalWidth ?? (typeof src.width === 'number' ? src.width : 0)
-    const h = src.naturalHeight ?? (typeof src.height === 'number' ? src.height : 0)
-    return w > 0 && h > 0 ? { w, h } : undefined
-  }
-
-  /**
-   * Draw one tile, resampling it properly where it has to be magnified.
-   *
-   * `drawImage` scaling up is a tent filter, and so is the GPU's magnification
-   * of whatever texture we hand it. Lanczos-3 (see lib/lanczos.ts) reconstructs
-   * with a windowed sinc instead, which keeps edges where they were. In the
-   * pyramid the magnifying case is exactly one: the fallback level, drawn at its
-   * children's scale — and the terminal tiles past Z_MAX, drawn at whatever the
-   * camera asks. It costs CPU, so it is spent only where it shows:
-   *
-   *  - only above RESAMPLE_MIN_SCALE, because below about a quarter again the
-   *    two filters are indistinguishable
-   *  - only on the part of the tile that lands on the canvas
-   *  - once per (tile, size), cached on the tile, because a drag recomposites
-   *    repeatedly against the same imagery
-   *  - and *never in this call*: the filter runs elsewhere (see
-   *    lib/patchResample.ts) and this draw takes the bilinear stretch until it
-   *    lands, so a composite costs a blit whether or not it is sharp yet
-   */
-  private drawTile(
-    ctx: CanvasRenderingContext2D,
-    d: Drawn,
-    canvasW: number,
-    canvasH: number,
-    inset: Inset,
-    sharpen: boolean,
-  ) {
-    const { x, y, w, h } = d
-    const up = this.magnified(d.image, x, y, w, h, canvasW, canvasH, sharpen)
-    const draw = (c: CanvasRenderingContext2D, dx: number, dy: number) => {
-      if (up) c.drawImage(up.canvas, up.x + dx, up.y + dy, up.w, up.h)
-      else c.drawImage(d.image, x + dx, y + dy, w, h)
-    }
-    const soft = this.feathered(x, y, w, h, canvasW, canvasH, inset, draw)
-    if (soft) ctx.drawImage(soft.canvas, soft.x, soft.y)
-    else draw(ctx, 0, 0)
-  }
-
-  /**
-   * A tile with the named edges ramped out, ready to be laid over whatever is
-   * already on the canvas.
-   *
-   * Ramping the alpha out over the last few pixels makes a join a crossfade
-   * between two resolutions instead of a hard rectangular line between them.
-   * Which edges deserve it is the caller's question (see absentNeighbours); this
-   * only refuses the ones that fall on the canvas boundary, because an edge
-   * lying there is the composite's own outer edge and the shader already
-   * feathers that against the base map. Ramping it twice would pull the imagery
-   * back from the edge of the rectangle it is supposed to fill.
-   */
-  private feathered(
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    canvasW: number,
-    canvasH: number,
-    inset: Inset,
-    draw: (c: CanvasRenderingContext2D, dx: number, dy: number) => void,
-  ): { canvas: HTMLCanvasElement; x: number; y: number } | undefined {
-    if (typeof document === 'undefined') return undefined
-    const edge = {
-      left: inset.left && x > 0.5,
-      right: inset.right && x + w < canvasW - 0.5,
-      top: inset.top && y > 0.5,
-      bottom: inset.bottom && y + h < canvasH - 0.5,
-    }
-    if (!edge.left && !edge.right && !edge.top && !edge.bottom) return undefined
-    // the part of the tile that lands on the canvas, in canvas pixels
-    const vx = Math.max(0, Math.floor(x))
-    const vy = Math.max(0, Math.floor(y))
-    const vw = Math.ceil(Math.min(canvasW, x + w)) - vx
-    const vh = Math.ceil(Math.min(canvasH, y + h)) - vy
-    if (vw < 4 || vh < 4) return undefined
-    const band = Math.round(clamp(Math.min(vw, vh) * FEATHER_FRACTION, 4, 64))
-
-    const scratch = this.scratch ?? document.createElement('canvas')
-    this.scratch = scratch
-    // Sized only when the size changed, for the reason `surface` is: this runs
-    // once per feathered tile per composite, and each assignment is a fresh
-    // backing store. The `clearRect` below is what this function actually
-    // relied on.
-    if (scratch.width !== vw || scratch.height !== vh) {
-      scratch.width = vw
-      scratch.height = vh
-      this.scratchCtx = undefined
-    }
-    const sc = this.scratchCtx ?? scratch.getContext('2d') ?? undefined
-    this.scratchCtx = sc
-    // a stub canvas in a test has no gradients; the butt joint is still correct
-    if (!sc?.createLinearGradient) return undefined
-    sc.clearRect(0, 0, vw, vh)
-    draw(sc, -vx, -vy)
-    // `destination-out`, not `destination-in`: it subtracts alpha only where it
-    // paints, so one band per edge composes without a full-canvas pass and
-    // without touching the middle. (`destination-in` is global — every pixel the
-    // source does not cover is erased — so four band-shaped passes of it leave
-    // four thin bands and nothing else, which is what it did.)
-    sc.globalCompositeOperation = 'destination-out'
-    const ramp = (x0: number, y0: number, x1: number, y1: number) => {
-      const g = sc.createLinearGradient(x0, y0, x1, y1)
-      g.addColorStop(0, 'rgba(0,0,0,1)') // full erase at the edge...
-      g.addColorStop(1, 'rgba(0,0,0,0)') // ...fading to none by the band's end
-      sc.fillStyle = g
-      sc.fillRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0) || vw, Math.abs(y1 - y0) || vh)
-    }
-    if (edge.left) ramp(0, 0, band, 0)
-    if (edge.right) ramp(vw, 0, vw - band, 0)
-    if (edge.top) ramp(0, 0, 0, band)
-    if (edge.bottom) ramp(0, vh, 0, vh - band)
-    sc.globalCompositeOperation = 'source-over'
-    return { canvas: scratch, x: vx, y: vy }
-  }
-
-  /** The visible part of a tile, Lanczos-resampled, or undefined if not worth it. */
-  private magnified(
-    image: CanvasImageSource,
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    canvasW: number,
-    canvasH: number,
-    sharpen: boolean,
-  ): { canvas: CanvasImageSource; x: number; y: number; w: number; h: number } | undefined {
-    const nat = DetailImagery.naturalSize(image)
-    if (!nat || w < 1 || h < 1) return undefined
-    if (Math.max(w / nat.w, h / nat.h) < RESAMPLE_MIN_SCALE) return undefined
-
-    // the part of the tile that lands on the canvas, in canvas pixels...
-    const vx = Math.max(0, x)
-    const vy = Math.max(0, y)
-    const vw = Math.round(Math.min(canvasW, x + w) - vx)
-    const vh = Math.round(Math.min(canvasH, y + h) - vy)
-    if (vw < 2 || vh < 2) return undefined
-    if (vw * vh > RESAMPLE_MAX_PX) return undefined
-
-    // ...and the source rectangle it came from, in image pixels
-    const crop = {
-      x: ((vx - x) / w) * nat.w,
-      y: ((vy - y) / h) * nat.h,
-      w: (vw / w) * nat.w,
-      h: (vh / h) * nat.h,
-    }
-
-    // Reuse only what was computed for exactly this geometry — see upscaleFits.
-    const held = this.upscaled.get(image)
-    if (upscaleFits(held, { crop, w: vw, h: vh })) {
-      return { canvas: held.canvas, x: vx, y: vy, w: vw, h: vh }
-    }
-
-    if (sharpen) this.requestUpscale(image, crop, vw, vh)
-    return undefined // bilinear stands in until the sharp version arrives
-  }
-
-  /**
-   * Ask for a magnified copy, and redraw once it exists.
-   *
-   * One job per tile at a time: during a zoom the wanted size changes every
-   * frame, and queueing a resample per frame would move the stall rather than
-   * remove it. The job in flight finishes, the redraw it triggers asks for the
-   * size wanted *then*, and the sequence converges as soon as the camera stops.
-   */
-  private requestUpscale(image: CanvasImageSource, crop: Crop, dw: number, dh: number) {
-    if (this.upscaling.has(image)) return
-    this.upscaling.add(image)
-    this.resampler
-      .run(image, crop, dw, dh)
-      .then((canvas) => {
-        this.upscaling.delete(image)
-        if (!canvas) return
-        this.release(this.upscaled.get(image)?.canvas)
-        this.upscaled.set(image, { canvas, w: dw, h: dh, crop })
-        this.upscaleEpoch++ // the same tiles now draw different pixels
-        // Redraw only if the camera is still. A resample that lands mid-drag is
-        // pure polish — the picture is already on screen and correct — so
-        // publishing it there would spend a full upload and mip rebuild on a
-        // frame the gesture is about to replace. Nothing is lost by waiting: the
-        // copy is cached against the tile and `upscaleEpoch` is already bumped,
-        // so the settle's own redraw picks it up.
-        if (this.still) this.recomposite(true)
-      })
-      .catch(() => this.upscaling.delete(image))
-  }
-
-  /** An ImageBitmap holds real memory until closed; a canvas needs nothing. */
-  private release(canvas?: CanvasImageSource) {
-    if (typeof ImageBitmap !== 'undefined' && canvas instanceof ImageBitmap) canvas.close()
-  }
-
-  /**
-   * A tile leaving the cache takes its sharpened copy with it.
-   *
-   * The copies hang off a WeakMap keyed by the tile's image, so dropping the
-   * tile does make them collectable — but an ImageBitmap holds memory the
-   * collector does not account for, and "collectable" is not "closed". A
-   * megapixel-scale bitmap per evicted tile, released whenever the GC feels like
-   * it, is exactly the kind of drift that shows up as a device out of texture
-   * memory an hour into a session and never in a profile.
-   */
-  private forget(image: CanvasImageSource) {
-    this.release(this.upscaled.get(image)?.canvas)
-    this.upscaled.delete(image)
-    this.upscaling.delete(image)
-    this.release(image)
-  }
-
-  /**
-   * Draw the wanted tiles onto one canvas cut to the view and hand that to the
-   * shader. The shader contract does not change: one texture, one rectangle.
-   *
-   * Two levels, in this order and no other. The fallback level goes down first
-   * and covers the whole rectangle, so there is never bare base map inside the
-   * composite; the target level goes on top wherever it has arrived. That is the
-   * Maps trade — coarse but present beats sharp but absent — and it is what
-   * killed the union-coverage scan, the draw ranking and the patch cache that
-   * used to decide which of a handful of overlapping arbitrary rectangles was
-   * worth drawing over which.
-   */
-  private recomposite(sharpen = false): boolean {
+  private absorb(now: number) {
     const w = this.want
-    if (!w) return false
+    if (!w) return
     const label = sourceForLevel(w.plan.z, this.sharpDisabled).label
-    // The screen and the device ceiling decide this, and nothing that moves with
-    // the camera. One size means one GL allocation for the session and no
-    // resolution that can pump up and down as the camera starts and stops — see
-    // the note above compositeCanvasSize.
-    const { width, height } = compositeCanvasSize(this.viewport.px, this.viewport.aspect, this.maxPx)
-    const place = (tile: Tile): Drawn | undefined => {
-      const image = this.tiles.get(tileKey(tile, label))
-      return image && { tile, image, ...placeOnCanvas(w.target, bboxOf(tile), width, height) }
+    // A token bucket, not a per-call allowance: `update` is reached more than
+    // once in an animation frame (the camera-change handler and the render tick
+    // both go through it, and a zoom three times), so counting calls spent two
+    // and three budgets in one frame — see UPLOAD_WINDOW_MS.
+    this.credit = Math.min(
+      ATLAS_UPLOADS_PER_FRAME,
+      this.credit + ((now - this.creditAt) / UPLOAD_WINDOW_MS) * ATLAS_UPLOADS_PER_FRAME,
+    )
+    this.creditAt = now
+    let budget = Math.floor(this.credit)
+    let left = 0
+    for (const t of [...w.plan.fallback, ...w.plan.level]) {
+      const key = tileKey(t, label)
+      if (this.atlas.slots.has(key)) continue
+      const image = this.tiles.get(key)
+      if (!image) continue
+      if (budget > 0) {
+        this.atlas.put(key, image, t.z, now)
+        budget--
+        this.credit--
+      } else left++
     }
-    const under = w.plan.fallback.map(place).filter((d): d is Drawn => !!d)
-    const over = w.plan.level.map(place).filter((d): d is Drawn => !!d)
-    if (!under.length && !over.length) return false
-
-    // Redrawing the same tiles, at the same size, onto the same rectangle
-    // produces the same canvas — and publishing it re-uploads every one of its
-    // pixels to the GPU and rebuilds the whole mip chain. update() runs on every
-    // frame the view moves, so this is the difference between one upload per
-    // distinct picture and one per frame.
-    const key = [
-      width,
-      height,
-      // the sharpening pass draws the same tiles at the same size and is still
-      // not the same picture — it is the pass that asks for the Lanczos copies
-      sharpen ? 'sharp' : 'fast',
-      this.upscaleEpoch,
-      w.target.minLat.toFixed(5),
-      w.target.minLng.toFixed(5),
-      w.target.maxLat.toFixed(5),
-      w.target.maxLng.toFixed(5),
-      ...under.map((d) => tileKey(d.tile, label)),
-      '/',
-      ...over.map((d) => tileKey(d.tile, label)),
-    ].join('|')
-    if (key === this.lastDraw && this.texture) return true
-    this.lastDraw = key
-
-    const surf = this.surface(width, height)
-    if (!surf) return false
-    surf.ctx.clearRect(0, 0, width, height)
-
-    const present = new Set(over.map((d) => tileKey(d.tile, '')))
-    for (const d of under) {
-      // Sharpening a fallback tile that its four children already hide is a
-      // megapixel of Lanczos nobody can see.
-      const hidden = childrenOf(d.tile).every((c) => present.has(tileKey(c, '')))
-      this.drawTile(surf.ctx, d, width, height, NO_INSET, sharpen && !hidden)
-    }
-    for (const d of over) {
-      this.drawTile(surf.ctx, d, width, height, absentNeighbours(d.tile, present), sharpen)
-    }
-
-    // the panel describes what is on screen, which is the finest level the
-    // composite actually drew — not whichever request happened to return last
-    const z = over.length ? w.plan.z : w.plan.z - 1
-    this.sourceLabel = this.heldLabel = label
-    this.attribution = this.heldAttribution = this.attributions.get(label) ?? ''
-    // a complete fallback is what lets `coversView` stand in for a coverage scan
-    this.solid = under.length === w.plan.fallback.length
-    this.current = w.target
-    this.publish(surf.canvas, w.target, (tileSpanDeg(z) * 111_320) / TILE_PX)
-    return true
+    this.backlog = left
   }
 
-  private cancelQueued() {
-    clearTimeout(this.settle)
-    clearTimeout(this.due)
-    this.settle = this.due = undefined
-    // …and the wanted set with it, so nothing can be pumped for a view that is
-    // no longer on screen
-    this.want = undefined
-    if (!this.inflight.size) return
-    // in-flight tiles still land in the cache — they are as true as ever — but
-    // they resolve into a dead generation and reach no screen
-    this.generation++
-  }
-
-  /** The one place a texture reaches the shader. */
-  private publish(source: CanvasImageSource, bbox: Bbox, groundRes: number) {
-    const size = DetailImagery.naturalSize(source)
-    // The composite canvas is reused between draws, so most publishes hand the
-    // shader the same image object again. Re-flagging that texture re-uploads
-    // the pixels without reallocating the GL texture or re-deriving its
-    // parameters, which a fresh Texture per composite made the driver do on
-    // every frame of a zoom.
-    //
-    // But only while the pixels are the same shape. three allocates immutable
-    // storage with texStorage2D on a texture's *first* upload and never again,
-    // so re-flagging a texture whose canvas has since been resized uploads the
-    // new image into the old allocation with texSubImage2D — which, when the new
-    // canvas is smaller, silently lands it in the top-left corner and leaves the
-    // rest of the texture holding the previous composite. No GL error is raised.
-    // The shader then stretches that mixture across the current rectangle, and
-    // since the previous composite had the one before it in *its* corner, the
-    // result is a small image over a larger copy over a larger copy: exactly the
-    // nesting reported from the field. Measured on a continuous zoom, 27 of 28
-    // composite uploads went into storage cut for a different size.
-    const previous = this.texture
-    const sameShape =
-      !!size && !!this.published && this.published.w === size.w && this.published.h === size.h
-    if (previous && previous.image === source && sameShape) {
-      previous.needsUpdate = true
-    } else {
-      const next = new Texture(source as HTMLImageElement)
-      next.colorSpace = SRGBColorSpace
-      // mipmaps are needed: the shader samples a deliberately blurred copy of
-      // the patch to separate its fine detail from its overall colour
-      next.minFilter = LinearMipmapLinearFilter
-      next.magFilter = LinearFilter
-      next.generateMipmaps = true
-      next.needsUpdate = true
-      this.texture = next
-      previous?.dispose()
-    }
-    this.published = size
-    this.publishedAt = Date.now()
-    // Content, rectangle and mip level move together, in this order, in one
-    // call: whatever the shader is handed, the rectangle it is stretched across
-    // and the level that matches the base map all describe the same pixels.
-    this.rect = bboxToUvRect(bbox)
-    this.composited = bbox
-    // Derived here, from the image the shader is about to be handed, because
-    // that is the only size the mip chain it will sample is built from. See
-    // detailLod.
-    this.lod = detailLod(size?.w ?? 1, bbox.maxLng - bbox.minLng)
-    this.groundRes = groundRes
+  /**
+   * Rebuild the index the shader resolves through, and describe what it shows.
+   *
+   * Every frame, because the grid origin moves with the camera and the fades
+   * move with the clock — but it is 1 KB of `Uint8Array` and one `texSubImage2D`
+   * of a 16x16 texture, which is three orders of magnitude under the composite
+   * upload it replaces.
+   */
+  private reindex(now: number) {
+    const w = this.want
+    if (!w) return
+    const label = sourceForLevel(w.plan.z, this.sharpDisabled).label
+    const index = buildIndex(
+      w.plan.z,
+      w.plan.level,
+      w.plan.fallback,
+      (t) => this.atlas.slots.slotOf(tileKey(t, label)),
+      now,
+    )
+    this.index = index
+    this.atlas.setIndex(index)
+    if (!index.resident) return
+    // the panel describes what is on screen, which is the finest level actually
+    // resident — not whichever request happened to return last
+    this.groundRes = (tileSpanDeg(index.sharp ? w.plan.z : w.plan.z - 1) * 111_320) / TILE_PX
+    // Provenance no longer has to be *held* across a hide the way it did when
+    // the label described a texture that outlived the view: the index is rebuilt
+    // from the camera every frame, so re-showing re-derives it.
+    this.sourceLabel = label
+    this.attribution = this.attributions.get(label) ?? ''
+    if (this.shown && this.mix === 1 && this.status === 'ready') return
     this.mix = 1
     this.shown = true
     this.status = 'ready'
     this.onReady?.()
   }
 
+  private cancelQueued() {
+    clearTimeout(this.settle)
+    this.settle = undefined
+    // …and the wanted set with it, so nothing can be pumped for a view that is
+    // no longer on screen
+    this.want = undefined
+    this.backlog = 0
+    if (!this.inflight.size) return
+    // in-flight tiles still land in the cache — they are as true as ever — but
+    // they resolve into a dead generation and reach no screen
+    this.generation++
+  }
+
+  /** An ImageBitmap holds real memory until closed; anything else needs nothing. */
+  private release(image?: CanvasImageSource) {
+    if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) image.close()
+  }
+
   dispose() {
     this.cancelQueued()
     this.tiles.clear()
-    this.resampler.dispose()
-    this.texture?.dispose()
+    this.atlas.dispose()
   }
 }

@@ -15,6 +15,8 @@ import {
   type WebGLRenderer,
 } from 'three'
 import type { EraPlan } from './paleo'
+import { ATLAS_COLS, INDEX_ROWS, INDEX_W, LOW_PX, type Grid } from './tileAtlas'
+import { TILE_PX } from './tilePyramid'
 import { PALETTE_GAMMA, type Palette } from './palette'
 import { CLOUD_UPSCALE, cloudUpscaleWorthIt } from './cloudUpscale'
 import { cloudDriftPhase } from './scale'
@@ -521,11 +523,13 @@ uniform sampler2D uRelief;    // topography, used as a height field
 uniform sampler2D uClouds;    // cloud coverage mask
 uniform sampler2D uCloudNrm;  // baked cloud relief: rg = dH/duv, b = sky visibility
 uniform float uCloudNrmMix;   // 0 until that map lands, and until then the deck is flat
-uniform sampler2D uDetail;    // streamed high-resolution patch over the viewed region
-uniform vec4 uDetailRect;     // u0, v0, du, dv of that patch
+uniform sampler2D uDetail;      // tile atlas: 8x8 slots of 512, streamed imagery
+uniform sampler2D uDetailLow;   // the same tiles at the base map's own density
+uniform sampler2D uDetailIndex; // grid cell -> slot; rows 0-7 target, 8-15 parent
+uniform vec4 uDetailGrid;       // origin col, origin row, width, height at uDetailZ
+uniform vec4 uDetailGridP;      // …and the same for the parent level
+uniform float uDetailZ;         // pyramid level of the target grid
 uniform float uDetailMix;
-uniform float uDetailLod;    // mip level whose blur matches the base map
-uniform vec2 uDetailSize;    // the patch texture's size in texels
 uniform vec3 uSunDir;
 uniform float uLights;        // electrification, 0..1
 uniform float uCloudRot;      // cloud drift, in UV units
@@ -567,6 +571,38 @@ float cloudMask(vec2 uv) {
     texture(uClouds, uv + vec2(d.x, 0.0)).r + texture(uClouds, uv - vec2(d.x, 0.0)).r +
     texture(uClouds, uv + vec2(0.0, d.y)).r + texture(uClouds, uv - vec2(0.0, d.y)).r);
   return clamp(c + uCloudSharp * (c - blur), 0.0, 1.0);
+}
+
+/**
+ * One cell of the tile index, or all-zero where the grid does not reach.
+ *
+ * texelFetch rather than texture(): an integer fetch has no filtering to round
+ * the wrong way between two slots and no derivative to be undefined, which is
+ * what makes it safe to do this per fragment. The range test is a multiply
+ * rather than a branch for the same reason the rest of this shader avoids
+ * per-pixel branches — and because an out-of-range texelFetch is undefined,
+ * the coordinate is clamped as well as weighted.
+ */
+vec4 atlasCell(vec2 g, vec2 size, float row) {
+  vec2 ok = step(vec2(0.0), g) * step(g, size - 1.0);
+  vec2 c = clamp(g, vec2(0.0), vec2(${INDEX_W - 1}.0, ${INDEX_ROWS - 1}.0));
+  return texelFetch(uDetailIndex, ivec2(c.x, c.y + row), 0) * (ok.x * ok.y);
+}
+
+/**
+ * Sample a slot.
+ *
+ * The half-texel gutter is the whole of the anti-bleed rule. With no mip chain
+ * on the atlas the only way a slot can reach its neighbour is bilinear picking
+ * up the texel across the boundary, and clamping the in-tile coordinate to
+ * [0.5, size-0.5] texels is exactly what CLAMP_TO_EDGE does for a standalone
+ * tile: the geometry inside the tile is untouched and only the outermost half
+ * texel is held, so two tiles still meet without a seam.
+ */
+vec3 atlasTap(sampler2D atlas, float code, vec2 inTile, float gutter) {
+  float slot = max(floor(code * 255.0 + 0.5) - 1.0, 0.0);
+  vec2 at = vec2(mod(slot, ${ATLAS_COLS}.0), floor(slot / ${ATLAS_COLS}.0));
+  return texture(atlas, (at + clamp(inTile, gutter, 1.0 - gutter)) * ${f(1 / ATLAS_COLS)}).rgb;
 }
 
 /**
@@ -628,76 +664,81 @@ void main() {
   vec3 albedo = texture(uEraA, vUv).rgb;
   if (uEraMix > 0.0) albedo = mix(albedo, texture(uEraB, vUv).rgb, uEraMix);
 
-  // --- high-resolution patch, feathered at its edges so the join is invisible ---
+  // --- streamed imagery, assembled here from the tile atlas ---
   // uDetailMix is uniform across the draw, so branching on it is safe. Branching
-  // on the per-pixel test is not: sampling a texture inside non-uniform control
+  // on the per-pixel tests is not: sampling a texture inside non-uniform control
   // flow leaves the derivatives undefined, which several mobile GPUs render as
-  // flicker or dropouts. So the patch is sampled unconditionally, at mip levels
-  // computed rather than inferred, and the region test becomes a weight instead
-  // of a branch.
+  // flicker or dropouts. So every tap below is unconditional and presence is a
+  // weight rather than a branch.
   //
-  // What comes out of this block is a single number: how much brighter or
-  // darker than the base map the patch says this piece of ground is. It is
-  // applied at the very end, after the grade — see below.
+  // This block used to read one composite texture through one rectangle. The
+  // rectangle was a canvas the CPU had assembled and re-uploaded whole on every
+  // arrival; what replaces it is an indirection — surface point to tile, tile to
+  // slot, slot to a rectangle of the atlas — so nothing on the CPU has to
+  // assemble anything and a tile arriving costs one 512 upload.
+  //
+  // Two levels are resolved, and the fall-through between them is the point:
+  // where the target level has not arrived, the parent's slot shows the same
+  // ground one level coarser. Coarse but present beats sharp but absent, so a
+  // pan shows soft imagery rather than a hole, and each tile dissolves in over
+  // its own fade rather than popping.
+  //
+  // What comes out is a single number: how much brighter or darker than the base
+  // map the imagery says this piece of ground is. It is applied at the very end,
+  // after the grade — see below.
   float detailGain = 1.0;
   if (uDetailMix > 0.0) {
-    vec2 d = (vUv - uDetailRect.xy) / uDetailRect.zw;
-    vec2 inside = step(vec2(0.0), d) * step(d, vec2(1.0));
-    vec2 f = smoothstep(vec2(0.0), vec2(0.08), d) * (1.0 - smoothstep(vec2(0.92), vec2(1.0), d));
-    vec2 dc = clamp(d, 0.0, 1.0);
+    // Surface point to tile. Longitude gives the column; the row runs *down*
+    // from the north pole, which is the pyramid's convention (lib/tilePyramid)
+    // and the row order the tiles were uploaded in.
+    float cols = exp2(uDetailZ);
+    vec2 tile = vec2(vUv.x * cols, (1.0 - vUv.y) * cols * 0.5);
+    vec2 up = tile * 0.5;                       // …and in the parent's grid
+    vec4 cell = atlasCell(floor(tile) - uDetailGrid.xy, uDetailGrid.zw, 0.0);
+    vec4 cellP = atlasCell(floor(up) - uDetailGridP.xy, uDetailGridP.zw, ${INDEX_ROWS}.0);
+    // R is the slot, offset by one so zero means absent; G is the fade
+    float onT = step(0.5 / 255.0, cell.r) * cell.g;
+    float onP = step(0.5 / 255.0, cellP.r) * cellP.g;
 
-    // Three explicit mip levels, all derived from one number: how many patch
-    // texels this pixel covers.
-    //
-    // Sampling the sharp tap at mip 0 unconditionally — which is what this used
-    // to do — is right only while the patch is being magnified. As soon as the
-    // patch is denser than the screen (every zoom-out, and any composite drawn
-    // larger than the view), mip 0 is an aliased point sample of a minified
-    // texture, and dividing one aliased sample by a blurred one turned bright
-    // features into dark smears: measured, the patch made the picture *less*
-    // detailed than no patch at all at wide zoom, and 7/255 darker.
-    vec2 texels = max(abs(dFdx(d)), abs(dFdy(d))) * uDetailSize;
-    float lodPix = max(0.0, log2(max(max(texels.x, texels.y), 1e-6)));
-    // never let the blurred tap be sharper than the sharp one: where the patch
-    // is minified past the base map's own scale the two levels meet, the ratio
-    // below becomes exactly 1, and the patch fades to a no-op instead of
-    // fighting the base map for the same frequency band
-    float lodLo = max(uDetailLod, lodPix);
-    vec4 det = textureLod(uDetail, dc, lodPix);
-    vec4 low = textureLod(uDetail, dc, lodLo);
-    // A composite canvas is transparent wherever no cached patch reached, and
-    // the mip chain averages that transparent black into the colour — which
-    // showed as a bright halo just inside the edge of a partly-covered
-    // composite. Straight (un-premultiplied) alpha makes the fix exact:
-    // mean(rgb) / mean(a) is the mean over covered texels alone.
-    vec3 hi = det.rgb / max(det.a, 0.004);
-    vec3 lo = low.rgb / max(low.a, 0.004);
+    vec2 fT = fract(tile);
+    vec2 fP = fract(up);
+    vec3 hiT = atlasTap(uDetail, cell.r, fT, ${f(0.5 / TILE_PX)});
+    vec3 hiP = atlasTap(uDetail, cellP.r, fP, ${f(0.5 / TILE_PX)});
+    // One blurred tap, not two. The reduced copies of a tile and of its parent
+    // describe the same ground at the same (base-map) density, so whichever of
+    // the two is present answers for both — and one tap here is the difference
+    // between three fetches and four.
+    vec3 lo = atlasTap(uDetailLow, mix(cellP.r, cell.r, step(0.5 / 255.0, cell.r)),
+      mix(fP, fT, step(0.5 / 255.0, cell.r)), ${f(0.5 / LOW_PX)});
 
     // Colour matching, unconditional and on luminance alone.
     //
-    // The patch contributes *structure*: how much brighter or darker the ground
-    // is than the base map knows. The base map contributes the colour. Taking
-    // the ratio per channel — the earlier form — transferred the sharp sensor's
-    // chroma as well, so Sentinel-2's greener, higher-contrast palette leaked
-    // through as hue shifts of up to 20/255 along coastlines and snow lines.
-    // One scalar cannot move a hue: it scales all three channels together, so
-    // the base map's colour survives by construction rather than by tuning.
+    // The imagery contributes *structure*: how much brighter or darker the
+    // ground is than the base map knows. The base map contributes the colour.
+    // Taking the ratio per channel — the earlier form — transferred the sharp
+    // sensor's chroma as well, so Sentinel-2's greener, higher-contrast palette
+    // leaked through as hue shifts of up to 20/255 along coastlines and snow
+    // lines. One scalar cannot move a hue: it scales all three channels
+    // together, so the base map's colour survives by construction.
+    //
+    // The divisor is the same tile reduced to the base map's own density, held
+    // in a second atlas (see lib/tileAtlas.ts). It used to be a mip of the
+    // composite; the atlas has no mip chain, because a chain over 8x8 slots
+    // averages unrelated ground into every texel above level 0.
     //
     // The limits are what "stability beats maximal sharpness" buys: a gain of
     // 2.5x is a real reading over a snow line or a coast, and it is also enough
-    // to drive the graded highlights past white and leave the patch looking
+    // to drive the graded highlights past white and leave the imagery looking
     // blown rather than sharp. Under a stop either way, ordinary ground (0.8 to
     // 1.3) is untouched and only the extremes are held back.
     const vec3 luma = vec3(0.2126, 0.7152, 0.0722);
-    float k = clamp((dot(hi, luma) + 0.004) / (dot(lo, luma) + 0.004), 0.55, 1.8);
-
-    // Coverage, softened. The alpha at the sharp tap alone is a one-texel step
-    // at the boundary between covered and uncovered parts of a composite — a
-    // hard edge across the middle of the patch. A tap a couple of mips up turns
-    // it into a ramp as wide as the feather at the rectangle edge, so the join
-    // reads the same wherever it falls.
-    float cover = smoothstep(0.15, 0.85, textureLod(uDetail, dc, clamp(lodPix + 1.0, 1.0, 4.0)).a);
-    detailGain = mix(1.0, k, inside.x * inside.y * f.x * f.y * uDetailMix * cover);
+    float base = dot(lo, luma) + 0.004;
+    float k = clamp((dot(hiT, luma) + 0.004) / base, 0.55, 1.8);
+    float kP = clamp((dot(hiP, luma) + 0.004) / base, 0.55, 1.8);
+    // parent over base map, target over parent — so a tile arriving dissolves
+    // into the coarse level it is replacing, never through the bare base map
+    float stack = mix(mix(1.0, kP, onP), k, onT);
+    detailGain = mix(1.0, stack, uDetailMix);
   }
 
   // Enhanced grades the albedo itself: a luminance remap (see ENHANCED_GRADE)
@@ -1020,10 +1061,12 @@ export class GlobeSurface {
         uCloudNrm: { value: null },
         uCloudNrmMix: { value: 0 },
         uDetail: { value: null },
-        uDetailRect: { value: new Vector4(0, 0, 1, 1) },
+        uDetailLow: { value: null },
+        uDetailIndex: { value: null },
+        uDetailGrid: { value: new Vector4(0, 0, 0, 0) },
+        uDetailGridP: { value: new Vector4(0, 0, 0, 0) },
+        uDetailZ: { value: 0 },
         uDetailMix: { value: 0 },
-        uDetailLod: { value: 4 },
-        uDetailSize: { value: new Vector2(1024, 1024) },
         uSunDir: { value: new Vector3(1, 0, 0) },
         uLights: { value: 1 },
         uCloudRot: { value: 0 },
@@ -1415,26 +1458,33 @@ export class GlobeSurface {
   }
 
   /**
-   * Point the shader at the streamed detail patch (null clears it).
+   * Point the shader at the tile atlas (null clears it).
    *
-   * The texture's own size goes with it: the shader needs it to work out how
-   * many patch texels each screen pixel covers, which is what decides every mip
-   * level it samples. Reading it here, from the texture actually being bound,
-   * is the only place it cannot disagree with what is on the GPU.
+   * Three textures and two grids, where there used to be one texture and one
+   * rectangle. The rectangle described a canvas the CPU had assembled; the grids
+   * describe where in the pyramid the visible tiles sit, and the shader does the
+   * assembling — see `atlasCell` and the detail block above.
+   *
+   * `view` is a whole `AtlasIndex` rather than loose numbers so that the level,
+   * the two grids and the index texture the slots are numbered in can only ever
+   * be published together. They described the same frame when they were built,
+   * and half of a frame's index over the other half is a picture of ground that
+   * does not exist.
    */
   setDetail(
-    map: Texture | null,
-    rect: [number, number, number, number],
+    maps: { sharp: Texture; low: Texture; index: Texture } | null,
+    view: { z: number; grid: Grid; parent: Grid } | undefined,
     mix: number,
-    lod = 4,
   ) {
     const u = this.material.uniforms
-    u.uDetail.value = map
-    u.uDetailRect.value.set(...rect)
-    u.uDetailMix.value = map ? mix : 0
-    u.uDetailLod.value = lod
-    const img = map?.image as { width?: number; height?: number } | undefined
-    if (img?.width && img?.height) u.uDetailSize.value.set(img.width, img.height)
+    u.uDetail.value = maps?.sharp ?? null
+    u.uDetailLow.value = maps?.low ?? null
+    u.uDetailIndex.value = maps?.index ?? null
+    u.uDetailMix.value = maps && view ? mix : 0
+    if (!view) return
+    u.uDetailZ.value = view.z
+    u.uDetailGrid.value.set(...view.grid)
+    u.uDetailGridP.value.set(...view.parent)
   }
 
   /**
