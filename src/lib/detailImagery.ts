@@ -1507,14 +1507,37 @@ export class DetailImagery {
     // `publish` is the only writer, so the number and the pixels change
     // together or not at all.
     const view = this.lastComposite
+    // An arrival that lands mid-gesture goes into the cache and NO further.
+    //
+    // This is the last publisher that did not wait for the camera. A pan was
+    // already down to zero composites while it moves; a zoom was still spending
+    // seven to fourteen across three seconds, because a zoom asks for imagery
+    // and the imagery comes back while the camera is still going. Each one is a
+    // full texture upload plus a full generateMipmap of the composite — the
+    // 111 ms class of stall that the whole motion-deferral exists to keep out of
+    // a gesture — bought to show one frame of a patch the next frame replaces.
+    //
+    // Nothing is lost by waiting. The patch is in the cache above, the settle's
+    // own recomposite reads the cache, and the settle always comes: `arm` is
+    // re-armed by motion and converges the moment the camera stops. The
+    // rectangle it publishes is the live one rather than this arrival's, which
+    // is the same rule every other publish on this path already follows.
+    //
+    // …but only if a settle is actually coming. An arrival can land after the
+    // last one has already fired — the camera moved, the request went out, the
+    // camera stopped, the settle ran on an empty cache, and *then* the image
+    // came back — and with nothing armed the patch would sit in the cache
+    // forever. So the arrival arms one if there is none, which is the same
+    // guarantee `update` gives and costs nothing when a settle is already due.
+    if (!this.still) {
+      if (this.settle === undefined) this.arm(src)
+      return
+    }
     // Sharpen only if the camera is actually still — see the `still` getter for
-    // why that is not the same as an unarmed settle timer. Patches land mid-zoom
-    // (see `generation`), and a Lanczos pass spent on a picture the next frame
-    // replaces is the stall this was moved off the main thread to avoid.
-    // Falling back to publishing the image directly covers the one case the
-    // composite cannot: no DOM, so no canvas.
-    const still = this.still
-    if (!view || !this.recomposite(view.target, view.screenPx, still)) {
+    // why that is not the same as an unarmed settle timer. Falling back to
+    // publishing the image directly covers the one case the composite cannot:
+    // no DOM, so no canvas.
+    if (!view || !this.recomposite(view.target, view.screenPx, true)) {
       this.sourceLabel = this.heldLabel = src.label
       this.attribution = this.heldAttribution = src.attribution ?? ''
       this.publish(img, bbox, meta)

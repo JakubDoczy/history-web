@@ -518,3 +518,59 @@ describe('no overlay outline is left to the polygon layer', () => {
     expect(src).toMatch(/setFlowPhase\(animationClock\(now\)\)/)
   })
 })
+
+describe('celestial bodies sit at defensible distances', () => {
+  const src = readFileSync('src/lib/celestialLayer.ts', 'utf8')
+  const num = (name: string) => Number(src.match(new RegExp(`const ${name} = ([\\d.]+)`))![1])
+  /** Angular diameter in degrees of a body of `r` radii at `alt` radii altitude. */
+  const arcDeg = (r: number, alt: number) => (2 * Math.atan(r / (1 + alt)) * 180) / Math.PI
+
+  it('puts the sun essentially at life size, which is what a star looks like', () => {
+    // 0.53 deg from Earth. Anything much larger reads as a prop hung outside
+    // the window, which is what the field reported of the 6.3 deg it replaced.
+    expect(arcDeg(num('SUN_RADIUS'), num('SUN_ALT'))).toBeCloseTo(0.53, 1)
+  })
+
+  it('keeps the moon legible without keeping it close', () => {
+    // Real is 0.52 deg and would be a few pixels; the whole exaggeration budget
+    // goes here, because the moon is the body that has to show a phase. Still
+    // far enough to read as distant, still small enough not to be a prop.
+    const arc = arcDeg(num('MOON_RADIUS'), num('MOON_ALT'))
+    expect(arc).toBeGreaterThan(1)
+    expect(arc).toBeLessThan(2.5)
+  })
+
+  it('moves both of them further out than they were', () => {
+    expect(num('MOON_ALT')).toBeGreaterThan(3.4)
+    expect(num('SUN_ALT')).toBeGreaterThan(39)
+  })
+
+  it('keeps the glare the same size as the sun recedes', () => {
+    // a Sprite is size-attenuated, so distance divides its apparent size
+    expect(num('GLOW_SCALE') / 11).toBeCloseTo((1 + num('SUN_ALT')) / 40, 0)
+  })
+})
+
+describe('an area cap is tessellated finely enough to stay above the planet', () => {
+  const src = readFileSync('src/components/GlobeView.vue', 'utf8')
+
+  it('subdivides a footprint much finer than three-globe would', () => {
+    // A cap is earcut, so one triangle can span the whole ring, and its edges
+    // are chords: 35 degrees of chord passes 295 km under the sphere against
+    // the 9 km the cap is lifted, and the planet eats the middle of it. That is
+    // the "clipping the ocean" report, and it is geometry, not depth.
+    expect(src).toMatch(/polygonCapCurvatureResolution\(\(d\) => \(asPoly\(d\)\.kind === 'area' \? 2 : 5\)\)/)
+  })
+
+  it('turns a margin that was thinner than the mesh into one of 37x', () => {
+    // a chord across `deg` of arc passes this far below the sphere at its middle
+    const sagKm = (deg: number) => 6371 * (1 - Math.cos((deg / 2 / 180) * Math.PI))
+    const clearanceKm = 0.0014 * 6371 // the cap's altitude, 8.92 km
+    // the default left 2.9 km — under one depth quantum at world view, and
+    // under the globe mesh's own faceting
+    expect(clearanceKm - sagKm(5)).toBeLessThan(3)
+    // and two degrees leaves nearly all of it, at a quarter of one degree's
+    // triangle count — the cap is drawn on every frame of every gesture
+    expect(sagKm(2)).toBeLessThan(clearanceKm / 9)
+  })
+})

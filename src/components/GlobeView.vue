@@ -474,6 +474,30 @@ onMounted(() => {
     // and the routes drawn over it still win: nothing in the polygon layer
     // writes depth any more, so what paints over what is renderOrder, and the
     // DrawingLayer's is twelve against the layer's nought.
+    // How finely a cap is broken up, in degrees of arc. The library grids the
+    // polygon's INTERIOR at this spacing as well as interpolating its contour
+    // (`getInnerGeoPoints`), so it is what bounds the size of a cap triangle —
+    // and a triangle's edges are straight chords through space, which pass
+    // BELOW the sphere between their ends.
+    //
+    // At three-globe's default of 5 degrees a chord sags 6.06 km, against the
+    // 8.92 km the cap is lifted: a margin of 2.9 km. That is thinner than one
+    // depth quantum at world view, and thinner than the globe mesh's own
+    // faceting, so on a large footprint the middle of a triangle reaches the
+    // planet's own depth and the fill comes back with pieces missing — the
+    // "gaps in areas, as if it is clipping the ocean" from the field. It is
+    // geometry, not depth precision: it happens on any GPU at any depth width,
+    // and it is worst on exactly the largest footprints.
+    //
+    // Two degrees sags 0.97 km — a margin of 9x rather than 1.3x — and the grid
+    // is a quarter of the triangles one degree would cost. That trade matters:
+    // the cap is drawn on every frame of every gesture, and at one degree the
+    // trans-Atlantic footprint alone put 21k triangles a frame on the ink,
+    // which is precisely the per-frame cost a selection is not supposed to add.
+    // It is spent only where it is needed: a nation border already comes with
+    // vertices a fraction of a degree apart, and an area is one polygon at a
+    // time.
+    .polygonCapCurvatureResolution((d) => (asPoly(d).kind === 'area' ? 2 : 5))
     .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.0014 : 0.0012))
     .polygonLabel((d) => {
       const p = asPoly(d)

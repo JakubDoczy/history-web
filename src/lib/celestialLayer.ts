@@ -27,6 +27,36 @@ const glowTexture = () => {
   return new CanvasTexture(c)
 }
 
+/**
+ * Where the sun and the moon are, and how big.
+ *
+ * True scale is not available: the moon is 60 Earth radii out and half a degree
+ * across, and at this globe's on-screen size that is a body a few pixels wide
+ * that nobody would read as a moon. So both are stylised — but the stylisation
+ * that was here read as "not realistic" from the field, and the numbers say why.
+ * The moon sat 4.4 radii out at 7.0 degrees of arc, thirteen times its real
+ * angular size; the sun sat 40 radii out at 6.3 degrees, twelve times its own.
+ * Two bodies that large and that near read as props hung just outside the
+ * window, which is exactly the complaint.
+ *
+ * What is here now keeps the sun honest and spends the whole exaggeration
+ * budget on the moon, which is the one that has to show a phase:
+ *
+ *  · the moon is ten radii out and 1.5 degrees across — still about three times
+ *    life size, which at a 50 degree field of view on a 900 px viewport is a
+ *    disc some 27 px tall: legibly a moon, with a terminator you can read, and
+ *    plainly far away;
+ *  · the sun is 120 radii out at 0.55 degrees, which is life size to within a
+ *    rounding error. At that distance it is glare with a disc in it rather than
+ *    a sphere in the scene, which is what a star at one astronomical unit looks
+ *    like. The camera's far plane is 2.5x the sky radius, decades beyond this.
+ */
+const MOON_ALT = 9 // radii ABOVE the surface, so ten from the centre
+const MOON_RADIUS = 0.131 // -> 2*atan(0.131/10) = 1.50 deg
+const SUN_ALT = 119 // 120 from the centre
+const SUN_RADIUS = 0.576 // -> 2*atan(0.576/120) = 0.55 deg, life size
+const GLOW_SCALE = 33 // three times the old 11, for three times the distance
+
 /** Visible sun (glowing) and moon (lit by the sun, so phases emerge) orbiting the globe. */
 export class CelestialLayer {
   private sun: Mesh<SphereGeometry, MeshBasicMaterial>
@@ -37,15 +67,17 @@ export class CelestialLayer {
   // sized once here, and nothing after construction asks how big the globe is.
   constructor(scene: Scene, radius: number, moonTextureUrl: string) {
     this.sun = new Mesh(
-      new SphereGeometry(radius * 2.2, 32, 32),
+      new SphereGeometry(radius * SUN_RADIUS, 32, 32),
       new MeshBasicMaterial({ color: 0xfff6e0 }),
     )
     this.glow = new Sprite(
       new SpriteMaterial({ map: glowTexture(), blending: AdditiveBlending, depthWrite: false }),
     )
-    this.glow.scale.setScalar(radius * 11)
+    // A sprite is size-attenuated, so tripling the sun's distance would divide
+    // its glare by three; the scale carries the same factor back.
+    this.glow.scale.setScalar(radius * GLOW_SCALE)
     this.moon = new Mesh(
-      new SphereGeometry(radius * 0.27, 48, 48),
+      new SphereGeometry(radius * MOON_RADIUS, 48, 48),
       new MeshPhongMaterial({ map: new TextureLoader().load(moonTextureUrl), shininess: 2 }),
     )
     scene.add(this.sun, this.glow, this.moon)
@@ -65,12 +97,12 @@ export class CelestialLayer {
 
   setHour(hour: number, coords: Coords) {
     const sunLng = subsolarLongitude(hour)
-    const s = coords(0, sunLng, 39) // far out along the subsolar direction
+    const s = coords(0, sunLng, SUN_ALT) // far out along the subsolar direction
     this.sun.position.set(s.x, s.y, s.z)
     this.glow.position.copy(this.sun.position)
 
     const mLng = moonLongitude(hour)
-    const m = coords(moonLatitude(mLng), mLng, 3.4)
+    const m = coords(moonLatitude(mLng), mLng, MOON_ALT)
     this.moon.position.set(m.x, m.y, m.z)
   }
 

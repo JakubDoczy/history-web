@@ -1108,6 +1108,11 @@ describe('cached patch compositing', () => {
     // stall (see coversView) — so the arrival is what puts a magnified patch on
     // the canvas, which is the case this test is about.
     d.update(45, 10, 0.02, 900, 1)
+    // An arrival mid-gesture normally goes into the cache and no further — a
+    // composite is an upload and a mip rebuild, and the camera is still moving.
+    // This one is the FIRST picture, which the deadline in `arm` deliberately
+    // does not defer: a globe with no imagery on it at all waits for nobody. So
+    // it lands here, unsharpened, which is what the next lines are about.
     img.onload!()
 
     // The zoom's own composite is bilinear: the raw image, straight onto the
@@ -1221,6 +1226,9 @@ describe('cached patch compositing', () => {
     d.update(45, 10, 0.045, 900, 1)
     const wanted = viewBbox(45, 10, 0.045, 1)
     inFlight.onload!()
+    // …and the arrival waits for the camera, so the rectangle it lands on is
+    // the live one rather than the one it was requested for
+    vi.advanceTimersByTime(SETTLE_MS + 1)
     const [, , du] = d.rect
     expect(du * 360).toBeCloseTo(wanted.maxLng - wanted.minLng, 3)
   })
