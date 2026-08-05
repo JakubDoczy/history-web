@@ -1448,6 +1448,7 @@ describe('composite atomicity', () => {
     const canvas = FakeCanvas.made[0]
 
     const seen = new Map<string, string>()
+    let previous = ''
     for (let i = 0; i < 12; i++) {
       d.update(45, 10 + i * 0.02, CLOSE, 900, 1)
       vi.advanceTimersByTime(SETTLE_MS + 32)
@@ -1455,10 +1456,18 @@ describe('composite atomicity', () => {
       const pixels = canvas.ops
         .map((o) => `${o.x.toFixed(2)}:${o.y.toFixed(2)}:${o.w.toFixed(2)}`)
         .join('|')
-      // one rectangle can only ever go with one arrangement of pixels
-      const held = seen.get(rect)
-      if (held !== undefined) expect(pixels).toBe(held)
-      seen.set(rect, pixels)
+      // A move small enough to stay inside the margin is now skipped outright —
+      // the composite already covers the screen (see the fast path in update).
+      // The rectangle it was published with has to stay put through that, which
+      // is the invariant in its sharpest form: no draw, no new rectangle.
+      if (!pixels) expect(rect).toBe(previous)
+      // …and one rectangle can only ever go with one arrangement of pixels
+      else {
+        const held = seen.get(rect)
+        if (held !== undefined) expect(pixels).toBe(held)
+        seen.set(rect, pixels)
+      }
+      previous = rect
       canvas.ops.length = 0
     }
     d.dispose()
@@ -1836,6 +1845,168 @@ describe('panning to rest', () => {
     }
     expect(FakeImage.requests).toHaveLength(after)
     d.dispose()
+  })
+})
+
+/**
+ * A pan slow enough that no single frame of it clears MOTION_EPS.
+ *
+ * The field report was that a *very slow* drag staggered while a rapid one was
+ * smooth — the opposite of every intuition about cost, and a classification bug
+ * rather than a cost one. OrbitControls turns a drag into
+ * `2π · rotateSpeed · dx / height` radians and globe.gl sets
+ * `rotateSpeed = altitude · 0.3`, so the altitude cancels: a drag moves the view
+ * by a fixed fraction of its own span per mouse pixel at every zoom, and a
+ * per-frame epsilon of 0.002 was a *speed* limit of about 1.8 px per frame. Any
+ * slower drag read as a still camera in the middle of the gesture, and the
+ * still-camera pipeline ran on every frame of it: the settle path publishes
+ * inline once `movedAt` is a settle old, and a publish is a full canvas upload
+ * plus `generateMipmap`.
+ *
+ * Measured in Chromium over a 150-frame pan (tests/e2e/slowPan.e2e.mjs), before
+ * the fix: at 0.0019 span/frame — 1.7 mouse px — 113 frames classified still and
+ * 399 publishes, 523 megapixels, against 1 publish for the same gesture at
+ * 0.0078 span/frame and 3 for a flick. After it, 0 and 0.
+ */
+describe('a slow pan is a pan', () => {
+  const CLOSE = 0.02
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.reset()
+    FakeCanvas.made = []
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  const settleAt = (d: DetailImagery, lat: number, lng: number, rounds = 3) => {
+    for (let round = 0; round < rounds; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(lat, lng, CLOSE, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.landAll()
+      vi.advanceTimersByTime(SETTLE_MS + 32)
+    }
+  }
+
+  /**
+   * A drag of `frames` frames, each moving the view east by `perFrame` of its
+   * own span, tiles landing as they would. Returns what it cost the GPU: one
+   * `clearRect` is one composite, and every composite is a publish.
+   */
+  const cost = (perFrame: number, frames: number, lng = 10) => {
+    const d = new DetailImagery()
+    settleAt(d, 45, lng)
+    const span = viewBboxFor(45, lng, CLOSE, 1)
+    const step = (span.maxLng - span.minLng) * perFrame
+    const composite = FakeCanvas.made[0]
+    const before = composite.cleared
+    for (let i = 1; i <= frames; i++) {
+      d.update(45, lng + step * i, CLOSE, 900, 1)
+      FakeImage.landAll(1)
+      vi.advanceTimersByTime(16)
+    }
+    const spent = composite.cleared - before
+    d.dispose()
+    return spent
+  }
+
+  it('defers publishes through a drag too slow to clear the per-frame epsilon', () => {
+    // half the old speed limit — a hand holds this easily, and every frame of it
+    // used to be a full upload and a mip chain rebuild
+    expect(cost(MOTION_EPS / 2, 90)).toBeLessThanOrEqual(2)
+  })
+
+  it('defers them through a crawl, where the old rule was worst of all', () => {
+    // a quarter of the epsilon per frame: the slower the drag, the longer the
+    // machinery spent believing the camera had stopped
+    expect(cost(MOTION_EPS / 4, 90)).toBeLessThanOrEqual(2)
+  })
+
+  it('spends no more on a slow pan than on the rapid pan that was already smooth', () => {
+    expect(cost(MOTION_EPS / 2, 90)).toBeLessThanOrEqual(cost(MOTION_EPS * 10, 90))
+  })
+
+  it('still gets a picture on screen during a slow pan that never ends', () => {
+    // The deferral may not strand the screen. A crawl outruns the composite's
+    // own margin eventually, and when it does the fast path stops answering and
+    // the escape hatch (PAN_MIN_COVER / PAN_PUBLISH_MS) publishes — by distance
+    // travelled rather than per frame, so it is rare and it is bounded.
+    const d = new DetailImagery()
+    settleAt(d, 45, 10)
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const step = (span.maxLng - span.minLng) * (MOTION_EPS / 2)
+    const composite = FakeCanvas.made[0]
+    const before = composite.cleared
+    for (let i = 1; i <= 2000; i++) {
+      d.update(45, 10 + step * i, CLOSE, 900, 1)
+      FakeImage.landAll(1)
+      vi.advanceTimersByTime(16)
+    }
+    const spent = composite.cleared - before
+    expect(spent).toBeGreaterThan(0) // the screen is not stranded…
+    expect(spent).toBeLessThan(40) // …nor is it repainted per frame
+    expect(d.status).toBe('ready')
+    d.dispose()
+  })
+
+  it('lets a decaying motion converge, so a released flick still settles', () => {
+    // Displacement rather than speed still has to reach zero, or the imagery
+    // waits forever on a camera that is technically moving. Orbit damping decays
+    // geometrically, so what is left to travel shrinks and the last crossing of
+    // the epsilon does come.
+    const d = new DetailImagery()
+    settleAt(d, 45, 10)
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const width = span.maxLng - span.minLng
+    let lng = 10
+    let v = width * 0.05
+    for (let i = 0; i < 200; i++) {
+      lng += v
+      v *= 0.9
+      d.update(45, lng, CLOSE, 900, 1)
+      FakeImage.landAll(1)
+      vi.advanceTimersByTime(16)
+    }
+    // The camera has come to rest at the far end and the imagery followed it —
+    // covering the view rather than cut exactly to it, since a last hair of
+    // damping is precisely what the composite's margin is for.
+    expect(coversView(bboxFromRect(d.rect), viewBboxFor(45, lng, CLOSE, 1, 1))).toBe(true)
+    expect(d.status).toBe('ready')
+    d.dispose()
+  })
+
+  it('publishes as promptly as ever for a camera that is parked', () => {
+    // The other half of the contract: integrating motion must not delay the
+    // first picture. A cold camera at a standstill has it one settle after the
+    // tiles land, exactly as before.
+    const d = new DetailImagery()
+    for (let i = 0; i < 24; i++) {
+      d.update(45, 10, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    FakeImage.landAll()
+    expect(d.status).not.toBe('ready')
+    vi.advanceTimersByTime(SETTLE_MS + 32)
+    expect(d.status).toBe('ready')
+    d.dispose()
+  })
+
+  it('has a floor, and it is a drift of one epsilon per settle', () => {
+    // The honest edge of any epsilon: below 0.002 of a span per SETTLE_MS —
+    // 0.07 mouse px per frame, ~4 px/s — a drift is indistinguishable from a
+    // parked camera, and is treated as one. What keeps that cheap is no longer
+    // the detector but the fast path in update(), which reuses a composite that
+    // still covers the screen, so the cost is one publish per eighth of a span
+    // travelled rather than one per frame. Measured in Chromium at 0.00008
+    // span/frame — 0.07 mouse px — 157 publishes before, 0 after.
+    const perFrame = (MOTION_EPS / SETTLE_MS) * 16 * 0.5
+    expect(cost(perFrame, 90)).toBeLessThanOrEqual(2)
   })
 })
 

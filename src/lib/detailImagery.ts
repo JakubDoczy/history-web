@@ -383,10 +383,12 @@ export const viewCoverage = (held: Bbox | undefined, want: Bbox): number => {
 }
 
 /**
- * How far the view moved between two frames, as a fraction of its own span.
+ * How far the view has moved from a reference rectangle, as a fraction of its
+ * own span.
  *
  * The largest of the four edges, so a pure zoom counts as motion as readily as
- * a pan does.
+ * a pan does. The reference is deliberately *not* the previous frame — see
+ * MOTION_EPS.
  */
 export const viewMotion = (a: Bbox | undefined, b: Bbox): number => {
   if (!a) return 1
@@ -401,12 +403,37 @@ export const viewMotion = (a: Bbox | undefined, b: Bbox): number => {
 }
 
 /**
- * How far the view may drift between frames and still count as a still camera.
+ * How far the view may drift *in total* and still count as a still camera.
  *
  * Small, but not zero: orbit damping keeps the camera creeping for the better
  * part of a second after the pointer is released, and waiting for that to reach
  * exactly zero would be waiting for the imagery forever. Two parts in a
  * thousand of the span is well under a screen pixel at any zoom.
+ *
+ * "In total" is the whole of the rule, and it used to be "between frames". A
+ * per-frame threshold does not describe a gesture, it describes a *speed*, and
+ * the speed it excluded is one a hand can hold. OrbitControls turns a drag into
+ * `2π · rotateSpeed · dx / height` radians and globe.gl sets
+ * `rotateSpeed = altitude · 0.3`, so the altitude cancels and a drag moves the
+ * view by a fixed fraction of its own span per mouse pixel at *every* zoom —
+ * 0.00112 of the span per pixel at 1000x750 and 46° N. So 0.002 per frame was a
+ * speed limit of 1.8 px per frame, ~110 px/s, and every slower drag was
+ * classified as a still camera in the middle of the gesture. That is not an
+ * edge case; it is what a careful drag is.
+ *
+ * What it cost, measured in Chromium against the mock service over a 150-frame
+ * pan (tests/e2e/slowPan.e2e.mjs): at 0.0019 span/frame — 1.7 mouse px, just
+ * under the old limit — 113 frames read as still, and the still-camera pipeline
+ * ran inside the gesture 399 times: 523 megapixels of texture upload and
+ * `generateMipmap`, and 526 Lanczos jobs. The same pan at 0.0078 span/frame
+ * published once, and a flick three times. The user's report was exactly this
+ * way round, and now all three publish once or less.
+ *
+ * Measured instead from the last view that *counted* as a move, the same 0.002
+ * is a displacement rather than a speed: any drift crossing it inside SETTLE_MS
+ * re-arms the settle, so the whole crawl is one gesture. A decaying motion still
+ * converges — orbit damping leaves a finite distance to travel, so the crossings
+ * thin out and stop — and a parked camera never crosses at all.
  */
 export const MOTION_EPS = 0.002
 
@@ -839,8 +866,8 @@ export class DetailImagery {
   private published?: { w: number; h: number }
   /** When the shader was last handed pixels; see PAN_PUBLISH_MS. */
   private publishedAt = 0
-  /** The view at the previous frame, and when it last differed; see MOTION_EPS. */
-  private lastSeen?: Bbox
+  /** The view the camera is judged to have moved *from*, and when; see MOTION_EPS. */
+  private restingAt?: Bbox
   private movedAt = 0
   /** When detail last became wanted; the deadline for the first picture. */
   private wantedAt = 0
@@ -904,8 +931,17 @@ export class DetailImagery {
     // Is the camera moving *at all*? Recorded before every early return below,
     // because the answer has to be about the camera and not about whether the
     // view has moved far enough to be worth anything.
-    if (viewMotion(this.lastSeen, target) > MOTION_EPS) this.movedAt = Date.now()
-    this.lastSeen = target
+    //
+    // Measured from where the camera last counted as having moved, never from
+    // the previous frame: a gesture is a displacement over a window of time, and
+    // a per-frame comparison can only see a speed. Creeping east at a tenth of
+    // the threshold per frame trips this every tenth frame — ten times inside
+    // one settle — so the crawl is one gesture, publishes defer, and the ring
+    // waits. See MOTION_EPS for what the per-frame form cost.
+    if (viewMotion(this.restingAt, target) > MOTION_EPS) {
+      this.movedAt = Date.now()
+      this.restingAt = target
+    }
 
     // Asking for a tile is idempotent — the cache and the in-flight set dedupe
     // by key — so there is no "has the view moved enough to be worth a request"
@@ -918,11 +954,21 @@ export class DetailImagery {
     // The imagery we already hold may still cover the view — show it again
     // rather than redrawing the same pixels onto a texture that is re-uploaded
     // in full, mip chain and all, every time it is published.
+    //
+    // Against what is *on screen*, not against the padded rectangle we would
+    // request. Both are grown by PATCH_MARGIN, so asking whether the held one
+    // contains the wanted one is asking whether the camera has moved by exactly
+    // zero — the test failed on a hair's drift and sent every frame of a slow
+    // move down the expensive path. The margin exists to buy ground ahead of
+    // the camera; spending it is what it is for. What the shader needs is
+    // imagery under every screen pixel, which is this question, and the answer
+    // now holds for an eighth of a span of travel instead of for nothing.
+    const onScreen = viewBbox(lat, lng, altitude, aspect, 1, fovDeg)
     if (
       this.texture &&
       this.solid &&
       !movedEnough(this.current, target) &&
-      coversView(this.composited, target)
+      coversView(this.composited, onScreen)
     ) {
       if (!this.shown || this.mix !== 1) {
         this.shown = true
