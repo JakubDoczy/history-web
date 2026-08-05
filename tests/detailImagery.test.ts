@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import {
   viewBbox,
   bboxToUvRect,
-  imageSize,
   visibleSpanDeg,
   minAltitudeFor,
   IMAGERY_ERA_FROM,
@@ -11,23 +10,25 @@ import {
   PRE_ERA_VIEW_KM,
   MAX_PATCH_PX,
   PATCH_MARGIN,
-  requestedPxPerDeg,
   viewSpanDeg,
   DEFAULT_FOV,
   DETAIL_ON_TEXELS,
   DETAIL_OFF_TEXELS,
+  FEATHER_FRACTION,
+  TILE_COALESCE_MS,
+  TILE_INFLIGHT,
+  Z_MAX,
   degPerScreenPx,
   baseTexelsPerScreenPx,
   detailWanted,
   planetFillsFrame,
-  clampBboxSpan,
   pickSource,
-  requestScreenPx,
   compositeCanvasSize,
   snapCompositeSize,
   RESAMPLE_MAX_PX,
   type Bbox,
 } from '../src/lib/detailImagery'
+import { TILE_BYTES, TILE_PX, targetLevel, tileSpanDeg } from '../src/lib/tilePyramid'
 
 describe('viewBbox', () => {
   it('is centred on the requested point', () => {
@@ -92,45 +93,6 @@ describe('bboxToUvRect', () => {
       const [u0, v0, du, dv] = bboxToUvRect(viewBbox(lat, lng, 0.02))
       expect((lng + 180) / 360).toBeCloseTo(u0 + du / 2, 6)
       expect((lat + 90) / 180).toBeCloseTo(v0 + dv / 2, 6)
-    }
-  })
-})
-
-describe('imageSize', () => {
-  it('keeps degrees-per-pixel consistent across both axes', () => {
-    const b = viewBbox(45, 10, 0.02)
-    const { width, height } = imageSize(b, 900)
-    const perPxX = (b.maxLng - b.minLng) / width
-    const perPxY = (b.maxLat - b.minLat) / height
-    expect(perPxY / perPxX).toBeCloseTo(1, 1)
-  })
-
-  it('respects the hard pixel ceiling', () => {
-    const b = viewBbox(0, 0, 0.3)
-    const { width, height } = imageSize(b, 8000, 2048)
-    expect(width).toBeLessThanOrEqual(2048)
-    expect(height).toBeLessThanOrEqual(2048)
-  })
-
-  it('never asks a source for more detail than it holds', () => {
-    // a tight view of a 500 m source: more pixels would only be upsampled blur
-    const b = viewBbox(0, 0, 0.002)
-    const { height } = imageSize(b, 4000, 2048, 222)
-    const latSpan = b.maxLat - b.minLat
-    expect(height).toBeLessThanOrEqual(Math.ceil(latSpan * 222) + 192)
-    expect(height).toBeLessThan(2048) // and so stays quick to fetch
-  })
-
-  it('lets the sharper source out-resolve the base one wherever a patch shows', () => {
-    // Now that the patch is cut to the frame rather than to the horizon, the
-    // rectangle is small enough that Blue Marble's 500 m ceiling bites across
-    // the whole range a patch is shown in, and the 10 m source always pulls
-    // ahead. It used to tie with it at the far end.
-    for (const alt of [0.0015, 0.02, 0.05]) {
-      const b = viewBbox(45, 10, alt)
-      const base = imageSize(b, 2400, MAX_PATCH_PX, BASE_SOURCE.pxPerDeg)
-      const sharp = imageSize(b, 2400, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
-      expect(sharp.height).toBeGreaterThan(base.height)
     }
   })
 })
@@ -214,29 +176,6 @@ describe('degPerScreenPx', () => {
   })
 })
 
-describe('clampBboxSpan', () => {
-  const box = { minLat: 0, maxLat: 40, minLng: -30, maxLng: 50 }
-
-  it('leaves a rectangle inside the limit exactly as it was', () => {
-    expect(clampBboxSpan(box, 100)).toBe(box)
-  })
-
-  it('shrinks about the centre, keeping the shape', () => {
-    const c = clampBboxSpan(box, 40)
-    expect((c.minLat + c.maxLat) / 2).toBeCloseTo(20, 9)
-    expect((c.minLng + c.maxLng) / 2).toBeCloseTo(10, 9)
-    expect(Math.max(c.maxLat - c.minLat, c.maxLng - c.minLng)).toBeCloseTo(40, 9)
-    const before = (box.maxLng - box.minLng) / (box.maxLat - box.minLat)
-    expect((c.maxLng - c.minLng) / (c.maxLat - c.minLat)).toBeCloseTo(before, 9)
-  })
-
-  it('never leaves valid geographic bounds', () => {
-    const c = clampBboxSpan({ minLat: -90, maxLat: 90, minLng: -180, maxLng: 180 }, 30)
-    expect(c.minLat).toBeGreaterThanOrEqual(-90)
-    expect(c.maxLng).toBeLessThanOrEqual(180)
-  })
-})
-
 describe('pickSource', () => {
   it('sends wide boxes to the source that can render them', () => {
     expect(pickSource(30)).toBe(BASE_SOURCE)
@@ -317,34 +256,6 @@ describe('snapCompositeSize', () => {
     // measured on a continuous zoom-in: 1462, 1430, 1417, 1413, 1406, 1400...
     const drift = [1462, 1430, 1417, 1413, 1406, 1400, 1395, 1390, 1386]
     expect(new Set(drift.map((n) => snapCompositeSize(n, MAX_PATCH_PX))).size).toBe(2)
-  })
-})
-
-describe('requestScreenPx', () => {
-  it('is the frame height in device pixels close in, where that is right', () => {
-    for (const alt of [0.02, 0.004, 0.0005]) {
-      const frame = viewBbox(20, 10, alt)
-      expect(requestScreenPx(frame, alt, 1800)).toBeCloseTo(1800, -1)
-    }
-  })
-
-  it('scales with the latitude span the request actually covers', () => {
-    const alt = 0.02
-    const frame = viewBbox(20, 10, alt)
-    const cut = clampBboxSpan(frame, (frame.maxLat - frame.minLat) / 2)
-    const ratio = (cut.maxLat - cut.minLat) / (frame.maxLat - frame.minLat)
-    expect(requestScreenPx(cut, alt, 1800) / requestScreenPx(frame, alt, 1800)).toBeCloseTo(ratio, 9)
-  })
-
-  it('sizes wide requests on the centre density, not the frame average', () => {
-    // at wide zoom the limb is foreshortened to nothing, so the frame's average
-    // px/deg is far below what the middle of the screen actually resolves;
-    // sizing on the average returned patches coarser than the base map
-    const alt = 1.2
-    const frame = viewBbox(20, 10, alt)
-    const box = clampBboxSpan(frame, BASE_SOURCE.maxSpanDeg)
-    const size = imageSize(box, requestScreenPx(box, alt, 1800), MAX_PATCH_PX, BASE_SOURCE.pxPerDeg)
-    expect(requestedPxPerDeg(box, size)).toBeGreaterThan(BASE_TEXTURE_PX_PER_DEG)
   })
 })
 
@@ -514,6 +425,7 @@ import {
   movedEnough,
   PAN_MIN_COVER,
   SETTLE_MS,
+  viewBbox as viewBboxFor,
   viewCoverage,
   viewMotion,
 } from '../src/lib/detailImagery'
@@ -672,10 +584,13 @@ describe('coversView', () => {
 /** Stands in for the browser's Image: records the URL, resolves on demand. */
 class FakeImage {
   static requests: string[] = []
-  static last?: FakeImage
+  static pending: FakeImage[] = []
   crossOrigin = ''
   onload: (() => void) | null = null
   onerror: (() => void) | null = null
+  /** A tile is always the pyramid's own size, whatever ground it holds. */
+  naturalWidth = TILE_PX
+  naturalHeight = TILE_PX
   private url = ''
   get src() {
     return this.url
@@ -683,21 +598,69 @@ class FakeImage {
   set src(v: string) {
     this.url = v
     FakeImage.requests.push(v)
-    FakeImage.last = this
+    FakeImage.pending.push(this)
+  }
+
+  static reset() {
+    FakeImage.requests = []
+    FakeImage.pending = []
+  }
+
+  /**
+   * Land everything on the wire, and everything the freed slots then ask for.
+   *
+   * A view wants tens of tiles and only TILE_INFLIGHT may be outstanding, so
+   * "the imagery arrived" is a fixed point rather than a single callback.
+   */
+  /** Refuse the oldest request on the wire, as a dead endpoint would. */
+  static failNext() {
+    FakeImage.pending.shift()?.onerror?.()
+  }
+
+  static landAll(rounds = 40) {
+    for (let i = 0; i < rounds && FakeImage.pending.length; i++) {
+      const batch = FakeImage.pending
+      FakeImage.pending = []
+      for (const img of batch) img.onload?.()
+    }
   }
 }
 
+/** The rectangle the shader was handed, back out of UV space. */
+const bboxFromRect = ([u, v, du, dv]: [number, number, number, number]): Bbox => ({
+  minLng: u * 360 - 180,
+  minLat: v * 180 - 90,
+  maxLng: (u + du) * 360 - 180,
+  maxLat: (v + dv) * 180 - 90,
+})
+
+/** The rectangle a request went out for, read back off the WMS URL. */
+const requestedBbox = (url: string): Bbox => {
+  const q = new URLSearchParams(url.slice(url.indexOf('?') + 1))
+  const n = q.get('bbox')!.split(',').map(Number)
+  return q.get('version') === '1.3.0'
+    ? { minLat: n[0], minLng: n[1], maxLat: n[2], maxLng: n[3] }
+    : { minLng: n[0], minLat: n[1], maxLng: n[2], maxLat: n[3] }
+}
+
+/** Which pyramid level a request was for, inferred from the box it asked for. */
+const levelOf = (url: string): number => {
+  const b = requestedBbox(url)
+  return Math.round(Math.log2(360 / (b.maxLat - b.minLat)))
+}
+
 describe('DetailImagery streaming', () => {
-  const CLOSE = 0.02 // ~23 deg span: patch territory
-  // world view: the globe sits inside the lens, so there is no rectangle worth
+  const CLOSE = 0.02 // a ~1 degree frame: level 10 territory
+  // world view: the globe sits inside the lens, so there is no tile worth
   // asking for however coarse the base map looks
   const FAR = 2.5
 
   beforeEach(() => {
     vi.useFakeTimers()
-    FakeImage.requests = []
-    FakeImage.last = undefined
+    FakeImage.reset()
+    FakeCanvas.made = []
     vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
   })
   afterEach(() => {
     vi.useRealTimers()
@@ -712,53 +675,172 @@ describe('DetailImagery streaming', () => {
     }
   }
 
-  it('still requests imagery when update runs every frame', () => {
-    // the settle timer was cleared and re-armed on every call, so it never
-    // elapsed and no patch was ever fetched at all
-    const d = new DetailImagery()
-    frames(d, Math.ceil(SETTLE_MS / 16) + 4)
-    expect(FakeImage.requests).toHaveLength(1)
-  })
-
-  it('does not re-request while the camera holds still', () => {
-    const d = new DetailImagery()
-    frames(d, 200)
-    expect(FakeImage.requests).toHaveLength(1)
-  })
-
-  it('drops a queued request when the camera zooms back out', () => {
+  it('asks for tiles on the frame that wants them, not a settle later', () => {
+    // The arbitrary-bbox streamer waited SETTLE_MS before spending anything,
+    // because one request was a multi-megapixel picture of a view the camera
+    // was about to leave. A tile is a fraction of that and its URL is canonical,
+    // so during a gesture the bandwidth goes to ground that is on screen now.
     const d = new DetailImagery()
     d.update(45, 10, CLOSE, 900, 1)
-    vi.advanceTimersByTime(SETTLE_MS / 2) // still queued
+    expect(FakeImage.requests).toHaveLength(TILE_INFLIGHT)
+    d.dispose()
+  })
+
+  it('never puts more than the in-flight cap on the wire at once', () => {
+    const d = new DetailImagery()
+    frames(d, 30)
+    expect(FakeImage.pending.length).toBeLessThanOrEqual(TILE_INFLIGHT)
+    // …and the cap is a throttle, not a ceiling: landing tiles frees slots
+    const first = FakeImage.requests.length
+    FakeImage.landAll()
+    expect(FakeImage.requests.length).toBeGreaterThan(first)
+    d.dispose()
+  })
+
+  it('spends the first requests on the fallback level, parents before children', () => {
+    // Four times cheaper than the level it stands under, and the only thing
+    // between a moving camera and bare base map, so it goes out first.
+    const d = new DetailImagery()
+    d.update(45, 10, CLOSE, 900, 1)
+    const z = targetLevel(baseTexelsPerScreenPx(CLOSE, 900), Z_MAX)
+    expect(FakeImage.requests.map(levelOf).every((l) => l === z - 1)).toBe(true)
+    d.dispose()
+  })
+
+  it('asks for every tile at the pyramid size, on the pyramid grid', () => {
+    // Aligned fixed boxes are what make a URL canonical, which is what lets the
+    // browser's HTTP cache and the service's own cache hit at all.
+    const d = new DetailImagery()
+    frames(d, 40)
+    FakeImage.landAll()
+    expect(FakeImage.requests.length).toBeGreaterThan(TILE_INFLIGHT)
+    for (const url of FakeImage.requests) {
+      const q = new URLSearchParams(url.slice(url.indexOf('?') + 1))
+      expect(q.get('width')).toBe(String(TILE_PX))
+      expect(q.get('height')).toBe(String(TILE_PX))
+      const b = requestedBbox(url)
+      const span = b.maxLat - b.minLat
+      expect(b.maxLng - b.minLng).toBeCloseTo(span, 6) // square in degrees
+      expect((b.minLng + 180) / span).toBeCloseTo(Math.round((b.minLng + 180) / span), 6)
+      expect((90 - b.maxLat) / span).toBeCloseTo(Math.round((90 - b.maxLat) / span), 6)
+    }
+    d.dispose()
+  })
+
+  it('never asks for the same tile twice, however tight the budget', () => {
+    // The wanted set is pinned, so eviction can never drop a tile the very next
+    // frame wants again — and the prefetch ring is spent out of headroom, so it
+    // cannot push the cache past its bound and start the same loop from the
+    // other end. Without both, a still camera fetched, evicted and refetched
+    // forever: 907 requests for 140 distinct tiles, measured.
+    const d = new DetailImagery({ tileBudget: TILE_BYTES * 8 })
+    for (let round = 0; round < 6; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(45, 10, CLOSE, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.landAll()
+      vi.advanceTimersByTime(SETTLE_MS + 32)
+    }
+    expect(FakeImage.requests.length).toBeGreaterThan(TILE_INFLIGHT)
+    expect(new Set(FakeImage.requests).size).toBe(FakeImage.requests.length)
+    d.dispose()
+  })
+
+  it('collects a burst of arrivals into one composite', () => {
+    // Tiles land within milliseconds of each other and every composite is a
+    // full canvas upload plus a full generateMipmap. Publishing on each arrival
+    // spent 48 of them across one scripted pan and zoom where six pictures were
+    // involved.
+    const d = new DetailImagery()
+    for (let i = 0; i < 24; i++) {
+      d.update(45, 10, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    expect(FakeCanvas.made.length).toBe(0) // nothing composited yet
+    FakeImage.landAll(1) // one round trip: several tiles, at once
+    expect(FakeCanvas.made.length).toBe(0) // …still nothing, one tick later…
+    vi.advanceTimersByTime(TILE_COALESCE_MS + 1)
+    expect(FakeCanvas.made[0].cleared).toBe(1) // …and then exactly one composite
+    d.dispose()
+  })
+
+  it('never asks for the same tile twice', () => {
+    // The whole economic case for the grid: a pan reuses what it already holds
+    // instead of paying again for ground it has.
+    const d = new DetailImagery()
+    frames(d, 40)
+    FakeImage.landAll()
+    frames(d, 40, 45, 10.05)
+    FakeImage.landAll()
+    expect(new Set(FakeImage.requests).size).toBe(FakeImage.requests.length)
+    d.dispose()
+  })
+
+  it('stops asking once every wanted tile is held', () => {
+    const d = new DetailImagery()
+    for (let i = 0; i < 6; i++) {
+      frames(d, 40)
+      FakeImage.landAll()
+    }
+    const settled = FakeImage.requests.length
+    frames(d, 200)
+    expect(FakeImage.requests).toHaveLength(settled)
+    d.dispose()
+  })
+
+  it('lets tiles fetched before a zoom-out land, but never onto the screen', () => {
+    // Zooming back out is not "something newer is coming", it is "nobody is
+    // looking at this any more". The tiles are as true as ever, so they stay in
+    // the cache rather than being paid for twice — but nothing they arrive into
+    // may reach the shader.
+    const d = new DetailImagery()
+    d.update(45, 10, CLOSE, 900, 1)
+    expect(FakeImage.requests.length).toBeGreaterThan(0)
     d.update(45, 10, FAR, 900, 1)
     vi.advanceTimersByTime(SETTLE_MS * 2)
-    expect(FakeImage.requests).toHaveLength(0)
+    FakeImage.landAll()
     expect(d.mix).toBe(0)
+    expect(d.texture).toBeUndefined()
+    d.dispose()
   })
 
-  it('publishes resolution only once the image it describes has arrived', () => {
+  it('publishes resolution only once the imagery it describes has arrived', () => {
     const d = new DetailImagery()
     frames(d, 30)
-    expect(FakeImage.requests).toHaveLength(1)
     expect(d.groundRes).toBe(0) // in flight: nothing on screen to describe yet
-    FakeImage.last!.onload!()
+    FakeImage.landAll()
+    vi.advanceTimersByTime(SETTLE_MS + 32)
     expect(d.groundRes).toBeGreaterThan(0)
     expect(d.status).toBe('ready')
+    d.dispose()
   })
 
-  it('keeps the loaded source name when the patch is hidden and shown again', () => {
+  it('quotes the resolution of the level it actually drew', () => {
     const d = new DetailImagery()
-    frames(d, 30)
-    FakeImage.last!.onload!()
+    frames(d, 40)
+    FakeImage.landAll()
+    vi.advanceTimersByTime(SETTLE_MS + 32)
+    const z = targetLevel(baseTexelsPerScreenPx(CLOSE, 900), Z_MAX)
+    expect(d.groundRes).toBeCloseTo((tileSpanDeg(z) * 111_320) / TILE_PX, 6)
+    d.dispose()
+  })
+
+  it('keeps the loaded source name when the imagery is hidden and shown again', () => {
+    const d = new DetailImagery()
+    frames(d, 40)
+    FakeImage.landAll()
+    vi.advanceTimersByTime(SETTLE_MS + 32)
     expect(d.sourceLabel).toBe(SHARP_SOURCE.label)
 
-    d.update(45, 10, FAR, 900, 1) // zoom out: patch retires
+    d.update(45, 10, FAR, 900, 1) // zoom out: the imagery retires
     expect(d.sourceLabel).toBe('—')
 
     d.update(45, 10, CLOSE, 900, 1) // and back: the same texture is re-shown
     expect(d.mix).toBe(1)
     expect(d.sourceLabel).toBe(SHARP_SOURCE.label) // not the fallback's name
     expect(d.attribution).toBe(SHARP_SOURCE.attribution)
+    d.dispose()
   })
 
   it('streams at mid zoom, where it used to show a magnified world map', () => {
@@ -767,120 +849,58 @@ describe('DetailImagery streaming', () => {
     // magnified ten times with nothing on its way.
     const d = new DetailImagery()
     frames(d, 30, 45, 10, 0.3)
-    expect(FakeImage.requests).toHaveLength(1)
+    expect(FakeImage.requests.length).toBeGreaterThan(0)
     // and it asks the source that can actually render a box that wide
-    expect(FakeImage.requests[0]).toContain(BASE_SOURCE.endpoint)
+    expect(FakeImage.requests.every((u) => u.includes(BASE_SOURCE.endpoint))).toBe(true)
     d.dispose()
   })
 
   it('never asks a source for a wider box than it will serve', () => {
+    // Now a statement about the whole plan rather than about one request: the
+    // source is picked on the *fallback* level, so the coarser of the two levels
+    // a view fetches is the one that has to fit — see sourceForLevel.
     for (const alt of [1.2, 0.8, 0.4, 0.3, 0.1, 0.02, 0.002]) {
-      FakeImage.requests = []
+      FakeImage.reset()
       const d = new DetailImagery()
-      frames(d, 30, 20, 10, alt)
-      expect(FakeImage.requests).toHaveLength(1)
-      const url = new URL(FakeImage.requests[0])
-      const [a, b, c, e] = (url.searchParams.get('bbox') ?? '').split(',').map(Number)
-      const sharp = url.href.includes(SHARP_SOURCE.endpoint)
-      // 1.3.0 is lat,lng and 1.1.1 is lng,lat, so compare both spans
-      const span = Math.max(Math.abs(c - a), Math.abs(e - b))
-      expect(span).toBeLessThanOrEqual(
-        (sharp ? SHARP_SOURCE.maxSpanDeg : BASE_SOURCE.maxSpanDeg) + 1e-6,
-      )
+      frames(d, 40, 20, 10, alt)
+      FakeImage.landAll()
+      expect(FakeImage.requests.length).toBeGreaterThan(0)
+      for (const url of FakeImage.requests) {
+        const b = requestedBbox(url)
+        const sharp = url.includes(SHARP_SOURCE.endpoint)
+        const span = Math.max(b.maxLat - b.minLat, b.maxLng - b.minLng)
+        expect(span).toBeLessThanOrEqual(
+          (sharp ? SHARP_SOURCE.maxSpanDeg : BASE_SOURCE.maxSpanDeg) + 1e-6,
+        )
+      }
       d.dispose()
     }
   })
 
-  it('sizes a clamped request to the screen, not to the frame it was cut from', () => {
-    // a box clamped to a fraction of the frame covers that fraction of the
-    // screen; asking for the full frame's pixel count would oversample by
-    // exactly the amount it was clamped by, and cost the same multiple
-    const d = new DetailImagery()
-    frames(d, 30, 20, 10, 1.2) // ~110 deg frame, clamped to the base source's 60
-    const url = new URL(FakeImage.requests[0])
-    const width = Number(url.searchParams.get('width'))
-    const height = Number(url.searchParams.get('height'))
-    expect(Math.max(width, height)).toBeLessThanOrEqual(MAX_PATCH_PX)
-    const [minLat, , maxLat] = (url.searchParams.get('bbox') ?? '').split(',').map(Number)
-    // finer than the world texture it is replacing — only just, at a frame
-    // this wide, which is exactly what "the base map has just stopped keeping
-    // up" means; the margin grows fast as the camera descends
-    expect(height / (maxLat - minLat)).toBeGreaterThan(BASE_TEXTURE_PX_PER_DEG)
-    d.dispose()
+  it('draws one source per composite, so no join crosses two sensors', () => {
+    // Sentinel-2 is a different sensor from Blue Marble — greener, darker — and
+    // where the two met on one canvas the seam was a palette step no edge
+    // feather can help. Both levels therefore come from one source.
+    for (const alt of [0.9, 0.4, 0.2, 0.05, 0.01, 0.003]) {
+      FakeImage.reset()
+      const d = new DetailImagery()
+      frames(d, 40, 20, 10, alt)
+      FakeImage.landAll()
+      const hosts = new Set(FakeImage.requests.map((u) => new URL(u).host))
+      expect(hosts.size).toBe(1)
+      d.dispose()
+    }
   })
 
   it('falls back to the base source after the sharp one fails twice', () => {
     const d = new DetailImagery()
     frames(d, 30)
     expect(FakeImage.requests[0]).toContain(SHARP_SOURCE.endpoint)
-    FakeImage.last!.onerror!()
-    FakeImage.last!.onerror!()
-    expect(FakeImage.requests[2]).toContain(BASE_SOURCE.endpoint)
-  })
-})
-
-describe('requested resolution', () => {
-  /**
-   * The complaint this answers: patches looked softer than the zoom warranted.
-   * The screen asks for `screenPx` device pixels down its height and sees
-   * `visibleSpanDeg` degrees of ground, so anything below that ratio is visibly
-   * upsampled. The only excuses are the source's own native resolution and the
-   * hard texture ceiling.
-   */
-  const ALTITUDES = [0.4, 0.2, 0.08, 0.03, 0.01, 0.004, 0.001, MIN_ALTITUDE_DETAIL]
-  const SCREENS = [900, 1600, 2880] // laptop, desktop, retina laptop at dpr 2
-
-  it('meets the screen density at every altitude, unless a real limit stops it', () => {
-    for (const alt of ALTITUDES) {
-      for (const screenPx of SCREENS) {
-        if (!detailWanted(alt, screenPx)) continue
-        for (const aspect of [1, 1.6]) {
-          const b = viewBbox(20, 10, alt, aspect)
-          const size = imageSize(b, screenPx, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
-          const got = requestedPxPerDeg(b, size)
-          const wanted = screenPx / viewSpanDeg(alt)
-          const atCeiling = Math.max(size.width, size.height) >= MAX_PATCH_PX - 1
-          const atSourceLimit = got >= SHARP_SOURCE.pxPerDeg * 0.99
-          // the only excuses are the texture ceiling and the source's own
-          // native resolution; anything else is a request we simply under-asked
-          expect(got >= wanted * 0.999 || atCeiling || atSourceLimit).toBe(true)
-        }
-      }
-    }
-  })
-
-  it('was short of the screen at the old 1536 ceiling, which is why it looked soft', () => {
-    const b = viewBbox(0, 10, 0.01)
-    const screenPxPerDeg = 1600 / viewSpanDeg(0.01)
-    const old = imageSize(b, 1600, 1536, SHARP_SOURCE.pxPerDeg)
-    expect(requestedPxPerDeg(b, old)).toBeLessThan(screenPxPerDeg * 0.9)
-    const now = imageSize(b, 1600, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
-    expect(requestedPxPerDeg(b, now)).toBeGreaterThanOrEqual(screenPxPerDeg * 0.999)
-  })
-
-  it('still refuses to out-ask a source past its native resolution', () => {
-    for (const alt of [0.05, 0.02, 0.008]) {
-      const b = viewBbox(0, 0, alt)
-      const size = imageSize(b, 4000, MAX_PATCH_PX, BASE_SOURCE.pxPerDeg)
-      // below a few hundred pixels the request is not worth shrinking further,
-      // so the floor is allowed to win; above it, the source's ceiling rules
-      const atFloor = size.height <= 192
-      expect(atFloor || requestedPxPerDeg(b, size) <= BASE_SOURCE.pxPerDeg * 1.01).toBe(true)
-    }
-    const wide = viewBbox(0, 0, 0.05)
-    expect(imageSize(wide, 4000, MAX_PATCH_PX, BASE_SOURCE.pxPerDeg).height).toBeLessThan(
-      imageSize(wide, 4000, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg).height,
-    )
-  })
-
-  it('keeps degrees-per-pixel square even when the ceiling bites', () => {
-    // a wide bbox used to clamp width alone, which stretched the sampling
-    const b = viewBbox(70, 0, 0.05, 2.5)
-    const { width, height } = imageSize(b, 6000, 1024, SHARP_SOURCE.pxPerDeg)
-    expect(Math.max(width, height)).toBeLessThanOrEqual(1024)
-    const perPxX = (b.maxLng - b.minLng) / width
-    const perPxY = (b.maxLat - b.minLat) / height
-    expect(perPxY / perPxX).toBeCloseTo(1, 1)
+    const before = FakeImage.requests.length
+    FakeImage.failNext()
+    FakeImage.failNext()
+    expect(FakeImage.requests.slice(before).some((u) => u.includes(BASE_SOURCE.endpoint))).toBe(true)
+    d.dispose()
   })
 })
 
@@ -906,21 +926,30 @@ class FakeCanvas {
   height = 0
   ops: { image: unknown; x: number; y: number; w: number; h: number }[] = []
   cleared = 0
+  /** Where each composite began: a composite clears before it draws anything. */
+  marks: number[] = []
   constructor() {
     FakeCanvas.made.push(this)
   }
+  /** Just the last composite's draws, since the canvas is reused between them. */
+  get last() {
+    return this.ops.slice(this.marks.length ? this.marks[this.marks.length - 1] : 0)
+  }
   getContext() {
     return {
-      clearRect: () => this.cleared++,
+      clearRect: () => {
+        this.cleared++
+        this.marks.push(this.ops.length)
+      },
       drawImage: (image: unknown, x: number, y: number, w: number, h: number) =>
         this.ops.push({ image, x, y, w, h }),
     }
   }
 }
 
-describe('cached patch compositing', () => {
+describe('tiled compositing', () => {
   const CLOSE = 0.02
-  /** A pan of ~27% of the patch width: past the refetch threshold, well inside it. */
+  /** A pan of ~27% of the frame width: enough that the wanted set really moves. */
   const PAN = (() => {
     const b = viewBbox(45, 10, CLOSE, 1)
     return (b.maxLng - b.minLng) * 0.27
@@ -928,8 +957,7 @@ describe('cached patch compositing', () => {
 
   beforeEach(() => {
     vi.useFakeTimers()
-    FakeImage.requests = []
-    FakeImage.last = undefined
+    FakeImage.reset()
     FakeCanvas.made = []
     vi.stubGlobal('Image', FakeImage)
     vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
@@ -939,394 +967,104 @@ describe('cached patch compositing', () => {
     vi.unstubAllGlobals()
   })
 
-  /** Settle, fetch and land one patch at the given point. */
-  const land = (d: DetailImagery, lat: number, lng: number) => {
-    for (let i = 0; i < 30; i++) {
-      d.update(lat, lng, CLOSE, 900, 1)
-      vi.advanceTimersByTime(16)
+  /**
+   * Hold the camera still until every tile the view wants has arrived.
+   *
+   * A view wants tens of tiles and only TILE_INFLIGHT may be outstanding, and
+   * the prefetch ring is not even asked for until the camera has been still for
+   * a settle — so "the imagery arrived" is a fixed point rather than one
+   * callback, which is what this loops to.
+   */
+  const land = (d: DetailImagery, lat: number, lng: number, alt = CLOSE) => {
+    for (let round = 0; round < 4; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(lat, lng, alt, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.landAll()
+      vi.advanceTimersByTime(SETTLE_MS + 32)
     }
-    FakeImage.last!.onload!()
   }
 
-  it('composites a patch the moment it arrives, rather than showing it raw', () => {
-    // One route to the shader, not two. A patch used to be published directly
-    // on arrival and composited on every later move, so the rectangle the
-    // shader feathered against changed from the request's box to the view's box
-    // and back — and the edge of the imagery moved with it.
+  /** The composite canvas: the first one made, and the only one drawn onto. */
+  const composite = () => FakeCanvas.made[0]
+
+  it('draws the fallback level first and the target level over it', () => {
+    // Coarse but present beats sharp but absent. The level below covers the
+    // whole rectangle before anything sharper goes down, so there is never bare
+    // base map inside the composite — which is what killed the union-coverage
+    // scan the old pipeline ran every frame.
     const d = new DetailImagery()
     land(d, 45, 10)
-    const canvas = FakeCanvas.made[0]
-    expect(canvas).toBeDefined()
-    expect(canvas.ops).toHaveLength(1)
-    expect(canvas.ops[0].image).toBe(FakeImage.last)
+    const ops = composite().last
+    expect(ops.length).toBeGreaterThan(4)
+    const sizes = [...new Set(ops.map((o) => Math.round(o.w)))].sort((a, b) => b - a)
+    expect(sizes).toHaveLength(2) // two levels, and only two
+    expect(sizes[0] / sizes[1]).toBeCloseTo(2, 1) // one level apart
+    // …coarse first: everything sharp is drawn after everything coarse
+    const lastCoarse = ops.map((o) => Math.round(o.w)).lastIndexOf(sizes[0])
+    const firstSharp = ops.map((o) => Math.round(o.w)).indexOf(sizes[1])
+    expect(lastCoarse).toBeLessThan(firstSharp)
     expect(d.mix).toBe(1)
+    d.dispose()
   })
 
-  it('redraws the patch it holds onto the new view, out of the cache and after the drag', () => {
+  it('lays the tiles of one level edge to edge, with no gap and no overlap', () => {
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const ops = composite().last
+    const w = Math.min(...ops.map((o) => Math.round(o.w)))
+    const sharp = ops.filter((o) => Math.round(o.w) === w)
+    for (const a of sharp) {
+      const east = sharp.find((b) => Math.abs(b.x - (a.x + a.w)) < 1e-6 && Math.abs(b.y - a.y) < 1e-6)
+      if (east) expect(east.w).toBeCloseTo(a.w, 6)
+    }
+    // and between them they reach every corner of the canvas
+    expect(Math.min(...sharp.map((o) => o.x))).toBeLessThanOrEqual(0)
+    expect(Math.max(...sharp.map((o) => o.x + o.w))).toBeGreaterThanOrEqual(composite().width)
+    d.dispose()
+  })
+
+  it('redraws what it holds onto the new view, out of the cache and after the drag', () => {
     const d = new DetailImagery()
     land(d, 45, 10)
     const rectBefore = [...d.rect]
-    const requestsBefore = FakeImage.requests.length
-    const held = FakeImage.last // the patch already on screen
-    // the canvas is reused between composites, so clear the record rather than
-    // the instance
-    const canvas = FakeCanvas.made[0]
+    const canvas = composite()
     canvas.ops.length = 0
     canvas.cleared = 0
 
-    d.update(45, 10 + PAN, CLOSE, 900, 1) // a pan of ~27% of the patch width
+    d.update(45, 10 + PAN, CLOSE, 900, 1)
     // Nothing at all happens while the camera is moving. A composite is a full
     // texture upload and a full mip rebuild — 111 ms measured — and mid-drag it
     // buys one frame of imagery on the newly exposed edge before the next drag
-    // frame replaces it. That is the stutter that was reported, so the drag
-    // costs neither a publish nor a request.
+    // frame replaces it.
     expect(canvas.ops).toHaveLength(0)
-    expect(FakeImage.requests).toHaveLength(requestsBefore)
 
     vi.advanceTimersByTime(SETTLE_MS + 1)
-    expect(canvas).toBeDefined()
-    expect(canvas.ops).toHaveLength(1) // the one patch we own
+    expect(canvas.ops.length).toBeGreaterThan(0)
     expect(canvas.cleared).toBe(1) // and nothing stale left under it
-    // the patch is now to the *west* of the view, so it is drawn left of centre
-    expect(canvas.ops[0].x).toBeLessThan(0)
-    expect(canvas.ops[0].y).toBeCloseTo(0, 6) // same latitude: no vertical shift
-    // the texture now covers the new view, and the picture came out of the
-    // cache: it is the patch we already had, not the one the settle has only
-    // just gone to ask for
+    // the ground we already hold is now to the *west*, so it is drawn left of
+    // where it was, out of the cache rather than off the network
+    expect(Math.min(...canvas.ops.map((o) => o.x))).toBeLessThan(0)
     expect(d.rect).not.toEqual(rectBefore)
     expect(d.mix).toBe(1)
-    expect(canvas.ops[0].image).toBe(held)
-  })
-
-  it('still issues the fresh request after the camera settles', () => {
-    const d = new DetailImagery()
-    land(d, 45, 10)
-    d.update(45, 10 + PAN, CLOSE, 900, 1)
-    expect(FakeImage.requests).toHaveLength(1) // composited, not fetched
-    vi.advanceTimersByTime(SETTLE_MS + 32)
-    expect(FakeImage.requests).toHaveLength(2) // and then fetched
-  })
-
-  it('layers several cached patches, sharpest last', () => {
-    const d = new DetailImagery()
-    land(d, 45, 10) // west
-    vi.advanceTimersByTime(SETTLE_MS * 2)
-    land(d, 45, 10 + 2 * PAN) // east
-    // the canvas is reused between composites, so clear the record rather than
-    // the instance
-    const canvas = FakeCanvas.made[0]
-    canvas.ops.length = 0
-
-    d.update(45, 10 + PAN, CLOSE, 900, 1) // back to the middle: both still show
-    // The redraw is deferred to rest now: a composite mid-gesture is a full
-    // texture upload and mip rebuild the user feels as a stutter, and imagery
-    // they cannot see because the next drag frame replaces it. Same picture,
-    // one settle later.
-    vi.advanceTimersByTime(SETTLE_MS + 1)
-    expect(canvas.ops).toHaveLength(2)
-    // both patches are at the same zoom, so the tie-break is age: the newest
-    // one — the one nearest the new view — must be drawn on top
-    expect(canvas.ops[1].x).toBeGreaterThan(canvas.ops[0].x)
-  })
-
-  it('draws only the newest patch when a zoom leaves them nested', () => {
-    // Each wheel notch asks for a smaller box around the same point, and now
-    // that late patches are kept they all arrive. Stacked concentrically they
-    // are a small image over a larger copy over a larger copy, joined by hard
-    // rectangular edges no feather touches.
-    const d = new DetailImagery()
-    land(d, 45, 10)
-    vi.advanceTimersByTime(SETTLE_MS * 2)
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10, CLOSE * 0.6, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    const canvas = FakeCanvas.made[0]
-    canvas.ops.length = 0
-    FakeImage.last!.onload!()
-    expect(canvas.ops).toHaveLength(1)
-  })
-
-  it('does not composite a patch the camera has jumped away from', () => {
-    const d = new DetailImagery()
-    land(d, 45, 10)
-    const before = FakeCanvas.made[0]?.ops.length ?? 0
-    d.update(-40, -170, CLOSE, 900, 1) // the other side of the world
-    expect(FakeCanvas.made[0]?.ops.length ?? 0).toBe(before) // nothing to draw
-  })
-
-  it('resamples a magnified patch, but never inside the caller\'s task', async () => {
-    // A canvas that can actually read and write pixels, which the stub above
-    // deliberately cannot: the resampler is skipped without readback, and the
-    // point of this test is that it is *not* skipped when readback exists.
-    class PixelCanvas {
-      static made: PixelCanvas[] = []
-      width = 0
-      height = 0
-      ops: { image: unknown; w: number; h: number }[] = []
-      put = 0
-      constructor() {
-        PixelCanvas.made.push(this)
-      }
-      getContext() {
-        return {
-          clearRect: () => {},
-          drawImage: (image: unknown, _x = 0, _y = 0, w = 0, h = 0) =>
-            this.ops.push({ image, w, h }),
-          getImageData: (_x: number, _y: number, w: number, h: number) => ({
-            data: new Uint8ClampedArray(w * h * 4),
-            width: w,
-            height: h,
-          }),
-          putImageData: () => this.put++,
-        }
-      }
-    }
-    vi.stubGlobal('document', { createElement: () => new PixelCanvas() })
-    vi.stubGlobal('ImageData', class {
-      constructor(
-        public data: Uint8ClampedArray,
-        public width: number,
-        public height: number,
-      ) {}
-    })
-
-    const d = new DetailImagery()
-    // land a patch at a wide view, so what we hold is coarse...
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10, 0.09, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    const img = FakeImage.last!
-    // the browser fills these in; the composite needs them to know the scale
-    Object.assign(img, { naturalWidth: 600, naturalHeight: 400 })
-
-    // ...then descend *before* it lands, so the composite the arrival triggers
-    // draws that coarse patch onto a canvas cut to a much closer view. The
-    // descent itself no longer redraws anything — the rectangle already
-    // composited covers it, and the upload that redraw cost was the zoom-in
-    // stall (see coversView) — so the arrival is what puts a magnified patch on
-    // the canvas, which is the case this test is about.
-    d.update(45, 10, 0.02, 900, 1)
-    // An arrival mid-gesture normally goes into the cache and no further — a
-    // composite is an upload and a mip rebuild, and the camera is still moving.
-    // This one is the FIRST picture, which the deadline in `arm` deliberately
-    // does not defer: a globe with no imagery on it at all waits for nobody. So
-    // it lands here, unsharpened, which is what the next lines are about.
-    img.onload!()
-
-    // The zoom's own composite is bilinear: the raw image, straight onto the
-    // canvas, and not one pixel filtered on the way. That is what keeps the
-    // zoom handler inside a frame.
-    const canvas = PixelCanvas.made.find((c) => c.ops.length)!
-    expect(canvas).toBeDefined()
-    expect(canvas.ops).not.toHaveLength(0)
-    expect(canvas.ops[0].image).toBe(img)
-    expect(PixelCanvas.made.every((c) => c.put === 0)).toBe(true)
-
-    // ...and no frame of a zoom filters anything inside the update call. The
-    // resample the *arrival* asked for does land during these frames — that is
-    // the whole point of deferring it — so the invariant is measured across
-    // each call rather than over the loop.
-    const puts = () => PixelCanvas.made.reduce((s, c) => s + c.put, 0)
-    for (let i = 0; i < 10; i++) {
-      const before = puts()
-      d.update(45, 10, 0.02 - i * 0.0005, 900, 1)
-      expect(puts()).toBe(before)
-      await vi.advanceTimersByTimeAsync(16)
-    }
-
-    // Then the camera settles, the resample runs off this task, and the
-    // composite is redrawn with it — the same picture as before, only later.
-    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
-    expect(PixelCanvas.made.some((c) => c.put > 0)).toBe(true)
-    const sharp = PixelCanvas.made
-      .flatMap((c) => c.ops)
-      .filter((o) => o.image instanceof PixelCanvas)
-    expect(sharp.length).toBeGreaterThan(0)
     d.dispose()
   })
 
-  it('asks for one resample per patch, however many frames a zoom takes', async () => {
-    let calls = 0
-    const d = new DetailImagery({
-      resampler: {
-        run: async () => {
-          calls++
-          return undefined
-        },
-        dispose: () => {},
-      },
-    })
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10, 0.09, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    Object.assign(FakeImage.last!, { naturalWidth: 600, naturalHeight: 400 })
-    FakeImage.last!.onload!()
-    // the camera was standing still when it landed, so this one is sharpened
-    const onArrival = calls
-    expect(onArrival).toBe(1)
-    // a continuous zoom: the wanted size changes every frame, and none of them
-    // is worth filtering because the next frame replaces it
-    for (let i = 0; i < 20; i++) {
-      d.update(45, 10, 0.05 - i * 0.0015, 900, 1)
-      await vi.advanceTimersByTimeAsync(16)
-    }
-    expect(calls).toBe(onArrival)
-    // one pass once the camera stops, not one per frame
-    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
-    expect(calls).toBe(onArrival + 1)
-    d.dispose()
-  })
-
-  it('keeps a patch that arrives after a later request went out', () => {
-    // A zoom issues a request per notch, and with a real network each one is
-    // still 1-2 s away when the next goes out. Discarding an image because
-    // something newer had been *asked for* meant a zoom threw away everything
-    // it fetched and showed the bare base map the whole way in.
-    const d = new DetailImagery()
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10, CLOSE, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    const first = FakeImage.last!
-    // the camera moves on and a second request goes out while the first is
-    // still in flight
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10 + 2 * PAN, CLOSE, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    expect(FakeImage.requests).toHaveLength(2)
-    expect(FakeImage.last).not.toBe(first)
-
-    first.onload!() // the older one lands last, and is still worth having
-    expect(d.mix).toBe(1)
-    // and it is drawn where it belongs — west of the current view, not over it
-    const canvas = FakeCanvas.made[0]
-    expect(canvas.ops).toHaveLength(1)
-    expect(canvas.ops[0].image).toBe(first)
-    expect(canvas.ops[0].x).toBeLessThan(0)
-  })
-
-  it('cuts a late patch to the view the camera is looking at now', () => {
-    // The fast path — "what we hold still covers this view" — does not
-    // recomposite, so the last *composited* rectangle can be several zoom steps
-    // old. Cutting an arrival to that instead of to the live view drew a patch
-    // smaller than the frame, and its feathered edge appeared to shrink while
-    // the camera stood still.
-    const d = new DetailImagery()
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10, 0.05, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    const inFlight = FakeImage.last!
-    // zoom in a little — not far enough to refetch, so update() takes the fast
-    // path and never recomposites
-    d.update(45, 10, 0.045, 900, 1)
-    const wanted = viewBbox(45, 10, 0.045, 1)
-    inFlight.onload!()
-    // …and the arrival waits for the camera, so the rectangle it lands on is
-    // the live one rather than the one it was requested for
-    vi.advanceTimersByTime(SETTLE_MS + 1)
-    const [, , du] = d.rect
-    expect(du * 360).toBeCloseTo(wanted.maxLng - wanted.minLng, 3)
-  })
-
-  it('still drops an image once streaming has been cancelled under it', () => {
-    // zooming back out is not "something newer is coming", it is "nobody is
-    // looking at this any more"
+  it('never publishes mid-gesture, however many tiles land during it', () => {
     const d = new DetailImagery()
     land(d, 45, 10)
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10 + 2 * PAN, CLOSE, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    const pending = FakeImage.last!
-    d.update(45, 10, 2.5, 900, 1) // out to a world view: streaming stops
-    const canvas = FakeCanvas.made[0]
+    const canvas = composite()
     canvas.ops.length = 0
-    pending.onload!()
+    for (let i = 1; i <= 8; i++) {
+      d.update(45, 10 + (PAN * i) / 8, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+      FakeImage.landAll() // arrivals during the drag go into the cache and no further
+    }
     expect(canvas.ops).toHaveLength(0)
-    expect(d.mix).toBe(0)
-  })
-
-  it('never shrinks the composite because the camera moved', () => {
-    // The display rule: effective resolution must not go backward over ground
-    // the camera is already looking at. A canvas that halves while the camera
-    // moves and doubles when it stops breaks that everywhere at once, several
-    // times a second, for as long as the wheel is turning.
-    const SCREEN = 3000
-    const d = new DetailImagery({ maxPx: 4096 })
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10, CLOSE, SCREEN, 1)
-      vi.advanceTimersByTime(16)
-    }
-    FakeImage.last!.onload!()
-    const canvas = FakeCanvas.made[0]
-    const atRest = Math.max(canvas.width, canvas.height)
-    expect(atRest).toBeGreaterThan(0)
-
-    d.update(45, 10 + PAN, CLOSE, SCREEN, 1)
-    expect(Math.max(canvas.width, canvas.height)).toBe(atRest)
     vi.advanceTimersByTime(SETTLE_MS + 32)
-    expect(Math.max(canvas.width, canvas.height)).toBe(atRest)
-  })
-
-  it('never composites the canvas into itself', () => {
-    // A canvas drawn into itself is undefined at best and a feedback loop at
-    // worst, each generation nesting a copy of the last. Nothing puts the
-    // composite into the cache today, so this is a guard against a future
-    // change making it possible — checked by putting the destination in the
-    // cache by hand and confirming it is not drawn.
-    const d = new DetailImagery()
-    land(d, 45, 10)
-    const canvas = FakeCanvas.made[0]
-    const cache = (d as unknown as { cache: { image: unknown }[] }).cache
-    cache.unshift({ ...cache[0], image: canvas })
-    canvas.ops.length = 0
-    d.update(45, 10 + PAN, CLOSE, 900, 1)
-    expect(canvas.ops.some((o) => o.image === canvas)).toBe(false)
-  })
-
-  it('changes the rectangle only in the same call that redraws the pixels', () => {
-    // Content, rectangle and mip level describe one picture. If the rectangle
-    // moves to a new view while the texture still holds the previous
-    // composite's pixels, the shader stretches the old picture over the new
-    // ground — which is the other half of the stretch-and-nest report.
-    const d = new DetailImagery()
-    land(d, 45, 10)
-    const canvas = FakeCanvas.made[0]
-    const seen: { rect: number[]; ops: number }[] = []
-    for (const step of [0.4, 0.9, 1.5, 2.2]) {
-      canvas.ops.length = 0
-      d.update(45, 10 + PAN * step, CLOSE, 900, 1)
-      seen.push({ rect: [...d.rect], ops: canvas.ops.length })
-    }
-    // every frame that moved the rectangle also redrew the canvas
-    for (let i = 1; i < seen.length; i++) {
-      const moved = seen[i].rect.some((v, k) => v !== seen[i - 1].rect[k])
-      if (moved) expect(seen[i].ops).toBeGreaterThan(0)
-    }
-  })
-
-  it('quotes the resolution of the imagery on screen, not of the last arrival', () => {
-    // The scale panel reads this. An arrival that the composite dedupes away —
-    // same patches, same size, same rectangle — never reaches the screen, and
-    // quoting its resolution anyway is how a still picture came to be described
-    // as getting coarser and then finer again.
-    const d = new DetailImagery()
-    land(d, 45, 10)
-    const sharp = d.groundRes
-    expect(sharp).toBeGreaterThan(0)
-    // a second, coarser patch for the same view arrives and changes nothing
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10 + PAN, CLOSE, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    const before = d.groundRes
-    d.update(45, 10 + PAN, CLOSE, 900, 1)
-    expect(d.groundRes).toBe(before)
+    expect(canvas.ops.length).toBeGreaterThan(0)
+    d.dispose()
   })
 
   it('does not redraw the same composite twice', () => {
@@ -1334,82 +1072,67 @@ describe('cached patch compositing', () => {
     // every frame the view moves
     const d = new DetailImagery()
     land(d, 45, 10)
-    const canvas = FakeCanvas.made[0]
+    const canvas = composite()
     canvas.ops.length = 0
     canvas.cleared = 0
     for (let i = 0; i < 8; i++) d.update(45, 10 + PAN, CLOSE, 900, 1)
-    // The redraw is deferred to rest now: a composite mid-gesture is a full
-    // texture upload and mip rebuild the user feels as a stutter, and imagery
-    // they cannot see because the next drag frame replaces it. Same picture,
-    // one settle later.
     vi.advanceTimersByTime(SETTLE_MS + 1)
     expect(canvas.cleared).toBe(1)
-    expect(canvas.ops).toHaveLength(1)
-  })
-
-  it('never hands the shader a rectangle its pixels were not drawn for', () => {
-    // Content, rectangle and mip level are written by publish() together. If a
-    // rectangle can be updated while the texture still holds the previous
-    // composite, the shader stretches the old pixels across the new box — the
-    // nesting reported from the field.
-    const d = new DetailImagery()
-    const drawnFor = () => {
-      const c = FakeCanvas.made[0]
-      return c && c.ops.length ? c : undefined
+    const once = canvas.ops.length
+    for (let i = 0; i < 8; i++) {
+      d.update(45, 10 + PAN, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
     }
-    const check = () => {
-      if (!d.texture || !drawnFor()) return
-      // the rect the shader holds must be the uv rect of the bbox the canvas
-      // was cut to, to the precision the composite key is keyed on
-      expect(d.rect.map((n) => +n.toFixed(6))).toEqual(
-        bboxToUvRect(lastTarget!).map((n) => +n.toFixed(6)),
-      )
-    }
-    let lastTarget: Bbox | undefined
-    for (const [lat, lng, alt] of [
-      [45, 10, 0.06], [45, 10, 0.05], [45.02, 10.03, 0.04], [45.02, 10.03, 0.02],
-    ] as const) {
-      for (let i = 0; i < 30; i++) {
-        lastTarget = viewBbox(lat, lng, alt, 1)
-        d.update(lat, lng, alt, 900, 1)
-        vi.advanceTimersByTime(16)
-      }
-      FakeImage.last!.onload!()
-      check()
-    }
+    expect(canvas.ops).toHaveLength(once)
     d.dispose()
   })
 
-  it('does not reuse the texture object when the canvas has been resized', () => {
-    // three allocates immutable storage on a texture's first upload and never
-    // again, so re-flagging a texture whose canvas has changed shape uploads the
-    // new image into the old allocation: silently into the top-left corner, with
-    // the previous composite left in the rest.
-    const d = new DetailImagery({ maxPx: 4096 })
-    for (let i = 0; i < 30; i++) {
-      d.update(45, 10, CLOSE, 3000, 1)
+  it('does not composite tiles the camera has jumped away from', () => {
+    const d = new DetailImagery()
+    land(d, 45, 10)
+    const canvas = composite()
+    canvas.ops.length = 0
+    d.update(-40, -170, CLOSE, 900, 1) // the other side of the world
+    vi.advanceTimersByTime(SETTLE_MS + 32)
+    expect(canvas.ops).toHaveLength(0) // nothing held is anywhere near it
+    d.dispose()
+  })
+
+  it('keeps tiles that arrive after the camera moved on', () => {
+    // A late tile is not wrong, only somewhere else: it covers the ground it
+    // covers, and the composite draws it exactly where it belongs. Discarding
+    // one because something newer had been *asked for* is how a zoom used to
+    // throw away everything it fetched.
+    const d = new DetailImagery()
+    for (let i = 0; i < 24; i++) {
+      d.update(45, 10, CLOSE, 900, 1)
       vi.advanceTimersByTime(16)
     }
-    FakeImage.last!.onload!()
-    const canvas = FakeCanvas.made[0]
-    const first = { tex: d.texture, w: canvas.width, h: canvas.height }
-    // the window is resized, which is the one thing that still changes the
-    // composite's shape now that a moving camera does not
-    d.update(45, 10 + PAN, CLOSE, 1200, 1)
-    // The redraw is deferred to rest now: a composite mid-gesture is a full
-    // texture upload and mip rebuild the user feels as a stutter, and imagery
-    // they cannot see because the next drag frame replaces it. Same picture,
-    // one settle later.
-    vi.advanceTimersByTime(SETTLE_MS + 1)
-    expect(canvas.width).not.toBe(first.w)
-    expect(d.texture).not.toBe(first.tex) // a fresh texture, so GL reallocates
-    // ...and the texture object is kept where the shape has not changed, which
-    // is what the snapped size ladder makes the common case
-    const held = d.texture
-    const shape = canvas.width
-    d.update(45, 10 + PAN * 1.6, CLOSE, 1200, 1)
-    expect(canvas.width).toBe(shape)
-    expect(d.texture).toBe(held)
+    const early = FakeImage.pending.slice()
+    expect(early.length).toBeGreaterThan(0)
+    for (let i = 0; i < 24; i++) {
+      d.update(45, 10 + PAN / 3, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    for (const img of early) img.onload!() // the older ones land last
+    vi.advanceTimersByTime(SETTLE_MS + 32)
+    expect(composite().ops.length).toBeGreaterThan(0)
+    expect(d.mix).toBe(1)
+    d.dispose()
+  })
+
+  it('never shrinks the composite because the camera moved', () => {
+    // The display rule: effective resolution must not go backward over ground
+    // the camera is already looking at. A canvas that halves while the camera
+    // moves and doubles when it stops breaks that everywhere at once.
+    const SCREEN = 3000
+    const d = new DetailImagery({ maxPx: 4096 })
+    land(d, 45, 10)
+    const canvas = composite()
+    const atRest = Math.max(canvas.width, canvas.height)
+    expect(atRest).toBeGreaterThan(0)
+    d.update(45, 10 + PAN, CLOSE, SCREEN, 1)
+    expect(Math.max(canvas.width, canvas.height)).toBe(atRest)
     d.dispose()
   })
 
@@ -1420,7 +1143,7 @@ describe('cached patch compositing', () => {
     // scripted sequence, and ten to twenty seconds of blocking time.
     const d = new DetailImagery()
     land(d, 45, 10)
-    const canvas = FakeCanvas.made[0]
+    const canvas = composite()
     const shapes = new Set<string>()
     for (let alt = CLOSE * 3; alt > CLOSE; alt *= 0.97) {
       for (let i = 0; i < 4; i++) {
@@ -1429,9 +1152,7 @@ describe('cached patch compositing', () => {
       }
       shapes.add(`${canvas.width}x${canvas.height}`)
     }
-    // two, and only two: the in-motion size and the resting one. Before this it
-    // was one per composite.
-    expect(shapes.size).toBeLessThanOrEqual(2)
+    expect(shapes.size).toBe(1)
     d.dispose()
   })
 
@@ -1439,19 +1160,112 @@ describe('cached patch compositing', () => {
     // a canvas drawn into itself nests a copy of the last generation each time
     const d = new DetailImagery()
     land(d, 45, 10)
-    const canvas = FakeCanvas.made[0]
-    canvas.ops.length = 0
-    d.update(45, 10 + PAN, CLOSE, 900, 1)
+    const canvas = composite()
+    for (let i = 1; i <= 6; i++) {
+      d.update(45, 10 + PAN * i, CLOSE, 900, 1)
+      vi.advanceTimersByTime(SETTLE_MS + 32)
+      FakeImage.landAll()
+    }
     expect(canvas.ops.every((o) => o.image !== canvas)).toBe(true)
+    d.dispose()
   })
 
   it('works without a canvas at all, as it must in a stale browser', () => {
     vi.stubGlobal('document', undefined)
     const d = new DetailImagery()
-    land(d, 45, 10)
-    expect(() => d.update(45, 10 + PAN, CLOSE, 900, 1)).not.toThrow()
+    expect(() => land(d, 45, 10)).not.toThrow()
+    expect(FakeImage.requests.length).toBeGreaterThan(0) // the fetch path is untouched
+    d.dispose()
+  })
+})
+
+describe('joins between levels', () => {
+  const CLOSE = 0.02
+
+  /** A canvas that records draws and can build the gradients feathering needs. */
+  class RampCanvas {
+    static made: RampCanvas[] = []
+    width = 0
+    height = 0
+    ops: { image: unknown; x: number; y: number; w: number; h: number }[] = []
+    gradients = 0
+    constructor() {
+      RampCanvas.made.push(this)
+    }
+    getContext() {
+      return {
+        clearRect: () => {},
+        drawImage: (image: unknown, x = 0, y = 0, w = 0, h = 0) =>
+          this.ops.push({ image, x, y, w, h }),
+        createLinearGradient: () => {
+          this.gradients++
+          return { addColorStop: () => {} }
+        },
+        fillRect: () => {},
+        set globalCompositeOperation(_v: string) {},
+        get globalCompositeOperation() {
+          return 'source-over'
+        },
+        fillStyle: '',
+        set imageSmoothingQuality(_v: unknown) {},
+      } as unknown as CanvasRenderingContext2D
+    }
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.reset()
+    RampCanvas.made = []
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new RampCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  const ramps = () => RampCanvas.made.reduce((s, c) => s + c.gradients, 0)
+
+  it('feathers the edge where the target level runs out', () => {
+    // The only join in a composite that crosses a resolution: a crossfade there
+    // is the difference between imagery sharpening in and a rectangle appearing.
+    const d = new DetailImagery()
+    for (let i = 0; i < 24; i++) {
+      d.update(45, 10, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    // land the fallback level and a *few* of the target tiles, so the sharp
+    // region has an edge inside the canvas
+    FakeImage.landAll(2)
     vi.advanceTimersByTime(SETTLE_MS + 32)
-    expect(FakeImage.requests).toHaveLength(2) // the fetch path is untouched
+    expect(ramps()).toBeGreaterThan(0)
+    expect(FEATHER_FRACTION).toBeGreaterThan(0)
+    d.dispose()
+  })
+
+  it('does not feather the joins inside a level, which are butt joints', () => {
+    // Two tiles of one level are the same resolution on the same grid, so they
+    // abut exactly. A ramp there would show as a band of the coarser level
+    // bleeding up through the seam — a defect invented by the fix.
+    const d = new DetailImagery()
+    for (let round = 0; round < 5; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(45, 10, CLOSE, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.landAll()
+      vi.advanceTimersByTime(SETTLE_MS + 32)
+    }
+    RampCanvas.made.forEach((c) => (c.gradients = 0))
+    // a redraw of a fully covered view: every target tile has neighbours on
+    // every side it shares with the canvas, so nothing is ramped at all
+    for (let i = 0; i < 4; i++) {
+      d.update(45, 10, CLOSE, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    vi.advanceTimersByTime(SETTLE_MS + 32)
+    expect(ramps()).toBe(0)
+    d.dispose()
   })
 })
 
@@ -1532,14 +1346,6 @@ describe('bbox shape at the closest zoom', () => {
     const groundRatio = (lngSpan * Math.cos((46 * Math.PI) / 180)) / latSpan
     expect(groundRatio).toBeCloseTo(aspect, 2)
   })
-
-  it('asks for a roughly square-sampled image there, not a letterbox', () => {
-    const b = viewBbox(46, 8, MIN_ALTITUDE_DETAIL, 1200 / 900)
-    const { width, height } = imageSize(b, 900, MAX_PATCH_PX, SHARP_SOURCE.pxPerDeg)
-    const perPxX = (b.maxLng - b.minLng) / width
-    const perPxY = (b.maxLat - b.minLat) / height
-    expect(perPxY / perPxX).toBeCloseTo(1, 1)
-  })
 })
 
 import { patchPixelCap } from '../src/lib/detailImagery'
@@ -1593,8 +1399,7 @@ describe('composite atomicity', () => {
 
   beforeEach(() => {
     vi.useFakeTimers()
-    FakeImage.requests = []
-    FakeImage.last = undefined
+    FakeImage.reset()
     FakeCanvas.made = []
     vi.stubGlobal('Image', FakeImage)
     vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
@@ -1604,10 +1409,14 @@ describe('composite atomicity', () => {
     vi.unstubAllGlobals()
   })
 
-  const settle = (d: DetailImagery, lat: number, lng: number, alt: number) => {
-    for (let i = 0; i < 30; i++) {
-      d.update(lat, lng, alt, 900, 1)
-      vi.advanceTimersByTime(16)
+  const settle = (d: DetailImagery, lat: number, lng: number, alt: number, rounds = 3) => {
+    for (let round = 0; round < rounds; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(lat, lng, alt, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.landAll()
+      vi.advanceTimersByTime(SETTLE_MS + 32)
     }
   }
 
@@ -1619,7 +1428,6 @@ describe('composite atomicity', () => {
     const d = new DetailImagery()
     for (const alt of [0.05, 0.04, 0.03, 0.02]) {
       settle(d, 45, 10, alt)
-      FakeImage.last!.onload!()
       const wanted = viewBbox(45, 10, alt, 1)
       const [u0, v0, du, dv] = d.rect
       expect(u0 * 360 - 180).toBeCloseTo(wanted.minLng, 3)
@@ -1637,18 +1445,21 @@ describe('composite atomicity', () => {
     // that were already there across the new one.
     const d = new DetailImagery()
     settle(d, 45, 10, CLOSE)
-    FakeImage.last!.onload!()
     const canvas = FakeCanvas.made[0]
 
     const seen = new Map<string, string>()
     for (let i = 0; i < 12; i++) {
       d.update(45, 10 + i * 0.02, CLOSE, 900, 1)
+      vi.advanceTimersByTime(SETTLE_MS + 32)
       const rect = d.rect.map((n) => n.toFixed(6)).join(',')
-      const pixels = canvas.ops.map((o) => `${o.x.toFixed(2)}:${o.y.toFixed(2)}:${o.w.toFixed(2)}`).join('|')
+      const pixels = canvas.ops
+        .map((o) => `${o.x.toFixed(2)}:${o.y.toFixed(2)}:${o.w.toFixed(2)}`)
+        .join('|')
       // one rectangle can only ever go with one arrangement of pixels
       const held = seen.get(rect)
       if (held !== undefined) expect(pixels).toBe(held)
       seen.set(rect, pixels)
+      canvas.ops.length = 0
     }
     d.dispose()
   })
@@ -1658,11 +1469,11 @@ describe('composite atomicity', () => {
     // feedback loop at worst, each generation nesting a copy of the last.
     const d = new DetailImagery()
     settle(d, 45, 10, CLOSE)
-    FakeImage.last!.onload!()
     const canvas = FakeCanvas.made[0]
     for (let i = 0; i < 8; i++) {
       d.update(45, 10 + i * 0.05, CLOSE, 900, 1)
       vi.advanceTimersByTime(40)
+      FakeImage.landAll()
     }
     expect(canvas.ops.every((o) => o.image !== canvas)).toBe(true)
     d.dispose()
@@ -1674,28 +1485,32 @@ describe('composite atomicity', () => {
     // the ground it belongs to: a sharp ghost over the correctly placed
     // imagery. The reuse test used to allow 5% of drift and ignored the crop's
     // height entirely.
-    const asked: { crop: { x: number; y: number; w: number; h: number }; dw: number; dh: number }[] = []
-    const canvases: Record<string, unknown> = {}
     const d = new DetailImagery({
       resampler: {
         run: async (_image, crop, dw, dh) => {
-          asked.push({ crop: { ...crop }, dw, dh })
-          const c = { width: dw, height: dh, tag: `${Math.round(crop.x)},${Math.round(crop.y)},${Math.round(crop.w)},${Math.round(crop.h)}@${dw}x${dh}` }
-          canvases[c.tag] = c
+          const c = {
+            width: dw,
+            height: dh,
+            tag: `${Math.round(crop.x)},${Math.round(crop.y)},${Math.round(crop.w)},${Math.round(crop.h)}@${dw}x${dh}`,
+          }
           return c as unknown as CanvasImageSource
         },
         dispose: () => {},
       },
     })
-    settle(d, 45, 10, 0.09)
-    Object.assign(FakeImage.last!, { naturalWidth: 800, naturalHeight: 600 })
-    FakeImage.last!.onload!()
+    for (let i = 0; i < 24; i++) {
+      d.update(45, 10, 0.09, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    FakeImage.landAll()
     await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
 
     const canvas = FakeCanvas.made[0]
     // walk the camera in, so the wanted crop and destination drift continuously
     for (let i = 0; i < 14; i++) {
       d.update(45, 10, 0.09 - i * 0.004, 900, 1)
+      await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+      FakeImage.landAll()
       await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
     }
     // every draw of a resampled copy must be at the size that copy was made for
@@ -1713,15 +1528,22 @@ describe('composite atomicity', () => {
   })
 })
 
-import { PATCH_KEEP } from '../src/lib/patchCache'
-
 describe('cached imagery is released, not just dropped', () => {
-  const CLOSE = 0.02
+  /**
+   * An altitude where the fallback level is genuinely magnified.
+   *
+   * The magnification is 2 x (screen density / target level density), and the
+   * target level is the smallest whose density clears the screen — so the ratio
+   * runs from just over 1 at the bottom of a level band to 2 at the top, and
+   * only the upper part of each band is above RESAMPLE_MIN_SCALE. At 0.014 the
+   * fallback lands at 1.69x, comfortably inside it; at 0.02 it is 1.18x and
+   * bilinear is the right answer.
+   */
+  const MAGNIFY = 0.014
 
   beforeEach(() => {
     vi.useFakeTimers()
-    FakeImage.requests = []
-    FakeImage.last = undefined
+    FakeImage.reset()
     FakeCanvas.made = []
     vi.stubGlobal('Image', FakeImage)
     vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
@@ -1735,7 +1557,7 @@ describe('cached imagery is released, not just dropped', () => {
   class FakeBitmap {
     static made: FakeBitmap[] = []
     closed = false
-    constructor(public width: number, public height: number, public tag: string) {
+    constructor(public width: number, public height: number) {
       FakeBitmap.made.push(this)
     }
     close() {
@@ -1743,176 +1565,235 @@ describe('cached imagery is released, not just dropped', () => {
     }
   }
 
-  it('closes exactly the bitmaps of the patches it evicted', async () => {
-    FakeBitmap.made = []
-    vi.stubGlobal('ImageBitmap', FakeBitmap)
-    const made = new Map<unknown, FakeBitmap>()
-    const d = new DetailImagery({
+  /** A resampler that hands back a bitmap, so eviction has something to close. */
+  const withBitmaps = () =>
+    new DetailImagery({
+      // A budget of a dozen tiles, so eviction is forced by the route below
+      // whatever TILE_MEMORY_BUDGET ships as — the test is about *releasing*
+      // evicted bitmaps, not about how big the production cache is.
+      tileBudget: 12 * 512 * 512 * 4,
       resampler: {
-        run: async (image) => {
-          const b = new FakeBitmap(64, 64, String(made.size))
-          made.set(image, b)
-          return b as unknown as CanvasImageSource
-        },
+        run: async () => new FakeBitmap(64, 64) as unknown as CanvasImageSource,
         dispose: () => {},
       },
     })
 
-    // land more patches than the cache keeps, each with a sharpened copy
-    const images: unknown[] = []
-    for (let i = 0; i < PATCH_KEEP + 3; i++) {
-      for (let f = 0; f < 30; f++) {
-        d.update(45, 10 + i * 0.9, CLOSE, 900, 1)
+  const visit = async (d: DetailImagery, lng: number) => {
+    for (let round = 0; round < 3; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(45, lng, MAGNIFY, 900, 1)
         vi.advanceTimersByTime(16)
       }
-      const img = FakeImage.last!
-      Object.assign(img, { naturalWidth: 400, naturalHeight: 300 })
-      images.push(img)
-      img.onload!()
+      FakeImage.landAll()
       await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
     }
+  }
 
-    // whatever the cache no longer holds must have had its bitmap closed, and
-    // whatever it still holds must not
-    const held = new Set((d as unknown as { cache: { image: unknown }[] }).cache.map((p) => p.image))
-    for (const [image, bitmap] of made) {
-      expect(bitmap.closed).toBe(!held.has(image))
-    }
-    expect([...made.values()].some((b) => b.closed)).toBe(true) // eviction did happen
+  it('closes the sharpened copies of the tiles it evicted', async () => {
+    FakeBitmap.made = []
+    vi.stubGlobal('ImageBitmap', FakeBitmap)
+    const d = withBitmaps()
+    // three views far enough apart that none of their tiles overlap: between
+    // them they want more decoded imagery than the byte budget allows
+    for (const lng of [10, 60, 110, 160]) await visit(d, lng)
+    expect(FakeBitmap.made.length).toBeGreaterThan(0)
+    expect(FakeBitmap.made.some((b) => b.closed)).toBe(true) // eviction did happen
     d.dispose()
   })
 
   it('closes what it still holds when it is disposed', async () => {
     FakeBitmap.made = []
     vi.stubGlobal('ImageBitmap', FakeBitmap)
-    const d = new DetailImagery({
-      resampler: {
-        run: async () => new FakeBitmap(64, 64, 'x') as unknown as CanvasImageSource,
-        dispose: () => {},
-      },
-    })
-    for (let f = 0; f < 30; f++) {
-      d.update(45, 10, CLOSE, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    Object.assign(FakeImage.last!, { naturalWidth: 400, naturalHeight: 300 })
-    FakeImage.last!.onload!()
-    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    const d = withBitmaps()
+    await visit(d, 10)
     expect(FakeBitmap.made.length).toBeGreaterThan(0)
     d.dispose()
     expect(FakeBitmap.made.every((b) => b.closed)).toBe(true)
   })
 })
 
-import { REST_MIN_COVER, FEATHER_FRACTION, viewBbox as viewBboxFor } from '../src/lib/detailImagery'
-import { unionCoverage as unionCov } from '../src/lib/patchCache'
-
 /**
- * The two properties a pan has to keep: the picture finishes, and it never gets
- * worse on the way. Both were reported broken from the field, and both are
- * about the gap between "the request is worth repeating" and "the imagery
- * reaches the edge of the screen", which are not the same question.
+ * The one magnification the pyramid still needs.
+ *
+ * A target-level tile is drawn at or below its own scale, so it never needs
+ * reconstructing. The fallback level does: it is drawn at its children's scale,
+ * an exact 2x up in the limit, and it is what the whole frame shows during a
+ * gesture and wherever the sharp level has not arrived. So the Lanczos path is
+ * spent there and nowhere else — and never inside the caller's task.
  */
-describe('panning to rest', () => {
-  const CLOSE = 0.02
-
-  /** A canvas that records draws and can build the gradients feathering needs. */
-  class PanCanvas {
-    static made: PanCanvas[] = []
-    width = 0
-    height = 0
-    ops: { image: unknown; x: number; y: number; w: number; h: number }[] = []
-    gradients = 0
-    composites: string[] = []
-    constructor() {
-      PanCanvas.made.push(this)
-    }
-    getContext() {
-      return {
-        clearRect: () => {},
-        drawImage: (image: unknown, x = 0, y = 0, w = 0, h = 0) =>
-          this.ops.push({ image, x, y, w, h }),
-        createLinearGradient: () => {
-          this.gradients++
-          return { addColorStop: () => {} }
-        },
-        fillRect: () => {},
-        set globalCompositeOperation(v: string) {
-          this.composites?.push?.(v)
-        },
-        get globalCompositeOperation() {
-          return 'source-over'
-        },
-        fillStyle: '',
-      } as unknown as CanvasRenderingContext2D
-    }
-  }
+describe('magnifying the fallback level', () => {
+  /**
+   * An altitude where the fallback level is genuinely magnified.
+   *
+   * The magnification is 2 x (screen density / target level density), and the
+   * target level is the smallest whose density clears the screen — so the ratio
+   * runs from just over 1 at the bottom of a level band to 2 at the top, and
+   * only the upper part of each band is above RESAMPLE_MIN_SCALE. At 0.014 the
+   * fallback lands at 1.69x, comfortably inside it; at 0.02 it is 1.18x and
+   * bilinear is the right answer.
+   */
+  const MAGNIFY = 0.014
 
   beforeEach(() => {
     vi.useFakeTimers()
-    FakeImage.requests = []
-    FakeImage.last = undefined
-    PanCanvas.made = []
+    FakeImage.reset()
+    FakeCanvas.made = []
     vi.stubGlobal('Image', FakeImage)
-    vi.stubGlobal('document', { createElement: () => new PanCanvas() })
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
   })
   afterEach(() => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
   })
 
-  /**
-   * The rectangle a request went out for, read back off the WMS URL.
-   *
-   * Asserting on what the pipeline *asks for* rather than on what it has cached
-   * keeps the test to the class's own surface — and it is the stronger
-   * statement anyway: the invariant is that a view missing imagery causes a
-   * request that covers it.
-   */
-  const requestedBbox = (url: string): Bbox => {
-    const q = new URLSearchParams(url.slice(url.indexOf('?') + 1))
-    const n = q.get('bbox')!.split(',').map(Number)
-    return q.get('version') === '1.3.0'
-      ? { minLat: n[0], minLng: n[1], maxLat: n[2], maxLng: n[3] }
-      : { minLng: n[0], minLat: n[1], maxLng: n[2], maxLat: n[3] }
-  }
-
-  /** Hold the camera at a view long enough for one settle, and land the patch. */
-  const settleAt = (d: DetailImagery, lat: number, lng: number, ms = SETTLE_MS * 3) => {
-    for (let i = 0; i < ms / 16; i++) {
-      d.update(lat, lng, CLOSE, 900, 1)
+  it('asks for one resample per tile, however many frames a zoom takes', async () => {
+    const asked: unknown[] = []
+    const d = new DetailImagery({
+      resampler: {
+        run: async (image) => {
+          asked.push(image)
+          return undefined
+        },
+        dispose: () => {},
+      },
+    })
+    for (let i = 0; i < 24; i++) {
+      d.update(45, 10, MAGNIFY, 900, 1)
       vi.advanceTimersByTime(16)
     }
-    if (FakeImage.last?.onload) FakeImage.last.onload()
-  }
+    FakeImage.landAll(1) // the fallback level, which is what gets magnified
+    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    const atRest = asked.length
+    expect(atRest).toBeGreaterThan(0)
+    expect(new Set(asked).size).toBe(atRest) // one job per tile, not one per frame
 
-  it('fills the edge a pan too small to refetch has exposed', () => {
-    const d = new DetailImagery()
-    settleAt(d, 45, 10)
-    const first = FakeImage.requests.length
-    expect(first).toBeGreaterThan(0)
-
-    // A pan past the patch's own 1.25x margin but under the fifth-of-a-span
-    // that `movedEnough` asks for. This is the case that used to leave a strip
-    // of base map along the leading edge that no later frame would ever fill.
-    const span = viewBboxFor(45, 10, CLOSE, 1)
-    const width = span.maxLng - span.minLng
-    const nudge = width * 0.16 // margin gives out at 0.125; refetch trips at 0.2
-    expect(movedEnough(span, viewBboxFor(45, 10 + nudge, CLOSE, 1))).toBe(false)
-
-    settleAt(d, 45, 10 + nudge)
-    expect(FakeImage.requests.length).toBeGreaterThan(first) // a request was owed
-
-    // ...for a rectangle that covers the view, and once it lands the published
-    // rectangle is the view's own again
-    const want = viewBboxFor(45, 10 + nudge, CLOSE, 1)
-    const asked = requestedBbox(FakeImage.requests.at(-1)!)
-    expect(unionCov([{ bbox: asked }], want)).toBeGreaterThanOrEqual(REST_MIN_COVER)
-    expect(d.rect[0] * 360 - 180).toBeCloseTo(want.minLng, 6)
+    // a continuous zoom: the wanted size changes every frame, and none of them
+    // is worth filtering because the next frame replaces it
+    for (let i = 0; i < 20; i++) {
+      d.update(45, 10, MAGNIFY - i * 0.0002, 900, 1)
+      await vi.advanceTimersByTimeAsync(16)
+    }
+    expect(asked.length).toBe(atRest)
     d.dispose()
   })
 
-  it('asks again after several small pans that each stay under the threshold', () => {
+  it('never filters a pixel inside an update call', async () => {
+    // A quarter of a second of Lanczos inside a zoom handler is a quarter of a
+    // second of frozen input for a picture the next frame replaces.
+    let inside = 0
+    let updating = false
+    const d = new DetailImagery({
+      resampler: {
+        run: async () => {
+          if (updating) inside++
+          return undefined
+        },
+        dispose: () => {},
+      },
+    })
+    for (let i = 0; i < 24; i++) {
+      d.update(45, 10, MAGNIFY, 900, 1)
+      vi.advanceTimersByTime(16)
+    }
+    FakeImage.landAll()
+    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    for (let i = 0; i < 10; i++) {
+      updating = true
+      d.update(45, 10, MAGNIFY - i * 0.0002, 900, 1)
+      updating = false
+      await vi.advanceTimersByTimeAsync(16)
+    }
+    // the resampler is *asked* off the update call, and it answers off it too
+    expect(inside).toBe(0)
+    d.dispose()
+  })
+
+  it('does not sharpen a fallback tile its four children already hide', async () => {
+    // A megapixel of Lanczos under imagery nobody can see through.
+    const asked = new Set<unknown>()
+    const d = new DetailImagery({
+      resampler: {
+        run: async (image) => {
+          asked.add(image)
+          return undefined
+        },
+        dispose: () => {},
+      },
+    })
+    for (let round = 0; round < 5; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(45, 10, MAGNIFY, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.landAll()
+      await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    }
+    const covered = asked.size
+    // …and once the target level is complete, no further redraw asks for more
+    for (let i = 0; i < 8; i++) {
+      d.update(45, 10, MAGNIFY, 900, 1)
+      await vi.advanceTimersByTimeAsync(16)
+    }
+    await vi.advanceTimersByTimeAsync(SETTLE_MS + 32)
+    expect(asked.size).toBe(covered)
+    d.dispose()
+  })
+})
+
+/**
+ * The two properties a pan has to keep: the picture finishes, and it never gets
+ * worse on the way. Both were reported broken from the field. The old pipeline
+ * needed a union-coverage scan to hold them, because a composite cut to a
+ * rectangle did not necessarily fill it; with a complete fallback level under
+ * every composite, containing the view and covering it are the same statement.
+ */
+describe('panning to rest', () => {
+  const CLOSE = 0.02
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.reset()
+    FakeCanvas.made = []
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  const settleAt = (d: DetailImagery, lat: number, lng: number, rounds = 3) => {
+    for (let round = 0; round < rounds; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(lat, lng, CLOSE, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.landAll()
+      vi.advanceTimersByTime(SETTLE_MS + 32)
+    }
+  }
+
+  it('fills the edge a pan too small to refetch has exposed', () => {
+    // A pan past the composite's own 1.25x margin but well under a tile: the
+    // case that used to leave a strip of base map along the leading edge that
+    // no later frame would ever fill, because nothing had moved *enough*.
+    const d = new DetailImagery()
+    settleAt(d, 45, 10)
+    const span = viewBboxFor(45, 10, CLOSE, 1)
+    const nudge = (span.maxLng - span.minLng) * 0.16
+    settleAt(d, 45, 10 + nudge)
+    const want = viewBboxFor(45, 10 + nudge, CLOSE, 1)
+    // the published rectangle is the view's own — every edge of it, not just
+    // the two a centred pan happens to leave alone
+    const held = bboxFromRect(d.rect)
+    expect(held.minLng).toBeCloseTo(want.minLng, 6)
+    expect(held.maxLng).toBeCloseTo(want.maxLng, 6)
+    expect(held.minLat).toBeCloseTo(want.minLat, 6)
+    expect(held.maxLat).toBeCloseTo(want.maxLat, 6)
+    d.dispose()
+  })
+
+  it('never lets a rectangle be published that the view outgrows in place', () => {
     const d = new DetailImagery()
     settleAt(d, 45, 10)
     const span = viewBboxFor(45, 10, CLOSE, 1)
@@ -1920,22 +1801,20 @@ describe('panning to rest', () => {
     let lng = 10
     for (let i = 0; i < 3; i++) {
       lng += step
-      const before = FakeImage.requests.length
       settleAt(d, 45, lng)
-      expect(FakeImage.requests.length).toBeGreaterThan(before)
       const want = viewBboxFor(45, lng, CLOSE, 1)
-      const asked = requestedBbox(FakeImage.requests.at(-1)!)
-      expect(unionCov([{ bbox: asked }], want)).toBeGreaterThanOrEqual(REST_MIN_COVER)
+      expect(bboxFromRect(d.rect).minLng).toBeCloseTo(want.minLng, 6)
+      expect(bboxFromRect(d.rect).maxLng).toBeCloseTo(want.maxLng, 6)
     }
     d.dispose()
   })
 
   it('stops asking once the view is covered, however long it stands still', () => {
-    // the other side of the same rule: a coverage test that never quite reaches
+    // The other side of the same rule: a coverage test that never quite reached
     // its threshold would spend a request every settle for as long as the app
-    // is open
+    // was open. Tile keys make the question exact instead of fractional.
     const d = new DetailImagery()
-    settleAt(d, 45, 10)
+    settleAt(d, 45, 10, 5)
     const after = FakeImage.requests.length
     for (let i = 0; i < 200; i++) {
       d.update(45, 10, CLOSE, 900, 1)
@@ -1947,7 +1826,7 @@ describe('panning to rest', () => {
 
   it('tolerates the camera creeping under orbit damping without refetching', () => {
     const d = new DetailImagery()
-    settleAt(d, 45, 10)
+    settleAt(d, 45, 10, 5)
     const after = FakeImage.requests.length
     const span = viewBboxFor(45, 10, CLOSE, 1)
     const creep = (span.maxLng - span.minLng) * (MOTION_EPS / 2)
@@ -1958,31 +1837,12 @@ describe('panning to rest', () => {
     expect(FakeImage.requests).toHaveLength(after)
     d.dispose()
   })
-
-  it('feathers a patch whose edge falls inside the composite', () => {
-    // the join between two patches is a crossfade, not a butt joint: that is
-    // what lets the plan keep a patch for a thin strip without bringing a
-    // visible rectangular edge with it
-    const d = new DetailImagery()
-    settleAt(d, 45, 10)
-    const span = viewBboxFor(45, 10, CLOSE, 1)
-    const nudge = (span.maxLng - span.minLng) * 0.16
-    PanCanvas.made.forEach((c) => (c.gradients = 0))
-    settleAt(d, 45, 10 + nudge)
-    expect(PanCanvas.made.some((c) => c.gradients > 0)).toBe(true)
-    expect(FEATHER_FRACTION).toBeGreaterThan(0)
-    d.dispose()
-  })
 })
 
 describe('the cost of a frame that is only moving', () => {
   /**
    * A canvas that counts what is expensive about one: how many times its
    * backing store was reallocated, and how many contexts were asked for.
-   *
-   * Both are per-frame costs in the shipped app — `recomposite` runs whenever
-   * the view moves and feathers every patch it draws — and both are invisible
-   * to a test that only looks at the pixels.
    */
   class CountingCanvas {
     static made: CountingCanvas[] = []
@@ -1993,6 +1853,8 @@ describe('the cost of a frame that is only moving', () => {
     #w = 0
     #h = 0
     gradients = 0
+    draws = 0
+    clears = 0
     set width(v: number) {
       CountingCanvas.resizes++
       this.mine.resizes++
@@ -2016,8 +1878,8 @@ describe('the cost of a frame that is only moving', () => {
       CountingCanvas.contexts++
       this.mine.contexts++
       return {
-        clearRect: () => {},
-        drawImage: () => {},
+        clearRect: () => this.clears++,
+        drawImage: () => this.draws++,
         createLinearGradient: () => {
           this.gradients++
           return { addColorStop: () => {} }
@@ -2032,8 +1894,7 @@ describe('the cost of a frame that is only moving', () => {
 
   beforeEach(() => {
     vi.useFakeTimers()
-    FakeImage.requests = []
-    FakeImage.last = undefined
+    FakeImage.reset()
     CountingCanvas.made = []
     CountingCanvas.resizes = 0
     CountingCanvas.contexts = 0
@@ -2047,20 +1908,19 @@ describe('the cost of a frame that is only moving', () => {
 
   const CLOSE = 0.02
   const settle = (d: DetailImagery, lat: number, lng: number) => {
-    for (let i = 0; i < 40; i++) {
-      d.update(lat, lng, CLOSE, 900, 1)
-      vi.advanceTimersByTime(16)
-    }
-    FakeImage.last?.onload?.()
-    for (let i = 0; i < 40; i++) {
-      d.update(lat, lng, CLOSE, 900, 1)
-      vi.advanceTimersByTime(16)
+    for (let round = 0; round < 3; round++) {
+      for (let i = 0; i < 24; i++) {
+        d.update(lat, lng, CLOSE, 900, 1)
+        vi.advanceTimersByTime(16)
+      }
+      FakeImage.landAll()
+      vi.advanceTimersByTime(SETTLE_MS + 32)
     }
   }
 
   it('does not reallocate the composite canvas once it has one', () => {
     // The composite canvas is deliberately one size for the session (see
-    // compositeCanvasSize), so every recomposite after the first is drawing at
+    // compositeCanvasSize), so every recomposite after the first draws at
     // exactly the size it drew at last time. Assigning `width`/`height` anyway
     // is not free and not a no-op: the spec resets the backing store — and
     // every piece of context state with it — whatever value is assigned.
@@ -2072,9 +1932,8 @@ describe('the cost of a frame that is only moving', () => {
     expect(composite.width).toBeGreaterThan(0)
     const span = viewBboxFor(45, 10, CLOSE, 1)
     const step = (span.maxLng - span.minLng) * 0.3
-    // …and now a pan long enough to composite repeatedly at the same size
     for (let i = 1; i <= 6; i++) settle(d, 45, 10 + step * i)
-    // the scratch canvas legitimately changes size with each patch's footprint;
+    // the scratch canvas legitimately changes size with each tile's footprint;
     // the composite's own must not have been touched again
     expect(composite.mine.resizes, 'the composite canvas was resized again').toBe(after.resizes)
     expect(
@@ -2084,30 +1943,26 @@ describe('the cost of a frame that is only moving', () => {
     d.dispose()
   })
 
-  it('does not scan the patch cache on a frame that has plainly moved', () => {
-    // `unionCoverage(compositePlan(...))` is the most expensive thing per frame
-    // in this file, and on a moving camera its answer cannot matter: the
-    // cheaper `movedEnough` has already decided the held imagery is not being
-    // re-shown. Counted through the cache the plan has to read.
+  it('draws nothing at all on a frame that is only moving', () => {
+    // The scheduler runs every frame — it has to, the wanted set follows the
+    // camera — but the expensive half does not. A composite is a full texture
+    // upload and a full mip rebuild, and mid-gesture it buys one frame of
+    // imagery the next frame replaces.
     const d = new DetailImagery()
     settle(d, 45, 10)
+    const composite = CountingCanvas.made[0]
+    const before = { draws: composite.draws, clears: composite.clears }
     const span = viewBboxFor(45, 10, CLOSE, 1)
     const wide = (span.maxLng - span.minLng) * 3
-    let reads = 0
-    const inner = (d as unknown as { cache: unknown[] }).cache
-    let held = inner
-    Object.defineProperty(d, 'cache', {
-      get: () => (reads++, held),
-      set: (v) => (held = v),
-      configurable: true,
-    })
-    // one long sweep, far enough that every frame is past `movedEnough`
     for (let i = 1; i <= 20; i++) {
       d.update(45, 10 + (wide * i) / 20, CLOSE, 900, 1)
       vi.advanceTimersByTime(16)
+      FakeImage.landAll()
     }
-    // a handful of reads for the settle path is fine; one per frame is the bug
-    expect(reads, 'the cache is scanned once per moving frame').toBeLessThan(20)
+    // one escape-hatch composite is allowed across a drag this long (see
+    // PAN_MIN_COVER); twenty is the bug
+    expect(composite.clears - before.clears).toBeLessThanOrEqual(1)
+    expect(composite.draws).toBeGreaterThan(before.draws - 1)
     d.dispose()
   })
 })

@@ -11,10 +11,16 @@ import { lanczosWeights, resampleLanczos3, type PixelBuffer } from './lanczos'
  * reworked) and falls back to the TS whenever the module cannot be
  * instantiated, so the pipeline never depends on it existing.
  *
+ * A request that is exactly 2x on both axes — which, once imagery streams as a
+ * fixed tile pyramid, is nearly all of them — goes to a second export with the
+ * weights baked in, and never builds or uploads a weight table at all. Same
+ * bytes out, measured bit-identical, ~1.3x faster; see the C for the numbers.
+ *
  * The binary is inlined as base64 rather than shipped as a separate asset:
- * 2.5 kB compiled is under the cost of the extra request, and it means the
- * resampler has no load order to get wrong — no `await import`, no half-ready
- * state where a patch arrives before the kernel does.
+ * 8.7 kB compiled, 3.8 kB of it gzipped over the wire — 2.4 kB more than
+ * before the 2x paths — is still under the cost of the extra request, and it
+ * means the resampler has no load order to get wrong: no `await import`, no
+ * half-ready state where a patch arrives before the kernel does.
  */
 
 interface Kernel {
@@ -39,10 +45,43 @@ interface Kernel {
     band: number,
     scratchP: number,
   ): void
+  /** Exact 2x in both axes, weights baked in; `up` 1 to double, 0 to halve. */
+  resample2?(
+    srcP: number,
+    srcW: number,
+    srcH: number,
+    dstP: number,
+    tmpP: number,
+    band: number,
+    scratchP: number,
+    up: number,
+  ): void
 }
 
 /** Destination columns per band; see the C for why the intermediate is banded. */
 const BAND = 128
+/**
+ * The 2x path wants a wider band than the general one — measured 1.10x at 128
+ * and 1.32x at 256, where the general kernel is flat across the same sweep.
+ * With the tap loops unrolled the per-band setup is a bigger share of the work,
+ * and a wider band also writes the destination in longer runs. 256 costs 8 MB
+ * of intermediate at the largest patch this app asks for; 512 measured the same
+ * and 1024 a little better, neither worth the memory.
+ */
+const BAND_2X = 256
+
+/** Taps per phase, upscale and downscale — must match the C. */
+const TAPS_2X = [12, 6]
+
+/**
+ * Is this an exact 2x on both axes? 1 = magnify, 0 = reduce, -1 = neither.
+ *
+ * The tile pyramid only ever asks for these two, and only these two have a
+ * weight table small enough to bake into the kernel. Anything else — including
+ * a request that is 2x on one axis only — takes the general path.
+ */
+const exact2 = (sw: number, sh: number, w: number, h: number): number =>
+  w === sw * 2 && h === sh * 2 ? 1 : sw === w * 2 && sh === h * 2 ? 0 : -1
 
 let kernel: Kernel | null | undefined // undefined = not tried yet, null = unavailable
 
@@ -109,24 +148,28 @@ function runKernel(src: PixelBuffer, dstW: number, dstH: number): KernelResult |
   const w = Math.max(1, Math.round(dstW))
   const h = Math.max(1, Math.round(dstH))
 
-  const x = lanczosWeights(src.width, w)
-  const y = lanczosWeights(src.height, h)
+  // the specialised kernel needs no tables at all, so they are not built either
+  const fixed = k.resample2 ? exact2(src.width, src.height, w, h) : -1
+  const band = fixed < 0 ? BAND : BAND_2X
+  const x = fixed < 0 ? lanczosWeights(src.width, w) : undefined
+  const y = fixed < 0 ? lanczosWeights(src.height, h) : undefined
+  const taps = x ? x.taps : TAPS_2X[fixed]
 
   k.reset()
   const srcBytes = src.width * src.height * 4
   const dstBytes = w * h * 4
-  const tmpBytes = BAND * src.height * 4 * 4
+  const tmpBytes = band * src.height * 4 * 4
   // the widest source span one band can read: a whole row, plus the filter
   // hanging off both ends. `starts` never goes below -taps nor above srcW.
-  const scratchBytes = (src.width + 2 * x.taps + 4) * 16
+  const scratchBytes = (src.width + 2 * taps + 4) * 16
   const srcP = k.alloc(srcBytes)
   const dstP = k.alloc(dstBytes)
   const tmpP = k.alloc(tmpBytes)
   const scratchP = k.alloc(scratchBytes)
-  const wxP = k.alloc(x.weights.byteLength)
-  const sxP = k.alloc(x.starts.byteLength)
-  const wyP = k.alloc(y.weights.byteLength)
-  const syP = k.alloc(y.starts.byteLength)
+  const wxP = x ? k.alloc(x.weights.byteLength) : 0
+  const sxP = x ? k.alloc(x.starts.byteLength) : 0
+  const wyP = y ? k.alloc(y.weights.byteLength) : 0
+  const syP = y ? k.alloc(y.starts.byteLength) : 0
 
   // grow *before* taking any view: WebAssembly.Memory.grow detaches every
   // existing ArrayBuffer view, so a view captured earlier would silently write
@@ -143,18 +186,23 @@ function runKernel(src: PixelBuffer, dstW: number, dstH: number): KernelResult |
 
   const mem = k.memory.buffer
   new Uint8Array(mem, srcP, srcBytes).set(src.data.subarray(0, srcBytes))
-  new Float32Array(mem, wxP, x.weights.length).set(x.weights)
-  new Int32Array(mem, sxP, x.starts.length).set(x.starts)
-  new Float32Array(mem, wyP, y.weights.length).set(y.weights)
-  new Int32Array(mem, syP, y.starts.length).set(y.starts)
 
-  k.resample(
-    srcP, src.width, src.height,
-    dstP, w, h,
-    wxP, sxP, x.taps,
-    wyP, syP, y.taps,
-    tmpP, BAND, scratchP,
-  )
+  if (x && y) {
+    new Float32Array(mem, wxP, x.weights.length).set(x.weights)
+    new Int32Array(mem, sxP, x.starts.length).set(x.starts)
+    new Float32Array(mem, wyP, y.weights.length).set(y.weights)
+    new Int32Array(mem, syP, y.starts.length).set(y.starts)
+    k.resample(
+      srcP, src.width, src.height,
+      dstP, w, h,
+      wxP, sxP, x.taps,
+      wyP, syP, y.taps,
+      tmpP, band, scratchP,
+    )
+  } else {
+    // `fixed` is 1 or 0 here, which is exactly the kernel's `up` flag
+    k.resample2!(srcP, src.width, src.height, dstP, tmpP, band, scratchP, fixed)
+  }
 
   return { pixels: new Uint8Array(k.memory.buffer, dstP, dstBytes), width: w, height: h }
 }

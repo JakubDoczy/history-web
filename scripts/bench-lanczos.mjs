@@ -6,6 +6,11 @@
  *   node scripts/bench-lanczos.mjs /tmp/other.c ... # candidates, side by side
  *   node scripts/bench-lanczos.mjs --ts             # include the TS reference
  *
+ * A kernel that also exports `resample2` gets a second row for it: the exact-2x
+ * specialisation, on the cases that are exactly 2x. Both rows are checked
+ * against the reference, and the 2x row against the general one — it exists to
+ * be faster, not to be different.
+ *
  * A variant that disagrees with the reference by more than one quantisation
  * step is reported as WRONG and its time is not worth reading; the whole point
  * of the compiled path is that it is invisible.
@@ -56,25 +61,29 @@ function load(bytes) {
   // one instance per prepared case: they all allocate from the same bump heap
   // after the same reset, so a second case silently overwrites the first one's
   // weight tables and the first one then reads an index table full of pixels
-  return (src, srcW, srcH, dstW, dstH) => {
+  return (src, srcW, srcH, dstW, dstH, fixed) => {
     const e = new WebAssembly.Instance(mod, {}).exports
+    if (fixed !== undefined && !e.resample2) return undefined
     const wantsScratch = e.resample.length > 14
-    const x = lanczosWeights(srcW, dstW)
-    const y = lanczosWeights(srcH, dstH)
-    const BAND = Number(process.env.BAND ?? 128) // BAND=256 node scripts/... to sweep
+    const x = fixed === undefined ? lanczosWeights(srcW, dstW) : null
+    const y = fixed === undefined ? lanczosWeights(srcH, dstH) : null
+    // BAND=512 node scripts/... to sweep; the 2x path likes a wider band than
+    // the general one, so it has its own default, matching lanczosWasm.ts
+    const BAND = Number(process.env.BAND ?? (fixed === undefined ? 128 : 256))
     e.reset()
     const srcBytes = srcW * srcH * 4
     const dstBytes = dstW * dstH * 4
     const srcP = e.alloc(srcBytes)
     const dstP = e.alloc(dstBytes)
     const tmpP = e.alloc(BAND * srcH * 16)
-    const wxP = e.alloc(x.weights.byteLength)
-    const sxP = e.alloc(x.starts.byteLength)
-    const wyP = e.alloc(y.weights.byteLength)
-    const syP = e.alloc(y.starts.byteLength)
+    const wxP = x ? e.alloc(x.weights.byteLength) : 0
+    const sxP = x ? e.alloc(x.starts.byteLength) : 0
+    const wyP = y ? e.alloc(y.weights.byteLength) : 0
+    const syP = y ? e.alloc(y.starts.byteLength) : 0
     // widest possible source span a band can read: the whole row plus the
     // filter hanging off both ends
-    const scratchP = wantsScratch ? e.alloc((srcW + 2 * x.taps + 4) * 16) : 0
+    const taps = x ? x.taps : fixed ? 6 : 12
+    const scratchP = wantsScratch ? e.alloc((srcW + 2 * taps + 4) * 16) : 0
 
     const need = e.heapTop() + 64
     const pages = Math.ceil((need - e.memory.buffer.byteLength) / 65536)
@@ -82,18 +91,26 @@ function load(bytes) {
 
     const mem = e.memory.buffer
     new Uint8Array(mem, srcP, srcBytes).set(src.subarray(0, srcBytes))
-    new Float32Array(mem, wxP, x.weights.length).set(x.weights)
-    new Int32Array(mem, sxP, x.starts.length).set(x.starts)
-    new Float32Array(mem, wyP, y.weights.length).set(y.weights)
-    new Int32Array(mem, syP, y.starts.length).set(y.starts)
+    if (x) {
+      new Float32Array(mem, wxP, x.weights.length).set(x.weights)
+      new Int32Array(mem, sxP, x.starts.length).set(x.starts)
+      new Float32Array(mem, wyP, y.weights.length).set(y.weights)
+      new Int32Array(mem, syP, y.starts.length).set(y.starts)
+    }
 
-    const call = wantsScratch
+    const call = !x
+      ? () => e.resample2(srcP, srcW, srcH, dstP, tmpP, BAND, scratchP, fixed)
+      : wantsScratch
       ? () => e.resample(srcP, srcW, srcH, dstP, dstW, dstH, wxP, sxP, x.taps, wyP, syP, y.taps, tmpP, BAND, scratchP)
       : () => e.resample(srcP, srcW, srcH, dstP, dstW, dstH, wxP, sxP, x.taps, wyP, syP, y.taps, tmpP, BAND)
 
     return { call, read: () => new Uint8ClampedArray(new Uint8Array(e.memory.buffer, dstP, dstBytes)) }
   }
 }
+
+/** 1 where the request doubles both axes, 0 where it halves both, else -1. */
+const exact2 = (sw, sh, dw, dh) =>
+  dw === sw * 2 && dh === sh * 2 ? 1 : sw === dw * 2 && sh === dh * 2 ? 0 : -1
 
 /** Something with edges, gradients and noise — a flat field would flatter a filter. */
 function image(w, h) {
@@ -129,6 +146,9 @@ const CASES = [
   [2048, 1024, 4096, 2048, 'basemap 2x'],
   [1024, 512, 2048, 1024, 'patch 2x'],
   [700, 420, 1400, 840, 'patch 2x odd'],
+  [1024, 1024, 2048, 2048, '1024\u00b2 up'],
+  [2048, 2048, 4096, 4096, '2048\u00b2 up'],
+  [2048, 2048, 1024, 1024, '2048\u00b2 down'],
 ]
 
 // correctness first, on sizes small enough for the reference to be affordable
@@ -137,6 +157,10 @@ const CHECKS = [
   [40, 40, 17, 23],
   [31, 17, 31, 17],
   [129, 71, 258, 142],
+  [64, 48, 128, 96], // exact 2x, both directions, including the odd-sized
+  [65, 49, 130, 98], // bands the specialised path has to get right at the edge
+  [64, 48, 32, 24],
+  [130, 98, 65, 49],
 ]
 
 const REPS = Number(process.env.REPS ?? 7)
@@ -145,7 +169,9 @@ const rows = []
 for (const file of files) {
   const bytes = compile(file)
   const make = load(bytes)
+  const fixedRuns = {}
   let worst = 0
+  let worst2 = 0 // the 2x path against the general one: must be 0, not "close"
   for (const [sw, sh, dw, dh] of CHECKS) {
     const src = image(sw, sh)
     const ref = resampleLanczos3({ data: src, width: sw, height: sh }, dw, dh)
@@ -153,14 +179,28 @@ for (const file of files) {
     k.call()
     const got = k.read()
     for (let i = 0; i < ref.data.length; i++) worst = Math.max(worst, Math.abs(got[i] - ref.data[i]))
+    const fixed = exact2(sw, sh, dw, dh)
+    const k2 = fixed < 0 ? undefined : make(src, sw, sh, dw, dh, fixed)
+    if (!k2) continue
+    k2.call()
+    const got2 = k2.read()
+    for (let i = 0; i < got.length; i++) worst2 = Math.max(worst2, Math.abs(got[i] - got2[i]))
   }
   const runs = {}
   for (const [sw, sh, dw, dh, label] of CASES) {
-    const k = make(image(sw, sh), sw, sh, dw, dh)
+    const src = image(sw, sh)
+    const k = make(src, sw, sh, dw, dh)
     k.call() // warm
     runs[label] = { call: k.call, ts: [] }
+    const fixed = exact2(sw, sh, dw, dh)
+    const k2 = fixed < 0 ? undefined : make(src, sw, sh, dw, dh, fixed)
+    if (!k2) continue
+    k2.call()
+    fixedRuns[label] = { call: k2.call, ts: [] }
   }
   rows.push({ name: basename(file), size: bytes.length, worst, runs })
+  if (Object.keys(fixedRuns).length)
+    rows.push({ name: '  \u2514 exact 2x', size: 0, worst: worst2, runs: fixedRuns })
 }
 
 if (withTs) {
@@ -203,9 +243,12 @@ for (const r of rows) {
     pad(r.name, 26) +
       pad(r.size || '-', 8) +
       pad(r.worst > 1 ? `WRONG(${r.worst})` : r.worst, 5) +
-      CASES.map(([, , , , l]) => pad(num(r.times[l].best) + ' ' + num(r.times[l].median).trim(), 14)).join(''),
+      CASES.map(([, , , , l]) =>
+        pad(r.times[l] ? num(r.times[l].best) + ' ' + num(r.times[l].median).trim() : '-', 14),
+      ).join(''),
   )
 }
 console.log(`\nbest / median ms of ${REPS} interleaved reps`)
-console.log('err = worst byte disagreement with the TS reference (must be <= 1)')
+console.log('err = worst byte disagreement with the TS reference (must be <= 1);')
+console.log('      on an "exact 2x" row, with the general kernel above it (must be 0)')
 rmSync(scratch, { recursive: true, force: true })

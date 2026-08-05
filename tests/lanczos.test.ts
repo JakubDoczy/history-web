@@ -241,3 +241,140 @@ describe('the compiled kernel', () => {
     for (let i = 0; i < b.data.length; i++) expect(Math.abs(a.data[i] - b.data[i])).toBeLessThanOrEqual(1)
   })
 })
+
+/**
+ * The general kernel, driven by hand at the sizes the glue now hands to the
+ * specialised one.
+ *
+ * Both paths agree with the reference to a quantisation step, but "each within
+ * one of the reference" would allow them to be two apart from each other, and
+ * they are not meant to differ at all: the specialised path is the same
+ * arithmetic in the same order with the same float32 weights, so the claim
+ * worth testing is byte equality.
+ */
+const viaGeneralKernel = (src: PixelBuffer, dw: number, dh: number): Uint8Array => {
+  const k = lanczosKernel()!
+  const x = lanczosWeights(src.width, dw)
+  const y = lanczosWeights(src.height, dh)
+  const BAND = 128
+  k.reset()
+  const srcBytes = src.width * src.height * 4
+  const dstBytes = dw * dh * 4
+  const srcP = k.alloc(srcBytes)
+  const dstP = k.alloc(dstBytes)
+  const tmpP = k.alloc(BAND * src.height * 16)
+  const scratchP = k.alloc((src.width + 2 * x.taps + 4) * 16)
+  const wxP = k.alloc(x.weights.byteLength)
+  const sxP = k.alloc(x.starts.byteLength)
+  const wyP = k.alloc(y.weights.byteLength)
+  const syP = k.alloc(y.starts.byteLength)
+  const pages = Math.ceil((k.heapTop() + 64 - k.memory.buffer.byteLength) / 65536)
+  if (pages > 0) k.memory.grow(pages)
+  const mem = k.memory.buffer
+  new Uint8Array(mem, srcP, srcBytes).set(src.data.subarray(0, srcBytes))
+  new Float32Array(mem, wxP, x.weights.length).set(x.weights)
+  new Int32Array(mem, sxP, x.starts.length).set(x.starts)
+  new Float32Array(mem, wyP, y.weights.length).set(y.weights)
+  new Int32Array(mem, syP, y.starts.length).set(y.starts)
+  k.resample(
+    srcP, src.width, src.height, dstP, dw, dh,
+    wxP, sxP, x.taps, wyP, syP, y.taps, tmpP, BAND, scratchP,
+  )
+  return new Uint8Array(new Uint8Array(mem, dstP, dstBytes)) // copied: the next call overwrites it
+}
+
+/** Edges, gradients and noise, from a fixed seed — a flat field flatters a filter. */
+const scene = (w: number, h: number) => {
+  let s = 12345
+  const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff)
+  return buffer(w, h, (x, y) => {
+    const land = Math.sin(x * 0.31) + Math.cos(y * 0.17) > 0.2 ? 1 : 0
+    const v = 40 + 150 * land + 50 * Math.sin(x * 0.7) * Math.cos(y * 0.4) + rnd() * 25
+    return [v, v * 0.8 + 30 * land, v * 0.5 + 70 * (1 - land), 255]
+  })
+}
+
+const maxDiff = (a: ArrayLike<number>, b: ArrayLike<number>) => {
+  let d = 0
+  for (let i = 0; i < a.length; i++) d = Math.max(d, Math.abs(a[i] - b[i]))
+  return d
+}
+
+describe('the exact-2x kernel', () => {
+  // wider than one band (256) so the band seam is exercised, and not a
+  // multiple of eight so the vertical pass's scalar tail is too
+  const UP = { sw: 201, sh: 143, dw: 402, dh: 286 }
+  const DOWN = { sw: 402, sh: 286, dw: 201, dh: 143 }
+
+  it('doubles both axes exactly as the general kernel does', () => {
+    const src = scene(UP.sw, UP.sh)
+    expect(maxDiff(resampleRGBA(src, UP.dw, UP.dh).data, viaGeneralKernel(src, UP.dw, UP.dh))).toBe(0)
+  })
+
+  it('halves both axes exactly as the general kernel does', () => {
+    const src = scene(DOWN.sw, DOWN.sh)
+    expect(maxDiff(resampleRGBA(src, DOWN.dw, DOWN.dh).data, viaGeneralKernel(src, DOWN.dw, DOWN.dh))).toBe(0)
+  })
+
+  it('is still within a quantisation step of the TypeScript reference', () => {
+    const src = scene(64, 48)
+    for (const [dw, dh] of [
+      [128, 96],
+      [32, 24],
+    ] as const) {
+      expect(maxDiff(resampleRGBA(src, dw, dh).data, resampleLanczos3(src, dw, dh).data)).toBeLessThanOrEqual(1)
+    }
+  })
+
+  it('handles the borders, where the filter hangs off the edge', () => {
+    // the clamp-and-renormalise at the edge is the part a specialised kernel
+    // is most likely to get subtly wrong, and it is also the part that shows:
+    // a border row that is half a pixel out reads as imagery not lining up
+    // with the base map
+    const src = scene(64, 48)
+    for (const [dw, dh] of [
+      [128, 96],
+      [32, 24],
+    ] as const) {
+      const got = resampleRGBA(src, dw, dh)
+      const ref = resampleLanczos3(src, dw, dh)
+      const px = (p: { data: ArrayLike<number> }, x: number, y: number) =>
+        [0, 1, 2, 3].map((c) => p.data[(y * dw + x) * 4 + c])
+      for (let x = 0; x < dw; x++) {
+        expect(maxDiff(px(got, x, 0), px(ref, x, 0))).toBeLessThanOrEqual(1)
+        expect(maxDiff(px(got, x, dh - 1), px(ref, x, dh - 1))).toBeLessThanOrEqual(1)
+      }
+      for (let y = 0; y < dh; y++) {
+        expect(maxDiff(px(got, 0, y), px(ref, 0, y))).toBeLessThanOrEqual(1)
+        expect(maxDiff(px(got, dw - 1, y), px(ref, dw - 1, y))).toBeLessThanOrEqual(1)
+      }
+    }
+  })
+
+  it('leaves a flat field flat at 2x, corners included — the phases normalise', () => {
+    const src = buffer(40, 24, () => [70, 140, 210, 255])
+    for (const [dw, dh] of [
+      [80, 48],
+      [20, 12],
+    ] as const) {
+      const out = resampleRGBA(src, dw, dh)
+      for (let y = 0; y < dh; y++) {
+        for (let x = 0; x < dw; x++) expect(at(out, x, y)).toEqual([70, 140, 210, 255])
+      }
+    }
+  })
+
+  it('leaves anything that is not 2x on both axes to the general path', () => {
+    // 2x on one axis only is the trap: the specialised weights are wrong for
+    // the other one, and the result would be quietly rescaled
+    const src = scene(48, 32)
+    for (const [dw, dh] of [
+      [96, 32],
+      [48, 64],
+      [96, 65],
+      [24, 32],
+    ] as const) {
+      expect(maxDiff(resampleRGBA(src, dw, dh).data, resampleLanczos3(src, dw, dh).data)).toBeLessThanOrEqual(1)
+    }
+  })
+})
