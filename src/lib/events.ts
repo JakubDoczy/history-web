@@ -1,11 +1,23 @@
-import type { Year } from './time'
+import {
+  timeExtent,
+  timeFrom,
+  timeIntersects,
+  timeLength,
+  timeStart,
+  pointTime,
+  type Time,
+  type Year,
+} from './time'
+import { assertNever } from './variant'
 import type { Ring } from './nations'
 import { DEFAULT_DIRECTION, type GeoPath, type PathDirection } from './paths'
 import { drawingPoints, type Drawing } from './drawing'
-import type { Stage } from './stages'
+import { parseSteps, type RawStep, type Step } from './steps'
 import { internalLinkIds } from './richtext'
 import { GeoGrid, SpanIndex, TopScored, separationDeg } from './queryIndex'
 import type { ViewportScope } from './viewport'
+
+export { assertNever }
 
 /**
  * ============================================================================
@@ -22,11 +34,12 @@ import type { ViewportScope } from './viewport'
  * 1. CLOSED UNIONS WITH REQUIRED DISCRIMINANTS
  * ---------------------------------------------------------------------------
  *
- * There are three unions, and every member of each carries a required `kind`:
+ * There are four unions, and every member of each carries a required `kind`:
  *
  *     Item    = HistoricalEvent | Person | Concept      an article the app owns
  *     MapPin  = HistoricalEvent | LifeMarker            a teardrop on the globe
- *     Shape   = area | routes | plan                    ground an event occupies
+ *     Feature = area | line | point                     ground an event occupies
+ *     Time    = point | period                          when it happened (lib/time.ts)
  *
  * Consumers dispatch with `switch (x.kind)` closed by `assertNever`, so adding
  * a fourth kind of anything is a compile error at every place that has to care
@@ -47,53 +60,76 @@ import type { ViewportScope } from './viewport'
  *              and from search.
  *
  * ---------------------------------------------------------------------------
- * 2. GEOMETRY IS COMPOSED, NOT A BAG OF OPTIONAL FIELDS
+ * 2. AN EVENT IS A TIME, A PLACE, AND (SOMETIMES) SOME INK
  * ---------------------------------------------------------------------------
  *
- * An event used to carry `lat`, `lng`, `area?`, `paths?`, `direction?` and
- * `drawing?` side by side, and every renderer sniffed for the ones it cared
- * about. Now an event carries ONE composed value:
+ * Three fields, and each is a whole answer to one question:
  *
- *     geometry = { anchor: LatLng, shapes: Shape[] }
+ *     time     : Time            WHEN — a point, or a period (lib/time.ts)
+ *     location : EventLocation   WHERE — one anchor, and every feature around it
+ *     drawing? : Drawing         WHAT IT DID — the operational overlay
  *
- * `anchor` is where the pin stands — always present, because a pin is what an
- * event *is* on this map. `shapes` is the ground it occupies beyond that point,
- * as a list of variants rather than as named optional fields, for one reason:
- * the operations that hurt were the FOLDS. "Every coordinate this occupies"
- * (`geometryPoints`, which frames the camera) and "how far it reaches"
- * (`geometryRadiusDeg`, which scopes the query) used to be three presence
- * checks each, in three different idioms, with the rules about what counts
- * written in prose. Over a list of variants they are one exhaustive switch
- * each, and the prose becomes a `case`.
+ * **Time is a variant.** It used to be `start` plus an optional `end`, and every
+ * corner of the app that cared wrote `end ?? start` to make sense of that — six
+ * places, six independent guesses at what a missing end meant. Now the two cases
+ * are two members of a union and the collapse happens once, at the parser. See
+ * lib/time.ts, which owns the type and every fold over it.
  *
- * The list is canonical, not free-form, and the parser is what guarantees it:
- * at most one shape of each kind, always in the same order. So `shapeOf(g,
- * 'area')` is a total answer to "what is this event's footprint?", not a search
- * — the four places that want one named component (the pin glyph, the polygon
- * layer, the route drawing, the battle plan) ask for it by kind and get back
- * the variant, fully typed, or `undefined`.
+ * **Location is composed.** An event used to carry `lat`, `lng`, `area?`,
+ * `paths?` and `direction?` side by side, and every renderer sniffed for the
+ * ones it cared about. Now:
+ *
+ *     location = { anchor: LatLng, features: Feature[] }
+ *
+ * `anchor` is the MAIN LOCATION — where the pin stands, always present, because
+ * a pin is what an event *is* on this map. `features` is everything else the
+ * event occupies: its footprint, its routes, and any secondary sites it names.
+ * A list of variants rather than named optional fields, for one reason: the
+ * operations that hurt were the FOLDS. "Every coordinate this occupies"
+ * (`locationPoints`, which frames the camera) and "how far it reaches"
+ * (`locationRadiusDeg`, which scopes the query) used to be three presence checks
+ * each, in three different idioms, with the rules about what counts written in
+ * prose. Over a list of variants they are one exhaustive switch each, and the
+ * prose becomes a `case`.
+ *
+ * The list is canonical, not free-form, and the parser guarantees it: at most
+ * one `area` and one `line`, always in the order area → line → points. So
+ * `featureOf(loc, 'area')` is a total answer to "what is this event's
+ * footprint?", not a search — the places that want one named component (the pin
+ * glyph, the polygon layer, the route ink) ask for it by kind and get back the
+ * variant, fully typed, or `undefined`. Points are the one kind an event may
+ * carry several of, so they are asked for as a list (`pointFeatures`); that is
+ * the difference between "the ground this covers" and "the places this names".
  *
  * Composition also makes the illegal states go away. `direction` lived next to
  * `paths` and meant nothing without it — a data test existed purely to assert
- * that no event carried one without the other. It is now a field OF the routes
- * shape, defaulted at the boundary, so the invariant is a type rather than a
+ * that no event carried one without the other. It is now a field OF the line
+ * feature, defaulted at the boundary, so the invariant is a type rather than a
  * test.
+ *
+ * **The drawing is not a location.** It was briefly a third shape in that list,
+ * and it does not belong there: a footprint and a route are ground, and a battle
+ * plan is a *picture of what happened on* the ground. It is a field of its own,
+ * which is also what lets a STEP carry one (lib/steps.ts) — a step occupies no
+ * ground but very much draws.
  *
  * ---------------------------------------------------------------------------
  * 3. NORMALISE AT THE BOUNDARY, ONCE
  * ---------------------------------------------------------------------------
  *
- * The JSON on disk is unchanged: flat `lat`/`lng`/`area`/`paths`/`direction`/
- * `drawing`, and `kind` omitted on the several hundred entries written before
- * persons and concepts existed (see scripts/build_event_chunks.py, which is the
- * only writer, and tests/eventsData.test.ts, which is the contract). Those
- * shapes are declared here too — `RawEvent`, `RawPerson`, `RawConcept` — and
- * they are the ONLY place an optional kind or a loose geometry field exists.
+ * The JSON on disk is flat and stays flat: `start`/`end`, `lat`/`lng`, `area`,
+ * `paths`, `direction`, `points`, `drawing`, and `kind` omitted on the several
+ * hundred entries written before persons and concepts existed (see
+ * scripts/build_event_chunks.py, which is the only writer, and
+ * tests/eventsData.test.ts, which is the contract). Those shapes are declared
+ * here too — `RawEvent`, `RawPerson`, `RawConcept` — and they are the ONLY place
+ * an optional kind, a loose coordinate or a bare `end` exists.
  *
  * `parseItems` is the single ingestion point (called from `adopt` in
- * stores/events.ts, and from the tests that read the chunk files). It stamps
- * the discriminant and composes the geometry. Past it, `kind` is required and
- * geometry is a value — no consumer defaults, no consumer sniffs.
+ * stores/events.ts, and from the tests that read the chunk files). It stamps the
+ * discriminant, folds the two date fields into a `Time`, composes the location,
+ * and normalises the steps. Past it, `kind` is required and every one of those
+ * is a value — no consumer defaults, no consumer sniffs.
  *
  * ---------------------------------------------------------------------------
  * PINS ARE THEIR OWN UNION
@@ -155,7 +191,7 @@ export interface ItemBase {
   weak?: string[]
 }
 
-/* ---------------------------------------------------------------- geometry */
+/* ---------------------------------------------------------------- location */
 
 export interface LatLng {
   lat: number
@@ -164,10 +200,10 @@ export interface LatLng {
 
 /**
  * Ground an event occupies beyond its anchor. A closed union — each member is
- * self-contained, carrying everything that shape needs and nothing another one
+ * self-contained, carrying everything that feature needs and nothing another one
  * does.
  */
-export type Shape =
+export type Feature =
   /**
    * A footprint: a polygon in GeoJSON [lng, lat] order. The anchor then acts as
    * its centroid — the pin stands *in* the region rather than beside it.
@@ -178,60 +214,80 @@ export type Shape =
    * lib/paths.ts for why this is always an array, never a bare `path`), plus
    * whether they have a direction (`PathDirection`).
    *
-   * A path event is a pin like any other until it is opened; selecting it draws
-   * the routes on the globe, and deselecting removes them again — the same
+   * A route event is a pin like any other until it is opened; selecting it draws
+   * the lines on the globe, and deselecting removes them again — the same
    * lifecycle the selected footprint has. The anchor stays the place the pin
    * stands, and by convention it stands *on* the route (the Strait of Magellan
    * for the circumnavigation, Nanjing for the treasure fleets).
    */
-  | { kind: 'routes'; paths: GeoPath[]; direction: PathDirection }
+  | { kind: 'line'; paths: GeoPath[]; direction: PathDirection }
   /**
-   * An operational overlay: frontlines, thrusts, markers and labels, drawn when
-   * the item is shown on the map. See lib/drawing.ts for the schema and
-   * lib/drawingLayer.ts for what puts it on the globe.
+   * A SECONDARY SITE: somewhere else this event also happened, with an optional
+   * name for it.
    *
-   * Unlike the other two, this does NOT draw on a plain selection. A battle plan
-   * is a lot of ink, and clicking a pin is a glance; "Show on map" is the request
-   * to *study* the thing, and it is what puts the panel out of the way (see
-   * `focus` in stores/events.ts) so there is something to study.
+   * The main location is the anchor — one place, because a pin is one place —
+   * and this is how an event says the rest. The Manhattan Project is Los Alamos
+   * *and* Oak Ridge and Hanford; a treaty is signed in one city and ratified in
+   * another. Before this the only way to say so was to invent a child event with
+   * a made-up name, or to leave it in the prose.
+   *
+   * `at` is a PLACE, not a moment — the field name it shares with a drawing
+   * layer's `at` (which is a time) is an unfortunate collision between two
+   * schemas that never meet in one object. A feature has no time; a layer has no
+   * position outside its own geometry.
    */
-  | { kind: 'plan'; drawing: Drawing }
+  | { kind: 'point'; at: LatLng; name?: string }
 
-export type ShapeKind = Shape['kind']
-export type ShapeOfKind<K extends ShapeKind> = Extract<Shape, { kind: K }>
+export type FeatureKind = Feature['kind']
+export type FeatureOfKind<K extends FeatureKind> = Extract<Feature, { kind: K }>
 
-/** Where an event's pin stands, and every shape it draws around that point. */
-export interface EventGeometry {
+/**
+ * The kinds an event may carry at most ONE of, which is what makes `featureOf` a
+ * lookup rather than a search. `point` is deliberately not among them.
+ */
+export type UniqueFeatureKind = 'area' | 'line'
+
+/** Where an event's pin stands, and every feature it draws around that point. */
+export interface EventLocation {
   anchor: LatLng
   /**
-   * At most one shape of each kind, always in the order area → routes → plan.
-   * Both halves of that are guaranteed by `parseGeometry`, and both are load
-   * bearing: uniqueness is what makes `shapeOf` a lookup rather than a search,
-   * and the order is what makes a fold over the list deterministic —
-   * `geometryPoints` feeds the camera fit, whose answer must not depend on the
-   * order the parser happened to see fields in.
+   * At most one `area` and one `line`, always in the order area → line →
+   * points, with the points in the order they were authored. All of that is
+   * guaranteed by `parseLocation`, and it is load bearing: uniqueness is what
+   * makes `featureOf` a lookup, and the order is what makes a fold over the list
+   * deterministic — `locationPoints` feeds the camera fit, whose answer must not
+   * depend on the order the parser happened to see fields in.
    *
-   * An event may carry all three at once. The Atlantic slave trade is the case
-   * that asked for it: a basin, three legs of a triangle over it, and both
-   * drawn when it is selected.
+   * An event may carry all of them at once. The Atlantic slave trade is the case
+   * that asked for it: a basin, three legs of a triangle over it, and both drawn
+   * when it is selected.
    */
-  shapes: Shape[]
+  features: Feature[]
 }
 
 /**
  * The one named component, by kind — typed, total, and the only lookup the
- * shape list needs. `undefined` means the event has no shape of that kind, which
- * is the whole of what the old `if (e.area)` was trying to say.
+ * feature list needs. `undefined` means the event has no feature of that kind,
+ * which is the whole of what the old `if (e.area)` was trying to say.
+ *
+ * Restricted to the kinds that are unique: asking for "the point" of an event
+ * with three of them is a question with no honest answer, so the type does not
+ * let it be asked. See `pointFeatures`.
  */
-export const shapeOf = <K extends ShapeKind>(
-  g: EventGeometry,
+export const featureOf = <K extends UniqueFeatureKind>(
+  loc: EventLocation,
   kind: K,
-): ShapeOfKind<K> | undefined => g.shapes.find((s): s is ShapeOfKind<K> => s.kind === kind)
+): FeatureOfKind<K> | undefined =>
+  loc.features.find((f): f is FeatureOfKind<K> => f.kind === kind)
 
-/** A geometry with nothing but a pin: the common case, and every life marker. */
-export const pointGeometry = (lat: number, lng: number): EventGeometry => ({
+/** Every secondary site this event names, in authored order. */
+export const pointFeatures = (loc: EventLocation): FeatureOfKind<'point'>[] =>
+  loc.features.filter((f): f is FeatureOfKind<'point'> => f.kind === 'point')
+
+/** A location with nothing but a pin: the common case, and every life marker. */
+export const pointLocation = (lat: number, lng: number): EventLocation => ({
   anchor: { lat, lng },
-  shapes: [],
+  features: [],
 })
 
 /* ------------------------------------------------------------- the variants */
@@ -244,15 +300,31 @@ export const pointGeometry = (lat: number, lng: number): EventGeometry => ({
 export interface PinFields {
   id: string
   name: string
-  start: Year
-  end?: Year // omitted = instantaneous
-  geometry: EventGeometry
+  /** WHEN: a point or a period. See lib/time.ts. */
+  time: Time
+  /** WHERE: the anchor the pin stands on, and every feature around it. */
+  location: EventLocation
   priority: number
   tags: string[]
 }
 
 export interface HistoricalEvent extends ItemBase, PinFields {
   kind: 'event'
+  /**
+   * THE OPERATIONAL OVERLAY: frontlines, thrusts, markers and labels. See
+   * lib/drawing.ts for the schema and lib/drawingLayer.ts for what puts it on
+   * the globe.
+   *
+   * Unlike a footprint or a route, this does NOT draw on a plain selection. A
+   * battle plan is a lot of ink, and clicking a pin is a glance; "Show on map"
+   * is the request to *study* the thing, and it is what puts the panel out of
+   * the way (see `focus` in stores/events.ts) so there is something to study.
+   *
+   * A field rather than a location feature, because it is not ground the event
+   * occupies — it is a picture of what happened on that ground. Which is also
+   * why a `Step` can carry one and cannot carry a footprint.
+   */
+  drawing?: Drawing
   /**
    * HIERARCHICAL CONTAINMENT: the one relation with a direction. A battle is
    * part of an operation, an operation part of a war. At most one parent, it
@@ -265,19 +337,19 @@ export interface HistoricalEvent extends ItemBase, PinFields {
    */
   parent?: string
   /**
-   * STAGED FOCUS: the authored steps through this event, if it has any.
+   * THE AUTHORED STEPS through this event, if it has any.
    *
-   * A flat field rather than a shape, and deliberately so — the geometry list
-   * is "ground this event occupies" (see `EventGeometry`), and a stage occupies
-   * no ground. It is a reading of the event's *time*, in the same relation to
-   * `start`/`end` that `parent` is to the graph, and every stage's `at` is
-   * measured against those two fields.
+   * A field of its own rather than a feature, and deliberately so — the location
+   * list is "ground this event occupies" (see `EventLocation`), and a step
+   * occupies no ground. It is a reading of the event's *time*, in the same
+   * relation to `time` that `parent` is to the graph, and every step's own time
+   * is measured against this event's.
    *
-   * Absent on all but the exemplars, and absent is not a degraded case: an
-   * event with no stages is the whole feature turned off, and focus mode
-   * behaves exactly as it did before. See lib/stages.ts.
+   * Absent on all but the exemplars, and absent is not a degraded case: an event
+   * with no steps is the whole feature turned off, and focus mode behaves
+   * exactly as it did before. See lib/steps.ts.
    */
-  stages?: Stage[]
+  steps?: Step[]
 }
 
 /** Where a life began or ended. `label` is what the panel's chip says. */
@@ -332,15 +404,6 @@ export type MapPin = HistoricalEvent | LifeMarker
 export type Subject = Item | LifeMarker
 
 /**
- * The closer on every `switch` over a variant. Unreachable by construction: if
- * it compiles, the switch was exhaustive, and if it ever runs the data lied
- * about its own discriminant.
- */
-export function assertNever(x: never): never {
-  throw new Error(`unhandled variant: ${JSON.stringify(x)}`)
-}
-
-/**
  * A predicate for `.filter`, which needs a callable one. This is the only
  * concession to `isFoo` in the codebase — it is a discriminant check with a
  * signature, not a rule about what a kind is, and everything that is not a
@@ -364,6 +427,7 @@ export const ofKind =
 export interface RawEvent extends ItemBase {
   kind?: 'event'
   start: Year
+  /** Absent, or equal to `start`, means a point in time. See `timeFrom`. */
   end?: Year
   lat: number
   lng: number
@@ -371,10 +435,19 @@ export interface RawEvent extends ItemBase {
   paths?: GeoPath[]
   /** Absent means `oneway`; see `DEFAULT_DIRECTION` in lib/paths.ts. */
   direction?: PathDirection
+  /** Secondary sites — see the `point` member of `Feature`. */
+  points?: RawPoint[]
   drawing?: Drawing
   parent?: string
-  /** Carried through the boundary untouched — see `stages` on HistoricalEvent. */
-  stages?: Stage[]
+  /** Normalised at the boundary — see `steps` on HistoricalEvent, and lib/steps.ts. */
+  steps?: RawStep[]
+}
+
+/** A secondary site as it is written on disk: flat, like every other coordinate. */
+export interface RawPoint {
+  lat: number
+  lng: number
+  name?: string
 }
 
 export interface RawPerson extends ItemBase {
@@ -393,25 +466,30 @@ export interface RawConcept extends ItemBase {
 export type RawItem = RawEvent | RawPerson | RawConcept
 
 /**
- * Compose the flat fields into the geometry value.
+ * Compose the flat fields into the location value.
  *
- * Empty is empty: an `area: []` or a `paths: []` produces no shape at all,
+ * Empty is empty: an `area: []` or a `paths: []` produces no feature at all,
  * which is what every consumer's old `!!e.area?.length` test meant. A
  * `direction` with no paths to belong to is dropped here rather than carried as
  * a field that means nothing.
  */
-export function parseGeometry(raw: RawEvent): EventGeometry {
-  const shapes: Shape[] = []
-  // area → routes → plan, which is the order every fold will see them in
-  if (raw.area?.length) shapes.push({ kind: 'area', ring: raw.area })
+export function parseLocation(raw: RawEvent): EventLocation {
+  const features: Feature[] = []
+  // area → line → points, which is the order every fold will see them in
+  if (raw.area?.length) features.push({ kind: 'area', ring: raw.area })
   if (raw.paths?.length)
-    shapes.push({
-      kind: 'routes',
+    features.push({
+      kind: 'line',
       paths: raw.paths,
       direction: raw.direction ?? DEFAULT_DIRECTION,
     })
-  if (raw.drawing) shapes.push({ kind: 'plan', drawing: raw.drawing })
-  return { anchor: { lat: raw.lat, lng: raw.lng }, shapes }
+  for (const p of raw.points ?? [])
+    features.push({
+      kind: 'point',
+      at: { lat: p.lat, lng: p.lng },
+      ...(p.name === undefined ? {} : { name: p.name }),
+    })
+  return { anchor: { lat: raw.lat, lng: raw.lng }, features }
 }
 
 /**
@@ -432,12 +510,18 @@ export function parseItem(raw: RawItem): Item {
       return { ...raw, kind: 'concept' }
     default: {
       const ev = raw as RawEvent
-      // The flat geometry fields are destructured OUT and re-composed. Past
-      // this line they exist only inside `geometry`, so no consumer can read an
-      // event's `lat` or `paths` even by accident — which is what makes the
-      // model closed rather than merely preferred.
-      const { lat, lng, area, paths, direction, drawing, ...rest } = ev
-      return { ...rest, kind: 'event', geometry: parseGeometry(ev) }
+      // The flat fields are destructured OUT and re-composed. Past this line
+      // they exist only inside `time` and `location`, so no consumer can read an
+      // event's `lat`, `paths` or bare `end` even by accident — which is what
+      // makes the model closed rather than merely preferred.
+      const { start, end, lat, lng, area, paths, direction, points, steps, ...rest } = ev
+      return {
+        ...rest,
+        kind: 'event',
+        time: timeFrom(start, end),
+        location: parseLocation(ev),
+        ...(steps ? { steps: parseSteps(steps) } : {}),
+      }
     }
   }
 }
@@ -455,35 +539,35 @@ export const parseItems = (raw: RawItem[]): Item[] => raw.map(parseItem)
 export const MINOR_PRIORITY = 0
 export const isMinor = (i: { priority: number }) => i.priority <= MINOR_PRIORITY
 
-/** The year a subject sits at: an event starts, a person is born, an idea anchors. */
-export function anchorYearOf(i: Subject): Year {
+/**
+ * WHEN a subject happened, as the one variant the whole app reads.
+ *
+ * The three item kinds keep their own natural fields — a person is `born` and
+ * `died`, an idea is `anchorYear`, and only a pin carries a `Time` outright —
+ * because those are what the article is *about* and flattening them would make
+ * a life read like an event with a long end. This is the fold that puts all
+ * three in one space, and it is what every span-aware consumer asks instead of
+ * reaching for a field.
+ */
+export function timeOf(i: Subject): Time {
   switch (i.kind) {
     case 'event':
     case 'life-marker':
-      return i.start
+      return i.time
     case 'person':
-      return i.born
+      return timeFrom(i.born, i.died)
     case 'concept':
-      return i.anchorYear
+      return pointTime(i.anchorYear)
     default:
       return assertNever(i)
   }
 }
 
+/** The year a subject sits at: an event starts, a person is born, an idea anchors. */
+export const anchorYearOf = (i: Subject): Year => timeStart(timeOf(i))
+
 /** The span a subject occupies on the timeline — a point for anything instantaneous. */
-export function timeExtentOf(i: Subject): [Year, Year] {
-  switch (i.kind) {
-    case 'event':
-    case 'life-marker':
-      return [i.start, i.end ?? i.start]
-    case 'person':
-      return [i.born, i.died ?? i.born]
-    case 'concept':
-      return [i.anchorYear, i.anchorYear]
-    default:
-      return assertNever(i)
-  }
-}
+export const timeExtentOf = (i: Subject): [Year, Year] => timeExtent(timeOf(i))
 
 /**
  * Does a subject's own span touch the interval `[start, end]`?
@@ -494,49 +578,55 @@ export function timeExtentOf(i: Subject): [Year, Year] {
  * a pin. Touching at a single year counts: an event dated to exactly the edge of
  * the band is on the timeline, not off it.
  */
-export const touchesSpan = (i: Subject, start: Year, end: Year): boolean => {
-  const [a, b] = timeExtentOf(i)
-  return a <= end && b >= start
-}
+export const touchesSpan = (i: Subject, start: Year, end: Year): boolean =>
+  timeIntersects(timeOf(i), start, end)
 
 /**
- * Every coordinate a geometry occupies, `[lng, lat]` each — its pin, its
- * footprint, its routes and its plan. What "show this on the map" is framed on
- * (lib/geoFocus.ts).
+ * Every coordinate a location occupies, `[lng, lat]` each — its anchor, its
+ * footprint, its routes and every secondary site it names.
  *
- * The plan counts, and it is the case that makes the fold worth having: D-Day
- * is a pin and a battle plan across a coastline, with no footprint and no route,
- * so the plan is the only thing that says how big it is.
+ * The fold that "show this on the map" is framed on (lib/geoFocus.ts), together
+ * with the drawing's own points, which are added by `pointsOf` below — a
+ * drawing is not part of the location (see the note at the top), but it is very
+ * much part of what the camera has to hold.
  */
-export function geometryPoints(g: EventGeometry): GeoPath {
-  const out: GeoPath = [[g.anchor.lng, g.anchor.lat]]
-  for (const s of g.shapes)
-    switch (s.kind) {
+export function locationPoints(loc: EventLocation): GeoPath {
+  const out: GeoPath = [[loc.anchor.lng, loc.anchor.lat]]
+  for (const f of loc.features)
+    switch (f.kind) {
       case 'area':
-        out.push(...s.ring)
+        out.push(...f.ring)
         break
-      case 'routes':
-        for (const path of s.paths) out.push(...path)
+      case 'line':
+        for (const path of f.paths) out.push(...path)
         break
-      case 'plan':
-        out.push(...drawingPoints(s.drawing))
+      case 'point':
+        out.push([f.at.lng, f.at.lat])
         break
       default:
-        assertNever(s)
+        assertNever(f)
     }
   return out
 }
 
 /**
- * Every coordinate a subject occupies. A person contributes the place their
- * life began (or ended, if that is the only one recorded); a concept
- * contributes nothing, which is what leaves it with no map action at all.
+ * Every coordinate a subject occupies — its location, plus its ink.
+ *
+ * The drawing counts, and it is the case that makes this worth having as a fold
+ * rather than as a field read: D-Day is a pin and a battle plan across a
+ * coastline, with no footprint and no route, so the plan is the only thing that
+ * says how big it is.
+ *
+ * A person contributes the place their life began (or ended, if that is the only
+ * one recorded); a concept contributes nothing, which is what leaves it with no
+ * map action at all.
  */
-export function geometryPointsOf(i: Subject): GeoPath {
+export function pointsOf(i: Subject): GeoPath {
   switch (i.kind) {
     case 'event':
+      return [...locationPoints(i.location), ...drawingPoints(i.drawing)]
     case 'life-marker':
-      return geometryPoints(i.geometry)
+      return locationPoints(i.location)
     case 'person': {
       const p = i.birthPlace ?? i.deathPlace
       return p ? [[p.lng, p.lat]] : []
@@ -630,7 +720,7 @@ export function buildRelations(items: Item[], byId: Map<string, Item>): Relation
   // order they happened. Priority breaks the tie so two events in the same year
   // still land in a stable, meaningful order.
   for (const list of children.values())
-    list.sort((a, b) => a.start - b.start || b.priority - a.priority)
+    list.sort((a, b) => timeStart(a.time) - timeStart(b.time) || b.priority - a.priority)
 
   const rank = (id: string) => byId.get(id)?.priority ?? MINOR_PRIORITY
   const year = (id: string) => {
@@ -691,8 +781,8 @@ export function lifeMarkersFor(p: Person): LifeMarker[] {
     moment,
     of: p,
     name: `${moment === 'birth' ? 'Birth' : 'Death'} of ${p.name}`,
-    start: year,
-    geometry: pointGeometry(place.lat, place.lng),
+    time: pointTime(year),
+    location: pointLocation(place.lat, place.lng),
     priority: MINOR_PRIORITY,
     tags: p.tags,
   })
@@ -730,8 +820,7 @@ export interface EventFilter {
   minor?: boolean
 }
 
-const intersects = (e: MapPin, start: Year, end: Year) =>
-  e.start <= end && (e.end ?? e.start) >= start
+const intersects = (e: MapPin, start: Year, end: Year) => timeIntersects(e.time, start, end)
 
 /**
  * Is this pin the filter's root, or somewhere under it?
@@ -781,11 +870,10 @@ export const YEAR_UNIT = 1
  * years on screen?", and a 146-year warming trend seen through a ten-year
  * window is only 7% about them.
  */
-export function coverageOf(evStart: Year, evEnd: Year, start: Year, end: Year): number {
-  const s = Math.min(evStart, evEnd)
-  const e = Math.max(evStart, evEnd)
+export function coverageOf(time: Time, start: Year, end: Year): number {
+  const [s, e] = timeExtent(time)
   const overlap = Math.min(e, end) - Math.max(s, start) + YEAR_UNIT
-  return Math.max(0, Math.min(1, overlap / (e - s + YEAR_UNIT)))
+  return Math.max(0, Math.min(1, overlap / (timeLength(time) + YEAR_UNIT)))
 }
 
 /**
@@ -841,33 +929,35 @@ export function coverageOf(evStart: Year, evEnd: Year, start: Year, end: Year): 
 export const COVERAGE_ONGOING = { floor: 0.6, k: 0.35 } as const
 export const COVERAGE_ENDED = { floor: 0.45, k: 0.5 } as const
 
-/** The multiplier itself. Pure; 1 for point events and for full containment. */
-export function coveragePenalty(
-  evStart: Year,
-  evEnd: Year,
-  start: Year,
-  end: Year,
-): number {
+/**
+ * The multiplier itself. Pure; 1 for point events and for full containment.
+ *
+ * It dispatches on the event's `Time` rather than on a pair of years, which is
+ * what makes the point case honest: a point has no span to be partially covered,
+ * so `coverageOf` scores it 1 the moment it intersects at all, and the two sets
+ * of constants below never come into it.
+ */
+export function coveragePenalty(time: Time, start: Year, end: Year): number {
   // A selection with no width (a bare cursor) says nothing about coverage, and
   // reading one would penalise every spanning event to its floor at once.
   if (!(end > start)) return 1
-  const coverage = coverageOf(evStart, evEnd, start, end)
+  const coverage = coverageOf(time, start, end)
   // "Ended" is decided by the selection reaching the event's end, which also
   // covers the event-wholly-inside case — where coverage is 1 and the choice of
   // constants cannot matter.
-  const { floor, k } = end >= Math.max(evStart, evEnd) ? COVERAGE_ENDED : COVERAGE_ONGOING
+  const { floor, k } = end >= timeExtent(time)[1] ? COVERAGE_ENDED : COVERAGE_ONGOING
   return floor + (1 - floor) * coverage ** k
 }
 
 /** Priority as the culling sees it: rank, discounted by how much of the event
  *  the selection actually holds. */
 export const effectivePriority = (e: MapPin, start: Year, end: Year): number =>
-  e.priority * coveragePenalty(e.start, e.end ?? e.start, start, end)
+  e.priority * coveragePenalty(e.time, start, end)
 
 /* ------------------------------------------------------- viewport scoping */
 
 /**
- * How far a geometry reaches from its anchor, in degrees of arc.
+ * How far a location reaches from its anchor, in degrees of arc.
  *
  * An area event is indexed as a point (its centroid) plus this radius, so a
  * plague whose centroid is off screen is still found when its footprint is on
@@ -876,43 +966,47 @@ export const effectivePriority = (e: MapPin, start: Year, end: Year): number =>
  * against the same circle either way, and the alternative (testing the polygon)
  * would pay for precision no one can see at pin scale.
  *
- * The `case` list is the specification, and the two shapes that contribute
+ * The `case` list is the specification, and the two features that contribute
  * NOTHING are the interesting half of it (they used to be a paragraph of
  * comment on a field nobody had to read):
  *
- *  · `routes` — a route is drawn only when its event is selected, and a
- *    selected pin is kept by the store whatever the camera is doing
- *    (`EventIndex.admits` ignores the scope). Counting it here would buy
- *    nothing on screen and cost a great deal: a circumnavigation's radius is
- *    most of the planet, which would put its pin in the top-N contest in
- *    *every* frame, at a spot the camera is not looking at.
- *  · `plan` — the same argument, one step stronger: a plan draws only in focus
- *    mode, which does not run this query at all.
+ *  · `line` — a route is drawn only when its event is selected, and a selected
+ *    pin is kept by the store whatever the camera is doing (`EventIndex.admits`
+ *    ignores the scope). Counting it here would buy nothing on screen and cost
+ *    a great deal: a circumnavigation's radius is most of the planet, which
+ *    would put its pin in the top-N contest in *every* frame, at a spot the
+ *    camera is not looking at.
+ *  · `point` — a secondary site is drawn on the same terms as a route (with the
+ *    selection, see `resolveSelectionInk`), so the same argument holds: Los
+ *    Alamos does not put the Manhattan Project's pin on screen over Tennessee.
+ *
+ * The drawing is not consulted for the same reason, one step stronger: a plan
+ * draws only in focus mode, which does not run this query at all.
  */
-export function geometryRadiusDeg(g: EventGeometry): number {
-  const { lat, lng } = g.anchor
+export function locationRadiusDeg(loc: EventLocation): number {
+  const { lat, lng } = loc.anchor
   let max = 0
-  for (const s of g.shapes)
-    switch (s.kind) {
+  for (const f of loc.features)
+    switch (f.kind) {
       case 'area':
-        for (const [plng, plat] of s.ring) {
+        for (const [plng, plat] of f.ring) {
           const d = separationDeg(lat, lng, plat, plng)
           if (d > max) max = d
         }
         break
-      case 'routes':
-      case 'plan':
+      case 'line':
+      case 'point':
         break // deliberately no reach: see above
       default:
-        assertNever(s)
+        assertNever(f)
     }
   return max
 }
 
 /** Is this pin inside the visible circle (footprint included)? */
 export const inScope = (e: MapPin, scope: ViewportScope): boolean =>
-  separationDeg(scope.lat, scope.lng, e.geometry.anchor.lat, e.geometry.anchor.lng) <=
-  scope.radiusDeg + geometryRadiusDeg(e.geometry)
+  separationDeg(scope.lat, scope.lng, e.location.anchor.lat, e.location.anchor.lng) <=
+  scope.radiusDeg + locationRadiusDeg(e.location)
 
 /**
  * Pins in the time window, matching filters, top `cap` by effective priority.
@@ -1072,13 +1166,14 @@ export class EventIndex {
     const radii = new Float64Array(n)
     for (let i = 0; i < n; i++) {
       const e = this.byPriority[i]
-      const s = e.start
-      const f = e.end ?? s
-      starts[i] = Math.min(s, f)
-      ends[i] = Math.max(s, f)
-      lats[i] = e.geometry.anchor.lat
-      lngs[i] = e.geometry.anchor.lng
-      radii[i] = geometryRadiusDeg(e.geometry)
+      // Ordered by construction (see `timeFrom`), so no min/max here: the
+      // variant is what makes that safe to assume.
+      const [s, f] = timeExtent(e.time)
+      starts[i] = s
+      ends[i] = f
+      lats[i] = e.location.anchor.lat
+      lngs[i] = e.location.anchor.lng
+      radii[i] = locationRadiusDeg(e.location)
     }
     this.spans = SpanIndex.fromColumns(starts, ends)
     this.geo = GeoGrid.fromColumns(lats, lngs, radii)

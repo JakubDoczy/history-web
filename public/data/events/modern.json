@@ -3088,7 +3088,7 @@
     }
    ]
   },
-  "stages": [
+  "steps": [
    {
     "id": "border-battles",
     "name": "The border battles (June)",
@@ -3103,7 +3103,8 @@
    {
     "id": "smolensk",
     "name": "Smolensk (July–September)",
-    "at": 0.2,
+    "start": 0.2,
+    "end": 0.4,
     "camera": {
      "lat": 55.0,
      "lng": 31.5,
@@ -3120,7 +3121,11 @@
      "lng": 31.6,
      "altitude": 0.26
     },
-    "page": "In September Panzer Group 2 turned south off the Moscow axis and met Panzer Group 1 east of Kiev, closing the largest encirclement of the war around the Soviet South-Western Front. Some 665,000 men were taken.\n\nThe turn secured the Ukraine and the approaches to the Donbass, and it cost the advance on Moscow a month of the campaigning season — the decision most argued over since."
+    "page": "In September Panzer Group 2 turned south off the Moscow axis and met Panzer Group 1 east of Kiev, closing the largest encirclement of the war around the Soviet South-Western Front. Some 665,000 men were taken.\n\nThe turn secured the Ukraine and the approaches to the Donbass, and it cost the advance on Moscow a month of the campaigning season — the decision most argued over since.",
+    "highlights": [
+     "kiev-pocket",
+     "uman-pocket"
+    ]
    },
    {
     "id": "typhoon",
@@ -3857,7 +3862,7 @@
     }
    ]
   },
-  "stages": [
+  "steps": [
    {
     "id": "six-june",
     "name": "6 June",

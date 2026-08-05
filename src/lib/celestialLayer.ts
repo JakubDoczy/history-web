@@ -51,6 +51,18 @@ export class CelestialLayer {
     scene.add(this.sun, this.glow, this.moon)
   }
 
+  /**
+   * Show or hide the whole layer.
+   *
+   * A sun and a moon in the frame are the same claim the starfield is — that
+   * this is a photograph of a body in space — so map mode turns all three off
+   * together (see `GlobeStyle.celestial`). Set on the objects rather than by
+   * removing them from the scene, so the layer keeps one lifecycle.
+   */
+  set visible(on: boolean) {
+    for (const o of [this.sun, this.glow, this.moon]) o.visible = on
+  }
+
   setHour(hour: number, coords: Coords) {
     const sunLng = subsolarLongitude(hour)
     const s = coords(0, sunLng, 39) // far out along the subsolar direction

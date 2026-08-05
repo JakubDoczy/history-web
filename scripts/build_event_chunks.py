@@ -12,8 +12,9 @@ no "kind" is an event, which is what the several hundred entries written before
 the item model existed rely on.
 
 Geometry is validated on the way through: an event may carry an `area` ring, a
-`paths` list of routes and a `drawing` overlay, all in [lng, lat] order (see
-validate_paths and validate_drawing).
+`paths` list of routes, a `points` list of secondary sites and a `drawing`
+overlay — the first, second and fourth in [lng, lat] order (see validate_paths,
+validate_points and validate_drawing).
 
 Relations are validated too (see validate_relations). Three typed fields carry
 the whole graph, and all three are written on ONE side only:
@@ -156,8 +157,9 @@ def validate(items: list[dict], ranked: list[str]) -> None:
             if field not in e:
                 sys.exit(f'{e["id"]}: a {k} needs a {field!r}')
         validate_paths(e)
+        validate_points(e)
         validate_drawing(e)
-        validate_stages(e)
+        validate_steps(e, by_id)
     validate_relations(items, by_id)
 
 
@@ -301,21 +303,21 @@ def validate_paths(e: dict) -> None:
 MARKER_STYLES = ('cross', 'star', 'dot', 'arrow')
 
 
-def validate_drawing(e: dict) -> None:
-    """The battle-plan overlay: `drawing.layers`, four kinds, all [lng, lat].
+def check_drawing(e: dict, what: str, d) -> None:
+    """One drawing: `layers`, five kinds, all [lng, lat].
 
     Mirrors `isDrawingSpec` in src/lib/drawing.ts. Checked here so a mistyped
     layer kind or a swapped coordinate pair is a build failure rather than a
     silently missing arrow on a map nobody re-reads.
+
+    `what` names where the drawing came from, because there are now two places
+    one can be written: an event's own `drawing`, and a STEP's (see
+    validate_steps and src/lib/steps.ts, rule 4).
     """
-    d = e.get('drawing')
-    if d is None:
-        return
-    event_only(e, 'a drawing')
     if not isinstance(d, dict) or not isinstance(d.get('layers'), list) or not d['layers']:
-        sys.exit(f'{e["id"]}: drawing must be an object with a non-empty "layers" list')
+        sys.exit(f'{e["id"]}: {what} must be an object with a non-empty "layers" list')
     for i, layer in enumerate(d['layers']):
-        where = f'drawing layer {i}'
+        where = f'{what} layer {i}'
         if not isinstance(layer, dict):
             sys.exit(f'{e["id"]}: {where} is not an object')
         t = layer.get('type')
@@ -357,7 +359,49 @@ def validate_drawing(e: dict) -> None:
             sys.exit(f'{e["id"]}: {where} size must be a positive number of degrees')
 
 
-STAGE_ID = re.compile(r'^[a-z0-9][a-z0-9-]*$')
+
+def validate_drawing(e: dict) -> None:
+    """An event's own overlay, if it has one."""
+    d = e.get('drawing')
+    if d is None:
+        return
+    event_only(e, 'a drawing')
+    check_drawing(e, 'drawing', d)
+
+
+def validate_points(e: dict) -> None:
+    """Secondary sites: `points`, a list of {lat, lng, name?}.
+
+    The main location is `lat`/`lng` — one place, because a pin is one place —
+    and this is how an event names the rest of them (see the `point` member of
+    `Feature` in src/lib/events.ts). Flat, like every other coordinate on disk,
+    and NOT in GeoJSON order for the same reason `lat`/`lng` are not: these are
+    named fields, so there is no order to get wrong.
+    """
+    points = e.get('points')
+    if points is None:
+        return
+    event_only(e, 'points')
+    if not isinstance(points, list) or not points:
+        sys.exit(f'{e["id"]}: points must be a non-empty list — drop the field instead')
+    for i, p in enumerate(points):
+        where = f'point {i}'
+        if not isinstance(p, dict):
+            sys.exit(f'{e["id"]}: {where} is not an object')
+        lat, lng = p.get('lat'), p.get('lng')
+        if not isinstance(lat, (int, float)) or not -90 <= lat <= 90:
+            sys.exit(f'{e["id"]}: {where} lat is off the planet')
+        if not isinstance(lng, (int, float)) or not -180 <= lng <= 180:
+            sys.exit(f'{e["id"]}: {where} lng is off the planet')
+        name = p.get('name')
+        if name is not None and (not isinstance(name, str) or not name):
+            sys.exit(f'{e["id"]}: {where} name must be non-empty text')
+        for k in p:
+            if k not in ('lat', 'lng', 'name'):
+                sys.exit(f'{e["id"]}: {where} has unexpected key {k!r}')
+
+
+STEP_ID = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 # `[text](item:id)`, `[text](event:id)` and `[text](https://…)` — the three link
 # forms src/lib/richtext.ts actually renders. Mirrors COMPLETE_LINKS there.
 COMPLETE_LINK = re.compile(
@@ -371,7 +415,7 @@ def check_markup(e: dict, where: str, text: str) -> None:
     renderRichText cannot fail — anything it does not recognise falls through as
     escaped prose — so a page with a mistyped link ships as visible bracket soup
     rather than as an error. This is the check that turns that into a build
-    failure. Mirrors `markupProblems` in src/lib/stages.ts.
+    failure. Mirrors `markupProblems` in src/lib/steps.ts.
     """
     opens = text.count('](')
     links = len(COMPLETE_LINK.findall(text))
@@ -379,51 +423,89 @@ def check_markup(e: dict, where: str, text: str) -> None:
         sys.exit(f'{e["id"]}: {where} has {opens - links} malformed link(s)')
 
 
-def validate_stages(e: dict) -> None:
-    """Staged focus: `stages`, ids unique per event, `at` inside the span.
+def validate_steps(e: dict, by_id: dict) -> None:
+    """The authored steps: `steps`, ids unique per event, times inside the span.
 
-    Mirrors `stageProblems` in src/lib/stages.ts, and checked here for the same
-    reason the drawing is: a stage dated outside the event it is a stage of owns
-    a window no layer can fall in, which is a chip that filters the map to
-    nothing rather than an exception.
+    Mirrors `stepProblems` in src/lib/steps.ts, and checked here for the same
+    reason the drawing is: a step dated outside the event it is a step of owns a
+    window no layer can fall in, which is a chip that filters the map to nothing
+    rather than an exception.
 
-    `at` has the same two forms it has on a drawing layer (see DrawingCommon in
-    src/lib/drawing.ts): a value in 0..1 is a FRACTION of the event's span, and
-    anything else is a year, which must lie inside that span.
+    A step's time is written in one of two forms, and exactly one of them:
+
+        {"at": 0.45}                 a moment
+        {"start": 0.3, "end": 0.55}  a stretch
+
+    Both use the same dual space a drawing layer's `at` does (see DrawingCommon
+    in src/lib/drawing.ts): a value in 0..1 is a FRACTION of the event's span,
+    and anything else is a year, which must lie inside that span.
+
+    A step may also carry ink of its own (`drawing`, drawn over the parent layers
+    its window keeps) and `highlights` — ids of this event's own children to lift
+    while it is open. A highlight that is not a child is a build failure: the
+    whole of what it does is pin and accent a child pin, so naming something else
+    is a line of data that can never have an effect.
     """
-    stages = e.get('stages')
-    if stages is None:
+    steps = e.get('steps')
+    if steps is None:
         return
-    event_only(e, 'stages')
-    if not isinstance(stages, list) or not stages:
-        sys.exit(f'{e["id"]}: stages must be a non-empty list — drop the field instead')
+    event_only(e, 'steps')
+    if not isinstance(steps, list) or not steps:
+        sys.exit(f'{e["id"]}: steps must be a non-empty list — drop the field instead')
     start = e['start']
     finish = e.get('end', start)
+    children = {c['id'] for c in by_id.values() if c.get('parent') == e['id']}
     seen: set[str] = set()
-    for i, s in enumerate(stages):
-        where = f'stage {i}'
+    for i, s in enumerate(steps):
+        where = f'step {i}'
         if not isinstance(s, dict):
             sys.exit(f'{e["id"]}: {where} is not an object')
         sid = s.get('id')
-        if not isinstance(sid, str) or not STAGE_ID.match(sid):
+        if not isinstance(sid, str) or not STEP_ID.match(sid):
             sys.exit(f'{e["id"]}: {where} needs a lowercase-kebab "id", not {sid!r}')
         if sid in seen:
-            sys.exit(f'{e["id"]}: two stages share the id {sid!r}')
+            sys.exit(f'{e["id"]}: two steps share the id {sid!r}')
         seen.add(sid)
         if not isinstance(s.get('name'), str) or not s['name']:
             sys.exit(f'{e["id"]}: {where} ({sid}) needs a non-empty "name"')
-        at = s.get('at')
-        if not isinstance(at, (int, float)) or isinstance(at, bool):
-            sys.exit(f'{e["id"]}: {where} ({sid}) needs a numeric "at"')
-        if not (0 <= at <= 1) and not (start <= at <= finish):
+
+        # --- the time, in exactly one of its two forms
+        moment, stretch = 'at' in s, 'start' in s
+        if moment == stretch:
             sys.exit(
-                f'{e["id"]}: {where} ({sid}) at {at} is outside the span {start}..{finish}'
+                f'{e["id"]}: {where} ({sid}) needs either "at" (a moment) or '
+                f'"start"/"end" (a stretch), not both and not neither'
             )
+        ends = [s['at']] if moment else [s['start']] + ([s['end']] if 'end' in s else [])
+        for v in ends:
+            if not isinstance(v, (int, float)) or isinstance(v, bool):
+                sys.exit(f'{e["id"]}: {where} ({sid}) has a non-numeric time {v!r}')
+            if not (0 <= v <= 1) and not (start <= v <= finish):
+                sys.exit(
+                    f'{e["id"]}: {where} ({sid}) {v} is outside the span {start}..{finish}'
+                )
+        if len(ends) == 2 and ends[1] < ends[0]:
+            sys.exit(f'{e["id"]}: {where} ({sid}) ends before it starts')
+
         page = s.get('page')
         if page is not None:
             if not isinstance(page, str) or not page:
                 sys.exit(f'{e["id"]}: {where} ({sid}) page must be non-empty text')
             check_markup(e, f'{where} ({sid}) page', page)
+        if s.get('drawing') is not None:
+            check_drawing(e, f'{where} ({sid}) drawing', s['drawing'])
+        highlights = s.get('highlights')
+        if highlights is not None:
+            if not isinstance(highlights, list) or not highlights:
+                sys.exit(f'{e["id"]}: {where} ({sid}) highlights must be a non-empty list')
+            for h in highlights:
+                if not isinstance(h, str) or not h:
+                    sys.exit(f'{e["id"]}: {where} ({sid}) highlights must be ids')
+                if h not in children:
+                    sys.exit(
+                        f'{e["id"]}: {where} ({sid}) highlights {h!r}, '
+                        f'which is not a child of this event'
+                    )
         cam = s.get('camera')
         if cam is not None:
             if not isinstance(cam, dict):
@@ -437,7 +519,7 @@ def validate_stages(e: dict) -> None:
             if alt is not None and not (isinstance(alt, (int, float)) and alt > 0):
                 sys.exit(f'{e["id"]}: {where} ({sid}) camera altitude must be positive')
         for k in s:
-            if k not in ('id', 'name', 'at', 'page', 'camera'):
+            if k not in ('id', 'name', 'at', 'start', 'end', 'page', 'camera', 'drawing', 'highlights'):
                 sys.exit(f'{e["id"]}: {where} ({sid}) has unexpected key {k!r}')
 
 

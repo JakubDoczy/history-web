@@ -288,6 +288,51 @@ const imageryLine = () => {
           </svg>
         </button>
         <div v-if="open === 'display'" class="body">
+          <!-- MAP MODE. Not a theme and not a toggle on the look below: it
+               selects a whole GlobeStyle (lib/present/globe.ts), which is why
+               it sits above the visual style rather than beside it. The
+               settings under it are left alone rather than disabled, so
+               switching back restores exactly what the reader had. -->
+          <div class="group">
+            <div class="group-head">
+              <span class="eyebrow">Mode</span>
+              <span class="tag-experimental">Experimental</span>
+            </div>
+            <div
+              class="seg"
+              :class="`mode-${settings.mode}`"
+              role="radiogroup"
+              aria-label="Render mode"
+            >
+              <span class="thumb" aria-hidden="true" />
+              <button
+                :class="{ on: settings.mode === 'realistic' }"
+                role="radio"
+                data-test="mode-realistic"
+                :aria-checked="settings.mode === 'realistic'"
+                @click="settings.setMode('realistic')"
+              >
+                Globe
+              </button>
+              <button
+                :class="{ on: settings.mode === 'schematic' }"
+                role="radio"
+                data-test="mode-schematic"
+                :aria-checked="settings.mode === 'schematic'"
+                @click="settings.setMode('schematic')"
+              >
+                Map
+              </button>
+            </div>
+            <p class="hint">
+              {{
+                settings.mode === 'realistic'
+                  ? 'Globe — the photographed planet: imagery, relief, clouds, night and stars.'
+                  : 'Map — a drawn scheme: no clouds, no relief, no night, no stars. Early days.'
+              }}
+            </p>
+          </div>
+
           <div class="group">
             <span class="eyebrow">Visual style</span>
             <div class="seg" :class="settings.visuals" role="radiogroup" aria-label="Visual style">
@@ -487,6 +532,17 @@ section:last-child {
   justify-content: space-between;
   gap: var(--s2);
 }
+/* Says what it is without a paragraph: this look is not finished. */
+.tag-experimental {
+  font-family: var(--cond);
+  font-size: var(--t-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brass);
+  border: 1px solid var(--brass-line);
+  border-radius: var(--r-pill);
+  padding: 1px 7px;
+}
 /* a quiet text button: the sliders are the control, this is only an escape hatch */
 .reset {
   font-family: var(--cond);
@@ -599,7 +655,11 @@ section:last-child {
   box-shadow: 0 2px 8px rgba(227, 167, 88, 0.25);
   transition: transform var(--slow);
 }
-.seg.realistic .thumb {
+/* The thumb sits over the SECOND option. Two segmented controls live in this
+   panel and their second options are named differently, so both are listed
+   rather than one being made to stand for the other. */
+.seg.realistic .thumb,
+.seg.mode-schematic .thumb {
   transform: translateX(100%);
 }
 .seg button {

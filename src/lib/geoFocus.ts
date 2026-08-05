@@ -1,11 +1,11 @@
 import { separationDeg, type Cap } from './queryIndex'
-import { geometryPointsOf, type Subject } from './events'
+import { pointsOf, type Subject } from './events'
 import type { GeoPath } from './paths'
 
 /**
- * "Show on map": where the camera has to be for an item's geometry to be *on
- * screen*, whatever that geometry is — a point, a footprint, a route, or all
- * three at once.
+ * "Show on map": where the camera has to be for everything an item occupies to
+ * be *on screen* — its anchor, its footprint, its routes, the sites it names and
+ * the ink it draws, or all of them at once (see `pointsOf` in lib/events.ts).
  *
  * Pure geometry, no store and no globe: the panel decides whether to offer the
  * action by asking for a target and getting `undefined` (a concept has nowhere
@@ -167,8 +167,9 @@ export function altitudeForCapDeg(radiusDeg: number, fovDeg = FIT_FOV, margin = 
 }
 
 /**
- * Where to put the camera to show an item — or `undefined` for an item with no
- * geometry, which is what hides the "Show on map" action on a concept.
+ * Where to put the camera to show an item — or `undefined` for an item that
+ * occupies nowhere at all, which is what hides the "Show on map" action on a
+ * concept.
  *
  * An event is framed on everything it draws: its own point (the pin, which is
  * always kept), its footprint if it has one, and every waypoint of every route.
@@ -185,7 +186,7 @@ export function focusTargetFor(
   fovDeg = FIT_FOV,
   aspect = 1,
 ): FocusTarget | undefined {
-  const points = geometryPointsOf(item)
+  const points = pointsOf(item)
   if (!points.length) return undefined
   const anchor = { lng: points[0][0], lat: points[0][1] }
   const cap = boundingCap(points, anchor)!

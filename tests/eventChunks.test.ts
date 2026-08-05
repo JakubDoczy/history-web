@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { chunksFor, mergeEvents, type EventManifest } from '../src/lib/eventChunks'
 import { parseItem, type HistoricalEvent } from '../src/lib/events'
+import { timeStart } from '../src/lib/time'
 
 const m: EventManifest = {
   spine: 'spine.json',
@@ -43,6 +44,6 @@ describe('mergeEvents', () => {
   it('deduplicates by id, keeping the first copy', () => {
     const merged = mergeEvents([ev('a'), ev('b')], [ev('b', 99), ev('c')])
     expect(merged.map((e) => e.id)).toEqual(['a', 'b', 'c'])
-    expect(merged[1].start).toBe(0) // spine copy wins; era copy is identical anyway
+    expect(timeStart(merged[1].time)).toBe(0) // spine copy wins; era copy is identical anyway
   })
 })

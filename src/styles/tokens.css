@@ -78,7 +78,7 @@
   --pill-h: 34px;
   /* And the stage strip that stacks on it (StageStrip.vue), for the same
      reason: the article has to stop short of both rather than paint over the
-     control the reader steps between stages with. */
+     control the reader steps between steps with. */
   --strip-h: 38px;
   /*
    * Motion. Duration AND easing together, so `transition: opacity var(--fast)`

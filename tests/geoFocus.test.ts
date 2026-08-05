@@ -12,7 +12,7 @@ import {
 } from '../src/lib/geoFocus'
 import { viewSpanDeg, visibleSpanDeg } from '../src/lib/detailImagery'
 import { separationDeg } from '../src/lib/queryIndex'
-import { parseItem, shapeOf, type Concept, type HistoricalEvent, type Person, type RawEvent } from '../src/lib/events'
+import { parseItem, featureOf, type Concept, type HistoricalEvent, type Person, type RawEvent } from '../src/lib/events'
 import type { GeoPath } from '../src/lib/paths'
 
 const ev = (o: Partial<RawEvent> = {}): HistoricalEvent =>
@@ -149,12 +149,12 @@ describe('focusTargetFor', () => {
       ],
     })
     const target = focusTargetFor(e)!
-    const { lat: anchorLat, lng: anchorLng } = e.geometry.anchor
+    const { lat: anchorLat, lng: anchorLng } = e.location.anchor
     expect(target.altitude).toBeGreaterThan(1)
     // the camera looks at the middle of the route, not at the pin
     expect(separationDeg(target.lat, target.lng, anchorLat, anchorLng)).toBeGreaterThan(20)
     // and every waypoint is inside the horizon from there
-    for (const [lng, lat] of shapeOf(e.geometry, 'routes')!.paths[0])
+    for (const [lng, lat] of featureOf(e.location, 'line')!.paths[0])
       expect(separationDeg(target.lat, target.lng, lat, lng)).toBeLessThanOrEqual(
         visibleSpanDeg(target.altitude) / 2 + 1e-9,
       )
@@ -303,7 +303,7 @@ describe('focusTargetFor — fitted to the window that is actually on screen', (
       // the circle inscribed in the frame: the half-span of whichever axis is
       // narrower, which is what every point has to be inside
       const halfFrame = viewSpanDeg(target.altitude, tightFovDeg(FIT_FOV, aspect)) / 2
-      for (const [lng, lat] of shapeOf(wide.geometry, 'routes')!.paths[0])
+      for (const [lng, lat] of featureOf(wide.location, 'line')!.paths[0])
         expect(
           separationDeg(target.lat, target.lng, lat, lng),
           `${w}x${h} ${lng},${lat}`,

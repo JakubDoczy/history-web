@@ -87,12 +87,12 @@ export function clusterEvents(events: MapPin[], visibleSpanDeg: number): Cluster
     const members = [seed]
     for (const other of pending) {
       if (taken.has(other.id)) continue
-      if (angularSeparationDeg(seed.geometry.anchor, other.geometry.anchor) <= threshold) {
+      if (angularSeparationDeg(seed.location.anchor, other.location.anchor) <= threshold) {
         taken.add(other.id)
         members.push(other)
       }
     }
-    const group: EventGroup = { id: seed.id, ...seed.geometry.anchor, members }
+    const group: EventGroup = { id: seed.id, ...seed.location.anchor, members }
     ;(members.length > 1 ? clusters : singles).push(group)
   }
   return { singles, clusters }
@@ -257,7 +257,7 @@ export function layoutPins(
   const legs: ClusterLeg[] = []
   const asPin = (
     e: MapPin,
-    at: LatLng = e.geometry.anchor,
+    at: LatLng = e.location.anchor,
     fanned = false,
   ): PinDatum => ({
     kind: 'event',
@@ -291,7 +291,7 @@ export function layoutPins(
     if (picked) pins.push(asPin(picked))
     if (rest.length === 1) pins.push(asPin(rest[0]))
     else if (rest.length > 1)
-      pins.push({ kind: 'cluster', id: g.id, ...rest[0].geometry.anchor, members: rest })
+      pins.push({ kind: 'cluster', id: g.id, ...rest[0].location.anchor, members: rest })
   }
   return { pins, legs }
 }

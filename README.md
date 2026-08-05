@@ -40,12 +40,13 @@ alongside it, and, for the operations that have one, a **battle plan**: front li
 arrows of advance, the pockets where armies were lost. The pins include the parts
 that never make the ordinary map at all — the regional battles, the sieges and the
 evacuations that are only interesting inside the thing they belong to.
-A long operation also gets a row of **stages** above the bar: *Overview* and then
+A long operation also gets a row of **steps** above the bar: *Overview* and then
 its moments in order — for Barbarossa, the border battles, Smolensk, Kiev, Typhoon,
 the counteroffensive. Pick one and the plan thins to what was true that month, a
-short page on it opens, and the camera goes where it happened; *Overview* puts the
-whole campaign back. Only the moments someone wrote down are selectable — it is a
-list of steps, not a scrubber.
+short page on it opens, the camera goes where it happened, and the battles that
+moment is about are ringed on the map; *Overview* puts the whole campaign back. Only
+the moments someone wrote down are selectable — it is a list of steps, not a
+scrubber.
 Tap the bar to read the article again, Escape to put the map back to normal.
 Search (top bar) finds any event by name or tag; "Show only this event family" filters
 the globe to one storyline.
@@ -110,9 +111,15 @@ tests/            unit tests, one file per lib module
   streams whichever chunks the visible time window touches.
   `scripts/build_event_chunks.py` rebuilds chunks, spine, and manifest from any flat
   JSON dropped in that folder, and validates the geometry on the way through.
-- **Geometry** is `[lng, lat]` throughout (GeoJSON order): `lat`/`lng` for the pin,
-  an optional `area` ring, and an optional `paths` — *always* a list of polylines, so
-  a network (the Silk Road) and a single voyage are the same shape of data. Routes are
+- **Location** is `[lng, lat]` throughout (GeoJSON order): `lat`/`lng` for the pin —
+  the MAIN location, always present — plus everything else the event occupies, as an
+  optional `area` ring, an optional `paths` (*always* a list of polylines, so a network
+  like the Silk Road and a single voyage are the same shape of data) and an optional
+  `points` list of secondary sites, each `{ lat, lng, name? }`. The parser composes
+  those into one value, `{ anchor, features }`, whose features are a closed union of
+  `area | line | point`; every fold over "where is this" is then one exhaustive switch
+  (see the note at the top of `src/lib/events.ts`). A selected event draws its routes,
+  its footprint's outline and a dot on each named site. Routes are
   authored as named waypoints and curved onto great circles at draw time
   (`src/lib/paths.ts`), because the renderer would otherwise join two ports with a
   line that is straight in lat/lng and wrong on the sphere.
@@ -139,28 +146,50 @@ tests/            unit tests, one file per lib module
   Every layer may also carry `color`, `label` (a caption above a marker; documentation
   on the others) and `at` — a year, or a 0..1 fraction of the event's span — which says
   WHEN that layer is true. A layer with no `at` is timeless and always drawn; one with
-  an `at` is drawn on the overview and in the one stage whose window it falls in (see
-  **Stages** below).
+  an `at` is drawn on the overview and in the one step whose window it falls in (see
+  **Steps** below).
   Two units on purpose: a frontline is a *symbol drawn on* a map and is sized in screen
   pixels, a thrust is a *thing on the ground* and is sized in degrees of arc.
   The shipped exemplars are **Operation Barbarossa** (the 22 June border, the December
   high-water mark, the three army-group axes, the Minsk/Smolensk/Kiev pockets) and
   **D-Day** (the five beaches, the airborne drops, the beachhead on the night of the
   6th and the front on 30 June).
-- **Stages** (`stages`) cut a long operation into the moments a historian would name,
-  so focus mode can be stepped through rather than read all at once. Schema in
-  `src/lib/stages.ts`, validated at build time by `validate_stages` and over the corpus
-  by `tests/eventsData.test.ts`: a list of `{ id, name, at, page?, camera? }`, ids unique
-  within the event, `at` in the same two forms a drawing layer's is. In the app a staged
-  event grows a **stage strip** above the pill — *Overview* first, then one chip per
-  stage in `at` order. A chip filters the drawing to its own layers plus the timeless
-  ones, shows its `page` (the same markup a body uses) with a way back, moves the time
+- **Time** is a variant, not a pair of fields. On disk an event carries `start` and an
+  optional `end`; the parser folds them into `{ kind: 'point', year }` or
+  `{ kind: 'period', start, end }` (no `end`, or an `end` equal to the `start`, is a
+  point), and every span-aware corner of the app — the timeline extent, the
+  intersection test, the coverage penalty, the query index — dispatches on that instead
+  of writing `end ?? start` for itself. See `src/lib/time.ts`.
+- **Steps** (`steps`) cut a long operation into the moments a historian would name, so
+  focus mode can be stepped through rather than read all at once. Schema in
+  `src/lib/steps.ts`, validated at build time by `validate_steps` and over the corpus by
+  `tests/eventsData.test.ts`: a list of `{ id, name, page?, camera?, drawing?,
+  highlights? }` with a time written either as `at` (a moment) or as `start`/`end` (a
+  stretch), ids unique within the event, and both forms in the same dual space a drawing
+  layer's `at` is — a value in 0..1 is a fraction of the event's span, anything else is
+  a year inside it. In the app a stepped event grows a **step strip** above the pill —
+  *Overview* first, then one chip per step in time order. A chip filters the drawing to
+  its own layers plus the timeless ones and merges the step's own `drawing` over the
+  top, rings the child events its `highlights` names (pinning them even past the child
+  cap), shows its `page` (the same markup a body uses) with a way back, moves the time
   cursor (never the selection band), and moves the camera if it says where.
   **Only the authored steps are selectable**: this is a list of named moments, not a
   scrubber, because the data does not know what a Tuesday in August looked like.
-  Barbarossa is staged in five (the border battles, Smolensk, Kiev, Typhoon, the
+  Barbarossa is stepped in five (the border battles; Smolensk, which is a stretch rather
+  than a moment; Kiev, which highlights the Kiev and Uman pockets; Typhoon; the
   counteroffensive) and D-Day in four (6 June, the beachhead, Cherbourg, the breakout);
-  each carries per-stage annotations that appear only in their own moment.
+  each carries per-step annotations that appear only in their own moment.
+- **Presentation** lives apart from all of it, in `src/lib/present/`: pure functions
+  from domain values to *render specs*, consumed by the globe and the panels instead of
+  the inline logic they used to carry. `resolvePinSpec` decides which glyph, size and
+  colours a pin gets (`src/lib/eventPins.ts` only emits the SVG); `resolveSelectionInk`
+  and `resolveFocusInk` decide what a selection and an open step put on the ground;
+  `resolveGlobeStyle` turns the settings into one `GlobeStyle` that GlobeView reads for
+  clouds, relief, stars, night, imagery and palette. Every one of them takes a
+  `RenderMode`, and that is what **map mode** is: Settings → Display → *Map*
+  (experimental) resolves a second style — no clouds, no relief, no night, no stars, no
+  streamed imagery, a flattened palette, flatter pins — without a line of domain code
+  knowing about it.
 - **Paleogeography**: `scripts/gen_paleo_v4.py` downloads the PALEOMAP PaleoDEMs and
   renders the 38 deep-time frames (hypsometric tints, hillshade, shelf seas, ice).
 - **Nations** are hand-curated keyframed polygons in `src/data/nations.json`; rings

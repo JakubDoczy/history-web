@@ -78,9 +78,9 @@ export const useTimeStore = defineStore('time', {
     /**
      * Move the CURSOR and nothing else — no band, no window.
      *
-     * The one caller is a stage of a focused event (see `selectStage` in
+     * The one caller is a step of a focused event (see `selectStep` in
      * stores/events.ts), and the difference from `setTime` is the whole reason
-     * it exists: stepping between the stages of an operation is a statement
+     * it exists: stepping between the steps of an operation is a statement
      * about *where inside this event* the reader is, not a request to change
      * what the globe is showing. `setTime` would drag the selection band onto
      * the stage's year, and the band is what culls the pins — so stepping

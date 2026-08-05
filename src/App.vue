@@ -24,7 +24,7 @@ watchEffect(() => events.ensure(time.range.start, time.range.end))
 // is already where "the window moved, so…" is spelled out.
 //
 // The band, not the cursor: the band is what culls the pins, so it is what says
-// whether the focused item is on screen at all. Stepping through the stages of
+// whether the focused item is on screen at all. Stepping through the steps of
 // an operation moves the cursor alone and never disturbs the mode.
 watchEffect(() => events.dropFocusOffTimeline(time.selection.start, time.selection.end))
 </script>

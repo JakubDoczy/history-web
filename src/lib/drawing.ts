@@ -49,12 +49,12 @@ export interface DrawingCommon {
    * WHEN this layer is true — a year (1941) or a fraction of the event's span
    * (0..1).
    *
-   * Read by lib/stages.ts, which is where the two forms and the comparison
+   * Read by lib/steps.ts, which is where the two forms and the comparison
    * between them are defined. The rule in one line: a layer with no `at` is
-   * TIMELESS and drawn in every stage, and one with an `at` is drawn on the
-   * overview and in the single stage whose window it falls in. An event with no
-   * `stages` ignores the field entirely and draws every layer, which is what
-   * every drawing authored before staging existed relies on.
+   * TIMELESS and drawn in every step, and one with an `at` is drawn on the
+   * overview and in the single step whose window it falls in. An event with no
+   * `steps` ignores the field entirely and draws every layer, which is what
+   * every drawing authored before stepping existed relies on.
    */
   at?: number
   /** Shown in the layer's own label, and by the renderer's hit label. */
@@ -221,7 +221,7 @@ export const isDrawing = (d: unknown): d is Drawing =>
 /**
  * Every coordinate a drawing occupies — what the camera has to hold to show it.
  *
- * Feeds the `plan` case of `geometryPoints` (lib/events.ts), so an event whose
+ * Feeds the drawing half of `pointsOf` (lib/events.ts), so an event whose
  * only shape is its drawing — D-Day is a pin and a plan, with no footprint and
  * no route — is still framed on the whole plan rather than on the pin alone.
  */
@@ -298,10 +298,14 @@ export const AREA_OUTLINE_WIDTH = 2
  * is authored open (the polygon layer closes it for its own coordinates) and an
  * outline with a gap in it is exactly the artefact this is fixing.
  */
-export const areaOutlineFor = (ring: GeoPath | undefined): DrawingSpec | undefined => {
+export const areaOutlineFor = (
+  ring: GeoPath | undefined,
+  /** In screen pixels. The look picks it — see `OUTLINE_WIDTH` in lib/present/ink.ts. */
+  width: number = AREA_OUTLINE_WIDTH,
+): DrawingSpec | undefined => {
   if (!ring || ring.length < 3) return undefined
   const [first] = ring
   const last = ring[ring.length - 1]
   const closed = first[0] === last[0] && first[1] === last[1] ? ring : [...ring, first]
-  return { type: 'frontline', paths: [closed], dash: 'solid', width: AREA_OUTLINE_WIDTH }
+  return { type: 'frontline', paths: [closed], dash: 'solid', width }
 }

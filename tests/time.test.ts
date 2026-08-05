@@ -9,6 +9,15 @@ import {
   PRESENT,
   MIN_TIME,
   MAX_TIME,
+  formatTime,
+  pointTime,
+  timeEnd,
+  timeExtent,
+  timeFrom,
+  timeIntersects,
+  timeLength,
+  timeStart,
+  type Time,
 } from '../src/lib/time'
 import { HISTORICAL } from '../src/lib/eras'
 import { FIT_MS, useTimeStore } from '../src/stores/time'
@@ -530,6 +539,99 @@ describe('the selection is never stranded outside the window', () => {
       s.selectEra(era)
       expect(inWindow(s), era.name).toBe(true)
       expect(s.selection).toEqual({ start: Math.max(era.start, MIN_TIME), end: era.end })
+    }
+  })
+})
+
+/**
+ * TIME AS A VARIANT (see `Time` in src/lib/time.ts).
+ *
+ * The type replaces `start` plus an optional `end`, and the whole of the case
+ * for it is that `end ?? start` was written in six places and meant a slightly
+ * different thing in each. What is asserted here is the contract those six
+ * places now share: how the boundary decides which member it is, and that every
+ * fold answers the same for a point as the old arithmetic did.
+ */
+describe('Time', () => {
+  describe('the boundary decides the member, once', () => {
+    it('is a point when there is no end', () => {
+      expect(timeFrom(1969)).toEqual({ kind: 'point', year: 1969 })
+    })
+
+    it('is a point when the end is the start — a war dated 1812–1812 is a year', () => {
+      expect(timeFrom(1812, 1812)).toEqual({ kind: 'point', year: 1812 })
+    })
+
+    it('is a period when the two differ', () => {
+      expect(timeFrom(1939, 1945)).toEqual({ kind: 'period', start: 1939, end: 1945 })
+    })
+
+    it('orders a reversed pair rather than carrying it', () => {
+      expect(timeFrom(1945, 1939)).toEqual({ kind: 'period', start: 1939, end: 1945 })
+    })
+
+    it('handles deep time and year zero like any other number', () => {
+      expect(timeFrom(-4.5e9, -4.4e9)).toEqual({ kind: 'period', start: -4.5e9, end: -4.4e9 })
+      // the case the old truthy tests got wrong: `end` of 0 is a real year
+      expect(timeFrom(-10, 0)).toEqual({ kind: 'period', start: -10, end: 0 })
+      expect(timeFrom(0)).toEqual({ kind: 'point', year: 0 })
+    })
+  })
+
+  describe('the folds', () => {
+    const point = pointTime(1969)
+    const period = timeFrom(1939, 1945)
+
+    it('gives a point zero length and its own year at both ends', () => {
+      expect(timeExtent(point)).toEqual([1969, 1969])
+      expect(timeStart(point)).toBe(1969)
+      expect(timeEnd(point)).toBe(1969)
+      expect(timeLength(point)).toBe(0)
+    })
+
+    it('gives a period its two ends and the years between them', () => {
+      expect(timeExtent(period)).toEqual([1939, 1945])
+      expect(timeStart(period)).toBe(1939)
+      expect(timeEnd(period)).toBe(1945)
+      expect(timeLength(period)).toBe(6)
+    })
+
+    /**
+     * Closed at both ends, and that is the load-bearing half: an event dated to
+     * exactly the edge of the selection band is ON the timeline. Three callers
+     * ask this question and they have to agree to the year.
+     */
+    it('intersects on a closed interval, touching years included', () => {
+      expect(timeIntersects(period, 1939, 1945)).toBe(true)
+      expect(timeIntersects(period, 1900, 1939)).toBe(true) // meeting at the start
+      expect(timeIntersects(period, 1945, 2000)).toBe(true) // and at the end
+      expect(timeIntersects(period, 1941, 1942)).toBe(true) // a band inside it
+      expect(timeIntersects(period, 1900, 1938)).toBe(false)
+      expect(timeIntersects(period, 1946, 2000)).toBe(false)
+      expect(timeIntersects(point, 1969, 1969)).toBe(true)
+      expect(timeIntersects(point, 1970, 2000)).toBe(false)
+    })
+
+    it('formats each kind the way the panel reads it', () => {
+      expect(formatTime(point)).toBe('1969')
+      expect(formatTime(period)).toBe('1939 – 1945')
+      expect(formatTime(pointTime(-99))).toBe('100 BCE')
+    })
+  })
+
+  /**
+   * The property the old `end ?? start` was reaching for, stated once: a point
+   * behaves exactly like a period of zero width, so nothing downstream needs a
+   * case for it.
+   */
+  it('answers for a point exactly as for a zero-width period', () => {
+    for (const y of [-4.5e9, -752, 0, 1969, MAX_TIME]) {
+      const point = pointTime(y)
+      const degenerate: Time = { kind: 'period', start: y, end: y }
+      expect(timeExtent(point)).toEqual(timeExtent(degenerate))
+      expect(timeLength(point)).toBe(timeLength(degenerate))
+      for (const [a, b] of [[y - 1, y + 1], [y, y], [y + 1, y + 2]])
+        expect(timeIntersects(point, a, b)).toBe(timeIntersects(degenerate, a, b))
     }
   })
 })

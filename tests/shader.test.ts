@@ -497,11 +497,16 @@ describe('no overlay outline is left to the polygon layer', () => {
   })
 
   it('draws that outline through the layer that owns lines on this globe', () => {
-    expect(src).toContain('areaOutlineFor')
-    // and on the selection's lifecycle, with the routes
-    const sel = src.slice(src.indexOf('const selectionDrawing'), src.indexOf('const focusDrawing'))
+    // The outline is resolved with the routes, in the one function that says
+    // what a selection puts on the ground (lib/present/ink.ts) — GlobeView only
+    // caches and renders what comes back. Both halves are asserted, because the
+    // fault this guards against is the outline drifting back into the polygon
+    // layer, and it could do that from either end.
+    const ink = readFileSync('src/lib/present/ink.ts', 'utf8')
+    const sel = ink.slice(ink.indexOf('export function resolveSelectionInk'), ink.indexOf('export function resolveFocusInk'))
     expect(sel).toContain('areaOutlineFor')
     expect(sel).toContain('routeDrawingFor')
+    expect(src).toContain('resolveSelectionInk')
   })
 
   it('can pin the continuous animations, or a frame diff measures them instead', () => {

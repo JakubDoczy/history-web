@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { parseItem, visibleEvents, type HistoricalEvent, type RawEvent } from '../src/lib/events'
+import { timeFrom, timeStart } from '../src/lib/time'
 
 // Fixtures are written in the RAW shape — flat lat/lng/area/paths, as the data
 // files carry them — and go through the parser, which is the only thing that
@@ -91,16 +92,121 @@ describe('EventIndex', () => {
 
 /* --------------------------------------------------- viewport-scoped culling */
 
-import { chooseQueryPlan, geometryRadiusDeg, inScope, type QueryPlan } from '../src/lib/events'
+import {
+  chooseQueryPlan,
+  featureOf,
+  inScope,
+  locationPoints,
+  locationRadiusDeg,
+  pointFeatures,
+  pointsOf,
+  type QueryPlan,
+} from '../src/lib/events'
+import { DEFAULT_DIRECTION } from '../src/lib/paths'
 
-describe('geometryRadiusDeg', () => {
+/**
+ * LOCATION AS A COMPOSITION (see `EventLocation` in src/lib/events.ts).
+ *
+ * The flat fields on disk become one anchor and a list of variants, and the two
+ * things worth asserting are the two the design rests on: the parser's
+ * guarantees about that list (canonical order, at most one of each unique kind,
+ * empty is empty), and that the folds over it are exhaustive.
+ */
+describe('the location composition', () => {
+  it('composes the flat fields into features, in one canonical order', () => {
+    const e = ev('all', {
+      lat: 1, lng: 2,
+      area: [[0, 0], [1, 1], [2, 0]],
+      paths: [[[0, 0], [5, 5]]],
+      points: [{ lat: 9, lng: 8, name: 'Oak Ridge' }, { lat: 7, lng: 6 }],
+    })
+    expect(e.location.anchor).toEqual({ lat: 1, lng: 2 })
+    expect(e.location.features.map((f) => f.kind)).toEqual(['area', 'line', 'point', 'point'])
+    expect(pointFeatures(e.location)).toEqual([
+      { kind: 'point', at: { lat: 9, lng: 8 }, name: 'Oak Ridge' },
+      { kind: 'point', at: { lat: 7, lng: 6 } },
+    ])
+  })
+
+  /** Empty is empty: what every consumer's old `!!e.area?.length` test meant. */
+  it('makes no feature at all from an empty ring, path list or point list', () => {
+    const e = ev('bare', { area: [], paths: [], points: [] })
+    expect(e.location.features).toEqual([])
+    expect(featureOf(e.location, 'area')).toBeUndefined()
+    expect(featureOf(e.location, 'line')).toBeUndefined()
+    expect(pointFeatures(e.location)).toEqual([])
+  })
+
+  /** `direction` meant nothing without paths, and is now a field OF the line. */
+  it('folds direction into the line feature and defaults it', () => {
+    expect(featureOf(ev('a', { paths: [[[0, 0], [1, 1]]] }).location, 'line')!.direction).toBe(
+      DEFAULT_DIRECTION,
+    )
+    expect(
+      featureOf(ev('b', { paths: [[[0, 0], [1, 1]]], direction: 'twoway' }).location, 'line')!
+        .direction,
+    ).toBe('twoway')
+    // …and a direction with no route to belong to is dropped rather than carried
+    expect(ev('c', { direction: 'twoway' }).location.features).toEqual([])
+  })
+
+  it('finds a unique feature by kind, and does not pretend points are unique', () => {
+    const e = ev('a', { area: [[0, 0], [1, 1], [2, 0]] })
+    expect(featureOf(e.location, 'area')!.kind).toBe('area')
+    expect(featureOf(e.location, 'line')).toBeUndefined()
+  })
+
+  describe('locationPoints — every coordinate, exhaustively', () => {
+    it('starts at the anchor and folds every feature into it', () => {
+      const e = ev('a', {
+        lat: 1, lng: 2,
+        area: [[10, 11]],
+        paths: [[[20, 21], [22, 23]]],
+        points: [{ lat: 31, lng: 30 }],
+      })
+      expect(locationPoints(e.location)).toEqual([
+        [2, 1], [10, 11], [20, 21], [22, 23], [30, 31],
+      ])
+    })
+
+    /**
+     * The drawing is NOT part of the location — it is a picture of what happened
+     * on it — but it is very much part of what the camera has to hold. D-Day is
+     * the case: a pin and a plan across a coastline, with no footprint and no
+     * route, so the plan is the only thing that says how big it is.
+     */
+    it('is the location alone; the drawing joins it in pointsOf', () => {
+      const e = ev('d', {
+        lat: 49.3, lng: -0.6,
+        drawing: { layers: [{ type: 'marker', pos: [-1.6, 49.6] }] },
+      })
+      expect(locationPoints(e.location)).toEqual([[-0.6, 49.3]])
+      expect(pointsOf(e)).toEqual([[-0.6, 49.3], [-1.6, 49.6]])
+    })
+  })
+})
+
+describe('locationRadiusDeg', () => {
   it('is zero for a point event', () => {
-    expect(geometryRadiusDeg(ev('p').geometry)).toBe(0)
+    expect(locationRadiusDeg(ev('p').location)).toBe(0)
   })
   it('is the furthest vertex of an area event from its centroid', () => {
     // ring is [lng, lat]; the furthest of these is 3° away along the meridian
     const area = ev('a', { lat: 0, lng: 0, area: [[0, 3], [1, 0], [0, -2]] })
-    expect(geometryRadiusDeg(area.geometry)).toBeCloseTo(3, 6)
+    expect(locationRadiusDeg(area.location)).toBeCloseTo(3, 6)
+  })
+  /**
+   * The two features that contribute NOTHING are the interesting half of the
+   * fold: both draw only when the event is selected, and a selected pin is kept
+   * whatever the camera is doing — so counting them would put a
+   * circumnavigation's pin in the top-N contest in every frame, at a spot the
+   * camera is not looking at.
+   */
+  it('gives a route and a secondary site no reach at all', () => {
+    const route = ev('r', { lat: 0, lng: 0, paths: [[[0, 0], [170, 60]]] })
+    const sites = ev('s', { lat: 0, lng: 0, points: [{ lat: 60, lng: 170 }] })
+    expect(locationRadiusDeg(route.location)).toBe(0)
+    expect(locationRadiusDeg(sites.location)).toBe(0)
   })
   it('lets a footprint reach into a scope its centroid is outside of', () => {
     const area = ev('a', { lat: 0, lng: 0, area: [[0, 5], [0, -5], [5, 0]] })
@@ -364,11 +470,11 @@ describe('item kinds', () => {
 describe('lifeMarkersFor', () => {
   it('makes a minor birth and death pin from a life', () => {
     const [birth, death] = lifeMarkersFor(einstein)
-    expect([birth.name, birth.start, birth.geometry.anchor.lat, birth.priority, birth.of.id]).toEqual([
+    expect([birth.name, timeStart(birth.time), birth.location.anchor.lat, birth.priority, birth.of.id]).toEqual([
       'Birth of Albert Einstein', 1879, 48.4, MINOR_PRIORITY, 'einstein',
     ])
     expect([birth.kind, birth.moment]).toEqual(['life-marker', 'birth'])
-    expect([death.name, death.start, death.geometry.anchor.lng]).toEqual([
+    expect([death.name, timeStart(death.time), death.location.anchor.lng]).toEqual([
       'Death of Albert Einstein', 1955, -74.67,
     ])
     expect(birth.tags).toEqual(einstein.tags) // so tag filtering and pin colour still work
@@ -587,33 +693,33 @@ import {
 describe('partial-coverage penalty', () => {
   describe('coverage', () => {
     it('is the fraction of the event the selection holds, counting years as units', () => {
-      expect(coverageOf(1939, 1945, 1939, 1945)).toBe(1) // wholly inside
-      expect(coverageOf(1939, 1945, 1943, 1944)).toBeCloseTo(2 / 7, 12)
-      expect(coverageOf(1880, 2026, 1990, 1999)).toBeCloseTo(10 / 147, 12)
+      expect(coverageOf(timeFrom(1939, 1945), 1939, 1945)).toBe(1) // wholly inside
+      expect(coverageOf(timeFrom(1939, 1945), 1943, 1944)).toBeCloseTo(2 / 7, 12)
+      expect(coverageOf(timeFrom(1880, 2026), 1990, 1999)).toBeCloseTo(10 / 147, 12)
     })
 
     // A year is a unit of time, not an instant: an event ending in 1943 and a
     // selection starting in 1943 share the whole of 1943, and `intersects`
     // already says so. Half-open arithmetic here would call that zero.
     it('gives a touching year real width, as intersection does', () => {
-      expect(coverageOf(1942, 1943, 1943, 1944)).toBeCloseTo(0.5, 12)
-      expect(coverageOf(1943, 1943, 1943, 1944)).toBe(1)
+      expect(coverageOf(timeFrom(1942, 1943), 1943, 1944)).toBeCloseTo(0.5, 12)
+      expect(coverageOf(timeFrom(1943, 1943), 1943, 1944)).toBe(1)
     })
 
     it('never leaves [0, 1]', () => {
-      expect(coverageOf(1939, 1945, -1e9, 1e9)).toBe(1)
-      expect(coverageOf(1939, 1945, 1800, 1810)).toBe(0)
+      expect(coverageOf(timeFrom(1939, 1945), -1e9, 1e9)).toBe(1)
+      expect(coverageOf(timeFrom(1939, 1945), 1800, 1810)).toBe(0)
     })
   })
 
   it('leaves point events alone, wherever the selection reaches', () => {
     for (const [s, e] of [[1969, 1969], [1900, 2000], [1969, 2026], [-1e9, 1969]] as const)
-      expect(coveragePenalty(1969, 1969, s, e), `${s}..${e}`).toBe(1)
+      expect(coveragePenalty(timeFrom(1969, 1969), s, e), `${s}..${e}`).toBe(1)
   })
 
   it('leaves an event wholly inside the selection alone', () => {
-    expect(coveragePenalty(1939, 1945, 1900, 2000)).toBe(1)
-    expect(coveragePenalty(-335e6, -175e6, -1e9, 2026)).toBe(1)
+    expect(coveragePenalty(timeFrom(1939, 1945), 1900, 2000)).toBe(1)
+    expect(coveragePenalty(timeFrom(-335e6, -175e6), -1e9, 2026)).toBe(1)
   })
 
   it('rises monotonically with coverage, in both cases', () => {
@@ -622,7 +728,7 @@ describe('partial-coverage penalty', () => {
       // lower the factor with it — never raise it, never plateau
       let last = Infinity
       for (const width of [10, 20, 50, 100, 500, 5000]) {
-        const f = coveragePenalty(1990 - width, 1990 + width, 1990, end)
+        const f = coveragePenalty(timeFrom(1990 - width, 1990 + width), 1990, end)
         expect(f, `width ${width}, end ${end}`).toBeLessThan(last)
         last = f
       }
@@ -638,18 +744,18 @@ describe('partial-coverage penalty', () => {
       expect(ended, `coverage ${c}`).toBeLessThan(ongoing)
     }
     // and on real spans: the same 44-year event, seen from inside and from after
-    const inside = coveragePenalty(1947, 1991, 1960, 1965)
-    const after = coveragePenalty(1947, 1991, 1988, 1993)
+    const inside = coveragePenalty(timeFrom(1947, 1991), 1960, 1965)
+    const after = coveragePenalty(timeFrom(1947, 1991), 1988, 1993)
     expect(after).toBeLessThan(inside)
   })
 
   it('meets at 1: full coverage is not a case distinction', () => {
-    expect(coveragePenalty(1939, 1945, 1939, 1945)).toBe(1)
-    expect(coveragePenalty(1939, 1945, 1930, 1960)).toBe(1)
+    expect(coveragePenalty(timeFrom(1939, 1945), 1939, 1945)).toBe(1)
+    expect(coveragePenalty(timeFrom(1939, 1945), 1930, 1960)).toBe(1)
   })
 
   it('says nothing about a selection with no width', () => {
-    expect(coveragePenalty(1880, 2026, 1990, 1990)).toBe(1)
+    expect(coveragePenalty(timeFrom(1880, 2026), 1990, 1990)).toBe(1)
   })
 
   // The point of the floor and of k < 1: importance can still win. An era-long

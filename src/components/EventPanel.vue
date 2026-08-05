@@ -2,11 +2,11 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
-import { formatYear } from '../lib/time'
+import { formatTime, formatYear } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
-import { assertNever, shapeOf, type Item, type Place } from '../lib/events'
+import { anchorYearOf, assertNever, featureOf, timeOf, type Item, type Place } from '../lib/events'
 import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
-import StageStrip from './StageStrip.vue'
+import StepStrip from './StepStrip.vue'
 
 const events = useEventStore()
 const time = useTimeStore()
@@ -32,8 +32,8 @@ const kindLabel = computed(() => ({ event: '', person: 'Person', concept: 'Conce
 const pillKind = computed(() => {
   const ev = event.value
   if (!ev) return kindLabel.value
-  if (shapeOf(ev.geometry, 'plan')) return 'Plan'
-  return shapeOf(ev.geometry, 'routes') ? 'Route' : 'Event'
+  if (ev.drawing) return 'Plan'
+  return featureOf(ev.location, 'line') ? 'Route' : 'Event'
 })
 
 /** The line under the title: a span, a lifespan, or the year an idea is anchored at. */
@@ -45,7 +45,9 @@ const when = computed(() => {
         ? `b. ${formatYear(i.born)}`
         : `${formatYear(i.born)} – ${formatYear(i.died)}`
     case 'event':
-      return i.end ? `${formatYear(i.start)} – ${formatYear(i.end)}` : formatYear(i.start)
+      // One fold over the variant, rather than a truthy test on an optional
+      // `end` — which read an event dated to the year 0 as a point by accident.
+      return formatTime(timeOf(i))
     case 'concept':
       return ''
     default:
@@ -84,17 +86,17 @@ const seeAlso = computed(() => events.seeAlsoOf(e.value.id))
 
 /**
  * The STAGE PAGE the article is showing, if any — the authored text of the step
- * the reader has stepped into (see `selectStage` in stores/events.ts).
+ * the reader has stepped into (see `selectStep` in stores/events.ts).
  *
- * Only on the focused event's OWN article. Opening a battle inside a staged
+ * Only on the focused event's OWN article. Opening a battle inside a stepped
  * operation swaps the panel to the battle, and the battle's article is about
- * the battle: it must not be overwritten by the text of a stage of its parent,
- * even though that stage is still what the map is filtered to.
+ * the battle: it must not be overwritten by the text of a step of its parent,
+ * even though that step is still what the map is filtered to.
  */
-const stagePage = computed(() => {
-  const stage = events.activeStage
-  if (!stage?.page) return null
-  return events.selectedId === events.focus?.itemId ? stage : null
+const stepPage = computed(() => {
+  const step = events.activeStep
+  if (!step?.page) return null
+  return events.selectedId === events.focus?.itemId ? step : null
 })
 
 /** Persons and concepts are chipped; an event is the unmarked case (as in search). */
@@ -221,7 +223,7 @@ onBeforeUnmount(() => inflight?.abort())
     <!-- The authored steps of the focused event, above the pill's row. Outside
          the swap below on purpose: it belongs to the FOCUS, not to whichever
          shape the panel is in, and it must not fold away with the article. -->
-    <StageStrip />
+    <StepStrip />
     <!-- Two shapes of the same panel. The article is the default; the pill is
          what focus mode leaves behind so the map is unobstructed (see
          `focusStack` in stores/events.ts). `mode="out-in"` because they are not
@@ -263,7 +265,7 @@ onBeforeUnmount(() => inflight?.abort())
         v-else
         key="article"
         class="sheet panel scroll-y"
-        :class="{ 'has-minimise': events.focus, 'has-strip': events.focusStages.length }"
+        :class="{ 'has-minimise': events.focus, 'has-strip': events.focusSteps.length }"
       >
     <span class="grabber" aria-hidden="true" />
     <!-- In focus mode the article can fold back down to the pill without
@@ -335,20 +337,20 @@ onBeforeUnmount(() => inflight?.abort())
     </p>
 
     <!-- ONE STAGE, INSTEAD OF THE WHOLE ARTICLE.
-         A stage page is a page, not a section appended to one: the reader
+         A step page is a page, not a section appended to one: the reader
          stepped into a moment of the operation and the panel is what tells them
          about that moment, so the lead picture, the body and the four relation
          lists all step aside. The way back is the first thing in it and says
          where it goes, because there is no other affordance in the panel that
          means "the whole thing again" — the strip's own Overview chip is
          outside this box, over the map. -->
-    <section v-if="stagePage" class="stage-page" data-test="stage-page">
-      <button class="back" data-test="stage-back" @click="events.selectStage()">
+    <section v-if="stepPage" class="step-page" data-test="step-page">
+      <button class="back" data-test="step-back" @click="events.selectStep()">
         <span aria-hidden="true">←</span>
         <span class="back-name">Overview</span>
       </button>
-      <h3>{{ stagePage.name }}</h3>
-      <div class="body" @click="onBodyClick" v-html="renderRichText(stagePage.page!)" />
+      <h3>{{ stepPage.name }}</h3>
+      <div class="body" @click="onBodyClick" v-html="renderRichText(stepPage.page!)" />
     </section>
 
     <template v-else>
@@ -392,7 +394,7 @@ onBeforeUnmount(() => inflight?.abort())
       <ul>
         <li v-for="p in partOf" :key="p.id">
           <a @click="goTo(p.id)">{{ p.name }}</a>
-          <span class="year tnum">{{ formatYear(p.start) }}</span>
+          <span class="year tnum">{{ formatYear(anchorYearOf(p)) }}</span>
         </li>
       </ul>
     </div>
@@ -402,7 +404,7 @@ onBeforeUnmount(() => inflight?.abort())
       <ul>
         <li v-for="c in children" :key="c.id">
           <a @click="goTo(c.id)">{{ c.name }}</a>
-          <span class="year tnum">{{ formatYear(c.start) }}</span>
+          <span class="year tnum">{{ formatYear(anchorYearOf(c)) }}</span>
         </li>
       </ul>
     </div>
@@ -483,9 +485,9 @@ onBeforeUnmount(() => inflight?.abort())
   z-index: var(--z-event-panel);
   animation: panel-in var(--slow);
 }
-/* A staged event's article stops short of the corner the stage strip is in.
-   Without this a long stage page reaches the bottom of the screen and paints
-   over the one control that steps to the next stage — on a phone that is the
+/* A stepped event's article stops short of the corner the step strip is in.
+   Without this a long step page reaches the bottom of the screen and paints
+   over the one control that steps to the next step — on a phone that is the
    whole strip, and the reader would have to close the page to see it again.
    The band reserved is exactly the pill's row plus the strip's (tokens.css). */
 .panel.has-strip {
@@ -525,7 +527,7 @@ onBeforeUnmount(() => inflight?.abort())
   max-width: min(470px, calc(100vw - 2 * var(--s4)));
   padding: 3px 5px 3px var(--s2);
   border-radius: var(--r-pill);
-  /* The stage strip stacks on this without measuring it — see --pill-h. */
+  /* The step strip stacks on this without measuring it — see --pill-h. */
   min-height: var(--pill-h);
   box-sizing: border-box;
 }
@@ -858,17 +860,17 @@ figcaption {
 }
 
 /* --- the article itself: set for reading, not for filling a box --- */
-/* --- the stage page ------------------------------------------------------
+/* --- the step page ------------------------------------------------------
    A page inside the article, set apart by a rule and an indent rather than by
    a box: it is still this event's panel, and boxing it would read as a card
    about something else. The back control is reused verbatim from the focus
    breadcrumb (`.back`) — one gesture, one look, two places it can appear. */
-.stage-page {
+.step-page {
   margin-top: var(--s4);
   padding-top: var(--s3);
   border-top: 1px solid var(--line-soft);
 }
-.stage-page h3 {
+.step-page h3 {
   margin: 2px 0 0;
   font-family: var(--serif);
   font-weight: 600;
@@ -876,7 +878,7 @@ figcaption {
   line-height: 1.3;
   color: var(--frost);
 }
-.stage-page .body {
+.step-page .body {
   margin-top: var(--s2);
 }
 
@@ -1074,8 +1076,8 @@ ul {
   }
   /* The sheet stands on the strip's row rather than on the rail. On a phone the
      sheet occupies the same corner the strip does, so without this the chips
-     are simply not there while a stage page is open — and the strip is how the
-     reader gets to the NEXT stage. */
+     are simply not there while a step page is open — and the strip is how the
+     reader gets to the NEXT step. */
   .panel.has-strip {
     bottom: calc(var(--strip-clear) + var(--s1));
     max-height: 62dvh;

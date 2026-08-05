@@ -7,7 +7,6 @@ import {
   isMinor,
   parseItems,
   searchItems,
-  shapeOf,
   touchesSpan,
   type EventFilter,
   type HistoricalEvent,
@@ -16,8 +15,10 @@ import {
   type RawItem,
   type Subject,
 } from '../lib/events'
+import { timeStart } from '../lib/time'
 import type { Drawing } from '../lib/drawing'
-import { atYear, drawingForStage, orderedStages, type Stage } from '../lib/stages'
+import { orderedSteps, stepTimeYears, type Step } from '../lib/steps'
+import { resolveFocusInk } from '../lib/present/ink'
 import { focusTargetFor, type FocusTarget } from '../lib/geoFocus'
 import { assignTiers, type Tier } from '../lib/eventTiers'
 import { internalLinkIds } from '../lib/richtext'
@@ -91,7 +92,7 @@ export const FOCUS_STACK_CAP = 4
  */
 const focusChildrenOf = (parentId: string, cap = FOCUS_CHILD_CAP): HistoricalEvent[] =>
   [...index.childrenOf(parentId)]
-    .sort((a, b) => b.priority - a.priority || a.start - b.start)
+    .sort((a, b) => b.priority - a.priority || timeStart(a.time) - timeStart(b.time))
     .slice(0, cap)
 
 /**
@@ -209,21 +210,21 @@ export const useEventStore = defineStore('events', {
     /** In focus mode, has the reader pulled the article back up over the map? */
     focusExpanded: false,
     /**
-     * STAGED FOCUS: which authored step of the focused event the reader is in,
+     * STEPPED FOCUS: which authored step of the focused event the reader is in,
      * or `undefined` for the overview.
      *
      * `undefined` is the ground state and it is never skipped: entering a focus,
      * pushing one, popping one and dropping the whole stack all reset it, so the
      * first thing a reader sees of any event is always the event whole (see
-     * lib/stages.ts, rule 1). Only `selectStage` ever sets it, and only to an id
+     * lib/steps.ts, rule 1). Only `selectStep` ever sets it, and only to an id
      * the focused event actually declares.
      *
      * It belongs to the TOP of the focus stack, not to the stack: stepping into
-     * a battle inside a staged operation and back out again returns to the
-     * overview rather than to whichever stage was open, because the stage is a
+     * a battle inside a stepped operation and back out again returns to the
+     * overview rather than to whichever step was open, because the step is a
      * reading of one event and the reader has been somewhere else since.
      */
-    stageId: undefined as string | undefined,
+    stepId: undefined as string | undefined,
   }),
   getters: {
     /**
@@ -275,9 +276,16 @@ export const useEventStore = defineStore('events', {
         // that is normally the context or one of the children already listed —
         // it matters for the child that "Contains" reached but the child cap
         // ranked out of the pinned set.
+        //
+        // So are the open step's HIGHLIGHTS, and for a stronger reason: a step
+        // that says it is about Kiev has said the one thing that outranks the
+        // child cap. The cap exists to stop a hundred children swamping the
+        // globe; a named child is not one of the hundred, it is the point of the
+        // moment the reader is standing in. See `Step.highlights`.
         for (const id of [
           focusId,
           ...focusChildrenOf(focusId).map((c) => c.id),
+          ...this.highlightedIds,
           ...(state.selectedId ? [state.selectedId] : []),
         ]) {
           if (out.some((e) => e.id === id)) continue
@@ -471,42 +479,49 @@ export const useEventStore = defineStore('events', {
     panelMinimised(state): boolean {
       return state.focusStack.length > 0 && !state.focusExpanded
     },
-    /* --- staged focus (lib/stages.ts) -------------------------------------
-       Three getters over one authored list. They are the whole of what the
-       stage strip, the stage page and the globe read, and every one of them is
-       empty or `undefined` for the overwhelming majority of the corpus, which
-       carries no stages at all. */
+    /* --- stepped focus (lib/steps.ts) --------------------------------------
+       Four getters over one authored list. They are the whole of what the step
+       strip, the step page and the globe read, and every one of them is empty or
+       `undefined` for the overwhelming majority of the corpus, which carries no
+       steps at all. */
     /**
-     * The focused event's stages, in `at` order — `[]` when there are none, or
+     * The focused event's steps, in time order — `[]` when there are none, or
      * when the thing in focus is a life marker, a person or an idea.
      *
      * Ordered here rather than trusted from the data, so the chips read
      * chronologically whatever order they were typed in.
      */
-    focusStages(): Stage[] {
+    focusSteps(): Step[] {
       const item = this.focused
-      if (item?.kind !== 'event' || !item.stages?.length) return []
-      return orderedStages(item.stages, item.start, item.end)
+      if (item?.kind !== 'event' || !item.steps?.length) return []
+      return orderedSteps(item.steps, item.time)
     },
-    /** The stage the reader is in, or `undefined` — the overview. */
-    activeStage(state): Stage | undefined {
-      return state.stageId
-        ? this.focusStages.find((s) => s.id === state.stageId)
-        : undefined
+    /** The step the reader is in, or `undefined` — the overview. */
+    activeStep(state): Step | undefined {
+      return state.stepId ? this.focusSteps.find((s) => s.id === state.stepId) : undefined
     },
     /**
-     * The plan on the globe: the focused item's drawing, filtered to the stage.
+     * The children the open step has asked to be lifted (see `Step.highlights`).
+     * Empty on the overview, which is the ground state and says nothing.
+     */
+    highlightedIds(): string[] {
+      return this.activeStep?.highlights ?? []
+    },
+    /**
+     * The plan on the globe: the focused item's ink, resolved for the open step.
      *
      * The FOCUS's drawing, not the selection's — while a child battle is open
-     * inside an operation the operation's plan is what stays on the map. On the
-     * overview this is the drawing itself, the same object, so stepping back out
-     * of a stage is a no-op for the renderer's key comparison.
+     * inside an operation the operation's plan is what stays on the map. What
+     * the step does to it — filter the parent's layers, merge the step's own —
+     * is `resolveFocusInk` (lib/present/ink.ts) and lives there rather than
+     * here, so the one rule that decides what is on the map is a pure function a
+     * test can reach. On the overview it hands back the drawing itself, the same
+     * object, so stepping back out is a no-op for the renderer's key comparison.
      */
     focusDrawing(state): Drawing | undefined {
       const item = this.focused
       if (item?.kind !== 'event') return undefined
-      const plan = shapeOf(item.geometry, 'plan')?.drawing
-      return drawingForStage(plan, state.stageId, this.focusStages, item.start, item.end)
+      return resolveFocusInk(item, state.stepId, { mode: useSettingsStore().mode })
     },
   },
   actions: {
@@ -661,9 +676,9 @@ export const useEventStore = defineStore('events', {
         this.focusStack = [id]
       }
       this.focusExpanded = false
-      // A new context always opens on its overview, never on a stage — the one
-      // that was open belonged to the event being left (see `stageId`).
-      this.stageId = undefined
+      // A new context always opens on its overview, never on a step — the one
+      // that was open belonged to the event being left (see `stepId`).
+      this.stepId = undefined
       // The mode is always on its own item: this is what makes the invariant
       // hold no matter which way the caller arrived (a pin, a link, a search).
       this.selectedId = id
@@ -676,7 +691,7 @@ export const useEventStore = defineStore('events', {
     exitFocus() {
       this.focusStack.pop()
       this.focusExpanded = false
-      this.stageId = undefined // the stage belonged to the context being left
+      this.stepId = undefined // the step belonged to the context being left
       const focusId = topFocus(this.focusStack)
       if (focusId !== undefined) this.selectedId = focusId
     },
@@ -687,7 +702,7 @@ export const useEventStore = defineStore('events', {
     clearFocus() {
       if (this.focusStack.length) this.focusStack = []
       this.focusExpanded = false
-      this.stageId = undefined
+      this.stepId = undefined
     },
     /**
      * The clean slate: no focus, no selection, no open cluster.
@@ -710,7 +725,7 @@ export const useEventStore = defineStore('events', {
      * it gets the same answer (`dismiss`).
      *
      * Focus mode is one item's context: its ink on the ground, its children
-     * pinned, its stages in the strip. All of that is *about a year*, and the
+     * pinned, its steps in the strip. All of that is *about a year*, and the
      * band is what says the year is on screen. Without this the mode simply
      * stayed: Barbarossa's 1941 front, drawn over the Permian, on a globe with
      * no pins on it at all (/tmp/shots35/verify-F2-live.png). The pin was culled
@@ -719,7 +734,7 @@ export const useEventStore = defineStore('events', {
      *
      * The test is intersection, not containment, and that margin is the design:
      * a band nudged off one end of a fifty-year war still touches it, and a
-     * reader stepping through the stages of an operation is moving the *cursor*
+     * reader stepping through the steps of an operation is moving the *cursor*
      * only (`setCursor` in stores/time.ts), which never narrows the band. The
      * mode dies when its subject has left the timeline entirely — no sooner.
      *
@@ -736,71 +751,76 @@ export const useEventStore = defineStore('events', {
       if (this.focusStack.length) this.focusExpanded = !this.focusExpanded
     },
     /**
-     * Step into one of the focused event's stages — or, with no id, back out to
-     * the overview. The stage strip's only action (see components/StageStrip.vue).
+     * Step into one of the focused event's steps — or, with no id, back out to
+     * the overview. The step strip's only action (see components/StepStrip.vue).
      *
-     * Four things follow, and they are the feature:
+     * Five things follow, and they are the feature:
      *
-     *  · the **drawing** filters to the timeless layers plus that stage's
-     *    (`focusDrawing`), so the June front and the December front are no
-     *    longer on the map at the same time;
-     *  · the stage's **page** replaces the article's body, with the stage's name
-     *    as its heading and a way back — and only when there is one, because a
-     *    stage that is purely a filter of the map should not open a panel over
-     *    the map it just filtered;
-     *  · the **camera** moves, if the stage says where; if it does not, the view
+     *  · the **drawing** filters to the timeless layers plus that step's, and the
+     *    step's own ink merges over the top (`focusDrawing`), so the June front
+     *    and the December front are no longer on the map at the same time;
+     *  · its **highlights**, if it names any, are pinned and accented — see
+     *    `highlightedIds` and `Step.highlights`;
+     *  · the step's **page** replaces the article's body, with the step's name as
+     *    its heading and a way back — and only when there is one, because a step
+     *    that is purely a filter of the map should not open a panel over the map
+     *    it just filtered;
+     *  · the **camera** moves, if the step says where; if it does not, the view
      *    is left exactly where the reader put it, which is the more common and
      *    the less rude case;
-     *  · the **cursor** moves to the stage's year — the cursor only. See
-     *    `setCursor` in stores/time.ts for why the selection band must not
-     *    follow it.
+     *  · the **cursor** moves to the step's year — the cursor only, and its
+     *    START if it is a period. See `setCursor` in stores/time.ts for why the
+     *    selection band must not follow it.
      *
-     * An unknown id is a no-op rather than a reset: it can only come from a
-     * stale link or a chunk that has not loaded, and answering "I do not know
-     * that stage" by silently changing what is on the globe is worse than
-     * answering nothing.
+     * An unknown id is a no-op rather than a reset: it can only come from a stale
+     * link or a chunk that has not loaded, and answering "I do not know that
+     * step" by silently changing what is on the globe is worse than answering
+     * nothing.
      *
      * Whichever chip is pressed, the **selection comes back to the focused
      * event** first. The strip is a control over one event — its own steps — and
-     * a stage's page belongs to that event's article, not to whatever else the
+     * a step's page belongs to that event's article, not to whatever else the
      * panel happens to be open on: with a battle inside the operation open, the
      * chip used to light up while its page stayed unreachable (the page renders
-     * only on the focused event's own article, see `stagePage` in
-     * EventPanel.vue) and `focusExpanded` force-opened the *battle's* article
-     * instead — a click on Kiev that answered with Minsk.
+     * only on the focused event's own article, see `stepPage` in EventPanel.vue)
+     * and `focusExpanded` force-opened the *battle's* article instead — a click
+     * on Kiev that answered with Minsk.
      */
-    selectStage(id?: string) {
+    selectStep(id?: string) {
       const item = this.focused
       if (item?.kind !== 'event') return
       // Was the panel open on a PART of the event? Then the part's article is
       // not the reading any more, and the pill comes back with it — the same
-      // rule `close` and `focusBack` follow on the way out of a part. A stage
+      // rule `close` and `focusBack` follow on the way out of a part. A step
       // with a page overrides this below: that page IS a reading.
       const fromPart = this.selectedId !== item.id
       if (id === undefined) {
-        const wasStaged = this.stageId !== undefined
+        const wasStepped = this.stepId !== undefined
         // Nothing to step back out of, and the panel is already on the event.
-        if (!wasStaged && !fromPart) return
+        if (!wasStepped && !fromPart) return
         this.selectedId = item.id
-        this.stageId = undefined
+        this.stepId = undefined
         if (fromPart) this.focusExpanded = false
-        // Only refit the camera if a stage could have moved it: an event whose
-        // stages carry no camera never took the view over, and putting it back
+        // Only refit the camera if a step could have moved it: an event whose
+        // steps carry no camera never took the view over, and putting it back
         // would be undoing something the reader did themselves.
-        if (wasStaged && this.focusStages.some((s) => s.camera)) {
+        if (wasStepped && this.focusSteps.some((s) => s.camera)) {
           const target = this.mapTarget(item.id)
           if (target) this.lookAt(target.lat, target.lng, target.altitude)
         }
         return
       }
-      const stage = this.focusStages.find((s) => s.id === id)
-      if (!stage) return
+      const step = this.focusSteps.find((s) => s.id === id)
+      if (!step) return
       this.selectedId = item.id
-      this.stageId = stage.id
-      if (stage.page) this.focusExpanded = true
+      this.stepId = step.id
+      if (step.page) this.focusExpanded = true
       else if (fromPart) this.focusExpanded = false
-      useTimeStore().setCursor(atYear(stage.at, item.start, item.end))
-      if (stage.camera) this.lookAt(stage.camera.lat, stage.camera.lng, stage.camera.altitude)
+      // The step's own time, projected back onto the event's real years — its
+      // START, which for a point is the whole of it and for a stretch is where
+      // the reader is being put.
+      useTimeStore().setCursor(timeStart(stepTimeYears(step, item.time)))
+      if (step.camera) this.lookAt(step.camera.lat, step.camera.lng, step.camera.altitude)
     },
     /**
      * Ask the globe to look at a coordinate (a person's birth or death place),
@@ -857,7 +877,7 @@ export const useEventStore = defineStore('events', {
     /** The year to put the timeline on when an item is opened from a link. */
     focusYear(id: string): number | undefined {
       const pin = index.pin(id)
-      if (pin) return pin.start
+      if (pin) return timeStart(pin.time)
       const item = index.byId.get(id)
       return item && anchorYearOf(item)
     },

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, useTemplateRef, watchEffect } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, useTemplateRef, watchEffect } from 'vue'
 import Globe, { type GlobeInstance } from 'globe.gl'
 import {
   AmbientLight,
@@ -14,9 +14,9 @@ import { useNationStore, type BorderEntry } from '../stores/nations'
 import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
 import { useViewStore } from '../stores/view'
-import { shapeOf, type HistoricalEvent } from '../lib/events'
+import { featureOf, type HistoricalEvent } from '../lib/events'
 import { ROUTE_FLOW_INTERVAL_MS } from '../lib/paths'
-import { areaOutlineFor, routeDrawingFor, type Drawing } from '../lib/drawing'
+import type { Drawing } from '../lib/drawing'
 import { DrawingLayer, SURFACE_ALT } from '../lib/drawingLayer'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
@@ -34,7 +34,14 @@ import { cloudFadeFor, cloudSharpenFor, cloudIdleIntervalMs } from '../lib/scale
 import { CelestialLayer } from '../lib/celestialLayer'
 import { eraPlan, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
-import { pinElement, clusterElement, pinStateKey, pinTier } from '../lib/eventPins'
+import { pinElement, clusterElement } from '../lib/eventPins'
+import {
+  pinStateKey,
+  pinTier,
+  resolveGlobeStyle,
+  resolveSelectionInk,
+  type RenderMode,
+} from '../lib/present'
 import {
   clusterEvents,
   clusterSpanBucket,
@@ -57,6 +64,27 @@ const time = useTimeStore()
 const settings = useSettingsStore()
 const view = useViewStore()
 const el = useTemplateRef('el')
+
+/**
+ * THE LOOK, resolved once and read everywhere below.
+ *
+ * Nothing in this file reads `settings.clouds`, `settings.relief`,
+ * `settings.detail`, `settings.visuals` or `settings.palette` any more — those
+ * are what the reader asked for, and this is what the renderer does about it
+ * (see lib/present/globe.ts). The indirection is what lets map mode exist
+ * without a second copy of every expression below.
+ */
+const style = computed(() => resolveGlobeStyle(settings, settings.mode))
+/** The mode alone, for the pin and ink resolvers. */
+const mode = computed<RenderMode>(() => settings.mode)
+/**
+ * Has the planet been on screen long enough to be given a sky?
+ *
+ * The first frame does without the starfield, the night map and the relief (see
+ * the tick); this is what tells the background watcher that the deferred half
+ * may start.
+ */
+const starsReady = ref(false)
 
 let globe: GlobeInstance | undefined
 let surface: GlobeSurface | undefined
@@ -195,16 +223,28 @@ const layout = computed(() =>
  * rebuilds nothing; the elements are cached by the same key for the case where
  * the globe does ask again.
  */
-type KeyedPin = PinDatum & { key: string; tier: Tier }
+type KeyedPin = PinDatum & { key: string; tier: Tier; highlighted: boolean }
 const pinData = new Map<string, KeyedPin>()
 const pinEls = new Map<string, HTMLElement>()
+
+/**
+ * Is this pin one the open step asked to be lifted? See `Step.highlights`.
+ *
+ * A BADGE counts if any of the pins it swallowed is one: at the zoom an
+ * operation is fitted to, a named child is usually inside a cluster rather than
+ * standing on its own, and a highlight nobody can see is not a highlight.
+ */
+const isHighlighted = (p: PinDatum) =>
+  p.kind === 'cluster'
+    ? p.members.some((m) => events.highlightedIds.includes(m.id))
+    : events.highlightedIds.includes(p.event.id)
 
 const stablePins = (pins: PinDatum[], tiers: ReadonlyMap<string, Tier>, selectedId?: string): KeyedPin[] =>
   stableByKey<PinDatum, KeyedPin>(
     pinData,
     pins,
-    (p) => pinStateKey(p, selectedId, pinTier(p, tiers)),
-    (p, key) => ({ ...p, key, tier: pinTier(p, tiers) }),
+    (p) => pinStateKey(p, selectedId, pinTier(p, tiers), mode.value, isHighlighted(p)),
+    (p, key) => ({ ...p, key, tier: pinTier(p, tiers), highlighted: isHighlighted(p) }),
     // the elements are cached by the same key; a pin that leaves takes its node
     (key) => pinEls.delete(key),
   )
@@ -249,14 +289,14 @@ const eventAreas = (): EventAreaEntry[] => {
   const e = events.selected
   // only an event has a footprint; a person or a concept is an article
   if (e?.kind !== 'event') return []
-  const area = shapeOf(e.geometry, 'area')
+  const area = featureOf(e.location, 'area')
   if (!area) return []
   // A drawing supersedes the footprint it is drawn inside. The area cap is a
   // tinted sheet over a whole theatre, and a battle plan read through it is a
   // battle plan read through a filter — the frontlines lose contrast against
   // exactly the ground they are about. While the plan is up, the footprint
   // steps aside; leaving the mode brings it back.
-  if (shapeOf(e.geometry, 'plan') && events.focus?.itemId === e.id) return []
+  if (e.drawing && events.focus?.itemId === e.id) return []
   const held = areaEntries.get(e.id)
   if (held) return [held]
   const ring = area.ring
@@ -285,44 +325,24 @@ const animationClock = (now: number): number => {
 }
 
 /**
- * The marks the selected event puts on the map — its routes and the outline of
- * its footprint — on exactly the same terms: drawn while the panel is open on
- * it, gone when it closes.
+ * The marks the selected event puts on the map — its routes, the outline of its
+ * footprint and the sites it names — on exactly the same terms: drawn while the
+ * panel is open on it, gone when it closes.
  *
- * Expressed as a `Drawing` (lib/drawing.ts) and rendered by the same layer the
- * battle plans use. That is the point of the redesign: there is one piece of
- * code on this globe that knows how to put a line on a sphere, so a voyage and a
- * frontline are at the same altitude, in the same units, with the same depth
- * handling, and a route cannot drift out of step with the dots that mark its
- * ports because they are built from it in one pass.
- *
- * Memoised by event id, so the layer's own key comparison has a stable object to
- * stringify and a re-selected event is not re-smoothed.
+ * WHAT they are is `resolveSelectionInk` (lib/present/ink.ts), a pure function of
+ * the event and the mode. What is left here is the CACHE: the layer's own key
+ * comparison wants a stable object to stringify, and a re-selected event should
+ * not be re-smoothed. Keyed by mode as well as id, because the two modes resolve
+ * to different ink and a held object from the other one would be stale.
  */
 const selectionSpecs = new Map<string, Drawing | undefined>()
 const selectionDrawing = (): Drawing | undefined => {
   const sel = events.selected
   if (sel?.kind !== 'event') return undefined
-  let held = selectionSpecs.get(sel.id)
-  if (!held) {
-    const routes = shapeOf(sel.geometry, 'routes')
-    // The footprint's OUTLINE rides with the routes rather than with the cap.
-    // See areaOutlineFor: the polygon layer strokes with GL_LINES, which no
-    // depth offset in WebGL can reach, so the one place on this globe that can
-    // put a biased line on a sphere draws it. It is cached with the routes
-    // because it has exactly their lifecycle — up with the selection, gone with
-    // it — and because both are pure functions of an event that does not change.
-    const layers = [
-      ...(routeDrawingFor(routes ?? {})?.layers ?? []),
-      // …but not while a battle plan is up: the cap steps aside for a plan (see
-      // eventAreas) and an outline around nothing is a line round a theatre the
-      // reader is no longer being shown.
-      ...(shapeOf(sel.geometry, 'plan') ? [] : [areaOutlineFor(shapeOf(sel.geometry, 'area')?.ring) ?? []].flat()),
-    ]
-    held = layers.length ? { layers } : undefined
-    selectionSpecs.set(sel.id, held)
-  }
-  return held
+  const key = `${mode.value}:${sel.id}`
+  if (!selectionSpecs.has(key))
+    selectionSpecs.set(key, resolveSelectionInk(sel, { mode: mode.value }))
+  return selectionSpecs.get(key)
 }
 
 onMounted(() => {
@@ -351,18 +371,27 @@ onMounted(() => {
     .htmlElement((d) => {
       const p = asPin(d)
       const tier = (d as KeyedPin).tier ?? 1
-      const key = (d as KeyedPin).key ?? pinStateKey(p, events.selectedId, tier)
+      const highlighted = (d as KeyedPin).highlighted ?? false
+      const key =
+        (d as KeyedPin).key ?? pinStateKey(p, events.selectedId, tier, mode.value, highlighted)
       const held = pinEls.get(key)
       if (held) return held
       const el =
         p.kind === 'cluster'
-          ? clusterElement(p.members, tier, () =>
+          ? clusterElement(p.members, { mode: mode.value, tier, highlighted }, () =>
               // the live span, not the quantised one: it is compared against
               // the live span on the next zoom
               events.expandCluster(p.id, visibleSpanDeg(view.altitude)),
             )
-          : pinElement(p.event, events.selectedId === p.event.id, tier, () =>
-              events.select(p.event.id),
+          : pinElement(
+              p.event,
+              {
+                mode: mode.value,
+                tier,
+                selected: events.selectedId === p.event.id,
+                highlighted,
+              },
+              () => events.select(p.event.id),
             )
       pinEls.set(key, el)
       return el
@@ -607,7 +636,7 @@ onMounted(() => {
    * How *close* the camera may come is what varies by period instead; see
    * minAltitudeFor.
    */
-  const detailAllowed = () => settings.detail && time.currentTime > -12000
+  const detailAllowed = () => style.value.imagery && time.currentTime > -12000
 
   /**
    * The only place detail streaming is driven. It was previously called from
@@ -721,7 +750,8 @@ onMounted(() => {
     if (!force && !povMoved(lastPov, pov)) return
     lastPov = { ...pov }
     // how close the camera may come depends on whether modern imagery is allowed
-    globe!.controls().minDistance = radius * (1 + minAltitudeFor(time.currentTime, settings.detail))
+    globe!.controls().minDistance =
+      radius * (1 + minAltitudeFor(time.currentTime, style.value.imagery))
     // globe.gl pins near at 0.05, which is what limits how close the camera may
     // come. Tracking it to the camera's own height keeps depth precision good
     // while allowing a far closer approach.
@@ -765,7 +795,9 @@ onMounted(() => {
       aspect: view.viewportWidthPx / Math.max(1, view.viewportPx),
     })
     if (!sameScope(view.scope, scope)) view.scope = scope
-    surface!.setFlatLight(near)
+    // The terminator, or the absence of one: map mode has no sun, so it pins
+    // this at 1 rather than letting the camera decide (see `GlobeStyle`).
+    surface!.setFlatLight(style.value.flatLight ?? near)
     lastSync = { ...pov }
     syncDetail(pov)
     // A drawing's labels are spaced for the frame "Show on map" flies to; zoomed
@@ -780,11 +812,11 @@ onMounted(() => {
     const cloudy = cloudFadeFor(span)
     surface!.setCloudSharpen(cloudy > 0.01 ? cloudSharpenFor(span) : 0)
     surface!.setClouds(
-      settings.clouds && cloudy > 0.01,
+      style.value.clouds && cloudy > 0.01,
       (time.currentTime > -12000 ? 1 : 0) * cloudy,
-      settings.cloudShadows,
+      style.value.cloudShadows,
     )
-    atmosphere!.visible = settings.atmosphere && near < 0.9
+    atmosphere!.visible = style.value.atmosphere && near < 0.9
     wake()
   }
 
@@ -1014,11 +1046,13 @@ onMounted(() => {
         // and only now the maps the first frame did without: they have the
         // network and the main thread to themselves from here on
         surface!.loadRest()
-        // The starfield is one of them. globe.gl gives no callback for the
-        // background texture, so nothing can wake the pump exactly when it
-        // lands — but the pump's one-second safety tick bounds the wait, and
-        // the three maps above each wake it as they arrive in the same window.
-        globe!.backgroundImageUrl(SKY_TEXTURE)
+        // The starfield is one of them, and the watcher above is what asks
+        // for it — this only says the globe is ready to carry one. globe.gl
+        // gives no callback for the background texture, so nothing can wake the
+        // pump exactly when it lands; the pump's one-second safety tick bounds
+        // the wait, and the three maps above each wake it as they arrive in the
+        // same window.
+        starsReady.value = true
         // ...and the event data, which draws nothing until there is a planet to
         // put pins on. App.vue is waiting on this. See lib/firstFrame.ts.
         firstFrame.release()
@@ -1083,14 +1117,13 @@ onMounted(() => {
       )
         wake()
     }),
-    // The authored drawing — the focused item's plan, filtered to whichever
-    // stage of it the reader has stepped into. Both decisions live in
-    // `focusDrawing` (stores/events.ts): that focus mode rather than the
-    // selection shows a plan at all, and which layers a stage keeps. The filter
-    // is a fold over the event's `stages` and the layer `at`s — pure logic over
-    // the item model — and redoing it here, from the focused item and its plan
-    // and its stages and the current stage id, would have put the one rule that
-    // decides what is on the map in a place no test can reach.
+    // The authored drawing — the focused item's plan, resolved for whichever
+    // step of it the reader has stepped into. Two decisions, in two places, and
+    // neither is here: that focus mode rather than the selection shows a plan at
+    // all is `focusDrawing` (stores/events.ts), and what a step does to that plan
+    // is `resolveFocusInk` (lib/present/ink.ts). Redoing either here, from the
+    // focused item and its plan and its steps and the current step id, would put
+    // the one rule that decides what is on the map in a place no test can reach.
     //
     // The colour falls back to the event's tag so an unstyled layer is already
     // in the map's own language.
@@ -1146,15 +1179,15 @@ onMounted(() => {
     // The relief map is the modern height field; deep-time frames carry their own
     // baked hillshade, so it fades out exactly as they fade in.
     watchEffect(() => {
-      surface!.setRelief(settings.relief ? 0.7 * modernShare(PALEO_FRAMES, time.currentTime) : 0)
+      surface!.setRelief(style.value.relief * 0.7 * modernShare(PALEO_FRAMES, time.currentTime))
       wake()
     }),
     watchEffect(() => {
-      surface!.setVisuals(settings.visuals === 'enhanced' ? 1 : 0)
+      surface!.setVisuals(style.value.boost)
       wake()
     }),
     watchEffect(() => {
-      surface!.setPalette(settings.palette)
+      surface!.setPalette(style.value.palette)
       wake()
     }),
     // The plan carries more than the crossfade: which frames stay resident and
@@ -1166,15 +1199,36 @@ onMounted(() => {
       prevEraTime = t
       wake()
     }),
+    // City lights are the night side saying it is night. Map mode has no night
+    // (see `GlobeStyle.night`), so it has none of these either.
     watchEffect(() => {
-      surface!.setCityLights(cityLightsFactor(time.currentTime))
+      surface!.setCityLights(style.value.night ? cityLightsFactor(time.currentTime) : 0)
+      wake()
+    }),
+    /**
+     * The starfield, or the flat field that replaces it.
+     *
+     * globe.gl gives no callback for the background texture, so the sky is not
+     * asked for until the planet is on screen (see `starsReady` in the tick) —
+     * this watcher is what puts it up then, and what takes it away again when
+     * the reader switches to map mode. `null` is how globe.gl is told to drop a
+     * background image and fall back to the colour.
+     */
+    watchEffect(() => {
+      globe!.backgroundColor(style.value.background)
+      if (!starsReady.value) return
+      globe!.backgroundImageUrl(style.value.stars ? SKY_TEXTURE : null)
       wake()
     }),
     // clouds are anachronistic detail in deep time, and would hide the plate drift
     watchEffect(() => {
-      void settings.clouds
-      void settings.atmosphere
-      void settings.detail
+      // The whole style, not a list of its fields: `style` is one computed, so
+      // reading it registers a dependency on every setting behind it at once —
+      // which is what makes a NEW visual knob correct here by default instead
+      // of correct only if someone remembers to add a line. (It also fixes an
+      // old miss: `cloudShadows` was applied inside `applyPov` but was not on
+      // the old list, so toggling it alone did nothing until the camera moved.)
+      void style.value
       void time.currentTime
       applyPov(true) // a settings change, not a camera move: run it regardless
     }),
@@ -1183,6 +1237,7 @@ onMounted(() => {
       surface!.setSun(dir)
       atmosphere!.setSunDirection(dir)
       dirLight?.position.copy(dir.clone().multiplyScalar(radius * 4))
+      celestial!.visible = style.value.celestial
       celestial!.setHour(settings.sunHour, coords)
       wake()
     }),
@@ -1327,5 +1382,31 @@ onBeforeUnmount(() => {
 .event-pin--selected svg,
 .event-pin--selected.event-pin--minor svg {
   opacity: 1;
+}
+/* A child the open step named (see Step.highlights). The accent ring is drawn
+   into the artwork; what is left here is the same thing the selection gets —
+   full opacity and a place at the front, because a highlighted pin must not be
+   dimmed by the tier it happened to land in. */
+.event-pin--accent svg,
+.event-pin--accent.event-pin--minor svg,
+.event-pin--accent.event-pin--tier3 svg {
+  opacity: 1;
+}
+.event-pin--accent {
+  z-index: 2;
+}
+/* MAP MODE (lib/present/mode.ts). A drawn map has no light in it, so the pins
+   lose the things that model light — the drop shadow, the tier glow's warm
+   halo, the breathing footprint — and keep everything that is a line. */
+.event-pin--flat svg,
+.event-pin--flat.event-pin--tier1 svg {
+  filter: none;
+}
+/* …except the hover lift, which is feedback rather than lighting. */
+.event-pin--flat:hover svg {
+  filter: brightness(1.15);
+}
+.event-pin--flat .pin-footprint {
+  animation: none;
 }
 </style>

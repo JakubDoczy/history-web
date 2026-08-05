@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { defaultPaletteFor, type Palette } from '../lib/palette'
+import { DEFAULT_MODE, type RenderMode } from '../lib/present/mode'
 
 export type ToggleKey =
   | 'clouds'
@@ -47,10 +48,25 @@ export const useSettingsStore = defineStore('settings', {
     scaleBar: true,
     autoRotate: false,
     relief: true,
+    /**
+     * HOW THE APP DRAWS ITSELF — the photographic globe, or the drawn map.
+     *
+     * Experimental, and the one setting here that is not a knob on the existing
+     * look: it selects a whole `GlobeStyle` (see lib/present/globe.ts), and the
+     * knobs above are then inputs the schematic style mostly ignores. They are
+     * deliberately left alone rather than disabled, so switching back restores
+     * exactly what the reader had.
+     */
+    mode: DEFAULT_MODE as RenderMode,
   }),
   actions: {
     toggle(key: ToggleKey) {
       this[key] = !this[key]
+    },
+
+    /** Switch the whole look. See `mode`, and lib/present/mode.ts. */
+    setMode(mode: RenderMode) {
+      this.mode = mode
     },
     /**
      * Change the base look, and reset the palette to that style's default.

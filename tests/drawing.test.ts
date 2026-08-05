@@ -166,7 +166,7 @@ describe('routeDrawingFor', () => {
 
 describe('drawingPoints reaches a route', () => {
   /**
-   * `geometryPointsOf` frames the camera on everything a drawing occupies, and a
+   * `pointsOf` frames the camera on everything a drawing occupies, and a
    * route drawing IS the drawing for a path event. If its waypoints were not
    * reachable here, "Show on map" would fit the camera to the terminus dots and
    * cut the middle of the voyage out of frame.

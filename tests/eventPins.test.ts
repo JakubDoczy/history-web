@@ -1,14 +1,16 @@
 import { describe, it, expect } from 'vitest'
-import { parseItem, type HistoricalEvent, type RawEvent } from '../src/lib/events'
+import { parseItem, type HistoricalEvent, type MapPin, type RawEvent } from '../src/lib/events'
+import { clusterSvg as emitClusterSvg, pinShiftPercent, pinSvg as emitPinSvg } from '../src/lib/eventPins'
 import {
   clusterSize,
-  clusterSvg,
   pinHeight,
-  pinShiftPercent,
   pinStateKey,
-  pinSvg,
   pinTier,
-} from '../src/lib/eventPins'
+  resolveClusterSpec,
+  resolvePinSpec,
+} from '../src/lib/present/pin'
+import type { RenderMode } from '../src/lib/present/mode'
+import type { Tier } from '../src/lib/eventTiers'
 import type { PinDatum } from '../src/lib/eventClusters'
 import type { GeoPath } from '../src/lib/paths'
 import { TAG_COLORS } from '../src/lib/tags'
@@ -18,6 +20,16 @@ const ev = (o: Partial<RawEvent> = {}): HistoricalEvent =>
   parseItem({
     id: 'e', name: 'e', start: 0, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: '', ...o,
   }) as HistoricalEvent
+
+/**
+ * Resolve then emit, which is what the globe does (see lib/present/pin.ts).
+ * Written as one helper so the assertions below stay about the ARTWORK; the
+ * resolver's own answers are asserted separately, at the bottom.
+ */
+const pinSvg = (e: MapPin, selected: boolean, tier: Tier = 1, mode: RenderMode = 'realistic') =>
+  emitPinSvg(resolvePinSpec(e, { mode, selected, tier }))
+const clusterSvg = (members: MapPin[], tier: Tier = 1, mode: RenderMode = 'realistic') =>
+  emitClusterSvg(resolveClusterSpec(members, { mode, tier }))
 
 const attr = (svg: string, name: string) => svg.match(new RegExp(`${name}="([^"]+)"`))![1]
 
@@ -194,8 +206,7 @@ describe('pinTier', () => {
 
 /* ------------------------------------------------------ significance tiers */
 
-import { TIER_SCALE } from '../src/lib/eventPins'
-import type { Tier } from '../src/lib/eventTiers'
+import { TIER_SCALE } from '../src/lib/present/pin'
 
 describe('tier styling', () => {
   const tiers: Tier[] = [1, 2, 3]
