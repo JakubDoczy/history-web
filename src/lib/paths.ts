@@ -180,6 +180,56 @@ export const ROUTE_SMOOTH_TENSION = 0.5
 export const ROUTE_SEGMENT_DEG = 1
 
 /**
+ * How finely an area cap is tessellated, in degrees of arc.
+ *
+ * This is the polygon layer's `curvatureResolution`, and `areaCapRing` has to
+ * be given the same number — see there for why.
+ */
+export const AREA_CAP_RESOLUTION_DEG = 2
+
+/**
+ * The closed ring to hand the polygon layer for an area's cap: densified onto
+ * great circles at the same resolution the layer tessellates at.
+ *
+ * The layer would interpolate the contour itself, and does it the same way this
+ * does — `geoInterpolate`, along the great circle. The reason to do it first is
+ * that the library then uses *two different curves* for the same edge, and
+ * disagrees with itself about which triangles are inside the polygon:
+ *
+ *  - it interpolates the contour along **great circles** at `resolution`
+ *  - it triangulates contour + interior points with a planar Delaunay, then
+ *    throws away any triangle touching the contour whose centroid is outside
+ *    the polygon — and that test (`turf/boolean-point-in-polygon`) is
+ *    **planar in lng/lat** against the ring it was *given*
+ *
+ * A great circle between two authored vertices bulges away from the straight
+ * lng/lat line between them, so the interpolated contour leaves the polygon the
+ * test is measured against. Across this app's own footprints, 945 of 2047
+ * interpolated contour points at 2° sit outside it — 84% of them on the
+ * trans-Atlantic slave-trade ring, whose authored edges run up to 38°. Every
+ * boundary triangle hanging off one of those points is discarded, and what
+ * survives is a fill with bites out of its edge and an outline that no longer
+ * hugs it. It went unnoticed at 5° because at that resolution most footprints
+ * get no interior points at all, and the library takes an earcut path that
+ * rejects nothing.
+ *
+ * Densifying first collapses the two curves into one: every contour point is
+ * now a vertex of the ring the test uses, the layer adds none of its own, and a
+ * boundary triangle is judged against the same edge it was built from. It costs
+ * no triangles — these are exactly the points the layer was generating anyway.
+ *
+ * The ring is closed here because a footprint is authored open and a polygon is
+ * not.
+ */
+export function areaCapRing(ring: GeoPath, maxSegDeg = AREA_CAP_RESOLUTION_DEG): GeoPath {
+  if (ring.length < 3) return [...ring]
+  const [first] = ring
+  const last = ring[ring.length - 1]
+  const closed = first[0] === last[0] && first[1] === last[1] ? ring : [...ring, first]
+  return densifyPath(closed, maxSegDeg)
+}
+
+/**
  * A centripetal Catmull-Rom spline through the waypoints, on the sphere.
  *
  * Authored routes are lists of ports and landfalls, and joining ports with

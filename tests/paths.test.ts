@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync, readdirSync } from 'node:fs'
 import {
+  AREA_CAP_RESOLUTION_DEG,
   MAX_SEGMENT_DEG,
   ROUTE_FLOW_INTERVAL_MS,
   ROUTE_SEGMENT_DEG,
   ROUTE_SMOOTH_SAMPLES,
   ROUTE_STYLE,
+  areaCapRing,
   densifyPath,
   densifyPaths,
   directionOf,
@@ -457,5 +460,141 @@ describe('routePolyline', () => {
     // into the planet between its own vertices.
     const sagKm = 6371 * (1 - Math.cos((ROUTE_SEGMENT_DEG / 2) * (Math.PI / 180)))
     expect(sagKm).toBeLessThan(0.0006 * 6371 * 0.25)
+  })
+})
+
+/**
+ * The rule the polygon layer is silently relying on.
+ *
+ * three-conic-polygon-geometry interpolates a cap's contour along great
+ * circles, then decides which boundary triangles to keep with a *planar*
+ * point-in-polygon test against the ring it was handed. If those two disagree
+ * it throws away triangles that are genuinely inside, and the fill comes back
+ * with bites out of its edge. They only agree if the ring we hand it already
+ * contains every point the layer would have interpolated.
+ */
+describe('areaCapRing', () => {
+  const RAD = Math.PI / 180
+  const sepDeg = (a: [number, number], b: [number, number]) => {
+    const v = ([lng, lat]: [number, number]) => {
+      const p = lat * RAD
+      const l = lng * RAD
+      return [Math.cos(p) * Math.cos(l), Math.cos(p) * Math.sin(l), Math.sin(p)]
+    }
+    const [x, y] = [v(a), v(b)]
+    return Math.acos(Math.min(1, Math.max(-1, x[0] * y[0] + x[1] * y[1] + x[2] * y[2]))) / RAD
+  }
+
+  /** Every area ring the app actually ships. */
+  const shippedRings = () => {
+    const dir = 'public/data/events'
+    const rings: [number, number][][] = []
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith('.json') || f === 'manifest.json') continue
+      const parsed = JSON.parse(readFileSync(`${dir}/${f}`, 'utf8'))
+      const events = Array.isArray(parsed) ? parsed : (parsed.events ?? [])
+      for (const e of events) if (Array.isArray(e?.area) && e.area.length >= 3) rings.push(e.area)
+    }
+    expect(rings.length).toBeGreaterThan(0)
+    return rings
+  }
+
+  /** The great-circle midpoint of every edge — what the layer would interpolate. */
+  const edgeMidpoints = (ring: [number, number][]) => {
+    const out: [number, number][] = []
+    for (let i = 1; i < ring.length; i++) {
+      const mid = densifyPath([ring[i - 1], ring[i]], sepDeg(ring[i - 1], ring[i]) / 2 + 1e-9)
+      if (mid.length === 3) out.push(mid[1])
+    }
+    return out
+  }
+
+  const ATLANTIC: [number, number][] = [
+    [-50, -35], [-20, -35], [12, -10], [10, 5], [-5, 12], [-18, 15], [-70, 20], [-80, 5], [-70, -15],
+  ]
+
+  it('closes an open ring, because a footprint is authored open', () => {
+    const out = areaCapRing(ATLANTIC)
+    expect(out[0]).toEqual(out[out.length - 1])
+  })
+
+  it('leaves no segment longer than the layer tessellates at, so the layer adds nothing', () => {
+    const out = areaCapRing(ATLANTIC)
+    for (let i = 1; i < out.length; i++) {
+      expect(sepDeg(out[i - 1], out[i])).toBeLessThanOrEqual(AREA_CAP_RESOLUTION_DEG + 1e-9)
+    }
+  })
+
+  it('keeps every authored vertex, unmoved and in order', () => {
+    const out = areaCapRing(ATLANTIC)
+    let at = 0
+    for (const v of ATLANTIC) {
+      const found = out.findIndex((p, i) => i >= at && p[0] === v[0] && p[1] === v[1])
+      expect(found).toBeGreaterThanOrEqual(at)
+      at = found
+    }
+  })
+
+  /**
+   * How far the great-circle contour departs from the straight lng/lat edge
+   * between the same two vertices — in degrees.
+   *
+   * This is the whole quantity that matters. The library builds the contour on
+   * the first curve and judges the resulting triangles against the second, so a
+   * departure comparable to a triangle's own size is a misclassified triangle.
+   */
+  const contourDeparture = (ring: [number, number][]) => {
+    let worst = 0
+    for (let i = 1; i < ring.length; i++) {
+      const [a, b] = [ring[i - 1], ring[i]]
+      for (const m of edgeMidpoints([a, b])) {
+        worst = Math.max(worst, Math.hypot(m[0] - (a[0] + b[0]) / 2, m[1] - (a[1] + b[1]) / 2))
+      }
+    }
+    return worst
+  }
+
+  it('the authored ring puts its contour degrees away from the edge it is judged against', () => {
+    // this is the bug: 1.9° of departure against a 2° triangle, so whole rows
+    // of boundary triangles test "outside" and are discarded
+    const departure = contourDeparture([...ATLANTIC, ATLANTIC[0]])
+    expect(departure).toBeGreaterThan(AREA_CAP_RESOLUTION_DEG / 2)
+  })
+
+  it('the densified ring keeps that departure far under one triangle', () => {
+    // 0.007° against the authored ring's 1.9°, and 0.4% of a cap triangle:
+    // measured in degrees, because degrees are what the planar test sees, so
+    // this includes the longitude stretch at high latitude
+    const departure = contourDeparture(areaCapRing(ATLANTIC))
+    expect(departure).toBeLessThan(AREA_CAP_RESOLUTION_DEG / 100)
+  })
+
+  it('and does so for every footprint shipped, not just the awkward one', () => {
+    // The bound is looser than the Atlantic case because departure is measured
+    // in degrees, and a degree of longitude is a shorter distance the further
+    // from the equator it is: the worst shipped ring is a high-latitude one at
+    // 0.077°, still under a twentieth of a cap triangle. What matters is the
+    // ratio to the triangle, and nothing shipped comes close to it.
+    for (const ring of shippedRings()) {
+      expect(contourDeparture(areaCapRing(ring))).toBeLessThan(AREA_CAP_RESOLUTION_DEG / 20)
+    }
+  })
+
+  it('holds for every footprint actually shipped, at the resolution actually used', () => {
+    for (const ring of shippedRings()) {
+      const out = areaCapRing(ring)
+      for (let i = 1; i < out.length; i++) {
+        expect(sepDeg(out[i - 1], out[i])).toBeLessThanOrEqual(AREA_CAP_RESOLUTION_DEG + 1e-9)
+      }
+    }
+  })
+
+  it('leaves a ring already finer than the resolution alone', () => {
+    const tight: [number, number][] = [[0, 0], [1, 0], [1, 1], [0, 1]]
+    expect(areaCapRing(tight)).toEqual([...tight, tight[0]])
+  })
+
+  it('does not invent a polygon out of a degenerate ring', () => {
+    expect(areaCapRing([[0, 0], [1, 1]])).toEqual([[0, 0], [1, 1]])
   })
 })

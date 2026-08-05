@@ -15,7 +15,7 @@ import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
 import { useViewStore } from '../stores/view'
 import { featureOf, type HistoricalEvent } from '../lib/events'
-import { ROUTE_FLOW_INTERVAL_MS } from '../lib/paths'
+import { AREA_CAP_RESOLUTION_DEG, ROUTE_FLOW_INTERVAL_MS, areaCapRing } from '../lib/paths'
 import type { Drawing } from '../lib/drawing'
 import { DrawingLayer, SURFACE_ALT } from '../lib/drawingLayer'
 import type { Ring } from '../lib/nations'
@@ -300,7 +300,10 @@ const eventAreas = (): EventAreaEntry[] => {
   const held = areaEntries.get(e.id)
   if (held) return [held]
   const ring = area.ring
-  const entry: EventAreaEntry = { kind: 'area', event: e, ring, coordinates: [[...ring, ring[0]]] }
+  // The cap gets the ring densified onto great circles, not the authored one:
+  // see `areaCapRing`. The outline keeps `ring` — the DrawingLayer densifies it
+  // to its own, finer resolution.
+  const entry: EventAreaEntry = { kind: 'area', event: e, ring, coordinates: [areaCapRing(ring)] }
   areaEntries.set(e.id, entry)
   return [entry]
 }
@@ -497,7 +500,7 @@ onMounted(() => {
     // It is spent only where it is needed: a nation border already comes with
     // vertices a fraction of a degree apart, and an area is one polygon at a
     // time.
-    .polygonCapCurvatureResolution((d) => (asPoly(d).kind === 'area' ? 2 : 5))
+    .polygonCapCurvatureResolution((d) => (asPoly(d).kind === 'area' ? AREA_CAP_RESOLUTION_DEG : 5))
     .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.0014 : 0.0012))
     .polygonLabel((d) => {
       const p = asPoly(d)

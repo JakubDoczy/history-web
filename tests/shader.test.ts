@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { AREA_CAP_RESOLUTION_DEG } from '../src/lib/paths'
 import {
   CLOUD_DEPTH,
   NIGHT_LIGHTS,
@@ -559,7 +560,16 @@ describe('an area cap is tessellated finely enough to stay above the planet', ()
     // are chords: 35 degrees of chord passes 295 km under the sphere against
     // the 9 km the cap is lifted, and the planet eats the middle of it. That is
     // the "clipping the ocean" report, and it is geometry, not depth.
-    expect(src).toMatch(/polygonCapCurvatureResolution\(\(d\) => \(asPoly\(d\)\.kind === 'area' \? 2 : 5\)\)/)
+    expect(src).toMatch(
+      /polygonCapCurvatureResolution\(\(d\) => \(asPoly\(d\)\.kind === 'area' \? AREA_CAP_RESOLUTION_DEG : 5\)\)/,
+    )
+    // ...and the resolution is the one the cap ring is densified to, not a
+    // second copy of the number. They have to be the same: the layer decides
+    // which boundary triangles to keep with a planar test against the ring it
+    // was given, so any contour point it interpolates for itself is a point
+    // that ring does not contain — see `areaCapRing`.
+    expect(AREA_CAP_RESOLUTION_DEG).toBeLessThanOrEqual(2)
+    expect(src).toContain('coordinates: [areaCapRing(ring)]')
   })
 
   it('turns a margin that was thinner than the mesh into one of 37x', () => {
