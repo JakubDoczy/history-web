@@ -12,7 +12,7 @@ import { toWarp, MIN_TIME, MAX_TIME } from '../src/lib/time'
 import { HISTORICAL, spanEraLabel } from '../src/lib/eras'
 import { useTimeStore } from '../src/stores/time'
 import { useEventStore } from '../src/stores/events'
-import type { HistoricalEvent } from '../src/lib/events'
+import type { RawEvent } from '../src/lib/events'
 
 const inside = (sel: { start: number; end: number }, win: { start: number; end: number }) =>
   sel.start >= win.start - 1e-6 && sel.end <= win.end + 1e-6 && sel.end > sel.start
@@ -201,7 +201,7 @@ describe('event store visibility follows the selection', () => {
   it('shows only events intersecting the selection, not the whole window', () => {
     const time = useTimeStore()
     const events = useEventStore()
-    const ev = (id: string, start: number): HistoricalEvent => ({
+    const ev = (id: string, start: number): RawEvent => ({
       id, name: id, start, lat: 0, lng: 0, priority: 1, tags: ['war'], summary: '',
     })
     events.adopt([ev('classical', -300), ev('medieval', 1200), ev('modern', 2000)])
@@ -214,7 +214,7 @@ describe('event store visibility follows the selection', () => {
   it('makes the jumped-to item visible, because the band grew to reach it', () => {
     const time = useTimeStore()
     const events = useEventStore()
-    const ev = (id: string, start: number): HistoricalEvent => ({
+    const ev = (id: string, start: number): RawEvent => ({
       id, name: id, start, lat: 0, lng: 0, priority: 1, tags: ['war'], summary: '',
     })
     events.adopt([ev('classical', -300), ev('medieval', 1200), ev('modern', 2000)])

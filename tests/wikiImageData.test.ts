@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { type HistoricalEvent } from '../src/lib/events'
+import { type RawItem } from '../src/lib/events'
 import { type EventManifest } from '../src/lib/eventChunks'
 import { parseWikiUrl, summaryUrl, wikiRefForEvent, type WikiRef } from '../src/lib/wikiImage'
 
@@ -20,7 +20,7 @@ import { parseWikiUrl, summaryUrl, wikiRefForEvent, type WikiRef } from '../src/
 const DIR = join(__dirname, '..', 'public', 'data', 'events')
 const readJson = (f: string) => JSON.parse(readFileSync(join(DIR, f), 'utf8'))
 const manifest = readJson('manifest.json') as EventManifest
-const all = [readJson(manifest.spine), ...manifest.chunks.map((c) => readJson(c.file))].flat() as HistoricalEvent[]
+const all = [readJson(manifest.spine), ...manifest.chunks.map((c) => readJson(c.file))].flat() as RawItem[]
 
 // The spine repeats events that also live in an era chunk; the store dedupes by
 // id on merge, so the test looks at the same set the app does.

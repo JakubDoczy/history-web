@@ -221,9 +221,9 @@ export const isDrawing = (d: unknown): d is Drawing =>
 /**
  * Every coordinate a drawing occupies — what the camera has to hold to show it.
  *
- * Feeds `geometryPointsOf` (lib/events.ts), so an event whose only geometry is
- * its drawing — D-Day is a pin and a plan, with no `area` and no `paths` — is
- * still framed on the whole plan rather than on the pin alone.
+ * Feeds the `plan` case of `geometryPoints` (lib/events.ts), so an event whose
+ * only shape is its drawing — D-Day is a pin and a plan, with no footprint and
+ * no route — is still framed on the whole plan rather than on the pin alone.
  */
 export function drawingPoints(d: Drawing | undefined): GeoPath {
   if (!d) return []
@@ -239,7 +239,12 @@ export function drawingPoints(d: Drawing | undefined): GeoPath {
 /* ------------------------------------------------------------ route drawing */
 
 /**
- * An event's routes, expressed as a drawing.
+ * A `routes` shape (lib/events.ts), expressed as a drawing.
+ *
+ * Structurally typed rather than importing `Shape`, for two reasons: it keeps
+ * the module graph one-way (events → drawing, never back), and it lets the raw
+ * data shape — where `direction` may be absent — go through the same function,
+ * which is what the build-time checks in the data tests use.
  *
  * Going through `Drawing` rather than a layer of its own is the point. There is
  * exactly ONE renderer of geometry on this globe's map — the same code that puts

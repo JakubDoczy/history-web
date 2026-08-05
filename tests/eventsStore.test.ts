@@ -3,9 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { FOCUS_CHILD_CAP, FOCUS_STACK_CAP, useEventStore } from '../src/stores/events'
 import { useSettingsStore } from '../src/stores/settings'
 import { useTimeStore } from '../src/stores/time'
-import type { HistoricalEvent } from '../src/lib/events'
+import type { RawEvent } from '../src/lib/events'
 
-const ev = (id: string, priority: number): HistoricalEvent => ({
+const ev = (id: string, priority: number): RawEvent => ({
   id, name: id, start: 1500, lat: 0, lng: 0, priority, tags: ['war'], summary: '',
 })
 
@@ -129,10 +129,10 @@ describe('event data loading, when the network misbehaves', () => {
   })
 })
 
-import type { Item, Person } from '../src/lib/events'
+import { parseItem, type RawItem, type RawPerson } from '../src/lib/events'
 import { focusTargetFor } from '../src/lib/geoFocus'
 
-const einstein: Person = {
+const einstein: RawPerson = {
   id: 'einstein', kind: 'person', name: 'Albert Einstein', born: 1879, died: 1955,
   birthPlace: { lat: 48.4, lng: 9.99, label: 'Ulm' },
   deathPlace: { lat: 40.36, lng: -74.67, label: 'Princeton' },
@@ -146,7 +146,7 @@ describe('the store as an item store', () => {
     useTimeStore().currentTime = 1900
   })
 
-  const seed = (): Item[] => [
+  const seed = (): RawItem[] => [
     einstein,
     { id: 'relativity', name: 'Relativity', start: 1905, lat: 0, lng: 0, priority: 88, tags: ['science'], summary: '', body: 'by [Einstein](item:einstein)' },
     { id: 'idea', kind: 'concept', name: 'Relativity, the idea', anchorYear: 1905, priority: 70, tags: ['science'], summary: '' },
@@ -190,7 +190,7 @@ describe('the store as an item store', () => {
 
   /* --- the typed relation getters, as the panel's four sections read them --- */
   describe('relation getters', () => {
-    const graph = (): Item[] => [
+    const graph = (): RawItem[] => [
       { id: 'war', name: 'War', start: 1939, lat: 0, lng: 0, priority: 96, tags: [], summary: '' },
       { id: 'operation', name: 'Operation', start: 1941, lat: 0, lng: 0, priority: 80, tags: [], summary: '', parent: 'war' },
       { id: 'later-battle', name: 'Later battle', start: 1943, lat: 0, lng: 0, priority: 60, tags: [], summary: '', parent: 'operation' },
@@ -272,12 +272,12 @@ describe('the store as an item store', () => {
 /* --------------------------------------------------------- show on map --- */
 
 describe('show on map', () => {
-  const route: HistoricalEvent = {
+  const route: RawEvent = {
     id: 'voyage', name: 'A voyage', start: 1519, end: 1522, lat: -52.5, lng: -70,
     priority: 79, tags: ['exploration'], summary: '',
     paths: [[[-70, -52.5], [-100, -35], [-130, -15], [-145, 0]]],
   }
-  const seed = (): Item[] => [
+  const seed = (): RawItem[] => [
     route,
     einstein,
     { id: 'idea', kind: 'concept', name: 'An idea', anchorYear: 1905, priority: 70, tags: ['science'], summary: '' },
@@ -299,7 +299,7 @@ describe('show on map', () => {
     expect(time.selection.start).toBe(1519)
     expect(time.selection.end).toBe(1800)
     // and the camera is somewhere that can see the whole route
-    const target = focusTargetFor(route)!
+    const target = focusTargetFor(parseItem(route))!
     expect(events.flyTo).toEqual({ ...target, seq: 1 })
     expect(events.flyTo!.altitude).toBeGreaterThan(0.3)
   })
@@ -349,7 +349,7 @@ describe('show on map', () => {
 import { useViewStore } from '../src/stores/view'
 import { cameraScope } from '../src/lib/viewport'
 
-const at = (id: string, priority: number, lat: number, lng: number): HistoricalEvent => ({
+const at = (id: string, priority: number, lat: number, lng: number): RawEvent => ({
   id, name: id, start: 1500, lat, lng, priority, tags: ['war'], summary: '',
 })
 
@@ -503,7 +503,7 @@ describe('the selected event keeps its pin', () => {
  * it, what leaves it, and what it does to the pins while it lasts.
  */
 describe('focus mode', () => {
-  const plan = (id: string, extra: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
+  const plan = (id: string, extra: Partial<RawEvent> = {}): RawEvent => ({
     id,
     name: id,
     start: 1941,
@@ -516,7 +516,7 @@ describe('focus mode', () => {
     ...extra,
   })
 
-  const child = (id: string, parent: string, priority = 0): HistoricalEvent => ({
+  const child = (id: string, parent: string, priority = 0): RawEvent => ({
     id, name: id, start: 1941, lat: 54, lng: 28, priority, tags: ['war'], summary: '', parent,
   })
 
@@ -794,18 +794,18 @@ describe('focus mode', () => {
  * the ones that end it — see `focusStack` in stores/events.ts.
  */
 describe('focus navigation, inside a plan and back out', () => {
-  const plan = (id: string, extra: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
+  const plan = (id: string, extra: Partial<RawEvent> = {}): RawEvent => ({
     id, name: id, start: 1941, lat: 53.9, lng: 27.6, priority: 70, tags: ['war'], summary: '',
     drawing: { layers: [{ type: 'marker', pos: [27.6, 53.9] }] },
     ...extra,
   })
-  const part = (id: string, parent: string, priority = 0): HistoricalEvent => ({
+  const part = (id: string, parent: string, priority = 0): RawEvent => ({
     id, name: id, start: 1941, lat: 54, lng: 28, priority, tags: ['war'], summary: '', parent,
   })
 
   /** An operation, two battles inside it, a village inside one battle, and an
    *  unrelated plan on the other side of the war. */
-  const corpus = (): HistoricalEvent[] => [
+  const corpus = (): RawEvent[] => [
     plan('barbarossa'),
     part('kiev', 'barbarossa', 60),
     part('minsk', 'barbarossa', 50),
@@ -837,15 +837,16 @@ describe('focus navigation, inside a plan and back out', () => {
     expect(events.focusReturnTo?.id).toBe('barbarossa')
   })
 
-  it('opens the battle in whatever shape the panel was already in', () => {
+  it('opens the battle expanded even when the operation was minimised', () => {
+    // Owner call: tapping a child pin says "tell me about this one" — the
+    // article opens expanded regardless of the shape the context's panel was in.
     const events = store()
     events.showOnMap('barbarossa')
     expect(events.panelMinimised).toBe(true)
     events.select('kiev')
-    expect(events.panelMinimised).toBe(true) // a pill for the battle, over the map
-    events.toggleFocusExpanded()
+    expect(events.panelMinimised).toBe(false) // the battle's article, over the map
     events.select('minsk')
-    expect(events.panelMinimised).toBe(false) // reading: the next one is read too
+    expect(events.panelMinimised).toBe(false)
     expect(events.focusReturnTo?.id).toBe('barbarossa')
   })
 
@@ -1001,12 +1002,12 @@ describe('focus navigation, inside a plan and back out', () => {
  * finite and what makes restoring a node by assignment legitimate.
  */
 describe('every reachable state has a way out', () => {
-  const plan = (id: string, extra: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
+  const plan = (id: string, extra: Partial<RawEvent> = {}): RawEvent => ({
     id, name: id, start: 1941, lat: 53.9, lng: 27.6, priority: 70, tags: ['war'], summary: '',
     drawing: { layers: [{ type: 'marker', pos: [27.6, 53.9] }] },
     ...extra,
   })
-  const corpus: HistoricalEvent[] = [
+  const corpus: RawEvent[] = [
     plan('op'),
     plan('battle', { parent: 'op', priority: 60 }),
     plan('village', { parent: 'battle', priority: 10 }),

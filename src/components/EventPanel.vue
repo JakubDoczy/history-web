@@ -4,7 +4,7 @@ import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { formatYear } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
-import { isConcept, isEvent, isPerson, kindOf, type Item, type Place } from '../lib/events'
+import { assertNever, shapeOf, type Item, type Place } from '../lib/events'
 import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
 
 const events = useEventStore()
@@ -15,30 +15,46 @@ const time = useTimeStore()
    header (a date range, a lifespan with place chips, or nothing) and which
    sections have anything to show. */
 const e = computed(() => events.selected!)
-const person = computed(() => (isPerson(e.value) ? e.value : null))
-const event = computed(() => (isEvent(e.value) ? e.value : null))
-const kindLabel = computed(() => ({ event: '', person: 'Person', concept: 'Concept' })[kindOf(e.value)])
+/* The two variants the template asks for by name. Narrowed on the discriminant
+   and handed to the template as a nullable, because a template cannot narrow. */
+const person = computed(() => (e.value.kind === 'person' ? e.value : null))
+const event = computed(() => (e.value.kind === 'event' ? e.value : null))
+const kindLabel = computed(() => ({ event: '', person: 'Person', concept: 'Concept' })[e.value.kind])
 /**
  * The pill's chip. The article can leave the chip off an event — most items are
  * events and the word adds nothing next to a date — but the pill has no date and
  * no body, so something has to say what kind of thing this is.
+ *
+ * An event says what SHAPE it is instead, which is the most useful thing a pill
+ * can say about one: a plan beats a route beats a bare point.
  */
-const pillKind = computed(
-  () => kindLabel.value || (event.value?.drawing ? 'Plan' : event.value?.paths ? 'Route' : 'Event'),
-)
+const pillKind = computed(() => {
+  const ev = event.value
+  if (!ev) return kindLabel.value
+  if (shapeOf(ev.geometry, 'plan')) return 'Plan'
+  return shapeOf(ev.geometry, 'routes') ? 'Route' : 'Event'
+})
 
 /** The line under the title: a span, a lifespan, or the year an idea is anchored at. */
 const when = computed(() => {
-  const p = person.value
-  if (p) return p.died === undefined ? `b. ${formatYear(p.born)}` : `${formatYear(p.born)} – ${formatYear(p.died)}`
-  if (isConcept(e.value)) return ''
-  const ev = event.value!
-  return ev.end ? `${formatYear(ev.start)} – ${formatYear(ev.end)}` : formatYear(ev.start)
+  const i = e.value
+  switch (i.kind) {
+    case 'person':
+      return i.died === undefined
+        ? `b. ${formatYear(i.born)}`
+        : `${formatYear(i.born)} – ${formatYear(i.died)}`
+    case 'event':
+      return i.end ? `${formatYear(i.start)} – ${formatYear(i.end)}` : formatYear(i.start)
+    case 'concept':
+      return ''
+    default:
+      return assertNever(i)
+  }
 })
 
 /**
  * What "Show on map" is about. Normally the article itself; when the panel was
- * opened from a *derived* pin (a birth or a death, which are events in their own
+ * opened from a *life marker* (a birth or a death, which are pins in their own
  * right but carry the life's article), it is that pin — the reader is looking at
  * one end of a life and the map should go there, not to the other end.
  */
@@ -66,7 +82,7 @@ const related = computed(() => events.strongOf(e.value.id))
 const seeAlso = computed(() => events.seeAlsoOf(e.value.id))
 
 /** Persons and concepts are chipped; an event is the unmarked case (as in search). */
-const badge = (i: Item) => (kindOf(i) === 'event' ? '' : kindOf(i))
+const badge = (i: Item) => (i.kind === 'event' ? '' : i.kind)
 const yearOf = (id: string) => formatYear(events.focusYear(id) ?? 0)
 
 const places = computed(() => {

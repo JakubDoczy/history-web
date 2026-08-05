@@ -1,4 +1,4 @@
-import { isMinor, type HistoricalEvent } from './events'
+import { isMinor, shapeOf, type MapPin } from './events'
 import type { PinDatum } from './eventClusters'
 import type { Tier } from './eventTiers'
 import { primaryTag, tagColor } from './tags'
@@ -33,7 +33,7 @@ export const TIER_SCALE: Record<Tier, number> = { 1: 1, 2: 0.85, 3: 0.7 }
  * Pin height in px: priority 0..100 → 18..30, scaled by tier, and selected pins
  * a third larger again. Tier 1 is the size the map has always drawn.
  */
-export const pinHeight = (e: HistoricalEvent, selected: boolean, tier: Tier = 1) =>
+export const pinHeight = (e: MapPin, selected: boolean, tier: Tier = 1) =>
   Math.round((18 + (e.priority / 100) * 12) * TIER_SCALE[tier] * (selected ? 1.35 : 1))
 
 /**
@@ -108,11 +108,14 @@ const GLOW =
   '<circle cx="12" cy="11" r="11" fill="#fff" opacity="0.09"/>' +
   '<circle cx="12" cy="11" r="10.3" fill="none" stroke="#fff" stroke-width="2.6" opacity="0.22"/>'
 
-export function pinSvg(e: HistoricalEvent, selected: boolean, tier: Tier = 1): string {
+export function pinSvg(e: MapPin, selected: boolean, tier: Tier = 1): string {
   const color = tagColor(primaryTag(e))
   const h = pinHeight(e, selected, tier)
-  const area = !!e.area
-  const hasPaths = !!e.paths?.length
+  // The two shapes the pin's ARTWORK says something about, asked for by kind:
+  // a footprint under the tip, a route in the head. A plan says nothing here —
+  // it is ink for the map, not a property of the teardrop.
+  const area = !!shapeOf(e.geometry, 'area')
+  const hasPaths = !!shapeOf(e.geometry, 'routes')
   const boxH = area ? AREA_BOX_H : BOX_H
   const w = Math.round(h * (BOX_W / BOX_H))
   const svgH = Math.round(h * (boxH / BOX_H))
@@ -166,7 +169,7 @@ export const clusterSize = (count: number, tier: Tier = 1) =>
  * of also-rans is small and quiet. Without that a badge over a city would read
  * as more important than the tier-1 pin next to it merely for being a badge.
  */
-export function clusterSvg(members: HistoricalEvent[], tier: Tier = 1): string {
+export function clusterSvg(members: MapPin[], tier: Tier = 1): string {
   const color = tagColor(primaryTag(members[0]))
   const d = clusterSize(members.length, tier)
   const label = members.length > 99 ? '99+' : String(members.length)
@@ -221,18 +224,19 @@ function interactive(el: HTMLElement, onClick: () => void) {
 
 /** DOM wrapper anchored so the pin's tip sits on the coordinate. */
 export function pinElement(
-  e: HistoricalEvent,
+  e: MapPin,
   selected: boolean,
   tier: Tier,
   onClick: () => void,
 ): HTMLElement {
   const el = document.createElement('div')
+  const area = !!shapeOf(e.geometry, 'area')
   el.className =
     'event-pin' +
     ` event-pin--tier${tier}` +
     (selected ? ' event-pin--selected' : '') +
-    (e.area ? ' event-pin--area' : '') +
-    (e.paths?.length ? ' event-pin--path' : '') +
+    (area ? ' event-pin--area' : '') +
+    (shapeOf(e.geometry, 'routes') ? ' event-pin--path' : '') +
     // minor pins are opt-in and there are a lot of them; they keep the smallest
     // size pinHeight gives them and go translucent, so they read as a layer
     // underneath the ranked ones rather than as competition for them
@@ -241,14 +245,14 @@ export function pinElement(
   el.title = e.name
   el.style.setProperty(
     '--pin-shift',
-    `${pinShiftPercent(e.area ? AREA_BOX_H : BOX_H, TIP_Y).toFixed(2)}%`,
+    `${pinShiftPercent(area ? AREA_BOX_H : BOX_H, TIP_Y).toFixed(2)}%`,
   )
   return interactive(el, onClick)
 }
 
 /** DOM wrapper for a cluster badge, centred on the coordinate. */
 export function clusterElement(
-  members: HistoricalEvent[],
+  members: MapPin[],
   tier: Tier,
   onClick: () => void,
 ): HTMLElement {

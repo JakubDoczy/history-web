@@ -1,9 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { visibleEvents, type HistoricalEvent } from '../src/lib/events'
+import { parseItem, visibleEvents, type HistoricalEvent, type RawEvent } from '../src/lib/events'
 
-const ev = (id: string, o: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
-  id, name: id, start: 0, lat: 0, lng: 0, priority: 50, tags: [], summary: '', ...o,
-})
+// Fixtures are written in the RAW shape — flat lat/lng/area/paths, as the data
+// files carry them — and go through the parser, which is the only thing that
+// makes an Item. That keeps the tests honest about the boundary: nothing in the
+// app ever sees a hand-built item either.
+const ev = (id: string, o: Partial<RawEvent> = {}): HistoricalEvent =>
+  parseItem({
+    id, name: id, start: 0, lat: 0, lng: 0, priority: 50, tags: [], summary: '', ...o,
+  }) as HistoricalEvent
 
 const data = [
   ev('ww2', { start: 1939, end: 1945, priority: 96, tags: ['war'] }),
@@ -86,16 +91,16 @@ describe('EventIndex', () => {
 
 /* --------------------------------------------------- viewport-scoped culling */
 
-import { chooseQueryPlan, eventRadiusDeg, inScope, type QueryPlan } from '../src/lib/events'
+import { chooseQueryPlan, geometryRadiusDeg, inScope, type QueryPlan } from '../src/lib/events'
 
-describe('eventRadiusDeg', () => {
+describe('geometryRadiusDeg', () => {
   it('is zero for a point event', () => {
-    expect(eventRadiusDeg(ev('p'))).toBe(0)
+    expect(geometryRadiusDeg(ev('p').geometry)).toBe(0)
   })
   it('is the furthest vertex of an area event from its centroid', () => {
     // ring is [lng, lat]; the furthest of these is 3° away along the meridian
     const area = ev('a', { lat: 0, lng: 0, area: [[0, 3], [1, 0], [0, -2]] })
-    expect(eventRadiusDeg(area)).toBeCloseTo(3, 6)
+    expect(geometryRadiusDeg(area.geometry)).toBeCloseTo(3, 6)
   })
   it('lets a footprint reach into a scope its centroid is outside of', () => {
     const area = ev('a', { lat: 0, lng: 0, area: [[0, 5], [0, -5], [5, 0]] })
@@ -264,12 +269,16 @@ describe('event search', () => {
   beforeEach(() => setActivePinia(createPinia()))
   it('matches names case-insensitively, ranked by priority', () => {
     const s = useEventStore()
-    // the store starts empty now: data arrives in fetched chunks
+    // the store starts empty now: data arrives in fetched chunks — RAW, which
+    // is what `adopt` takes; it is the boundary that makes them items
+    const raw = (id: string, o: Partial<RawEvent>): RawEvent => ({
+      id, name: id, start: 0, lat: 0, lng: 0, priority: 50, tags: [], summary: '', ...o,
+    })
     s.adopt([
-      ev('great-war', { name: 'The Great War', priority: 90, tags: ['war'] }),
-      ev('cold-war', { name: 'Cold War', priority: 80, tags: ['war', 'politics'] }),
-      ev('warsaw-pact', { name: 'Warsaw Pact', priority: 60, tags: ['politics'] }),
-      ev('unrelated', { name: 'Something else', priority: 99, tags: ['science'] }),
+      raw('great-war', { name: 'The Great War', priority: 90, tags: ['war'] }),
+      raw('cold-war', { name: 'Cold War', priority: 80, tags: ['war', 'politics'] }),
+      raw('warsaw-pact', { name: 'Warsaw Pact', priority: 60, tags: ['politics'] }),
+      raw('unrelated', { name: 'Something else', priority: 99, tags: ['science'] }),
     ])
     const r = s.search('war')
     expect(r.length).toBeGreaterThan(0)
@@ -285,13 +294,9 @@ describe('event search', () => {
 import {
   MINOR_PRIORITY,
   anchorYearOf,
-  derivedEventsFor,
-  isConcept,
-  isEvent,
   isMinor,
-  isPerson,
-  kindOf,
-  pinnableEvents,
+  lifeMarkersFor,
+  mapPinsOf,
   searchItems,
   timeExtentOf,
   type Concept,
@@ -315,11 +320,13 @@ const relativityIdea: Concept = {
 }
 
 describe('item kinds', () => {
-  it('treats a missing kind as an event, which is what the old data relies on', () => {
-    const legacy = ev('legacy')
-    expect(kindOf(legacy)).toBe('event')
-    expect(isEvent(legacy)).toBe(true)
-    expect(isPerson(einstein) && isConcept(relativityIdea)).toBe(true)
+  it('stamps a missing kind as an event, which is what the old data relies on', () => {
+    // the raw entry says nothing about its kind; the parser is what decides
+    const legacy = parseItem({
+      id: 'legacy', name: 'legacy', start: 0, lat: 0, lng: 0, priority: 50, tags: [], summary: '',
+    })
+    expect(legacy.kind).toBe('event')
+    expect([einstein.kind, relativityIdea.kind]).toEqual(['person', 'concept'])
   })
 
   it('anchors each kind at the right year, and gives each its extent', () => {
@@ -338,24 +345,27 @@ describe('item kinds', () => {
   })
 })
 
-describe('derivedEventsFor', () => {
+describe('lifeMarkersFor', () => {
   it('makes a minor birth and death pin from a life', () => {
-    const [birth, death] = derivedEventsFor(einstein)
-    expect([birth.name, birth.start, birth.lat, birth.priority, birth.derivedFrom]).toEqual([
+    const [birth, death] = lifeMarkersFor(einstein)
+    expect([birth.name, birth.start, birth.geometry.anchor.lat, birth.priority, birth.of.id]).toEqual([
       'Birth of Albert Einstein', 1879, 48.4, MINOR_PRIORITY, 'einstein',
     ])
-    expect([death.name, death.start, death.lng]).toEqual(['Death of Albert Einstein', 1955, -74.67])
+    expect([birth.kind, birth.moment]).toEqual(['life-marker', 'birth'])
+    expect([death.name, death.start, death.geometry.anchor.lng]).toEqual([
+      'Death of Albert Einstein', 1955, -74.67,
+    ])
     expect(birth.tags).toEqual(einstein.tags) // so tag filtering and pin colour still work
   })
 
   it('makes no pin without a coordinate, rather than guessing one', () => {
-    expect(derivedEventsFor(nowhere)).toEqual([])
-    expect(derivedEventsFor({ ...einstein, deathPlace: undefined })).toHaveLength(1)
-    expect(derivedEventsFor({ ...einstein, died: undefined })).toHaveLength(1) // birth only
+    expect(lifeMarkersFor(nowhere)).toEqual([])
+    expect(lifeMarkersFor({ ...einstein, deathPlace: undefined })).toHaveLength(1)
+    expect(lifeMarkersFor({ ...einstein, died: undefined })).toHaveLength(1) // birth only
   })
 
   it('pins events and persons, never concepts', () => {
-    const ids = pinnableEvents([ev('a'), einstein, relativityIdea, nowhere]).map((e) => e.id)
+    const ids = mapPinsOf([ev('a'), einstein, relativityIdea, nowhere]).map((e) => e.id)
     expect(ids).toEqual(['a', 'einstein--birth', 'einstein--death'])
   })
 })
@@ -434,7 +444,7 @@ import { buildRelations, type Item } from '../src/lib/events'
  * in both directions, under one precedence order (containment > strong > weak).
  */
 describe('buildRelations', () => {
-  const item = (id: string, o: Partial<HistoricalEvent> = {}): HistoricalEvent =>
+  const item = (id: string, o: Partial<RawEvent> = {}): HistoricalEvent =>
     ev(id, { start: 1900, ...o })
   const build = (items: Item[]) => buildRelations(items, new Map(items.map((i) => [i.id, i])))
 

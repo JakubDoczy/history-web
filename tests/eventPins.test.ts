@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { HistoricalEvent } from '../src/lib/events'
+import { parseItem, type HistoricalEvent, type RawEvent } from '../src/lib/events'
 import {
   clusterSize,
   clusterSvg,
@@ -12,9 +12,11 @@ import type { PinDatum } from '../src/lib/eventClusters'
 import type { GeoPath } from '../src/lib/paths'
 import { TAG_COLORS } from '../src/lib/tags'
 
-const ev = (o: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
-  id: 'e', name: 'e', start: 0, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: '', ...o,
-})
+// raw in, parsed out — the only way an item is ever made (see parseItem)
+const ev = (o: Partial<RawEvent> = {}): HistoricalEvent =>
+  parseItem({
+    id: 'e', name: 'e', start: 0, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: '', ...o,
+  }) as HistoricalEvent
 
 const attr = (svg: string, name: string) => svg.match(new RegExp(`${name}="([^"]+)"`))![1]
 

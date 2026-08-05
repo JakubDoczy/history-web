@@ -10,12 +10,13 @@ import {
 } from '../src/lib/geoFocus'
 import { viewSpanDeg, visibleSpanDeg } from '../src/lib/detailImagery'
 import { separationDeg } from '../src/lib/queryIndex'
-import type { Concept, HistoricalEvent, Person } from '../src/lib/events'
+import { parseItem, shapeOf, type Concept, type HistoricalEvent, type Person, type RawEvent } from '../src/lib/events'
 import type { GeoPath } from '../src/lib/paths'
 
-const ev = (o: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
-  id: 'e', name: 'e', start: 1500, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: '', ...o,
-})
+const ev = (o: Partial<RawEvent> = {}): HistoricalEvent =>
+  parseItem({
+    id: 'e', name: 'e', start: 1500, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: '', ...o,
+  }) as HistoricalEvent
 
 describe('boundingCap', () => {
   it('contains every point it was cut from', () => {
@@ -146,11 +147,12 @@ describe('focusTargetFor', () => {
       ],
     })
     const target = focusTargetFor(e)!
+    const { lat: anchorLat, lng: anchorLng } = e.geometry.anchor
     expect(target.altitude).toBeGreaterThan(1)
     // the camera looks at the middle of the route, not at the pin
-    expect(separationDeg(target.lat, target.lng, e.lat, e.lng)).toBeGreaterThan(20)
+    expect(separationDeg(target.lat, target.lng, anchorLat, anchorLng)).toBeGreaterThan(20)
     // and every waypoint is inside the horizon from there
-    for (const [lng, lat] of e.paths![0])
+    for (const [lng, lat] of shapeOf(e.geometry, 'routes')!.paths[0])
       expect(separationDeg(target.lat, target.lng, lat, lng)).toBeLessThanOrEqual(
         visibleSpanDeg(target.altitude) / 2 + 1e-9,
       )

@@ -16,7 +16,7 @@ import { createPinia } from 'pinia'
 import EventPanel from '../../src/components/EventPanel.vue'
 import { useEventStore } from '../../src/stores/events'
 import { useTimeStore } from '../../src/stores/time'
-import type { Item } from '../../src/lib/events'
+import type { RawItem } from '../../src/lib/events'
 import type { EventManifest } from '../../src/lib/eventChunks'
 
 const pinia = createPinia()
@@ -30,7 +30,7 @@ const time = useTimeStore(pinia)
 // the dev server mounts `public/` under vite's base (see vite.config.ts)
 const DATA = `${import.meta.env.BASE_URL}data/events/`
 const manifest: EventManifest = await (await fetch(DATA + 'manifest.json')).json()
-for (const c of manifest.chunks) store.adopt((await (await fetch(DATA + c.file)).json()) as Item[])
+for (const c of manifest.chunks) store.adopt((await (await fetch(DATA + c.file)).json()) as RawItem[])
 
 Object.assign(window as unknown as Record<string, unknown>, {
   relHarness: {

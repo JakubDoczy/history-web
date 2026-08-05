@@ -4,7 +4,7 @@ import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
 import { clamp, formatYear } from '../lib/time'
-import { kindOf, type Item } from '../lib/events'
+import type { Item } from '../lib/events'
 
 const events = useEventStore()
 const time = useTimeStore()
@@ -16,7 +16,7 @@ const results = computed(() => events.search(query.value))
 onMounted(() => input.value?.focus())
 
 /** Persons and concepts are labelled; an event is the unmarked case. */
-const badge = (i: Item) => (kindOf(i) === 'event' ? '' : kindOf(i))
+const badge = (i: Item) => (i.kind === 'event' ? '' : i.kind)
 
 function pick(id: string) {
   // Search reaches items that are not events, so the year to jump to is the

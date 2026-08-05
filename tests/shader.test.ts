@@ -453,3 +453,33 @@ describe('dirToUv(n) == vec2(fract(vUv.x + 0.5), vUv.y)', () => {
     }
   })
 })
+
+describe('the area footprint cannot z-fight the map it sits on', () => {
+  const src = readFileSync('src/components/GlobeView.vue', 'utf8')
+
+  it('biases the polygon cap in depth-buffer units, not in height', () => {
+    // The altitudes this globe uses are far finer than the depth buffer that
+    // has to tell them apart: the area cap at 0.0014 R and the borders at
+    // 0.0012 R are 1.3 km apart, against ~2.7 km for one step of a 24-bit
+    // buffer at world view. Separation by height alone therefore resolves to
+    // "whichever way it rounded", per pixel and per frame — the smear along an
+    // area's edge that a pan drags across the screen. Polygon offset is in
+    // depth-buffer units and so is right at every zoom.
+    const cap = src.slice(src.indexOf('const capMaterial'), src.indexOf('capMaterials.set'))
+    expect(cap).toMatch(/polygonOffset:\s*true/)
+    expect(cap).toMatch(/polygonOffsetUnits:\s*-\d/)
+    expect(cap).toMatch(/polygonOffsetFactor:\s*-\d/)
+  })
+
+  it('still lets the planet hide what is round the back', () => {
+    // depthWrite off makes paint order renderOrder's business; depthTEST must
+    // stay on, or a footprint in the Pacific shows through the Atlantic
+    const cap = src.slice(src.indexOf('const capMaterial'), src.indexOf('capMaterials.set'))
+    expect(cap).toMatch(/depthWrite:\s*false/)
+    expect(cap).not.toMatch(/depthTest:\s*false/)
+  })
+
+  it('keeps the transition at zero, so a cap is never built coplanar', () => {
+    expect(src).toContain('.polygonsTransitionDuration(0)')
+  })
+})

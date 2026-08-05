@@ -14,7 +14,7 @@ import { createPinia } from 'pinia'
 import EventPanel from '../../src/components/EventPanel.vue'
 import { useEventStore } from '../../src/stores/events'
 import { clearWikiImageCache } from '../../src/lib/wikiImage'
-import type { HistoricalEvent } from '../../src/lib/events'
+import type { RawEvent } from '../../src/lib/events'
 
 /**
  * Served by the dev server from this directory, not by a Playwright route: any
@@ -23,7 +23,7 @@ import type { HistoricalEvent } from '../../src/lib/events'
  */
 const OWN_IMAGE = new URL('./fixtures/own-image.png', import.meta.url).pathname
 
-const EVENTS: HistoricalEvent[] = [
+const EVENTS: RawEvent[] = [
   {
     id: 'gobekli-tepe',
     name: 'Göbekli Tepe',

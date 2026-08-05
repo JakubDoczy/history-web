@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { chunksFor, mergeEvents, type EventManifest } from '../src/lib/eventChunks'
-import type { HistoricalEvent } from '../src/lib/events'
+import { parseItem, type HistoricalEvent } from '../src/lib/events'
 
 const m: EventManifest = {
   spine: 'spine.json',
@@ -12,7 +12,9 @@ const m: EventManifest = {
 }
 
 const ev = (id: string, start = 0): HistoricalEvent =>
-  ({ id, name: id, start, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: 'x'.repeat(30) }) as HistoricalEvent
+  parseItem({
+    id, name: id, start, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: 'x'.repeat(30),
+  }) as HistoricalEvent
 
 describe('chunksFor', () => {
   it('returns chunks intersecting the window', () => {

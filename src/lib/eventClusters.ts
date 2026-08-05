@@ -1,6 +1,6 @@
 import { degPerScreenPx } from './detailImagery'
 import { halfOctave } from './quantise'
-import type { HistoricalEvent } from './events'
+import type { LatLng, MapPin } from './events'
 
 /**
  * Pin clustering.
@@ -55,7 +55,7 @@ export interface EventGroup {
   lat: number
   lng: number
   /** Highest priority first. */
-  members: HistoricalEvent[]
+  members: MapPin[]
 }
 
 export interface ClusterResult {
@@ -63,7 +63,7 @@ export interface ClusterResult {
   clusters: EventGroup[]
 }
 
-const byPriority = (a: HistoricalEvent, b: HistoricalEvent) =>
+const byPriority = (a: MapPin, b: MapPin) =>
   b.priority - a.priority || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
 
 /**
@@ -74,7 +74,7 @@ const byPriority = (a: HistoricalEvent, b: HistoricalEvent) =>
  * badge where the eye expects the headline event to be, and makes the grouping
  * independent of input order.
  */
-export function clusterEvents(events: HistoricalEvent[], visibleSpanDeg: number): ClusterResult {
+export function clusterEvents(events: MapPin[], visibleSpanDeg: number): ClusterResult {
   const threshold = clusterThresholdDeg(visibleSpanDeg)
   const pending = [...events].sort(byPriority)
   const taken = new Set<string>()
@@ -87,12 +87,12 @@ export function clusterEvents(events: HistoricalEvent[], visibleSpanDeg: number)
     const members = [seed]
     for (const other of pending) {
       if (taken.has(other.id)) continue
-      if (angularSeparationDeg(seed, other) <= threshold) {
+      if (angularSeparationDeg(seed.geometry.anchor, other.geometry.anchor) <= threshold) {
         taken.add(other.id)
         members.push(other)
       }
     }
-    const group: EventGroup = { id: seed.id, lat: seed.lat, lng: seed.lng, members }
+    const group: EventGroup = { id: seed.id, ...seed.geometry.anchor, members }
     ;(members.length > 1 ? clusters : singles).push(group)
   }
   return { singles, clusters }
@@ -224,8 +224,8 @@ export const legStrokeDeg = (view: FanView) => Math.max(1e-9, LEG_STROKE_PX * vi
 
 /** A pin to draw: either one event or a collapsed cluster badge. */
 export type PinDatum =
-  | { kind: 'event'; id: string; lat: number; lng: number; event: HistoricalEvent; fanned: boolean }
-  | { kind: 'cluster'; id: string; lat: number; lng: number; members: HistoricalEvent[] }
+  | { kind: 'event'; id: string; lat: number; lng: number; event: MapPin; fanned: boolean }
+  | { kind: 'cluster'; id: string; lat: number; lng: number; members: MapPin[] }
 
 /** A leg drawn from an expanded cluster's anchor out to one fanned member. */
 export interface ClusterLeg {
@@ -234,7 +234,7 @@ export interface ClusterLeg {
   startLng: number
   endLat: number
   endLng: number
-  event: HistoricalEvent
+  event: MapPin
 }
 
 export interface PinLayout {
@@ -256,8 +256,8 @@ export function layoutPins(
   const pins: PinDatum[] = []
   const legs: ClusterLeg[] = []
   const asPin = (
-    e: HistoricalEvent,
-    at: { lat: number; lng: number } = e,
+    e: MapPin,
+    at: LatLng = e.geometry.anchor,
     fanned = false,
   ): PinDatum => ({
     kind: 'event',
@@ -291,7 +291,7 @@ export function layoutPins(
     if (picked) pins.push(asPin(picked))
     if (rest.length === 1) pins.push(asPin(rest[0]))
     else if (rest.length > 1)
-      pins.push({ kind: 'cluster', id: g.id, lat: rest[0].lat, lng: rest[0].lng, members: rest })
+      pins.push({ kind: 'cluster', id: g.id, ...rest[0].geometry.anchor, members: rest })
   }
   return { pins, legs }
 }

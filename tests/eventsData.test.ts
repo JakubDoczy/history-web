@@ -5,19 +5,20 @@ import {
   EventIndex,
   MINOR_PRIORITY,
   anchorYearOf,
-  derivedEventsFor,
   effectivePriority,
   geometryPointsOf,
-  isConcept,
-  isEvent,
   isMinor,
-  isPerson,
-  kindOf,
+  lifeMarkersFor,
+  ofKind,
+  parseItems,
+  shapeOf,
   timeExtentOf,
   type Concept,
   type HistoricalEvent,
   type Item,
   type Person,
+  type RawEvent,
+  type RawItem,
 } from '../src/lib/events'
 import { type EventManifest } from '../src/lib/eventChunks'
 import {
@@ -47,16 +48,39 @@ import { internalLinkIds, renderRichText } from '../src/lib/richtext'
 const DIR = join(__dirname, '..', 'public', 'data', 'events')
 const readJson = (f: string) => JSON.parse(readFileSync(join(DIR, f), 'utf8'))
 const manifest = readJson('manifest.json') as EventManifest
-const chunkItems = new Map<string, Item[]>(
-  manifest.chunks.map((c) => [c.file, readJson(c.file) as Item[]]),
-)
-const items = [...chunkItems.values()].flat()
-const spine = readJson(manifest.spine) as Item[]
-const byId = new Map(items.map((e) => [e.id, e]))
 
-const events = items.filter(isEvent)
-const persons = items.filter(isPerson)
-const concepts = items.filter(isConcept)
+/**
+ * TWO views of the same corpus, and the difference between them is the point of
+ * `parseItems`.
+ *
+ * `raw*` is exactly what is on disk: flat `lat`/`lng`/`area`/`paths`, `kind`
+ * absent on everything written before the item model existed. That is the
+ * contract with scripts/build_event_chunks.py, and it is what the shape and
+ * geometry assertions below are about.
+ *
+ * `items` is what the app runs on — parsed once, at the boundary, as the store
+ * does on every chunk it loads. Everything that exercises runtime behaviour
+ * (the index, the camera fit, the relation graph) uses these.
+ */
+const rawChunks = new Map<string, RawItem[]>(
+  manifest.chunks.map((c) => [c.file, readJson(c.file) as RawItem[]]),
+)
+const chunkItems = new Map<string, Item[]>(
+  [...rawChunks].map(([file, raw]) => [file, parseItems(raw)]),
+)
+const rawItems = [...rawChunks.values()].flat()
+const items = [...chunkItems.values()].flat()
+const spine = parseItems(readJson(manifest.spine) as RawItem[])
+const byId = new Map(items.map((e) => [e.id, e]))
+const rawById = new Map(rawItems.map((e) => [e.id, e]))
+
+const events = items.filter(ofKind('event'))
+const persons = items.filter(ofKind('person'))
+const concepts = items.filter(ofKind('concept'))
+/** The same events as `events`, in the same order, as the files carry them. */
+const rawEvents = rawItems.filter(
+  (e): e is RawEvent => e.kind === undefined || e.kind === 'event',
+)
 
 /** ranking.txt, comments and blank lines stripped — the source of every priority. */
 const ranking = readFileSync(join(DIR, 'ranking.txt'), 'utf8')
@@ -97,14 +121,16 @@ describe('items — dataset shape', () => {
     }
   })
 
-  it('uses one of the three kinds, defaulting to event', () => {
-    for (const e of items) {
-      expect(['event', 'person', 'concept'], e.id).toContain(kindOf(e))
+  it('uses one of the three kinds, defaulting to event at the boundary', () => {
+    for (const [i, raw] of rawItems.entries()) {
+      const parsed = items[i]
+      expect(['event', 'person', 'concept'], raw.id).toContain(parsed.kind)
       // the default is load-bearing: every entry written before persons and
-      // concepts existed carries no `kind` at all
-      if (!('kind' in e)) expect(isEvent(e), e.id).toBe(true)
+      // concepts existed carries no `kind` at all, and the PARSER is what
+      // stamps one on — past it, no item has an absent kind
+      if (!('kind' in raw)) expect(parsed.kind, raw.id).toBe('event')
     }
-    expect(items.filter((e) => e.kind === undefined).length).toBeGreaterThanOrEqual(150)
+    expect(rawItems.filter((e) => e.kind === undefined).length).toBeGreaterThanOrEqual(150)
   })
 
   it('has the fields every item needs, with the right types', () => {
@@ -120,7 +146,7 @@ describe('items — dataset shape', () => {
   })
 
   it('has the fields each kind needs, with the right types', () => {
-    for (const e of events) {
+    for (const e of rawEvents) {
       expect(typeof e.start, e.id).toBe('number')
       expect(typeof e.lat, e.id).toBe('number')
       expect(typeof e.lng, e.id).toBe('number')
@@ -145,13 +171,18 @@ describe('items — dataset shape', () => {
       person: new Set([...common, 'born', 'died', 'birthPlace', 'deathPlace']),
       concept: new Set([...common, 'anchorYear']),
     }
-    for (const e of items)
+    for (const e of rawItems) {
+      const kind = e.kind ?? 'event'
       for (const k of Object.keys(e))
-        expect(allowed[kindOf(e)].has(k), `${e.id} (${kindOf(e)}) has unexpected key ${k}`).toBe(true)
+        expect(allowed[kind].has(k), `${e.id} (${kind}) has unexpected key ${k}`).toBe(true)
+    }
   })
 
-  it('never ships a derived key: birth and death pins are made at runtime', () => {
-    for (const e of items) expect('derivedFrom' in e, e.id).toBe(false)
+  it('never ships a runtime-only key: geometry and life markers are made at load', () => {
+    for (const e of rawItems) {
+      expect('geometry' in e, e.id).toBe(false)
+      expect('of' in e, e.id).toBe(false)
+    }
   })
 })
 
@@ -225,7 +256,7 @@ describe('items — geography', () => {
   }
 
   it('has coordinates in range', () => {
-    for (const e of events) inRange(e.lat, e.lng, e.id)
+    for (const e of rawEvents) inRange(e.lat, e.lng, e.id)
   })
 
   it('puts every birth and death place on the planet', () => {
@@ -236,7 +267,7 @@ describe('items — geography', () => {
   })
 
   it('has well-formed area rings, with the point inside the ring bbox', () => {
-    const areas = events.filter((e) => e.area)
+    const areas = rawEvents.filter((e) => e.area)
     expect(areas.length).toBeGreaterThanOrEqual(10)
     for (const e of areas) {
       const ring = e.area!
@@ -263,7 +294,7 @@ describe('items — geography', () => {
  * the road it draws, and that the camera can be put somewhere that shows it.
  */
 describe('items — path events', () => {
-  const pathEvents = events.filter((e) => e.paths)
+  const pathEvents = rawEvents.filter((e) => e.paths)
 
   it('ships a body of routes, on the events that are about going somewhere', () => {
     expect(pathEvents.length, 'too few path events').toBeGreaterThanOrEqual(6)
@@ -275,7 +306,7 @@ describe('items — path events', () => {
   })
 
   it('uses `paths` — always a list of routes — and never a bare `path`', () => {
-    for (const e of items) expect('path' in e, `${e.id} uses the wrong field`).toBe(false)
+    for (const e of rawItems) expect('path' in e, `${e.id} uses the wrong field`).toBe(false)
     for (const e of pathEvents) {
       expect(Array.isArray(e.paths), e.id).toBe(true)
       expect(e.paths!.length, `${e.id} has an empty paths list`).toBeGreaterThanOrEqual(1)
@@ -327,10 +358,12 @@ describe('items — path events', () => {
 
   it('can be framed by the camera: the fit holds the whole route, or admits it cannot', () => {
     for (const e of pathEvents) {
-      const target = focusTargetFor(e)!
+      const target = focusTargetFor(byId.get(e.id)!)!
       const horizon = visibleSpanDeg(target.altitude) / 2
       const worst = Math.max(
-        ...geometryPointsOf(e).map(([lng, lat]) => separationDeg(target.lat, target.lng, lat, lng)),
+        ...geometryPointsOf(byId.get(e.id)!).map(([lng, lat]) =>
+          separationDeg(target.lat, target.lng, lat, lng),
+        ),
       )
       // A circumnavigation cannot be shown at once — half of it is behind the
       // planet — so the fit stops at world view rather than lying about it.
@@ -339,11 +372,11 @@ describe('items — path events', () => {
       // the height a bare pin is flown to
       expect(target.altitude, `${e.id}`).toBeGreaterThan(altitudeForCapDeg(POINT_CAP_DEG))
     }
-    expect(focusTargetFor(byId.get('magellan') as HistoricalEvent)!.altitude).toBe(MAX_FIT_ALTITUDE)
+    expect(focusTargetFor(byId.get('magellan')!)!.altitude).toBe(MAX_FIT_ALTITUDE)
   })
 
   it("keeps the owner's example a point pin: Magellan is a place, the voyage is its route", () => {
-    const magellan = byId.get('magellan') as HistoricalEvent
+    const magellan = rawById.get('magellan') as RawEvent
     expect(magellan.area, 'the circumnavigation is a route, not a region').toBeUndefined()
     expect(magellan.paths).toHaveLength(1)
     // the pin stands in the strait that carries the name
@@ -356,7 +389,7 @@ describe('items — path events', () => {
   })
 
   it('lets one event carry both a footprint and its routes', () => {
-    const trade = byId.get('slave-trade') as HistoricalEvent
+    const trade = rawById.get('slave-trade') as RawEvent
     expect(trade.area, 'the Atlantic basin the system worked across').toBeDefined()
     expect(trade.paths, 'the three legs of the triangle').toHaveLength(3)
     // a triangle closes: the return leg ends where the outward one began
@@ -448,7 +481,7 @@ describe('items — hierarchy', () => {
       if (e.parent) {
         const p = byId.get(e.parent)
         expect(p, `${e.id} -> missing parent ${e.parent}`).toBeDefined()
-        expect(isEvent(p!), `${e.id} -> parent ${e.parent} is not an event`).toBe(true)
+        expect(p!.kind, `${e.id} -> parent ${e.parent} is not an event`).toBe('event')
       }
   })
 
@@ -700,15 +733,15 @@ describe('persons and concepts', () => {
   })
 })
 
-describe('derived birth and death pins', () => {
-  it('derives at most two point events per person, at the stated places', () => {
+describe('life markers — the pins derived from a life', () => {
+  it('derives at most two point pins per person, at the stated places', () => {
     for (const p of persons) {
-      const derived = derivedEventsFor(p)
+      const derived = lifeMarkersFor(p)
       const wanted = (p.birthPlace ? 1 : 0) + (p.deathPlace && p.died !== undefined ? 1 : 0)
       expect(derived.length, p.id).toBe(wanted)
       for (const d of derived) {
         expect(d.id.startsWith(p.id), d.id).toBe(true)
-        expect(d.derivedFrom, d.id).toBe(p.id)
+        expect(d.of.id, d.id).toBe(p.id)
         expect(d.priority, `${d.id} must be minor-tier`).toBe(MINOR_PRIORITY)
         expect(d.tags, d.id).toEqual(p.tags)
         expect(d.end, `${d.id} is a point in time`).toBeUndefined()
@@ -717,12 +750,16 @@ describe('derived birth and death pins', () => {
       if (p.birthPlace) {
         const b = derived[0]
         expect(b.name).toBe(`Birth of ${p.name}`)
-        expect([b.start, b.lat, b.lng]).toEqual([p.born, p.birthPlace.lat, p.birthPlace.lng])
+        expect([b.start, b.geometry.anchor.lat, b.geometry.anchor.lng]).toEqual([
+          p.born, p.birthPlace.lat, p.birthPlace.lng,
+        ])
       }
       if (p.died !== undefined && p.deathPlace) {
         const d = derived[derived.length - 1]
         expect(d.name).toBe(`Death of ${p.name}`)
-        expect([d.start, d.lat, d.lng]).toEqual([p.died, p.deathPlace.lat, p.deathPlace.lng])
+        expect([d.start, d.geometry.anchor.lat, d.geometry.anchor.lng]).toEqual([
+          p.died, p.deathPlace.lat, p.deathPlace.lng,
+        ])
       }
     }
   })
@@ -730,7 +767,7 @@ describe('derived birth and death pins', () => {
   it('keeps derived pins off the globe until minor events are asked for', () => {
     const index = new EventIndex(items)
     const einstein = byId.get('albert-einstein') as Person
-    const birth = derivedEventsFor(einstein)[0]
+    const birth = lifeMarkersFor(einstein)[0]
 
     const normal = index.query(einstein.born - 5, einstein.born + 5, {}, 500).map((e) => e.id)
     expect(normal).not.toContain(birth.id)
@@ -742,9 +779,12 @@ describe('derived birth and death pins', () => {
   it('resolves a derived pin back to the life it belongs to', () => {
     const index = new EventIndex(items)
     for (const p of persons)
-      for (const d of derivedEventsFor(p)) {
-        expect(index.pin(d.id)?.derivedFrom, d.id).toBe(p.id)
-        expect(index.byId.get(index.pin(d.id)!.derivedFrom!)?.name).toBe(p.name)
+      for (const d of lifeMarkersFor(p)) {
+        const pin = index.pin(d.id)!
+        expect(pin.kind, d.id).toBe('life-marker')
+        expect(pin.kind === 'life-marker' && pin.of.id, d.id).toBe(p.id)
+        // …and the panel opens the life, not a stub about the birth
+        expect(index.article(d.id)?.name, d.id).toBe(p.name)
       }
   })
 
@@ -865,8 +905,8 @@ describe('item chunks — manifest and spine', () => {
       const hi = i + 1 < bounds.length ? bounds[i + 1][1] : Infinity
       for (const e of evs) {
         const y = anchorYearOf(e)
-        expect(y, `${e.id} (${kindOf(e)}) is in the wrong chunk ${file}`).toBeGreaterThanOrEqual(lo)
-        expect(y, `${e.id} (${kindOf(e)}) is in the wrong chunk ${file}`).toBeLessThan(hi)
+        expect(y, `${e.id} (${e.kind}) is in the wrong chunk ${file}`).toBeGreaterThanOrEqual(lo)
+        expect(y, `${e.id} (${e.kind}) is in the wrong chunk ${file}`).toBeLessThan(hi)
       }
     }
     // and the seed content actually lands across several of them
@@ -882,7 +922,10 @@ describe('item chunks — manifest and spine', () => {
     const expected = items.filter((e) => e.priority >= 85)
     expect(new Set(spine.map((e) => e.id))).toEqual(new Set(expected.map((e) => e.id)))
     expect(spine.length).toBeGreaterThanOrEqual(30) // the timeline is never empty
-    expect(spine.some(isPerson), 'no life is important enough to always be loaded').toBe(true)
+    expect(
+      spine.some((i) => i.kind === 'person'),
+      'no life is important enough to always be loaded',
+    ).toBe(true)
   })
 
   it('every tag in the vocabulary has a pin colour', async () => {
@@ -938,7 +981,7 @@ describe('items — partial coverage against real spans', () => {
  * and "the author thought about it" is not something a default can record.
  */
 describe('items — route direction', () => {
-  const pathEvents = events.filter((e) => e.paths)
+  const pathEvents = rawEvents.filter((e) => e.paths)
 
   it('declares a direction on every drawn route', () => {
     for (const e of pathEvents)
@@ -947,11 +990,16 @@ describe('items — route direction', () => {
   })
 
   it('never puts a direction on an event with no route to give it one', () => {
-    for (const e of events) if (!e.paths) expect(e.direction, e.id).toBeUndefined()
+    for (const e of rawEvents) if (!e.paths) expect(e.direction, e.id).toBeUndefined()
   })
 
   it('calls the trade networks two-way and the voyages one-way', () => {
-    const dir = (id: string) => directionOf(byId.get(id) as HistoricalEvent)
+    // read through the PARSED item: direction is a field of the routes shape
+    // now, so this asserts what the app will actually draw
+    const dir = (id: string) => {
+      const item = byId.get(id)!
+      return item.kind === 'event' ? shapeOf(item.geometry, 'routes')?.direction : undefined
+    }
     // carried goods both ways for centuries; an arrow on either would be a lie
     expect(dir('silk-road')).toBe('twoway')
     expect(dir('manila-galleon')).toBe('twoway')
@@ -1005,7 +1053,7 @@ describe('items — route direction', () => {
  * theatre, at the right scale, and that the camera can frame it.
  */
 describe('items — drawings', () => {
-  const drawn = events.filter((e) => e.drawing)
+  const drawn = rawEvents.filter((e) => e.drawing)
 
   it('ships the exemplars', () => {
     expect(drawn.map((e) => e.id)).toEqual(expect.arrayContaining(['barbarossa', 'd-day']))
@@ -1013,7 +1061,7 @@ describe('items — drawings', () => {
 
   it('is a valid drawing wherever one is present, and absent everywhere else', () => {
     for (const e of drawn) expect(isDrawing(e.drawing), `${e.id}`).toBe(true)
-    for (const i of items) if (!isEvent(i)) expect('drawing' in i, i.id).toBe(false)
+    for (const i of rawItems) if (i.kind && i.kind !== 'event') expect('drawing' in i, i.id).toBe(false)
   })
 
   it('keeps every drawn coordinate on the planet and in the right order', () => {
@@ -1043,7 +1091,7 @@ describe('items — drawings', () => {
 
   it('can be framed by the camera, and the plan fills the frame rather than a corner', () => {
     for (const e of drawn) {
-      const target = focusTargetFor(e)!
+      const target = focusTargetFor(byId.get(e.id)!)!
       const half = visibleSpanDeg(target.altitude) / 2
       const pts = drawingPoints(e.drawing)
       const worst = Math.max(
@@ -1059,7 +1107,7 @@ describe('items — drawings', () => {
   })
 
   it("draws Barbarossa's 1941: two fronts, three army groups, the pockets", () => {
-    const b = byId.get('barbarossa') as HistoricalEvent
+    const b = rawById.get('barbarossa') as RawEvent
     const layers = b.drawing!.layers
     const fronts = layers.filter((l) => l.type === 'frontline')
     const thrusts = layers.filter((l) => l.type === 'thrust')
@@ -1094,15 +1142,15 @@ describe('items — drawings', () => {
   })
 
   it('gives Barbarossa a footprint that is the 1941 theatre, not all of Russia', () => {
-    const b = byId.get('barbarossa') as HistoricalEvent
+    const b = rawById.get('barbarossa') as RawEvent
     // the front never reached the Urals, let alone Kamchatka; a footprint that
     // said otherwise framed the drawing at world view
     expect(Math.max(...b.area!.map((p) => p[0]))).toBeLessThan(45)
-    expect(focusTargetFor(b)!.altitude).toBeLessThan(0.5)
+    expect(focusTargetFor(byId.get('barbarossa')!)!.altitude).toBeLessThan(0.5)
   })
 
   it('draws Normandy on the beaches: five landings between the Cotentin and the Orne', () => {
-    const d = byId.get('d-day') as HistoricalEvent
+    const d = rawById.get('d-day') as RawEvent
     const layers = d.drawing!.layers
     const thrusts = layers.filter((l) => l.type === 'thrust') as {
       path: [number, number][]

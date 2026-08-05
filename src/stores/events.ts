@@ -4,12 +4,15 @@ import {
   EventIndex,
   anchorYearOf,
   effectivePriority,
-  isEvent,
   isMinor,
+  parseItems,
   searchItems,
   type EventFilter,
   type HistoricalEvent,
   type Item,
+  type MapPin,
+  type RawItem,
+  type Subject,
 } from '../lib/events'
 import { focusTargetFor, type FocusTarget } from '../lib/geoFocus'
 import { assignTiers, type Tier } from '../lib/eventTiers'
@@ -96,16 +99,18 @@ const focusChildrenOf = (parentId: string, cap = FOCUS_CHILD_CAP): HistoricalEve
  * on screen, and opening it should no more leave the operation than opening the
  * one next to it would. `visible` keeps a pin under it either way.
  *
- * Derived pins (a person's birth, a death) are asked about too, so a life whose
- * birth pin belongs to the focused item behaves like any other part.
+ * Life markers (a person's birth, a death) are asked about too — they are pins
+ * without a `parent`, so the answer is always no, which is the correct one: a
+ * birth is related to a life, never contained by an operation.
  */
 const isPartOf = (parentId: string, id?: string): boolean => {
   if (!id) return false
+  // Only an event is *part of* anything — a life, an idea or a life marker is
+  // related to things, never contained by them (see `parent` in lib/events.ts).
   const item = index.byId.get(id)
-  // Only an event is *part of* anything — a life or an idea is related to
-  // things, never contained by them (see `parent` in lib/events.ts).
-  if (item && isEvent(item) && item.parent === parentId) return true
-  return index.pin(id)?.parent === parentId
+  if (item?.kind === 'event' && item.parent === parentId) return true
+  const pin = index.pin(id)
+  return pin?.kind === 'event' && pin.parent === parentId
 }
 
 /** The focus context the reader is in: the top of the stack. */
@@ -212,7 +217,7 @@ export const useEventStore = defineStore('events', {
      * quantised so that a pan or a zoom re-runs it a few times rather than sixty
      * times a second (lib/viewport.ts).
      */
-    visible(state): HistoricalEvent[] {
+    visible(state): MapPin[] {
       const { selection } = useTimeStore()
       const { maxEvents, showMinorEvents } = useSettingsStore()
       const view = useViewStore()
@@ -240,7 +245,7 @@ export const useEventStore = defineStore('events', {
       // are the screen.
       const focusId = topFocus(state.focusStack)
       if (focusId) {
-        const out: HistoricalEvent[] = []
+        const out: MapPin[] = []
         // The MINOR filter is lifted for the whole set: a child battle is part
         // of the thing already on the globe, and the focused item itself may
         // well be the minor pin the reader had to search for to get here.
@@ -293,15 +298,14 @@ export const useEventStore = defineStore('events', {
       return (lastTiers = assignTiers(ranked, lastTiers))
     },
     /**
-     * The item the panel shows. A derived birth/death pin is not an article of
-     * its own — selecting one opens the life it came from, while `selectedId`
-     * stays on the pin so the globe can keep highlighting the right teardrop.
+     * The item the panel shows. A life marker is not an article of its own —
+     * selecting one opens the life it came from (`EventIndex.article` is the
+     * one place that resolution lives), while `selectedId` stays on the pin so
+     * the globe can keep highlighting the right teardrop.
      */
     selected(state): Item | undefined {
       void state.revision
-      if (!state.selectedId) return undefined
-      const derivedFrom = index.pin(state.selectedId)?.derivedFrom
-      return index.byId.get(derivedFrom ?? state.selectedId)
+      return state.selectedId ? index.article(state.selectedId) : undefined
     },
     allTags: () => [...TAGS],
     /* --- the typed relation graph, as the panel reads it ------------------
@@ -331,7 +335,7 @@ export const useEventStore = defineStore('events', {
       return index.weakOf(id)
     },
     byId: (s) => (id: string) => s.all.find((e) => e.id === id),
-    /** A pin by id, derived pins included — what the globe and the panel jump to. */
+    /** A pin by id, life markers included — what the globe and the panel jump to. */
     pinById: (s) => (id: string) => {
       void s.revision
       return index.pin(id)
@@ -339,8 +343,8 @@ export const useEventStore = defineStore('events', {
     /**
      * Where the camera would have to be to show this item — `undefined` for an
      * item with no geometry at all, which is what hides the panel's "Show on
-     * map" action on a concept. Derived birth/death pins resolve too, since they
-     * are events like any other once the index has made them.
+     * map" action on a concept. Life markers resolve too: they carry a geometry
+     * of their own (a point, at the place the life began or ended).
      */
     mapTarget: (s) => (id: string): FocusTarget | undefined => {
       void s.revision
@@ -408,11 +412,11 @@ export const useEventStore = defineStore('events', {
       return id ? { itemId: id } : undefined
     },
     /** The item focus mode is on, if any — what the pill names and what draws. */
-    focused(state): Item | undefined {
+    focused(state): Subject | undefined {
       void state.revision
       const id = topFocus(state.focusStack)
-      // `pin` as well as `byId`: "Show on map" reaches derived pins (a person's
-      // birth), which are events in their own right but live outside `byId`.
+      // `pin` as well as `byId`: "Show on map" reaches life markers (a person's
+      // birth), which are pins in their own right but live outside `byId`.
       // Without the fallback the mode would be on with nothing named.
       return id ? (index.byId.get(id) ?? index.pin(id)) : undefined
     },
@@ -430,7 +434,7 @@ export const useEventStore = defineStore('events', {
      * Barbarossa"), and it is why the reader can tell they are inside something
      * rather than looking at a battle that happens to have pins around it.
      */
-    focusReturnTo(state): Item | undefined {
+    focusReturnTo(state): Subject | undefined {
       void state.revision
       const id = topFocus(state.focusStack)
       if (!id || !state.selectedId || state.selectedId === id) return undefined
@@ -471,8 +475,8 @@ export const useEventStore = defineStore('events', {
       })
     },
     /** Merge items into the store and rebuild the query index. */
-    adopt(events: Item[]) {
-      this.all = mergeEvents(this.all, events)
+    adopt(raw: RawItem[]) {
+      this.all = mergeEvents(this.all, parseItems(raw))
       index = new EventIndex(this.all)
       // A merge changes what the result set is a contest *between*, so the
       // tier memory it was holding is about a different contest. Dropping it
@@ -484,7 +488,7 @@ export const useEventStore = defineStore('events', {
     async load(file: string) {
       if (this.requested.has(file)) return
       this.requested.add(file)
-      const events = await fetchJson<Item[]>(DATA + file)
+      const events = await fetchJson<RawItem[]>(DATA + file)
       // A chunk file is an array. Anything else — an error document, a partial
       // write, a proxy's login page — is not data, and merging it would put
       // objects with no id or date into the index.
@@ -515,6 +519,10 @@ export const useEventStore = defineStore('events', {
       if (id === undefined) return this.close()
       const focusId = topFocus(this.focusStack)
       if (focusId !== undefined && focusId !== id && !isPartOf(focusId, id)) this.clearFocus()
+      // Clicking a PART of the focused item opens its article expanded, even if
+      // the context's own panel was minimised: the tap said "tell me about this
+      // one", and answering with another pill would make the user tap twice.
+      else if (focusId !== undefined && focusId !== id) this.focusExpanded = true
       this.selectedId = id
       // picking a member answers the question the cluster was asking, so it
       // closes; the selected event keeps its own pin either way.
@@ -544,6 +552,9 @@ export const useEventStore = defineStore('events', {
       }
       if (this.selectedId !== undefined && this.selectedId !== focusId) {
         this.selectedId = focusId
+        // back to the context as its pill: the child's article was the reading,
+        // and closing it should uncover the map, not swap one article for another
+        this.focusExpanded = false
         return
       }
       this.exitFocus()
@@ -560,8 +571,12 @@ export const useEventStore = defineStore('events', {
     focusBack() {
       const focusId = topFocus(this.focusStack)
       if (focusId === undefined) return
-      if (this.selectedId !== undefined && this.selectedId !== focusId) this.selectedId = focusId
-      else this.exitFocus()
+      if (this.selectedId !== undefined && this.selectedId !== focusId) {
+        this.selectedId = focusId
+        // same as close(): stepping back from a part restores the context's
+        // pill, not an article — the child's article auto-expanded on select
+        this.focusExpanded = false
+      } else this.exitFocus()
     },
     /**
      * Put the map in front: minimise the panel, draw the item's drawing, pin its

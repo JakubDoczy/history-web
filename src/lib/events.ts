@@ -1,32 +1,119 @@
 import type { Year } from './time'
 import type { Ring } from './nations'
-import type { GeoPath, PathDirection } from './paths'
+import { DEFAULT_DIRECTION, type GeoPath, type PathDirection } from './paths'
 import { drawingPoints, type Drawing } from './drawing'
 import { internalLinkIds } from './richtext'
 import { GeoGrid, SpanIndex, TopScored, separationDeg } from './queryIndex'
 import type { ViewportScope } from './viewport'
 
 /**
- * The dataset is a set of ITEMS, not only events. Three kinds share one id
- * space, one search, one panel and one link syntax — `[text](item:id)`:
+ * ============================================================================
+ * THE DOMAIN MODEL
+ * ============================================================================
+ *
+ * This file is the codebase's core type. Everything else — the store, the
+ * globe, the panel, the search, the index — is a consumer of what is declared
+ * here, so the shape of these types is the shape of the app.
+ *
+ * Three rules hold it together.
+ *
+ * ---------------------------------------------------------------------------
+ * 1. CLOSED UNIONS WITH REQUIRED DISCRIMINANTS
+ * ---------------------------------------------------------------------------
+ *
+ * There are three unions, and every member of each carries a required `kind`:
+ *
+ *     Item    = HistoricalEvent | Person | Concept      an article the app owns
+ *     MapPin  = HistoricalEvent | LifeMarker            a teardrop on the globe
+ *     Shape   = area | routes | plan                    ground an event occupies
+ *
+ * Consumers dispatch with `switch (x.kind)` closed by `assertNever`, so adding
+ * a fourth kind of anything is a compile error at every place that has to care
+ * and silent everywhere else. There are no `isFoo()` predicates: narrowing
+ * happens on the discriminant, at the point where the variants genuinely
+ * diverge. (`ofKind` exists only because `.filter` needs a callable predicate.)
+ *
+ * The three item kinds share one id space, one search, one panel and one link
+ * syntax — `[text](item:id)`:
  *
  *  - `event`   something that happened at a place and a time. Pinned on the
- *              globe and drawn on the timeline. The default kind: an entry with
- *              no `kind` is an event, which is what every entry written before
- *              this model existed relies on.
- *  - `person`  an article about a life. Not a pin of its own; the index derives
- *              up to two minor point events from it (birth and death), and
- *              clicking one of those opens the person's article.
+ *              globe and drawn on the timeline.
+ *  - `person`  an article about a life. Not a pin of its own; two LIFE MARKERS
+ *              (birth, death) are derived from it, and clicking one opens the
+ *              life.
  *  - `concept` an article about an idea. No place, and only a nominal year
  *              (`anchorYear`) so it lands in an era chunk. Reached from links
  *              and from search.
+ *
+ * ---------------------------------------------------------------------------
+ * 2. GEOMETRY IS COMPOSED, NOT A BAG OF OPTIONAL FIELDS
+ * ---------------------------------------------------------------------------
+ *
+ * An event used to carry `lat`, `lng`, `area?`, `paths?`, `direction?` and
+ * `drawing?` side by side, and every renderer sniffed for the ones it cared
+ * about. Now an event carries ONE composed value:
+ *
+ *     geometry = { anchor: LatLng, shapes: Shape[] }
+ *
+ * `anchor` is where the pin stands — always present, because a pin is what an
+ * event *is* on this map. `shapes` is the ground it occupies beyond that point,
+ * as a list of variants rather than as named optional fields, for one reason:
+ * the operations that hurt were the FOLDS. "Every coordinate this occupies"
+ * (`geometryPoints`, which frames the camera) and "how far it reaches"
+ * (`geometryRadiusDeg`, which scopes the query) used to be three presence
+ * checks each, in three different idioms, with the rules about what counts
+ * written in prose. Over a list of variants they are one exhaustive switch
+ * each, and the prose becomes a `case`.
+ *
+ * The list is canonical, not free-form, and the parser is what guarantees it:
+ * at most one shape of each kind, always in the same order. So `shapeOf(g,
+ * 'area')` is a total answer to "what is this event's footprint?", not a search
+ * — the four places that want one named component (the pin glyph, the polygon
+ * layer, the route drawing, the battle plan) ask for it by kind and get back
+ * the variant, fully typed, or `undefined`.
+ *
+ * Composition also makes the illegal states go away. `direction` lived next to
+ * `paths` and meant nothing without it — a data test existed purely to assert
+ * that no event carried one without the other. It is now a field OF the routes
+ * shape, defaulted at the boundary, so the invariant is a type rather than a
+ * test.
+ *
+ * ---------------------------------------------------------------------------
+ * 3. NORMALISE AT THE BOUNDARY, ONCE
+ * ---------------------------------------------------------------------------
+ *
+ * The JSON on disk is unchanged: flat `lat`/`lng`/`area`/`paths`/`direction`/
+ * `drawing`, and `kind` omitted on the several hundred entries written before
+ * persons and concepts existed (see scripts/build_event_chunks.py, which is the
+ * only writer, and tests/eventsData.test.ts, which is the contract). Those
+ * shapes are declared here too — `RawEvent`, `RawPerson`, `RawConcept` — and
+ * they are the ONLY place an optional kind or a loose geometry field exists.
+ *
+ * `parseItems` is the single ingestion point (called from `adopt` in
+ * stores/events.ts, and from the tests that read the chunk files). It stamps
+ * the discriminant and composes the geometry. Past it, `kind` is required and
+ * geometry is a value — no consumer defaults, no consumer sniffs.
+ *
+ * ---------------------------------------------------------------------------
+ * PINS ARE THEIR OWN UNION
+ * ---------------------------------------------------------------------------
+ *
+ * A birth pin used to be a `HistoricalEvent` with a runtime-only `derivedFrom`
+ * string on it, tested for by presence. It is now `LifeMarker`, a second member
+ * of `MapPin`, holding the `Person` it came from. What was "if this string is
+ * set, the pin is a lie about an article" is now a variant that cannot be
+ * mistaken for an event: markers are pinnable but not articles, so they are in
+ * `MapPin` and NOT in `Item` — which is exactly why they have never been in
+ * `byId`, in search, or in the panel.
  */
+
+/* ========================================================== the item union */
+
 export type ItemKind = 'event' | 'person' | 'concept'
 
-/** What every item carries, whatever its kind. */
+/** What every item carries, whatever its kind. Also the shape of a raw entry. */
 export interface ItemBase {
   id: string
-  kind?: ItemKind
   name: string
   /**
    * Ranking position, derived by scripts/build_event_chunks.py from
@@ -67,45 +154,104 @@ export interface ItemBase {
   weak?: string[]
 }
 
-export interface HistoricalEvent extends ItemBase {
-  kind?: 'event'
-  start: Year
-  end?: Year // omitted = instantaneous
+/* ---------------------------------------------------------------- geometry */
+
+export interface LatLng {
   lat: number
   lng: number
-  /** Optional polygon (GeoJSON [lng, lat] order) for area events; lat/lng then acts as centroid. */
-  area?: Ring
+}
+
+/**
+ * Ground an event occupies beyond its anchor. A closed union — each member is
+ * self-contained, carrying everything that shape needs and nothing another one
+ * does.
+ */
+export type Shape =
   /**
-   * Optional route geometry: one or more polylines in GeoJSON [lng, lat] order
-   * (see lib/paths.ts for why this is always an array, never a bare `path`).
+   * A footprint: a polygon in GeoJSON [lng, lat] order. The anchor then acts as
+   * its centroid — the pin stands *in* the region rather than beside it.
+   */
+  | { kind: 'area'; ring: Ring }
+  /**
+   * Route geometry: one or more polylines in GeoJSON [lng, lat] order (see
+   * lib/paths.ts for why this is always an array, never a bare `path`), plus
+   * whether they have a direction (`PathDirection`).
    *
    * A path event is a pin like any other until it is opened; selecting it draws
    * the routes on the globe, and deselecting removes them again — the same
-   * lifecycle the selected area polygon has. `lat`/`lng` stays the place the
-   * pin stands, and by convention it stands *on* the route (the Strait of
-   * Magellan for the circumnavigation, Nanjing for the treasure fleets).
-   *
-   * An event may carry both `area` and `paths`; both are drawn when it is
-   * selected. The Atlantic slave trade is the case that asked for it — three
-   * legs of a triangle over the basin the whole system worked across.
+   * lifecycle the selected footprint has. The anchor stays the place the pin
+   * stands, and by convention it stands *on* the route (the Strait of Magellan
+   * for the circumnavigation, Nanjing for the treasure fleets).
    */
-  paths?: GeoPath[]
-  /**
-   * Whether the routes have a direction — see `PathDirection` in lib/paths.ts.
-   * Absent means `oneway`, so a voyage need not say so; a trade network must.
-   */
-  direction?: PathDirection
+  | { kind: 'routes'; paths: GeoPath[]; direction: PathDirection }
   /**
    * An operational overlay: frontlines, thrusts, markers and labels, drawn when
    * the item is shown on the map. See lib/drawing.ts for the schema and
    * lib/drawingLayer.ts for what puts it on the globe.
    *
-   * Unlike `area` and `paths`, this does NOT draw on a plain selection. A battle
-   * plan is a lot of ink, and clicking a pin is a glance; "Show on map" is the
-   * request to *study* the thing, and it is what puts the panel out of the way
-   * (see `focus` in stores/events.ts) so there is something to study.
+   * Unlike the other two, this does NOT draw on a plain selection. A battle plan
+   * is a lot of ink, and clicking a pin is a glance; "Show on map" is the request
+   * to *study* the thing, and it is what puts the panel out of the way (see
+   * `focus` in stores/events.ts) so there is something to study.
    */
-  drawing?: Drawing
+  | { kind: 'plan'; drawing: Drawing }
+
+export type ShapeKind = Shape['kind']
+export type ShapeOfKind<K extends ShapeKind> = Extract<Shape, { kind: K }>
+
+/** Where an event's pin stands, and every shape it draws around that point. */
+export interface EventGeometry {
+  anchor: LatLng
+  /**
+   * At most one shape of each kind, always in the order area → routes → plan.
+   * Both halves of that are guaranteed by `parseGeometry`, and both are load
+   * bearing: uniqueness is what makes `shapeOf` a lookup rather than a search,
+   * and the order is what makes a fold over the list deterministic —
+   * `geometryPoints` feeds the camera fit, whose answer must not depend on the
+   * order the parser happened to see fields in.
+   *
+   * An event may carry all three at once. The Atlantic slave trade is the case
+   * that asked for it: a basin, three legs of a triangle over it, and both
+   * drawn when it is selected.
+   */
+  shapes: Shape[]
+}
+
+/**
+ * The one named component, by kind — typed, total, and the only lookup the
+ * shape list needs. `undefined` means the event has no shape of that kind, which
+ * is the whole of what the old `if (e.area)` was trying to say.
+ */
+export const shapeOf = <K extends ShapeKind>(
+  g: EventGeometry,
+  kind: K,
+): ShapeOfKind<K> | undefined => g.shapes.find((s): s is ShapeOfKind<K> => s.kind === kind)
+
+/** A geometry with nothing but a pin: the common case, and every life marker. */
+export const pointGeometry = (lat: number, lng: number): EventGeometry => ({
+  anchor: { lat, lng },
+  shapes: [],
+})
+
+/* ------------------------------------------------------------- the variants */
+
+/**
+ * The fields a thing needs to be a teardrop on the globe: an id, a name to
+ * label it, a moment in time to be culled by, a place to stand, and a rank to
+ * be ordered by. Shared by the two members of `MapPin`.
+ */
+export interface PinFields {
+  id: string
+  name: string
+  start: Year
+  end?: Year // omitted = instantaneous
+  geometry: EventGeometry
+  priority: number
+  tags: string[]
+}
+
+export interface HistoricalEvent extends ItemBase, PinFields {
+  kind: 'event'
   /**
    * HIERARCHICAL CONTAINMENT: the one relation with a direction. A battle is
    * part of an operation, an operation part of a war. At most one parent, it
@@ -117,12 +263,6 @@ export interface HistoricalEvent extends ItemBase {
    * wins over `weak` (see `buildRelations`).
    */
   parent?: string
-  /**
-   * Set only on events the index derives from a person (see `derivedEventsFor`).
-   * Never present in the data files; it is what makes a birth pin open the
-   * life it belongs to rather than a stub article about the birth.
-   */
-  derivedFrom?: string
 }
 
 /** Where a life began or ended. `label` is what the panel's chip says. */
@@ -148,10 +288,146 @@ export interface Concept extends ItemBase {
 
 export type Item = HistoricalEvent | Person | Concept
 
-export const kindOf = (i: Item): ItemKind => i.kind ?? 'event'
-export const isEvent = (i: Item): i is HistoricalEvent => kindOf(i) === 'event'
-export const isPerson = (i: Item): i is Person => i.kind === 'person'
-export const isConcept = (i: Item): i is Concept => i.kind === 'concept'
+export type LifeMoment = 'birth' | 'death'
+
+/**
+ * A point on the globe derived from a life — the place it began or ended.
+ *
+ * Pinnable but not an article: it carries no summary, no body and no relations,
+ * because it *is* the person as far as the reader is concerned (`of` is what a
+ * click opens). That is why it is a member of `MapPin` and not of `Item`, and
+ * why its id — `${person.id}--birth` — exists nowhere in the data.
+ */
+export interface LifeMarker extends PinFields {
+  kind: 'life-marker'
+  moment: LifeMoment
+  /** The life it was cut from. The article a click on this pin opens. */
+  of: Person
+}
+
+/** Everything that can be a teardrop: the events, plus every life's two ends. */
+export type MapPin = HistoricalEvent | LifeMarker
+
+/**
+ * Anything the app can name, locate or fly to — an article, or a pin standing
+ * in for one. The store's `selected`/`focused` getters and the camera fit are
+ * all in these terms, because a birth pin is a legitimate thing to look at and
+ * is not an `Item`.
+ */
+export type Subject = Item | LifeMarker
+
+/**
+ * The closer on every `switch` over a variant. Unreachable by construction: if
+ * it compiles, the switch was exhaustive, and if it ever runs the data lied
+ * about its own discriminant.
+ */
+export function assertNever(x: never): never {
+  throw new Error(`unhandled variant: ${JSON.stringify(x)}`)
+}
+
+/**
+ * A predicate for `.filter`, which needs a callable one. This is the only
+ * concession to `isFoo` in the codebase — it is a discriminant check with a
+ * signature, not a rule about what a kind is, and everything that is not a
+ * filter narrows inline with `switch` or `===`.
+ */
+export const ofKind =
+  <K extends ItemKind>(kind: K) =>
+  (i: Item): i is Extract<Item, { kind: K }> =>
+    i.kind === kind
+
+/* ============================================== the boundary: raw JSON in */
+
+/**
+ * An event as it is written in a chunk file: flat geometry, and a `kind` that
+ * may be missing entirely.
+ *
+ * The missing kind is load-bearing back-compat, not laziness — every entry
+ * authored before persons and concepts existed says nothing about its kind, and
+ * `parseItem` is what decides (as it always did) that such an entry is an event.
+ */
+export interface RawEvent extends ItemBase {
+  kind?: 'event'
+  start: Year
+  end?: Year
+  lat: number
+  lng: number
+  area?: Ring
+  paths?: GeoPath[]
+  /** Absent means `oneway`; see `DEFAULT_DIRECTION` in lib/paths.ts. */
+  direction?: PathDirection
+  drawing?: Drawing
+  parent?: string
+}
+
+export interface RawPerson extends ItemBase {
+  kind: 'person'
+  born: Year
+  died?: Year
+  birthPlace?: Place
+  deathPlace?: Place
+}
+
+export interface RawConcept extends ItemBase {
+  kind: 'concept'
+  anchorYear: Year
+}
+
+export type RawItem = RawEvent | RawPerson | RawConcept
+
+/**
+ * Compose the flat fields into the geometry value.
+ *
+ * Empty is empty: an `area: []` or a `paths: []` produces no shape at all,
+ * which is what every consumer's old `!!e.area?.length` test meant. A
+ * `direction` with no paths to belong to is dropped here rather than carried as
+ * a field that means nothing.
+ */
+export function parseGeometry(raw: RawEvent): EventGeometry {
+  const shapes: Shape[] = []
+  // area → routes → plan, which is the order every fold will see them in
+  if (raw.area?.length) shapes.push({ kind: 'area', ring: raw.area })
+  if (raw.paths?.length)
+    shapes.push({
+      kind: 'routes',
+      paths: raw.paths,
+      direction: raw.direction ?? DEFAULT_DIRECTION,
+    })
+  if (raw.drawing) shapes.push({ kind: 'plan', drawing: raw.drawing })
+  return { anchor: { lat: raw.lat, lng: raw.lng }, shapes }
+}
+
+/**
+ * The single ingestion point. Stamps the discriminant, composes the geometry,
+ * and drops the flat fields — past here nothing in the app can read `e.lat` or
+ * `e.paths`, because they no longer exist.
+ *
+ * Anything that is not declared a person or a concept is an event. That is the
+ * back-compat default, and it is deliberately total rather than exhaustive: a
+ * chunk with a `kind` this build has never heard of must still land on the map
+ * as best it can, not throw the whole file out.
+ */
+export function parseItem(raw: RawItem): Item {
+  switch (raw.kind) {
+    case 'person':
+      return { ...raw, kind: 'person' }
+    case 'concept':
+      return { ...raw, kind: 'concept' }
+    default: {
+      const ev = raw as RawEvent
+      // The flat geometry fields are destructured OUT and re-composed. Past
+      // this line they exist only inside `geometry`, so no consumer can read an
+      // event's `lat` or `paths` even by accident — which is what makes the
+      // model closed rather than merely preferred.
+      const { lat, lng, area, paths, direction, drawing, ...rest } = ev
+      return { ...rest, kind: 'event', geometry: parseGeometry(ev) }
+    }
+  }
+}
+
+export const parseItems = (raw: RawItem[]): Item[] => raw.map(parseItem)
+
+/* ================================================= folds over the model */
 
 /**
  * The priority of an item that is not on the ranking list. Minor items are off
@@ -162,91 +438,83 @@ export const isConcept = (i: Item): i is Concept => i.kind === 'concept'
 export const MINOR_PRIORITY = 0
 export const isMinor = (i: { priority: number }) => i.priority <= MINOR_PRIORITY
 
-/** The year an item sits at: an event starts, a person is born, a concept is anchored. */
-export function anchorYearOf(i: Item): Year {
-  if (isPerson(i)) return i.born
-  if (isConcept(i)) return i.anchorYear
-  return i.start
+/** The year a subject sits at: an event starts, a person is born, an idea anchors. */
+export function anchorYearOf(i: Subject): Year {
+  switch (i.kind) {
+    case 'event':
+    case 'life-marker':
+      return i.start
+    case 'person':
+      return i.born
+    case 'concept':
+      return i.anchorYear
+    default:
+      return assertNever(i)
+  }
+}
+
+/** The span a subject occupies on the timeline — a point for anything instantaneous. */
+export function timeExtentOf(i: Subject): [Year, Year] {
+  switch (i.kind) {
+    case 'event':
+    case 'life-marker':
+      return [i.start, i.end ?? i.start]
+    case 'person':
+      return [i.born, i.died ?? i.born]
+    case 'concept':
+      return [i.anchorYear, i.anchorYear]
+    default:
+      return assertNever(i)
+  }
 }
 
 /**
- * Every coordinate an item occupies, `[lng, lat]` each — its pin, its footprint
- * and its routes. What "show this on the map" is framed on (lib/geoFocus.ts).
+ * Every coordinate a geometry occupies, `[lng, lat]` each — its pin, its
+ * footprint, its routes and its plan. What "show this on the map" is framed on
+ * (lib/geoFocus.ts).
  *
- * A person contributes the place their life began (or ended, if that is the only
- * one recorded); a concept contributes nothing, which is what leaves it with no
- * map action at all.
+ * The plan counts, and it is the case that makes the fold worth having: D-Day
+ * is a pin and a battle plan across a coastline, with no footprint and no route,
+ * so the plan is the only thing that says how big it is.
  */
-export function geometryPointsOf(item: Item): GeoPath {
-  if (isPerson(item)) {
-    const p = item.birthPlace ?? item.deathPlace
-    return p ? [[p.lng, p.lat]] : []
-  }
-  if (isConcept(item)) return []
-  const out: GeoPath = [[item.lng, item.lat]]
-  if (item.area) out.push(...item.area)
-  for (const path of item.paths ?? []) out.push(...path)
-  // …and its drawing, which for an event like D-Day is the only geometry it has
-  // beyond the pin: no footprint, no route, and a plan that spans a coastline.
-  out.push(...drawingPoints(item.drawing))
+export function geometryPoints(g: EventGeometry): GeoPath {
+  const out: GeoPath = [[g.anchor.lng, g.anchor.lat]]
+  for (const s of g.shapes)
+    switch (s.kind) {
+      case 'area':
+        out.push(...s.ring)
+        break
+      case 'routes':
+        for (const path of s.paths) out.push(...path)
+        break
+      case 'plan':
+        out.push(...drawingPoints(s.drawing))
+        break
+      default:
+        assertNever(s)
+    }
   return out
 }
-
-/** The span an item occupies on the timeline — a point for anything instantaneous. */
-export function timeExtentOf(i: Item): [Year, Year] {
-  if (isPerson(i)) return [i.born, i.died ?? i.born]
-  if (isConcept(i)) return [i.anchorYear, i.anchorYear]
-  return [i.start, i.end ?? i.start]
-}
-
-/* ------------------------------------------------------------ derived pins */
-
-/** `${personId}${DERIVED_SUFFIX.birth}` etc. — a derived pin's id. */
-export const DERIVED_SUFFIX = { birth: '--birth', death: '--death' } as const
 
 /**
- * The point events a person contributes to the globe.
- *
- * A life is an article, not a pin — but a birth and a death *are* events at a
- * place and a time, and the map is poorer for leaving them off. So the index
- * synthesises them rather than the data duplicating them: nothing in the files
- * says "Birth of Einstein", and editing the person moves the pin.
- *
- * They are minor-tier by construction. Two pins per person over a corpus of
- * lives would swamp the globe at the default cap, and a birth is rarely the
- * most important thing in its window; the ranking list governs the *person*,
- * and the pins ride along when minor events are shown.
- *
- * No place, no pin: a coordinate is not something to guess at.
+ * Every coordinate a subject occupies. A person contributes the place their
+ * life began (or ended, if that is the only one recorded); a concept
+ * contributes nothing, which is what leaves it with no map action at all.
  */
-export function derivedEventsFor(p: Person): HistoricalEvent[] {
-  const make = (suffix: string, name: string, year: Year, place: Place): HistoricalEvent => ({
-    id: p.id + suffix,
-    name,
-    start: year,
-    lat: place.lat,
-    lng: place.lng,
-    priority: MINOR_PRIORITY,
-    tags: p.tags,
-    summary: place.label ? `${name}, at ${place.label}.` : `${name}.`,
-    derivedFrom: p.id,
-  })
-  const out: HistoricalEvent[] = []
-  if (p.birthPlace)
-    out.push(make(DERIVED_SUFFIX.birth, `Birth of ${p.name}`, p.born, p.birthPlace))
-  if (p.died !== undefined && p.deathPlace)
-    out.push(make(DERIVED_SUFFIX.death, `Death of ${p.name}`, p.died, p.deathPlace))
-  return out
-}
-
-/** Everything that can carry a pin: real events, plus every person's derived pair. */
-export function pinnableEvents(items: Item[]): HistoricalEvent[] {
-  const out: HistoricalEvent[] = []
-  for (const i of items) {
-    if (isEvent(i)) out.push(i)
-    else if (isPerson(i)) out.push(...derivedEventsFor(i))
+export function geometryPointsOf(i: Subject): GeoPath {
+  switch (i.kind) {
+    case 'event':
+    case 'life-marker':
+      return geometryPoints(i.geometry)
+    case 'person': {
+      const p = i.birthPlace ?? i.deathPlace
+      return p ? [[p.lng, p.lat]] : []
+    }
+    case 'concept':
+      return []
+    default:
+      return assertNever(i)
   }
-  return out
 }
 
 /* --------------------------------------------------------------- relations */
@@ -318,7 +586,9 @@ export function buildRelations(items: Item[], byId: Map<string, Item>): Relation
   /** id → the pair it is already in a *hierarchical* relation with. */
   const family = new Map<string, Set<string>>()
   for (const i of items) {
-    if (!isEvent(i) || !i.parent || i.parent === i.id || !byId.has(i.parent)) continue
+    // only an event is contained by anything: a life or an idea is *related* to
+    // things, never a part of them, which is why `parent` is an event's field
+    if (i.kind !== 'event' || !i.parent || i.parent === i.id || !byId.has(i.parent)) continue
     const list = children.get(i.parent)
     if (list) list.push(i)
     else children.set(i.parent, [i])
@@ -360,29 +630,96 @@ export function buildRelations(items: Item[], byId: Map<string, Item>): Relation
   return { children, strong, weak }
 }
 
+/* ------------------------------------------------------------ life markers */
+
+/** `${personId}${LIFE_MARKER_SUFFIX.birth}` etc. — a life marker's id. */
+export const LIFE_MARKER_SUFFIX: Record<LifeMoment, string> = {
+  birth: '--birth',
+  death: '--death',
+}
+
+/**
+ * The pins a person contributes to the globe.
+ *
+ * A life is an article, not a pin — but a birth and a death *are* points at a
+ * place and a time, and the map is poorer for leaving them off. So the index
+ * synthesises them rather than the data duplicating them: nothing in the files
+ * says "Birth of Einstein", and editing the person moves the pin.
+ *
+ * They are minor-tier by construction. Two pins per person over a corpus of
+ * lives would swamp the globe at the default cap, and a birth is rarely the
+ * most important thing in its window; the ranking list governs the *person*,
+ * and the pins ride along when minor events are shown.
+ *
+ * No place, no pin: a coordinate is not something to guess at.
+ */
+export function lifeMarkersFor(p: Person): LifeMarker[] {
+  const make = (moment: LifeMoment, year: Year, place: Place): LifeMarker => ({
+    kind: 'life-marker',
+    id: p.id + LIFE_MARKER_SUFFIX[moment],
+    moment,
+    of: p,
+    name: `${moment === 'birth' ? 'Birth' : 'Death'} of ${p.name}`,
+    start: year,
+    geometry: pointGeometry(place.lat, place.lng),
+    priority: MINOR_PRIORITY,
+    tags: p.tags,
+  })
+  const out: LifeMarker[] = []
+  if (p.birthPlace) out.push(make('birth', p.born, p.birthPlace))
+  if (p.died !== undefined && p.deathPlace) out.push(make('death', p.died, p.deathPlace))
+  return out
+}
+
+/** Everything that can carry a pin: real events, plus every life's markers. */
+export function mapPinsOf(items: Item[]): MapPin[] {
+  const out: MapPin[] = []
+  for (const i of items)
+    switch (i.kind) {
+      case 'event':
+        out.push(i)
+        break
+      case 'person':
+        out.push(...lifeMarkersFor(i))
+        break
+      case 'concept':
+        break // an idea has no place to stand
+      default:
+        assertNever(i)
+    }
+  return out
+}
+
 /* --------------------------------------------------------------- filtering */
 
 export interface EventFilter {
-  tags?: string[] // event must carry at least one
-  parent?: string // event must be the parent itself or a descendant
-  /** Include minor-tier (unranked) events. Off by default — see MINOR_PRIORITY. */
+  tags?: string[] // pin must carry at least one
+  parent?: string // pin must be the parent itself or a descendant
+  /** Include minor-tier (unranked) pins. Off by default — see MINOR_PRIORITY. */
   minor?: boolean
 }
 
-const intersects = (e: HistoricalEvent, start: Year, end: Year) =>
+const intersects = (e: MapPin, start: Year, end: Year) =>
   e.start <= end && (e.end ?? e.start) >= start
 
-const isUnder = (e: HistoricalEvent, root: string, byId: Map<string, Item>) => {
-  for (
-    let cur: HistoricalEvent | undefined = e;
-    cur;
-    cur = cur.parent ? (byId.get(cur.parent) as HistoricalEvent | undefined) : undefined
-  )
+/**
+ * Is this pin the filter's root, or somewhere under it?
+ *
+ * A life marker terminates the walk immediately: containment is an event's
+ * relation, so a birth is never *part of* anything (it is only ever related to
+ * the life it came from).
+ */
+const isUnder = (e: MapPin, root: string, byId: ReadonlyMap<string, Subject>) => {
+  for (let cur: MapPin | undefined = e; cur; ) {
     if (cur.id === root) return true
+    if (cur.kind !== 'event' || !cur.parent) return false
+    const next = byId.get(cur.parent)
+    cur = next?.kind === 'event' ? next : undefined
+  }
   return false
 }
 
-const passes = (e: HistoricalEvent, filter: EventFilter, byId: Map<string, Item>) =>
+const passes = (e: MapPin, filter: EventFilter, byId: ReadonlyMap<string, Subject>) =>
   (filter.minor || !isMinor(e)) &&
   (!filter.tags?.length || e.tags.some((t) => filter.tags!.includes(t))) &&
   (!filter.parent || isUnder(e, filter.parent, byId))
@@ -493,13 +830,13 @@ export function coveragePenalty(
 
 /** Priority as the culling sees it: rank, discounted by how much of the event
  *  the selection actually holds. */
-export const effectivePriority = (e: HistoricalEvent, start: Year, end: Year): number =>
+export const effectivePriority = (e: MapPin, start: Year, end: Year): number =>
   e.priority * coveragePenalty(e.start, e.end ?? e.start, start, end)
 
 /* ------------------------------------------------------- viewport scoping */
 
 /**
- * How far an area event reaches from its centroid, in degrees of arc.
+ * How far a geometry reaches from its anchor, in degrees of arc.
  *
  * An area event is indexed as a point (its centroid) plus this radius, so a
  * plague whose centroid is off screen is still found when its footprint is on
@@ -508,37 +845,54 @@ export const effectivePriority = (e: HistoricalEvent, start: Year, end: Year): n
  * against the same circle either way, and the alternative (testing the polygon)
  * would pay for precision no one can see at pin scale.
  *
- * `paths` deliberately do NOT widen it, though they are geometry too. A route
- * is drawn only when its event is selected, and a selected pin is kept by the
- * store whatever the camera is doing (`EventIndex.admits` ignores the scope) —
- * so counting the route here would buy nothing on screen and cost a great deal:
- * a circumnavigation's radius is most of the planet, which would put its pin in
- * the top-N contest in *every* frame, at a spot the camera is not looking at.
+ * The `case` list is the specification, and the two shapes that contribute
+ * NOTHING are the interesting half of it (they used to be a paragraph of
+ * comment on a field nobody had to read):
+ *
+ *  · `routes` — a route is drawn only when its event is selected, and a
+ *    selected pin is kept by the store whatever the camera is doing
+ *    (`EventIndex.admits` ignores the scope). Counting it here would buy
+ *    nothing on screen and cost a great deal: a circumnavigation's radius is
+ *    most of the planet, which would put its pin in the top-N contest in
+ *    *every* frame, at a spot the camera is not looking at.
+ *  · `plan` — the same argument, one step stronger: a plan draws only in focus
+ *    mode, which does not run this query at all.
  */
-export function eventRadiusDeg(e: HistoricalEvent): number {
-  if (!e.area?.length) return 0
+export function geometryRadiusDeg(g: EventGeometry): number {
+  const { lat, lng } = g.anchor
   let max = 0
-  for (const [lng, lat] of e.area) {
-    const d = separationDeg(e.lat, e.lng, lat, lng)
-    if (d > max) max = d
-  }
+  for (const s of g.shapes)
+    switch (s.kind) {
+      case 'area':
+        for (const [plng, plat] of s.ring) {
+          const d = separationDeg(lat, lng, plat, plng)
+          if (d > max) max = d
+        }
+        break
+      case 'routes':
+      case 'plan':
+        break // deliberately no reach: see above
+      default:
+        assertNever(s)
+    }
   return max
 }
 
-/** Is this event inside the visible circle (footprint included)? */
-export const inScope = (e: HistoricalEvent, scope: ViewportScope): boolean =>
-  separationDeg(scope.lat, scope.lng, e.lat, e.lng) <= scope.radiusDeg + eventRadiusDeg(e)
+/** Is this pin inside the visible circle (footprint included)? */
+export const inScope = (e: MapPin, scope: ViewportScope): boolean =>
+  separationDeg(scope.lat, scope.lng, e.geometry.anchor.lat, e.geometry.anchor.lng) <=
+  scope.radiusDeg + geometryRadiusDeg(e.geometry)
 
-/** Events in the time window, matching filters, top `cap` by effective priority. */
+/** Pins in the time window, matching filters, top `cap` by effective priority. */
 export function visibleEvents(
-  events: HistoricalEvent[],
+  events: MapPin[],
   start: Year,
   end: Year,
   filter: EventFilter = {},
   cap = 100,
   scope?: ViewportScope,
-): HistoricalEvent[] {
-  const byId = new Map<string, Item>(events.map((e) => [e.id, e]))
+): MapPin[] {
+  const byId = new Map<string, MapPin>(events.map((e) => [e.id, e]))
   return events
     .filter((e) => intersects(e, start, end))
     .filter((e) => !scope || inScope(e, scope))
@@ -605,7 +959,7 @@ export function chooseQueryPlan(o: {
  *
  * It holds every item (so links, search and the panel can reach a person or a
  * concept) but queries only what can be pinned: real events plus the birth and
- * death points derived from each person.
+ * death markers derived from each person.
  *
  * One canonical order runs through the whole thing: `byPriority`, best first.
  * It is the scan order of the cheapest plan, it is the tie-break in every
@@ -618,16 +972,16 @@ export class EventIndex {
   readonly items: Item[]
   readonly byId: Map<string, Item>
   /**
-   * The pins that are *not* in `byId`: the birth and death points derived from
+   * The pins that are *not* in `byId`: the birth and death markers derived from
    * each person, whose ids exist nowhere in the data.
    *
    * This used to be every pin, real ones included — a second map the size of
    * the corpus, holding what `byId` already held. At 68 000 items that copy
    * cost 10 ms of the build to answer a question `byId` can answer with one
-   * extra `isEvent` check (see `pin`).
+   * discriminant check (see `pin`).
    */
-  private derivedPins: Map<string, HistoricalEvent>
-  private byPriority: HistoricalEvent[]
+  private markers: Map<string, LifeMarker>
+  private byPriority: MapPin[]
   /** Time spans of `byPriority`, by magnitude bucket (lib/queryIndex.ts). */
   private spans: SpanIndex
   /** Locations of `byPriority`, on a lat/lng grid; areas by centroid + radius. */
@@ -651,16 +1005,15 @@ export class EventIndex {
     this.byId = new Map()
     for (const i of items) this.byId.set(i.id, i)
     this.relations = buildRelations(items, this.byId)
-    const pins = pinnableEvents(items)
-    this.derivedPins = new Map()
-    for (const p of pins) if (p.derivedFrom) this.derivedPins.set(p.id, p)
-    // Every derived pin sits at MINOR_PRIORITY, so within the minor tier the
+    const pins = mapPinsOf(items)
+    this.markers = new Map()
+    for (const p of pins) if (p.kind === 'life-marker') this.markers.set(p.id, p)
+    // Every life marker sits at MINOR_PRIORITY, so within the minor tier the
     // rank of the *person* is the only thing left to sort on — which is what
     // makes ranking a life worth doing even though a life carries no pin of
     // its own: when minor pins are shown and the cap bites, Einstein's birth
     // survives and an unranked figure's does not.
-    const rank = (e: HistoricalEvent) =>
-      e.derivedFrom ? (this.byId.get(e.derivedFrom)?.priority ?? 0) : e.priority
+    const rank = (e: MapPin) => (e.kind === 'life-marker' ? e.of.priority : e.priority)
     this.byPriority = [...pins].sort((a, b) => b.priority - a.priority || rank(b) - rank(a))
     // One pass fills the columns both indexes are built from. Building them
     // from arrays of little objects instead cost 17 ms per 68 000 events in
@@ -677,9 +1030,9 @@ export class EventIndex {
       const f = e.end ?? s
       starts[i] = Math.min(s, f)
       ends[i] = Math.max(s, f)
-      lats[i] = e.lat
-      lngs[i] = e.lng
-      radii[i] = eventRadiusDeg(e)
+      lats[i] = e.geometry.anchor.lat
+      lngs[i] = e.geometry.anchor.lng
+      radii[i] = geometryRadiusDeg(e.geometry)
     }
     this.spans = SpanIndex.fromColumns(starts, ends)
     this.geo = GeoGrid.fromColumns(lats, lngs, radii)
@@ -724,7 +1077,7 @@ export class EventIndex {
     filter: EventFilter = {},
     cap = 100,
     scope?: ViewportScope,
-  ): HistoricalEvent[] {
+  ): MapPin[] {
     if (cap <= 0) return []
     const n = this.byPriority.length
     const timeHits = this.spans.countIntersecting(start, end)
@@ -737,8 +1090,8 @@ export class EventIndex {
     const fallback: QueryPlan = spaceCost <= timeCost ? 'space' : 'time'
     const fallbackCost = Math.min(spaceCost, timeCost)
 
-    const run = (chosen: QueryPlan): HistoricalEvent[] | undefined => {
-      const top = new TopScored<HistoricalEvent>(cap)
+    const run = (chosen: QueryPlan): MapPin[] | undefined => {
+      const top = new TopScored<MapPin>(cap)
       // The space plan's enumeration *is* the membership test, so only the
       // other two pay for one.
       const testScope = chosen === 'space' ? undefined : scope
@@ -777,13 +1130,22 @@ export class EventIndex {
     return run(plan) ?? run(fallback)!
   }
 
-  /** The pin carrying an id — a real event, or one derived from a person. */
-  pin(id: string): HistoricalEvent | undefined {
+  /** The pin carrying an id — a real event, or a marker derived from a life. */
+  pin(id: string): MapPin | undefined {
     const item = this.byId.get(id)
-    // a person or a concept carries no pin of its own, and a derived id is in
+    // a person or a concept carries no pin of its own, and a marker's id is in
     // neither the data nor `byId`
-    if (item) return isEvent(item) ? item : undefined
-    return this.derivedPins.get(id)
+    if (item) return item.kind === 'event' ? item : undefined
+    return this.markers.get(id)
+  }
+
+  /**
+   * The ARTICLE behind an id: the item itself, or — for a life marker — the
+   * life it was cut from. What the panel opens when a birth pin is clicked.
+   */
+  article(id: string): Item | undefined {
+    const pin = this.markers.get(id)
+    return pin ? pin.of : this.byId.get(id)
   }
 
   /**
@@ -798,7 +1160,7 @@ export class EventIndex {
    * those would be the same mistake in the other direction; both have hidden a
    * selected pin since long before this, and both still do.
    */
-  admits(id: string, start: Year, end: Year, filter: EventFilter = {}): HistoricalEvent | undefined {
+  admits(id: string, start: Year, end: Year, filter: EventFilter = {}): MapPin | undefined {
     const pin = this.pin(id)
     if (!pin || !intersects(pin, start, end)) return undefined
     return passes(pin, filter, this.byId) ? pin : undefined
@@ -828,10 +1190,10 @@ export class EventIndex {
     const out: HistoricalEvent[] = []
     const seen = new Set<string>([id])
     let cur = this.byId.get(id)
-    while (cur && isEvent(cur) && cur.parent && !seen.has(cur.parent)) {
+    while (cur?.kind === 'event' && cur.parent && !seen.has(cur.parent)) {
       seen.add(cur.parent)
       const next = this.byId.get(cur.parent)
-      if (!next || !isEvent(next)) break
+      if (next?.kind !== 'event') break
       out.push(next)
       cur = next
     }

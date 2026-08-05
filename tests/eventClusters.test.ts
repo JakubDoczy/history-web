@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { HistoricalEvent } from '../src/lib/events'
+import { parseItem, type HistoricalEvent, type RawEvent } from '../src/lib/events'
 import {
   angularSeparationDeg,
   clusterEvents,
@@ -22,9 +22,10 @@ import {
 } from '../src/lib/eventClusters'
 import { degPerScreenPx, viewSpanDeg } from '../src/lib/detailImagery'
 
-const ev = (id: string, o: Partial<HistoricalEvent> = {}): HistoricalEvent => ({
-  id, name: id, start: 0, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: '', ...o,
-})
+const ev = (id: string, o: Partial<RawEvent> = {}): HistoricalEvent =>
+  parseItem({
+    id, name: id, start: 0, lat: 0, lng: 0, priority: 50, tags: ['war'], summary: '', ...o,
+  }) as HistoricalEvent
 
 /** Roughly world view (altitude 2.5), and a street-level view of one city. */
 const WORLD_SPAN = 147

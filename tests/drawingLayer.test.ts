@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { BufferGeometry, Mesh, Scene, Vector3 } from 'three'
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
+import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import {
   DrawingLayer,
@@ -367,21 +368,36 @@ describe('DrawingLayer routes', () => {
         !(c.material as LineMaterial).dashed &&
         (c.material as LineMaterial).linewidth === ROUTE_STYLE.haloStroke,
     )
-  /** The port dots: zero-length fat lines, which render as screen-space discs. */
+  /**
+   * The port dots: zero-length fat lines, which render as screen-space discs.
+   *
+   * `LineSegments2`, not `Line2` — both ports of a route now share one object
+   * (two disjoint zero-length segments), which is one draw call instead of two.
+   * `Line2` extends `LineSegments2`, so this matches either shape.
+   */
   const portDots = (layer: DrawingLayer) =>
     layer.object.children.filter(
-      (c): c is Line2 =>
-        c instanceof Line2 &&
+      (c): c is LineSegments2 =>
+        c instanceof LineSegments2 &&
         !(c.material as LineMaterial).dashed &&
         (c.material as LineMaterial).linewidth !== ROUTE_STYLE.haloStroke,
     )
 
+  /** The taper ramp a stroke carries per vertex; see setTaper in the layer. */
+  const taper = (l: LineSegments2) => {
+    const a = l.geometry.getAttribute('instanceTaperStart')
+    const b = l.geometry.getAttribute('instanceTaperEnd')
+    return [...Array(a.count).keys()].map((i) => a.getX(i)).concat(b.getX(b.count - 1))
+  }
+
   it('puts a dot on each port, sized in screen pixels like the line', () => {
     const layer = new DrawingLayer(new Scene(), R)
     layer.set(oneway, { color: '#e5a54d' })
-    // two ends, each a dark disc under a bright one
+    // two ends, each a dark disc under a bright one — in two objects, one per
+    // layer, each holding both ports
     const dots = portDots(layer)
-    expect(dots).toHaveLength(4)
+    expect(dots).toHaveLength(2)
+    for (const d of dots) expect(d.geometry.getAttribute('instanceStart').count).toBe(2)
     const widths = dots.map((d) => (d.material as LineMaterial).linewidth)
     for (const w of widths) expect(w).toBeGreaterThan(ROUTE_STYLE.stroke)
     // A zero-length fat line IS the disc: both of its vertices are the same
@@ -398,11 +414,15 @@ describe('DrawingLayer routes', () => {
     layer.dispose()
   })
 
-  it('draws one solid casing and a run of tapered pieces over it', () => {
+  it('draws one solid casing and ONE tapered stroke over it', () => {
+    // The stroke used to be ROUTE_STYLE.taperPieces separate lines, because a
+    // LineMaterial carries one opacity for its whole length. It carries a
+    // per-vertex ramp now (setTaper), so a route is one object — measured at
+    // mid zoom, 98 draw calls a frame with this event selected became 41.
     const layer = new DrawingLayer(new Scene(), R)
     layer.set(oneway, { color: '#e5a54d' })
     expect(casings(layer)).toHaveLength(1)
-    expect(strokes(layer)).toHaveLength(ROUTE_STYLE.taperPieces)
+    expect(strokes(layer)).toHaveLength(1)
     // the casing is wider than the stroke, and under it in paint order
     const casing = casings(layer)[0]
     expect((casing.material as LineMaterial).linewidth).toBeGreaterThan(ROUTE_STYLE.stroke)
@@ -415,44 +435,41 @@ describe('DrawingLayer routes', () => {
   it('brightens toward the destination on a one-way route', () => {
     const layer = new DrawingLayer(new Scene(), R)
     layer.set(oneway, { color: '#e5a54d' })
-    const ops = strokes(layer).map((l) => (l.material as LineMaterial).opacity)
-    expect(ops[0]).toBeLessThan(ops[ops.length - 1])
-    expect(ops[0]).toBeCloseTo(
-      ROUTE_STYLE.tailOpacity + (1 - ROUTE_STYLE.tailOpacity) / (2 * ROUTE_STYLE.taperPieces),
-      2,
-    )
+    const ops = taper(strokes(layer)[0])
+    // the ramp now reaches its true endpoints rather than the midpoints of the
+    // first and last of twenty pieces
+    expect(ops[0]).toBeCloseTo(ROUTE_STYLE.tailOpacity, 6)
+    expect(ops[ops.length - 1]).toBeCloseTo(1, 6)
     // monotone: a voyage does not flicker on its way across
-    for (let i = 1; i < ops.length; i++) expect(ops[i]).toBeGreaterThan(ops[i - 1])
+    for (let i = 1; i < ops.length; i++) expect(ops[i]).toBeGreaterThanOrEqual(ops[i - 1])
+    // and the material's own opacity is out of the way, or it would scale it twice
+    expect((strokes(layer)[0].material as LineMaterial).opacity).toBe(1)
     layer.dispose()
   })
 
   it('fades away equally at both ends of a two-way route', () => {
     const layer = new DrawingLayer(new Scene(), R)
     layer.set(twoway, { color: '#4c8dff' })
-    const ops = strokes(layer).map((l) => (l.material as LineMaterial).opacity)
+    const ops = taper(strokes(layer)[0])
     for (let i = 0; i < ops.length; i++)
-      expect(ops[i], `piece ${i}`).toBeCloseTo(ops[ops.length - 1 - i], 6)
+      expect(ops[i], `vertex ${i}`).toBeCloseTo(ops[ops.length - 1 - i], 6)
     expect(Math.max(...ops)).toBeGreaterThan(Math.min(...ops))
+    expect(ops[0]).toBeCloseTo(ROUTE_STYLE.endOpacity, 6)
     layer.dispose()
   })
 
-  it('spells ONE dash pattern across the pieces, whatever the joins are', () => {
+  it('spells ONE dash pattern down the route, with no joins left to cross', () => {
+    // This used to be the awkward part of the twenty-piece stroke: each piece
+    // had to be told where it began along the whole route or the dashes
+    // restarted at every join. One line has no joins, so the pattern is the
+    // material's and the offset is nothing.
     const layer = new DrawingLayer(new Scene(), R)
     layer.set(twoway, { color: '#4c8dff' })
     const pieces = strokes(layer)
-    const cycle = (m: LineMaterial) => m.dashSize + m.gapSize
-    // every piece runs the same pattern...
-    for (const p of pieces)
-      expect(cycle(p.material as LineMaterial)).toBeCloseTo(
-        cycle(pieces[0].material as LineMaterial),
-        6,
-      )
-    // ...and each is offset by where it starts, so the dashes cross the joins.
-    // The offsets are strictly increasing along the route, by the length of the
-    // piece before them.
-    const offs = pieces.map((p) => (p.material as LineMaterial).dashOffset)
-    for (let i = 1; i < offs.length; i++) expect(offs[i]).toBeGreaterThan(offs[i - 1])
-    expect(offs[0]).toBe(0)
+    expect(pieces).toHaveLength(1)
+    const m = pieces[0].material as LineMaterial
+    expect(m.dashSize + m.gapSize).toBeGreaterThan(0)
+    expect(m.dashOffset).toBe(0)
     layer.dispose()
   })
 
@@ -508,7 +525,10 @@ describe('DrawingLayer routes', () => {
     // Every solid mesh vertex sits at exactly the stated radius — no kind gets
     // its own extra lift any more, because a lift is parallax.
     for (const child of layer.object.children) {
-      if (child instanceof Line2) continue
+      // LineSegments2 (and Line2, which extends it) keeps its real vertices in
+      // instanceStart/instanceEnd; `position` is the unit quad the fat-line
+      // shader extrudes, and measuring that is measuring the template
+      if (child instanceof LineSegments2) continue
       const pos = ((child as Mesh).geometry as BufferGeometry)?.getAttribute('position')
       if (!pos) continue
       for (let i = 0; i < pos.count; i++)

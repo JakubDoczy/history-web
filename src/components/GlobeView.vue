@@ -14,7 +14,7 @@ import { useNationStore, type BorderEntry } from '../stores/nations'
 import { useTimeStore } from '../stores/time'
 import { useSettingsStore } from '../stores/settings'
 import { useViewStore } from '../stores/view'
-import { isEvent, type HistoricalEvent } from '../lib/events'
+import { shapeOf, type HistoricalEvent } from '../lib/events'
 import { ROUTE_FLOW_INTERVAL_MS } from '../lib/paths'
 import { routeDrawingFor, type Drawing } from '../lib/drawing'
 import { DrawingLayer, SURFACE_ALT } from '../lib/drawingLayer'
@@ -112,6 +112,29 @@ const capMaterial = (color: string, opacity: number): MeshBasicMaterial => {
       // Atlantic). The rest of the material is what three-globe would have built
       // anyway — it is unlit Basic there too.
       side: DoubleSide,
+      // …and the same depth bias every other overlay carries (`groundBias` in
+      // lib/drawingLayer.ts). This is the rest of the area-smudge fix, and the
+      // half that survived `polygonsTransitionDuration(0)`.
+      //
+      // Height alone cannot separate these layers. The cap sits at 0.0014 R and
+      // the borders at 0.0012 R — 1.3 km apart — while one step of a 24-bit
+      // depth buffer is ~2.7 km of altitude at world view (the arithmetic is
+      // written out above SURFACE_ALT). So the cap, the stroke and the planet
+      // land in the SAME depth value over most of the zoom range, and which one
+      // wins is then decided by rounding: it changes per pixel, and it changes
+      // again the moment the camera moves. That is the ragged edge that
+      // "smudges" across a pan, and it is worse, not better, on a device with a
+      // 16-bit depth buffer — which is why it outlived a fix that only stopped
+      // the cap being built coplanar, and why a software rasteriser here shows
+      // it faintly if at all.
+      //
+      // Polygon offset biases in depth-buffer UNITS, so it is exactly as big as
+      // it needs to be at every zoom, and four units is nothing against the ~2R
+      // of depth between the near face of the globe and the far one — the
+      // planet still hides the areas round the back.
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -4,
     })
     capMaterials.set(key, m)
   }
@@ -227,19 +250,20 @@ const areaEntries = new Map<string, EventAreaEntry>()
  * footprint is drawn, whether or not the timeline window still reaches it.
  */
 const eventAreas = (): EventAreaEntry[] => {
-  const sel = events.selected
+  const e = events.selected
   // only an event has a footprint; a person or a concept is an article
-  const e = sel && isEvent(sel) ? sel : undefined
-  if (!e?.area) return []
+  if (e?.kind !== 'event') return []
+  const area = shapeOf(e.geometry, 'area')
+  if (!area) return []
   // A drawing supersedes the footprint it is drawn inside. The area cap is a
   // tinted sheet over a whole theatre, and a battle plan read through it is a
   // battle plan read through a filter — the frontlines lose contrast against
   // exactly the ground they are about. While the plan is up, the footprint
   // steps aside; leaving the mode brings it back.
-  if (e.drawing && events.focus?.itemId === e.id) return []
+  if (shapeOf(e.geometry, 'plan') && events.focus?.itemId === e.id) return []
   const held = areaEntries.get(e.id)
   if (held) return [held]
-  const ring = e.area
+  const ring = area.ring
   const entry: EventAreaEntry = { kind: 'area', event: e, ring, coordinates: [[...ring, ring[0]]] }
   areaEntries.set(e.id, entry)
   return [entry]
@@ -262,10 +286,11 @@ const eventAreas = (): EventAreaEntry[] => {
 const routeSpecs = new Map<string, Drawing | undefined>()
 const routeDrawing = (): Drawing | undefined => {
   const sel = events.selected
-  const e = sel && isEvent(sel) ? sel : undefined
-  if (!e?.paths?.length) return undefined
-  if (!routeSpecs.has(e.id)) routeSpecs.set(e.id, routeDrawingFor(e))
-  return routeSpecs.get(e.id)
+  if (sel?.kind !== 'event') return undefined
+  const routes = shapeOf(sel.geometry, 'routes')
+  if (!routes) return undefined
+  if (!routeSpecs.has(sel.id)) routeSpecs.set(sel.id, routeDrawingFor(routes))
+  return routeSpecs.get(sel.id)
 }
 
 /**
@@ -277,7 +302,7 @@ const focusDrawing = (): Drawing | undefined => {
   // inside an operation's focus, the operation's plan must stay on the map —
   // the context is what the mode shows, the selection is what the panel reads.
   const item = events.focused
-  return item && isEvent(item) ? item.drawing : undefined
+  return item?.kind === 'event' ? shapeOf(item.geometry, 'plan')?.drawing : undefined
 }
 
 onMounted(() => {

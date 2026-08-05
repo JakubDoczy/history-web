@@ -4,6 +4,8 @@ import {
   DoubleSide,
   Float32BufferAttribute,
   Group,
+  InstancedInterleavedBuffer,
+  InterleavedBufferAttribute,
   Mesh,
   MeshBasicMaterial,
   Vector2,
@@ -13,6 +15,8 @@ import {
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
+import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
+import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 import {
   ROUTE_SEGMENT_DEG,
@@ -20,7 +24,6 @@ import {
   densifyPath,
   directionOf,
   flowPhase,
-  lengthPieces,
   routePolyline,
   slerpPoint,
   taperOpacity,
@@ -121,6 +124,70 @@ export const SURFACE_ALT = 0.0006
  * limb, where a line's depth slope across a pixel is steepest.
  */
 const groundBias = { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 } as const
+
+/**
+ * Per-vertex opacity for a fat line, in one extra instanced attribute.
+ *
+ * `LineMaterial` carries a single opacity for a whole line, which is why the
+ * taper down a route used to be cut into twenty constant-opacity pieces. Twenty
+ * pieces is twenty objects, twenty materials and — this is the part that was
+ * felt — twenty draw calls, and a route event draws three routes. Measured at
+ * the zoom the whole Atlantic is framed at: 98 draw calls a frame with the
+ * trans-Atlantic trade selected, against 34 with nothing selected.
+ *
+ * `LineSegmentsGeometry` already hands the shader a start and an end value per
+ * segment for position and for colour. This adds a third such pair carrying
+ * alpha, which the rasteriser interpolates along the segment exactly as it does
+ * the colour, and the fragment shader multiplies into its own alpha. Twenty
+ * objects become one, and the gradient stops being twenty steps and becomes
+ * continuous — which is what it was always meant to look like.
+ */
+function setTaper(geom: LineGeometry, alphas: number[]) {
+  // the pairs layout `LineGeometry.setPositions` builds: segment i runs from
+  // vertex i to vertex i+1, and neighbouring segments share the boundary value
+  const n = Math.max(0, alphas.length - 1)
+  const pairs = new Float32Array(n * 2)
+  for (let i = 0; i < n; i++) {
+    pairs[i * 2] = alphas[i]
+    pairs[i * 2 + 1] = alphas[i + 1]
+  }
+  const buffer = new InstancedInterleavedBuffer(pairs, 2, 1)
+  geom.setAttribute('instanceTaperStart', new InterleavedBufferAttribute(buffer, 1, 0))
+  geom.setAttribute('instanceTaperEnd', new InterleavedBufferAttribute(buffer, 1, 1))
+}
+
+/**
+ * A `LineMaterial` that reads the attribute `setTaper` writes.
+ *
+ * The patch is four string substitutions against three's own line shader, which
+ * is a hostage to its exact source — so each anchor is a whole statement rather
+ * than a fragment, and a miss is loud: the attribute would be undeclared and the
+ * shader would fail to compile rather than silently drawing the wrong thing.
+ * The cache key has to differ from a plain LineMaterial's or the two share a
+ * compiled program and whichever compiled first wins.
+ */
+function taperMaterial(params: ConstructorParameters<typeof LineMaterial>[0]): LineMaterial {
+  const mat = new LineMaterial(params)
+  mat.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        'attribute vec3 instanceColorStart;',
+        'attribute vec3 instanceColorStart;\n\t\tattribute float instanceTaperStart;\n\t\tattribute float instanceTaperEnd;\n\t\tvarying float vTaper;',
+      )
+      .replace(
+        'float aspect = resolution.x / resolution.y;',
+        'vTaper = ( position.y < 0.5 ) ? instanceTaperStart : instanceTaperEnd;\n\t\t\tfloat aspect = resolution.x / resolution.y;',
+      )
+    shader.fragmentShader = shader.fragmentShader
+      .replace('uniform vec3 diffuse;', 'varying float vTaper;\n\t\tuniform vec3 diffuse;')
+      .replace(
+        'gl_FragColor = vec4( diffuseColor.rgb, alpha );',
+        'gl_FragColor = vec4( diffuseColor.rgb, alpha * vTaper );',
+      )
+  }
+  mat.customProgramCacheKey = () => 'lineTaper'
+  return mat
+}
 
 /**
  * A unit vector on the sphere from `[lng, lat]`.
@@ -643,35 +710,33 @@ export class DrawingLayer {
     this.geometries.push(haloGeom)
     this.materials.push(haloMat)
 
-    // …and the stroke, in constant-opacity pieces along a gradient
-    for (const piece of lengthPieces(cum, ROUTE_STYLE.taperPieces)) {
-      const geom = new LineGeometry()
-      geom.setPositions(positions.slice(piece.start * 3, (piece.end + 1) * 3))
-      const mat = new LineMaterial({
-        color: color.getHex(),
-        linewidth: ROUTE_STYLE.stroke,
-        dashed: true,
-        dashScale: 1,
-        dashSize,
-        gapSize,
-        transparent: true,
-        opacity: taperOpacity(piece.t, directionOf(spec)),
-        depthWrite: false,
-        ...groundBias,
-      })
-      mat.resolution.copy(this.resolution)
-      // A static two-way route still needs its offset set once, or every piece
-      // starts its pattern from its own beginning and the dashes step at the
-      // joins.
-      mat.dashOffset = cum[piece.start]
-      const line = new Line2(geom, mat)
-      line.computeLineDistances()
-      line.renderOrder = 12 + order
-      this.group.add(line)
-      this.geometries.push(geom)
-      this.materials.push(mat)
-      if (oneway) this.flowing.push({ material: mat, startDist: cum[piece.start], cycle })
-    }
+    // …and the stroke: one line, the gradient carried per vertex. See setTaper
+    // for why this is not twenty lines any more.
+    const geom = new LineGeometry()
+    geom.setPositions(positions)
+    setTaper(geom, cum.map((d) => taperOpacity(d / total, directionOf(spec))))
+    const mat = taperMaterial({
+      color: color.getHex(),
+      linewidth: ROUTE_STYLE.stroke,
+      dashed: true,
+      dashScale: 1,
+      dashSize,
+      gapSize,
+      transparent: true,
+      // the taper is the alpha now; the material's own opacity is the ceiling
+      // the attribute is measured against
+      opacity: 1,
+      depthWrite: false,
+      ...groundBias,
+    })
+    mat.resolution.copy(this.resolution)
+    const line = new Line2(geom, mat)
+    line.computeLineDistances()
+    line.renderOrder = 12 + order
+    this.group.add(line)
+    this.geometries.push(geom)
+    this.materials.push(mat)
+    if (oneway) this.flowing.push({ material: mat, startDist: 0, cycle })
 
     // …and a dot on each port, in SCREEN pixels like the line.
     //
@@ -683,29 +748,34 @@ export class DrawingLayer {
     // and it costs no new renderer: it inherits the altitude, the depth bias and
     // the resolution the route already has. A degree-sized glyph cannot do this;
     // it is three pixels wide when the route is framed and eighty one zoom in.
-    for (const end of [pts[0], pts[pts.length - 1]]) {
+    //
+    // Both ports go in ONE object per layer rather than one each: a
+    // `LineSegmentsGeometry` holds disjoint segments, and two zero-length ones
+    // are two discs for the price of a single draw call.
+    const ports = [pts[0], pts[pts.length - 1]].flatMap((end) => {
       const p = scale(unit(end[0], end[1]), this.radius * (1 + alt))
-      for (const [w, c, o] of [
-        [ROUTE_STYLE.stroke * 3.4, new Color(ROUTE_STYLE.haloColor).getHex(), ROUTE_STYLE.haloOpacity],
-        [ROUTE_STYLE.stroke * 2.2, color.getHex(), 1],
-      ] as [number, number, number][]) {
-        const g = new LineGeometry()
-        g.setPositions([...p, ...p])
-        const m = new LineMaterial({
-          color: c,
-          linewidth: w,
-          transparent: true,
-          opacity: o,
-          depthWrite: false,
-          ...groundBias,
-        })
-        m.resolution.copy(this.resolution)
-        const dot = new Line2(g, m)
-        dot.renderOrder = 12 + order
-        this.group.add(dot)
-        this.geometries.push(g)
-        this.materials.push(m)
-      }
+      return [...p, ...p]
+    })
+    for (const [w, c, o] of [
+      [ROUTE_STYLE.stroke * 3.4, new Color(ROUTE_STYLE.haloColor).getHex(), ROUTE_STYLE.haloOpacity],
+      [ROUTE_STYLE.stroke * 2.2, color.getHex(), 1],
+    ] as [number, number, number][]) {
+      const g = new LineSegmentsGeometry()
+      g.setPositions(ports)
+      const m = new LineMaterial({
+        color: c,
+        linewidth: w,
+        transparent: true,
+        opacity: o,
+        depthWrite: false,
+        ...groundBias,
+      })
+      m.resolution.copy(this.resolution)
+      const dot = new LineSegments2(g, m)
+      dot.renderOrder = 12 + order
+      this.group.add(dot)
+      this.geometries.push(g)
+      this.materials.push(m)
     }
   }
 

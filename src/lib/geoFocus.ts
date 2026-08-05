@@ -1,5 +1,5 @@
 import { separationDeg, type Cap } from './queryIndex'
-import { geometryPointsOf, type Item } from './events'
+import { geometryPointsOf, type Subject } from './events'
 import type { GeoPath } from './paths'
 
 /**
@@ -135,7 +135,7 @@ export function altitudeForCapDeg(radiusDeg: number, fovDeg = FIT_FOV, margin = 
  * A person is framed on the place their life began, which is the one coordinate
  * a life is certain to carry.
  */
-export function focusTargetFor(item: Item, fovDeg = FIT_FOV): FocusTarget | undefined {
+export function focusTargetFor(item: Subject, fovDeg = FIT_FOV): FocusTarget | undefined {
   const points = geometryPointsOf(item)
   if (!points.length) return undefined
   const anchor = { lng: points[0][0], lat: points[0][1] }
