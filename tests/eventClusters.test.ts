@@ -10,6 +10,7 @@ import {
   fanRadiusPx,
   fanViewFor,
   legStrokeDeg,
+  LEG_ARC,
   LEG_STROKE_PX,
   PIN_ALTITUDE,
   FAN_MAX_PX,
@@ -219,6 +220,41 @@ describe('legStrokeDeg', () => {
   it('shrinks with the zoom rather than swallowing the pins', () => {
     expect(legStrokeDeg(viewAt(0.02))).toBeLessThan(legStrokeDeg(viewAt(2.5)) / 50)
     expect(legStrokeDeg(viewAt(0.02))).toBeGreaterThan(0)
+  })
+})
+
+/**
+ * The fireworks, in numbers.
+ *
+ * The arc layer draws a Bézier that leaves the ground, rises to `altitude` and
+ * comes back — so the shape of a leg is entirely decided by these four values,
+ * and the complaint ("children fly out on parabolic arcs") was the old
+ * altitude of 0.004 radii being *four times* the whole length of the leg at the
+ * zoom a stack is actually opened at.
+ */
+describe('LEG_ARC', () => {
+  it('is flat: the same altitude at both ends and in the middle', () => {
+    expect(LEG_ARC.startAltitude).toBe(LEG_ARC.altitude)
+    expect(LEG_ARC.endAltitude).toBe(LEG_ARC.altitude)
+  })
+
+  it('lies in the plane the pins float in, so a leg meets the tip it points at', () => {
+    expect(LEG_ARC.altitude).toBe(PIN_ALTITUDE)
+  })
+
+  it('does not tween — a fan relaid on every frame of a zoom has nothing to chase', () => {
+    expect(LEG_ARC.transitionMs).toBe(0)
+  })
+
+  it('no longer hops several times the length of the leg it is drawn along', () => {
+    // An altitude in globe radii is that many radians of arc, which is the unit
+    // the fan is measured in — so the two are directly comparable.
+    const asDeg = (radii: number) => (radii * 180) / Math.PI
+    const legDeg = fanRadiusDeg(6, CITY_VIEW)
+    // what it used to do: an apex four times the leg's own ground length
+    expect(asDeg(0.004) / legDeg).toBeGreaterThan(3)
+    // what it does now: nothing at all, at any zoom
+    expect(asDeg(LEG_ARC.altitude - LEG_ARC.startAltitude)).toBe(0)
   })
 })
 

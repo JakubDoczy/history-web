@@ -196,13 +196,17 @@ const clickPin = async (name) => {
 
 console.log('\n(a) an operation on the map')
 await page.evaluate(() => window.__events.showOnMap('barbarossa'))
-await settleToPanel('pill')
+// An OPERATION — a steps-bearing event — opens with its overview up on a
+// desktop rather than folded to the pill (`opensExpanded` in stores/events.ts).
+// Everything below is about the ladder in and out of it, which is unchanged;
+// only the shape the ladder starts in is.
+await settleToPanel('article')
 await settleTo('the plan drawn', () => document.querySelectorAll('.event-pin').length > 2)
 await shot('01-operation')
 let s = await stateOf()
-await check('the operation is the context, folded to a pill', () => {
+await check('the operation is the context, on its overview', () => {
   ok(s.focus === 'barbarossa', `focus is ${s.focus}`)
-  ok(s.shape === 'pill', `panel is ${s.shape}`)
+  ok(s.shape === 'article', `panel is ${s.shape}`)
   ok(!s.back, 'a way back was offered from the context itself')
   ok(s.visible.includes('kiev-pocket'), `battles are not pinned: ${s.visible}`)
 })
@@ -314,10 +318,10 @@ await check('no panel survives a burst of transitions', () => {
 
 console.log('\n(g) an era picked from deep inside a focus')
 await page.evaluate(() => window.__events.showOnMap('barbarossa'))
-await settleToPanel('pill')
+await settleToPanel('article')
 await clickPin('Kiev')
 await waitForSel('[data-test="focus-back"]')
-await click('[data-test="pill-expand"]') // the battle's article, over the plan
+// the battle's own article, over the plan: selecting a part expands it
 await waitForSel('[data-test="show-on-map"]')
 await click('[data-test="show-on-map"]') // push: the battle becomes the context
 await settleToPanel('pill')

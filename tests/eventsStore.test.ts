@@ -1,8 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { FOCUS_CHILD_CAP, FOCUS_STACK_CAP, useEventStore } from '../src/stores/events'
+import {
+  FOCUS_CHILD_CAP,
+  FOCUS_STACK_CAP,
+  SIDE_BY_SIDE_MIN_PX,
+  opensExpanded,
+  useEventStore,
+} from '../src/stores/events'
 import { useSettingsStore } from '../src/stores/settings'
 import { useTimeStore } from '../src/stores/time'
+import { useViewStore } from '../src/stores/view'
 import type { RawEvent } from '../src/lib/events'
 
 const ev = (id: string, priority: number): RawEvent => ({
@@ -1119,7 +1126,13 @@ describe('every reachable state has a way out', () => {
     ...extra,
   })
   const corpus: RawEvent[] = [
-    plan('op'),
+    // `op` carries steps, so the walk covers the one transition that is not the
+    // same for every item: entering a focus on an OPERATION leaves the article
+    // up rather than folding it to the pill (`opensExpanded`, and the view
+    // store's default width is a desktop one). Every invariant below is about
+    // there being a panel and about what it is on, so both shapes must be
+    // walked or the checks only ever see the pill.
+    plan('op', { steps: [{ id: 'first', name: 'First', at: 0 }] }),
     plan('battle', { parent: 'op', priority: 60 }),
     plan('village', { parent: 'battle', priority: 10 }),
     plan('elsewhere', { lat: 49.3, lng: -0.6 }),
@@ -1319,6 +1332,46 @@ describe('stepped focus', () => {
     expect(events.focusSteps.map((s) => s.id)).toEqual(['june', 'kiev', 'december'])
   })
 
+  /**
+   * OVERVIEW FIRST, WITHOUT A SECOND CLICK.
+   *
+   * An operation is the one thing whose focus is a reading as well as a view:
+   * folding it to a pill answered "show me Barbarossa" with a two-word bar, and
+   * the overview it is supposed to land on took a click nothing advertised. On
+   * a phone the article is a sheet OVER the map, so there the pill is still
+   * right — the rule is the width, and it is the stylesheets' own break.
+   */
+  it('opens an operation on its overview where there is room beside the map', () => {
+    const events = store()
+    events.showOnMap('op')
+    expect(events.panelMinimised).toBe(false)
+    expect(events.stepId, 'landed on a step rather than the overview').toBeUndefined()
+  })
+
+  it('opens the same operation as a pill on a phone', () => {
+    useViewStore().viewportWidthPx = 390
+    const events = store()
+    events.showOnMap('op')
+    expect(events.panelMinimised).toBe(true)
+  })
+
+  it('leaves everything without steps folded to the pill, desktop or not', () => {
+    const events = useEventStore()
+    events.adopt([op({ steps: undefined })])
+    events.showOnMap('op')
+    expect(events.panelMinimised).toBe(true)
+  })
+
+  it('decides that on the item and the width, and nothing else', () => {
+    const stepped = { kind: 'event', steps: [{ id: 'a' }] } as unknown as Parameters<
+      typeof opensExpanded
+    >[0]
+    expect(opensExpanded(stepped, SIDE_BY_SIDE_MIN_PX)).toBe(true)
+    expect(opensExpanded(stepped, SIDE_BY_SIDE_MIN_PX - 1)).toBe(false)
+    expect(opensExpanded({ kind: 'event' } as typeof stepped, 1600)).toBe(false)
+    expect(opensExpanded(undefined, 1600)).toBe(false)
+  })
+
   /** The owner's rule: the default view is the whole-event overview. */
   it('lands on the overview, with every layer drawn', () => {
     const events = store()
@@ -1352,7 +1405,10 @@ describe('stepped focus', () => {
   it('opens the panel on a step that has a page, and leaves it alone otherwise', () => {
     const events = store()
     events.showOnMap('op')
-    expect(events.panelMinimised).toBe(true)
+    // An operation on a desktop-width screen lands with its overview up, which
+    // is the default viewport the view store carries (see `opensExpanded`).
+    expect(events.panelMinimised).toBe(false)
+    events.toggleFocusExpanded() // …and the reader folds it away again
     events.selectStep('december') // no page: the map stays uncovered
     expect(events.panelMinimised).toBe(true)
     events.selectStep('june') // a page: the article comes up to hold it

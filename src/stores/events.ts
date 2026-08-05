@@ -122,6 +122,38 @@ const isPartOf = (parentId: string, id?: string): boolean => {
 const topFocus = (stack: readonly string[]): string | undefined => stack[stack.length - 1]
 
 /**
+ * The width at which the article sits BESIDE the map rather than over it — the
+ * 640 px break every stylesheet in the app is written against (styles/tokens.css,
+ * and the media query at the foot of every component). Above it the panel is a
+ * column down the left-hand side; at or below it the panel is a sheet, and
+ * anything it covers is not on screen.
+ */
+export const SIDE_BY_SIDE_MIN_PX = 641
+
+/**
+ * Does entering a focus leave the article UP, on its overview?
+ *
+ * For an OPERATION it does, on a desktop. An operation — an event with authored
+ * steps (lib/steps.ts) — is the one kind of thing in the corpus whose focus is a
+ * *reading* as well as a view: it has an overview page, a strip of numbered
+ * pages under it, and a plan on the ground that the pages are about. Folding all
+ * of that to a pill and asking the reader to press it again answers "show me
+ * Barbarossa" with a two-word bar, and the overview — the thing rule 1 of
+ * lib/steps.ts says is what you always land on — was reachable only by a second
+ * click that nothing advertised.
+ *
+ * Everything else still minimises, which is the whole of "Show on map": a bare
+ * point, a route, a footprint, a life marker has nothing to read that the map is
+ * not already showing better.
+ *
+ * And only where there is room. On a phone the article is a bottom sheet over
+ * the map, so opening one on arrival would hide the plan the reader just asked
+ * to be shown; there the pill is right, and one tap brings the overview up.
+ */
+export const opensExpanded = (item: Subject | undefined, viewportWidthPx: number): boolean =>
+  item?.kind === 'event' && !!item.steps?.length && viewportWidthPx >= SIDE_BY_SIDE_MIN_PX
+
+/**
  * A JSON fetch that fails by returning undefined rather than by throwing, and
  * that treats an HTTP error as a failure.
  *
@@ -172,7 +204,8 @@ export const useEventStore = defineStore('events', {
      * they are the whole feature:
      *
      *  · the panel minimises to a pill (EventPanel.vue), so the map is not
-     *    behind an article;
+     *    behind an article — with one exception, an operation on a desktop,
+     *    which lands on its overview instead (see `opensExpanded`);
      *  · the item's `drawing` renders (GlobeView.vue) — the one place it does;
      *  · its child events get their pins (see `visible`), so an operation shows
      *    its battles;
@@ -675,13 +708,17 @@ export const useEventStore = defineStore('events', {
       } else {
         this.focusStack = [id]
       }
-      this.focusExpanded = false
       // A new context always opens on its overview, never on a step — the one
       // that was open belonged to the event being left (see `stepId`).
       this.stepId = undefined
       // The mode is always on its own item: this is what makes the invariant
       // hold no matter which way the caller arrived (a pin, a link, a search).
       this.selectedId = id
+      // …and the panel folds to the pill, unless what was opened is an
+      // operation on a screen with room for both (see `opensExpanded`). Read
+      // after the stack and the selection are set, because it is asked about
+      // the item now in focus.
+      this.focusExpanded = opensExpanded(this.focused, useViewStore().viewportWidthPx)
     },
     /**
      * Leave the innermost context: the article comes back whole, the drawing
@@ -843,8 +880,10 @@ export const useEventStore = defineStore('events', {
      *    which is the same extendSelectionTo rule a scrub obeys;
      *  · the **camera** frames its whole geometry (lib/geoFocus.ts): a point
      *    from a sensible height, a footprint or a route fitted with margin;
-     *  · and the app is in **focus mode**: the article folds to a pill and the
-     *    globe clears down to this item, its children and its ink (see `focus`).
+     *  · and the app is in **focus mode**: the article folds to a pill — or
+     *    stays up on its overview, for an operation with room beside the map
+     *    (`opensExpanded`) — and the globe clears down to this item, its
+     *    children and its ink (see `focus`).
      *
      * That last one has no exceptions. It used to require real geometry, on the
      * reasoning that minimising an article to reveal a single teardrop is a

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useEventStore } from '../stores/events'
 
 /**
@@ -25,6 +26,22 @@ import { useEventStore } from '../stores/events'
  * not make the chips jump.
  */
 const events = useEventStore()
+
+/**
+ * "5 steps" — the strip saying, in words, that there is more here than the
+ * article.
+ *
+ * The chips alone did not carry that. They read as a row of labels about the
+ * thing already on screen (which is what a row of borderless words on a map
+ * looks like), so an operation's per-step detail was found by accident or not
+ * at all. A count is the smallest honest advertisement there is: it names the
+ * quantity of pages, so a reader can tell before clicking whether it is worth
+ * a click.
+ */
+const count = computed(() => {
+  const n = events.focusSteps.length
+  return `${n} ${n === 1 ? 'step' : 'steps'}`
+})
 </script>
 
 <template>
@@ -45,6 +62,9 @@ const events = useEventStore()
       Overview
     </button>
     <span class="rule" aria-hidden="true" />
+    <!-- Labels the group it stands in front of, not the strip as a whole: the
+         Overview is not one of the steps it is counting. -->
+    <span class="count" data-test="step-count">{{ count }}</span>
     <div class="steps scroll-x">
       <button
         v-for="(s, i) in events.focusSteps"
@@ -64,16 +84,20 @@ const events = useEventStore()
 </template>
 
 <style scoped>
-/* Docked above the pill's row, on the pill's own left edge, so the two read as
-   one stack of controls about the same thing. Laid out against `--strip-clear`
-   (tokens.css), which the article also reads — a shared token rather than a
-   measurement, because a ResizeObserver for four pixels of offset would be a
-   lifecycle bug bought for nothing. The offset is the same whether the pill is
-   there or the article is up, so folding the panel does not make the chips
-   jump. */
+/* Docked above the pill's row and on the pill's own axis — bottom-centre, since
+   that is where the pill went — so the two read as one stack of controls about
+   the same thing. Laid out against `--strip-clear` (tokens.css), which the
+   article also reads — a shared token rather than a measurement, because a
+   ResizeObserver for four pixels of offset would be a lifecycle bug bought for
+   nothing. The offset is the same whether the pill is there or the article is
+   up, so folding the panel does not make the chips jump.
+
+   `translate`, not a transform: the entrance animation below owns `transform`,
+   and centring with it would be dropped for the length of the entrance. */
 .strip {
   position: absolute;
-  left: calc(var(--s4) + var(--safe-l));
+  left: 50%;
+  translate: -50% 0;
   bottom: calc(var(--strip-clear) - var(--strip-h));
   z-index: var(--z-event-panel);
   display: flex;
@@ -124,15 +148,36 @@ const events = useEventStore()
   background: var(--line);
 }
 
+/* the count (see `count` in the script): an eyebrow, not a chip — it is the
+   only thing on this bar that cannot be pressed, and it must not look as
+   though it can be */
+.count {
+  flex: none;
+  padding: 0 var(--s1) 0 2px;
+  font-family: var(--cond);
+  font-size: var(--t-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* A step chip is a PAGE you can turn to, and it says so while still: a framed
+   surface with a number on it. It used to be bare text on a transparent
+   background until hovered, which on a desktop is discoverable and on a touch
+   screen — where there is no hover at all — is not discoverable in any sense.
+   The frame is the app's own quiet one (--line, the tag and place chips' 4%
+   fill); the brass "on" state below is unchanged and still outranks it. */
 .chip {
   flex: none;
   display: flex;
   align-items: center;
   gap: 5px;
   padding: 5px var(--s2);
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
   border-radius: var(--r-pill);
-  background: none;
+  background: rgba(255, 255, 255, 0.04);
   font-family: var(--cond);
   font-size: var(--t-xs);
   letter-spacing: 0.04em;
@@ -146,7 +191,12 @@ const events = useEventStore()
 }
 .chip:hover {
   color: var(--frost);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--brass-line);
+  background: rgba(255, 255, 255, 0.08);
+}
+.chip:hover .tick {
+  border-color: var(--brass-line);
+  color: var(--brass);
 }
 .chip.on {
   color: var(--brass);
@@ -181,6 +231,13 @@ const events = useEventStore()
 }
 
 @media (max-width: 640px) {
+  /* The word count goes: a phone's strip is already scrolling its chips, and
+     the room it takes is a chip's worth of the two that fit. The framed chips
+     carry the affordance on their own — which is the half of it that a touch
+     screen, with no hover to reveal anything, actually needed. */
+  .count {
+    display: none;
+  }
   /* A phone shows two chips and scrolls to the rest, rather than five ellipsed
      to the point of saying nothing. */
   .label {

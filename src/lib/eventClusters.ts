@@ -222,6 +222,38 @@ export const LEG_STROKE_PX = 1.6
 
 export const legStrokeDeg = (view: FanView) => Math.max(1e-9, LEG_STROKE_PX * view.degPerPx)
 
+/**
+ * A LEG IS A LEADER LINE, NOT A TRAJECTORY.
+ *
+ * The globe's arc layer draws a cubic Bézier that leaves the ground, rises to
+ * `altitude` at its midpoint and comes back down. That is the right shape for a
+ * flight between two cities; it is the wrong shape entirely for a fifty-pixel
+ * connector between a stack and the pin that came out of it. At the zoom a
+ * cluster is expanded at, a 25 km hop over a leg a few kilometres long is a
+ * near-vertical lob — twelve of them from one point read as fireworks, which is
+ * exactly what it was called.
+ *
+ * So the leg is drawn FLAT and IN THE PIN PLANE: the same altitude at both ends
+ * and at the middle, which collapses the Bézier onto the (essentially straight)
+ * ground track between the two points, and that altitude is the one the pins
+ * themselves float at, so a leg meets the tip it points at instead of passing
+ * under it — the same parallax correction `fanViewFor` makes for the radius.
+ *
+ * `transitionMs: 0` is the other half. A tween between two straight lines is a
+ * line sweeping through the ones between them, which is motion the reader has
+ * to watch resolve before the fan can be read; and while a fan is open a zoom
+ * relays it every frame, so the tween was permanently chasing the layout.
+ *
+ * Stated as data rather than as four calls in GlobeView because it is one
+ * decision, and because a test can then hold it: flatness is the whole design.
+ */
+export const LEG_ARC = {
+  startAltitude: PIN_ALTITUDE,
+  endAltitude: PIN_ALTITUDE,
+  altitude: PIN_ALTITUDE,
+  transitionMs: 0,
+} as const
+
 /** A pin to draw: either one event or a collapsed cluster badge. */
 export type PinDatum =
   | { kind: 'event'; id: string; lat: number; lng: number; event: MapPin; fanned: boolean }

@@ -127,9 +127,13 @@ await page.evaluate(() => window.__events.showOnMap('barbarossa'))
 await settle(page, 2600)
 const plan = await stateOf(page)
 await page.screenshot({ path: join(shots, `${tag}-01-plan-pill.png`) })
-await check('enters focus and minimises', () => {
+// Barbarossa carries steps, so on a desktop it is an OPERATION and lands with
+// its overview up rather than folded to the pill (`opensExpanded` in
+// stores/events.ts). The pill is still what everything else gets — see (b)
+// below, which is a bare point event, and the phone at the foot of this file.
+await check('enters focus, on the overview of the operation', () => {
   eq(plan.focus, 'barbarossa', 'focus')
-  ok(plan.minimised, 'panel is not the pill')
+  ok(!plan.minimised, 'the operation folded to the pill on a desktop')
 })
 await check('the globe carries only the plan and its children', () => {
   eq(plan.visible, ['barbarossa', ...plan.children].sort(), 'visible set')
@@ -139,10 +143,10 @@ await check('no nation borders while the mode is on', () => {
   ok(!plan.polygons.includes('full'), `polygons: ${plan.polygons}`)
 })
 
-console.log('\n(c) the article, expanded')
-await page.evaluate(() => window.__events.toggleFocusExpanded())
-// `mode="out-in"`: the pill has to finish leaving before the article starts
-// arriving, and under swiftshader those two 240 ms halves are not 480 ms
+console.log('\n(c) the article, as the operation opened it')
+// No toggle: it is already up (see (a)). `mode="out-in"` still applies to the
+// fold at the end of this block — under swiftshader those two 240 ms halves
+// are not 480 ms.
 await page.waitForSelector('.panel')
 await settle(page, 1200)
 await page.screenshot({ path: join(shots, `${tag}-02-plan-article.png`) })

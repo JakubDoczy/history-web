@@ -47,6 +47,7 @@ import {
   fanViewFor,
   layoutPins,
   legStrokeDeg,
+  LEG_ARC,
   type ClusterLeg,
   type FanView,
   type PinDatum,
@@ -402,21 +403,27 @@ onMounted(() => {
       el.style.opacity = visible ? '1' : '0'
       el.style.pointerEvents = visible ? 'auto' : 'none'
     })
-    // arcs layer: the legs of an expanded cluster, anchor out to each member,
-    // so a fanned pin still reads as belonging to the spot it came from
+    // arcs layer: the legs of an expanded cluster — straight leader lines from
+    // the stack's spot out to each member, so a fanned pin still reads as
+    // belonging to where it came from. Flat, in the pin plane, and untweened:
+    // see LEG_ARC in lib/eventClusters.ts for why all three matter.
     .arcStartLat((d) => asLeg(d).startLat)
     .arcStartLng((d) => asLeg(d).startLng)
     .arcEndLat((d) => asLeg(d).endLat)
     .arcEndLng((d) => asLeg(d).endLng)
     .arcColor((d: object) => {
       const c = tagColor(primaryTag(asLeg(d).event))
-      return [c + '10', c + 'cc'] // fades in from the anchor so the badge stays clean
+      // fades in over the first stretch, so a dozen legs meeting at one point
+      // do not paint a blob where the stack is
+      return [c + '10', c + 'cc']
     })
-    .arcAltitude(0.004)
+    .arcStartAltitude(LEG_ARC.startAltitude)
+    .arcEndAltitude(LEG_ARC.endAltitude)
+    .arcAltitude(LEG_ARC.altitude)
     // the legs are measured on screen like the fan they belong to; the layer is
     // only ever re-digested while a fan is open, which is when this changes
     .arcStroke(() => legStrokeDeg(liveFan()))
-    .arcsTransitionDuration(180)
+    .arcsTransitionDuration(LEG_ARC.transitionMs)
     // polygons layer: nation borders + the selected event's area
     // The coordinate array comes from the entry rather than being built here:
     // three-globe re-tessellates the cap whenever this is a different array

@@ -67,6 +67,14 @@
 
   --rail: 92px; /* timeline height */
   /*
+   * Height of the top bar's content row (TopBar.vue): its --s3 padding twice,
+   * around the tallest thing in it, which is an --icon-btn. A token for the
+   * same reason --rail is one: floating UI has to stop short of it, and the
+   * one thing that does — the open panel, which on a phone now reaches all the
+   * way up to it — must not carry its own copy of the arithmetic.
+   */
+  --bar: 58px;
+  /*
    * Height of the focus pill (EventPanel.vue). A token because a SECOND thing
    * now stacks on top of it — the stage strip (StageStrip.vue) — and the strip
    * has to clear it without measuring it: both are absolutely positioned
@@ -102,6 +110,8 @@
 
   /* vertical space that floating UI must leave clear at the bottom */
   --rail-clear: calc(var(--rail) + var(--safe-b));
+  /* …and at the top: the bar plus whatever the notch takes */
+  --bar-clear: calc(var(--bar) + var(--safe-t));
   /*
    * The top edge of the stage strip, measured from the bottom of the window:
    * the rail, the pill's row, and the strip's own height. It is a token because
@@ -121,6 +131,8 @@
     --rail: 84px;
     --t-md: 14px;
     --pill-h: 46px;
+    /* the bar's touch targets are 40px on a phone, not 34 */
+    --bar: 64px;
   }
 }
 

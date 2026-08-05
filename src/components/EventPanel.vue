@@ -165,9 +165,9 @@ function onImageMounted(el: Element) {
   if (img.complete && img.naturalWidth > 0) wikiShown.value = true
 }
 
-/** Roughly the panel's content width, in device pixels. */
+/** Roughly the panel's content width, in device pixels (see `.panel` below). */
 function targetWidth() {
-  const css = Math.min(370, (globalThis.innerWidth || 370) - 32) - 40
+  const css = Math.min(480, (globalThis.innerWidth || 480) - 32) - 40
   const dpr = Math.min(globalThis.devicePixelRatio || 1, 2) // 2x is the useful ceiling here
   return Math.round(Math.max(css, 200) * dpr)
 }
@@ -243,14 +243,31 @@ onBeforeUnmount(() => inflight?.abort())
           <span aria-hidden="true">←</span>
           <span class="pill-back-name">{{ events.focusReturnTo.name }}</span>
         </button>
-        <button class="pill-main" data-test="pill-expand" @click="events.toggleFocusExpanded()">
+        <button
+          class="pill-main"
+          data-test="pill-expand"
+          title="Restore this window"
+          @click="events.toggleFocusExpanded()"
+        >
           <span class="pill-name">{{ e.name }}</span>
           <span class="pill-kind">{{ pillKind }}</span>
         </button>
-        <button class="pill-btn" aria-label="Expand article" @click="events.toggleFocusExpanded()">
+        <!-- Not a bare chevron. A chevron on a bar over a map is ambiguous —
+             it could as easily mean "more of the map" — and the word is the
+             one thing that says outright what this row of chrome IS: a window
+             put down, waiting to be picked up. It steps aside on a phone,
+             where the pill spans the screen and the thumb targets need the
+             room (see the query below). -->
+        <button
+          class="pill-btn pill-restore"
+          data-test="pill-restore"
+          aria-label="Restore this window"
+          @click="events.toggleFocusExpanded()"
+        >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 15l6-6 6 6" />
           </svg>
+          <span class="pill-restore-label">Restore</span>
         </button>
         <button class="pill-btn" data-test="pill-close" aria-label="Close" @click="events.close()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -479,7 +496,17 @@ onBeforeUnmount(() => inflight?.abort())
   position: absolute;
   top: calc(54px + var(--safe-t));
   left: calc(var(--s4) + var(--safe-l));
-  width: min(400px, calc(100vw - 2 * var(--s4)));
+  /* A measure, not a fixed column: 30% of the window between a floor and a
+     ceiling. At 400px the article was a slim strip — a 68ch body set at 15px
+     never got near its own measure, and every "Contains" row ellipsised. The
+     ceiling is where the line length stops being comfortable; the floor is what
+     a 1280px laptop gets, and the last term is what a narrow window gets. */
+  width: min(clamp(420px, 30vw, 480px), calc(100vw - 2 * var(--s4)));
+  /* Every dimension here is a dimension of the BOX. Without this the panel is
+     content-box, so each max-height below was quietly 34px short of what it
+     said — the padding and the borders — and the article's foot lapped over
+     the timeline it was written to stop above. */
+  box-sizing: border-box;
   max-height: calc(100dvh - var(--rail-clear) - 66px - var(--safe-t));
   padding: var(--s3) var(--s5) var(--s5);
   z-index: var(--z-event-panel);
@@ -504,10 +531,20 @@ onBeforeUnmount(() => inflight?.abort())
 }
 
 /* --- focus mode: the panel folded down to a bar ---------------------------
-   Docked bottom-left, just clear of the timeline, so the map above it — which
+   Docked bottom-CENTRE, just clear of the timeline, so the map above it — which
    is the whole reason the panel got out of the way — is uninterrupted. It is a
-   row of three targets: the name (expands), a chevron (expands), an X (closes,
-   which also leaves the mode).
+   row of three targets: the name (restores), a labelled chevron (restores), an
+   X (closes, which also leaves the mode).
+
+   Centred rather than tucked into the bottom-left corner, which is where it
+   used to sit and where it was routinely lost: a corner is where a desktop app
+   puts the things you are meant to ignore, and this is the one control naming
+   what the whole globe is currently showing. Bottom-centre is where a minimised
+   window goes — directly above the timeline, on the screen's own axis, in the
+   reader's line of travel between the map and the rail. `translate` rather
+   than a transform, because the panel-swap transition and the entrance
+   animation both own `transform` (below) and would drop the centring for the
+   length of the fold.
 
    Sized one notch below the article's own scale — a caption, not a headline.
    The pill is a label on a map the reader is looking *past* it at, so every
@@ -515,7 +552,8 @@ onBeforeUnmount(() => inflight?.abort())
    --t-lg, the chip is eyebrow-sized, the buttons are 26px rather than 30. */
 .pill {
   position: absolute;
-  left: calc(var(--s4) + var(--safe-l));
+  left: 50%;
+  translate: -50% 0;
   bottom: calc(var(--rail-clear) + var(--s2));
   z-index: var(--z-event-panel);
   display: flex;
@@ -530,6 +568,19 @@ onBeforeUnmount(() => inflight?.abort())
   /* The step strip stacks on this without measuring it — see --pill-h. */
   min-height: var(--pill-h);
   box-sizing: border-box;
+  transition:
+    border-color var(--fast),
+    box-shadow var(--fast);
+}
+/* The whole bar answers to the pointer, not only the two buttons on it: a
+   parked window lights up as one object when you reach for it, which is the
+   difference between "a caption on the map" and "your article is in here". */
+.pill:hover {
+  border-color: var(--brass-line);
+  box-shadow:
+    var(--lift),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px var(--brass-soft);
 }
 /* The way out of a part and back to the whole, on the pill: an arrow and the
    name of the context, kept to a third of the bar so the item the pill is
@@ -620,6 +671,28 @@ onBeforeUnmount(() => inflight?.abort())
   color: var(--frost);
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--line);
+}
+/* The one button here that carries a word: it is wider than the square ones,
+   framed like the chips elsewhere in the app, and brass — the colour every
+   control that *moves something* is drawn in. */
+.pill-restore {
+  display: flex;
+  gap: 5px;
+  width: auto;
+  padding: 0 10px 0 7px;
+  border-color: var(--brass-line);
+  color: var(--brass);
+}
+.pill-restore:hover {
+  color: #f2dcae;
+  background: var(--brass-soft);
+  border-color: var(--brass-line);
+}
+.pill-restore-label {
+  font-family: var(--cond);
+  font-size: var(--t-eyebrow);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 .pill-btn:active {
   transform: scale(0.94);
@@ -1061,16 +1134,26 @@ ul {
 }
 
 @media (max-width: 640px) {
-  /* a bottom sheet, sitting just clear of the timeline. It grows with the
-     desktop panel, but only to 62dvh: the map above it is the other half of
-     what a phone is showing, and a sheet past two thirds stops being a sheet. */
+  /* A bottom sheet that stands on the timeline and reaches all the way up to
+     the top bar.
+
+     It used to stop at 62dvh, on the reasoning that the map above it is the
+     other half of what a phone is showing. That reasoning belongs to the PILL,
+     which is the shape the panel takes when the map is the point; while the
+     article is open the reader is reading, and 62dvh of a phone is about
+     fifteen lines of a 68ch measure — a peephole that had to be scrolled
+     through an article a desktop shows most of at once.
+
+     Stated as a max-height rather than a `top`, so a short article is still a
+     short sheet: the ceiling is where the top bar's controls are (--bar-clear,
+     which carries the notch), and everything below is the rail plus its gap. */
   .panel {
     top: auto;
     bottom: calc(var(--rail-clear) + var(--s2));
     left: calc(var(--s3) + var(--safe-l));
     right: calc(var(--s3) + var(--safe-r));
     width: auto;
-    max-height: 62dvh;
+    max-height: calc(100dvh - var(--bar-clear) - var(--rail-clear) - 2 * var(--s2));
     padding: var(--s4) var(--s4) var(--s4);
     animation-name: sheet-in;
   }
@@ -1080,7 +1163,7 @@ ul {
      reader gets to the NEXT step. */
   .panel.has-strip {
     bottom: calc(var(--strip-clear) + var(--s1));
-    max-height: 62dvh;
+    max-height: calc(100dvh - var(--bar-clear) - var(--strip-clear) - var(--s1) - var(--s2));
   }
   @keyframes sheet-in {
     from {
@@ -1130,18 +1213,30 @@ ul {
   .family {
     min-height: 44px;
   }
-  /* the pill spans the width the sheet did, still above the timeline. It shrinks
-     with the desktop one, but not below a thumb: 38px is the smallest the two
-     buttons can be and still be hit without aiming. */
+  /* the pill spans the width the sheet did, still above the timeline — which is
+     the desktop's bottom-centre by another route, so the centring `translate`
+     comes off. It shrinks with the desktop one, but not below a thumb: 38px is
+     the smallest the two buttons can be and still be hit without aiming. */
   .pill {
     left: calc(var(--s3) + var(--safe-l));
     right: calc(var(--s3) + var(--safe-r));
+    translate: none;
     max-width: none;
     padding: 3px 5px 3px var(--s3);
   }
   .pill-btn {
     width: 38px;
     height: 38px;
+  }
+  /* A phone's pill already spans the screen above the timeline, so it cannot be
+     lost the way a desktop corner loses it — and the word costs a thumb's worth
+     of the two buttons' room. The square target and its tooltip stay. */
+  .pill-restore {
+    padding: 0;
+    width: 38px;
+  }
+  .pill-restore-label {
+    display: none;
   }
   .pill-main {
     flex: 1;
