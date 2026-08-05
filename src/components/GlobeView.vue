@@ -16,7 +16,7 @@ import { useSettingsStore } from '../stores/settings'
 import { useViewStore } from '../stores/view'
 import { shapeOf, type HistoricalEvent } from '../lib/events'
 import { ROUTE_FLOW_INTERVAL_MS } from '../lib/paths'
-import { routeDrawingFor, type Drawing } from '../lib/drawing'
+import { areaOutlineFor, routeDrawingFor, type Drawing } from '../lib/drawing'
 import { DrawingLayer, SURFACE_ALT } from '../lib/drawingLayer'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
@@ -34,7 +34,7 @@ import { cloudFadeFor, cloudSharpenFor, cloudIdleIntervalMs } from '../lib/scale
 import { CelestialLayer } from '../lib/celestialLayer'
 import { eraPlan, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
-import { pinElement, clusterElement, pinStateKey } from '../lib/eventPins'
+import { pinElement, clusterElement, pinStateKey, pinTier } from '../lib/eventPins'
 import {
   clusterEvents,
   clusterSpanBucket,
@@ -69,7 +69,16 @@ let drawing: DrawingLayer | undefined
 let routes: DrawingLayer | undefined
 let resizeObs: ResizeObserver | undefined
 let raf = 0
+/**
+ * Is a `pointOfView` flight in the air? Read only by the cancel-on-gesture
+ * handler, so that grabbing a globe nobody is flying costs nothing.
+ */
+let flying = false
+/** The flight's own timer, so a second request supersedes the first cleanly. */
+let flyTimer = 0
 const stops: (() => void)[] = []
+/** How long a "look at this" flight runs, in ms. */
+const FLY_MS = 900
 
 type EventAreaEntry = {
   kind: 'area'
@@ -190,25 +199,12 @@ type KeyedPin = PinDatum & { key: string; tier: Tier }
 const pinData = new Map<string, KeyedPin>()
 const pinEls = new Map<string, HTMLElement>()
 
-/**
- * A pin's tier: its own, or — for a badge — its dominant member's.
- *
- * Dominant by *tier*, not by the raw priority the cluster is anchored on: the
- * two orders differ once the coverage penalty is applied, and a badge hiding
- * the set's leading event has to say so whichever member the badge is sitting
- * on. Anything not in the map is not in the result set and cannot lead it.
- */
-const tierOf = (p: PinDatum, tiers: ReadonlyMap<string, Tier>): Tier =>
-  p.kind === 'cluster'
-    ? (p.members.reduce<Tier>((best, m) => Math.min(best, tiers.get(m.id) ?? 3) as Tier, 3))
-    : (tiers.get(p.event.id) ?? 3)
-
 const stablePins = (pins: PinDatum[], tiers: ReadonlyMap<string, Tier>, selectedId?: string): KeyedPin[] =>
   stableByKey<PinDatum, KeyedPin>(
     pinData,
     pins,
-    (p) => pinStateKey(p, selectedId, tierOf(p, tiers)),
-    (p, key) => ({ ...p, key, tier: tierOf(p, tiers) }) as KeyedPin,
+    (p) => pinStateKey(p, selectedId, pinTier(p, tiers)),
+    (p, key) => ({ ...p, key, tier: pinTier(p, tiers) }),
     // the elements are cached by the same key; a pin that leaves takes its node
     (key) => pinEls.delete(key),
   )
@@ -270,8 +266,28 @@ const eventAreas = (): EventAreaEntry[] => {
 }
 
 /**
- * The routes of the selected event, on exactly the same terms as its footprint:
- * drawn while the panel is open on it, gone when it closes.
+ * The clock the two continuous animations read — the cloud deck's drift and the
+ * flow down a one-way route.
+ *
+ * Pinnable, and only in a development build. Both animations repaint most of the
+ * globe every frame by design, which makes them indistinguishable from a
+ * rendering fault when two frames are compared: the honest test for "does this
+ * edge move when nothing about the scene moved" needs two frames of an
+ * identical scene, and it cannot have one while the clouds are turning and the
+ * dashes are marching. Setting `__freezeClock` to a timestamp holds both still
+ * without touching either animation's own logic, so what a frame diff then sees
+ * is geometry and depth and nothing else.
+ */
+const animationClock = (now: number): number => {
+  if (!import.meta.env.DEV) return now
+  const frozen = (window as unknown as { __freezeClock?: number }).__freezeClock
+  return typeof frozen === 'number' ? frozen : now
+}
+
+/**
+ * The marks the selected event puts on the map — its routes and the outline of
+ * its footprint — on exactly the same terms: drawn while the panel is open on
+ * it, gone when it closes.
  *
  * Expressed as a `Drawing` (lib/drawing.ts) and rendered by the same layer the
  * battle plans use. That is the point of the redesign: there is one piece of
@@ -283,26 +299,30 @@ const eventAreas = (): EventAreaEntry[] => {
  * Memoised by event id, so the layer's own key comparison has a stable object to
  * stringify and a re-selected event is not re-smoothed.
  */
-const routeSpecs = new Map<string, Drawing | undefined>()
-const routeDrawing = (): Drawing | undefined => {
+const selectionSpecs = new Map<string, Drawing | undefined>()
+const selectionDrawing = (): Drawing | undefined => {
   const sel = events.selected
   if (sel?.kind !== 'event') return undefined
-  const routes = shapeOf(sel.geometry, 'routes')
-  if (!routes) return undefined
-  if (!routeSpecs.has(sel.id)) routeSpecs.set(sel.id, routeDrawingFor(routes))
-  return routeSpecs.get(sel.id)
-}
-
-/**
- * The authored drawing — and the one place it is decided that focus mode, not
- * selection, is what shows it (see `focus` in stores/events.ts).
- */
-const focusDrawing = (): Drawing | undefined => {
-  // The FOCUS's drawing, not the selection's: while a child battle is selected
-  // inside an operation's focus, the operation's plan must stay on the map —
-  // the context is what the mode shows, the selection is what the panel reads.
-  const item = events.focused
-  return item?.kind === 'event' ? shapeOf(item.geometry, 'plan')?.drawing : undefined
+  let held = selectionSpecs.get(sel.id)
+  if (!held) {
+    const routes = shapeOf(sel.geometry, 'routes')
+    // The footprint's OUTLINE rides with the routes rather than with the cap.
+    // See areaOutlineFor: the polygon layer strokes with GL_LINES, which no
+    // depth offset in WebGL can reach, so the one place on this globe that can
+    // put a biased line on a sphere draws it. It is cached with the routes
+    // because it has exactly their lifecycle — up with the selection, gone with
+    // it — and because both are pure functions of an event that does not change.
+    const layers = [
+      ...(routeDrawingFor(routes ?? {})?.layers ?? []),
+      // …but not while a battle plan is up: the cap steps aside for a plan (see
+      // eventAreas) and an outline around nothing is a line round a theatre the
+      // reader is no longer being shown.
+      ...(shapeOf(sel.geometry, 'plan') ? [] : [areaOutlineFor(shapeOf(sel.geometry, 'area')?.ring) ?? []].flat()),
+    ]
+    held = layers.length ? { layers } : undefined
+    selectionSpecs.set(sel.id, held)
+  }
+  return held
 }
 
 onMounted(() => {
@@ -396,10 +416,24 @@ onMounted(() => {
     // one fewer wall of triangles per ring for something that was drawn at zero
     // opacity anyway. The invisible *cap* stays — it is the hover/click target.
     .polygonSideColor(() => '')
+    // No stroke on an event footprint — its outline is a fat line in the
+    // DrawingLayer now (see `areaOutlineFor`). three-globe strokes a polygon
+    // with GL_LINES, and there is no polygon offset for line primitives in
+    // WebGL, so that stroke could only ever be held off the planet's depth
+    // value by ALTITUDE: 8.9 km against a depth quantum of ~2.7 km at world
+    // view, which is not a separation, and it flickered along its own length as
+    // the camera moved. That is the smudge that outlived both earlier fixes.
+    //
+    // A nation border is the same primitive with the same exposure, and it is
+    // deliberately NOT moved here: a border is drawn for every polity on the
+    // globe at once rather than one selection at a time, so rebuilding them as
+    // fat lines is a different size of change and a different risk. Nothing was
+    // reported against them — they are thinner, unfilled, and never sit under a
+    // tinted cap, which is where the artefact was legible — so they keep the
+    // layer's stroke and the exposure is written down instead of guessed at.
     .polygonStrokeColor((d) => {
       const p = asPoly(d)
-      if (p.kind === 'area') return tagColor(primaryTag(p.event))
-      return p.nation.color
+      return p.kind === 'area' ? '' : p.nation.color
     })
     // Down near the ground, for the reason everything else is (SURFACE_ALT in
     // lib/drawingLayer.ts): at 0.004 a border slid 63 px against its own
@@ -462,7 +496,7 @@ onMounted(() => {
     //    casing, because the layer draws one stroke per datum.
     //
     // All of it now goes through the DrawingLayer, like every other mark this
-    // globe puts on its map. See `routeDrawing` above.
+    // globe puts on its map. See `selectionDrawing` above.
     //
     // clicking bare globe dismisses an open cluster
     .onGlobeClick(() => events.collapseClusters())
@@ -551,9 +585,6 @@ onMounted(() => {
   // way to read the loader's own state a screenshot cannot tell a patch that
   // got sharper from one that got blurrier. Never exists in a production build.
   if (import.meta.env.DEV) (window as unknown as { __detail?: DetailImagery }).__detail = detail
-  if (import.meta.env.DEV) {
-    ;(window as unknown as { __detail?: DetailImagery }).__detail = detail
-  }
   // the patch only reaches the shader if the loader tells us it arrived
   detail.onReady = () => {
     // a load can resolve after imagery was switched off or the time scrubbed
@@ -828,6 +859,22 @@ onMounted(() => {
   // a stop — dispatches this. It is the single most important dirty source, and
   // the one the whole scheme depends on.
   globe.controls().addEventListener('change', () => wake())
+  // A HAND ON THE GLOBE OUTRANKS A FLIGHT. `pointOfView` with a duration drives
+  // the camera for the better part of a second, and it does not stop for the
+  // user: grabbing the planet mid-flight used to be a tug of war the tween won,
+  // with the globe snapping back to the destination the moment the drag ended.
+  // Stages made that a common gesture rather than a rare one — every chip may
+  // move the camera — so the flight is abandoned the instant a drag starts.
+  //
+  // Re-issuing the CURRENT point of view is the cancel: globe.gl ends the
+  // running tween (which lands it, synchronously) and then sets the camera back
+  // to where this call says it is, so nothing is drawn between the two. Reading
+  // the pov first is what makes that true.
+  globe.controls().addEventListener('start', () => {
+    if (!flying) return
+    flying = false
+    globe!.pointOfView(globe!.pointOfView())
+  })
   // The hover raycast lives inside the render loop, so a pointer that moves over
   // a parked globe has to buy frames for the hover to be found and the tooltip
   // to be drawn. Leaving buys the frames that clear it again.
@@ -904,7 +951,7 @@ onMounted(() => {
     // some other reason entirely (a pointer moving, damping, the safety tick)
     // still finds the phase where the wall clock puts it. The cadence question
     // is the separate one below.
-    if (!still) surface!.setCloudDrift(now - t0)
+    if (!still) surface!.setCloudDrift(animationClock(now) - t0)
     const idleMs = cloudIdleIntervalMs({
       cloudsShown: surface!.cloudsShown,
       reducedMotion: still,
@@ -935,7 +982,7 @@ onMounted(() => {
       // second for a picture nobody was drawing. `due` is the case where the
       // wake below is about to draw one, and `resumeAnimation` renders
       // synchronously, so the phase has to be in place before it.
-      if (pump.running || due) routes!.setFlowPhase(now)
+      if (pump.running || due) routes!.setFlowPhase(animationClock(now))
       if (due) {
         lastFlow = now
         stats.flows++
@@ -1028,7 +1075,7 @@ onMounted(() => {
       const sel = events.selected
       const color = sel ? tagColor(primaryTag(sel)) : '#ffffff'
       if (
-        routes!.set(routeDrawing(), {
+        routes!.set(selectionDrawing(), {
           color,
           altitude: SURFACE_ALT,
           resolution: { width: view.viewportWidthPx, height: view.viewportPx },
@@ -1036,16 +1083,24 @@ onMounted(() => {
       )
         wake()
     }),
-    // The authored drawing. `focusDrawing` is what ties it to focus mode rather
-    // than to the selection; the colour falls back to the event's tag so an
-    // unstyled layer is already in the map's own language.
+    // The authored drawing — the focused item's plan, filtered to whichever
+    // stage of it the reader has stepped into. Both decisions live in
+    // `focusDrawing` (stores/events.ts): that focus mode rather than the
+    // selection shows a plan at all, and which layers a stage keeps. The filter
+    // is a fold over the event's `stages` and the layer `at`s — pure logic over
+    // the item model — and redoing it here, from the focused item and its plan
+    // and its stages and the current stage id, would have put the one rule that
+    // decides what is on the map in a place no test can reach.
+    //
+    // The colour falls back to the event's tag so an unstyled layer is already
+    // in the map's own language.
     watchEffect(() => {
       // colour from the focused context (whose drawing this is), not whatever
       // child happens to be selected inside it
       const sel = events.focused ?? events.selected
       const color = sel ? tagColor(primaryTag(sel)) : '#ffffff'
       if (
-        drawing!.set(focusDrawing(), {
+        drawing!.set(events.focusDrawing, {
           color,
           // The same altitude as everything else on the map. A plan is still the
           // top layer of ink — that is KIND_ORDER and renderOrder, not height.
@@ -1076,8 +1131,14 @@ onMounted(() => {
         target.altitude === undefined
           ? { lat: target.lat, lng: target.lng }
           : { lat: target.lat, lng: target.lng, altitude: target.altitude },
-        900,
+        FLY_MS,
       )
+      // Armed for exactly as long as the flight lasts (see the `start` handler),
+      // and disarmed by a timer rather than by the tween's own completion
+      // because globe.gl does not expose one.
+      flying = true
+      clearTimeout(flyTimer)
+      flyTimer = setTimeout(() => (flying = false), FLY_MS) as unknown as number
       // the default cushion (1.5 s) outlasts the 900 ms flight, and OrbitControls
       // announces every damping step of it anyway
       wake()
@@ -1142,6 +1203,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(raf)
+  clearTimeout(flyTimer)
   stops.forEach((s) => s())
   surface?.dispose()
   detail?.dispose()
@@ -1210,7 +1272,7 @@ onBeforeUnmount(() => {
      are centred and set it to 0. */
   transform: translateY(var(--pin-shift, -50%));
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
-  transition: opacity var(--fast, 0.15s ease);
+  transition: opacity var(--fast);
 }
 .event-pin--selected {
   z-index: 2;
@@ -1222,7 +1284,7 @@ onBeforeUnmount(() => {
 .event-pin--area .pin-footprint {
   transform-box: fill-box;
   transform-origin: center;
-  animation: pin-footprint 2.6s var(--ease, ease) infinite;
+  animation: pin-footprint 2.6s var(--ease) infinite;
 }
 @keyframes pin-footprint {
   0%,

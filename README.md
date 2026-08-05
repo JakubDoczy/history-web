@@ -37,7 +37,15 @@ footprint or a three-year voyage. The article then folds down to a bar above the
 timeline and the globe clears: everything unrelated goes — other events' pins, the
 nation borders — leaving the thing you asked for, the events it contains as pins
 alongside it, and, for the operations that have one, a **battle plan**: front lines,
-arrows of advance, the pockets where armies were lost.
+arrows of advance, the pockets where armies were lost. The pins include the parts
+that never make the ordinary map at all — the regional battles, the sieges and the
+evacuations that are only interesting inside the thing they belong to.
+A long operation also gets a row of **stages** above the bar: *Overview* and then
+its moments in order — for Barbarossa, the border battles, Smolensk, Kiev, Typhoon,
+the counteroffensive. Pick one and the plan thins to what was true that month, a
+short page on it opens, and the camera goes where it happened; *Overview* puts the
+whole campaign back. Only the moments someone wrote down are selectable — it is a
+list of steps, not a scrubber.
 Tap the bar to read the article again, Escape to put the map back to normal.
 Search (top bar) finds any event by name or tag; "Show only this event family" filters
 the globe to one storyline.
@@ -129,14 +137,30 @@ tests/            unit tests, one file per lib module
   | `label` | words on the map | `pos`, `text`, `size: sm\|md` |
 
   Every layer may also carry `color`, `label` (a caption above a marker; documentation
-  on the others) and `at` — a year or a 0..1 fraction, reserved for staging a drawing as
-  the timeline moves. Nothing reads `at` yet and every layer renders regardless.
+  on the others) and `at` — a year, or a 0..1 fraction of the event's span — which says
+  WHEN that layer is true. A layer with no `at` is timeless and always drawn; one with
+  an `at` is drawn on the overview and in the one stage whose window it falls in (see
+  **Stages** below).
   Two units on purpose: a frontline is a *symbol drawn on* a map and is sized in screen
   pixels, a thrust is a *thing on the ground* and is sized in degrees of arc.
   The shipped exemplars are **Operation Barbarossa** (the 22 June border, the December
   high-water mark, the three army-group axes, the Minsk/Smolensk/Kiev pockets) and
   **D-Day** (the five beaches, the airborne drops, the beachhead on the night of the
   6th and the front on 30 June).
+- **Stages** (`stages`) cut a long operation into the moments a historian would name,
+  so focus mode can be stepped through rather than read all at once. Schema in
+  `src/lib/stages.ts`, validated at build time by `validate_stages` and over the corpus
+  by `tests/eventsData.test.ts`: a list of `{ id, name, at, page?, camera? }`, ids unique
+  within the event, `at` in the same two forms a drawing layer's is. In the app a staged
+  event grows a **stage strip** above the pill — *Overview* first, then one chip per
+  stage in `at` order. A chip filters the drawing to its own layers plus the timeless
+  ones, shows its `page` (the same markup a body uses) with a way back, moves the time
+  cursor (never the selection band), and moves the camera if it says where.
+  **Only the authored steps are selectable**: this is a list of named moments, not a
+  scrubber, because the data does not know what a Tuesday in August looked like.
+  Barbarossa is staged in five (the border battles, Smolensk, Kiev, Typhoon, the
+  counteroffensive) and D-Day in four (6 June, the beachhead, Cherbourg, the breakout);
+  each carries per-stage annotations that appear only in their own moment.
 - **Paleogeography**: `scripts/gen_paleo_v4.py` downloads the PALEOMAP PaleoDEMs and
   renders the 38 deep-time frames (hypsometric tints, hillshade, shelf seas, ice).
 - **Nations** are hand-curated keyframed polygons in `src/data/nations.json`; rings

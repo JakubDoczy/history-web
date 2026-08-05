@@ -7,6 +7,7 @@ import {
   pinShiftPercent,
   pinStateKey,
   pinSvg,
+  pinTier,
 } from '../src/lib/eventPins'
 import type { PinDatum } from '../src/lib/eventClusters'
 import type { GeoPath } from '../src/lib/paths'
@@ -159,6 +160,35 @@ describe('pinStateKey', () => {
     expect(pinStateKey(badge('a', [a, b]))).not.toBe(pinStateKey(pin(a)))
     expect(pinStateKey(badge('a', [a, b]))).not.toBe(pinStateKey(badge('a', [a])))
     expect(pinStateKey(badge('a', [a, b]))).toBe(pinStateKey(badge('a', [a, b])))
+  })
+})
+
+describe('pinTier', () => {
+  const a = ev({ id: 'a' })
+  const b = ev({ id: 'b' })
+  const c = ev({ id: 'c' })
+  const pin = (e: HistoricalEvent): PinDatum => ({
+    kind: 'event', id: e.id, lat: 0, lng: 0, event: e, fanned: false,
+  })
+  const badge = (members: HistoricalEvent[]): PinDatum => ({
+    kind: 'cluster', id: 'k', lat: 0, lng: 0, members,
+  })
+  const map = (o: Record<string, 1 | 2 | 3>) => new Map<string, 1 | 2 | 3>(Object.entries(o))
+
+  it('gives a lone pin its own tier', () => {
+    expect(pinTier(pin(a), map({ a: 2 }))).toBe(2)
+  })
+
+  it('gives a badge its most significant member, not its first or its last', () => {
+    expect(pinTier(badge([c, a, b]), map({ a: 1, b: 3, c: 2 }))).toBe(1)
+    expect(pinTier(badge([a, b, c]), map({ a: 3, b: 2, c: 3 }))).toBe(2)
+  })
+
+  it('falls back to the least significant tier for anything off the map', () => {
+    // not in the result set, so it cannot be leading it
+    expect(pinTier(pin(a), map({}))).toBe(3)
+    expect(pinTier(badge([a, b]), map({ b: 2 }))).toBe(2)
+    expect(pinTier(badge([a, b]), map({}))).toBe(3)
   })
 })
 

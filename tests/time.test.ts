@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import {
   formatYear,
@@ -11,7 +11,8 @@ import {
   MAX_TIME,
 } from '../src/lib/time'
 import { HISTORICAL } from '../src/lib/eras'
-import { useTimeStore } from '../src/stores/time'
+import { FIT_MS, useTimeStore } from '../src/stores/time'
+import { windowFitting } from '../src/lib/selection'
 
 describe('formatYear', () => {
   it.each([
@@ -431,5 +432,104 @@ describe('time store: a move that moves nothing publishes nothing', () => {
     s.setRange({ start: 1000, end: 1800 })
     expect(s.currentTime).toBe(1800)
     expect(s.currentTime).not.toBe(before.currentTime)
+  })
+})
+
+/* ------------------------------------------------- the band and the rail ---
+   Regression: `selectEra` sets the band to the era and then *flies* the window
+   to it, so for the length of the flight the band is wider than the rail — and
+   what put it back was the tween landing. Any gesture cancels the tween, and
+   two of them then returned without touching the band: a pan already hard
+   against the end of time (`d === 0`) and a zoom refused by the minimum-span
+   guard. The band stayed off the rail, drawn at a negative x, until something
+   unrelated happened to re-clamp it. See /tmp/shots35/repro-era-band.mjs. */
+describe('the selection is never stranded outside the window', () => {
+  const STONE_AGE = { name: 'Stone Age', start: -3e6, end: -3301, color: '#5a5f6d' }
+  /** Frames of a fit in flight — collected, and run only when a test says so. */
+  let frames: FrameRequestCallback[]
+  /** A clock the test drives, so a tween can be flown without waiting on one. */
+  let clock: number
+
+  const inWindow = (s: ReturnType<typeof useTimeStore>) =>
+    s.selection.start >= s.range.start && s.selection.end <= s.range.end
+
+  /** The state the repro starts from: home window, home band, a fit in flight. */
+  const eraFlightFromHome = () => {
+    const s = useTimeStore()
+    s.setRange({ start: -550, end: MAX_TIME })
+    s.setSelection(500, 1945)
+    s.selectEra(STONE_AGE)
+    expect(frames.length).toBeGreaterThan(0) // the fit really is in the air
+    expect(inWindow(s)).toBe(false) // ...and the band is deliberately off-rail
+    return s
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    frames = []
+    // a clock to fly against, and a user who has not asked for less motion —
+    // without both, fitWindow lands in one synchronous step and there is no
+    // in-flight state to strand anything
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb))
+    vi.stubGlobal('cancelAnimationFrame', () => {})
+    vi.stubGlobal('matchMedia', () => ({ matches: false }))
+    clock = performance.now()
+    vi.spyOn(performance, 'now').mockImplementation(() => clock)
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('re-clamps when a pan is refused for being hard against the end of time', () => {
+    const s = useTimeStore()
+    eraFlightFromHome()
+    const before = s.range
+    s.pan(1) // the window already ends at the present: nothing to pan into
+    expect(s.range).toBe(before) // still not a pan…
+    expect(inWindow(s)).toBe(true) // …but the band is back on the rail
+  })
+
+  it('re-clamps when a zoom is refused by the minimum-span guard', () => {
+    const s = useTimeStore()
+    eraFlightFromHome()
+    const before = s.range
+    s.zoom(1e-5) // a window less than a year wide: refused
+    expect(s.range).toBe(before)
+    expect(inWindow(s)).toBe(true)
+  })
+
+  it('leaves the band on the rail when a scrub takes the view over mid-flight', () => {
+    const s = useTimeStore()
+    eraFlightFromHome()
+    s.setTime(-100000) // outside the window, so the cursor lands on its edge
+    expect(inWindow(s)).toBe(true)
+    expect(s.currentTime).toBeGreaterThanOrEqual(s.range.start)
+  })
+
+  it('lands the flight with the band on the rail', () => {
+    const s = useTimeStore()
+    eraFlightFromHome()
+    // half way there: still in the air, still off the rail
+    clock += FIT_MS / 2
+    frames.shift()!(clock)
+    expect(inWindow(s)).toBe(false)
+    // and now the landing
+    clock += FIT_MS
+    frames.shift()!(clock)
+    expect(s.range).toEqual(windowFitting(STONE_AGE))
+    expect(inWindow(s)).toBe(true)
+  })
+
+  it('clamps the era into the window it is flying to, at the moment it is set', () => {
+    // no clock: the fit lands synchronously, and the band must be inside it
+    vi.unstubAllGlobals()
+    setActivePinia(createPinia())
+    const s = useTimeStore()
+    for (const era of HISTORICAL) {
+      s.selectEra(era)
+      expect(inWindow(s), era.name).toBe(true)
+      expect(s.selection).toEqual({ start: Math.max(era.start, MIN_TIME), end: era.end })
+    }
   })
 })

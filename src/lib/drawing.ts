@@ -47,11 +47,14 @@ export interface DrawingCommon {
   color?: string
   /**
    * WHEN this layer is true — a year (1941) or a fraction of the event's span
-   * (0..1). Carried for time-staging a drawing as the timeline moves; nothing
-   * reads it yet and **every layer renders regardless**, so it is documentation
-   * with a schema slot rather than behaviour. It is here now because staging is
-   * a change to the renderer, not to the data, and adding it later would mean
-   * re-authoring every exemplar.
+   * (0..1).
+   *
+   * Read by lib/stages.ts, which is where the two forms and the comparison
+   * between them are defined. The rule in one line: a layer with no `at` is
+   * TIMELESS and drawn in every stage, and one with an `at` is drawn on the
+   * overview and in the single stage whose window it falls in. An event with no
+   * `stages` ignores the field entirely and draws every layer, which is what
+   * every drawing authored before staging existed relies on.
    */
   at?: number
   /** Shown in the layer's own label, and by the renderer's hit label. */
@@ -148,9 +151,6 @@ export const MARKER_SIZE_DEG = 0.8
  */
 export const THRUST_HEAD_SCALE = 2.4
 
-/** The layer kinds, in draw order — later kinds paint over earlier ones. */
-export const DRAWING_KINDS = ['route', 'frontline', 'thrust', 'marker', 'label'] as const
-
 /* ------------------------------------------------------------ validation */
 
 const isPos = (p: unknown): p is [number, number] =>
@@ -158,8 +158,8 @@ const isPos = (p: unknown): p is [number, number] =>
   p.length === 2 &&
   Number.isFinite(p[0]) &&
   Number.isFinite(p[1]) &&
-  Math.abs(p[0] as number) <= 180 &&
-  Math.abs(p[1] as number) <= 90
+  Math.abs(p[0]) <= 180 &&
+  Math.abs(p[1]) <= 90
 
 const isColor = (c: unknown) => c === undefined || (typeof c === 'string' && c.length > 0)
 const isSize = (n: unknown) => n === undefined || (typeof n === 'number' && n > 0 && n < 90)
@@ -271,4 +271,37 @@ export const routeDrawingFor = (e: {
   const paths = e.paths?.filter((p) => p.length >= 2) ?? []
   if (!paths.length) return undefined
   return { layers: [{ type: 'route', paths, direction: directionOf(e) }] }
+}
+
+/** How heavy an area's outline is drawn, in screen pixels. */
+export const AREA_OUTLINE_WIDTH = 2
+
+/**
+ * An event footprint's OUTLINE, as a drawing layer.
+ *
+ * The fill stays in the polygon layer — it is the hover and click target, and a
+ * cap is a mesh, so the polygon offset that keeps it off the planet's depth
+ * value reaches it. The outline cannot be drawn there: three-globe strokes a
+ * polygon with a `Line`, GL_LINES, and `POLYGON_OFFSET_FILL` does not apply to
+ * line primitives — there is no `glPolygonOffset` for lines in WebGL at all. So
+ * the stroke was left separated from the globe by height alone, 8.9 km against
+ * a ~2.7 km depth quantum at world view, and it kept doing what the cap stopped
+ * doing: resolving to the planet's own depth value and flickering along its
+ * length as the camera moved.
+ *
+ * Drawn through the DrawingLayer it is a *fat* line — screen-space quads, which
+ * are triangles, which do take the offset. It also gets everything else the
+ * layer already guarantees: SURFACE_ALT, densification so the chords do not sag
+ * through the planet between vertices, and a renderOrder above the cap.
+ *
+ * The ring is closed here rather than by the caller, because a footprint's ring
+ * is authored open (the polygon layer closes it for its own coordinates) and an
+ * outline with a gap in it is exactly the artefact this is fixing.
+ */
+export const areaOutlineFor = (ring: GeoPath | undefined): DrawingSpec | undefined => {
+  if (!ring || ring.length < 3) return undefined
+  const [first] = ring
+  const last = ring[ring.length - 1]
+  const closed = first[0] === last[0] && first[1] === last[1] ? ring : [...ring, first]
+  return { type: 'frontline', paths: [closed], dash: 'solid', width: AREA_OUTLINE_WIDTH }
 }

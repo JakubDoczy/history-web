@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, useTemplateRef } from 'vue'
+import { computed, nextTick, ref, onMounted, useTemplateRef, watch } from 'vue'
 import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
 import { clamp, formatYear } from '../lib/time'
+import { NO_ACTIVE, clampActive, stepActive } from '../lib/listbox'
 import type { Item } from '../lib/events'
 
 const events = useEventStore()
@@ -11,7 +12,59 @@ const time = useTimeStore()
 const ui = useUiStore()
 const query = ref('')
 const input = useTemplateRef<HTMLInputElement>('input')
+const list = useTemplateRef<HTMLUListElement>('list')
 const results = computed(() => events.search(query.value))
+
+/**
+ * THE KEYBOARD. The results are a listbox the text field *owns*: focus never
+ * leaves the input — a search box you have to tab out of to reach its answers
+ * is one where every keystroke after the first arrow key goes somewhere
+ * surprising — and the highlighted row is published through
+ * `aria-activedescendant` instead, which is how a screen reader hears it.
+ *
+ * Which leaves three things for this file: the index, the id it names, and
+ * keeping the highlighted row scrolled into view. The arithmetic is in
+ * lib/listbox.ts.
+ */
+const active = ref(0)
+const rowId = (id: string) => `search-opt-${id}`
+const activeId = computed(() =>
+  active.value >= 0 && active.value < results.value.length
+    ? rowId(results.value[active.value].id)
+    : undefined,
+)
+
+// A new query is a new ranking, so the highlight goes back to the best match —
+// which is also the row Enter took before any of this existed.
+//
+// The QUERY, not the results. The result list is also rebuilt whenever a chunk
+// of events streams in (`revision` in stores/events.ts), and watching that
+// walked the reader's highlight back to the top under their hands, seconds
+// after they had moved it. An index that outlives its row is handled where it
+// is read instead: `activeId` publishes nothing and `stepActive` re-enters the
+// list from the top.
+watch(query, () => (active.value = clampActive(results.value.length)))
+
+/** Keep the highlighted row on screen: the list scrolls, the arrows must not
+ *  walk off the bottom of it. `nearest`, so a visible row is never scrolled. */
+const revealActive = async () => {
+  await nextTick()
+  list.value?.children[active.value]?.scrollIntoView({ block: 'nearest' })
+}
+
+function onKeydown(e: KeyboardEvent) {
+  const next = stepActive(e.key, active.value, results.value.length)
+  if (next === null) return // not ours: Escape, Enter, Tab, and every character
+  e.preventDefault() // ArrowUp/Down in a text field otherwise jump the caret
+  active.value = next
+  revealActive()
+}
+
+/** Enter takes the highlighted row — the first one, until an arrow says else. */
+function submit() {
+  const hit = results.value[active.value]
+  if (hit) pick(hit.id)
+}
 
 onMounted(() => input.value?.focus())
 
@@ -34,6 +87,7 @@ function pick(id: string) {
   }
   events.select(id)
   query.value = ''
+  active.value = NO_ACTIVE
   ui.close()
 }
 </script>
@@ -53,22 +107,41 @@ function pick(id: string) {
         <circle cx="11" cy="11" r="7" />
         <path d="m20 20-3.6-3.6" />
       </svg>
+      <!-- the combobox pattern: the field keeps focus and NAMES the row it has
+           highlighted, so arrows never take the caret out of the text -->
       <input
         ref="input"
         v-model="query"
         type="search"
         placeholder="Search events, people, ideas"
         aria-label="Search events, people and ideas"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-controls="search-results"
+        :aria-expanded="results.length > 0"
+        :aria-activedescendant="activeId"
+        @keydown="onKeydown"
         @keydown.escape="ui.close()"
-        @keydown.enter="results[0] && pick(results[0].id)"
+        @keydown.enter.prevent="submit()"
       />
     </div>
 
-    <ul v-if="results.length" class="scroll-y">
+    <ul
+      v-if="results.length"
+      id="search-results"
+      ref="list"
+      class="scroll-y"
+      role="listbox"
+      aria-label="Search results"
+    >
       <li
         v-for="(e, i) in results"
+        :id="rowId(e.id)"
         :key="e.id"
-        :class="{ first: i === 0 }"
+        role="option"
+        :aria-selected="i === active"
+        :class="{ active: i === active }"
+        @mousemove="active = i"
         @mousedown.prevent="pick(e.id)"
       >
         <span class="name">{{ e.name }}</span>
@@ -191,12 +264,17 @@ li {
   border-radius: var(--r-pill);
   padding: 1px 7px;
 }
-/* the first row is what Enter selects — mark it quietly */
-li.first {
+/* the highlighted row is what Enter selects — mark it quietly. It is the first
+   row until an arrow key says otherwise, which is exactly what this used to
+   mark unconditionally, so the panel at rest looks as it always did. */
+li.active {
   box-shadow: inset 2px 0 0 var(--brass-line);
+  /* quieter than hover: the arrows have to be followable without the list
+     looking like the pointer is somewhere it is not */
+  background: rgba(255, 255, 255, 0.06);
 }
 li:hover,
-li.first:hover {
+li.active:hover {
   background: var(--brass-soft);
   color: #fff;
 }

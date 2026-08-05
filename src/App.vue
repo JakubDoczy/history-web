@@ -17,6 +17,16 @@ const time = useTimeStore()
 // with no globe on it still gets its events).
 onMounted(() => firstFrame.whenDrawn(() => events.init()))
 watchEffect(() => events.ensure(time.range.start, time.range.end))
+
+// And focus mode ends when its subject leaves the timeline. The two stores are
+// composed here, as they are above and as the era pickers do it (TopBar.vue):
+// time knows nothing about events, events do not watch the clock, and this file
+// is already where "the window moved, so…" is spelled out.
+//
+// The band, not the cursor: the band is what culls the pins, so it is what says
+// whether the focused item is on screen at all. Stepping through the stages of
+// an operation moves the cursor alone and never disturbs the mode.
+watchEffect(() => events.dropFocusOffTimeline(time.selection.start, time.selection.end))
 </script>
 
 <template>

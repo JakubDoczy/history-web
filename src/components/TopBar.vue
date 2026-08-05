@@ -237,10 +237,19 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
+/* The two halves of the bar are not equals when there is not enough room for
+   both. The right-hand group is all fixed sizes — a year, and two touch targets
+   — and it is the group that must never be squeezed; the left-hand one carries
+   the only thing here that can give up characters, which is the era's name. So
+   the right side is rigid and the left side is the one that shrinks. Without
+   this the bar simply overflowed: `min-width: 0` let `.mark` shrink but nothing
+   inside it was told to, so the era chip kept its full width and was drawn
+   straight through the year — 54 px of overlap at 320 px, "CONTEMP[1990]RARY". */
 .mark {
   display: flex;
   align-items: center;
   gap: var(--s2);
+  flex: 1 1 auto;
   min-width: 0;
 }
 .title {
@@ -258,6 +267,9 @@ onBeforeUnmount(() => {
 }
 .era-picker {
   position: relative;
+  /* the one flexible item in the bar: it gives up width before anything else,
+     and its button ellipsises inside whatever is left (see `.era-name`) */
+  flex: 0 1 auto;
   min-width: 0;
 }
 .era {
@@ -265,7 +277,9 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  max-width: 250px;
+  /* `100%` is what makes the ellipsis fire — a button is sized by its text, and
+     without a cap tied to the space it has been given it just overflows */
+  max-width: min(250px, 100%);
   height: 26px;
   padding: 0 7px;
   border: 1px solid transparent;
@@ -426,6 +440,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: var(--s2);
+  flex: none; /* a year and two touch targets: nothing here may be squeezed */
 }
 .stamp {
   font-family: var(--cond);
@@ -461,7 +476,9 @@ onBeforeUnmount(() => {
   }
   .era {
     height: 34px;
-    max-width: 126px;
+    /* 126px holds the longest era name ("Contemporary") at this size; the 100%
+       is the one that bites when the window is too narrow for even that */
+    max-width: min(126px, 100%);
     font-size: var(--t-micro);
     letter-spacing: 0.05em;
     border-color: var(--line);
@@ -489,6 +506,24 @@ onBeforeUnmount(() => {
   .right :deep(.icon-btn) {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* The narrowest phones in use (320-375 px), where the four things in this bar
+   do not all fit even after the chip has given up what it can: two 40 px touch
+   targets, a year that may be "4500 Ma", the era, and the wordmark. Something
+   has to go, and it is the wordmark — it is the only element here that is not a
+   control and not information; the app is already on screen and does not need
+   to announce itself in the two centimetres the era name wants. Same judgement
+   that hides the rule and the caret one breakpoint up.
+
+   The measurement, at 320: 296 px of content box, of which the year and the
+   buttons take ~160 and the gaps 12, leaving ~124 for the chip — one pixel
+   more than "CONTEMPORARY" needs at this size, which is the widest era name
+   there is. Below that the ellipsis takes over rather than the overlap. */
+@media (max-width: 380px) {
+  .title {
+    display: none;
   }
 }
 </style>

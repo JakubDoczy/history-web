@@ -151,7 +151,42 @@ const click = (sel) =>
     el.click()
   }, sel)
 const waitForSel = (sel) => settleTo(sel, (s) => !!document.querySelector(s), sel)
+const hasPin = (name) =>
+  page.evaluate(
+    (n) => [...document.querySelectorAll('.event-pin')].some((x) => x.title.includes(n)),
+    name,
+  )
+/**
+ * Click the pin for a named event, fanning a cluster out first if it is inside
+ * one.
+ *
+ * Barbarossa has eight parts now — the five headline ones plus Brest, Uman and
+ * Tallinn — and at the zoom the plan is framed at, two of them fall inside a
+ * cluster badge rather than standing as their own teardrop (see
+ * lib/eventClusters.ts). That is the app's ordinary answer to crowded pins and
+ * a reader gets past it in one tap, so the harness does what the reader does
+ * rather than reaching into the store: the point of this script is that the
+ * parts are REACHABLE, and a part behind a badge that will not open is exactly
+ * the failure worth catching.
+ */
 const clickPin = async (name) => {
+  await settleTo(
+    `a pin or a cluster for ${name}`,
+    (n) =>
+      [...document.querySelectorAll('.event-pin')].some(
+        (x) => x.title.includes(n) || /events here/.test(x.title),
+      ),
+    name,
+  )
+  for (let i = 0; i < 6 && !(await hasPin(name)); i++) {
+    await page.evaluate((k) => {
+      const badges = [...document.querySelectorAll('.event-pin')].filter((x) =>
+        /events here/.test(x.title),
+      )
+      badges[k % Math.max(1, badges.length)]?.click()
+    }, i)
+    await page.waitForTimeout(500)
+  }
   await settleTo(`a pin for ${name}`, (n) =>
     [...document.querySelectorAll('.event-pin')].some((x) => x.title.includes(n)), name)
   await page.evaluate((n) => {
@@ -204,7 +239,7 @@ await check('lands on the operation, still in the mode', () => {
 console.log('\n(d) closing the battle with its own X')
 await clickPin('Kiev')
 await waitForSel('[data-test="focus-back"]')
-await click('[data-test="pill-close"]')
+await click('[data-test="pill-close"], [data-test="panel-close"]')
 await settleTo('the operation in the panel', () =>
   !document.querySelector('[data-test="focus-back"]'))
 s = await stateOf()
@@ -241,10 +276,10 @@ await waitForSel('[data-test="show-on-map"]')
 await click('[data-test="show-on-map"]')
 await clickPin('Kiev')
 await waitForSel('[data-test="focus-back"]')
-await click('[data-test="pill-close"]') // closes the battle
+await click('[data-test="pill-close"], [data-test="panel-close"]') // closes the battle
 await settleTo('the operation in the panel', () =>
   !document.querySelector('[data-test="focus-back"]'))
-await click('[data-test="pill-close"]') // closes the operation
+await click('[data-test="pill-close"], [data-test="panel-close"]') // closes the operation
 await settleToPanel('none')
 await shot('05-stuck-state-resolved')
 s = await stateOf()

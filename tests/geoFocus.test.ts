@@ -7,6 +7,8 @@ import {
   altitudeForCapDeg,
   boundingCap,
   focusTargetFor,
+  tightFovDeg,
+  MIN_FIT_ASPECT,
 } from '../src/lib/geoFocus'
 import { viewSpanDeg, visibleSpanDeg } from '../src/lib/detailImagery'
 import { separationDeg } from '../src/lib/queryIndex'
@@ -242,5 +244,85 @@ describe('focusTargetFor — a drawing is geometry too', () => {
       drawing: { layers: [{ type: 'marker', pos: [-0.59, 49.35] }] },
     })
     expect(focusTargetFor(tiny)!.altitude).toBe(MIN_FIT_ALTITUDE)
+  })
+})
+
+/* --------------------------------------------- the frame is a rectangle ---
+   Regression: the fit inverted the camera's VERTICAL fov and nothing else, so
+   the altitude for an item was the same on a 1440x900 desktop as on a 390x844
+   phone — where the frame is half as wide as it is tall, and a wide item
+   (Barbarossa's front, the Silk Road) hung off both sides of the screen. */
+describe('tightFovDeg', () => {
+  it('leaves a landscape window alone: its height is already the tight axis', () => {
+    expect(tightFovDeg(FIT_FOV, 16 / 9)).toBe(FIT_FOV)
+    expect(tightFovDeg(FIT_FOV, 1)).toBe(FIT_FOV)
+  })
+
+  it('narrows for a portrait window, by the tangent the projection scales', () => {
+    const aspect = 390 / 844
+    const expected = (2 * Math.atan(aspect * Math.tan((FIT_FOV / 2) * (Math.PI / 180)))) * (180 / Math.PI)
+    expect(tightFovDeg(FIT_FOV, aspect)).toBeCloseTo(expected, 9)
+    expect(tightFovDeg(FIT_FOV, aspect)).toBeLessThan(FIT_FOV)
+    // and monotone: the narrower the window, the narrower the lens across it
+    expect(tightFovDeg(FIT_FOV, 0.5)).toBeLessThan(tightFovDeg(FIT_FOV, 0.8))
+  })
+
+  it('stops believing an aspect past the bounds the rest of the app clamps to', () => {
+    expect(tightFovDeg(FIT_FOV, 0.01)).toBe(tightFovDeg(FIT_FOV, MIN_FIT_ASPECT))
+    expect(tightFovDeg(FIT_FOV, 99)).toBe(FIT_FOV)
+    expect(tightFovDeg(FIT_FOV, 0)).toBe(FIT_FOV) // no measurement yet: square
+  })
+})
+
+describe('focusTargetFor — fitted to the window that is actually on screen', () => {
+  /** A front ~20° wide and ~5° tall: the shape a portrait frame cuts in half. */
+  const wide = ev({
+    lat: 52,
+    lng: 25,
+    paths: [
+      [
+        [15, 54],
+        [25, 52],
+        [35, 50],
+      ],
+    ],
+  })
+
+  it('backs the camera off on a portrait phone, and not on a desktop', () => {
+    const desktop = focusTargetFor(wide, FIT_FOV, 1440 / 900)!.altitude
+    const square = focusTargetFor(wide)!.altitude
+    const phone = focusTargetFor(wide, FIT_FOV, 390 / 844)!.altitude
+    expect(desktop).toBe(square) // landscape never fitted the wrong axis
+    expect(phone).toBeGreaterThan(desktop)
+  })
+
+  it('keeps the whole item inside the tight axis of the frame, at every window', () => {
+    for (const [w, h] of [[1440, 900], [768, 1024], [390, 844], [320, 568]]) {
+      const aspect = w / h
+      const target = focusTargetFor(wide, FIT_FOV, aspect)!
+      // the circle inscribed in the frame: the half-span of whichever axis is
+      // narrower, which is what every point has to be inside
+      const halfFrame = viewSpanDeg(target.altitude, tightFovDeg(FIT_FOV, aspect)) / 2
+      for (const [lng, lat] of shapeOf(wide.geometry, 'routes')!.paths[0])
+        expect(
+          separationDeg(target.lat, target.lng, lat, lng),
+          `${w}x${h} ${lng},${lat}`,
+        ).toBeLessThanOrEqual(halfFrame)
+    }
+  })
+
+  it('gives a bare point its region on a phone too, not a keyhole', () => {
+    const point = focusTargetFor(ev({ lat: 48.86, lng: 2.35 }), FIT_FOV, 390 / 844)!
+    expect(point.altitude).toBe(altitudeForCapDeg(POINT_CAP_DEG, tightFovDeg(FIT_FOV, 390 / 844)))
+    expect(point.altitude).toBeGreaterThan(altitudeForCapDeg(POINT_CAP_DEG))
+  })
+
+  it('still stops at world view for a route that circles the planet', () => {
+    const round = ev({
+      lat: 0,
+      lng: 0,
+      paths: [[[0, 0], [90, 10], [180, 0], [-90, -10], [0, 0]]],
+    })
+    expect(focusTargetFor(round, FIT_FOV, 320 / 568)!.altitude).toBe(MAX_FIT_ALTITUDE)
   })
 })

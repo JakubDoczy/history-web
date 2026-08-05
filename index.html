@@ -17,8 +17,17 @@
 
       This URL must match MODERN_TEXTURE in src/data/paleoTextures.ts. They are
       the same file by hand, not by construction — a preload that misses is worse
-      than none, because it spends the bandwidth twice. %BASE_URL% is Vite's, and
-      keeps this working under the GitHub Pages sub-path.
+      than none, because it spends the bandwidth twice.
+
+      It is written root-relative and WITHOUT %BASE_URL%, which looks wrong under
+      a GitHub Pages sub-path and is the only form that is right in both modes.
+      Vite's HTML transform rewrites the `href` of a <link> itself, prepending
+      `base` — so `%BASE_URL%textures/…` was substituted to `/history-web/…` and
+      then rewritten again to `/history-web/history-web/…`, a 404 in dev that
+      spent the whole point of the preload (the build's own pass over the same
+      attribute happened to be a no-op, so it only ever showed in dev). One
+      mechanism per URL: the leading slash makes it root-relative, and the
+      transform supplies the base, in dev and in the build alike.
 
       `crossorigin` is not optional and not about origins. three's Loader sets
       `crossOrigin = 'anonymous'` on every image it creates, and the preload cache
@@ -29,7 +38,7 @@
       rel="preload"
       as="image"
       crossorigin
-      href="%BASE_URL%textures/base/earth-blue-marble.webp"
+      href="/textures/base/earth-blue-marble.webp"
     />
 
     <!--

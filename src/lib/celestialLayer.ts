@@ -33,7 +33,9 @@ export class CelestialLayer {
   private glow: Sprite
   private moon: Mesh<SphereGeometry, MeshPhongMaterial>
 
-  constructor(scene: Scene, private radius: number, moonTextureUrl: string) {
+  // `radius` is a plain parameter, not a `private` field: everything it sizes is
+  // sized once here, and nothing after construction asks how big the globe is.
+  constructor(scene: Scene, radius: number, moonTextureUrl: string) {
     this.sun = new Mesh(
       new SphereGeometry(radius * 2.2, 32, 32),
       new MeshBasicMaterial({ color: 0xfff6e0 }),

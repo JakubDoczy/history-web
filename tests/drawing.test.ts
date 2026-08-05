@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
+  AREA_OUTLINE_WIDTH,
+  areaOutlineFor,
   drawingPoints,
   isDrawing,
   isDrawingSpec,
@@ -182,5 +184,44 @@ describe('drawingPoints reaches a route', () => {
     const pts = drawingPoints(d)
     for (const p of [[0, 0], [10, 5], [20, 0]])
       expect(pts.some((q) => q[0] === p[0] && q[1] === p[1]), `${p}`).toBe(true)
+  })
+})
+
+describe('areaOutlineFor', () => {
+  const ring: GeoPath = [
+    [-70, -25],
+    [-80, 10],
+    [-60, 20],
+    [-30, 30],
+  ]
+
+  it('is a solid frontline, because that is the primitive that can be biased', () => {
+    // three-globe strokes a polygon with GL_LINES and WebGL has no polygon
+    // offset for line primitives, so the layer's own stroke could only be held
+    // off the planet's depth value by height — 8.9 km against a ~2.7 km depth
+    // quantum at world view. A frontline is a fat line: screen-space quads,
+    // which are triangles, which the offset does reach.
+    const spec = areaOutlineFor(ring)!
+    expect(spec.type).toBe('frontline')
+    expect(spec.dash).toBe('solid')
+    expect(spec.width).toBe(AREA_OUTLINE_WIDTH)
+  })
+
+  it('closes the ring, because a footprint is authored open', () => {
+    const [path] = areaOutlineFor(ring)!.paths as GeoPath[]
+    expect(path).toHaveLength(ring.length + 1)
+    expect(path[path.length - 1]).toEqual(ring[0])
+  })
+
+  it('leaves an already-closed ring alone rather than doubling its last point', () => {
+    const closed: GeoPath = [...ring, ring[0]]
+    const [path] = areaOutlineFor(closed)!.paths as GeoPath[]
+    expect(path).toHaveLength(closed.length)
+  })
+
+  it('draws nothing for a ring that is not a ring', () => {
+    expect(areaOutlineFor(undefined)).toBeUndefined()
+    expect(areaOutlineFor([])).toBeUndefined()
+    expect(areaOutlineFor([[0, 0], [1, 1]])).toBeUndefined()
   })
 })

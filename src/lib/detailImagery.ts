@@ -332,6 +332,12 @@ export function imageSize(
  * Pixels per degree of latitude a request will actually deliver — the number to
  * compare against the screen's own density when asking whether a patch is as
  * sharp as the zoom warrants.
+ *
+ * Nothing in the pipeline calls it: it names the quantity `imageSize`'s
+ * contract is written in, and tests/detailImagery.test.ts holds that contract
+ * (never blurrier than the screen, never sharper than the source can give)
+ * across the whole zoom range. Same reason `visibleEvents` ships in
+ * lib/events.ts — the statement lives next to the code it is about.
  */
 export const requestedPxPerDeg = (b: Bbox, size: { height: number }) =>
   size.height / Math.max(b.maxLat - b.minLat, 1e-9)
@@ -1078,9 +1084,9 @@ export class DetailImagery {
    * platform gave us, and a stub in a test has none of these properties.
    */
   private static naturalSize(img: CanvasImageSource): { w: number; h: number } | undefined {
-    const any = img as { naturalWidth?: number; naturalHeight?: number; width?: number; height?: number }
-    const w = any.naturalWidth ?? (typeof any.width === 'number' ? any.width : 0)
-    const h = any.naturalHeight ?? (typeof any.height === 'number' ? any.height : 0)
+    const src = img as { naturalWidth?: number; naturalHeight?: number; width?: number; height?: number }
+    const w = src.naturalWidth ?? (typeof src.width === 'number' ? src.width : 0)
+    const h = src.naturalHeight ?? (typeof src.height === 'number' ? src.height : 0)
     return w > 0 && h > 0 ? { w, h } : undefined
   }
 
@@ -1122,7 +1128,7 @@ export class DetailImagery {
       if (up) c.drawImage(up.canvas, up.x + dx, up.y + dy, up.w, up.h)
       else c.drawImage(p.image, x + dx, y + dy, w, h)
     }
-    const soft = this.feathered(p, x, y, w, h, canvasW, canvasH, draw)
+    const soft = this.feathered(x, y, w, h, canvasW, canvasH, draw)
     if (soft) ctx.drawImage(soft.canvas, soft.x, soft.y)
     else draw(ctx, 0, 0)
   }
@@ -1153,7 +1159,6 @@ export class DetailImagery {
    * back from the edge of the rectangle it is supposed to fill.
    */
   private feathered(
-    p: CachedPatch<CanvasImageSource>,
     x: number,
     y: number,
     w: number,

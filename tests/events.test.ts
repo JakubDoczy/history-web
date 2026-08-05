@@ -299,6 +299,7 @@ import {
   mapPinsOf,
   searchItems,
   timeExtentOf,
+  touchesSpan,
   type Concept,
   type Item,
   type Person,
@@ -337,6 +338,21 @@ describe('item kinds', () => {
     expect(timeExtentOf(einstein)).toEqual([1879, 1955])
     expect(timeExtentOf(nowhere)).toEqual([1500, 1500]) // no death year: a point
     expect(timeExtentOf(relativityIdea)).toEqual([1905, 1905])
+  })
+
+  it('says whether a subject touches an interval, edges included', () => {
+    const war = ev('e', { start: 1939, end: 1945 })
+    expect(touchesSpan(war, 1939, 1945)).toBe(true)
+    expect(touchesSpan(war, 1900, 1939)).toBe(true) // meeting at the start year
+    expect(touchesSpan(war, 1945, 2000)).toBe(true) // and at the end year
+    expect(touchesSpan(war, 1941, 1942)).toBe(true) // a band inside the event
+    expect(touchesSpan(war, 1900, 1938)).toBe(false)
+    expect(touchesSpan(war, 1946, 2000)).toBe(false)
+    expect(touchesSpan(war, -300e6, -299e6)).toBe(false)
+    // a life and an idea are spans and points in the same sense
+    expect(touchesSpan(einstein, 1950, 1960)).toBe(true)
+    expect(touchesSpan(relativityIdea, 1905, 1905)).toBe(true)
+    expect(touchesSpan(relativityIdea, 1906, 2000)).toBe(false)
   })
 
   it('calls anything off the ranking list minor', () => {

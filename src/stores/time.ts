@@ -59,7 +59,6 @@ export const useTimeStore = defineStore('time', {
   }),
   getters: {
     span: (s) => s.range.end - s.range.start,
-    selectionSpan: (s) => s.selection.end - s.selection.start,
   },
   actions: {
     /**
@@ -72,6 +71,28 @@ export const useTimeStore = defineStore('time', {
       const target = clamp(t, this.range.start, this.range.end)
       this.extendSelectionTo(target)
       this.currentTime = target
+      // extendSelectionTo publishes nothing for a year already inside the band,
+      // and the band it was inside may be one a cancelled fit left off the rail.
+      this.settleSelection()
+    },
+    /**
+     * Move the CURSOR and nothing else — no band, no window.
+     *
+     * The one caller is a stage of a focused event (see `selectStage` in
+     * stores/events.ts), and the difference from `setTime` is the whole reason
+     * it exists: stepping between the stages of an operation is a statement
+     * about *where inside this event* the reader is, not a request to change
+     * what the globe is showing. `setTime` would drag the selection band onto
+     * the stage's year, and the band is what culls the pins — so stepping
+     * through Barbarossa would quietly rewrite the set of events on the map.
+     *
+     * Clamped to the window, like every other cursor move, so the cursor still
+     * has a mark on the rail. No `cancelFit`: this changes neither the window
+     * nor the band, so there is no view for it to be taking over.
+     */
+    setCursor(t: Year) {
+      const target = clamp(t, this.range.start, this.range.end)
+      if (target !== this.currentTime) this.currentTime = target
     },
     /** Jump to a time; if it lies outside the window, recenter the window on it. */
     focusTime(t: Year) {
@@ -86,6 +107,7 @@ export const useTimeStore = defineStore('time', {
       // window, so extending before the recentre would only be clipped back out.
       this.extendSelectionTo(target)
       this.currentTime = target
+      this.settleSelection() // same reason as setTime's
     },
     /**
      * Grow the selection just far enough to hold `t`, by moving the edge `t` is
@@ -109,6 +131,28 @@ export const useTimeStore = defineStore('time', {
       if (t > end) this.setSelection(start, t)
       else this.setSelection(t, end)
     },
+    /**
+     * THE INVARIANT: the band is inside the window.
+     *
+     * It holds everywhere except in flight — `selectEra` sets the band to the
+     * era and then flies the window to it, and for those 320 ms the band is
+     * deliberately wider than the rail (see `selectEra`). What made that safe
+     * was the tween *landing*, which is a promise the tween cannot keep: any
+     * gesture cancels it, and two of them then returned without touching the
+     * band — a pan already hard against the end of time, and a zoom refused by
+     * the minimum-span guard. The band was left stranded off the rail, drawn at
+     * a negative x, until something else happened to re-clamp it.
+     *
+     * So this is called by every action that can end without having gone
+     * through `setRange`/`setSelection` (both of which clamp on the way past),
+     * and by the fit when it lands. Cheap, and a no-op in the overwhelmingly
+     * common case: `clampSelection` returns a band already inside the window in
+     * the years it came in as, and `sameSpan` then publishes nothing.
+     */
+    settleSelection() {
+      const selection = clampSelection(this.selection, this.range)
+      if (!sameSpan(selection, this.selection)) this.selection = selection
+    },
     /** Zoom in warp (display) space around a focus fraction [0..1] of the window. */
     zoom(factor: number, focus = 0.5) {
       cancelFit()
@@ -117,7 +161,11 @@ export const useTimeStore = defineStore('time', {
       const pivot = ws + (we - ws) * focus
       const start = clamp(fromWarp(pivot - (pivot - ws) * factor))
       const end = clamp(fromWarp(pivot + (we - pivot) * factor))
+      // The guard refuses the zoom, not the take-over: the fit is already
+      // cancelled above, so the band has to be settled against the window it is
+      // now staying in.
       if (end - start >= 1) this.setRange({ start, end })
+      else this.settleSelection()
     },
     /** Pan by a fraction of the visible window (display space). */
     pan(fraction: number) {
@@ -130,8 +178,10 @@ export const useTimeStore = defineStore('time', {
       const lo = toWarp(MIN_TIME) - ws // how far left there is still room to go
       const hi = toWarp(MAX_TIME) - we
       const d = Math.max(lo, Math.min(hi, (we - ws) * fraction))
-      // Already hard against the end being pushed at: not a pan.
-      if (d === 0) return
+      // Already hard against the end being pushed at: not a pan — but still the
+      // user taking the view over from a fit, so the band settles into the
+      // window that is staying put (see `settleSelection`).
+      if (d === 0) return this.settleSelection()
       // A saturated end is *exactly* the end of time, not the warp roundtrip of
       // it. `fromWarp(toWarp(MIN_TIME))` comes back 5 µyr short, which is enough
       // room for the next pan to move and the one after to move back — so a
@@ -192,14 +242,20 @@ export const useTimeStore = defineStore('time', {
      * The order matters. The selection is set *first* and directly, so that the
      * windows the tween passes through on its way cannot clip it (see
      * `clampSelection`) — for the length of the flight the band is simply wider
-     * than the rail, which is exactly what flying into an era looks like. The
-     * final window contains it by construction, so the invariant is intact the
-     * moment the tween lands.
+     * than the rail, which is exactly what flying into an era looks like.
+     *
+     * It is clamped against the window it is flying *to*, though, rather than
+     * merely being one the destination happens to contain. `windowFitting` puts
+     * air either side of the era, so the clamp is a no-op today — which is the
+     * point: the invariant is checked here instead of resting on an argument
+     * about a function two files away, and it is checked at the moment the band
+     * is written rather than at the moment the tween lands (a tween any gesture
+     * can cancel — see `settleSelection`).
      */
     selectEra(era: Era) {
       cancelFit()
       const target = windowFitting(era)
-      const selection = orderSpan(clamp(era.start), clamp(era.end))
+      const selection = clampSelection(orderSpan(clamp(era.start), clamp(era.end)), target)
       if (!sameSpan(selection, this.selection)) this.selection = selection
       // The cursor comes along, but only as far as it has to: one already inside
       // the era stays put (an era is a framing, not a jump), and one outside is
@@ -227,18 +283,20 @@ export const useTimeStore = defineStore('time', {
         if (t !== this.currentTime) this.currentTime = t
       }
       const raf = globalThis.requestAnimationFrame
-      if (!raf || stillPreferred() || sameSpan(from, target)) return land(target)
+      if (!raf || stillPreferred() || sameSpan(from, target)) {
+        land(target)
+        return this.settleSelection() // arrived: the band is back on the rail
+      }
       const seq = fitSeq
       const t0 = performance.now()
       const step = () => {
         if (seq !== fitSeq) return // superseded, or the user took the view over
         const u = (performance.now() - t0) / FIT_MS
         land(tweenWindow(from, target, u))
+        if (u >= 1) this.settleSelection() // the last frame is the landing
         fitRaf = u >= 1 ? 0 : raf(step)
       }
       fitRaf = raf(step)
     },
-    /** Abandon a running fit — anything the user does to the view outranks it. */
-    stopFit: cancelFit,
   },
 })

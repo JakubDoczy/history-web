@@ -190,6 +190,23 @@ export function clusterSvg(members: MapPin[], tier: Tier = 1): string {
 }
 
 /**
+ * A pin's significance tier: its own, or — for a cluster badge — its dominant
+ * member's.
+ *
+ * Dominant by *tier*, not by the raw priority the cluster is anchored on: the
+ * two orders differ once the coverage penalty is applied (see
+ * `effectivePriority` in lib/events.ts), and a badge hiding the set's leading
+ * event has to say so whichever member the badge happens to be sitting on.
+ *
+ * Anything absent from the map is not in the result set and so cannot lead it,
+ * which is what the 3 (the least significant tier) defaults stand for.
+ */
+export const pinTier = (p: PinDatum, tiers: ReadonlyMap<string, Tier>): Tier =>
+  p.kind === 'cluster'
+    ? p.members.reduce<Tier>((best, m) => Math.min(best, tiers.get(m.id) ?? 3) as Tier, 3)
+    : (tiers.get(p.event.id) ?? 3)
+
+/**
  * Everything about a pin that decides what its DOM looks like.
  *
  * The globe's HTML layer keeps the element it already built for a datum it has
@@ -236,7 +253,11 @@ export function pinElement(
     ` event-pin--tier${tier}` +
     (selected ? ' event-pin--selected' : '') +
     (area ? ' event-pin--area' : '') +
-    (shapeOf(e.geometry, 'routes') ? ' event-pin--path' : '') +
+    // No class for a route event: the winding line is drawn INSIDE the head by
+    // `pinSvg`, so unlike the footprint — which the stylesheet animates — there
+    // is nothing left for CSS to say about one. The class existed, matched no
+    // rule anywhere, and cost a `shapeOf` per pin build.
+    //
     // minor pins are opt-in and there are a lot of them; they keep the smallest
     // size pinHeight gives them and go translucent, so they read as a layer
     // underneath the ranked ones rather than as competition for them

@@ -10,7 +10,6 @@ import {
   directionOf,
   flowPhase,
   isGeoPath,
-  lengthPieces,
   routePolyline,
   slerpPoint,
   smoothPath,
@@ -271,19 +270,6 @@ describe('ROUTE_STYLE', () => {
     expect(ROUTE_STYLE.flowCycleMs).toBeLessThan(2500)
   })
 
-  it('cuts the gradient finely enough that no step is an edge', () => {
-    // the largest jump between neighbouring pieces, over both directions
-    for (const dir of ['oneway', 'twoway'] as const) {
-      let worst = 0
-      for (let i = 1; i < ROUTE_STYLE.taperPieces; i++) {
-        const a = taperOpacity((i - 0.5) / ROUTE_STYLE.taperPieces, dir)
-        const b = taperOpacity((i + 0.5) / ROUTE_STYLE.taperPieces, dir)
-        worst = Math.max(worst, Math.abs(a - b))
-      }
-      expect(worst, dir).toBeLessThan(0.06)
-    }
-  })
-
   it('wakes the pump often enough to be smooth and rarely enough to be cheap', () => {
     expect(ROUTE_FLOW_INTERVAL_MS).toBeGreaterThanOrEqual(45) // not 60 Hz
     expect(ROUTE_FLOW_INTERVAL_MS).toBeLessThanOrEqual(70) // at least ~15 Hz
@@ -354,46 +340,6 @@ describe('taperOpacity', () => {
         expect(taperOpacity(t, dir), `${dir} ${t}`).toBeGreaterThanOrEqual(0.3)
         expect(taperOpacity(t, dir), `${dir} ${t}`).toBeLessThanOrEqual(1)
       }
-  })
-})
-
-describe('lengthPieces', () => {
-  const evenly = (n: number) => Array.from({ length: n }, (_, i) => i)
-
-  it('cuts a polyline into pieces of roughly equal length', () => {
-    const pieces = lengthPieces(evenly(101), 4)
-    expect(pieces).toHaveLength(4)
-    for (const p of pieces) expect(p.end - p.start).toBeGreaterThan(20)
-  })
-
-  it('shares boundary vertices, so the pieces butt together with no seam', () => {
-    const pieces = lengthPieces(evenly(101), 5)
-    for (let i = 1; i < pieces.length; i++) expect(pieces[i].start).toBe(pieces[i - 1].end)
-    expect(pieces[0].start).toBe(0)
-    expect(pieces[pieces.length - 1].end).toBe(100)
-  })
-
-  it('walks by LENGTH, not by vertex count', () => {
-    // a polyline whose vertices are all crowded into the first tenth
-    const cum = [0, 1, 2, 3, 4, 100]
-    const [first] = lengthPieces(cum, 2)
-    // the first half of the LENGTH ends inside the long last segment, so the
-    // first piece has to reach the last vertex index before it
-    expect(first.end).toBe(4)
-  })
-
-  it('samples the gradient at the middle of each piece, not at its start', () => {
-    const pieces = lengthPieces(evenly(101), 4)
-    expect(pieces[0].t).toBeGreaterThan(0)
-    expect(pieces[pieces.length - 1].t).toBeLessThan(1)
-    expect(pieces.map((p) => p.t)).toEqual([...pieces.map((p) => p.t)].sort((a, b) => a - b))
-  })
-
-  it('copes with a degenerate line rather than dividing by zero', () => {
-    expect(lengthPieces([0, 0, 0], 4)).toEqual([{ start: 0, end: 2, t: 0.5 }])
-    expect(lengthPieces([0], 4)).toEqual([])
-    expect(lengthPieces([], 4)).toEqual([])
-    expect(lengthPieces([0, 1], 0)).toHaveLength(1)
   })
 })
 

@@ -2,6 +2,7 @@ import type { Year } from './time'
 import type { Ring } from './nations'
 import { DEFAULT_DIRECTION, type GeoPath, type PathDirection } from './paths'
 import { drawingPoints, type Drawing } from './drawing'
+import type { Stage } from './stages'
 import { internalLinkIds } from './richtext'
 import { GeoGrid, SpanIndex, TopScored, separationDeg } from './queryIndex'
 import type { ViewportScope } from './viewport'
@@ -263,6 +264,20 @@ export interface HistoricalEvent extends ItemBase, PinFields {
    * wins over `weak` (see `buildRelations`).
    */
   parent?: string
+  /**
+   * STAGED FOCUS: the authored steps through this event, if it has any.
+   *
+   * A flat field rather than a shape, and deliberately so — the geometry list
+   * is "ground this event occupies" (see `EventGeometry`), and a stage occupies
+   * no ground. It is a reading of the event's *time*, in the same relation to
+   * `start`/`end` that `parent` is to the graph, and every stage's `at` is
+   * measured against those two fields.
+   *
+   * Absent on all but the exemplars, and absent is not a degraded case: an
+   * event with no stages is the whole feature turned off, and focus mode
+   * behaves exactly as it did before. See lib/stages.ts.
+   */
+  stages?: Stage[]
 }
 
 /** Where a life began or ended. `label` is what the panel's chip says. */
@@ -358,6 +373,8 @@ export interface RawEvent extends ItemBase {
   direction?: PathDirection
   drawing?: Drawing
   parent?: string
+  /** Carried through the boundary untouched — see `stages` on HistoricalEvent. */
+  stages?: Stage[]
 }
 
 export interface RawPerson extends ItemBase {
@@ -466,6 +483,20 @@ export function timeExtentOf(i: Subject): [Year, Year] {
     default:
       return assertNever(i)
   }
+}
+
+/**
+ * Does a subject's own span touch the interval `[start, end]`?
+ *
+ * The same closed-interval test `EventIndex.admits` runs on a pin (`intersects`,
+ * below), lifted to a subject so it can be asked of anything the panel or the
+ * focus mode is holding — including a person or a concept, neither of which has
+ * a pin. Touching at a single year counts: an event dated to exactly the edge of
+ * the band is on the timeline, not off it.
+ */
+export const touchesSpan = (i: Subject, start: Year, end: Year): boolean => {
+  const [a, b] = timeExtentOf(i)
+  return a <= end && b >= start
 }
 
 /**
@@ -883,7 +914,22 @@ export const inScope = (e: MapPin, scope: ViewportScope): boolean =>
   separationDeg(scope.lat, scope.lng, e.geometry.anchor.lat, e.geometry.anchor.lng) <=
   scope.radiusDeg + geometryRadiusDeg(e.geometry)
 
-/** Pins in the time window, matching filters, top `cap` by effective priority. */
+/**
+ * Pins in the time window, matching filters, top `cap` by effective priority.
+ *
+ * THE REFERENCE IMPLEMENTATION, and the reason it is here rather than in the
+ * tests: `EventIndex.query` answers the same question three different ways (see
+ * `chooseQueryPlan`), each with its own early-out, and the only claim that
+ * makes those safe is that all four agree. This is the fourth — the obvious
+ * one, a filter and a sort — and tests/events.test.ts holds the index to it
+ * over random corpora, windows, filters and camera scopes. Keeping it beside
+ * the code it is a statement about is what stops the two drifting when a
+ * filter or a tiebreak changes; a copy in a test file would be changed to
+ * match the index the day the index went wrong.
+ *
+ * Nothing in the app calls it. That is correct: it is a specification, and
+ * specifications are not on the hot path.
+ */
 export function visibleEvents(
   events: MapPin[],
   start: Year,

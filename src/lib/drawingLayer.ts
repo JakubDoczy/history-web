@@ -662,14 +662,13 @@ export class DrawingLayer {
    * already a smooth curve on the sphere, and this function's whole job is how
    * it is inked.
    *
-   * The stroke is drawn as `taperPieces` separate fat lines rather than one,
-   * because a fat line carries a single opacity for its whole length and the
-   * gradient is the thing that says which way a voyage went in a still picture.
-   * Consecutive pieces share their boundary vertex, so there is no seam; each
-   * one is told where it starts along the whole route, so the dash pattern
-   * crosses the joins as if it were one line; and only the pieces of a *one-way*
-   * route are registered as flowing, which is what keeps a two-way trade network
-   * from buying a single frame.
+   * The stroke is ONE fat line carrying the gradient per vertex (`setTaper`),
+   * and the gradient is the thing that says which way a voyage went in a still
+   * picture. It used to be twenty separate lines at twenty constant opacities,
+   * because `LineMaterial` has no per-vertex alpha of its own — that is what
+   * `setTaper` and `taperMaterial` add, and collapsing the route to one object
+   * is what they bought. Only a *one-way* route is registered as flowing, which
+   * is what keeps a two-way trade network from buying a single frame.
    *
    * The casing is one line for the whole route at a constant opacity. It is a
    * casing — its job is that the route is legible over a snowfield, and a casing

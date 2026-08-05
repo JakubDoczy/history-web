@@ -66,6 +66,29 @@
   --z-topbar: 9;
 
   --rail: 92px; /* timeline height */
+  /*
+   * Height of the focus pill (EventPanel.vue). A token because a SECOND thing
+   * now stacks on top of it — the stage strip (StageStrip.vue) — and the strip
+   * has to clear it without measuring it: both are absolutely positioned
+   * against the same corner, and a ResizeObserver for four pixels of offset
+   * would be a lifecycle bug bought for nothing. The pill enforces it with
+   * `min-height`, so this is a guarantee rather than a description; it grows on
+   * a phone because the type scale does.
+   */
+  --pill-h: 34px;
+  /* And the stage strip that stacks on it (StageStrip.vue), for the same
+     reason: the article has to stop short of both rather than paint over the
+     control the reader steps between stages with. */
+  --strip-h: 38px;
+  /*
+   * Motion. Duration AND easing together, so `transition: opacity var(--fast)`
+   * and `animation: panel-in var(--slow)` are both complete — a component that
+   * wrote its own number would drift from the panel next to it, which is how
+   * the article and the stage strip ended up entering at 0.26s and 0.24s.
+   * A one-shot ENTRANCE is --slow; a hover or state change is --fast. Looping
+   * animations (the footprint's breath, the imagery pulse) are their own thing
+   * and carry their own numbers.
+   */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --fast: 0.14s var(--ease);
   --slow: 0.24s var(--ease);
@@ -79,12 +102,25 @@
 
   /* vertical space that floating UI must leave clear at the bottom */
   --rail-clear: calc(var(--rail) + var(--safe-b));
+  /*
+   * The top edge of the stage strip, measured from the bottom of the window:
+   * the rail, the pill's row, and the strip's own height. It is a token because
+   * THREE things are laid out against it and they must not disagree — the strip
+   * positions itself by it, and the article (a floating panel on a desktop, a
+   * bottom sheet on a phone) stops short of it in both of its shapes. The pill's
+   * row is counted whether or not the pill is on screen, which is what keeps the
+   * chips from jumping as the article folds.
+   */
+  --strip-clear: calc(
+    var(--rail-clear) + var(--s2) + var(--pill-h) + var(--s1) + var(--strip-h)
+  );
 }
 
 @media (max-width: 640px) {
   :root {
     --rail: 84px;
     --t-md: 14px;
+    --pill-h: 46px;
   }
 }
 

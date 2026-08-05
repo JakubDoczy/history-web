@@ -102,7 +102,47 @@ export function boundingCap(
 }
 
 /**
+ * How far from square the fit will believe a viewport is.
+ *
+ * The same bounds `viewBbox` and `cameraScope` clamp aspect to (0.35 … 3), and
+ * for the same reason: past those a window is a slot rather than a picture, and
+ * fitting the long way round it would fly the camera to world view to frame a
+ * city. Wider than the clamp the fit simply stops getting more generous.
+ */
+export const MIN_FIT_ASPECT = 0.35
+export const MAX_FIT_ASPECT = 3
+
+/**
+ * The field of view the *tighter* axis of the frame has.
+ *
+ * `fovDeg` measures the frame's HEIGHT — that is what a perspective camera's fov
+ * is, in three.js and so in globe.gl — and the width follows from the aspect.
+ * A portrait phone (aspect ≈ 0.46) is therefore a ~24° lens across and a 50° one
+ * down, and a cap has to fit in both: whichever axis is narrower is the one that
+ * decides the altitude, which is exactly the axis a purely vertical fit ignored.
+ * Landscape is the case where nothing changes, because there the height is
+ * already the tight one.
+ *
+ * Tangents, not angles: a perspective projection scales tan(fov/2) by the
+ * aspect. `viewBbox` (lib/detailImagery.ts) scales the *ground span* linearly
+ * instead, which is the same thing near enough for a patch that is deliberately
+ * fetched larger than the frame, but a fit wants the lens itself — the two
+ * differ by ~6% at 50° on a phone, and 6% here is a label off the edge.
+ */
+export function tightFovDeg(fovDeg = FIT_FOV, aspect = 1): number {
+  const a = Math.min(MAX_FIT_ASPECT, Math.max(MIN_FIT_ASPECT, aspect || 1))
+  if (a >= 1) return fovDeg // landscape: the height is already the tight axis
+  const RAD = Math.PI / 180
+  return (2 * Math.atan(a * Math.tan((fovDeg / 2) * RAD))) / RAD
+}
+
+/**
  * Camera altitude at which a cap of this angular radius fits in the frame.
+ *
+ * `fovDeg` is one axis of the frame; pass the tighter one (see `tightFovDeg`)
+ * to fit a cap in *both*. The function is monotonically decreasing in fov — a
+ * narrower lens has to stand further back — so the tighter axis is also the
+ * answer, and there is no second maximum to take.
  *
  * Two constraints, and the answer is whichever is further out:
  *
@@ -134,8 +174,17 @@ export function altitudeForCapDeg(radiusDeg: number, fovDeg = FIT_FOV, margin = 
  * always kept), its footprint if it has one, and every waypoint of every route.
  * A person is framed on the place their life began, which is the one coordinate
  * a life is certain to carry.
+ *
+ * `aspect` is the viewport's width ÷ height. It defaults to 1 — a square frame,
+ * where the vertical fov is the whole story — but the caller that has a window
+ * to measure should pass it, or a wide item on a portrait phone is fitted top to
+ * bottom and hangs off both sides (Barbarossa's front, the Silk Road's route).
  */
-export function focusTargetFor(item: Subject, fovDeg = FIT_FOV): FocusTarget | undefined {
+export function focusTargetFor(
+  item: Subject,
+  fovDeg = FIT_FOV,
+  aspect = 1,
+): FocusTarget | undefined {
   const points = geometryPointsOf(item)
   if (!points.length) return undefined
   const anchor = { lng: points[0][0], lat: points[0][1] }
@@ -153,7 +202,7 @@ export function focusTargetFor(item: Subject, fovDeg = FIT_FOV): FocusTarget | u
     // guessing what the reader meant.
     altitude: altitudeForCapDeg(
       cap.radiusDeg > MIN_EXTENT_DEG ? cap.radiusDeg : POINT_CAP_DEG,
-      fovDeg,
+      tightFovDeg(fovDeg, aspect),
     ),
   }
 }

@@ -30,6 +30,14 @@ import {
   isGeoPath,
 } from '../src/lib/paths'
 import { drawingPoints, isDrawing, routeDrawingFor } from '../src/lib/drawing'
+import {
+  atFraction,
+  drawingForStage,
+  orderedStages,
+  stageAt,
+  stageProblems,
+  stagePageLinkIds,
+} from '../src/lib/stages'
 import { FIT_FOV, MAX_FIT_ALTITUDE, POINT_CAP_DEG, altitudeForCapDeg, focusTargetFor } from '../src/lib/geoFocus'
 import { separationDeg } from '../src/lib/queryIndex'
 import { viewSpanDeg, visibleSpanDeg } from '../src/lib/detailImagery'
@@ -121,6 +129,21 @@ describe('items — dataset shape', () => {
     }
   })
 
+  /* A search result is a NAME and a year: two rows reading "Germ theory of
+     disease" (the 1861–1885 event, and the concept it established) were one
+     picture of the corpus's only ambiguity, and nothing said which was which.
+     The corpus convention is that the concept holds the general name and its
+     event holds the specific one — "Relativity" / "Einstein's theory of
+     relativity", "Printing" / "Gutenberg's printing press". */
+  it('gives every item a display name of its own', () => {
+    const seen = new Map<string, string>()
+    for (const e of items) {
+      const key = e.name.trim().toLowerCase()
+      expect(seen.has(key), `${e.id} and ${seen.get(key)} are both called "${e.name}"`).toBe(false)
+      seen.set(key, e.id)
+    }
+  })
+
   it('uses one of the three kinds, defaulting to event at the boundary', () => {
     for (const [i, raw] of rawItems.entries()) {
       const parsed = items[i]
@@ -167,6 +190,7 @@ describe('items — dataset shape', () => {
       event: new Set([
         ...common,
         'start', 'end', 'lat', 'lng', 'area', 'paths', 'direction', 'drawing', 'parent',
+        'stages',
       ]),
       person: new Set([...common, 'born', 'died', 'birthPlace', 'deathPlace']),
       concept: new Set([...common, 'anchorYear']),
@@ -857,9 +881,16 @@ describe('items — behaviour through the query layer', () => {
   })
 
   it('reads the real corpus through the relation maps, both ways', () => {
-    // Barbarossa's parts, chronological — and what focus mode pins
+    // Barbarossa's parts, chronological — and what focus mode pins. Every one
+    // of them is unranked (see the staged-focus tests below): the operation's
+    // parts are regional battles that never make the global cut, and focus mode
+    // is where they get their pins.
     expect(index.childrenOf('barbarossa').map((e) => e.id)).toEqual([
       'minsk-pocket', 'smolensk-1941', 'kiev-pocket', 'moscow-1941', 'leningrad-siege',
+      'brest-fortress', 'uman-pocket', 'tallinn-evacuation',
+    ])
+    expect(index.childrenOf('d-day').map((e) => e.id)).toEqual([
+      'pointe-du-hoc', 'villers-bocage', 'cherbourg-1944',
     ])
     // …reached from inside, the chain out to the war
     expect(index.parentChain('kiev-pocket').map((e) => e.id)).toEqual(['barbarossa', 'ww2'])
@@ -1172,5 +1203,244 @@ describe('items — drawings', () => {
     expect(lngs).toEqual([...lngs].sort((a, b) => a - b))
     // and the two frontlines: the night of the 6th, and the front three weeks on
     expect(layers.filter((l) => l.type === 'frontline')).toHaveLength(2)
+  })
+})
+
+/**
+ * STAGED FOCUS over the shipped corpus (see src/lib/stages.ts).
+ *
+ * The schema half is unit-tested in tests/stages.test.ts; this is the half that
+ * is about the DATA — that the exemplars carry stages at all, that every stage
+ * is sound against the event it is a stage of, and that the `at`s the layers
+ * carry actually partition the drawing into the stages someone wrote. The last
+ * one is the assertion worth having: a stage whose window catches no layer is a
+ * chip that filters the map to its timeless layers and looks broken, and
+ * nothing but a check over the real numbers can catch it.
+ */
+describe('items — staged focus', () => {
+  const staged = rawEvents.filter((e) => e.stages)
+
+  it('ships the exemplars, and stages nothing else yet', () => {
+    expect(staged.map((e) => e.id).sort()).toEqual(['barbarossa', 'd-day'])
+  })
+
+  it('is valid wherever it is present, against the event’s own span', () => {
+    for (const e of staged) expect(stageProblems(e), e.id).toEqual([])
+  })
+
+  it('gives every stage a unique id and a name inside one event', () => {
+    for (const e of staged) {
+      const ids = e.stages!.map((s) => s.id)
+      expect(new Set(ids).size, `${e.id} repeats a stage id`).toBe(ids.length)
+      for (const s of e.stages!) {
+        expect(s.id, `${e.id}/${s.id}`).toMatch(/^[a-z0-9][a-z0-9-]*$/)
+        expect(s.name.length, `${e.id}/${s.id}`).toBeGreaterThan(2)
+      }
+    }
+  })
+
+  it('keeps every stage inside the span of the event it stages', () => {
+    for (const e of staged)
+      for (const s of e.stages!) {
+        const f = atFraction(s.at, e.start, e.end)
+        expect(f, `${e.id}/${s.id} is before its event`).toBeGreaterThanOrEqual(0)
+        expect(f, `${e.id}/${s.id} is after its event`).toBeLessThanOrEqual(1)
+      }
+  })
+
+  it('writes a page on every stage, in markup that renders and resolves', () => {
+    for (const e of staged) {
+      for (const s of e.stages!) {
+        expect(typeof s.page, `${e.id}/${s.id} has no page`).toBe('string')
+        expect(s.page!.length, `${e.id}/${s.id}`).toBeGreaterThan(80)
+        expect(renderRichText(s.page!)).toContain('<p>')
+      }
+      // a stage page links like a body does, and to things that exist
+      for (const id of stagePageLinkIds(e.stages!))
+        expect(byId.has(id), `${e.id}: a stage page links to unknown item ${id}`).toBe(true)
+    }
+    // and the pages are actually used to point somewhere, not just prose
+    expect(staged.flatMap((e) => stagePageLinkIds(e.stages!)).length).toBeGreaterThanOrEqual(6)
+  })
+
+  it('puts a camera where it has one, and it is on the planet', () => {
+    for (const e of staged)
+      for (const s of e.stages!) {
+        if (!s.camera) continue
+        expect(Math.abs(s.camera.lat), `${e.id}/${s.id}`).toBeLessThanOrEqual(90)
+        expect(Math.abs(s.camera.lng), `${e.id}/${s.id}`).toBeLessThanOrEqual(180)
+        if (s.camera.altitude !== undefined)
+          expect(s.camera.altitude, `${e.id}/${s.id}`).toBeGreaterThan(0)
+        // a stage camera looks at the event it is a stage of, not across the world
+        const worst = separationDeg(s.camera.lat, s.camera.lng, e.lat, e.lng)
+        expect(worst, `${e.id}/${s.id} looks ${worst.toFixed(1)}° away`).toBeLessThan(25)
+      }
+  })
+
+  /**
+   * The default view stays the whole event. This is the owner's rule and the
+   * one thing about the feature a reader can notice by accident: entering focus
+   * must draw exactly what it drew before stages existed.
+   */
+  it('shows every layer on the overview, exactly as before stages existed', () => {
+    for (const e of staged) {
+      const stages = orderedStages(e.stages!, e.start, e.end)
+      expect(drawingForStage(e.drawing, undefined, stages, e.start, e.end)).toBe(e.drawing)
+    }
+  })
+
+  it('gives every stage something of its own to draw', () => {
+    for (const e of staged) {
+      const stages = orderedStages(e.stages!, e.start, e.end)
+      for (const s of stages) {
+        const shown = drawingForStage(e.drawing, s.id, stages, e.start, e.end)
+        const own = shown!.layers.filter((l) => l.at !== undefined)
+        expect(own.length, `${e.id}/${s.id} draws nothing of its own`).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('partitions the dated layers: each lands in exactly one stage, none is lost', () => {
+    for (const e of staged) {
+      const stages = orderedStages(e.stages!, e.start, e.end)
+      const dated = e.drawing!.layers.filter((l) => l.at !== undefined)
+      const placed = stages.flatMap(
+        (s) =>
+          drawingForStage(e.drawing, s.id, stages, e.start, e.end)!.layers.filter(
+            (l) => l.at !== undefined,
+          ),
+      )
+      expect(placed.length, `${e.id} loses or duplicates a dated layer`).toBe(dated.length)
+    }
+  })
+
+  /**
+   * The timeless layers are the half of the rule that carries the design: the
+   * three army-group axes are true of the whole campaign, so they stay while
+   * the fronts and the pockets come and go around them.
+   */
+  it('keeps the undated layers in every stage', () => {
+    for (const e of staged) {
+      const stages = orderedStages(e.stages!, e.start, e.end)
+      const timeless = e.drawing!.layers.filter((l) => l.at === undefined).length
+      expect(timeless, `${e.id} has nothing that outlasts a stage`).toBeGreaterThan(0)
+      for (const s of stages) {
+        const shown = drawingForStage(e.drawing, s.id, stages, e.start, e.end)!
+        expect(shown.layers.filter((l) => l.at === undefined).length, `${e.id}/${s.id}`).toBe(
+          timeless,
+        )
+      }
+    }
+  })
+
+  it('carries per-stage ANNOTATIONS — words on the map that come and go with their moment', () => {
+    for (const e of staged) {
+      const stages = orderedStages(e.stages!, e.start, e.end)
+      const dated = e.drawing!.layers.filter(
+        (l) => l.at !== undefined && (l.type === 'label' || l.type === 'marker'),
+      )
+      expect(dated.length, `${e.id} has no stage annotations`).toBeGreaterThanOrEqual(4)
+      // …and each is in exactly one stage's window, which is what "only in their
+      // stage" means when the reader steps through the chips
+      for (const l of dated) {
+        const owner = stageAt(stages, l.at!, e.start, e.end)
+        expect(owner, `${e.id}: an annotation belongs to no stage`).toBeDefined()
+        const shown = stages.filter((s) =>
+          drawingForStage(e.drawing, s.id, stages, e.start, e.end)!.layers.includes(l),
+        )
+        expect(shown.map((s) => s.id), `${e.id}: annotation in ${shown.length} stages`).toEqual([
+          owner!.id,
+        ])
+      }
+    }
+  })
+
+  it('stages Barbarossa from the border to the counteroffensive, in order', () => {
+    const b = rawById.get('barbarossa') as RawEvent
+    const stages = orderedStages(b.stages!, b.start, b.end)
+    expect(stages.map((s) => s.id)).toEqual([
+      'border-battles', 'smolensk', 'kiev', 'typhoon', 'counteroffensive',
+    ])
+    const front = (label: string) =>
+      b.drawing!.layers.find((l) => (l as { label?: string }).label?.includes(label))!
+    // the June border opens the campaign and the December line closes it — the
+    // two layers the product named, at the two ends of the strip
+    expect(stageAt(stages, front('22 June').at!, b.start, b.end)!.id).toBe('border-battles')
+    expect(stageAt(stages, front('5 December').at!, b.start, b.end)!.id).toBe('counteroffensive')
+    // and the three army-group axes belong to no single stage
+    for (const l of b.drawing!.layers.filter((l) => l.type === 'thrust'))
+      expect(l.at, 'an axis of advance is tied to one stage').toBeUndefined()
+  })
+
+  it('stages D-Day from the assault to the breakout, in order', () => {
+    const d = rawById.get('d-day') as RawEvent
+    const stages = orderedStages(d.stages!, d.start, d.end)
+    expect(stages.map((s) => s.id)).toEqual(['six-june', 'beachhead', 'cherbourg', 'breakout'])
+    // the five assaults are the 6th; the beach names outlast them
+    for (const l of d.drawing!.layers.filter((l) => l.type === 'thrust'))
+      expect(stageAt(stages, l.at!, d.start, d.end)!.id).toBe('six-june')
+    const beaches = d.drawing!.layers.filter(
+      (l) => l.type === 'label' && ['Utah', 'Omaha', 'Gold', 'Juno', 'Sword'].includes(l.text),
+    )
+    expect(beaches).toHaveLength(5)
+    for (const l of beaches) expect(l.at, 'a beach name is tied to one stage').toBeUndefined()
+  })
+})
+
+/**
+ * HIDDEN SUB-EVENTS: the regionally important battles that never make the
+ * global cut.
+ *
+ * They are unranked by design — the ranking list is the app's one statement
+ * about what matters, and Villers-Bocage is not on it — which is exactly why
+ * focus mode has to be the place they surface. The store's half of this (that
+ * focus lifts the minor filter and pins them anyway, tiered as background) is
+ * in tests/eventsStore.test.ts; this is the corpus's half.
+ */
+describe('items — the minor parts of the exemplars', () => {
+  const parts = (id: string) => events.filter((e) => e.parent === id)
+
+  it('gives both exemplars enough parts to be worth pinning', () => {
+    expect(parts('barbarossa').length).toBeGreaterThanOrEqual(8)
+    expect(parts('d-day').length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('ships the ones the product named', () => {
+    const ids = new Set(events.map((e) => e.id))
+    for (const id of [
+      'brest-fortress', 'uman-pocket', 'tallinn-evacuation',
+      'pointe-du-hoc', 'villers-bocage', 'cherbourg-1944',
+    ])
+      expect(ids.has(id), `${id} is missing`).toBe(true)
+  })
+
+  it('leaves them unranked, so they are background everywhere but here', () => {
+    for (const id of ['barbarossa', 'd-day'])
+      for (const p of parts(id)) {
+        expect(isMinor(p), `${p.id} is on the ranking list`).toBe(true)
+        expect(p.priority, p.id).toBe(MINOR_PRIORITY)
+        expect(rankOf.has(p.id), `${p.id} is in ranking.txt`).toBe(false)
+      }
+  })
+
+  it('puts each of them where it happened, inside its parent’s theatre', () => {
+    for (const id of ['barbarossa', 'd-day']) {
+      const parent = rawById.get(id) as RawEvent
+      for (const p of parts(id)) {
+        const d = separationDeg(parent.lat, parent.lng, p.geometry.anchor.lat, p.geometry.anchor.lng)
+        expect(d, `${p.id} is ${d.toFixed(1)}° from ${id}`).toBeLessThan(20)
+      }
+    }
+  })
+
+  it('stays inside its parent in time, and is contained by it in the graph', () => {
+    const index = new EventIndex(items)
+    for (const id of ['barbarossa', 'd-day']) {
+      const parent = byId.get(id) as HistoricalEvent
+      for (const p of parts(id)) {
+        expect(p.start, p.id).toBeGreaterThanOrEqual(parent.start)
+        expect(index.parentChain(p.id).map((e) => e.id), p.id).toContain(id)
+      }
+    }
   })
 })

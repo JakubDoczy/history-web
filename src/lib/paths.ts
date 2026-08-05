@@ -355,20 +355,6 @@ export const ROUTE_STYLE = {
   tailOpacity: 0.36,
   endOpacity: 0.5,
   /**
-   * How many constant-opacity pieces the gradient is cut into.
-   *
-   * A fat line carries one opacity for the whole line — `LineMaterial` has no
-   * per-vertex alpha, and the two ways to get one (patching its shader, or
-   * `alphaToCoverage` tricks) are a lot of surface area for a stroke. Twenty
-   * pieces put at most 0.05 of opacity between neighbours, which is below what
-   * the eye finds as an edge on a 2.3 px line, and there are 25 dashes on the
-   * route anyway — most dashes land inside one piece and simply *are* that
-   * brightness. `taperOpacity` is shaped to keep that step small: the ramps are
-   * piecewise linear, which is the gentlest a ramp between two given values can
-   * be.
-   */
-  taperPieces: 20,
-  /**
    * One dash cycle, in ms. 1200 against the 128 ms the strobe amounted to: a
    * dash crosses its own length in a beat and a bit, which reads as a current in
    * the line rather than as traffic on it.
@@ -403,63 +389,18 @@ export const flowPhase = (nowMs: number): number => {
  *
  * One-way rises evenly to the destination; two-way rises to the middle and falls
  * away again, which is symmetric by construction rather than by two numbers
- * somebody has to keep equal. Both are piecewise LINEAR on purpose. The gradient
- * is drawn as `taperPieces` constant-opacity runs (see ROUTE_STYLE), so what
- * matters is the largest step between two neighbouring pieces, and for a ramp
- * between two given values a straight line is the shape that makes that step as
- * small as it can be — an eased curve concentrates the same total change into
- * fewer pieces and starts to band. On a two-way route the peak in the middle
- * doubles the total change, which is why it gets a higher floor.
+ * somebody has to keep equal. Both are piecewise LINEAR: the ramp is sampled per
+ * VERTEX and handed to the stroke as an attribute (`setTaper` in
+ * lib/drawingLayer.ts), so the shape only has to be one the eye reads as an even
+ * fade, and a straight line is that shape. It used to be cut into twenty
+ * constant-opacity pieces, which is why linearity was load-bearing rather than
+ * merely tidy; the per-vertex ramp made that a preference.
  */
 export const taperOpacity = (t: number, direction: PathDirection): number => {
   const c = Math.max(0, Math.min(1, t))
   if (direction === 'twoway')
     return ROUTE_STYLE.endOpacity + (1 - ROUTE_STYLE.endOpacity) * (1 - Math.abs(2 * c - 1))
   return ROUTE_STYLE.tailOpacity + (1 - ROUTE_STYLE.tailOpacity) * c
-}
-
-/**
- * Cut a polyline into `pieces` runs of roughly equal *length*, as index ranges
- * that share their boundary vertices — so the pieces butt together with no seam
- * even though each is drawn separately.
- *
- * `cumulative[i]` is the distance from the start to vertex i, in any unit. `t`
- * is the midpoint of the piece as a fraction of the whole, which is what the
- * gradient is sampled at: sampling at the piece's *start* would make the first
- * piece the tail colour exactly and the last piece one step short of the head.
- */
-export function lengthPieces(
-  cumulative: number[],
-  pieces: number,
-): { start: number; end: number; t: number }[] {
-  const n = cumulative.length
-  if (n < 2 || pieces < 1) return n >= 2 ? [{ start: 0, end: n - 1, t: 0.5 }] : []
-  const total = cumulative[n - 1]
-  if (!(total > 0)) return [{ start: 0, end: n - 1, t: 0.5 }]
-  const out: { start: number; end: number; t: number }[] = []
-  let start = 0
-  for (let p = 0; p < pieces && start < n - 1; p++) {
-    const wantEnd = (total * (p + 1)) / pieces
-    // The NEAREST vertex to the wanted boundary, not the first one past it: a
-    // polyline whose vertices are crowded at one end (which route data is) has
-    // no vertex anywhere near most boundaries, and "first one past" then hands
-    // the whole rest of the line to one piece.
-    let end = start + 1
-    while (
-      end < n - 1 &&
-      Math.abs(cumulative[end + 1] - wantEnd) <= Math.abs(cumulative[end] - wantEnd)
-    )
-      end++
-    // The last piece always runs to the end, whatever the rounding said.
-    if (p === pieces - 1) end = n - 1
-    out.push({
-      start,
-      end,
-      t: (cumulative[start] + cumulative[end]) / (2 * total),
-    })
-    start = end
-  }
-  return out
 }
 
 /* ------------------------------------------------------- points along a route */

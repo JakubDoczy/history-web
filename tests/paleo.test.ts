@@ -80,7 +80,9 @@ describe('imageryCredit', () => {
   })
 })
 
-import { PALEO_FRAMES } from '../src/data/paleoTextures'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { MODERN_TEXTURE, PALEO_FRAMES } from '../src/data/paleoTextures'
 import frameList from '../src/data/paleoFrames.json'
 
 describe('PALEO_FRAMES', () => {
@@ -208,5 +210,34 @@ describe('eraPlan', () => {
     // end returns it as both `from` and `to`
     const plan = eraPlan(frames, 2026)
     expect(new Set(plan.keep).size).toBe(plan.keep.length)
+  })
+})
+
+/* -------------------------------------------------- the hand-written preload ---
+   index.html asks for the day basemap before the module graph exists (see the
+   comment there). Two ways to get that URL wrong, and both cost the whole
+   saving — a preload that misses spends the bandwidth twice:
+
+     · naming a different file from MODERN_TEXTURE;
+     · writing the base into it. Vite's HTML transform rewrites a <link href>
+       itself, so `%BASE_URL%textures/…` became `/history-web/history-web/…` in
+       dev — a 404 in front of the first frame. */
+describe('the basemap preload in index.html', () => {
+  const html = readFileSync(join(__dirname, '..', 'index.html'), 'utf8')
+  const preload = /<link\b[^>]*rel="preload"[^>]*>/s.exec(html)?.[0] ?? ''
+  const href = /href="([^"]+)"/.exec(preload)?.[1] ?? ''
+
+  it('names the file the globe actually loads', () => {
+    expect(preload).toContain('as="image"')
+    expect(preload).toContain('crossorigin') // or the CORS-keyed cache misses
+    expect(MODERN_TEXTURE.endsWith(href)).toBe(true)
+  })
+
+  it('leaves the base to the transform, exactly once', () => {
+    expect(href.startsWith('/')).toBe(true) // root-relative: the transform's cue
+    expect(href).not.toContain('%BASE_URL%')
+    // nor in any other URL the transform will pass over, for the same reason
+    for (const [, url] of html.matchAll(/(?:href|src)="([^"]*)"/g))
+      expect(url, url).not.toContain('%BASE_URL%')
   })
 })

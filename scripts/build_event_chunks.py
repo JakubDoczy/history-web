@@ -46,6 +46,7 @@ linkable.
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -156,6 +157,7 @@ def validate(items: list[dict], ranked: list[str]) -> None:
                 sys.exit(f'{e["id"]}: a {k} needs a {field!r}')
         validate_paths(e)
         validate_drawing(e)
+        validate_stages(e)
     validate_relations(items, by_id)
 
 
@@ -231,6 +233,40 @@ def validate_relations(items: list[dict], by_id: dict) -> None:
         print(f'  {len(warnings)} relation warning(s)')
 
 
+# --- geometry primitives ---------------------------------------------------
+# One point check and one polyline check, shared by every field that carries
+# coordinates: `paths`, and the `frontline` / `thrust` / `marker` / `label`
+# layers of a drawing. `validate_paths` used to inline its own copy of the
+# polyline walk, which is how it came to be the one place that never checked
+# that a coordinate was a NUMBER — a string there raised a TypeError out of the
+# comparison instead of naming the event.
+
+
+def event_only(e: dict, what: str) -> None:
+    """Geometry belongs to events. A person is a life and a concept is an idea."""
+    if kind_of(e) != 'event':
+        sys.exit(f'{e["id"]}: only an event can carry {what}')
+
+
+def check_point(e: dict, where: str, pos) -> None:
+    """One [lng, lat] pair — GeoJSON order, numeric, on the planet."""
+    if not isinstance(pos, list) or len(pos) != 2:
+        sys.exit(f'{e["id"]}: {where} must be [lng, lat]')
+    lng, lat = pos
+    if not (isinstance(lng, (int, float)) and isinstance(lat, (int, float))):
+        sys.exit(f'{e["id"]}: {where} is not numeric: {pos}')
+    if not (-180 <= lng <= 180 and -90 <= lat <= 90):
+        sys.exit(f'{e["id"]}: {where} is off the planet: {pos}')
+
+
+def check_line(e: dict, where: str, path) -> None:
+    """A polyline: at least two points, each one a good [lng, lat]."""
+    if not isinstance(path, list) or len(path) < 2:
+        sys.exit(f'{e["id"]}: {where} needs at least two points')
+    for j, pt in enumerate(path):
+        check_point(e, f'{where} point {j}', pt)
+
+
 DIRECTIONS = ('oneway', 'twoway')
 
 
@@ -255,41 +291,11 @@ def validate_paths(e: dict) -> None:
             sys.exit(f'{e["id"]}: direction must be one of {DIRECTIONS}, not {direction!r}')
     if paths is None:
         return
-    if kind_of(e) != 'event':
-        sys.exit(f'{e["id"]}: only an event can carry paths')
+    event_only(e, 'paths')
     if not isinstance(paths, list) or not paths:
         sys.exit(f'{e["id"]}: paths must be a non-empty list of routes')
     for i, path in enumerate(paths):
-        if not isinstance(path, list) or len(path) < 2:
-            sys.exit(f'{e["id"]}: path {i} needs at least two points')
-        for pt in path:
-            if not isinstance(pt, list) or len(pt) != 2:
-                sys.exit(f'{e["id"]}: path {i} has a point that is not [lng, lat]')
-            lng, lat = pt
-            if not (-180 <= lng <= 180 and -90 <= lat <= 90):
-                sys.exit(f'{e["id"]}: path {i} has a point off the planet: {pt}')
-
-
-def check_line(e: dict, where: str, path) -> None:
-    """A polyline: at least two [lng, lat] points, all on the planet."""
-    if not isinstance(path, list) or len(path) < 2:
-        sys.exit(f'{e["id"]}: {where} needs at least two points')
-    for pt in path:
-        if not isinstance(pt, list) or len(pt) != 2:
-            sys.exit(f'{e["id"]}: {where} has a point that is not [lng, lat]')
-        lng, lat = pt
-        if not (isinstance(lng, (int, float)) and isinstance(lat, (int, float))):
-            sys.exit(f'{e["id"]}: {where} has a non-numeric point: {pt}')
-        if not (-180 <= lng <= 180 and -90 <= lat <= 90):
-            sys.exit(f'{e["id"]}: {where} has a point off the planet: {pt}')
-
-
-def check_point(e: dict, where: str, pos) -> None:
-    if not isinstance(pos, list) or len(pos) != 2:
-        sys.exit(f'{e["id"]}: {where} pos must be [lng, lat]')
-    lng, lat = pos
-    if not (-180 <= lng <= 180 and -90 <= lat <= 90):
-        sys.exit(f'{e["id"]}: {where} pos is off the planet: {pos}')
+        check_line(e, f'path {i}', path)
 
 
 MARKER_STYLES = ('cross', 'star', 'dot', 'arrow')
@@ -305,8 +311,7 @@ def validate_drawing(e: dict) -> None:
     d = e.get('drawing')
     if d is None:
         return
-    if kind_of(e) != 'event':
-        sys.exit(f'{e["id"]}: only an event can carry a drawing')
+    event_only(e, 'a drawing')
     if not isinstance(d, dict) or not isinstance(d.get('layers'), list) or not d['layers']:
         sys.exit(f'{e["id"]}: drawing must be an object with a non-empty "layers" list')
     for i, layer in enumerate(d['layers']):
@@ -331,13 +336,13 @@ def validate_drawing(e: dict) -> None:
             if 'taper' in layer and not isinstance(layer['taper'], bool):
                 sys.exit(f'{e["id"]}: {where} taper must be a boolean')
         elif t == 'marker':
-            check_point(e, where, layer.get('pos'))
+            check_point(e, f'{where} pos', layer.get('pos'))
             if layer.get('style') not in (None,) + MARKER_STYLES:
                 sys.exit(f'{e["id"]}: {where} style must be one of {MARKER_STYLES}')
             if layer.get('style') == 'arrow' and not isinstance(layer.get('bearing'), (int, float)):
                 sys.exit(f'{e["id"]}: {where} is an arrow and needs a numeric "bearing"')
         elif t == 'label':
-            check_point(e, where, layer.get('pos'))
+            check_point(e, f'{where} pos', layer.get('pos'))
             if not isinstance(layer.get('text'), str) or not layer['text']:
                 sys.exit(f'{e["id"]}: {where} (label) needs non-empty "text"')
             if layer.get('size') not in (None, 'sm', 'md'):
@@ -350,6 +355,90 @@ def validate_drawing(e: dict) -> None:
             isinstance(layer['size'], (int, float)) and 0 < layer['size'] < 90
         ):
             sys.exit(f'{e["id"]}: {where} size must be a positive number of degrees')
+
+
+STAGE_ID = re.compile(r'^[a-z0-9][a-z0-9-]*$')
+# `[text](item:id)`, `[text](event:id)` and `[text](https://…)` — the three link
+# forms src/lib/richtext.ts actually renders. Mirrors COMPLETE_LINKS there.
+COMPLETE_LINK = re.compile(
+    r'\[(.+?)\]\((?:(?:item|event):[\w-]+|https?:(?:[^\s()]|\([^\s()]*\))+)\)'
+)
+
+
+def check_markup(e: dict, where: str, text: str) -> None:
+    """Every "](" in a rich-text field closes a link the renderer knows.
+
+    renderRichText cannot fail — anything it does not recognise falls through as
+    escaped prose — so a page with a mistyped link ships as visible bracket soup
+    rather than as an error. This is the check that turns that into a build
+    failure. Mirrors `markupProblems` in src/lib/stages.ts.
+    """
+    opens = text.count('](')
+    links = len(COMPLETE_LINK.findall(text))
+    if opens != links:
+        sys.exit(f'{e["id"]}: {where} has {opens - links} malformed link(s)')
+
+
+def validate_stages(e: dict) -> None:
+    """Staged focus: `stages`, ids unique per event, `at` inside the span.
+
+    Mirrors `stageProblems` in src/lib/stages.ts, and checked here for the same
+    reason the drawing is: a stage dated outside the event it is a stage of owns
+    a window no layer can fall in, which is a chip that filters the map to
+    nothing rather than an exception.
+
+    `at` has the same two forms it has on a drawing layer (see DrawingCommon in
+    src/lib/drawing.ts): a value in 0..1 is a FRACTION of the event's span, and
+    anything else is a year, which must lie inside that span.
+    """
+    stages = e.get('stages')
+    if stages is None:
+        return
+    event_only(e, 'stages')
+    if not isinstance(stages, list) or not stages:
+        sys.exit(f'{e["id"]}: stages must be a non-empty list — drop the field instead')
+    start = e['start']
+    finish = e.get('end', start)
+    seen: set[str] = set()
+    for i, s in enumerate(stages):
+        where = f'stage {i}'
+        if not isinstance(s, dict):
+            sys.exit(f'{e["id"]}: {where} is not an object')
+        sid = s.get('id')
+        if not isinstance(sid, str) or not STAGE_ID.match(sid):
+            sys.exit(f'{e["id"]}: {where} needs a lowercase-kebab "id", not {sid!r}')
+        if sid in seen:
+            sys.exit(f'{e["id"]}: two stages share the id {sid!r}')
+        seen.add(sid)
+        if not isinstance(s.get('name'), str) or not s['name']:
+            sys.exit(f'{e["id"]}: {where} ({sid}) needs a non-empty "name"')
+        at = s.get('at')
+        if not isinstance(at, (int, float)) or isinstance(at, bool):
+            sys.exit(f'{e["id"]}: {where} ({sid}) needs a numeric "at"')
+        if not (0 <= at <= 1) and not (start <= at <= finish):
+            sys.exit(
+                f'{e["id"]}: {where} ({sid}) at {at} is outside the span {start}..{finish}'
+            )
+        page = s.get('page')
+        if page is not None:
+            if not isinstance(page, str) or not page:
+                sys.exit(f'{e["id"]}: {where} ({sid}) page must be non-empty text')
+            check_markup(e, f'{where} ({sid}) page', page)
+        cam = s.get('camera')
+        if cam is not None:
+            if not isinstance(cam, dict):
+                sys.exit(f'{e["id"]}: {where} ({sid}) camera must be an object')
+            lat, lng = cam.get('lat'), cam.get('lng')
+            if not isinstance(lat, (int, float)) or not -90 <= lat <= 90:
+                sys.exit(f'{e["id"]}: {where} ({sid}) camera lat is off the planet')
+            if not isinstance(lng, (int, float)) or not -180 <= lng <= 180:
+                sys.exit(f'{e["id"]}: {where} ({sid}) camera lng is off the planet')
+            alt = cam.get('altitude')
+            if alt is not None and not (isinstance(alt, (int, float)) and alt > 0):
+                sys.exit(f'{e["id"]}: {where} ({sid}) camera altitude must be positive')
+        for k in s:
+            if k not in ('id', 'name', 'at', 'page', 'camera'):
+                sys.exit(f'{e["id"]}: {where} ({sid}) has unexpected key {k!r}')
 
 
 def main() -> None:

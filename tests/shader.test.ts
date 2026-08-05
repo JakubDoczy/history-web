@@ -483,3 +483,33 @@ describe('the area footprint cannot z-fight the map it sits on', () => {
     expect(src).toContain('.polygonsTransitionDuration(0)')
   })
 })
+
+describe('no overlay outline is left to the polygon layer', () => {
+  const src = readFileSync('src/components/GlobeView.vue', 'utf8')
+
+  it('gives an event footprint no stroke of its own', () => {
+    // The fill stays — it is the hover and click target, and a cap is a mesh so
+    // the polygon offset reaches it. The OUTLINE moved to the DrawingLayer,
+    // where it is a fat line and can be biased in depth-buffer units. A stroke
+    // here would be GL_LINES again, held off the planet by height alone.
+    const stroke = src.slice(src.indexOf('.polygonStrokeColor'), src.indexOf('.polygonAltitude'))
+    expect(stroke).toMatch(/kind === 'area' \? '' :/)
+  })
+
+  it('draws that outline through the layer that owns lines on this globe', () => {
+    expect(src).toContain('areaOutlineFor')
+    // and on the selection's lifecycle, with the routes
+    const sel = src.slice(src.indexOf('const selectionDrawing'), src.indexOf('const focusDrawing'))
+    expect(sel).toContain('areaOutlineFor')
+    expect(sel).toContain('routeDrawingFor')
+  })
+
+  it('can pin the continuous animations, or a frame diff measures them instead', () => {
+    // the cloud drift and the route flow both repaint most of the globe every
+    // frame by design; two frames of an identical scene are only obtainable
+    // with both held still
+    expect(src).toContain('__freezeClock')
+    expect(src).toMatch(/setCloudDrift\(animationClock\(now\)/)
+    expect(src).toMatch(/setFlowPhase\(animationClock\(now\)\)/)
+  })
+})

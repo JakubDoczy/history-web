@@ -7,6 +7,8 @@ import {
   isMinor,
   parseItems,
   searchItems,
+  shapeOf,
+  touchesSpan,
   type EventFilter,
   type HistoricalEvent,
   type Item,
@@ -14,6 +16,8 @@ import {
   type RawItem,
   type Subject,
 } from '../lib/events'
+import type { Drawing } from '../lib/drawing'
+import { atYear, drawingForStage, orderedStages, type Stage } from '../lib/stages'
 import { focusTargetFor, type FocusTarget } from '../lib/geoFocus'
 import { assignTiers, type Tier } from '../lib/eventTiers'
 import { internalLinkIds } from '../lib/richtext'
@@ -204,6 +208,22 @@ export const useEventStore = defineStore('events', {
     focusStack: [] as string[],
     /** In focus mode, has the reader pulled the article back up over the map? */
     focusExpanded: false,
+    /**
+     * STAGED FOCUS: which authored step of the focused event the reader is in,
+     * or `undefined` for the overview.
+     *
+     * `undefined` is the ground state and it is never skipped: entering a focus,
+     * pushing one, popping one and dropping the whole stack all reset it, so the
+     * first thing a reader sees of any event is always the event whole (see
+     * lib/stages.ts, rule 1). Only `selectStage` ever sets it, and only to an id
+     * the focused event actually declares.
+     *
+     * It belongs to the TOP of the focus stack, not to the stack: stepping into
+     * a battle inside a staged operation and back out again returns to the
+     * overview rather than to whichever stage was open, because the stage is a
+     * reading of one event and the reader has been somewhere else since.
+     */
+    stageId: undefined as string | undefined,
   }),
   getters: {
     /**
@@ -335,21 +355,28 @@ export const useEventStore = defineStore('events', {
       return index.weakOf(id)
     },
     byId: (s) => (id: string) => s.all.find((e) => e.id === id),
-    /** A pin by id, life markers included — what the globe and the panel jump to. */
-    pinById: (s) => (id: string) => {
-      void s.revision
-      return index.pin(id)
-    },
     /**
      * Where the camera would have to be to show this item — `undefined` for an
      * item with no geometry at all, which is what hides the panel's "Show on
      * map" action on a concept. Life markers resolve too: they carry a geometry
      * of their own (a point, at the place the life began or ended).
+     *
+     * Fitted to the window that is actually on screen, not to a square one: the
+     * lens's fov measures the frame's HEIGHT, so on a portrait phone the frame
+     * is half as wide as it is tall and a route fitted vertically hangs off both
+     * sides (see `tightFovDeg` in lib/geoFocus.ts). The view store already
+     * publishes both axes for the scale bar and the scope, so the fit costs a
+     * read; it also makes this getter follow a resize, which is right — the
+     * altitude that framed an item in landscape does not frame it in portrait.
      */
     mapTarget: (s) => (id: string): FocusTarget | undefined => {
       void s.revision
+      const view = useViewStore()
       const item = index.byId.get(id) ?? index.pin(id)
-      return item && focusTargetFor(item)
+      return (
+        item &&
+        focusTargetFor(item, view.fov, view.viewportWidthPx / Math.max(1, view.viewportPx))
+      )
     },
     /**
      * The items on either end of a link with this one: what its body points at,
@@ -443,6 +470,43 @@ export const useEventStore = defineStore('events', {
     /** Is the panel currently the compact pill rather than the article? */
     panelMinimised(state): boolean {
       return state.focusStack.length > 0 && !state.focusExpanded
+    },
+    /* --- staged focus (lib/stages.ts) -------------------------------------
+       Three getters over one authored list. They are the whole of what the
+       stage strip, the stage page and the globe read, and every one of them is
+       empty or `undefined` for the overwhelming majority of the corpus, which
+       carries no stages at all. */
+    /**
+     * The focused event's stages, in `at` order — `[]` when there are none, or
+     * when the thing in focus is a life marker, a person or an idea.
+     *
+     * Ordered here rather than trusted from the data, so the chips read
+     * chronologically whatever order they were typed in.
+     */
+    focusStages(): Stage[] {
+      const item = this.focused
+      if (item?.kind !== 'event' || !item.stages?.length) return []
+      return orderedStages(item.stages, item.start, item.end)
+    },
+    /** The stage the reader is in, or `undefined` — the overview. */
+    activeStage(state): Stage | undefined {
+      return state.stageId
+        ? this.focusStages.find((s) => s.id === state.stageId)
+        : undefined
+    },
+    /**
+     * The plan on the globe: the focused item's drawing, filtered to the stage.
+     *
+     * The FOCUS's drawing, not the selection's — while a child battle is open
+     * inside an operation the operation's plan is what stays on the map. On the
+     * overview this is the drawing itself, the same object, so stepping back out
+     * of a stage is a no-op for the renderer's key comparison.
+     */
+    focusDrawing(state): Drawing | undefined {
+      const item = this.focused
+      if (item?.kind !== 'event') return undefined
+      const plan = shapeOf(item.geometry, 'plan')?.drawing
+      return drawingForStage(plan, state.stageId, this.focusStages, item.start, item.end)
     },
   },
   actions: {
@@ -597,6 +661,9 @@ export const useEventStore = defineStore('events', {
         this.focusStack = [id]
       }
       this.focusExpanded = false
+      // A new context always opens on its overview, never on a stage — the one
+      // that was open belonged to the event being left (see `stageId`).
+      this.stageId = undefined
       // The mode is always on its own item: this is what makes the invariant
       // hold no matter which way the caller arrived (a pin, a link, a search).
       this.selectedId = id
@@ -609,6 +676,7 @@ export const useEventStore = defineStore('events', {
     exitFocus() {
       this.focusStack.pop()
       this.focusExpanded = false
+      this.stageId = undefined // the stage belonged to the context being left
       const focusId = topFocus(this.focusStack)
       if (focusId !== undefined) this.selectedId = focusId
     },
@@ -619,6 +687,7 @@ export const useEventStore = defineStore('events', {
     clearFocus() {
       if (this.focusStack.length) this.focusStack = []
       this.focusExpanded = false
+      this.stageId = undefined
     },
     /**
      * The clean slate: no focus, no selection, no open cluster.
@@ -635,9 +704,103 @@ export const useEventStore = defineStore('events', {
       this.selectedId = undefined
       this.expandedClusterId = undefined
     },
+    /**
+     * The mode outlives nothing. Scrubbing the band clear of the focused item is
+     * the same statement picking an era makes — "show me a different time" — and
+     * it gets the same answer (`dismiss`).
+     *
+     * Focus mode is one item's context: its ink on the ground, its children
+     * pinned, its stages in the strip. All of that is *about a year*, and the
+     * band is what says the year is on screen. Without this the mode simply
+     * stayed: Barbarossa's 1941 front, drawn over the Permian, on a globe with
+     * no pins on it at all (/tmp/shots35/verify-F2-live.png). The pin was culled
+     * by the same band a hundred lines up (`visible`), so the mode was already
+     * arguing with the map it was drawn on.
+     *
+     * The test is intersection, not containment, and that margin is the design:
+     * a band nudged off one end of a fifty-year war still touches it, and a
+     * reader stepping through the stages of an operation is moving the *cursor*
+     * only (`setCursor` in stores/time.ts), which never narrows the band. The
+     * mode dies when its subject has left the timeline entirely — no sooner.
+     *
+     * An item that is not in the index yet is left alone: chunks stream, and
+     * "I have not loaded it" is not "it is not in this time".
+     */
+    dropFocusOffTimeline(start: number, end: number) {
+      const item = this.focused
+      if (!item || touchesSpan(item, start, end)) return
+      this.dismiss()
+    },
     /** The pill's chevron: the article, over the map, without leaving the mode. */
     toggleFocusExpanded() {
       if (this.focusStack.length) this.focusExpanded = !this.focusExpanded
+    },
+    /**
+     * Step into one of the focused event's stages — or, with no id, back out to
+     * the overview. The stage strip's only action (see components/StageStrip.vue).
+     *
+     * Four things follow, and they are the feature:
+     *
+     *  · the **drawing** filters to the timeless layers plus that stage's
+     *    (`focusDrawing`), so the June front and the December front are no
+     *    longer on the map at the same time;
+     *  · the stage's **page** replaces the article's body, with the stage's name
+     *    as its heading and a way back — and only when there is one, because a
+     *    stage that is purely a filter of the map should not open a panel over
+     *    the map it just filtered;
+     *  · the **camera** moves, if the stage says where; if it does not, the view
+     *    is left exactly where the reader put it, which is the more common and
+     *    the less rude case;
+     *  · the **cursor** moves to the stage's year — the cursor only. See
+     *    `setCursor` in stores/time.ts for why the selection band must not
+     *    follow it.
+     *
+     * An unknown id is a no-op rather than a reset: it can only come from a
+     * stale link or a chunk that has not loaded, and answering "I do not know
+     * that stage" by silently changing what is on the globe is worse than
+     * answering nothing.
+     *
+     * Whichever chip is pressed, the **selection comes back to the focused
+     * event** first. The strip is a control over one event — its own steps — and
+     * a stage's page belongs to that event's article, not to whatever else the
+     * panel happens to be open on: with a battle inside the operation open, the
+     * chip used to light up while its page stayed unreachable (the page renders
+     * only on the focused event's own article, see `stagePage` in
+     * EventPanel.vue) and `focusExpanded` force-opened the *battle's* article
+     * instead — a click on Kiev that answered with Minsk.
+     */
+    selectStage(id?: string) {
+      const item = this.focused
+      if (item?.kind !== 'event') return
+      // Was the panel open on a PART of the event? Then the part's article is
+      // not the reading any more, and the pill comes back with it — the same
+      // rule `close` and `focusBack` follow on the way out of a part. A stage
+      // with a page overrides this below: that page IS a reading.
+      const fromPart = this.selectedId !== item.id
+      if (id === undefined) {
+        const wasStaged = this.stageId !== undefined
+        // Nothing to step back out of, and the panel is already on the event.
+        if (!wasStaged && !fromPart) return
+        this.selectedId = item.id
+        this.stageId = undefined
+        if (fromPart) this.focusExpanded = false
+        // Only refit the camera if a stage could have moved it: an event whose
+        // stages carry no camera never took the view over, and putting it back
+        // would be undoing something the reader did themselves.
+        if (wasStaged && this.focusStages.some((s) => s.camera)) {
+          const target = this.mapTarget(item.id)
+          if (target) this.lookAt(target.lat, target.lng, target.altitude)
+        }
+        return
+      }
+      const stage = this.focusStages.find((s) => s.id === id)
+      if (!stage) return
+      this.selectedId = item.id
+      this.stageId = stage.id
+      if (stage.page) this.focusExpanded = true
+      else if (fromPart) this.focusExpanded = false
+      useTimeStore().setCursor(atYear(stage.at, item.start, item.end))
+      if (stage.camera) this.lookAt(stage.camera.lat, stage.camera.lng, stage.camera.altitude)
     },
     /**
      * Ask the globe to look at a coordinate (a person's birth or death place),

@@ -6,6 +6,7 @@ import { formatYear } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
 import { assertNever, shapeOf, type Item, type Place } from '../lib/events'
 import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
+import StageStrip from './StageStrip.vue'
 
 const events = useEventStore()
 const time = useTimeStore()
@@ -80,6 +81,21 @@ const children = computed(() => events.childrenOf(e.value.id))
 const related = computed(() => events.strongOf(e.value.id))
 /** The softer ones, with the article's prose links folded in behind them. */
 const seeAlso = computed(() => events.seeAlsoOf(e.value.id))
+
+/**
+ * The STAGE PAGE the article is showing, if any — the authored text of the step
+ * the reader has stepped into (see `selectStage` in stores/events.ts).
+ *
+ * Only on the focused event's OWN article. Opening a battle inside a staged
+ * operation swaps the panel to the battle, and the battle's article is about
+ * the battle: it must not be overwritten by the text of a stage of its parent,
+ * even though that stage is still what the map is filtered to.
+ */
+const stagePage = computed(() => {
+  const stage = events.activeStage
+  if (!stage?.page) return null
+  return events.selectedId === events.focus?.itemId ? stage : null
+})
 
 /** Persons and concepts are chipped; an event is the unmarked case (as in search). */
 const badge = (i: Item) => (i.kind === 'event' ? '' : i.kind)
@@ -202,6 +218,10 @@ onBeforeUnmount(() => inflight?.abort())
        Now closing removes the host synchronously, and the inner swap only ever
        chooses between two elements that both exist. -->
   <div v-if="events.selected" class="panel-host">
+    <!-- The authored steps of the focused event, above the pill's row. Outside
+         the swap below on purpose: it belongs to the FOCUS, not to whichever
+         shape the panel is in, and it must not fold away with the article. -->
+    <StageStrip />
     <!-- Two shapes of the same panel. The article is the default; the pill is
          what focus mode leaves behind so the map is unobstructed (see
          `focusStack` in stores/events.ts). `mode="out-in"` because they are not
@@ -243,7 +263,7 @@ onBeforeUnmount(() => inflight?.abort())
         v-else
         key="article"
         class="sheet panel scroll-y"
-        :class="{ 'has-minimise': events.focus }"
+        :class="{ 'has-minimise': events.focus, 'has-strip': events.focusStages.length }"
       >
     <span class="grabber" aria-hidden="true" />
     <!-- In focus mode the article can fold back down to the pill without
@@ -259,7 +279,7 @@ onBeforeUnmount(() => inflight?.abort())
         <path d="M6 9l6 6 6-6" />
       </svg>
     </button>
-    <button class="close" aria-label="Close" @click="events.close()">
+    <button class="close" aria-label="Close" data-test="panel-close" @click="events.close()">
       <svg
         width="14"
         height="14"
@@ -314,6 +334,24 @@ onBeforeUnmount(() => inflight?.abort())
       </button>
     </p>
 
+    <!-- ONE STAGE, INSTEAD OF THE WHOLE ARTICLE.
+         A stage page is a page, not a section appended to one: the reader
+         stepped into a moment of the operation and the panel is what tells them
+         about that moment, so the lead picture, the body and the four relation
+         lists all step aside. The way back is the first thing in it and says
+         where it goes, because there is no other affordance in the panel that
+         means "the whole thing again" — the strip's own Overview chip is
+         outside this box, over the map. -->
+    <section v-if="stagePage" class="stage-page" data-test="stage-page">
+      <button class="back" data-test="stage-back" @click="events.selectStage()">
+        <span aria-hidden="true">←</span>
+        <span class="back-name">Overview</span>
+      </button>
+      <h3>{{ stagePage.name }}</h3>
+      <div class="body" @click="onBodyClick" v-html="renderRichText(stagePage.page!)" />
+    </section>
+
+    <template v-else>
     <figure v-if="e.image">
       <img
         loading="lazy"
@@ -415,6 +453,7 @@ onBeforeUnmount(() => inflight?.abort())
     >
       Show only this event family
     </button>
+    </template>
       </article>
     </Transition>
   </div>
@@ -442,7 +481,15 @@ onBeforeUnmount(() => inflight?.abort())
   max-height: calc(100dvh - var(--rail-clear) - 66px - var(--safe-t));
   padding: var(--s3) var(--s5) var(--s5);
   z-index: var(--z-event-panel);
-  animation: panel-in 0.26s var(--ease);
+  animation: panel-in var(--slow);
+}
+/* A staged event's article stops short of the corner the stage strip is in.
+   Without this a long stage page reaches the bottom of the screen and paints
+   over the one control that steps to the next stage — on a phone that is the
+   whole strip, and the reader would have to close the page to see it again.
+   The band reserved is exactly the pill's row plus the strip's (tokens.css). */
+.panel.has-strip {
+  max-height: calc(100dvh - 66px - var(--safe-t) - var(--strip-clear) - var(--s1));
 }
 @keyframes panel-in {
   from {
@@ -478,6 +525,9 @@ onBeforeUnmount(() => inflight?.abort())
   max-width: min(470px, calc(100vw - 2 * var(--s4)));
   padding: 3px 5px 3px var(--s2);
   border-radius: var(--r-pill);
+  /* The stage strip stacks on this without measuring it — see --pill-h. */
+  min-height: var(--pill-h);
+  box-sizing: border-box;
 }
 /* The way out of a part and back to the whole, on the pill: an arrow and the
    name of the context, kept to a third of the bar so the item the pill is
@@ -758,7 +808,7 @@ h2 {
   background: transparent;
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
-  color: var(--frost-dim, var(--muted));
+  color: var(--frost-dim);
   padding: 4px 11px;
   cursor: pointer;
   transition:
@@ -808,6 +858,28 @@ figcaption {
 }
 
 /* --- the article itself: set for reading, not for filling a box --- */
+/* --- the stage page ------------------------------------------------------
+   A page inside the article, set apart by a rule and an indent rather than by
+   a box: it is still this event's panel, and boxing it would read as a card
+   about something else. The back control is reused verbatim from the focus
+   breadcrumb (`.back`) — one gesture, one look, two places it can appear. */
+.stage-page {
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line-soft);
+}
+.stage-page h3 {
+  margin: 2px 0 0;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: var(--t-lg);
+  line-height: 1.3;
+  color: var(--frost);
+}
+.stage-page .body {
+  margin-top: var(--s2);
+}
+
 .body {
   margin-top: var(--s4);
   font-family: var(--serif);
@@ -999,6 +1071,14 @@ ul {
     max-height: 62dvh;
     padding: var(--s4) var(--s4) var(--s4);
     animation-name: sheet-in;
+  }
+  /* The sheet stands on the strip's row rather than on the rail. On a phone the
+     sheet occupies the same corner the strip does, so without this the chips
+     are simply not there while a stage page is open — and the strip is how the
+     reader gets to the NEXT stage. */
+  .panel.has-strip {
+    bottom: calc(var(--strip-clear) + var(--s1));
+    max-height: 62dvh;
   }
   @keyframes sheet-in {
     from {

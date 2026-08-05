@@ -304,6 +304,31 @@ describe('show on map', () => {
     expect(events.flyTo!.altitude).toBeGreaterThan(0.3)
   })
 
+  /* Regression: the fit used the camera's vertical fov alone, so the altitude
+     was identical on a desktop and on a portrait phone — where the frame is
+     half as wide as it is tall and a route hangs off both sides. */
+  it('fits to the window on screen, not to a square one', () => {
+    const events = useEventStore()
+    const view = useViewStore()
+    events.adopt(seed())
+
+    view.viewportWidthPx = 1440
+    view.viewportPx = 900
+    const desktop = events.mapTarget('voyage')!
+    expect(desktop.altitude).toBe(focusTargetFor(parseItem(route), view.fov, 1440 / 900)!.altitude)
+
+    view.viewportWidthPx = 390
+    view.viewportPx = 844
+    const phone = events.mapTarget('voyage')!
+    expect(phone.altitude).toBeGreaterThan(desktop.altitude)
+    // the centre is a property of the geometry, not of the window
+    expect([phone.lat, phone.lng]).toEqual([desktop.lat, desktop.lng])
+
+    // and the flight the panel asks for is the fitted one, not the square one
+    events.showOnMap('voyage')
+    expect(events.flyTo!.altitude).toBe(phone.altitude)
+  })
+
   it('offers nothing for an item with no geometry, and does nothing if asked', () => {
     const events = useEventStore()
     events.adopt(seed())
@@ -793,6 +818,92 @@ describe('focus mode', () => {
  * operation where it was. These are the transitions that make that true, and
  * the ones that end it — see `focusStack` in stores/events.ts.
  */
+/* ------------------------------------- the mode never outlives its subject ---
+   Regression: a focused battle plan survived a scrub to an arbitrary time —
+   Barbarossa's 1941 front was still drawn, in ink, over a Permian paleomap
+   300 million years before it, on a globe the same band had emptied of every
+   pin (/tmp/shots35/verify-F2-live.png). The band is what says an item is on
+   the timeline at all, so when it no longer touches the focused item the mode
+   goes, exactly as picking an era already made it go (`dismiss`). */
+describe('focus ends when its subject leaves the timeline', () => {
+  const op = (extra: Partial<RawEvent> = {}): RawEvent => ({
+    id: 'op', name: 'op', start: 1941, end: 1945, lat: 53.9, lng: 27.6,
+    priority: 70, tags: ['war'], summary: '',
+    drawing: { layers: [{ type: 'marker', pos: [27.6, 53.9] }] },
+    stages: [{ id: 'kiev', name: 'Kiev', at: 0.45 }],
+    ...extra,
+  })
+  const focused = () => {
+    const events = useEventStore()
+    events.adopt([op()])
+    events.showOnMap('op')
+    expect(events.focus).toEqual({ itemId: 'op' })
+    return events
+  }
+  /** What the app does on every band move (App.vue). */
+  const scrubTo = (start: number, end: number) => {
+    const time = useTimeStore()
+    time.setSelection(start, end)
+    useEventStore().dropFocusOffTimeline(time.selection.start, time.selection.end)
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+  })
+
+  it('drops the whole mode when the band no longer touches the event', () => {
+    const events = focused()
+    events.selectStage('kiev')
+    scrubTo(1600, 1700)
+    expect(events.focus).toBeUndefined()
+    expect(events.focusDrawing).toBeUndefined()
+    expect(events.stageId).toBeUndefined()
+    expect(events.selectedId).toBeUndefined() // …a clean map, as an era pick gives
+  })
+
+  it('survives a band that still touches the event at all', () => {
+    const events = focused()
+    scrubTo(1900, 1941) // touching at exactly the start year counts
+    expect(events.focus).toEqual({ itemId: 'op' })
+    scrubTo(1945, 2000) // and at exactly the end year
+    expect(events.focus).toEqual({ itemId: 'op' })
+    scrubTo(1942, 1943) // and wholly inside it
+    expect(events.focus).toEqual({ itemId: 'op' })
+  })
+
+  it('survives stepping through the stages, which move the cursor alone', () => {
+    const events = focused()
+    const time = useTimeStore()
+    time.setSelection(1941, 1945)
+    events.selectStage('kiev')
+    events.dropFocusOffTimeline(time.selection.start, time.selection.end)
+    expect(events.focus).toEqual({ itemId: 'op' })
+    expect(events.stageId).toBe('kiev')
+  })
+
+  it('leaves a focus alone while its chunk has not loaded', () => {
+    // chunks stream, and "I have not loaded it" is not "it is not in this time"
+    const events = useEventStore()
+    events.focusStack = ['not-loaded-yet']
+    events.dropFocusOffTimeline(-300e6, -299e6)
+    expect(events.focus).toEqual({ itemId: 'not-loaded-yet' })
+  })
+
+  it('keeps the focus the very moment Show on map enters it', () => {
+    // showOnMap brings the timeline onto the item before entering the mode; the
+    // watcher runs after, and must find the band on the item rather than kill
+    // the focus it just opened
+    const events = useEventStore()
+    const time = useTimeStore()
+    events.adopt([op()])
+    time.setSelection(1600, 1700)
+    events.showOnMap('op')
+    events.dropFocusOffTimeline(time.selection.start, time.selection.end)
+    expect(events.focus).toEqual({ itemId: 'op' })
+  })
+})
+
 describe('focus navigation, inside a plan and back out', () => {
   const plan = (id: string, extra: Partial<RawEvent> = {}): RawEvent => ({
     id, name: id, start: 1941, lat: 53.9, lng: 27.6, priority: 70, tags: ['war'], summary: '',
@@ -1138,5 +1249,348 @@ describe('every reachable state has a way out', () => {
       expect(events.selectedId, `stuck after ${path.join(' → ')}`).toBeUndefined()
       expect(presses, `too many presses from ${k}`).toBeLessThanOrEqual(FOCUS_STACK_CAP + 2)
     }
+  })
+})
+
+/**
+ * STAGED FOCUS: the store's half of the feature (see src/lib/stages.ts for the
+ * schema and the folds, and tests/eventsData.test.ts for the corpus).
+ *
+ * Everything here is about the four things a chip does — filter the drawing,
+ * open the page, move the camera, move the cursor — and about the one thing it
+ * must never do, which is change the selection band under the reader.
+ */
+describe('staged focus', () => {
+  const stages = [
+    { id: 'june', name: 'The border battles', at: 0, page: 'Three army groups crossed.' },
+    { id: 'kiev', name: 'Kiev', at: 0.45, camera: { lat: 50, lng: 32, altitude: 0.2 } },
+    { id: 'december', name: 'The counteroffensive', at: 0.9 },
+  ]
+  const op = (extra: Partial<RawEvent> = {}): RawEvent => ({
+    id: 'op',
+    name: 'op',
+    start: 1941,
+    lat: 53.9,
+    lng: 27.6,
+    priority: 70,
+    tags: ['war'],
+    summary: '',
+    drawing: {
+      layers: [
+        { type: 'label', pos: [24, 53], text: 'June front', at: 0 },
+        { type: 'label', pos: [30, 54], text: 'Army Group Centre' }, // timeless
+        { type: 'label', pos: [32, 50], text: 'Kiev pocket', at: 0.5 },
+        { type: 'label', pos: [37, 55], text: 'December front', at: 0.95 },
+      ],
+    },
+    stages,
+    ...extra,
+  })
+  const part = (id: string, parent: string): RawEvent => ({
+    id, name: id, start: 1941, lat: 54, lng: 28, priority: 0, tags: ['war'], summary: '', parent,
+  })
+
+  const texts = (e: ReturnType<typeof useEventStore>) =>
+    (e.focusDrawing?.layers ?? []).map((l) => (l as { text: string }).text)
+
+  const store = (extra: RawEvent[] = []) => {
+    const events = useEventStore()
+    events.adopt([op(), ...extra])
+    return events
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+  })
+
+  it('offers no stages for an event that has none', () => {
+    const events = useEventStore()
+    events.adopt([op({ stages: undefined })])
+    events.showOnMap('op')
+    expect(events.focusStages).toEqual([])
+    expect(events.activeStage).toBeUndefined()
+    expect(texts(events)).toHaveLength(4) // …and draws everything, as it always did
+  })
+
+  it('offers the stages of the focused event, in at order', () => {
+    const events = store()
+    events.showOnMap('op')
+    expect(events.focusStages.map((s) => s.id)).toEqual(['june', 'kiev', 'december'])
+  })
+
+  /** The owner's rule: the default view is the whole-event overview. */
+  it('lands on the overview, with every layer drawn', () => {
+    const events = store()
+    events.showOnMap('op')
+    expect(events.stageId).toBeUndefined()
+    expect(events.activeStage).toBeUndefined()
+    expect(texts(events)).toEqual([
+      'June front', 'Army Group Centre', 'Kiev pocket', 'December front',
+    ])
+  })
+
+  it('filters the drawing to the stage’s layers plus the timeless ones', () => {
+    const events = store()
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    expect(events.activeStage?.id).toBe('kiev')
+    expect(texts(events)).toEqual(['Army Group Centre', 'Kiev pocket'])
+    events.selectStage('december')
+    expect(texts(events)).toEqual(['Army Group Centre', 'December front'])
+  })
+
+  it('restores the whole drawing on the way back to the overview', () => {
+    const events = store()
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    events.selectStage()
+    expect(events.stageId).toBeUndefined()
+    expect(texts(events)).toHaveLength(4)
+  })
+
+  it('opens the panel on a stage that has a page, and leaves it alone otherwise', () => {
+    const events = store()
+    events.showOnMap('op')
+    expect(events.panelMinimised).toBe(true)
+    events.selectStage('december') // no page: the map stays uncovered
+    expect(events.panelMinimised).toBe(true)
+    events.selectStage('june') // a page: the article comes up to hold it
+    expect(events.panelMinimised).toBe(false)
+  })
+
+  it('flies the camera only for a stage that says where to look', () => {
+    const events = store()
+    events.showOnMap('op')
+    const before = events.flyTo!.seq
+    events.selectStage('december')
+    expect(events.flyTo!.seq, 'a stage with no camera moved the view').toBe(before)
+    events.selectStage('kiev')
+    expect(events.flyTo).toMatchObject({ lat: 50, lng: 32, altitude: 0.2 })
+  })
+
+  it('refits the whole event when a staged camera is given back to the overview', () => {
+    const events = store()
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    const moved = events.flyTo!.seq
+    events.selectStage()
+    expect(events.flyTo!.seq).toBeGreaterThan(moved)
+    // the whole-event fit, which is the bounding cap of everything it draws —
+    // not the pin, and emphatically not where the stage left the camera
+    expect(events.flyTo).toMatchObject(events.mapTarget('op')!)
+  })
+
+  it('leaves the view where the reader put it when no stage ever moved it', () => {
+    const events = useEventStore()
+    events.adopt([op({ stages: stages.map(({ camera, ...s }) => s) })])
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    const seq = events.flyTo!.seq
+    events.selectStage()
+    expect(events.flyTo!.seq, 'the overview took the camera back for no reason').toBe(seq)
+  })
+
+  /**
+   * The distinction `setCursor` exists for. The band is what culls the pins, so
+   * a chip that dragged it would silently rewrite the set of events on the map —
+   * which is not what "step to the next moment of this operation" means.
+   */
+  it('moves the time cursor and not the selection band', () => {
+    const events = store()
+    const time = useTimeStore()
+    events.showOnMap('op')
+    time.setSelection(1900, 1950)
+    const band = { ...time.selection }
+    time.currentTime = 1000
+    events.selectStage('kiev')
+    expect(time.currentTime).toBe(1941)
+    expect(time.selection).toEqual(band)
+  })
+
+  it('ignores a stage id the focused event does not declare', () => {
+    const events = store()
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    events.selectStage('not-a-stage')
+    expect(events.stageId, 'an unknown chip changed the map').toBe('kiev')
+  })
+
+  it('does nothing at all outside focus mode', () => {
+    const events = store()
+    events.select('op')
+    events.selectStage('kiev')
+    expect(events.stageId).toBeUndefined()
+    expect(events.focusDrawing).toBeUndefined()
+  })
+
+  /* --- the stage belongs to the context, and never outlives it ------------ */
+
+  it('opens every new context on its overview', () => {
+    const events = store([part('battle', 'op')])
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    events.showOnMap('battle') // pushed: a context of its own
+    expect(events.stageId).toBeUndefined()
+    events.focusBack() // …and back out to the operation
+    expect(events.stageId).toBeUndefined()
+  })
+
+  it('drops the stage when the mode is left altogether', () => {
+    const events = store([{ ...part('other', 'op'), parent: undefined }])
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    events.select('other') // a statement about something else entirely
+    expect(events.focus).toBeUndefined()
+    expect(events.stageId).toBeUndefined()
+  })
+
+  it('keeps the stage while a part of the focused event is read', () => {
+    const events = store([part('battle', 'op')])
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    events.select('battle')
+    // the map is still filtered to the stage — the context did not change
+    expect(events.stageId).toBe('kiev')
+    expect(texts(events)).toEqual(['Army Group Centre', 'Kiev pocket'])
+  })
+
+  /* --- the strip is a control over the FOCUSED event ---------------------
+     Regression: with a battle inside the operation open, a stage chip set
+     `stageId` and force-expanded the panel — onto the BATTLE's article, since
+     that is what `selectedId` still pointed at. The chip lit up, the stage's
+     page was unreachable (it renders only on the focused event's own article),
+     and the reader who clicked "Kiev" got Minsk. See
+     /tmp/shots35/repro-stage-child.mjs. */
+  it('brings the selection back to the focused event, and opens the stage page', () => {
+    const events = store([part('battle', 'op')])
+    events.showOnMap('op')
+    events.select('battle') // a part of the operation: still the same context
+    expect(events.selectedId).toBe('battle')
+    events.toggleFocusExpanded() // …minimised again, as the repro leaves it
+
+    events.selectStage('june') // the stage with a page
+    expect(events.selectedId, 'the stage page belongs to the focused event').toBe('op')
+    expect(events.stageId).toBe('june')
+    expect(events.activeStage?.page).toBeTruthy()
+    // which is what makes the page reachable at all (EventPanel's `stagePage`)
+    expect(events.panelMinimised).toBe(false)
+    expect(events.focusReturnTo).toBeUndefined()
+  })
+
+  it('does the same for a stage with no page of its own', () => {
+    const events = store([part('battle', 'op')])
+    events.showOnMap('op')
+    events.select('battle')
+    events.selectStage('december') // no page: the map stays uncovered
+    expect(events.selectedId).toBe('op')
+    expect(events.panelMinimised).toBe(true)
+  })
+
+  it('takes the overview chip as the way back to the whole event too', () => {
+    const events = store([part('battle', 'op')])
+    events.showOnMap('op')
+    events.selectStage('kiev')
+    events.select('battle')
+    const seq = events.flyTo!.seq
+    events.selectStage()
+    expect(events.selectedId).toBe('op')
+    expect(events.stageId).toBeUndefined()
+    expect(events.flyTo!.seq, 'the overview refits the whole event').toBeGreaterThan(seq)
+
+    // and pressing it again, with nothing to step out of, still publishes nothing
+    const settled = events.flyTo!.seq
+    events.selectStage()
+    expect(events.flyTo!.seq).toBe(settled)
+  })
+
+  it('draws the CONTEXT’s stage, not the selected part’s own plan', () => {
+    const events = store([{ ...part('battle', 'op'), drawing: op().drawing }])
+    events.showOnMap('op')
+    events.selectStage('june')
+    events.select('battle')
+    expect(texts(events)).toEqual(['June front', 'Army Group Centre'])
+  })
+})
+
+/**
+ * HIDDEN SUB-EVENTS: the regionally important parts that never make the global
+ * cut still get pins, but only inside the thing they are part of.
+ */
+describe('focus pins the minor children', () => {
+  const op = (id: string, extra: Partial<RawEvent> = {}): RawEvent => ({
+    id, name: id, start: 1941, lat: 53.9, lng: 27.6, priority: 70, tags: ['war'], summary: '',
+    drawing: { layers: [{ type: 'marker', pos: [27.6, 53.9] }] },
+    ...extra,
+  })
+  /** Unranked: priority 0 is what `MINOR_PRIORITY` means (see lib/events.ts). */
+  const minorPart = (id: string, parent: string): RawEvent => ({
+    id, name: id, start: 1941, lat: 54, lng: 28, priority: 0, tags: ['war'], summary: '', parent,
+  })
+
+  const corpus = () => [
+    op('barbarossa'),
+    minorPart('brest-fortress', 'barbarossa'),
+    minorPart('uman-pocket', 'barbarossa'),
+    minorPart('tallinn-evacuation', 'barbarossa'),
+  ]
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+  })
+
+  it('leaves them off the ordinary globe, as the ranking list says', () => {
+    const events = useEventStore()
+    events.adopt(corpus())
+    expect(events.visible.map((e) => e.id)).toEqual(['barbarossa'])
+  })
+
+  it('pins every one of them inside the focus, minor filter and all', () => {
+    const events = useEventStore()
+    events.adopt(corpus())
+    events.showOnMap('barbarossa')
+    expect(events.visible.map((e) => e.id).sort()).toEqual([
+      'barbarossa', 'brest-fortress', 'tallinn-evacuation', 'uman-pocket',
+    ])
+    expect(events.focusChildren.map((e) => e.id).sort()).toEqual([
+      'brest-fortress', 'tallinn-evacuation', 'uman-pocket',
+    ])
+  })
+
+  it('pins them even when the reader has minor events switched off', () => {
+    const events = useEventStore()
+    const settings = useSettingsStore()
+    settings.showMinorEvents = false
+    events.adopt(corpus())
+    events.showOnMap('barbarossa')
+    expect(events.visible).toHaveLength(4)
+  })
+
+  /**
+   * Tier 3 by construction (see `assignTiers`): a set of unranked pins must not
+   * promote a fifth of itself, and inside a focus the minor children are the
+   * background the focused item is read against.
+   */
+  it('tiers them as background, and the operation above them', () => {
+    const events = useEventStore()
+    events.adopt(corpus())
+    events.showOnMap('barbarossa')
+    const tiers = events.tiers
+    expect(tiers.get('barbarossa')).toBe(1)
+    for (const id of ['brest-fortress', 'uman-pocket', 'tallinn-evacuation'])
+      expect(tiers.get(id), id).toBe(3)
+  })
+
+  it('still honours the cap when a family is larger than the globe can hold', () => {
+    const events = useEventStore()
+    events.adopt([
+      op('barbarossa'),
+      ...Array.from({ length: FOCUS_CHILD_CAP + 5 }, (_, i) =>
+        minorPart(`part-${i}`, 'barbarossa'),
+      ),
+    ])
+    events.showOnMap('barbarossa')
+    expect(events.focusChildren).toHaveLength(FOCUS_CHILD_CAP)
   })
 })

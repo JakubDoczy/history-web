@@ -770,7 +770,7 @@
  },
  {
   "id": "germ-theory",
-  "name": "Germ theory of disease",
+  "name": "Germ theory established",
   "start": 1861,
   "end": 1885,
   "lat": 48.84,
@@ -2710,7 +2710,7 @@
      "color": "#eaf1fb",
      "dash": "solid",
      "width": 2.6,
-     "at": 1941,
+     "at": 0.0,
      "paths": [
       [
        [
@@ -2778,7 +2778,7 @@
      "color": "#e5484d",
      "dash": "dashed",
      "width": 2.6,
-     "at": 1941,
+     "at": 0.95,
      "paths": [
       [
        [
@@ -2985,7 +2985,8 @@
       26.3,
       53.6
      ],
-     "label": "Minsk pocket · 324,000"
+     "label": "Minsk pocket · 324,000",
+     "at": 0.05
     },
     {
      "type": "marker",
@@ -2996,7 +2997,8 @@
       31.6,
       54.6
      ],
-     "label": "Smolensk pocket · 300,000"
+     "label": "Smolensk pocket · 300,000",
+     "at": 0.25
     },
     {
      "type": "marker",
@@ -3007,7 +3009,8 @@
       32.4,
       50.3
      ],
-     "label": "Kiev pocket · 665,000"
+     "label": "Kiev pocket · 665,000",
+     "at": 0.5
     },
     {
      "type": "marker",
@@ -3018,7 +3021,8 @@
       37.62,
       55.75
      ],
-     "label": "Moscow — not taken"
+     "label": "Moscow — not taken",
+     "at": 0.8
     },
     {
      "type": "label",
@@ -3026,7 +3030,8 @@
       30.32,
       59.94
      ],
-     "text": "Leningrad, besieged"
+     "text": "Leningrad, besieged",
+     "at": 0.4
     },
     {
      "type": "label",
@@ -3034,10 +3039,112 @@
       39.72,
       47.24
      ],
-     "text": "Rostov"
+     "text": "Rostov, retaken 29 November",
+     "at": 0.92
+    },
+    {
+     "type": "label",
+     "pos": [
+      23.66,
+      52.08
+     ],
+     "text": "Brest Fortress, held to 29 June",
+     "size": "sm",
+     "at": 0.02
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.28,
+     "color": "#ffd7a8",
+     "pos": [
+      30.22,
+      48.75
+     ],
+     "label": "Uman pocket · 103,000",
+     "at": 0.3
+    },
+    {
+     "type": "label",
+     "pos": [
+      30.73,
+      46.48
+     ],
+     "text": "Odessa, besieged",
+     "size": "sm",
+     "at": 0.5
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.34,
+     "color": "#ffd7a8",
+     "pos": [
+      34.4,
+      55.2
+     ],
+     "label": "Vyazma–Bryansk pockets · 673,000",
+     "at": 0.7
     }
    ]
-  }
+  },
+  "stages": [
+   {
+    "id": "border-battles",
+    "name": "The border battles (June)",
+    "at": 0,
+    "camera": {
+     "lat": 52.6,
+     "lng": 25.2,
+     "altitude": 0.24
+    },
+    "page": "Three army groups crossed the 1939 demarcation line before dawn on 22 June 1941 and broke through the covering forces of the western Soviet military districts within days. Army Group Centre closed two rings behind Białystok and Minsk and took some 324,000 prisoners; Army Group North crossed the Dvina into Latvia; Army Group South met the heaviest armour of the campaign around Dubno and Brody.\n\nWhat the advance passed it did not always reduce. The garrison of [Brest Fortress](item:brest-fortress), surrounded on the first morning, held out inside the German rear for a week."
+   },
+   {
+    "id": "smolensk",
+    "name": "Smolensk (July–September)",
+    "at": 0.2,
+    "camera": {
+     "lat": 55.0,
+     "lng": 31.5,
+     "altitude": 0.26
+    },
+    "page": "Through July and August Army Group Centre fought its way up the Moscow highway. The [battle of Smolensk](item:smolensk-1941) cost the Red Army a further 300,000 prisoners, but it absorbed two months of the campaign's good weather and the Soviet counterattacks at Yelnya recovered ground for the first time since the invasion began.\n\nIn the south the [Uman pocket](item:uman-pocket) destroyed two Soviet armies in August. In the north the ring closed on Leningrad, cut off by land on 8 September; the Baltic Fleet had already run the [evacuation of Tallinn](item:tallinn-evacuation) through minefields at the end of August."
+   },
+   {
+    "id": "kiev",
+    "name": "Kiev (September)",
+    "at": 0.45,
+    "camera": {
+     "lat": 49.6,
+     "lng": 31.6,
+     "altitude": 0.26
+    },
+    "page": "In September Panzer Group 2 turned south off the Moscow axis and met Panzer Group 1 east of Kiev, closing the largest encirclement of the war around the Soviet South-Western Front. Some 665,000 men were taken.\n\nThe turn secured the Ukraine and the approaches to the Donbass, and it cost the advance on Moscow a month of the campaigning season — the decision most argued over since."
+   },
+   {
+    "id": "typhoon",
+    "name": "Typhoon (October–December)",
+    "at": 0.65,
+    "camera": {
+     "lat": 55.4,
+     "lng": 35.6,
+     "altitude": 0.24
+    },
+    "page": "Operation Typhoon opened on 30 September. Double encirclements at Vyazma and Bryansk took a further 673,000 prisoners and left the road to Moscow thinly held; then the autumn rains turned it to mud and the December frosts caught an army that had been equipped for a summer campaign.\n\nThe leading formations came within about 30 km of the capital, at Krasnaya Polyana, and stopped there."
+   },
+   {
+    "id": "counteroffensive",
+    "name": "The counteroffensive (December)",
+    "at": 0.9,
+    "camera": {
+     "lat": 53.4,
+     "lng": 34.5,
+     "altitude": 0.36
+    },
+    "page": "On 5 December the Red Army attacked with divisions brought from the Far East, and over the following weeks pushed the front back between 100 and 250 km along the Moscow axis. Rostov had already been given up on 29 November, the first city the Wehrmacht abandoned.\n\nBarbarossa's stated object — the destruction of the Soviet Union in a single campaign — had failed. The war in the east ran on for another three and a half years. See [World War II](event:ww2)."
+   }
+  ]
  },
  {
   "id": "pearl-harbor",
@@ -3213,6 +3320,66 @@
   ]
  },
  {
+  "id": "brest-fortress",
+  "name": "Defence of Brest Fortress",
+  "start": 1941,
+  "lat": 52.083,
+  "lng": 23.657,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "barbarossa",
+  "summary": "The frontier fortress on the Bug was surrounded on the first morning of the invasion and held out for a week inside the German rear.",
+  "body": "Part of [Operation Barbarossa](event:barbarossa). The nineteenth-century citadel at Brest stood on the demarcation line and was surrounded within hours on 22 June 1941. Its garrison, cut off from any relief, held the ruins against artillery and dive-bombing until 29 June; scattered resistance continued into July.\n\nThe defence had no effect on the timetable of the advance, which went round it, but it became one of the first Soviet accounts of the war to be told as a victory rather than as a retreat.",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Defense_of_Brest_Fortress"
+   }
+  ]
+ },
+ {
+  "id": "uman-pocket",
+  "name": "Uman encirclement",
+  "start": 1941,
+  "lat": 48.75,
+  "lng": 30.22,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "barbarossa",
+  "summary": "Two Soviet armies were surrounded south-west of Kiev in August 1941, losing about 103,000 men taken prisoner.",
+  "body": "Part of [Operation Barbarossa](event:barbarossa). In the first week of August 1941 the 1st Panzer Group and the 17th Army closed a ring around the Soviet 6th and 12th Armies near Uman, in the black-earth country south-west of Kiev. About 103,000 men were taken, along with the greater part of two armies' artillery.\n\nThe pocket opened the way east across the Dnieper and set up the far larger encirclement at [Kiev](event:kiev-pocket) a month later.",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Uman"
+   }
+  ]
+ },
+ {
+  "id": "tallinn-evacuation",
+  "name": "Evacuation of Tallinn",
+  "start": 1941,
+  "lat": 59.44,
+  "lng": 24.75,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "barbarossa",
+  "summary": "The Baltic Fleet ran some 190 ships out of Tallinn through minefields and air attack in August 1941, losing about a third of them.",
+  "body": "Part of [Operation Barbarossa](event:barbarossa). With Army Group North astride the Estonian coast road, the Soviet Baltic Fleet abandoned Tallinn on 28 August 1941 and made for Kronstadt. The convoys crossed the Juminda minefield under continuous air attack; between 50 and 60 vessels were lost and some 12,000 people with them.\n\nThe ships that arrived nonetheless reinforced the naval artillery that helped hold the perimeter through the [siege of Leningrad](event:leningrad-siege).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Soviet_evacuation_of_Tallinn"
+   }
+  ]
+ },
+ {
   "id": "quit-india",
   "name": "Quit India Movement",
   "start": 1942,
@@ -3312,7 +3479,7 @@
      "color": "#eaf1fb",
      "dash": "solid",
      "width": 2.8,
-     "at": 1944,
+     "at": 0.0,
      "paths": [
       [
        [
@@ -3392,7 +3559,7 @@
      "color": "#e5484d",
      "dash": "dashed",
      "width": 2.6,
-     "at": 1944,
+     "at": 0.45,
      "paths": [
       [
        [
@@ -3452,7 +3619,8 @@
        49.44
       ]
      ],
-     "label": "Utah"
+     "label": "Utah",
+     "at": 0.02
     },
     {
      "type": "thrust",
@@ -3472,7 +3640,8 @@
        49.4
       ]
      ],
-     "label": "Omaha"
+     "label": "Omaha",
+     "at": 0.02
     },
     {
      "type": "thrust",
@@ -3492,7 +3661,8 @@
        49.37
       ]
      ],
-     "label": "Gold"
+     "label": "Gold",
+     "at": 0.02
     },
     {
      "type": "thrust",
@@ -3512,7 +3682,8 @@
        49.36
       ]
      ],
-     "label": "Juno"
+     "label": "Juno",
+     "at": 0.02
     },
     {
      "type": "thrust",
@@ -3532,7 +3703,8 @@
        49.32
       ]
      ],
-     "label": "Sword"
+     "label": "Sword",
+     "at": 0.02
     },
     {
      "type": "marker",
@@ -3543,7 +3715,8 @@
       -1.32,
       49.41
      ],
-     "label": "82nd & 101st Airborne"
+     "label": "82nd & 101st Airborne",
+     "at": 0.0
     },
     {
      "type": "marker",
@@ -3554,7 +3727,8 @@
       -0.18,
       49.245
      ],
-     "label": "6th Airborne"
+     "label": "6th Airborne",
+     "at": 0.0
     },
     {
      "type": "marker",
@@ -3565,7 +3739,8 @@
       -0.37,
       49.18
      ],
-     "label": "Caen, held to 9 July"
+     "label": "Caen, held to 9 July",
+     "at": 0.5
     },
     {
      "type": "marker",
@@ -3576,7 +3751,8 @@
       -1.62,
       49.64
      ],
-     "label": "Cherbourg, taken 27 June"
+     "label": "Cherbourg, taken 27 June",
+     "at": 0.65
     },
     {
      "type": "label",
@@ -3622,8 +3798,155 @@
      ],
      "text": "Sword",
      "size": "sm"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.02,
+     "color": "#f5a623",
+     "pos": [
+      -0.9894,
+      49.3958
+     ],
+     "label": "Pointe du Hoc",
+     "at": 0.05
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.02,
+     "color": "#ffd7a8",
+     "pos": [
+      -0.6553,
+      49.0806
+     ],
+     "label": "Villers-Bocage, 13 June",
+     "at": 0.35
+    },
+    {
+     "type": "label",
+     "pos": [
+      -1.45,
+      49.3
+     ],
+     "text": "Cotentin cut, 18 June",
+     "size": "sm",
+     "at": 0.62
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.02,
+     "color": "#ffd7a8",
+     "pos": [
+      -1.09,
+      49.116
+     ],
+     "label": "Saint-Lô taken, 19 July",
+     "at": 0.88
+    },
+    {
+     "type": "label",
+     "pos": [
+      -1.15,
+      49.03
+     ],
+     "text": "Operation Cobra, 25 July",
+     "size": "sm",
+     "at": 0.9
     }
    ]
-  }
+  },
+  "stages": [
+   {
+    "id": "six-june",
+    "name": "6 June",
+    "at": 0,
+    "page": "Airborne divisions dropped behind the invasion coast after midnight to hold its flanks. The seaborne assault began at 06:30 on the American beaches and about an hour later on the British and Canadian ones, the tides running later to the east. Utah was taken cheaply; Omaha, overlooked by bluffs and held by a full-strength division, cost the day's heaviest casualties; Rangers scaled [Pointe du Hoc](item:pointe-du-hoc) and found the battery they had come for moved inland.\n\nBy nightfall about 156,000 men were ashore in five lodgements, none of them yet joined to another."
+   },
+   {
+    "id": "beachhead",
+    "name": "The beachhead",
+    "at": 0.3,
+    "page": "The landings were linked into a single bridgehead within the week, and the fighting became a contest for the bocage — small fields walled in earth banks and thorn, ground made for defence. Caen, an objective of the first day, was not taken until 9 July; an armoured thrust towards [Villers-Bocage](item:villers-bocage) on 13 June was stopped and pulled back.\n\nA Channel gale between 19 and 22 June wrecked the American Mulberry harbour and cost more landing craft than the assault itself."
+   },
+   {
+    "id": "cherbourg",
+    "name": "Cherbourg",
+    "at": 0.6,
+    "camera": {
+     "lat": 49.55,
+     "lng": -1.35,
+     "altitude": 0.05
+    },
+    "page": "VII Corps cut the Cotentin peninsula on 18 June and turned north for the deep-water port the campaign needed. [Cherbourg](item:cherbourg-1944) surrendered on 27 June with its harbour systematically demolished, and it did not handle cargo in quantity until the autumn."
+   },
+   {
+    "id": "breakout",
+    "name": "The breakout",
+    "at": 0.85,
+    "page": "Saint-Lô fell on 19 July after a month of hedgerow fighting. Operation Cobra opened on 25 July with saturation bombing on a narrow front west of the town, broke the German line and put armour into open country — the end of Normandy as a battle for a beachhead."
+   }
+  ]
+ },
+ {
+  "id": "pointe-du-hoc",
+  "name": "Pointe du Hoc",
+  "start": 1944,
+  "lat": 49.3958,
+  "lng": -0.9894,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "d-day",
+  "summary": "American Rangers scaled a 30-metre cliff between Utah and Omaha on 6 June 1944 to take a battery that had already been moved inland.",
+  "body": "Part of the [D-Day landings](event:d-day). The 2nd Ranger Battalion landed under the cliffs at Pointe du Hoc at 07:10 on 6 June 1944 and climbed them with rope ladders and grapnels under fire. The six 155 mm guns the position had been built for were found in an orchard a kilometre inland, unmanned, and were disabled there.\n\nThe Rangers held the clifftop against counterattack for two days before relief arrived from Omaha; about half of the 225 men who landed were still fit to fight.",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Pointe_du_Hoc"
+   }
+  ]
+ },
+ {
+  "id": "villers-bocage",
+  "name": "Battle of Villers-Bocage",
+  "start": 1944,
+  "lat": 49.0806,
+  "lng": -0.6553,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "d-day",
+  "summary": "A British armoured thrust into a gap west of Caen was stopped in the village street on 13 June 1944 and withdrawn.",
+  "body": "Part of the [D-Day landings](event:d-day). On 13 June 1944 the 7th Armoured Division pushed through a gap in the German line towards Villers-Bocage, some 25 km inland. Its leading squadron was caught in column on the road out of the village and destroyed, largely by a handful of Tiger tanks of the 101st SS Heavy Panzer Battalion.\n\nThe division withdrew the next day. The action is remembered less for its scale than for what it showed about armour in the bocage, where a hedged lane gave the defender the first shot at close range.",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Villers-Bocage"
+   }
+  ]
+ },
+ {
+  "id": "cherbourg-1944",
+  "name": "Fall of Cherbourg",
+  "start": 1944,
+  "lat": 49.639,
+  "lng": -1.616,
+  "priority": 0,
+  "tags": [
+   "war"
+  ],
+  "parent": "d-day",
+  "summary": "The Cotentin port surrendered on 27 June 1944 with its harbour so thoroughly demolished that it took until autumn to work at capacity.",
+  "body": "Part of the [D-Day landings](event:d-day). The American VII Corps cut the Cotentin peninsula on 18 June 1944 and turned north on the deep-water port the campaign had been planned around. The garrison surrendered on 27 June after a week of fighting through the outer forts.\n\nIts engineers had wrecked the harbour first — cranes toppled, quays cratered, the approaches mined — and Cherbourg did not handle cargo in quantity until September, by which time the armies were already well east of the Seine.",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Cherbourg"
+   }
+  ]
  }
 ]
