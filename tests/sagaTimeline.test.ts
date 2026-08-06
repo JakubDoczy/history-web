@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { parseSteps, type RawStep, type Step } from '../src/lib/steps'
-import { pointTime, timeFrom } from '../src/lib/time'
+import { pointTime, timeExtent, timeFrom } from '../src/lib/time'
 import {
   LANE_GAP_PX,
   MAX_LANES,
   MIN_LABEL_PX,
   minLabelPx,
-  MIN_STATION_PX,
+  MIN_WINDOW_DAYS,
   RAIL_PAD,
+  FULL_WINDOW,
   axisTicks,
   backPressesTo,
   crumbs,
@@ -15,8 +16,14 @@ import {
   laneOf,
   labelWidth,
   layoutRail,
-  railWidth,
+  markZ,
+  minWindow,
+  panWindow,
+  railU,
   railX,
+  revealIn,
+  spanUnit,
+  zoomWindow,
   spread,
   stationAt,
   stationTime,
@@ -94,11 +101,6 @@ describe('stations', () => {
 })
 
 describe('the rail’s width', () => {
-  it('is the element’s, until the stations could not be told apart at that size', () => {
-    expect(railWidth(1200, 11)).toBe(1200)
-    expect(railWidth(390, 11)).toBe(11 * MIN_STATION_PX) // a phone scrolls instead
-  })
-
   it('leaves air at both ends, so the first and last station are not on the edge', () => {
     expect(railX(0, 1000)).toBeCloseTo(RAIL_PAD * 1000)
     expect(railX(1, 1000)).toBeCloseTo(1000 - RAIL_PAD * 1000)
@@ -415,5 +417,299 @@ describe('the breadcrumb', () => {
   it('does nothing for a crumb that is not on the stack', () => {
     expect(backPressesTo(['ww2'], 'ww2', 'moon-landing')).toBe(0)
     expect(backPressesTo([], undefined, 'ww2')).toBe(0)
+  })
+})
+
+/* ==========================================================================
+   THE WINDOW — round 46
+   ==========================================================================
+
+   The rail used to answer "eleven moments will not fit on a phone" by growing
+   past the element and scrolling. It answers it by ZOOMING now, which is the
+   era rail's answer to the same question, and everything the rail draws is a
+   function of the visible window rather than of the span. What follows is that
+   function's arithmetic: what a gesture may do, where it is stopped, and what
+   the rest of the layout does when the window moves.
+
+   All of it is pure, so all of it is here rather than in a browser: the e2e
+   pass checks that the gestures are wired to these functions, not what they
+   compute. */
+
+/** The window that shows exactly the years a..b of a saga's span. */
+const over = (span: ReturnType<typeof timeFrom>, a: number, b: number) => {
+  const [from, to] = timeExtent(span)
+  return { u0: railU((a - from) / (to - from)), u1: railU((b - from) / (to - from)) }
+}
+const len = (w: { u0: number; u1: number }) => w.u1 - w.u0
+
+describe('the visible window', () => {
+  it('holds the point under the cursor still, which is what makes a zoom a zoom', () => {
+    for (const at of [0, 0.25, 0.5, 1]) {
+      const w = zoomWindow(FULL_WINDOW, 0.5, at)
+      expect(w.u0 + at * len(w), `anchor ${at}`).toBeCloseTo(at)
+    }
+    // …and again from a window that is already somewhere
+    const w = zoomWindow({ u0: 0.2, u1: 0.6 }, 0.5, 0.75)
+    expect(w.u0 + 0.75 * len(w)).toBeCloseTo(0.2 + 0.75 * 0.4)
+  })
+
+  it('never zooms out past the saga’s own padded span', () => {
+    expect(zoomWindow({ u0: 0.2, u1: 0.5 }, 100, 0.5)).toEqual(FULL_WINDOW)
+    expect(zoomWindow(FULL_WINDOW, 2, 0.5)).toEqual(FULL_WINDOW)
+    // a window against an end keeps its width and slides rather than being
+    // clipped: zooming out at the right edge still arrives at the whole saga
+    const w = zoomWindow({ u0: 0.9, u1: 1 }, 3, 1)
+    expect(len(w)).toBeCloseTo(0.3)
+    expect(w.u1).toBeCloseTo(1)
+  })
+
+  it('stops zooming in where the tick ladder stops refining', () => {
+    const min = minWindow(ww2Span)
+    const w = zoomWindow(FULL_WINDOW, 0.0001, 0.5, min)
+    expect(len(w)).toBeCloseTo(min)
+    expect(len(zoomWindow(w, 0.5, 0.5, min))).toBeCloseTo(min) // and stays there
+  })
+
+  it('sizes that floor from the span: about three days, whatever the saga is', () => {
+    const days = (span: ReturnType<typeof timeFrom>) => {
+      const [a, b] = timeExtent(span)
+      return (minWindow(span) / (1 - 2 * RAIL_PAD)) * (b - a) * 365.2425
+    }
+    expect(days(ww2Span)).toBeCloseTo(MIN_WINDOW_DAYS, 5)
+    expect(days(timeFrom(1944.43, 1944.56))).toBeCloseTo(MIN_WINDOW_DAYS, 5)
+    // a saga shorter than the floor cannot zoom at all, and says so
+    expect(minWindow(timeFrom(1944, 1944.002))).toBe(1)
+    expect(minWindow(ddaySpan)).toBe(1) // …nor can one with no extent
+  })
+
+  it('pans by a fraction of rail space, keeping its width, and stops at the ends', () => {
+    const on = panWindow({ u0: 0.2, u1: 0.4 }, 0.1)
+    expect([on.u0, on.u1].map((v) => +v.toFixed(6))).toEqual([0.3, 0.5])
+    expect(panWindow({ u0: 0.2, u1: 0.4 }, -1)).toEqual({ u0: 0, u1: 0.2 })
+    expect(panWindow({ u0: 0.2, u1: 0.4 }, 1)).toEqual({ u0: 0.8, u1: 1 })
+    expect(panWindow(FULL_WINDOW, 0.5)).toEqual(FULL_WINDOW) // nothing to pan
+  })
+
+  it('draws through the window: the same fraction, a different pixel', () => {
+    // the whole span across 800px, then a tenth of it across the same 800px
+    expect(railX(0.5, 800)).toBeCloseTo(400)
+    const w = { u0: 0.45, u1: 0.55 }
+    expect(railX(0.5, 800, w)).toBeCloseTo(((RAIL_PAD + 0.45 - 0.45) / 0.1) * 800)
+    // …and a moment outside the window lands outside the rail, not on its edge
+    expect(railX(0, 800, w)).toBeLessThan(0)
+    expect(railX(1, 800, w)).toBeGreaterThan(800)
+  })
+})
+
+describe('panning a station into view', () => {
+  it('leaves a window that already holds it alone, so a walk does not jog the rail', () => {
+    const w = { u0: 0.2, u1: 0.6 }
+    expect(revealIn(w, 0.4)).toBe(w) // the same object: the caller animates nothing
+    expect(revealIn(w, 0.26)).toBe(w) // inside the margin, which is 12% of 0.4
+  })
+
+  it('moves the least it can, and brings the station clear of the edge', () => {
+    const w = { u0: 0.2, u1: 0.6 }
+    const left = revealIn(w, 0.1)
+    expect(len(left)).toBeCloseTo(0.4)
+    expect(left.u0).toBeCloseTo(0.1 - 0.12 * 0.4)
+    const right = revealIn(w, 0.9)
+    expect(right.u1).toBeCloseTo(0.9 + 0.12 * 0.4)
+  })
+
+  it('does not run off the ends to make room for a station that is on one', () => {
+    const [lo, hi] = [revealIn({ u0: 0.2, u1: 0.6 }, 0), revealIn({ u0: 0.2, u1: 0.6 }, 1)]
+    expect([lo.u0, lo.u1].map((v) => +v.toFixed(6))).toEqual([0, 0.4])
+    expect([hi.u0, hi.u1].map((v) => +v.toFixed(6))).toEqual([0.6, 1])
+  })
+})
+
+/**
+ * THE RULE REFINES WITH THE WINDOW — the third thing the reader asked for:
+ * *"the timeline if it's short enough, should show months or even days — all
+ * based on how much space you have for ticks."*
+ *
+ * It is the same ladder round 44 built, fed the VISIBLE span instead of the
+ * whole one. So there is no mode and no threshold: a war rules in years, its
+ * 1944 in months and D-Day's June in days, and the thing that decides is how
+ * many `TICK_PX` of room the labels have.
+ */
+describe('the tick ladder, walked by the zoom', () => {
+  it('steps year → month → day as the window closes on D-Day', () => {
+    const at = (w: { u0: number; u1: number }) => axisTicks(ww2Span, 1200, w).unit
+    expect(at(FULL_WINDOW)).toBe('year')
+    expect(at(over(ww2Span, 1944, 1945))).toBe('month')
+    expect(at(over(ww2Span, 1944.41, 1944.5))).toBe('day')
+  })
+
+  it('names the ticks in the unit it is ruling in, and marks where a bigger one opens', () => {
+    const june = axisTicks(ww2Span, 1200, over(ww2Span, 1944.41, 1944.5))
+    expect(june.ticks.some((t) => /^\d+ Jun$/.test(t.label))).toBe(true)
+    expect(june.ticks.every((t) => t.major === /^1 /.test(t.label))).toBe(true)
+    const y44 = axisTicks(ww2Span, 1200, over(ww2Span, 1944, 1945))
+    expect(y44.ticks.map((t) => t.label)).toContain('Jul')
+    // January carries its year: a month rule still says WHICH year it is in
+    expect(y44.ticks.filter((t) => t.major).map((t) => t.label)).toEqual(['Jan 1944', 'Jan 1945'])
+  })
+
+  /**
+   * A twelfth of a year is 30.44 days and a calendar month is 28 to 31, so a
+   * month rule stepped in twelfths drifts a third of a day per tick. On a
+   * ten-month window at 1280px that drift printed "Jan 1944" twice and skipped
+   * February entirely — two labels claiming the same month, three pixels apart.
+   */
+  it('stands its month ticks on the first of the month, on the calendar’s own grid', () => {
+    const y44 = axisTicks(ww2Span, 1200, over(ww2Span, 1944, 1945))
+    expect(y44.unit).toBe('month')
+    expect(new Set(y44.ticks.map((t) => t.label)).size).toBe(y44.ticks.length)
+    // every second month from January, because the sequence aligns to the year
+    expect(y44.ticks.map((t) => t.label)).toEqual([
+      'Jan 1944', 'Mar', 'May', 'Jul', 'Sep', 'Nov', 'Jan 1945',
+    ])
+    // consecutive months on a one-month rule, none missing and none twice
+    const ten = axisTicks(ww2Span, 1280, over(ww2Span, 1943.85, 1944.6))
+    expect(ten.ticks.map((t) => t.label)).toEqual([
+      'Dec', 'Jan 1944', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
+    ])
+  })
+
+  /**
+   * Two NEIGHBOURING ticks never say the same thing. Further apart they may:
+   * a six-month rule over three years says Jul three times, and the Januarys
+   * between them carry the year — which is the era rail's own idiom and how a
+   * ruler has always been read. What is a defect is two adjacent marks both
+   * claiming to be January 1944.
+   */
+  it('never says the same thing twice in a row, at any zoom or width', () => {
+    for (const width of [390, 800, 1280]) {
+      for (let k = 1; k >= minWindow(ww2Span); k /= 1.25) {
+        const w = { u0: Math.max(0, 0.62 - k / 2), u1: Math.min(1, 0.62 + k / 2) }
+        const labels = axisTicks(ww2Span, width, w).ticks.map((t) => t.label)
+        for (let i = 1; i < labels.length; i++)
+          expect(labels[i], `w=${width} k=${k}: ${labels}`).not.toBe(labels[i - 1])
+      }
+    }
+  })
+
+  it('never refines past the window: every tick it draws is inside the span', () => {
+    for (const w of [FULL_WINDOW, over(ww2Span, 1941, 1942), over(ww2Span, 1945.5, 1945.6)])
+      for (const t of axisTicks(ww2Span, 900, w).ticks) expect(t.u).toBeGreaterThanOrEqual(0)
+  })
+
+  it('walks the ladder monotonically — zooming in never coarsens the rule', () => {
+    const rank = { year: 0, month: 1, day: 2, none: -1 }
+    let last = -1
+    for (let k = 1; k >= minWindow(ww2Span); k /= 1.4) {
+      const u = rank[axisTicks(ww2Span, 800, { u0: 0.5 - k / 2, u1: 0.5 + k / 2 }).unit]
+      expect(u, `window ${k}`).toBeGreaterThanOrEqual(last)
+      last = u
+    }
+    expect(last).toBe(2) // …and it arrives at days
+  })
+
+  /**
+   * THE DENSITY RULE IS THE COLLISION PROOF. A spacing is only chosen if the
+   * span it divides leaves each label `TICK_PX` of rail, so two labels cannot
+   * be drawn closer than one label is wide — at any zoom, at any width. Swept
+   * across both, and across the widths where `floor(width / TICK_PX)` ticks
+   * over, which is where a density rule breaks if it is going to.
+   */
+  it('leaves every tick label its room, at every zoom and every width', () => {
+    for (const width of [219, 220, 221, 320, 329, 330, 331, 390, 440, 660, 880, 1200, 1440]) {
+      for (let k = 1; k >= minWindow(ww2Span); k /= 1.3) {
+        const w = { u0: Math.max(0, 0.5 - k / 2), u1: Math.min(1, 0.5 + k / 2) }
+        const xs = axisTicks(ww2Span, width, w).ticks.map((t) => railX(t.u, width, w))
+        for (let i = 1; i < xs.length; i++)
+          expect(xs[i] - xs[i - 1], `w=${width} k=${k}`).toBeGreaterThan(90)
+      }
+    }
+  })
+})
+
+describe('the layout, re-derived per window', () => {
+  const phone = (w = FULL_WINDOW) => layoutRail(stations(ww2, ww2Span), ww2Span, 390, w)
+  /** The last four months of the war — the pile-up the fit view has to stack. */
+  const END_OF_WAR = { u0: 0.895, u1: 0.95 }
+
+  it('un-crowds what the fit view had to stack: zoom in and the lanes empty', () => {
+    const fit = phone()
+    expect(fit.lanes).toBe(3) // eleven moments of a war, on a 390px phone
+    expect(fit.stations.filter((s) => s.labelPx > 0).length).toBeLessThan(3)
+
+    const shown = phone(END_OF_WAR).stations.filter((s) => s.x >= 0 && s.x <= 390)
+    expect(shown.map((s) => s.step.id)).toEqual(['ve-day', 'trinity', 'hiroshima', 'vj-day'])
+    expect(shown.every((s) => s.lane === 0)).toBe(true) // nothing has to hang
+    // …and with the room comes a name AND its date, which the fit view dropped
+    expect(fit.stations.find((s) => s.step.id === 've-day')!.labelPx).toBe(0)
+    expect(shown.filter((s) => s.dated).length).toBeGreaterThan(0)
+  })
+
+  it('puts the stations outside the window outside the rail, rather than on its edge', () => {
+    const end = phone(END_OF_WAR)
+    expect(end.stations.find((s) => s.step.id === 'd-day')!.x).toBeLessThan(0)
+    expect(phone(over(ww2Span, 1939.7, 1940.2)).stations.at(-1)!.x).toBeGreaterThan(390)
+  })
+
+  it('re-measures a period’s band against the window it is drawn in', () => {
+    const wide = phone().stations.find((s) => s.step.id === 'holocaust')!.band!
+    const near = phone(over(ww2Span, 1941, 1942)).stations.find((s) => s.step.id === 'holocaust')!
+      .band!
+    expect(near.w).toBeGreaterThan(wide.w * 5) // six years of it, over one year of rail
+  })
+
+  it('reports the window it was derived from, so the view has one source for it', () => {
+    const w = over(ww2Span, 1944, 1945)
+    expect(phone(w).win).toBe(w)
+    expect(phone().win).toBe(FULL_WINDOW)
+  })
+})
+
+/**
+ * WHICH MARK IS ON TOP. In a three-deep pile-up the question "which step am I
+ * on" is answered by z-order before it is answered by colour, and the answer
+ * used to be four CSS rules of equal specificity all claiming `z-index: 3`.
+ */
+describe('markZ', () => {
+  it('puts the open step above everything, then the cursor, then a hover', () => {
+    const z = (s: Parameters<typeof markZ>[0]) => markZ(s)
+    expect(z({ on: true, lane: 2 })).toBeGreaterThan(z({ cursor: true, lane: 0 }))
+    expect(z({ cursor: true, lane: 2 })).toBeGreaterThan(z({ hover: true, lane: 0 }))
+    expect(z({ hover: true, lane: 2 })).toBeGreaterThan(z({ lane: 0 }))
+    // the open step is on top even when it is also the cursor and also hovered
+    expect(z({ on: true, cursor: true, hover: true })).toBe(z({ on: true }))
+  })
+
+  it('orders the row itself by lane: nearer the axis is nearer the eye', () => {
+    expect(markZ({ lane: 0 })).toBeGreaterThan(markZ({ lane: 1 }))
+    expect(markZ({ lane: 1 })).toBeGreaterThan(markZ({ lane: 2 }))
+    expect(markZ({})).toBe(markZ({ lane: 0 }))
+    expect(markZ({ lane: 40 })).toBeGreaterThan(0) // never falls out of the stack
+  })
+})
+
+/**
+ * A SAGA'S OWN RESOLUTION, which the zoom must not move.
+ *
+ * The live rule refines as the reader zooms — that is the feature. The head's
+ * span readout and every station's date are facts about the saga, so they are
+ * asked of the SPAN at a fixed density instead: zoomed into June 1944 the rule
+ * ruled in days, and a war that began in 1939 read "1 Sep – 2 Sep 1945".
+ */
+describe('spanUnit', () => {
+  it('is the span’s own, not the window’s', () => {
+    expect(spanUnit(ww2Span)).toBe('year')
+    expect(spanUnit(timeFrom(1944.43033, 1944.56421))).toBe('day') // 6 Jun – 25 Jul
+    expect(spanUnit(ddaySpan)).toBe('none')
+    // …and it does not budge when the rail does
+    expect(axisTicks(ww2Span, 1200, over(ww2Span, 1944.41, 1944.5)).unit).toBe('day')
+    expect(spanUnit(ww2Span)).toBe('year')
+  })
+
+  it('keeps every station’s date at that resolution too', () => {
+    const dated = (w: { u0: number; u1: number }) =>
+      layoutRail(stations(ww2, ww2Span), ww2Span, 1200, w).stations.map((s) =>
+        stationAt(s, ww2Span, 11),
+      )
+    expect(dated(FULL_WINDOW)).toEqual(dated(over(ww2Span, 1944.41, 1944.5)))
   })
 })

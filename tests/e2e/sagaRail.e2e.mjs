@@ -404,15 +404,79 @@ await shot(phone, 'g-phone-rail')
 console.log(
   `    rail ${small.rail.w}x${small.rail.h} at y=${small.rail.y}, track scrolls ${small.scrollW}>${small.clientW}`,
 )
-await check('the phone stretches the span rather than bending it', () => {
+/* ROUND 46 CHANGED THIS CHECK, and it is the same claim by the opposite means.
+   Until now a phone answered "eleven moments will not fit" by growing the rail
+   past the element and SCROLLING it — a second system the desktop did not have,
+   and a pan with none of a pan's other half. The rail is exactly as wide as its
+   element now, on every screen, and what a phone does instead is ZOOM: one
+   window, moved by wheel, pinch, drag and double-tap, with everything re-derived
+   from it (docs/design/sagas.md, rule 7). So the assertion that the track
+   overflows is gone and its opposite is here; the span is still stretched
+   rather than bent, and the reader still reaches the end of the war. */
+await check('the phone fits the whole span in its own width — no second system', () => {
   ok(small.stations.length === 11, `${small.stations.length} stations`)
-  ok(small.scrollW > small.clientW, 'eleven stations fitted a 390px phone without scrolling?')
-  ok(small.rail.h >= 44, `the rail is ${small.rail.h}px tall`)
+  ok(small.scrollW <= small.clientW + 1, `the rail still scrolls (${small.scrollW} > ${small.clientW})`)
+  ok(small.rail.h >= 108, `the phone's rail is ${small.rail.h}px tall, not the taller one`)
   // every mark inside the track, and every lane inside the rail
   for (const s of small.stations) {
     ok(s.lane <= 2, `${s.step} is in lane ${s.lane}`)
     ok(s.h >= 22 && s.w >= 22, `${s.step} is a ${s.w}x${s.h} target`)
   }
+})
+/* …and the gesture that replaced the scroll, on the device that needed it.
+   Two fingers, because that is what a phone has: the pinch is the era rail's
+   own idiom (TimelineBar.vue) and lands in the same pure window math the unit
+   tests cover (tests/sagaTimeline.test.ts). What only a browser can settle is
+   that it is WIRED — that the rule refines and the marks move apart. */
+const winOf = () =>
+  phone.evaluate(() => document.querySelector('[data-test="saga-timeline"] .track').dataset.window)
+await check('a pinch on the rail zooms the window, and the rule refines with it', async () => {
+  ok((await winOf()) === '0.0000,1.0000', `the rail did not open fitted: ${await winOf()}`)
+  const box = await phone.evaluate(() => {
+    const r = document.querySelector('[data-test="saga-timeline"] .track').getBoundingClientRect()
+    return { x: r.x, y: r.y + r.height / 2, w: r.width }
+  })
+  // a pinch OUT (fingers apart) is a zoom IN, held at the point between them
+  for (let i = 0; i < 6; i++) {
+    await phone.evaluate(
+      ([x, y, w, step]) => {
+        const el = document.querySelector('[data-test="saga-timeline"] .track')
+        const fire = (type, pts) =>
+          pts.forEach((p, i) =>
+            el.dispatchEvent(
+              new PointerEvent(type, {
+                pointerId: i + 1,
+                clientX: p,
+                clientY: y,
+                bubbles: true,
+                pointerType: 'touch',
+              }),
+            ),
+          )
+        const mid = x + w * 0.8
+        fire('pointerdown', [mid - 40, mid + 40])
+        fire('pointermove', [mid - 40 * step, mid + 40 * step])
+        fire('pointerup', [mid - 40 * step, mid + 40 * step])
+      },
+      [box.x, box.y, box.w, 1.6],
+    )
+    await phone.waitForTimeout(60)
+  }
+  const [u0, u1] = (await winOf()).split(',').map(Number)
+  ok(u1 - u0 < 0.35, `the pinch did not zoom: window is ${u1 - u0} of the span`)
+  const zoomed = await railOf(phone)
+  ok(
+    zoomed.ticks.length > 1 && !/^\d{4}$/.test(zoomed.ticks[1].label),
+    `the rule is still in years: ${zoomed.ticks.map((t) => t.label).join(' ')}`,
+  )
+  await shot(phone, 'g2-phone-pinched')
+  // …and the control beside it puts the whole saga back
+  await phone.tap('[data-test="saga-zoom"]')
+  await phone.waitForFunction(
+    () => document.querySelector('[data-test="saga-timeline"] .track').dataset.window === '0.0000,1.0000',
+    null,
+    { timeout: 15000 },
+  )
 })
 await check('and the plain way through is on the phone too: prev, the list, next', async () => {
   const nav = await phone.evaluate(() => ({

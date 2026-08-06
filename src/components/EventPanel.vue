@@ -280,7 +280,7 @@ onBeforeUnmount(() => inflight?.abort())
           :title="`Back to ${events.focusReturnTo.name}`"
           @click="events.focusBack()"
         >
-          <span aria-hidden="true">←</span>
+          <svg class="glyph" width="12" height="12" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 0H-7M-2 -5L-7 0L-2 5" /></svg>
           <span class="pill-back-name">{{ events.focusReturnTo.name }}</span>
         </button>
         <button
@@ -305,19 +305,51 @@ onBeforeUnmount(() => inflight?.abort())
              where the pill spans the screen and the thumb targets need the
              room (see the query below). -->
         <button
-          class="pill-btn pill-restore"
+          class="pill-btn icon-c pill-restore"
           data-test="pill-restore"
           aria-label="Restore this window"
           @click="events.toggleFocusExpanded()"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 15l6-6 6 6" />
+          <!-- The chevron the phone twice called off-centre. It is pure
+               geometry now: the viewBox is symmetric about (0,0) and the path
+               is drawn about it, so the shape's own centre IS the viewport's
+               centre whatever scales it — and `.icon-c` places that centre by
+               translation rather than by asking a layout where the middle is.
+               See the icon rule in styles/tokens.css. -->
+          <svg
+            class="glyph"
+            width="14"
+            height="14"
+            viewBox="-12 -12 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M-6 3L0 -3L6 3" />
           </svg>
           <span class="pill-restore-label">Restore</span>
         </button>
-        <button class="pill-btn" data-test="pill-close" aria-label="Close" @click="events.close()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M6 6l12 12M18 6L6 18" />
+        <button
+          class="pill-btn icon-c"
+          data-test="pill-close"
+          aria-label="Close"
+          @click="events.close()"
+        >
+          <svg
+            class="glyph"
+            width="14"
+            height="14"
+            viewBox="-12 -12 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M-6 -6L6 6M6 -6L-6 6" />
           </svg>
         </button>
       </div>
@@ -368,7 +400,7 @@ onBeforeUnmount(() => inflight?.abort())
       data-test="focus-back"
       @click="events.focusBack()"
     >
-      <span aria-hidden="true">←</span>
+      <svg class="glyph" width="12" height="12" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 0H-7M-2 -5L-7 0L-2 5" /></svg>
       <span class="back-name">{{ events.focusReturnTo.name }}</span>
     </button>
     <h2>{{ e.name }}</h2>
@@ -431,7 +463,7 @@ onBeforeUnmount(() => inflight?.abort())
          outside this box, over the map. -->
     <section v-if="stepPage" class="step-page" data-test="step-page">
       <button class="back" data-test="step-back" @click="events.selectStep()">
-        <span aria-hidden="true">←</span>
+        <svg class="glyph" width="12" height="12" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 0H-7M-2 -5L-7 0L-2 5" /></svg>
         <span class="back-name">Overview</span>
       </button>
       <h3>{{ stepPage.name }}</h3>
@@ -751,6 +783,13 @@ onBeforeUnmount(() => inflight?.abort())
   place-items: center;
   width: 26px;
   height: 26px;
+  /* `padding: 0` is not cosmetic. Left alone, the UA's own `1px 6px` on a
+     <button> survives, and at 26px square with a 1px border that leaves a 12px
+     content box for a 14px glyph — an overflowing grid item, which Chromium
+     centres and other engines are entitled to clamp to the start edge. A glyph
+     whose centring depends on which overflow-alignment fallback an engine
+     implements is exactly the class of bug this round is closing. */
+  padding: 0;
   background: none;
   border: 1px solid transparent;
   border-radius: var(--r-pill);
@@ -768,21 +807,23 @@ onBeforeUnmount(() => inflight?.abort())
 }
 /* The one button here that carries a word: it is wider than the square ones,
    framed like the chips elsewhere in the app, and brass — the colour every
-   control that *moves something* is drawn in. */
+   control that *moves something* is drawn in.
+
+   TWICE REPORTED OFF-CENTRE ON A REAL PHONE, and twice fixed by arguing with a
+   layout: first `place-items`, whose justify half a flex box ignores, then
+   `justify-content`, which measured exact in every browser we had. The third
+   answer is not to ask a layout at all. The glyph is placed by geometry
+   (`.icon-c`, tokens.css) — vertically off its own centre, horizontally at a
+   STATED x that is the only thing the two states differ in: 14px from the left
+   edge when the word is beside it, the middle of the ring when it is not. */
 .pill-restore {
-  display: flex;
-  align-items: center;
-  /* CENTRED, and stated here rather than left to the box. `.pill-btn` centres
-     with `place-items`, whose justify half a flex box ignores — so on a phone,
-     where the label is hidden and the button goes back to a 38px square, the
-     chevron sat flush against the left edge of its own brass ring with 22px of
-     empty frame beside it. That is what the reader saw as broken. */
-  justify-content: center;
-  gap: 5px;
   width: auto;
-  padding: 0 10px 0 7px;
+  padding: 0 10px 0 25px;
   border-color: var(--brass-line);
   color: var(--brass);
+}
+.pill-restore > .glyph {
+  left: 14px;
 }
 .pill-restore:hover {
   color: #f2dcae;
@@ -792,6 +833,9 @@ onBeforeUnmount(() => inflight?.abort())
 .pill-restore-label {
   font-family: var(--cond);
   font-size: var(--t-eyebrow);
+  /* `.icon-c` zeroes both so nothing here can make a strut; the word puts back
+     its own, and only its own. */
+  line-height: 1;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -1371,15 +1415,21 @@ ul {
   }
   /* A phone's pill already spans the screen above the timeline, so it cannot be
      lost the way a desktop corner loses it — and the word costs a thumb's worth
-     of the two buttons' room. The square target and its tooltip stay. */
+     of the two buttons' room. The square target and its tooltip stay.
+
+     With the word gone the glyph moves to the middle of the ring, which is the
+     ONE declaration that differs between the two states: the mechanism placing
+     it is the same one, so there is no half of a desktop rule left for this
+     rule to inherit. That inheritance is what broke it in round 45. */
   .pill-restore {
     padding: 0;
     width: 38px;
   }
-  /* …and the glyph grows into the ring the word used to share with it. A 14 px
-     chevron centred in a 38 px circle reads as an empty frame with something
-     small in it, which is half of what was wrong with it before. */
-  .pill-restore svg {
+  .pill-restore > .glyph {
+    /* …and the glyph grows into the ring the word used to share with it: a 14px
+       chevron in a 38px circle reads as an empty frame with something small in
+       it, which was the other half of what the reader saw. */
+    left: 50%;
     width: 18px;
     height: 18px;
   }

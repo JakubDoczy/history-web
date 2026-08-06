@@ -126,3 +126,74 @@ lib/present/sagaTimeline.ts.
 6. **Show on map keeps the step.** It is a statement about the camera:
    put this in front of me. Only the innermost crumb and the list's
    overview row leave a step, and both say so.
+
+## The rail's contract, round 46
+
+7. **The rail has a window, and everything is derived from it.** A phone
+   used to answer "eleven moments will not fit" by growing the rail past
+   the element and scrolling it — a second system the desktop did not
+   have, and a pan with none of a pan's other half. There is ONE system
+   now and it is the era rail's (components/TimelineBar.vue): a visible
+   window over the padded span that wheel and pinch zoom about the point
+   under the cursor, a drag pans, and a double-tap takes one step in.
+   The rail is exactly as wide as its element on every screen.
+   - Positions, period bands, lane assignment, label room and the tick
+     rule are all **re-derived per window** (`layoutRail(sts, span,
+     width, win)`), not transformed. Marks that were eleven pixels apart
+     become a hundred, so they climb out of their lanes and their dropped
+     names come back. That is what zooming is for.
+   - **Clamps.** Never out past the padded span (`{u0:0, u1:1}`); never
+     in past about three days across, which is where the tick ladder
+     stops refining (`minWindow`). A saga with no extent cannot zoom at
+     all: magnifying an order says nothing the numbers on the marks do
+     not already say.
+   - The window is **rail-local state**. It dies with the rail, so a
+     descent re-anchors to the child's span fitted — a child is a
+     different question.
+   - The **index pans the picture**: prev, next and the list bring their
+     target inside the window with a short eased glide when it is
+     outside it (`revealIn`), and leave a window that already holds it
+     alone.
+   - One visible control carries the affordance: it takes a step in from
+     rest and becomes **Fit** once the window is anything but the whole
+     span. A phone has no grab cursor and no `title`, so the rail says
+     "this moves" with a control rather than with a hint that has to be
+     dismissed.
+
+8. **The rule refines with the window; the saga's own dates do not.**
+   The tick ladder (round 44) is fed the VISIBLE span and the rail's
+   pixel width, so a war rules in years, its 1944 in months and D-Day's
+   June in days — one ladder walked by the zoom, no modes, no
+   thresholds. The `TICK_PX` density rule is the collision proof: a
+   spacing is only chosen if every label has that much rail, at any zoom
+   and any width. Month ticks stand on the **first of a calendar month**
+   and are aligned to the year (a twelfth of a year is 30.44 days, and a
+   rule stepped in twelfths printed "Jan 1944" twice and skipped
+   February). What must NOT follow the window is the span readout in the
+   head and each station's own date (rule 4): those are facts about the
+   saga, asked of the span at a fixed density (`spanUnit`), because a
+   date that changes when you turn the wheel is not one.
+
+9. **A phone's rail is the taller one, and the step you are on is drawn
+   on top.** The saga rail carries a rule, three lanes of marks and a
+   dated name beside each; the era rail carries two strips and a ruler.
+   At 84px it drew all of that in 14px rows — *"it should be taller
+   (take a bit more screen on mobile)"*. Under a saga `--rail` is 116px
+   on a phone (`:root:has(.rail.saga)`, tokens.css) so that every
+   clearance derived from it — the pill's position, the mobile sheet's
+   height, the scale bar — moves with it; desktop is unchanged.
+   In a pile-up the open step is **topmost**: above every other lane's
+   marks and labels, its own label never dropped, and lifted with a ring
+   of the rail's own ground and a shadow under it. The priority is a
+   pure function (`markZ`) rather than four CSS rules of equal
+   specificity all claiming `z-index: 3`.
+
+10. **An icon is geometry, never type.** Every glyph in a control is an
+    inline SVG path whose geometric centre is its viewBox's centre, and
+    it is placed by translation off its container's centre — never by
+    flex or grid alignment, never on a baseline, never a text character
+    (`←`, `▸`) resolved through whatever font a device happens to have.
+    The rule and the reasoning are in styles/tokens.css (`.glyph`,
+    `.icon-c`); the phone reported the minimised window's chevron
+    off-centre twice, and both earlier fixes argued with a layout instead
+    of removing the dependence on one.

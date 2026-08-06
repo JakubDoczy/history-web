@@ -120,6 +120,61 @@ Reported off a real device, all four reproduced before they were fixed
   unconditionally, which is right for a new context and wrong for the one
   it is already in. See rule 6 in docs/design/sagas.md.
 
+## 5e. The rail zooms, the rule refines, the icons stop being type (round 46)
+
+Three reports off the same phone, and one of them for the second time.
+
+- **The rail is zoomable, and the phone's horizontal scroll is gone.**
+  *"The timeline of operations should be zoomable."* It has a visible
+  window now, with the era rail's own gestures on it — wheel and pinch
+  about the point under the cursor, drag to pan, double-tap for one step
+  in — and everything the rail draws is re-derived from that window
+  rather than scaled with it: positions, bands, lanes, label room and
+  the rule. The 44px-per-station scrolling fallback a phone used to get
+  is **deleted**: one system, on every screen. Clamped at the padded
+  span going out and at ~three days going in (where the tick ladder
+  stops refining); the window is the rail's own state and a descent
+  opens fitted. Prev/next/list pan their target into view when it is
+  outside the window. See docs/design/sagas.md rule 7.
+  · e2e: `sagaRail.e2e.mjs` (g) — the assertion that the phone's track
+  overflows is inverted, with the reasoning written where it was.
+
+- **Ticks refine with the space.** *"The timeline, if it's short enough,
+  should show months or even days — all based on how much space you have
+  for ticks."* This is the round-44 ladder fed the VISIBLE span instead
+  of the whole one, so the same war rules in years, its 1944 in months
+  and D-Day's June in days with no mode and no threshold. Two defects
+  fell out of being able to zoom far enough to see them: month ticks
+  were spaced a uniform twelfth of a year (30.44 days) and so drifted
+  off the calendar — "Jan 1944" twice, no February — and the head's span
+  readout followed the live rule, so a war that began in 1939 read
+  "1 Sep – 2 Sep 1945" when zoomed into June. Months are calendar months
+  now; the saga's own dates are asked of the span (`spanUnit`), never of
+  the window. Rule 8.
+
+- **The phone's rail is taller, and the open step is on top.** `--rail`
+  goes 84 → 116px on a phone *while a saga is up* — the token every
+  clearance is derived from, so the pill, the mobile sheet and the scale
+  bar all move with it — and the lanes take the pixels. In a pile-up the
+  step the reader is on is drawn above every other lane's marks and
+  labels, keeps its whole label, and is lifted with a dark ring and a
+  shadow. Rule 9.
+
+- **The chevron, third time: stop asking a layout where the middle is.**
+  The pill's restore control was reported off-centre AGAIN, after round
+  45 measured `dx = 0.00` at three widths and three pixel ratios. Both
+  earlier fixes argued with the button's layout (`place-items`, then
+  `justify-content`); what they never removed was the *dependence* on
+  one. Icons are geometry now: a symmetric viewBox whose centre is the
+  shape's centre, placed by translation off the container's centre, with
+  `padding: 0` (the UA's own `1px 6px` was still live and left a 26px
+  desktop button a 12px content box for a 14px glyph) and `font-size: 0`
+  so no strut can exist. The text arrows next door (`←`, `▸`) — real
+  font glyphs, resolved per device — are SVG paths now too. Verified by
+  the rendered PATH's bounding box, and with the button's layout
+  deliberately degraded to `display: block`. Rule 10; the rule itself is
+  in styles/tokens.css.
+
 ## 6. Map mode: first-class toggle + drawn cartography (next round)
 
 - A visible side toggle (icon) switches globe/map rendering mode; no

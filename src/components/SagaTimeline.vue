@@ -1,19 +1,27 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useEventStore } from '../stores/events'
 import { formatTime, timeExtent } from '../lib/time'
 import { NO_ACTIVE } from '../lib/listbox'
 import type { SagaView } from '../lib/present/saga'
 import {
+  FULL_WINDOW,
   backPressesTo,
   crumbs,
   formatAt,
   layoutRail,
+  markZ,
+  minWindow,
+  panWindow,
   railX,
+  revealIn,
+  spanUnit,
   stationAt,
   stations,
   stepBy,
+  zoomWindow,
   type PlacedStation,
+  type RailWindow,
 } from '../lib/present/sagaTimeline'
 
 /**
@@ -52,7 +60,20 @@ onMounted(() => {
 })
 onBeforeUnmount(() => resizeObs.disconnect())
 
-const rail = computed(() => layoutRail(stations(props.saga.steps, props.saga.span), props.saga.span, width.value))
+/* --- the window: what part of the span is on screen -------------------------
+   The era rail's grammar, on a saga's span (lib/present/sagaTimeline.ts, note
+   4). It lives here and nowhere else: the rail is keyed by the saga
+   (BottomRail.vue), so a descent gets a new component and opens fitted, which
+   is the right answer — a child's span is a different question. */
+const win = ref<RailWindow>(FULL_WINDOW)
+/** The narrowest window this saga allows; 1 means "nothing to zoom into". */
+const floor = computed(() => minWindow(props.saga.span))
+const zoomable = computed(() => floor.value < 1)
+const zoomed = computed(() => win.value.u1 - win.value.u0 < 0.999)
+
+const rail = computed(() =>
+  layoutRail(stations(props.saga.steps, props.saga.span), props.saga.span, width.value, win.value),
+)
 const ids = computed(() => rail.value.stations.map((s) => s.step.id))
 const trail = computed(() => crumbs(events.focusTrail))
 /**
@@ -61,7 +82,12 @@ const trail = computed(() => crumbs(events.focusTrail))
  * which is the whole point of having dated it.
  */
 const span = computed(() => {
-  const { unit } = rail.value.axis
+  // The SAGA's own resolution, not the live rule's: the rule refines as the
+  // reader zooms and this does not, because "what period is this saga" is not
+  // a question about where the window happens to be. Zoomed into June 1944 the
+  // live rule ruled in days, and a war that ran from 1939 read "1 Sep – 2 Sep
+  // 1945".
+  const unit = spanUnit(props.saga.span)
   const [a, b] = timeExtent(props.saga.span)
   if (unit !== 'month' && unit !== 'day') return formatTime(props.saga.span)
   return `${formatAt(a, unit)} – ${formatAt(b, unit, true)}`
@@ -74,7 +100,110 @@ const count = computed(() => {
 const dateOf = (s: PlacedStation) =>
   stationAt(s, props.saga.span, rail.value.stations.length)
 /** A tick's pixel, through the same map the stations are placed by. */
-const tickX = (u: number) => railX(u, rail.value.width)
+const tickX = (u: number) => railX(u, rail.value.width, rail.value.win)
+/** A drawn station's place in rail space — the window's own coordinate. */
+const railSpaceOf = (s: PlacedStation) =>
+  win.value.u0 + (s.x / Math.max(1, width.value)) * (win.value.u1 - win.value.u0)
+/** Off the visible edge: still laid out (it is still a fact) but not a target. */
+const MARGIN_PX = 24
+const offWindow = (s: PlacedStation) => s.x < -MARGIN_PX || s.x > width.value + MARGIN_PX
+
+/* --- zoom and pan: the era rail's gestures, on this span --------------------
+   Wheel and pinch zoom about the point under the cursor, a drag pans, a
+   double-tap takes one step in. All of it is the same one call into the pure
+   window math, so what a gesture can and cannot do (never out past the padded
+   span, never in past a rule that has stopped refining) is stated once. */
+const ZOOM_STEP = 1.4
+const DRAG_PX = 3
+/** Has the reader moved the window yet? Only the hint reads this. */
+const touched = ref(false)
+let anim = 0
+
+const slow = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+/** A short settle onto a new window — what panning a station into view looks like. */
+function glide(to: RailWindow, ms = 240) {
+  cancelAnimationFrame(anim)
+  if (slow()) return void (win.value = to)
+  const from = win.value
+  const t0 = performance.now()
+  const step = (t: number) => {
+    const k = Math.min(1, (t - t0) / ms)
+    const e = 1 - (1 - k) ** 3 // the same "arrive, don't land" shape as --ease
+    win.value = { u0: from.u0 + (to.u0 - from.u0) * e, u1: from.u1 + (to.u1 - from.u1) * e }
+    if (k < 1) anim = requestAnimationFrame(step)
+  }
+  anim = requestAnimationFrame(step)
+}
+function setWin(w: RailWindow) {
+  cancelAnimationFrame(anim)
+  win.value = w
+  touched.value = true
+}
+const zoomBy = (k: number, at: number) =>
+  zoomable.value && setWin(zoomWindow(win.value, k, at, floor.value))
+
+const pointers = new Map<number, number>()
+/** A drag is a pan, and the press that would have ended it is not a press. */
+let panned = false
+let tap = { t: 0, x: 0 }
+const localX = (e: PointerEvent | WheelEvent) => e.clientX - track.value!.getBoundingClientRect().left
+const pinch = () => {
+  const [a, b] = [...pointers.values()]
+  return Math.max(1, Math.abs(b - a))
+}
+
+function onWheel(e: WheelEvent) {
+  zoomBy(e.deltaY > 0 ? ZOOM_STEP : 1 / ZOOM_STEP, localX(e) / width.value)
+}
+function onPointerDown(e: PointerEvent) {
+  pointers.set(e.pointerId, localX(e))
+  panned = false
+}
+function onPointerMove(e: PointerEvent) {
+  if (!pointers.has(e.pointerId)) return
+  if (pointers.size >= 2) {
+    const before = pinch()
+    pointers.set(e.pointerId, localX(e))
+    const [a, b] = [...pointers.values()]
+    panned = true
+    return zoomBy(before / pinch(), (a + b) / 2 / width.value)
+  }
+  const x = localX(e)
+  const dx = x - pointers.get(e.pointerId)!
+  // Under the threshold the anchor is NOT moved, so a slow drag still accrues
+  // to it: a tap that wanders two pixels stays a tap, and a press stays a press.
+  if (!panned && Math.abs(dx) < DRAG_PX) return
+  if (!panned) track.value!.setPointerCapture(e.pointerId)
+  panned = true
+  pointers.set(e.pointerId, x)
+  setWin(panWindow(win.value, (-dx / width.value) * (win.value.u1 - win.value.u0)))
+}
+function onPointerUp(e: PointerEvent) {
+  pointers.delete(e.pointerId)
+  if (panned) return void setTimeout(() => (panned = false)) // the click follows
+  if (pointers.size) return
+  const [t, x] = [performance.now(), localX(e)]
+  // A double-tap is one step in, held at the tap — a phone's wheel.
+  if (t - tap.t < 340 && Math.abs(x - tap.x) < 28) {
+    zoomBy(1 / (ZOOM_STEP * ZOOM_STEP), x / width.value)
+    tap = { t: 0, x }
+  } else tap = { t, x }
+}
+/**
+ * The zoom control — and the affordance, which is most of its job.
+ *
+ * The era rail advertises its gestures with a grab cursor and an aria-label,
+ * and a phone has neither. So the rail carries one visible control that says
+ * the window can move: from rest it takes one step in, and once the window is
+ * anything but the whole span it becomes the way back to it. One button, two
+ * states, and the state is the readout.
+ */
+function fit() {
+  if (!zoomable.value) return
+  touched.value = true
+  if (zoomed.value) glide(FULL_WINDOW)
+  else setWin(zoomWindow(win.value, 1 / ZOOM_STEP, 0.5, floor.value))
+}
 
 /* --- the cursor: what a press of Enter would take ---------------------------
    The cursor is not the selection. Arrows MOVE it and Enter takes it when the
@@ -128,19 +257,28 @@ function onKeydown(e: KeyboardEvent) {
   go(dir)
 }
 
-/** Keep a station on screen: a phone's rail is wider than the phone (`railWidth`). */
-async function reveal(id?: string) {
-  if (!id) return
-  await nextTick()
-  track.value?.querySelector(`#${CSS.escape(stationId(id))}`)?.scrollIntoView({
-    block: 'nearest',
-    inline: 'nearest',
-  })
+/**
+ * Keep a station on screen — by PANNING THE WINDOW to it, which is the only
+ * thing "on screen" can mean now that the rail is exactly as wide as its
+ * element. It is the second half of the dual system doing its job: the index
+ * takes you to a step, and the picture follows so you can see where it is.
+ *
+ * A window that already holds the station is left alone, so walking prev/next
+ * through the middle of a zoomed war does not jog the rail on every press.
+ */
+function reveal(id?: string) {
+  const s = rail.value.stations.find((x) => x.step.id === id)
+  if (!s) return
+  const to = revealIn(win.value, railSpaceOf(s))
+  if (to !== win.value) glide(to)
 }
 
+/** A press on a station — unless the press was the end of a pan (see `panned`). */
+const press = (id: string) => !panned && events.selectStep(id)
+
 // The rail follows the store, not only the reader: a step opened from anywhere
-// (the list, a page's own link, a descent that landed here) scrolls into view,
-// and the cursor lands on it so prev/next carries on from where they are.
+// (the list, a page's own link, a descent that landed here) is panned into
+// view, and the cursor lands on it so prev/next carries on from where they are.
 watch(
   () => events.stepId,
   (id) => {
@@ -199,7 +337,7 @@ function goToCrumb(id: string, current: boolean) {
     <div class="head">
       <div class="crumbs">
         <template v-for="(c, i) in trail" :key="c.id">
-          <span v-if="i" class="sep" aria-hidden="true">▸</span>
+          <svg v-if="i" class="glyph sep" width="8" height="8" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M-3 -6L3 0L-3 6" /></svg>
           <button
             class="crumb"
             :class="{ current: c.current, on: c.current && !events.stepId }"
@@ -219,15 +357,48 @@ function goToCrumb(id: string, current: boolean) {
       <!-- THE OTHER HALF OF THE DUAL SYSTEM. Three plain targets at the rail's
            edge: back one, the whole list, forward one. -->
       <div class="nav">
+        <!-- The window's own control, and the rail's one visible statement that
+             the window can move at all (see `fit`). It stands down entirely on
+             a saga with no extent, where there is nothing to zoom into. -->
         <button
-          class="nav-btn"
+          v-if="zoomable"
+          class="nav-btn zoom-btn"
+          data-test="saga-zoom"
+          :class="{ on: zoomed, hint: !touched }"
+          :aria-label="zoomed ? 'Fit the whole saga' : 'Zoom in'"
+          :title="
+            zoomed
+              ? 'Fit the whole saga — drag to pan, scroll or pinch to zoom'
+              : 'Zoom in — or scroll, pinch or double-tap the rail; drag to pan'
+          "
+          @click="fit()"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="-12 -12 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="-1.5" cy="-1.5" r="6.5" />
+            <path d="M3.2 3.2L9 9" />
+            <path v-if="!zoomed" d="M-1.5 -4.5v6M-4.5 -1.5h6" />
+            <path v-else d="M-4.5 -1.5h6" />
+          </svg>
+          <span class="zoom-label">{{ zoomed ? 'Fit' : 'Zoom' }}</span>
+        </button>
+        <button
+          class="nav-btn icon-c"
           data-test="saga-prev"
           :disabled="!canGo(-1)"
           title="Previous step"
           aria-label="Previous step"
           @click="go(-1)"
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+          <svg class="glyph" width="13" height="13" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 -6L-3 0L3 6" /></svg>
         </button>
         <button
           class="nav-btn list-btn"
@@ -238,17 +409,17 @@ function goToCrumb(id: string, current: boolean) {
           @click="listOpen = !listOpen"
         >
           <span class="list-label">Steps</span>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6" /></svg>
+          <svg class="glyph" width="11" height="11" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M-6 3L0 -3L6 3" /></svg>
         </button>
         <button
-          class="nav-btn"
+          class="nav-btn icon-c"
           data-test="saga-next"
           :disabled="!canGo(1)"
           title="Next step"
           aria-label="Next step"
           @click="go(1)"
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+          <svg class="glyph" width="13" height="13" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M-3 -6L3 0L-3 6" /></svg>
         </button>
       </div>
     </div>
@@ -276,15 +447,28 @@ function goToCrumb(id: string, current: boolean) {
           <span class="row-num tnum" aria-hidden="true">{{ s.ordinal }}</span>
           <span class="row-name">{{ s.step.name }}</span>
           <span class="row-at tnum">{{ dateOf(s) }}</span>
-          <svg v-if="s.kind === 'entrance'" class="row-in" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+          <svg v-if="s.kind === 'entrance'" class="glyph row-in" width="11" height="11" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M-3 -6L3 0L-3 6" /></svg>
         </button>
       </li>
     </ul>
 
-    <!-- THE TRACK. It scrolls only when the stations cannot be told apart at the
-         element's own width — a phone with eleven of them. -->
-    <div ref="track" class="track">
-      <div class="inner" :class="{ dateless: rail.axis.unit === 'none' }" :style="{ width: rail.width + 'px' }">
+    <!-- THE TRACK. Exactly as wide as the element, always: what used to be a
+         scrolling rail on a phone is a WINDOW now, moved by the same gestures
+         the era rail has (`onWheel`, `onPointerMove`) and clamped by the same
+         pure functions everything else here is derived from. -->
+    <div
+      ref="track"
+      class="track"
+      :class="{ zoomed }"
+      :data-window="`${win.u0.toFixed(4)},${win.u1.toFixed(4)}`"
+      :aria-label="zoomable ? 'Drag to pan, scroll or pinch to zoom' : undefined"
+      @wheel.prevent="onWheel"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
+    >
+      <div class="inner" :class="{ dateless: rail.axis.unit === 'none' }">
         <!-- THE RULE. The era rail's idiom at a saga's scale: a gridline down
              the whole track, a stronger stub at the axis, the label beside it. -->
         <span
@@ -301,6 +485,11 @@ function goToCrumb(id: string, current: boolean) {
           class="axis"
           :title="rail.axis.unit === 'none' ? `${span} — dated to a single point, so the steps stand in order rather than at dates` : undefined"
         />
+        <!-- A station. `--z` is WHICH MARK IS ON TOP, decided where it can be
+             read and unit-tested (`markZ`) rather than by the order four rules
+             of equal specificity happen to be written in: the open step
+             outranks the cursor, which outranks a hover, which outranks the
+             row — and in a pile-up that is the whole of "which step am I on". -->
         <button
           v-for="s in rail.stations"
           :id="stationId(s.step.id)"
@@ -319,9 +508,18 @@ function goToCrumb(id: string, current: boolean) {
           :data-entrance="s.kind === 'entrance' ? '' : undefined"
           role="tab"
           :aria-selected="events.stepId === s.step.id"
+          :tabindex="offWindow(s) ? -1 : 0"
           :title="`${s.step.name} · ${dateOf(s)}${s.kind === 'entrance' ? ' — go into it' : ''}`"
-          :style="{ left: s.x + 'px', top: `calc(var(--lane-1) + ${s.lane} * var(--lane-h))` }"
-          @click="events.selectStep(s.step.id)"
+          :style="{
+            left: s.x + 'px',
+            top: `calc(var(--lane-1) + ${s.lane} * var(--lane-h))`,
+            '--z': markZ({
+              on: events.stepId === s.step.id,
+              cursor: cursorId === stationId(s.step.id),
+              lane: s.lane,
+            }),
+          }"
+          @click="press(s.step.id)"
         >
           <!-- The stem: a hairline from the axis down to the mark, so a station
                that had to hang below the rule still points at its own moment. -->
@@ -341,10 +539,10 @@ function goToCrumb(id: string, current: boolean) {
                  chevron, the pill's restore arrow): another layer, this way. -->
             <svg
               v-if="s.kind === 'entrance'"
-              class="descend"
+              class="glyph descend"
               width="11"
               height="11"
-              viewBox="0 0 24 24"
+              viewBox="-12 -12 24 24"
               fill="none"
               stroke="currentColor"
               stroke-width="2.8"
@@ -352,7 +550,7 @@ function goToCrumb(id: string, current: boolean) {
               stroke-linejoin="round"
               aria-hidden="true"
             >
-              <path d="M6 9l6 6 6-6" />
+              <path d="M-6 -3L0 3L6 -3" />
             </svg>
           </span>
           <!-- The name AND ITS DATE, with the room the layout could find them.
@@ -478,7 +676,6 @@ function goToCrumb(id: string, current: boolean) {
 }
 .sep {
   flex: none;
-  font-size: 9px;
   color: var(--line);
 }
 .meta {
@@ -548,6 +745,29 @@ function goToCrumb(id: string, current: boolean) {
 }
 .list-btn.on svg {
   transform: rotate(180deg);
+}
+/* The zoom control, and with it the whole of the rail's "this moves" cue. Two
+   slow breaths on first mount and then it is furniture: an affordance that goes
+   on waving is a nag, and the reader who has already zoomed knows. */
+.zoom-btn.hint {
+  animation: zoom-hint 2s var(--ease) 0.7s 2;
+}
+@keyframes zoom-hint {
+  30% {
+    border-color: var(--brass-line);
+    color: var(--brass);
+  }
+  70% {
+    border-color: var(--brass-line);
+    color: var(--brass);
+  }
+}
+.zoom-label {
+  font-family: var(--cond);
+  font-size: var(--t-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* --- the list, opened upward out of the rail --- */
@@ -632,18 +852,21 @@ function goToCrumb(id: string, current: boolean) {
   opacity: 0.8;
 }
 
-/* --- the track --- */
+/* --- the track ---
+   A window, not a scroller. `touch-action: none` is what makes the gestures
+   the rail's own rather than the browser's — the same line the era rail
+   carries, and for the same reason: a horizontal drag here is a pan over a
+   span, and a pinch is a zoom, and neither may also be a page scroll. */
 .track {
   flex: 1;
   min-height: 0;
   position: relative;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
 }
-.track::-webkit-scrollbar {
-  display: none;
+.track:active {
+  cursor: grabbing;
 }
 .inner {
   position: relative;
@@ -712,11 +935,17 @@ function goToCrumb(id: string, current: boolean) {
   color: inherit;
   cursor: pointer;
   text-align: left;
+  /* The priority is computed (`markZ`); this is only where it lands. */
+  z-index: var(--z, 1);
 }
-.station:hover,
-.station.on,
-.station.cursor {
-  z-index: 3; /* a crowded mark comes to the front when it is asked about */
+/* A hover is a question, so it comes forward — but not past the answer: the
+   open step (40) and the cursor (30) are set from --z by the rules below. */
+.station:hover {
+  z-index: 20;
+}
+.station.cursor,
+.station.on {
+  z-index: var(--z);
 }
 .stem {
   position: absolute;
@@ -744,7 +973,8 @@ function goToCrumb(id: string, current: boolean) {
   transition:
     color var(--fast),
     border-color var(--fast),
-    background-color var(--fast);
+    background-color var(--fast),
+    scale var(--fast);
 }
 .num {
   font-family: var(--cond);
@@ -771,11 +1001,21 @@ function goToCrumb(id: string, current: boolean) {
    and all four are written at the same specificity: the open step is normally
    under the cursor as well, and with the cursor's rule after this one the brass
    number was being drawn in brass on the brass fill. */
+/* …and it is LIFTED, in the app's brass language: a ring of the rail's own
+   ground punches it out of whatever it has landed in the middle of, and the
+   shadow under it says the mark is a layer above the pile rather than the
+   brightest thing in it. In a three-deep crowd that is the difference between
+   "which one am I on" being answered by colour alone and being answered. */
 .station.on .mark {
   border-color: var(--brass);
   background: var(--brass);
   color: var(--void);
-  box-shadow: 0 0 10px rgba(227, 167, 88, 0.5);
+  box-shadow:
+    0 0 0 3px rgba(6, 10, 18, 0.92),
+    0 2px 8px rgba(0, 0, 0, 0.65),
+    0 0 12px rgba(227, 167, 88, 0.55);
+  /* `scale`, not `transform`: the mark is centred by a translate it must keep. */
+  scale: 1.12;
 }
 /* A badge on the mark's shoulder rather than a glyph under it: the room beside
    the mark belongs to the label, and a chevron sitting in it would be read as
@@ -888,11 +1128,14 @@ function goToCrumb(id: string, current: boolean) {
 }
 
 @media (max-width: 640px) {
-  /* A phone's rail is 8px shorter, and its lanes give the pixels up: the rule
-     and the marks are the two things that cannot. */
+  /* A PHONE'S RAIL IS THE TALLER ONE (tokens.css: --rail under a saga).
+     It has more to say than the era rail does — a rule, three lanes of marks,
+     and a dated name beside each of them — and at 84px it said all of it in
+     14px rows with the names touching the lane below. The extra pixels go
+     into the lanes, which is where the crowding was. */
   .rail {
-    --lane-1: 24px;
-    --lane-h: 14px;
+    --lane-1: 32px;
+    --lane-h: 22px;
     --mark: 14px;
   }
   /* The crumb keeps its own row's width and ellipses — a phone's stack can be
@@ -903,8 +1146,25 @@ function goToCrumb(id: string, current: boolean) {
   .meta {
     display: none;
   }
-  .list-label {
+  .list-label,
+  .zoom-label {
     display: none;
+  }
+  /* With their words gone these are icon buttons, so their glyphs are placed
+     the way every other icon-only control's is — by geometry, not by asking a
+     grid where the middle of a box with a hidden child in it is. See the icon
+     rule in styles/tokens.css, and the pill's chevron, which is why it exists. */
+  .list-btn,
+  .zoom-btn {
+    position: relative;
+    padding: 0;
+  }
+  .list-btn > .glyph,
+  .zoom-btn > .glyph {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
   }
   .nav-btn {
     height: 22px;

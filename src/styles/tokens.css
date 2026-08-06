@@ -115,12 +115,32 @@
 }
 
 @media (max-width: 640px) {
+  /*
+   * A SAGA'S RAIL IS TALLER THAN THE ERA RAIL, and only on a phone.
+   *
+   * The era rail draws two strips and a ruler; the saga rail draws a rule,
+   * three lanes of marks and a dated name beside every one of them, and at
+   * 84px it drew them in 14px rows with the labels grazing the lane below —
+   * *"it should be taller (take a bit more screen on mobile)"*. A desktop rail
+   * has the room already, so it is unchanged.
+   *
+   * Stated as the ONE token every other clearance is derived from (--rail-clear
+   * and everything under it: the pill's position, the mobile sheet's height,
+   * the scale bar) rather than as a height inside the component. A rail that
+   * knew it was 116px tall while --rail-clear said 84 would be a rail with the
+   * pill sitting inside it, which is exactly the bug --rail exists to prevent.
+   * `:has` because the fact is "a saga is on the map", which is a fact about
+   * the document, and the rail is where that fact is already written down.
+   */
   :root {
     --rail: 84px;
     --t-md: 14px;
     --pill-h: 46px;
     /* the bar's touch targets are 40px on a phone, not 34 */
     --bar: 64px;
+  }
+  :root:has(.rail.saga) {
+    --rail: 116px;
   }
 }
 
@@ -178,9 +198,61 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
+/*
+ * ICONS ARE GEOMETRY. NEVER TYPE, AND NEVER CENTRED BY A LINE BOX.
+ *
+ * A phone reported the minimised window's chevron off-centre inside its ring
+ * TWICE — and the second time the browser we could measure said it was exact
+ * (dx = 0.00 at three widths and three pixel ratios). The device disagreed
+ * because the centring was being *computed by the button's layout*: a `display`
+ * the phone rule inherited half of, a UA `padding: 1px 6px` nobody had reset,
+ * a font-size and a line-height that make a strut for an inline SVG to sit on,
+ * and, next door, arrows that were literally text (`←`, U+2190) resolved
+ * through whatever font on the device happens to have that codepoint. Every one
+ * of those is a per-engine, per-font answer to "where is the middle".
+ *
+ * So nothing here asks a layout where the middle is. The rule, in three parts:
+ *
+ *   1. An icon is an inline `<svg class="glyph">` with an explicit viewBox whose
+ *      GEOMETRIC CENTRE IS THE VIEWBOX CENTRE, sized in px. No font, no
+ *      codepoint, no icon face — a stroked path is the same shape on every
+ *      device there is.
+ *   2. Its container is `.icon-c`, which places it by TRANSLATION off its own
+ *      centre. Absolute position and a -50% translate are the same arithmetic
+ *      in every engine; flex alignment, grid alignment, baselines, overflow
+ *      alignment fallbacks and UA padding are not.
+ *   3. The container states `padding: 0`, `font-size: 0` and `line-height: 0`,
+ *      so that even where a control also carries a word there is no strut, and
+ *      an engine that degraded the container to flow layout would still have
+ *      nothing to shift the glyph by.
+ */
+.glyph {
+  display: block;
+  flex: none;
+}
+.icon-c {
+  position: relative;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+}
+.icon-c > .glyph {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+}
+
+/* The app's standard square icon button — an `.icon-c` by another name, and it
+   states the primitive's declarations rather than asking every call site to
+   remember a second class. */
 .icon-btn {
+  position: relative;
   display: grid;
   place-items: center;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
   width: 34px;
   height: 34px;
   border: 1px solid var(--line);
@@ -208,6 +280,12 @@ button {
   border-color: var(--brass);
   color: var(--brass);
   background: var(--brass-soft);
+}
+.icon-btn > svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
 }
 
 :focus-visible {

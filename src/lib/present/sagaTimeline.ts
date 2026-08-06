@@ -26,9 +26,10 @@ import { resolveStepChip, type StepChip } from './saga'
  * apart. What crowding costs is *lanes*, not truth: a mark with no room beside
  * its neighbour drops to the next row down and hangs off the axis by a stem, so
  * the pile-up at the end of a war reads as a pile-up (see `laneOf`). Reaching a
- * crowded station with a thumb is answered elsewhere entirely — by the rail's
- * prev/next and its list of every step (`stepBy`), which is the second half of
- * the dual system the reader asked for.
+ * crowded station with a thumb is answered elsewhere entirely — by the ZOOM
+ * (note 4), which spreads a pile-up without moving anything off its date, and
+ * by the rail's prev/next and its list of every step (`stepBy`), which is the
+ * second half of the dual system the reader asked for.
  *
  * ---------------------------------------------------------------------------
  * 2. THE SPACE IS THE STEPS' OWN — FRACTIONS, WHICH ARE THE YEARS
@@ -63,14 +64,105 @@ import { resolveStepChip, type StepChip } from './saga'
 export const RAIL_PAD = 0.05
 
 /**
- * The width the rail gives each station before it starts scrolling.
+ * THE VISIBLE WINDOW, in *rail space* — the 0..1 the padded span is drawn over.
  *
- * Not a target width any more (see 1 above) — a *sight line*. Eleven stations on
- * a 390 px phone would be four pixels apart whatever the layout does with them,
- * so the rail grows past the element and the view scrolls, which spreads the
- * span rather than distorting it.
+ * A phone showing eleven moments of a six-year war used to grow the rail past
+ * the element and scroll it. Two systems — a scrolling rail on a phone, a fitted
+ * one on a desktop — and the scrolling one answered "I cannot read the end of
+ * the war" with "drag sideways", which is a pan with none of a pan's other half.
+ *
+ * There is one system now, and it is the era rail's (components/TimelineBar.vue):
+ * a visible window that wheel, pinch, drag and double-tap move, and which every
+ * other number in this module is a function of. Positions, bands, lane
+ * assignment, label room and the tick rule are all recomputed per window, so
+ * zooming into June 1944 does not scale a picture of the war — it re-asks every
+ * question at the new scale, and the rule answers "days" where it answered
+ * "years" (see `axisTicks`). The window is the rail's own state and dies with
+ * it: a descent is a different span, and it opens fitted.
+ *
+ * Rail space rather than span space because the pad is part of what the reader
+ * sees at rest: `{ u0: 0, u1: 1 }` is the whole saga WITH its air, which is
+ * exactly the picture the rail drew before it could zoom, and the clamp "never
+ * out past the padded span" is then the trivial one.
  */
-export const MIN_STATION_PX = 44
+export interface RailWindow {
+  u0: number
+  u1: number
+}
+
+/** The rail at rest: the whole padded span. */
+export const FULL_WINDOW: RailWindow = { u0: 0, u1: 1 }
+
+/** A fraction of the SPAN, in rail space. */
+export const railU = (u: number, pad = RAIL_PAD): number => pad + u * (1 - 2 * pad)
+
+/**
+ * How far in the rail will go: about three days across.
+ *
+ * Not a round number someone liked — it is where the tick ladder bottoms out.
+ * The finest spacing is one day and a rail carries at least two ticks, so a
+ * window under ~3 days would go on magnifying a picture whose rule had stopped
+ * refining: more pixels per day and nothing new said. See `axisTicks`.
+ */
+export const MIN_WINDOW_DAYS = 3
+
+const clampTo = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v)
+
+/**
+ * The narrowest window this saga allows, as a fraction of rail space.
+ *
+ * A point-dated saga has no extent, so there is nothing to zoom into and the
+ * floor is the whole rail: its stations are an ORDER (see `spread`), and
+ * magnifying an order says nothing the numbers on the marks did not.
+ */
+export function minWindow(span: Time): number {
+  const [from, to] = timeExtent(span)
+  const len = to - from
+  if (!(len > 0)) return 1
+  return Math.min(1, (MIN_WINDOW_DAYS * DAY * (1 - 2 * RAIL_PAD)) / len)
+}
+
+/**
+ * ZOOM, about a point the reader is holding still — the era rail's contract
+ * (`zoom` in stores/time.ts): `k > 1` widens the window, `at` is where the
+ * cursor or the pinch centre is, in 0..1 of the rail's width.
+ *
+ * Clamped at both ends and then RE-ANCHORED rather than merely clipped: a
+ * window pushed against the start of the span keeps its width and slides, so
+ * zooming out at the far right of a war still ends on the whole war rather than
+ * on a window that has silently lost half its span.
+ */
+export function zoomWindow(w: RailWindow, k: number, at: number, min = 0): RailWindow {
+  const len = w.u1 - w.u0
+  const held = w.u0 + at * len
+  const next = clampTo(len * k, Math.min(min, 1), 1)
+  const u0 = clampTo(held - at * next, 0, 1 - next)
+  return { u0, u1: u0 + next }
+}
+
+/** PAN, by a fraction of rail space. The width is preserved; the ends are hard. */
+export function panWindow(w: RailWindow, du: number): RailWindow {
+  const len = w.u1 - w.u0
+  const u0 = clampTo(w.u0 + du, 0, 1 - len)
+  return { u0, u1: u0 + len }
+}
+
+/**
+ * The window moved just far enough that a point of rail space is comfortably
+ * inside it — what prev/next and the list do when the step they take is off the
+ * visible edge.
+ *
+ * `margin` is a fraction of the WINDOW, so a station panned into view arrives
+ * with room for its own label rather than hard against the edge that was hiding
+ * it. A window already showing the point is returned unchanged, which is what
+ * lets the caller decide whether anything needs animating.
+ */
+export function revealIn(w: RailWindow, v: number, margin = 0.12): RailWindow {
+  const len = w.u1 - w.u0
+  const m = Math.min(margin, 0.45) * len
+  if (v >= w.u0 + m && v <= w.u1 - m) return w
+  return panWindow(w, v < w.u0 + m ? v - m - w.u0 : v + m - w.u1)
+}
 
 /** Below this there is no room for a name worth truncating to. */
 export const MIN_LABEL_PX = 56
@@ -199,6 +291,45 @@ function calendarOf(t: Year): { m: number; d: number } | undefined {
   return { m: at.getUTCMonth(), d: at.getUTCDate() }
 }
 
+/** The first instant of a calendar month, back in the app's unit of years. */
+function monthStart(y: number, m: number): Year {
+  const d = new Date(0)
+  d.setUTCFullYear(y, m, 1)
+  d.setUTCHours(0, 0, 0, 0)
+  return y + (d.getTime() - jan1(y)) / (jan1(y + 1) - jan1(y))
+}
+
+/**
+ * The moments a spacing puts inside [a, b].
+ *
+ * Multiples of the spacing, EXCEPT for months, which are not a length. A
+ * twelfth of a year is 30.44 days and a calendar month is 28 to 31, so a rule
+ * stepped in twelfths drifts a third of a day per month — invisible on a rail
+ * showing one year, and on a rail zoomed to ten months it printed "Jan 1944"
+ * twice and no February at all. A month tick stands on the first of its month
+ * or it is not a month tick, and the sequence is aligned to the CALENDAR (so a
+ * three-month rule is Jan/Apr/Jul/Oct) rather than to wherever the window
+ * happens to begin.
+ *
+ * Days stay uniform: they are a real length, and 1/365.2425 of a year is within
+ * a fraction of a day of one over the fortnight such a rule ever covers.
+ */
+function tickTimes(a: Year, b: Year, s: { unit: AxisUnit; years: number }): Year[] {
+  const out: Year[] = []
+  if (s.unit === 'month' && Math.abs(a) <= 9999) {
+    const k = Math.max(1, Math.round(s.years * 12))
+    const y0 = Math.floor(a)
+    for (let i = Math.ceil((y0 * 12 + (a - y0) * 12) / k) * k; ; i += k) {
+      const t = monthStart(Math.floor(i / 12), ((i % 12) + 12) % 12)
+      if (t > b + 1e-9) break
+      if (t >= a - 1e-9) out.push(t)
+    }
+    return out
+  }
+  for (let i = Math.ceil(a / s.years - 1e-9); i * s.years <= b + 1e-9; i++) out.push(i * s.years)
+  return out
+}
+
 /**
  * A moment, named at the resolution the axis is ruled in — so nothing on the
  * rail ever claims a precision the rule underneath it does not have.
@@ -229,23 +360,35 @@ export function formatAt(t: Year, unit: AxisUnit, full = false): string {
  * there is nothing to divide, and the single tick returned is the year itself.
  * The view draws that axis dashed — a rule with no divisions on it, which is
  * what the data supports. Where its stations then stand is `spread`.
+ *
+ * THE RULE REFINES WITH THE WINDOW. What is divided is the span the reader can
+ * actually SEE, so the same war rules in years whole, in months at 1944 and in
+ * days inside June — one ladder, walked by the zoom rather than by a mode. The
+ * density rule (`TICK_PX` of room per label) is what makes that safe at every
+ * step of the way: the finest spacing is chosen from the room there is, so two
+ * labels can never be drawn closer than one label is wide.
+ *
+ * The visible range is clipped to the SPAN, not taken raw from the window: at
+ * rest the window includes the pad, and dividing the pad would make a war
+ * eleven per cent longer than it was — the rule would answer a question about
+ * time with a fact about margins.
  */
-export function axisTicks(span: Time, width: number): Axis {
+export function axisTicks(span: Time, width: number, win: RailWindow = FULL_WINDOW): Axis {
   const [from, to] = timeExtent(span)
   const len = to - from
   if (len <= 0) return { unit: 'none', ticks: [{ u: 0, label: formatOn(from), major: true }] }
-  const ideal = len / Math.max(2, Math.floor(width / TICK_PX))
+  const at = (v: number) => from + ((v - RAIL_PAD) / (1 - 2 * RAIL_PAD)) * len
+  const [a, b] = [clampTo(at(win.u0), from, to), clampTo(at(win.u1), from, to)]
+  const ideal = (b - a) / Math.max(2, Math.floor(width / TICK_PX))
   const s = SPACINGS.find((c) => c.years >= ideal) ?? SPACINGS[SPACINGS.length - 1]
-  const ticks: Tick[] = []
-  for (let i = Math.ceil(from / s.years - 1e-9); i * s.years <= to + 1e-9; i++) {
-    const t = i * s.years
+  const ticks = tickTimes(a, b, s).map((t) => {
     const cal = calendarOf(t)
-    ticks.push({
+    return {
       u: (t - from) / len,
       label: formatAt(t, s.unit),
       major: s.unit === 'month' ? cal?.m === 0 : s.unit === 'day' ? cal?.d === 1 : true,
-    })
-  }
+    }
+  })
   return { unit: s.unit, ticks }
 }
 
@@ -298,8 +441,10 @@ export interface PlacedStation extends Station {
 }
 
 export interface RailLayout {
-  /** The width the stations are laid out over — the element's, or wider (scroll). */
+  /** The width the stations are laid out over: the element's, always. */
   width: number
+  /** The window everything here was derived from. */
+  win: RailWindow
   /** How many lanes the stations ended up needing. */
   lanes: number
   axis: Axis
@@ -330,17 +475,6 @@ export function stations(steps: readonly Step[], span: Time): Station[] {
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v)
 
 /**
- * How wide the rail is drawn.
- *
- * Normally the element's own width. With more stations than the element can
- * separate, the rail grows past it and the view scrolls — which stretches the
- * span without bending it, and is the only honest way a phone can show eleven
- * moments.
- */
-export const railWidth = (clientWidth: number, count: number): number =>
-  Math.max(clientWidth, count * MIN_STATION_PX)
-
-/**
  * WHERE THE STATIONS STAND, in 0..1 of the rail.
  *
  * At their own moments — that is the whole contract (see 1 above) — with one
@@ -365,9 +499,13 @@ export const spread = (sts: readonly Station[], unit: AxisUnit): number[] =>
       // its name — on a rail whose names are the whole of what it has to say.
       sts.map((_, i) => (i + 0.5) / sts.length)
 
-/** Where a fraction of the span sits on a rail of this width, padded at both ends. */
-export const railX = (u: number, width: number, pad = RAIL_PAD): number =>
-  (pad + u * (1 - 2 * pad)) * width
+/**
+ * Where a fraction of the span sits on a rail of this width — through the
+ * window, which at rest is the whole padded span and so the identity this was
+ * before it could zoom.
+ */
+export const railX = (u: number, width: number, win: RailWindow = FULL_WINDOW): number =>
+  ((railU(u) - win.u0) / (win.u1 - win.u0)) * width
 
 /**
  * Which lane each station hangs in: the first one whose last mark is far enough
@@ -391,6 +529,34 @@ export function laneOf(xs: readonly number[]): number[] {
   })
 }
 
+/**
+ * WHICH STATION IS DRAWN ON TOP.
+ *
+ * Lanes are how the rail survives a pile-up, and a pile-up is where "which step
+ * am I on?" is hardest to answer — four marks in eleven pixels, in three rows,
+ * with labels crossing each other. The one the reader is standing on must
+ * therefore be the one nothing is drawn over, and the one they are pointing at
+ * next: the open step outranks the cursor, the cursor outranks a hover, and all
+ * three outrank the row.
+ *
+ * Here rather than in the stylesheet because CSS said it in source order — four
+ * rules at equal specificity, all claiming `z-index: 3` — which is a priority
+ * written in a place where it cannot be read, and could not be tested at all.
+ */
+export function markZ(s: {
+  on?: boolean
+  cursor?: boolean
+  hover?: boolean
+  lane?: number
+}): number {
+  if (s.on) return 40
+  if (s.cursor) return 30
+  if (s.hover) return 20
+  // Within the row, an upper lane is nearer the axis and nearer the eye; the
+  // stems of the lanes below it pass behind rather than through its label.
+  return 10 - Math.min(9, s.lane ?? 0)
+}
+
 /** The room a name wants, in px — the same eyeballed metric the era bands use. */
 export const labelWidth = (name: string): number => name.length * LABEL_CHAR_PX + 4
 
@@ -404,21 +570,29 @@ const labelRoom = (xs: readonly number[], lanes: readonly number[], i: number, w
 
 /**
  * The whole geometry of the rail: the rule, and where each station's mark, band
- * and label go, for a given element width.
+ * and label go, for a given element width AND VISIBLE WINDOW.
+ *
+ * Everything is re-derived, not transformed. A zoomed-in rail is not a scaled
+ * picture of the fitted one: the marks that were eleven pixels apart are now a
+ * hundred, so they no longer collide, so they climb back out of their lanes and
+ * their names — which had no room and were dropped — are drawn. That is the
+ * whole point of being able to zoom, and it is why the window is an argument
+ * here rather than a CSS transform in the view.
  */
 export function layoutRail(
   sts: readonly Station[],
   span: Time,
-  clientWidth: number,
+  width: number,
+  win: RailWindow = FULL_WINDOW,
 ): RailLayout {
-  const width = railWidth(clientWidth, sts.length)
-  const axis = axisTicks(span, width)
-  if (!sts.length) return { width, lanes: 1, axis, stations: [] }
+  const axis = axisTicks(span, width, win)
+  if (!sts.length) return { width, win, lanes: 1, axis, stations: [] }
   const us = spread(sts, axis.unit)
-  const xs = us.map((u) => railX(u, width))
+  const xs = us.map((u) => railX(u, width, win))
   const lanes = laneOf(xs)
   return {
     width,
+    win,
     lanes: Math.max(...lanes) + 1,
     axis,
     stations: sts.map((s, i) => {
@@ -432,7 +606,7 @@ export function layoutRail(
         // marks means nothing and a bar drawn across it would mean less.
         band:
           axis.unit !== 'none' && s.uEnd > s.u
-            ? { x: xs[i], w: railX(s.uEnd, width) - xs[i] }
+            ? { x: xs[i], w: railX(s.uEnd, width, win) - xs[i] }
             : undefined,
         lane: lanes[i],
         // The ROOM, not the guess at the name's width: the cap exists to keep a
@@ -473,7 +647,20 @@ const FINER: Record<AxisUnit, AxisUnit> = {
   day: 'day',
   none: 'none',
 }
-export const stationUnit = (span: Time): AxisUnit => FINER[axisTicks(span, TICK_PX * 11).unit]
+
+/**
+ * The resolution a SAGA is written at — what its own span deserves, asked at a
+ * desktop rail's density and at no particular zoom.
+ *
+ * The rail's live axis is not this: it refines as the reader zooms in, which is
+ * the whole point of it. But the saga's own dates — the span in the head, and
+ * every station's date beside its name — are facts about the saga, and a fact
+ * that changes as you turn the wheel is not one. Zoomed into June 1944 the
+ * live rule says "day", and the head read "1 Sep – 2 Sep 1945" for a war that
+ * ran from 1939.
+ */
+export const spanUnit = (span: Time): AxisUnit => axisTicks(span, TICK_PX * 11).unit
+export const stationUnit = (span: Time): AxisUnit => FINER[spanUnit(span)]
 
 /**
  * What the rail, the list and the tooltip call a station's moment.

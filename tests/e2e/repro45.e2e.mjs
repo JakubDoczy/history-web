@@ -59,7 +59,18 @@ async function open(width, height, dsf) {
   return page
 }
 
-/** The restore control, and where its glyph actually sits inside it. */
+/**
+ * The restore control, and where its glyph actually sits inside it.
+ *
+ * ROUND 46: this measures the <svg> ELEMENT's box, which is what round 45
+ * thought the question was — it read 0.00 here and the phone still disagreed.
+ * The measurement that settles it is the rendered PATH's own bounding box
+ * (tests/e2e/repro46.e2e.mjs, `inkOf`). Keep reading `dx` here only for the
+ * phone, where the control is an icon-only square: on a desktop it is a chip
+ * with the word "Restore" on it and the glyph is deliberately 14px from the
+ * left edge, so `dx` is about -33 by design (`labelShown` says which case it
+ * is).
+ */
 const restoreOf = (page) =>
   page.evaluate(() => {
     const b = document.querySelector('[data-test="pill-restore"]')
