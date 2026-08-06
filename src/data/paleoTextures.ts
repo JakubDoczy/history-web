@@ -40,3 +40,31 @@ export const PALEO_FRAMES: TextureKeyframe[] = [
   ...frames.map((f) => ({ time: f.time, url: `${base}textures/paleo/${f.file}` })),
   { time: -10_000, url: MODERN_TEXTURE },
 ]
+
+/**
+ * The drawn world: the same 4096x2048 equirectangular grid, rendered at build
+ * time from the same vector data and the same rasterizer the drawn tiles come
+ * from (scripts/render-drawn-world.mjs). It is the pyramid's level 3 exactly —
+ * 4096 px across 360 degrees is 512 * 2^3 — which is what keeps the shader's
+ * sharp/blurred ratio self-consistent: a drawn tile's reduced tap and this
+ * texture are the same drawing at the same density.
+ */
+export const DRAWN_TEXTURE = `${base}textures/map/drawn-world.webp`
+
+/**
+ * …and the era timeline it stands in.
+ *
+ * The SAME frames, with only the modern one swapped, so map mode inherits deep
+ * time whole: the reconstructions are not redrawn (nobody has vector coastlines
+ * for the Cretaceous), they are printed on the drawn map's paper by the shader
+ * instead — see `paper` in lib/present/globe.ts. Derived from PALEO_FRAMES
+ * rather than rebuilt, so a change to the frame list cannot reach one mode and
+ * miss the other.
+ */
+export const DRAWN_FRAMES: TextureKeyframe[] = PALEO_FRAMES.map((f) =>
+  f.url === MODERN_TEXTURE ? { ...f, url: DRAWN_TEXTURE } : f,
+)
+
+/** The base-texture timeline a mode reads. See `GlobeStyle.base`. */
+export const framesFor = (base: 'modern' | 'drawn'): TextureKeyframe[] =>
+  base === 'drawn' ? DRAWN_FRAMES : PALEO_FRAMES

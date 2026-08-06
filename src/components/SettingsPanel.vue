@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useEventStore } from '../stores/events'
 import { useSettingsStore, MAX_EVENTS } from '../stores/settings'
 import { useUiStore } from '../stores/ui'
@@ -7,7 +7,8 @@ import { useViewStore } from '../stores/view'
 import { useTimeStore } from '../stores/time'
 import { PALETTE_RANGE } from '../lib/palette'
 import { imageryCredit } from '../lib/paleo'
-import { PALEO_FRAMES } from '../data/paleoTextures'
+import { framesFor } from '../data/paleoTextures'
+import { DRAWN_ATTRIBUTION } from '../lib/drawnSource'
 import { buildLabel } from '../lib/build'
 
 const events = useEventStore()
@@ -17,6 +18,17 @@ const view = useViewStore()
 const time = useTimeStore()
 
 type Section = 'events' | 'imagery' | 'sky' | 'light' | 'display'
+/**
+ * The credit line follows the MODE, not just the year: map mode draws the same
+ * deep-time reconstructions (PALEOMAP, credited as ever) but its modern frame is
+ * a drawing made on the device from Natural Earth vectors, and NASA has nothing
+ * to do with it.
+ */
+const mapFrames = computed(() => framesFor(settings.mode === 'schematic' ? 'drawn' : 'modern'))
+const baseCredit = computed(() =>
+  settings.mode === 'schematic' ? DRAWN_ATTRIBUTION : undefined,
+)
+
 const open = ref<Section | null>('imagery')
 const toggleSection = (s: Section) => (open.value = open.value === s ? null : s)
 
@@ -176,7 +188,7 @@ const imageryLine = () => {
             <span>Terrain relief shading</span>
           </label>
           <p class="hint credit">
-            {{ imageryCredit(PALEO_FRAMES, time.currentTime, view.detailAttribution) }}
+            {{ imageryCredit(mapFrames, time.currentTime, view.detailAttribution, baseCredit) }}
           </p>
         </div>
       </section>
@@ -329,7 +341,7 @@ const imageryLine = () => {
               {{
                 settings.mode === 'realistic'
                   ? 'Globe — the photographed planet: imagery, relief, clouds, night and stars.'
-                  : 'Map — a drawn scheme: no clouds, no relief, no night, no stars. Early days.'
+                  : 'Map — a drawn atlas: coastlines, borders and rivers inked on paper, drawn on your device from vector data. No imagery, no clouds, no night, no stars.'
               }}
             </p>
           </div>

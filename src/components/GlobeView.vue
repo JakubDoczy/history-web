@@ -25,16 +25,21 @@ import { firstFrame } from '../lib/firstFrame'
 import { AtmosphereLayer } from '../lib/skyLayer'
 import {
   DetailImagery,
+  IMAGERY_ERA_FROM,
+  IMAGERY_PLAN,
+  singleSourcePlan,
   visibleSpanDeg,
   viewSpanDeg,
   minAltitudeFor,
 } from '../lib/detailImagery'
+import { DRAWN_ERA_FROM, DRAWN_Z_MAX, DrawnTiles } from '../lib/drawnSource'
 import { cloudFadeFor, cloudSharpenFor, cloudIdleIntervalMs } from '../lib/scale'
 import { CelestialLayer } from '../lib/celestialLayer'
 import { eraPlan, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { pinElement, clusterElement } from '../lib/eventPins'
 import {
+  onGround,
   pinStateKey,
   pinTier,
   resolveGlobeStyle,
@@ -56,7 +61,13 @@ import { cameraScope, sameScope } from '../lib/viewport'
 import { stableByKey } from '../lib/stableIdentity'
 import type { Tier } from '../lib/eventTiers'
 import { primaryTag, tagColor } from '../lib/tags'
-import { PALEO_FRAMES, MODERN_TEXTURE, NIGHT_TEXTURE, RELIEF_TEXTURE, SKY_TEXTURE } from '../data/paleoTextures'
+import {
+  MODERN_TEXTURE,
+  NIGHT_TEXTURE,
+  RELIEF_TEXTURE,
+  SKY_TEXTURE,
+  framesFor,
+} from '../data/paleoTextures'
 
 const events = useEventStore()
 const nations = useNationStore()
@@ -75,6 +86,14 @@ const el = useTemplateRef('el')
  * without a second copy of every expression below.
  */
 const style = computed(() => resolveGlobeStyle(settings, settings.mode))
+/**
+ * The base-texture timeline this mode reads: the photographed planet's, or the
+ * same deep-time frames ending in the drawn world (data/paleoTextures.ts).
+ * Everything downstream — the crossfade, the retention window, the relief fade,
+ * the paper grade — goes through this one value, so the two modes cannot
+ * disagree about which frame is on screen.
+ */
+const frames = computed(() => framesFor(style.value.base))
 /** The mode alone, for the pin and ink resolvers. */
 const mode = computed<RenderMode>(() => settings.mode)
 /**
@@ -91,6 +110,14 @@ let surface: GlobeSurface | undefined
 let celestial: CelestialLayer | undefined
 let atmosphere: AtmosphereLayer | undefined
 let detail: DetailImagery | undefined
+/**
+ * The drawn map's rasterizer, built the first time map mode is entered and kept
+ * after that. Lazy on purpose: it spawns a worker and pulls 1.1 MB of vector
+ * data, and the app opens on the photographed globe.
+ */
+let drawnTiles: DrawnTiles | undefined
+/** …and its plan, held rather than rebuilt: `setPlan` compares by identity. */
+let drawnPlan: ReturnType<typeof singleSourcePlan> | undefined
 /** The authored battle plan of the item in focus mode; nothing otherwise. */
 let drawing: DrawingLayer | undefined
 /** The selected event's routes and their terminus dots. */
@@ -119,6 +146,8 @@ type PolyEntry = BorderEntry | EventAreaEntry
 
 /** What the polygon layer was last given; see the watcher that fills it. */
 let lastPolys: PolyEntry[] = []
+/** …and the mode its stroke colours were resolved for. */
+let lastInk: RenderMode | undefined
 
 const asPin = (d: object) => d as PinDatum
 const asLeg = (d: object) => d as ClusterLeg
@@ -469,9 +498,13 @@ onMounted(() => {
     // reported against them — they are thinner, unfilled, and never sit under a
     // tinted cap, which is where the artefact was legible — so they keep the
     // layer's stroke and the exposure is written down instead of guessed at.
+    // A nation colour was chosen against Blue Marble and is often pale — Sumer
+    // is #b09a72, which measures 1.05:1 against the drawn map's land tone, i.e.
+    // gone. `onGround` takes it toward the map's own pen on paper and leaves it
+    // alone on the photograph. See lib/present/ink.ts.
     .polygonStrokeColor((d) => {
       const p = asPoly(d)
-      return p.kind === 'area' ? '' : p.nation.color
+      return p.kind === 'area' ? '' : onGround(p.nation.color, { mode: mode.value })
     })
     // Down near the ground, for the reason everything else is (SURFACE_ALT in
     // lib/drawingLayer.ts): at 0.004 a border slid 63 px against its own
@@ -664,7 +697,22 @@ onMounted(() => {
    * How *close* the camera may come is what varies by period instead; see
    * minAltitudeFor.
    */
-  const detailAllowed = () => style.value.imagery && time.currentTime > -12000
+  const detailAllowed = () => {
+    switch (style.value.tiles) {
+      case 'none':
+        return false
+      // A photograph of the modern Atlantic over a Pangaean coastline is
+      // nonsense, so imagery stops where the paleo frames start driving.
+      case 'imagery':
+        return time.currentTime > -12000
+      // A drawn coastline is not a photograph and carries no century in it, so
+      // the only question left is whether the coastline is the right one — see
+      // DRAWN_ERA_FROM, which is the year the base texture stops being a
+      // reconstruction.
+      case 'drawn':
+        return time.currentTime >= DRAWN_ERA_FROM
+    }
+  }
 
   /**
    * The only place detail streaming is driven. It was previously called from
@@ -685,6 +733,9 @@ onMounted(() => {
     detail!.update(pov.lat, pov.lng, pov.altitude, h * dpr, w / h, view.fov)
     surface!.setDetail(detail!.atlas, detail!.index, detail!.mix)
   }
+
+  /** The year the streaming layer stops being an anachronism, if it ever was. */
+  const eraFrom = () => (style.value.tiles === 'imagery' ? IMAGERY_ERA_FROM : null)
 
   /** 0 far out, 1 close in — drives detail streaming and retires the sky effects. */
   const closeness = (altitude: number) => {
@@ -778,8 +829,11 @@ onMounted(() => {
     if (!force && !povMoved(lastPov, pov)) return
     lastPov = { ...pov }
     // how close the camera may come depends on whether modern imagery is allowed
+    // The pre-era zoom clamp belongs to the SOURCE. Only a photograph dates
+    // itself; the drawn map passes null and may be inspected as closely in 1200
+    // as in 2020, which is most of what it is for.
     globe!.controls().minDistance =
-      radius * (1 + minAltitudeFor(time.currentTime, style.value.imagery))
+      radius * (1 + minAltitudeFor(time.currentTime, style.value.tiles !== 'none', eraFrom()))
     // globe.gl pins near at 0.05, which is what limits how close the camera may
     // come. Tracking it to the camera's own height keeps depth precision good
     // while allowing a far closer approach.
@@ -845,6 +899,11 @@ onMounted(() => {
       style.value.cloudShadows,
     )
     atmosphere!.visible = style.value.atmosphere && near < 0.9
+    // …and globe.gl's OWN atmosphere shell, which is a second one and is on by
+    // default. It survived every earlier pass at map mode because nothing in
+    // this file ever mentioned it: `GlobeStyle.atmosphere` drove the custom
+    // layer alone, so the drawn globe kept a blue halo round a sheet of paper.
+    globe!.showAtmosphere(style.value.atmosphere)
     wake()
   }
 
@@ -1124,6 +1183,11 @@ onMounted(() => {
     // the very same objects in the same order, and re-setting the data then
     // costs a full data-join over every polygon to conclude nothing moved.
     watchEffect(() => {
+      // The mode is a dependency, not a decoration: the border colour is
+      // resolved per ground (see polygonStrokeColor), and three-globe only
+      // re-reads an accessor when the data it is given is different — so the
+      // list identity has to change when the mode does.
+      const ink = mode.value
       // Focus mode takes the borders off the globe with everything else that is
       // not the focused item (see `focus` in stores/events.ts). It is gated
       // here rather than in the nation store because the borders themselves are
@@ -1132,7 +1196,13 @@ onMounted(() => {
       // store and must keep seeing them. Reading `events.focus` inside this
       // watcher is what makes leaving the mode put them straight back.
       const next = [...(events.focus ? [] : nations.borders), ...eventAreas()]
-      if (next.length === lastPolys.length && next.every((p, i) => p === lastPolys[i])) return
+      if (
+        ink === lastInk &&
+        next.length === lastPolys.length &&
+        next.every((p, i) => p === lastPolys[i])
+      )
+        return
+      lastInk = ink
       lastPolys = next
       globe!.polygonsData(next)
       wake()
@@ -1148,6 +1218,7 @@ onMounted(() => {
         routes!.set(selectionDrawing(), {
           color,
           altitude: SURFACE_ALT,
+          ground: style.value.base === 'drawn' ? 'paper' : 'dark',
           resolution: { width: view.viewportWidthPx, height: view.viewportPx },
         })
       )
@@ -1171,6 +1242,7 @@ onMounted(() => {
       if (
         drawing!.set(events.focusDrawing, {
           color,
+          ground: style.value.base === 'drawn' ? 'paper' : 'dark',
           // The same altitude as everything else on the map. A plan is still the
           // top layer of ink — that is KIND_ORDER and renderOrder, not height.
           altitude: SURFACE_ALT,
@@ -1215,7 +1287,7 @@ onMounted(() => {
     // The relief map is the modern height field; deep-time frames carry their own
     // baked hillshade, so it fades out exactly as they fade in.
     watchEffect(() => {
-      surface!.setRelief(style.value.relief * 0.7 * modernShare(PALEO_FRAMES, time.currentTime))
+      surface!.setRelief(style.value.relief * 0.7 * modernShare(frames.value, time.currentTime))
       wake()
     }),
     watchEffect(() => {
@@ -1226,12 +1298,59 @@ onMounted(() => {
       surface!.setPalette(style.value.palette)
       wake()
     }),
+    /**
+     * WHICH TILES STREAM, and what the shader does with them.
+     *
+     * One watcher for both because they are one switch. `setPlan` abandons
+     * whatever was in flight for the other source and drops the index built
+     * from it — the decoded cache is keyed by source label already, so
+     * switching back finds its own tiles where it left them.
+     *
+     * The drawn rasterizer is built the first time it is asked for: it spawns a
+     * worker and fetches 1.1 MB of vector data, and a reader who never opens
+     * map mode should pay for neither.
+     */
+    watchEffect(() => {
+      const kind = style.value.tiles
+      if (kind === 'drawn') {
+        if (!drawnPlan) {
+          drawnTiles = new DrawnTiles(import.meta.env.BASE_URL)
+          drawnPlan = singleSourcePlan(drawnTiles.source, DRAWN_Z_MAX)
+          // The 50m geometry landing renames the source, which retires every
+          // tile drawn from the 110m stand-in. Nothing else would ask for the
+          // new ones: the camera has not moved, so the tick's own guard would
+          // skip the sync — forgetting where it last synced is what makes the
+          // upgrade reach the screen.
+          drawnTiles.onUpgrade = () => {
+            lastSync = undefined
+            wake()
+          }
+          if (import.meta.env.DEV) {
+            ;(window as unknown as { __drawn?: DrawnTiles }).__drawn = drawnTiles
+          }
+        }
+        detail!.setPlan(drawnPlan)
+      } else {
+        detail!.setPlan(IMAGERY_PLAN)
+      }
+      // The shader's half of the same decision: whether a streamed tile
+      // modulates the ground or IS the ground, whether the planet has an
+      // atmospheric limb, how much of the paper grade a deep-time frame takes,
+      // and whether the output is encoded.
+      surface!.setSurfaceMode(
+        style.value.detail,
+        style.value.rim,
+        style.value.paper ? 1 - modernShare(frames.value, time.currentTime) : 0,
+        style.value.encode ? 1 : 0,
+      )
+      wake()
+    }),
     // The plan carries more than the crossfade: which frames stay resident and
     // which one to warm next, both of which depend on the *direction* the cursor
     // is moving, so the previous time is part of the input.
     watchEffect(() => {
       const t = time.currentTime
-      surface!.setEra(eraPlan(PALEO_FRAMES, t, prevEraTime))
+      surface!.setEra(eraPlan(frames.value, t, prevEraTime))
       prevEraTime = t
       wake()
     }),
@@ -1298,6 +1417,7 @@ onBeforeUnmount(() => {
   stops.forEach((s) => s())
   surface?.dispose()
   detail?.dispose()
+  drawnTiles?.dispose()
   celestial?.dispose()
   atmosphere?.dispose()
   drawing?.dispose()
@@ -1354,6 +1474,22 @@ onBeforeUnmount(() => {
   font-size: 12.5px;
   letter-spacing: 0.18em;
   color: #fff;
+}
+/* ON PAPER (lib/drawingLayer.ts, `ground`). The rule above is white letters
+   inside a hard black halo, which is the only thing that reads over snowfield,
+   forest and open ocean. On the drawn map it is precisely backwards: the
+   letters sit at 1.1:1 against parchment and disappear, leaving the halo behind
+   as a grey smudge where a word should be. So the pair is inverted — the map's
+   own ink for the letters, its own paper for the halo — and the weight goes up
+   a step, because a light ground makes a stroke read thinner than it is. */
+.drawing-label--paper,
+.drawing-label--paper.drawing-label--md {
+  color: #221c12;
+  font-weight: 700;
+  text-shadow:
+    0 0 3px rgba(240, 232, 210, 0.95),
+    0 0 6px rgba(240, 232, 210, 0.85),
+    0 1px 0 rgba(240, 232, 210, 0.9);
 }
 
 .event-pin svg {

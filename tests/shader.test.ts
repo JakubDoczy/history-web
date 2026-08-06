@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { AREA_CAP_RESOLUTION_DEG } from '../src/lib/paths'
 import {
   CLOUD_DEPTH,
+  DETAIL_MODE,
   NIGHT_LIGHTS,
   cloudFormSlope,
   cloudShading,
@@ -61,7 +62,9 @@ describe('detail patch shading', () => {
     // one scalar scales all three channels together; a per-channel ratio
     // transferred the other sensor's chroma as well
     expect(glsl).toMatch(/float k = clamp\(\(dot\(hiT, luma\)/)
-    expect(glsl).toMatch(/detailGain = mix\(1\.0, stack, uDetailMix\)/)
+    // `stack` is what the ratio path still hands over; paint mode neutralises
+    // it one term further in (see the paint test below).
+    expect(glsl).toMatch(/detailGain = mix\(1\.0, mix\(stack, 1\.0, uDetailPaint\), uDetailMix\)/)
   })
 
   it('applies the patch after the grade, not before it', () => {
@@ -84,6 +87,22 @@ describe('detail patch shading', () => {
     expect(m).toBeTruthy()
     expect(Number(m![1])).toBeGreaterThanOrEqual(0.5)
     expect(Number(m![2])).toBeLessThanOrEqual(2)
+  })
+
+  it('keeps the ratio for photographs and paints for drawings', () => {
+    // The ratio assumes the sharp tile and the base map are one picture at two
+    // resolutions. A drawn map's pen is a fixed number of TILE pixels, so the
+    // level-3 base texture and a level-9 tile carry washes sixty times apart in
+    // ground width and the low frequencies do not cancel — they emboss. Paint
+    // mode is the fix, and it must be off by default and neutral when off.
+    expect(DETAIL_MODE.ratio).toBe(0)
+    expect(glsl).toMatch(/paintCover = mix\(onP, 1\.0, onT\) \* uDetailMix \* uDetailPaint/)
+    // the gain is forced to 1 while painting, so the two paths never both act
+    expect(glsl).toMatch(/mix\(stack, 1\.0, uDetailPaint\)/)
+    // and the paint lands AFTER the grade and the palette, like the gain does
+    expect(glsl.indexOf('albedo = mix(albedo, paintColor, paintCover)')).toBeGreaterThan(
+      glsl.indexOf('uPalette.z'),
+    )
   })
 
   it('never samples a mip level of the atlas', () => {

@@ -470,6 +470,16 @@ export interface DrawingLayerOptions {
   altitude?: number
   /** Screen size, for the fat lines. Set again on resize. */
   resolution?: { width: number; height: number }
+  /**
+   * What the ink is landing on.
+   *
+   * Only the LABELS read it, and they have to: a drawing label is white with a
+   * hard black halo, which is exactly right over snowfield, forest and ocean
+   * and exactly wrong on parchment — the letters vanish into the paper and all
+   * that is left is the halo, a grey smear where a word should be. Everything
+   * else on this layer carries its own casing and reads on either ground.
+   */
+  ground?: 'dark' | 'paper'
 }
 
 /** How many times the drawing's own width the frame may be before labels go. */
@@ -510,6 +520,8 @@ export class DrawingLayer {
   private materials: (MeshBasicMaterial | LineMaterial)[] = []
   private geometries: BufferGeometry[] = []
   private labels: CSS2DObject[] = []
+  /** What the ink is landing on; see DrawingLayerOptions.ground. */
+  private ground: 'dark' | 'paper' = 'dark'
   private resolution = new Vector2(900, 900)
   /** What is drawn now — so an unchanged spec is not rebuilt on every tick. */
   private currentKey = ''
@@ -598,7 +610,9 @@ export class DrawingLayer {
    * render pump.
    */
   set(drawing: Drawing | undefined, opts: DrawingLayerOptions): boolean {
-    const key = drawing ? `${opts.color}|${opts.altitude ?? ''}|${JSON.stringify(drawing)}` : ''
+    const key = drawing
+      ? `${opts.color}|${opts.altitude ?? ''}|${opts.ground ?? ''}|${JSON.stringify(drawing)}`
+      : ''
     if (key === this.currentKey) return false
     this.currentKey = key
     this.clear()
@@ -607,6 +621,7 @@ export class DrawingLayer {
     if (!drawing) return true
     const alt = opts.altitude ?? SURFACE_ALT
     const layers = [...drawing.layers].sort((a, b) => KIND_ORDER[a.type] - KIND_ORDER[b.type])
+    this.ground = opts.ground ?? 'dark'
     for (const [i, spec] of layers.entries()) this.build(spec, opts.color, alt, i)
     return true
   }
@@ -931,7 +946,9 @@ export class DrawingLayer {
     // check of the geometry); labels are the one part that needs one.
     if (typeof document === 'undefined') return
     const el = document.createElement('div')
-    el.className = `drawing-label drawing-label--${spec.size ?? 'sm'}`
+    el.className =
+      `drawing-label drawing-label--${spec.size ?? 'sm'}` +
+      (this.ground === 'paper' ? ' drawing-label--paper' : '')
     el.textContent = spec.text
     if (spec.color) el.style.color = spec.color
     // Labels must never eat a click meant for a pin or the globe behind them.

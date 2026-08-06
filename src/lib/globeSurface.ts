@@ -21,6 +21,7 @@ import { PALETTE_GAMMA, type Palette } from './palette'
 import { CLOUD_UPSCALE, cloudUpscaleWorthIt } from './cloudUpscale'
 import { cloudDriftPhase } from './scale'
 import { fadeTowards } from './mapFade'
+import { PAPER } from './drawnTile'
 import type { CloudUpscaleRequest, CloudUpscaleResponse } from './cloudUpscale.worker'
 
 /**
@@ -500,6 +501,56 @@ export function cloudShadowDensity(occ: number): number {
   return occ * (k + (1 - k) * occ)
 }
 
+/**
+ * HOW A STREAMED TILE REACHES THE SCREEN — and the one place the drawn map
+ * could not reuse the imagery pipeline as it stood.
+ *
+ * `ratio` is what this shader has always done, and it is right for a
+ * photograph: divide the sharp tap by the same tile reduced to the base map's
+ * density and multiply the base map by the result, so Sentinel-2 contributes
+ * structure and NASA keeps the colour. It rests on an assumption nobody had to
+ * state — that the sharp tile and the base map are THE SAME PICTURE at two
+ * resolutions, so their low frequencies cancel.
+ *
+ * A drawing breaks that assumption, and the design's expectation that "the
+ * blurred tap of a drawn tile against a drawn base map is self-consistent by
+ * construction" turns out to be false. The reason is the pen. Ink is a fixed
+ * 1.15 tile pixels and the shoreline wash a fixed 11, at EVERY level, because
+ * that is what makes a drawn map look drawn — so the level-3 base texture
+ * carries a wash about a degree of ground wide and a level-9 tile carries one
+ * a sixtieth of that. Reduced to the base map's density the tile's wash is a
+ * fifth of a texel, i.e. gone, while the base map's is eight texels of solid
+ * tone. The two do not cancel; they emboss. Photographed, at the Aegean: crisp
+ * coastline ink standing on a soft grey doubling of itself.
+ *
+ * So map mode PAINTS instead. Where a tile is resident it simply is the ground,
+ * blending parent to target and to the base map underneath by the same per-slot
+ * dissolve the ratio path uses — which is not a weaker answer but a stronger
+ * one, because a drawn tile already carries the right colour by construction
+ * and needs nothing from the map beneath it. The base texture then does exactly
+ * the job it should: it is what you see until a finer drawing of that ground
+ * arrives.
+ */
+export const DETAIL_MODE = { ratio: 0, paint: 1 } as const
+
+/** sRGB hex to linear light — the space this shader's albedo lives in. */
+const linearOf = (hex: string): [number, number, number] =>
+  [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }) as [number, number, number]
+
+/**
+ * The two ends of the paper grade, taken from the drawn map's own palette so
+ * that a paleo frame and a drawn tile are printed with the same ink on the same
+ * sheet. Derived rather than restated: a second copy of these colours would
+ * drift from lib/drawnTile.ts the first time either was tuned.
+ */
+export const PAPER_TONES = {
+  ink: linearOf(PAPER.ink),
+  paper: linearOf(PAPER.land),
+} as const
+
 const G = ENHANCED_GRADE
 const N = NIGHT_LIGHTS
 const C = CLOUD_DEPTH
@@ -543,6 +594,10 @@ uniform vec2 uTexel;          // 1 / relief texture size
 uniform float uFlatLight;     // 1 = ignore the terminator (close-up imagery is already lit)
 uniform float uBoost;         // 0 = realistic lighting, 1 = enhanced (brighter, lifted shadows)
 uniform vec3 uPalette;        // experimental grade: saturation, grayscale, contrast
+uniform float uDetailPaint;   // 0 = the sharp/blurred ratio, 1 = the tile IS the ground
+uniform float uRim;           // 0 removes the atmospheric limb and terminator band
+uniform float uPaperMix;      // 0 = the map as it is, 1 = printed on the drawn map's paper
+uniform float uEncode;        // 1 = write sRGB-encoded, for a surface that is already a picture
 
 const float PI = 3.14159265;
 
@@ -687,6 +742,9 @@ void main() {
   // map the imagery says this piece of ground is. It is applied at the very end,
   // after the grade — see below.
   float detailGain = 1.0;
+  // …and, in paint mode, the tile itself and how much of this pixel it covers.
+  float paintCover = 0.0;
+  vec3 paintColor = vec3(0.0);
   if (uDetailMix > 0.0) {
     // Surface point to tile. Longitude gives the column; the row runs *down*
     // from the north pole, which is the pyramid's convention (lib/tilePyramid)
@@ -738,7 +796,11 @@ void main() {
     // parent over base map, target over parent — so a tile arriving dissolves
     // into the coarse level it is replacing, never through the bare base map
     float stack = mix(mix(1.0, kP, onP), k, onT);
-    detailGain = mix(1.0, stack, uDetailMix);
+    // …and in paint mode the ratio says nothing: the tile is the ground. See
+    // DETAIL_MODE for why a drawing cannot go through the ratio at all.
+    detailGain = mix(1.0, mix(stack, 1.0, uDetailPaint), uDetailMix);
+    paintCover = mix(onP, 1.0, onT) * uDetailMix * uDetailPaint;
+    paintColor = mix(hiP, hiT, onT);
   }
 
   // Enhanced grades the albedo itself: a luminance remap (see ENHANCED_GRADE)
@@ -800,6 +862,20 @@ void main() {
     albedo = pow(max(pushed, 0.0), vec3(${f(PALETTE_GAMMA)}));
   }
 
+  // --- the paper grade: a deep-time frame, printed rather than photographed ---
+  // A duotone between the drawn map's own ink and its own paper, by luminance.
+  // Map mode's answer to deep time is not to redraw the Cretaceous from vectors
+  // nobody has — it is to keep the existing reconstruction and put it on the
+  // same sheet as everything else, so a scrub from 1940 to 200 Ma changes the
+  // geography without changing the medium. The exponent lifts the mid tones: a
+  // paleo frame is mostly dark ocean, and a linear ramp printed it near-black.
+  if (uPaperMix > 0.0) {
+    float pl = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
+    vec3 sheet = mix(${v3(PAPER_TONES.ink)}, ${v3(PAPER_TONES.paper)},
+      pow(clamp(pl, 0.0, 1.0), 0.45));
+    albedo = mix(albedo, sheet, uPaperMix);
+  }
+
   // The streamed patch, at last: a plain gain on the finished colour. Nothing
   // downstream of this reshapes it, so what the patch says about the ground is
   // what reaches the screen — and because it is a single multiplier, it cannot
@@ -815,6 +891,10 @@ void main() {
   float head = clamp((1.0 - dot(albedo, vec3(0.2126, 0.7152, 0.0722))) / 0.45, 0.0, 1.0);
   float gain = min(detailGain, 1.0) * mix(1.0, max(detailGain, 1.0), head);
   albedo = clamp(albedo * gain, 0.0, 1.6);
+  // PAINT. Zero for imagery, so the line above is still the whole story there;
+  // in map mode it is the tile standing in for the ground it covers, at the
+  // coverage the per-slot dissolve says. See DETAIL_MODE.
+  albedo = mix(albedo, paintColor, paintCover);
 
   vec3 surface = albedo * lambert;
 
@@ -970,9 +1050,14 @@ void main() {
   }
 
   // --- warm terminator band and blue limb ---
-  color += vec3(0.22, 0.08, 0.0) * smoothstep(0.25, 0.0, abs(cosGeo)) * daylight;
+  // uRim is what finally switches these off, and map mode is what needed it.
+  // With the terminator flattened, daylight is 1 everywhere, so the limb term
+  // ran all the way round the planet and read as a warm halo on a drawing that
+  // has no atmosphere in it — the one thing lib/present/globe.ts used to have
+  // to write down as "map mode cannot switch this off".
+  color += vec3(0.22, 0.08, 0.0) * smoothstep(0.25, 0.0, abs(cosGeo)) * daylight * uRim;
   float rim = pow(1.0 - max(dot(viewDir, n), 0.0), 3.0);
-  color += vec3(0.2, 0.45, 1.0) * rim * (0.25 + 0.55 * daylight);
+  color += vec3(0.2, 0.45, 1.0) * rim * (0.25 + 0.55 * daylight) * uRim;
 
   // Exposure lift for the enhanced look. The day term is gated on daylight,
   // so the night side keeps exactly the exposure it had — brightening it
@@ -980,7 +1065,27 @@ void main() {
   // which this shader never draws, cannot be touched either way.
   color *= 1.0 + uBoost * (${f(G.exposure)} + ${f(G.dayExposure)} * daylight);
 
-  fragColor = vec4(color, 1.0);
+  // --- what actually reaches the framebuffer ---
+  //
+  // This material writes LINEAR values into a drawing buffer three has told the
+  // browser is sRGB-encoded (drawingBufferColorSpace), because a raw
+  // ShaderMaterial gets none of the output conversion the built-in materials
+  // get from the colorspace_fragment chunk. Everything above — ENHANCED_GRADE, the
+  // exposure lift, the water gain, the lambert floor — was tuned by eye through
+  // that missing gamma, so the photographed globe is *defined* by it and
+  // "fixing" it globally would change every pixel of the shipped look.
+  //
+  // The drawn map cannot live with it. Its ground is not a photograph to be
+  // graded, it is a drawing whose two parchment tones were chosen as numbers:
+  // measured, the #ece2c8 paper reached the screen as (198, 180, 135), a full
+  // gamma down and visibly browner, because the blue channel loses the most.
+  // So map mode encodes its own output and the photographic mode does not — one
+  // uniform, exact sRGB rather than a 1/2.2 approximation, and zero change to
+  // the realistic branch.
+  vec3 out_ = mix(color, mix(color * 12.92,
+    1.055 * pow(max(color, 0.0), vec3(1.0 / 2.4)) - 0.055,
+    step(0.0031308, color)), uEncode);
+  fragColor = vec4(out_, 1.0);
 }
 `
 
@@ -1082,6 +1187,10 @@ export class GlobeSurface {
         uFlatLight: { value: 0 },
         uBoost: { value: 1 },
         uPalette: { value: new Vector3(1, 0, 1) },
+        uDetailPaint: { value: DETAIL_MODE.ratio },
+        uRim: { value: 1 },
+        uPaperMix: { value: 0 },
+        uEncode: { value: 0 },
       },
     })
   }
@@ -1520,6 +1629,18 @@ export class GlobeSurface {
   /** 0 = realistic lighting, 1 = enhanced (brighter day side, lifted night side). */
   setVisuals(boost: number) {
     this.material.uniforms.uBoost.value = boost
+  }
+
+  /**
+   * How far the streamed layer may push the ground, and whether the planet has
+   * an atmosphere and a sheet of paper. Three uniforms, one call, because they
+   * are one decision — see `GlobeStyle`.
+   */
+  setSurfaceMode(detail: number, rim: number, paper: number, encode: number) {
+    this.material.uniforms.uDetailPaint.value = detail
+    this.material.uniforms.uRim.value = rim
+    this.material.uniforms.uPaperMix.value = paper
+    this.material.uniforms.uEncode.value = encode
   }
 
   /** The experimental palette controls; (1, 0, 1) is a no-op. */

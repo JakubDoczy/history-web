@@ -116,13 +116,25 @@ export function modernShare(frames: TextureKeyframe[], t: Year): number {
 export const PALEO_CREDIT =
   'Paleogeography: PALEOMAP PaleoDEMs — Scotese & Wright (2018), CC BY 4.0'
 
-const MODERN_CREDIT = 'Imagery: NASA GIBS / Worldview'
+export const MODERN_CREDIT = 'Imagery: NASA GIBS / Worldview'
 
 /**
  * The imagery credit line: whatever the streamed layer requires while one is
  * shown, otherwise whichever basemap the globe is actually drawing.
+ *
+ * `modern` is a parameter because the last keyframe is not always a photograph.
+ * Map mode runs the same frame list with the modern one swapped for the drawn
+ * world (data/paleoTextures.ts), and crediting NASA for a map drawn on the
+ * device from Natural Earth vectors would be wrong twice over — the deep-time
+ * frames it shares with the photographic globe still credit PALEOMAP, because
+ * those really are the same reconstructions, printed differently.
  */
-export function imageryCredit(frames: TextureKeyframe[], t: Year, streamed: string): string {
+export function imageryCredit(
+  frames: TextureKeyframe[],
+  t: Year,
+  streamed: string,
+  modern = MODERN_CREDIT,
+): string {
   if (streamed) return streamed
-  return modernShare(frames, t) < 1 ? PALEO_CREDIT : MODERN_CREDIT
+  return modernShare(frames, t) < 1 ? PALEO_CREDIT : modern
 }

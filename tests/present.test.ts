@@ -254,9 +254,20 @@ describe('map mode diverges — and only in the presentation', () => {
     const flat = resolveGlobeStyle(on, 'schematic')
     expect([
       flat.clouds, flat.cloudShadows, flat.atmosphere,
-      flat.stars, flat.celestial, flat.night, flat.imagery,
-    ]).toEqual([false, false, false, false, false, false, false])
-    // and less than the full enhanced lift, on an already fully lit globe
+      flat.stars, flat.celestial, flat.night,
+    ]).toEqual([false, false, false, false, false, false])
+    // …and the atmospheric limb with them, which map mode used to be unable to
+    // switch off at all (it is `uRim` in the surface shader now).
+    expect(flat.rim).toBe(0)
+    // The one thing map mode does NOT turn off any more: streaming. It streams
+    // a different KIND of tile — the drawn rasterizer, through the same
+    // pyramid — which is the whole of the drawn map's integration.
+    expect(flat.tiles).toBe('drawn')
+    expect(flat.base).toBe('drawn')
+    expect(flat.paper).toBe(true)
+    expect(flat.detail).not.toBe(resolveGlobeStyle(on, 'realistic').detail)
+    // and no enhanced lift at all: the ground is a drawing, already graded
+    expect(flat.boost).toBe(0)
     expect(flat.boost).toBeLessThan(resolveGlobeStyle(on, 'realistic').boost)
     expect(flat.relief).toBe(0)
     expect(flat.flatLight).toBe(1) // no sun, so no terminator
@@ -277,11 +288,12 @@ describe('map mode diverges — and only in the presentation', () => {
     expect(resolveGlobeStyle(all(true), 'schematic')).toEqual(resolveGlobeStyle(all(false), 'schematic'))
     // while the realistic style is exactly the settings, restated
     expect(resolveGlobeStyle(all(false), 'realistic')).toMatchObject({
-      clouds: false, cloudShadows: false, atmosphere: false, relief: 0, imagery: false, boost: 0,
+      clouds: false, cloudShadows: false, atmosphere: false, relief: 0, tiles: 'none', boost: 0,
     })
     expect(resolveGlobeStyle(all(true), 'realistic')).toMatchObject({
-      clouds: true, cloudShadows: true, atmosphere: true, relief: 1, imagery: true, boost: 1,
+      clouds: true, cloudShadows: true, atmosphere: true, relief: 1, tiles: 'imagery', boost: 1,
       stars: true, celestial: true, night: true, flatLight: null, background: REALISTIC_BACKGROUND,
+      base: 'modern', paper: false, rim: 1,
     })
   })
 

@@ -6,6 +6,7 @@ import {
   type DrawingSpec,
 } from '../drawing'
 import { keepsLayer, stepOwner, type Step } from '../steps'
+import { PAPER } from '../drawnTile'
 import type { RenderCtx } from './mode'
 
 /**
@@ -29,6 +30,36 @@ import type { RenderCtx } from './mode'
 
 /** How heavy an area's outline is drawn, in screen pixels, per mode. */
 export const OUTLINE_WIDTH = { realistic: 2, schematic: 1.4 } as const
+
+/**
+ * INK ON PAPER — a colour chosen against a dark photograph, re-aimed at pale
+ * parchment.
+ *
+ * Every accent on this globe was picked against Blue Marble: a night-blue sea,
+ * a dark continent, a black sky. Nine of the fourteen tag colours and every one
+ * of the nation colours sit in the top half of the value range because that is
+ * what reads on black — `#ffe27a` for the selected pin's ring, `#b09a72` for
+ * Sumer's border. Put the same colours on the drawn map's paper (`#ece2c8`
+ * land, `#d3c8a8` sea) and the pale ones are gone: measured as luminance
+ * contrast against the land tone, Sumer's border is 1.05:1 and the selection
+ * ring is 1.11:1 — invisible, not merely quiet.
+ *
+ * Taking a colour toward the map's own pen fixes it without inventing a second
+ * palette: the hue is what carries the meaning (war is red, trade is amber) and
+ * the hue survives a mix toward a near-neutral dark. At 0.45 the same two go to
+ * 3.4:1 and 3.0:1, which is a drawn line on a drawn map.
+ */
+export function inkOnPaper(hex: string, mix = 0.45): string {
+  const to = PAPER.ink
+  const at = (i: number, from: string) => parseInt(from.slice(i, i + 2), 16)
+  const ch = (i: number) => Math.round(at(i, hex) * (1 - mix) + at(i, to) * mix)
+  if (hex.length !== 7 || hex[0] !== '#') return hex
+  return `#${[1, 3, 5].map((i) => ch(i).toString(16).padStart(2, '0')).join('')}`
+}
+
+/** …and the same, only where the ground is paper. One call site's worth of `if`. */
+export const onGround = (hex: string, ctx: RenderCtx, mix?: number): string =>
+  ctx.mode === 'schematic' ? inkOnPaper(hex, mix) : hex
 
 /**
  * Radius of the dot marking a secondary site, in degrees of arc.

@@ -120,9 +120,20 @@ export const MIN_ALTITUDE_PRE_ERA = altitudeForFrameKm(PRE_ERA_VIEW_KM)
 /**
  * How close the camera may come. Inverted from the old rule: the era no longer
  * decides whether imagery exists, only how far in it may be inspected.
+ *
+ * `eraFrom` is the year the streamed layer stops being an anachronism, or
+ * `null` for a layer that never was one. The drawn map passes `null`: a drawn
+ * coastline says nothing about which century is on the timeline, so the clamp
+ * that keeps a photographed motorway out of the fourteenth century has nothing
+ * to hold back. Written as a parameter rather than read from
+ * `IMAGERY_ERA_FROM` so the rule belongs to the SOURCE and not to this file.
  */
-export const minAltitudeFor = (year: number, detailEnabled: boolean): number =>
-  detailEnabled && year < IMAGERY_ERA_FROM ? MIN_ALTITUDE_PRE_ERA : MIN_ALTITUDE_DETAIL
+export const minAltitudeFor = (
+  year: number,
+  detailEnabled: boolean,
+  eraFrom: number | null = IMAGERY_ERA_FROM,
+): number =>
+  detailEnabled && eraFrom !== null && year < eraFrom ? MIN_ALTITUDE_PRE_ERA : MIN_ALTITUDE_DETAIL
 
 /**
  * Angular width of the visible cap, in degrees, for an altitude in globe radii.
@@ -288,14 +299,29 @@ export const MOTION_EPS = 0.002
  * An earlier attempt put an unverified sharp source first and one bad date took
  * the whole feature down; this ordering makes that failure mode impossible.
  */
-export interface ImagerySource {
+export interface TileSource {
   label: string
+  /** Native resolution in pixels per degree; 500 m ≈ 222, 10 m ≈ 11100. */
+  pxPerDeg: number
+  attribution?: string
+  /**
+   * A LOCAL source renders its own tiles; a remote one is fetched.
+   *
+   * This one member is the whole of what the drawn map needed from this file.
+   * The pyramid, the cache, the scheduler, the atlas and the shader never ask
+   * where a tile came from, so a vector rasterizer running in a worker
+   * (lib/drawnSource.ts) is a source in exactly the sense Sentinel-2 is —
+   * which is the architectural claim the drawn map is built on, reduced to an
+   * optional function.
+   */
+  render?: (t: Tile) => Promise<CanvasImageSource>
+}
+
+export interface ImagerySource extends TileSource {
   endpoint: string
   layers: string
   /** WMS 1.1.1 takes bbox as lng,lat and calls it SRS; 1.3.0 takes lat,lng and calls it CRS. */
   version: '1.1.1' | '1.3.0'
-  /** Native resolution in pixels per degree; 500 m ≈ 222, 10 m ≈ 11100. */
-  pxPerDeg: number
   /**
    * The widest box worth asking this source for in one image.
    *
@@ -306,7 +332,6 @@ export interface ImagerySource {
    */
   maxSpanDeg: number
   time?: string
-  attribution?: string
 }
 
 export const BASE_SOURCE: ImagerySource = {
@@ -473,6 +498,37 @@ export const Z_MAX = maxLevel(SHARP_SOURCE)
 export const sourceForLevel = (z: number, sharpDisabled = false): ImagerySource =>
   pickSource(tileSpanDeg(z - 1), sharpDisabled)
 
+/**
+ * WHICH SOURCES A MODE STREAMS, and how far up the pyramid they go.
+ *
+ * One value, because the two questions are one decision: `Z_MAX` is a property
+ * of what a source can honestly serve, and a pipeline that streamed one
+ * source's tiles to another's ceiling would be asking a server to upsample or a
+ * rasterizer to draw facets. `DetailImagery` holds a plan rather than reading
+ * the module constants, which is the whole of what let a second kind of source
+ * exist without a second copy of the scheduler.
+ */
+export interface SourcePlan {
+  zMax: number
+  /** The source for a level, given whether the sharp one has been demoted. */
+  at(z: number, sharpDisabled: boolean): TileSource
+  /** Does a failure from this plan mean anything? Local rendering never retries. */
+  remote: boolean
+}
+
+export const IMAGERY_PLAN: SourcePlan = {
+  zMax: Z_MAX,
+  at: (z, sharpDisabled) => sourceForLevel(z, sharpDisabled),
+  remote: true,
+}
+
+/** …and the trivial plan a local source needs: one source at every level. */
+export const singleSourcePlan = (source: TileSource, zMax: number): SourcePlan => ({
+  zMax,
+  at: () => source,
+  remote: false,
+})
+
 /** How long the camera must hold still before the prefetch ring is worth spending. */
 export const SETTLE_MS = 280
 
@@ -509,6 +565,8 @@ export interface DetailImageryOptions {
   tileBudget?: number
   /** Slots in the atlas; the tests use a small one to reach eviction. */
   atlasSlots?: number
+  /** Which sources to stream, and how far. Defaults to the WMS imagery plan. */
+  plan?: SourcePlan
 }
 
 /** What the live camera wants: recomputed from scratch on every frame. */
@@ -551,6 +609,8 @@ export class DetailImagery {
   /** Decoded tiles, bounded by bytes — see lib/tilePyramid.ts. */
   private tiles: TileCache<CanvasImageSource>
   private tileBudget: number
+  /** See SourcePlan: what this instance streams, swappable at runtime. */
+  private plan: SourcePlan
   /** Tile keys on the wire, and the ones their source has already refused. */
   private inflight = new Set<string>()
   private refused = new Set<string>()
@@ -569,6 +629,7 @@ export class DetailImagery {
 
   constructor(opts: DetailImageryOptions = {}) {
     this.tileBudget = opts.tileBudget ?? TILE_MEMORY_BUDGET
+    this.plan = opts.plan ?? IMAGERY_PLAN
     this.tiles = new TileCache(this.tileBudget, (img) => this.release(img))
     this.atlas = new TileAtlas(opts.renderer, opts.atlasSlots)
   }
@@ -583,6 +644,36 @@ export class DetailImagery {
    */
   get animating(): boolean {
     return this.backlog > 0 || !!this.index?.fading
+  }
+
+  /**
+   * Stream a different kind of tile from here on — the map/globe switch.
+   *
+   * Everything in flight is abandoned by generation and the wanted set is
+   * dropped, because a Sentinel tile arriving into a drawn view would be
+   * cached under its own label (harmless) and indexed into a grid built for the
+   * other source (not harmless). The decoded cache itself is NOT cleared: it is
+   * keyed by source label already, so switching back finds the tiles it left.
+   */
+  setPlan(plan: SourcePlan) {
+    if (plan === this.plan) return
+    this.plan = plan
+    this.cancelQueued()
+    this.sharpDisabled = false
+    this.sharpStrikes = 0
+    this.strikes = 0
+    this.disabled = false
+    this.refused.clear()
+    this.shown = false
+    this.mix = 0
+    this.index = undefined
+    this.status = 'idle'
+    this.sourceLabel = '—'
+  }
+
+  /** The source that serves a level under the current plan. */
+  private sourceAt(z: number): TileSource {
+    return this.plan.at(z, this.sharpDisabled)
   }
 
   update(
@@ -620,7 +711,10 @@ export class DetailImagery {
     // `fitLevel` is the only place resolution is ever given up, and it is the
     // atlas's 64 slots doing the giving — the same 4096² ceiling `patchPixelCap`
     // used to enforce on a canvas.
-    const z = fitLevel(target, targetLevel(baseTexelsPerScreenPx(altitude, screenPx, fovDeg), Z_MAX))
+    const z = fitLevel(
+      target,
+      targetLevel(baseTexelsPerScreenPx(altitude, screenPx, fovDeg), this.plan.zMax),
+    )
     this.want = { target, plan: tilePlan(target, z) }
 
     // Is the camera moving *at all*? Measured from where it last counted as
@@ -671,7 +765,7 @@ export class DetailImagery {
   private pin() {
     const w = this.want
     if (!w) return
-    const label = sourceForLevel(w.plan.z, this.sharpDisabled).label
+    const label = this.sourceAt(w.plan.z).label
     const keys = new Set<string>()
     for (const t of w.plan.fallback) keys.add(tileKey(t, label))
     for (const t of [...w.plan.level, ...w.plan.ring]) {
@@ -701,7 +795,7 @@ export class DetailImagery {
   private pump() {
     const w = this.want
     if (!w || this.disabled) return
-    const src = sourceForLevel(w.plan.z, this.sharpDisabled)
+    const src = this.sourceAt(w.plan.z)
     const queue = [...w.plan.fallback, ...w.plan.level]
     // The ring is spent out of *headroom*, and only at rest. The frame's own
     // tiles are fetched whatever the budget says — a hole on screen costs a
@@ -724,13 +818,30 @@ export class DetailImagery {
    * forever — so the browser's HTTP cache and the service's both hit, which an
    * arbitrary bbox per view never allowed.
    */
-  private request(tile: Tile, key: string, src: ImagerySource) {
+  private request(tile: Tile, key: string, src: TileSource) {
     const gen = this.generation
     this.inflight.add(key)
     // Only while there is nothing to look at. The prefetch ring goes out *after*
     // the view is covered and would otherwise leave the panel reading "loading"
     // over a picture that is finished.
     if (!this.shown) this.status = 'loading'
+    // A LOCAL source answers the same question with a promise instead of a
+    // network round trip. Everything after the arrival is identical, which is
+    // the point: `adopt` does not know, the cache does not know, the atlas does
+    // not know.
+    if (src.render) {
+      src.render(tile).then(
+        (image) => {
+          this.inflight.delete(key)
+          this.adopt(key, image, src, gen)
+        },
+        () => {
+          this.inflight.delete(key)
+          this.refuse(key, src)
+        },
+      )
+      return
+    }
     const img = new Image()
     img.crossOrigin = 'anonymous'
     const arrived = (image: CanvasImageSource) => {
@@ -750,7 +861,7 @@ export class DetailImagery {
       this.inflight.delete(key)
       this.refuse(key, src)
     }
-    img.src = wmsUrl(src, bboxOf(tile), TILE_PX, TILE_PX)
+    img.src = wmsUrl(src as ImagerySource, bboxOf(tile), TILE_PX, TILE_PX)
   }
 
   /**
@@ -761,8 +872,12 @@ export class DetailImagery {
    * on it, and demoting the sharp source changes every key it would ask for
    * next, so the retry is the whole view at once rather than one tile at a time.
    */
-  private refuse(key: string, src: ImagerySource) {
+  private refuse(key: string, src: TileSource) {
     this.refused.add(key)
+    // A local render that failed did not fail because of the source: there is
+    // no server to demote and no strike to count, only a tile the fallback
+    // level already covers.
+    if (!this.plan.remote) return
     if (src === SHARP_SOURCE) {
       this.sharpStrikes++
       if (this.sharpStrikes >= 2) this.sharpDisabled = true
@@ -784,7 +899,7 @@ export class DetailImagery {
    * screen now costs one 512 upload out of a per-frame budget. All this has to
    * do is mark the pipeline as having work, which is what wakes the render loop.
    */
-  private adopt(key: string, image: CanvasImageSource, src: ImagerySource, gen: number) {
+  private adopt(key: string, image: CanvasImageSource, src: TileSource, gen: number) {
     this.tiles.set(key, image)
     this.attributions.set(src.label, src.attribution ?? '')
     this.strikes = 0
@@ -825,7 +940,7 @@ export class DetailImagery {
   private absorb(now: number) {
     const w = this.want
     if (!w) return
-    const label = sourceForLevel(w.plan.z, this.sharpDisabled).label
+    const label = this.sourceAt(w.plan.z).label
     // A token bucket, not a per-call allowance: `update` is reached more than
     // once in an animation frame (the camera-change handler and the render tick
     // both go through it, and a zoom three times), so counting calls spent two
@@ -862,7 +977,7 @@ export class DetailImagery {
   private reindex(now: number) {
     const w = this.want
     if (!w) return
-    const label = sourceForLevel(w.plan.z, this.sharpDisabled).label
+    const label = this.sourceAt(w.plan.z).label
     const index = buildIndex(
       w.plan.z,
       w.plan.level,

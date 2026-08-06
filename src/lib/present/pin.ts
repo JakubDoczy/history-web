@@ -4,6 +4,7 @@ import type { Tier } from '../eventTiers'
 import { primaryTag, tagColor, type Tag } from '../tags'
 import type { RenderCtx, RenderMode } from './mode'
 import { sagaOf } from './saga'
+import { inkOnPaper } from './ink'
 
 /**
  * WHAT A PIN LOOKS LIKE — resolved from the domain, emitted by lib/eventPins.ts.
@@ -258,9 +259,18 @@ export const TIER_SCALE: Record<Tier, number> = { 1: 1, 2: 0.85, 3: 0.7 }
 export const pinHeight = (e: MapPin, selected: boolean, tier: Tier = 1) =>
   Math.round((18 + (e.priority / 100) * 12) * TIER_SCALE[tier] * (selected ? 1.35 : 1))
 
-/** The selected pin's halo, and the highlighted child's accent. */
-export const HALO_COLOR = '#ffe27a'
-export const ACCENT_COLOR = '#7ad1ff'
+/**
+ * The selected pin's halo, and the highlighted child's accent — per mode,
+ * because the ground under them is not the same ground.
+ *
+ * Both were chosen against a night-blue ocean: a 1.6 px ring of `#ffe27a` at
+ * 0.9 opacity round the pin head, which on Blue Marble is unmistakable and on
+ * the drawn map's parchment measures 1.11:1 against the land tone. `inkOnPaper`
+ * is the whole of the fix — the hue is what says "selected" and "the step means
+ * this one", and it survives being taken toward the map's own pen.
+ */
+export const HALO_COLOR = { realistic: '#ffe27a', schematic: inkOnPaper('#ffe27a', 0.5) } as const
+export const ACCENT_COLOR = { realistic: '#7ad1ff', schematic: inkOnPaper('#7ad1ff', 0.42) } as const
 
 /** The white every glyph is drawn in. Flatter in map mode — see `resolvePinSpec`. */
 const INK = { realistic: '#fff', schematic: '#f4f7fb' } as const
@@ -323,8 +333,8 @@ export function resolvePinSpec(e: MapPin, ctx: PinCtx): PinSpec {
     // The glow says "this one leads the set" in light coming off the pin. Map
     // mode has no light to come off anything, so it says nothing instead.
     glow: ctx.tier === 1 && !flat,
-    halo: ctx.selected ? HALO_COLOR : null,
-    accent: ctx.highlighted ? ACCENT_COLOR : null,
+    halo: ctx.selected ? HALO_COLOR[ctx.mode] : null,
+    accent: ctx.highlighted ? ACCENT_COLOR[ctx.mode] : null,
     classes: [
       'event-pin',
       `event-pin--tier${ctx.tier}`,
@@ -386,7 +396,7 @@ export function resolveClusterSpec(
     // members would have said. Without this, a step that highlights a child
     // sitting inside a cluster highlights nothing the reader can see — which is
     // the common case at the zoom "Show on map" fits a saga to.
-    accent: ctx.highlighted ? ACCENT_COLOR : null,
+    accent: ctx.highlighted ? ACCENT_COLOR[ctx.mode] : null,
     classes: [
       'event-pin',
       'event-pin--cluster',

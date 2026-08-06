@@ -6,6 +6,7 @@ import EventPanel from '../components/EventPanel.vue'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import SearchBox from '../components/SearchBox.vue'
 import ScaleBar from '../components/ScaleBar.vue'
+import ModeToggle from '../components/ModeToggle.vue'
 import UpdateToast from '../components/UpdateToast.vue'
 import { useSettingsStore } from '../stores/settings'
 import { onMounted, onBeforeUnmount } from 'vue'
@@ -49,6 +50,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   <Transition name="fade">
     <ScaleBar v-if="settings.scaleBar" />
   </Transition>
+  <!-- Globe or map, on the edge of the screen where the thing it changes is.
+       The same `settings.mode` the Display panel writes — one setting, shown
+       in two places. See components/ModeToggle.vue. -->
+  <ModeToggle />
   <EventPanel />
   <BottomRail />
   <!-- Not about the world on the map: about the page itself. See
