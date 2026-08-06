@@ -31,21 +31,73 @@ export type PinGlyph =
 
 /* ------------------------------------------------------- category glyphs */
 
+/** A point in the pin's own 24×32 box. */
+export type GlyphPt = readonly [x: number, y: number]
+
 /**
- * One drawn part of a category glyph: SVG path data in the pin's own 24×32 box,
- * centred on the head at (12, 11). Path data and nothing else — no rasters, so
- * a glyph costs no request, scales with the pin and takes the ink colour of
- * whichever mode it is drawn in.
+ * Where a category glyph is drawn, and how much room it has.
+ *
+ * The head of the teardrop is a disc of radius 9 centred just under (12, 11);
+ * the saga ring (lib/eventPins.ts) is inside it at 7.1, and the ring's inner
+ * edge is therefore at 6.6. `GLYPH_R` is what is left for the mark, with a
+ * margin around it — the reported fault was crossed swords drawn out to 6.4,
+ * which at 1x collided with the ring and ran into the rim, so the tips came
+ * back as fragments ("you only see parts of the swords").
+ *
+ * It is a metric of the REGISTRY, checked against every entry by
+ * tests/eventPins.test.ts (`glyphReach`), rather than a scale factor applied by
+ * whoever is drawing: a glyph auto-shrunk to fit is a glyph nobody looked at.
  */
-export interface GlyphPart {
-  d: string
-  /** Filled (a coin) rather than stroked (a blade). */
-  fill?: boolean
-  /** Stroke weight in box units; ignored when filled. */
-  width?: number
-}
+export const GLYPH_CENTRE: GlyphPt = [12, 11]
+export const GLYPH_R = 5.0
+
+/**
+ * One drawn part of a category glyph, as geometry rather than as a path string.
+ *
+ * Two shapes cover the registry — a round-capped segment and an ellipse — and
+ * saying so in the data is what makes the fit above CHECKABLE: the ink a part
+ * covers can be measured (`glyphReach`) instead of being guessed at from a
+ * `d` attribute. lib/eventPins.ts turns these into path data; there are still no
+ * rasters, so a glyph costs no request and takes its mode's ink colour.
+ */
+export type GlyphPart =
+  /** A blade, a beam: a segment, stroked and round-capped. */
+  | { kind: 'stroke'; from: GlyphPt; to: GlyphPt; width: number }
+  /** A coin: an ellipse, filled — or, with a `width`, drawn as a ring. */
+  | { kind: 'ellipse'; at: GlyphPt; rx: number; ry: number; width?: number }
 
 export type GlyphArt = readonly GlyphPart[]
+
+const dist = ([x, y]: GlyphPt) => Math.hypot(x - GLYPH_CENTRE[0], y - GLYPH_CENTRE[1])
+
+/**
+ * How far a glyph's ink reaches from the head's centre, in box units — the
+ * number `GLYPH_R` is the budget for.
+ *
+ * Exact for a stroke (a round cap is a disc of half the stroke's width at each
+ * end, so the reach is the further endpoint plus that) and sampled for an
+ * ellipse, which has no closed form worth writing here.
+ */
+export const glyphReach = (art: GlyphArt): number =>
+  Math.max(
+    ...art.map((p) =>
+      p.kind === 'stroke'
+        ? Math.max(dist(p.from), dist(p.to)) + p.width / 2
+        : Math.max(
+            ...Array.from({ length: 64 }, (_, i) => {
+              const a = (i / 64) * 2 * Math.PI
+              return dist([p.at[0] + p.rx * Math.cos(a), p.at[1] + p.ry * Math.sin(a)])
+            }),
+          ) + (p.width ?? 0) / 2,
+    ),
+  )
+
+const stroke = (from: GlyphPt, to: GlyphPt, width: number): GlyphPart => ({
+  kind: 'stroke',
+  from,
+  to,
+  width,
+})
 
 /**
  * CROSSED SWORDS — war.
@@ -55,10 +107,16 @@ export type GlyphArt = readonly GlyphPart[]
  * costs contrast, and a blade with a pommel and a fuller is a smudge. The
  * blades run corner to corner so the mark reads as an X first and as swords
  * second, which is the right order — an X on a red pin already says "battle".
+ *
+ * All four extremes are laid on the same circle of radius `GLYPH_R`, so the
+ * mark is as large as its budget and no larger, and it is round: nothing sticks
+ * out at one corner to be the first thing the rim eats.
  */
 const SWORDS: GlyphArt = [
-  { d: 'M8.1 15.1L16 7.2M15.9 15.1L8 7.2', width: 1.7 },
-  { d: 'M6.9 13.3L9.7 16.1M17.1 13.3L14.3 16.1', width: 1.5 },
+  stroke([9.05, 13.95], [14.95, 8.05], 1.5),
+  stroke([14.95, 13.95], [9.05, 8.05], 1.5),
+  stroke([8.2, 12.6], [10.3, 14.7], 1.3),
+  stroke([15.8, 12.6], [13.7, 14.7], 1.3),
 ]
 
 /**
@@ -83,9 +141,9 @@ const SWORDS: GlyphArt = [
  * scales read badly at 12–16 px; decide by looking, at real pin size".
  */
 const COINS: GlyphArt = [
-  { d: 'M8.2 8.2a3.8 1.5 0 1 0 7.6 0a3.8 1.5 0 1 0 -7.6 0', fill: true },
-  { d: 'M8.2 11.4a3.8 1.5 0 1 0 7.6 0a3.8 1.5 0 1 0 -7.6 0', width: 1.2 },
-  { d: 'M8.2 14.6a3.8 1.5 0 1 0 7.6 0a3.8 1.5 0 1 0 -7.6 0', fill: true },
+  { kind: 'ellipse', at: [12, 7.9], rx: 3.6, ry: 1.45 },
+  { kind: 'ellipse', at: [12, 11], rx: 3.6, ry: 1.45, width: 1.1 },
+  { kind: 'ellipse', at: [12, 14.1], rx: 3.6, ry: 1.45 },
 ]
 
 /**
@@ -283,6 +341,20 @@ export function resolvePinSpec(e: MapPin, ctx: PinCtx): PinSpec {
       ...(flat ? ['event-pin--flat'] : []),
     ],
   }
+}
+
+/**
+ * What a pin says when it is hovered.
+ *
+ * Its name — and, for a saga, that it is one and how many steps it holds. The
+ * hover is where the map can afford a sentence, and "Saga · 11 steps" is the cue
+ * that tells a reader the pin they are about to open leads somewhere with a
+ * shape to it, before they open it. Same vocabulary as the pill, the rail and
+ * the panel's own call to action.
+ */
+export const pinTitle = (e: MapPin): string => {
+  const steps = sagaOf(e)
+  return steps ? `${e.name}\nSaga · ${steps.length} steps` : e.name
 }
 
 /** Badge diameter in px for a cluster of `count` events, scaled by its tier. */

@@ -2,19 +2,23 @@ import { describe, it, expect } from 'vitest'
 import { parseSteps, type RawStep, type Step } from '../src/lib/steps'
 import { pointTime, timeFrom } from '../src/lib/time'
 import {
+  LANE_GAP_PX,
+  MAX_LANES,
   MIN_LABEL_PX,
-  MIN_SLAB_PX,
+  MIN_STATION_PX,
   RAIL_PAD,
+  axisTicks,
   backPressesTo,
   crumbs,
-  labelRows,
+  formatAt,
+  laneOf,
   labelWidth,
   layoutRail,
   railWidth,
   railX,
-  slabEdges,
-  stationAt,
+  stationTime,
   stations,
+  stepBy,
 } from '../src/lib/present/sagaTimeline'
 
 /**
@@ -77,9 +81,9 @@ describe('stations', () => {
 })
 
 describe('the rail’s width', () => {
-  it('is the element’s, until the stations could not be pressed at that size', () => {
+  it('is the element’s, until the stations could not be told apart at that size', () => {
     expect(railWidth(1200, 11)).toBe(1200)
-    expect(railWidth(390, 11)).toBe(11 * MIN_SLAB_PX) // a phone scrolls instead
+    expect(railWidth(390, 11)).toBe(11 * MIN_STATION_PX) // a phone scrolls instead
   })
 
   it('leaves air at both ends, so the first and last station are not on the edge', () => {
@@ -89,127 +93,222 @@ describe('the rail’s width', () => {
   })
 })
 
-describe('slab edges — the half-open windows, widened until they can be hit', () => {
-  const widths = (e: number[]) => e.slice(1).map((x, i) => x - e[i])
-
-  it('are the step windows themselves when there is room for them', () => {
-    expect(slabEdges([100, 300, 600], 900, 44)).toEqual([0, 300, 600, 900])
-  })
-
-  it('give every station a pressable target, in order, without leaving the rail', () => {
-    const xs = stations(ww2, ww2Span).map((s) => railX(s.u, 1200))
-    const e = slabEdges(xs, 1200, MIN_SLAB_PX)
-    expect(e[0]).toBe(0)
-    expect(e[e.length - 1]).toBe(1200)
-    expect(e).toEqual([...e].sort((a, b) => a - b))
-    for (const w of widths(e)) expect(w).toBeGreaterThanOrEqual(MIN_SLAB_PX - 1e-9)
-  })
-
-  it('shares the rail out evenly when even the minimum will not fit', () => {
-    const e = slabEdges([0, 10, 20, 30], 80, 44) // 4 x 44 > 80
-    expect(widths(e).every((w) => Math.abs(w - 20) < 1e-9)).toBe(true)
-  })
-
-  it('moves an edge no further than it has to', () => {
-    // one tight pair in the middle of an otherwise roomy rail: the two edges
-    // around it move, the ones outside it do not
-    const e = slabEdges([0, 200, 210, 600], 800, 44)
-    expect(e[1]).toBe(200)
-    expect(e[2]).toBe(244)
-    expect(e[3]).toBe(600)
-  })
-})
-
-describe('layoutRail', () => {
-  it('puts every mark inside its own target, so pressing the dot selects the dot', () => {
-    for (const width of [1200, 800, 484]) {
-      const rail = layoutRail(stations(ww2, ww2Span), width)
-      for (const s of rail.stations) {
-        expect(s.x).toBeGreaterThanOrEqual(s.from)
-        expect(s.x).toBeLessThanOrEqual(s.to)
-      }
+/**
+ * THE DEFECT THIS ROUND FIXED, as a test.
+ *
+ * The first rail widened every station's window to a 44 px slab and clamped its
+ * mark into it, which spaced eleven steps almost evenly and made a timeline that
+ * said nothing about time. Nothing does that any more: a station is at `railX`
+ * of its own moment and the only thing crowding may change is which lane it
+ * hangs in.
+ */
+describe('placement is the truth about when', () => {
+  it('puts every mark exactly on its own moment, at every width', () => {
+    for (const width of [1600, 1200, 800, 484]) {
+      const rail = layoutRail(stations(ww2, ww2Span), ww2Span, width)
+      for (const s of rail.stations) expect(s.x, s.step.id).toBeCloseTo(railX(s.u, rail.width))
     }
   })
 
-  it('leaves an uncrowded mark exactly on its own moment', () => {
-    const rail = layoutRail(stations(dday, ddaySpan), 900)
-    for (const s of rail.stations) expect(s.x).toBeCloseTo(s.trueX)
-  })
-
-  it('keeps the true moment when the target had to be widened off it', () => {
-    const rail = layoutRail(stations(ww2, ww2Span), 700)
-    const pushed = rail.stations.filter((s) => Math.abs(s.x - s.trueX) > 2)
-    expect(pushed.length).toBeGreaterThan(0) // the pile-up at the end of the war
-    for (const s of pushed) expect(s.trueX).toBeCloseTo(railX(s.u, rail.width))
+  it('keeps the war’s last four steps piled where they really are', () => {
+    const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
+    const by = new Map(rail.stations.map((s) => [s.step.id, s]))
+    // 1944.6 to 1945: under a tenth of the rail for four of the eleven steps —
+    // which the slab layout used to spread over a quarter of it
+    const pile = ['ve-day', 'trinity', 'hiroshima', 'vj-day'].map((id) => by.get(id)!.x)
+    expect(pile[pile.length - 1] - pile[0]).toBeLessThan(0.1 * rail.width)
+    expect(pile).toEqual([...pile].sort((a, b) => a - b))
   })
 
   it('bands a period from its own start to its own end, and a moment not at all', () => {
-    const rail = layoutRail(stations(ww2, ww2Span), 1200)
+    const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
     const by = new Map(rail.stations.map((s) => [s.step.id, s]))
     expect(by.get('midway')!.band).toBeUndefined()
     const band = by.get('holocaust')!.band!
-    expect(band.w).toBeGreaterThan(0)
-    expect(band.x + band.w).toBeCloseTo(railX(0.95, 1200), 0)
+    expect(band.x).toBeCloseTo(railX(0.38, 1200))
+    expect(band.x + band.w).toBeCloseTo(railX(0.95, 1200))
   })
 
-  it('stacks the labels only when one row will not hold them', () => {
-    expect(layoutRail(stations(dday, ddaySpan), 1200).rows).toBe(1)
-    expect(layoutRail(stations(ww2, ww2Span), 1200).rows).toBe(2)
-    expect(layoutRail(stations(ww2, ww2Span), 1200).stations.map((s) => s.row))
-      .toEqual([0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
+  it('is not knocked over by a saga with one step, or by a rail with no width', () => {
+    const one = layoutRail(stations([ww2[0]], ww2Span), ww2Span, 1200)
+    expect(one.stations[0].lane).toBe(0)
+    expect(() => layoutRail(stations(ww2, ww2Span), ww2Span, 0)).not.toThrow()
+    expect(layoutRail([], ww2Span, 1200).stations).toEqual([])
+  })
+})
+
+describe('lanes — what crowding is allowed to change', () => {
+  it('keeps a station on the axis while there is room beside it', () => {
+    expect(laneOf([0, 100, 200, 300])).toEqual([0, 0, 0, 0])
   })
 
-  it('gives a label the room it has, and none at all below a readable width', () => {
-    const rail = layoutRail(stations(ww2, ww2Span), 1200)
+  it('drops the second of a colliding pair to the next lane, not sideways', () => {
+    expect(laneOf([0, LANE_GAP_PX - 1, 200])).toEqual([0, 1, 0])
+    expect(laneOf([0, LANE_GAP_PX, 200])).toEqual([0, 0, 0])
+  })
+
+  it('comes back to lane 0 as soon as lane 0 is clear again', () => {
+    expect(laneOf([0, 5, 10, 400])).toEqual([0, 1, 2, 0])
+  })
+
+  it('never opens more lanes than the rail is tall enough for', () => {
+    const lanes = laneOf([0, 1, 2, 3, 4, 5])
+    expect(Math.max(...lanes)).toBeLessThan(MAX_LANES)
+    // past the last lane the marks share one and overlap — an honest picture of
+    // six moments in five pixels, and the list is how they are reached
+    expect(lanes.length).toBe(6)
+  })
+
+  it('gives the war two lanes on a desktop and three on a phone’s scrolling rail', () => {
+    expect(layoutRail(stations(ww2, ww2Span), ww2Span, 1200).lanes).toBe(2)
+    expect(layoutRail(stations(ww2, ww2Span), ww2Span, 390).lanes).toBe(3)
+    expect(layoutRail(stations(dday, ddaySpan), ddaySpan, 1200).lanes).toBe(1)
+  })
+})
+
+describe('labels', () => {
+  it('gives a label the room to the next mark IN ITS OWN LANE, or none at all', () => {
+    const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
     for (const s of rail.stations) {
-      expect(s.labelPx === 0 || s.labelPx >= MIN_LABEL_PX).toBe(true)
-      // the room reaches the next mark on its own row, and stops there
-      const next = rail.stations[rail.stations.indexOf(s) + rail.rows]
+      expect(s.labelPx === 0 || s.labelPx >= MIN_LABEL_PX, s.step.id).toBe(true)
+      const next = rail.stations.find((o) => o.lane === s.lane && o.x > s.x)
       if (s.labelPx && next) expect(s.x + s.labelPx).toBeLessThanOrEqual(next.x)
     }
     // and the pile-up at the end of the war is where the names drop out
     expect(rail.stations.filter((s) => !s.labelPx).map((s) => s.step.id)).toContain('trinity')
   })
 
+  it('names more than half of them at rest — the eleven-chip overflow, solved', () => {
+    const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
+    expect(rail.stations.filter((s) => s.labelPx).length).toBeGreaterThan(5)
+  })
+
+  it('names every station of an uncrowded saga', () => {
+    const rail = layoutRail(stations(dday, ddaySpan), ddaySpan, 1200)
+    expect(rail.stations.every((s) => s.labelPx)).toBe(true)
+  })
+
   it('hangs the last names the other way off their marks, so nothing runs off the rail', () => {
-    const rail = layoutRail(stations(ww2, ww2Span), 1200)
+    const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
     for (const s of rail.stations)
       expect(s.flip, s.step.id).toBe(s.x + labelWidth(s.step.name) > rail.width)
     expect(rail.stations[0].flip).toBe(false)
     expect(rail.stations[rail.stations.length - 1].flip).toBe(true)
   })
+})
 
-  it('is not knocked over by a saga with one step, or by a rail with no width', () => {
-    const one = layoutRail(stations([ww2[0]], ww2Span), 1200)
-    expect(one.stations[0].from).toBe(0)
-    expect(one.stations[0].to).toBe(1200)
-    expect(() => layoutRail(stations(ww2, ww2Span), 0)).not.toThrow()
-    expect(layoutRail([], 1200).stations).toEqual([])
+describe('the axis — a rule the reader can read the dates off', () => {
+  it('rules a six-year war in years, inside its own span', () => {
+    const axis = axisTicks(ww2Span, 1200)
+    expect(axis.unit).toBe('year')
+    expect(axis.ticks.map((t) => t.label)).toEqual(['1939', '1940', '1941', '1942', '1943', '1944', '1945'])
+    for (const t of axis.ticks) expect(t.u).toBeGreaterThanOrEqual(0)
+    for (const t of axis.ticks) expect(t.u).toBeLessThanOrEqual(1)
+    expect(axis.ticks[0].u).toBe(0)
+    expect(axis.ticks[axis.ticks.length - 1].u).toBe(1)
   })
 
-  it('names two rows’ worth by stacking — the eleven-chip overflow, solved', () => {
-    const flat = layoutRail(stations(ww2, ww2Span), 1200)
-    const named = flat.stations.filter((s) => s.labelPx).length
-    // more than half the names are legible at rest, and the rest are one hover
-    // (or one arrow key) away — where the strip showed two chips and scrolled
-    expect(named).toBeGreaterThan(5)
+  it('coarsens rather than crowding when the rail is narrow', () => {
+    const wide = axisTicks(timeFrom(1000, 2000), 1200).ticks.length
+    const narrow = axisTicks(timeFrom(1000, 2000), 300).ticks.length
+    expect(narrow).toBeLessThan(wide)
+    expect(narrow).toBeGreaterThanOrEqual(2)
+  })
+
+  it('rules a saga that ran one dated year in MONTHS', () => {
+    const axis = axisTicks(timeFrom(1944, 1945), 1200)
+    expect(axis.unit).toBe('month')
+    expect(axis.ticks[0].label).toBe('Jan 1944')
+    expect(axis.ticks.map((t) => t.label)).toContain('Jul')
+    // January opens a year, and says so louder than the months between
+    expect(axis.ticks.filter((t) => t.major).map((t) => t.label)).toEqual(['Jan 1944', 'Jan 1945'])
+  })
+
+  it('rules a fortnight in days', () => {
+    const axis = axisTicks(timeFrom(1944.42, 1944.46), 900)
+    expect(axis.unit).toBe('day')
+    expect(axis.ticks.length).toBeGreaterThan(1)
+    expect(axis.ticks.every((t) => /^\d+ [A-Z][a-z]{2}$/.test(t.label))).toBe(true)
+  })
+
+  it('rules deep time in the round numbers of its own size', () => {
+    const axis = axisTicks(timeFrom(-12000, -9000), 1200)
+    expect(axis.unit).toBe('year')
+    expect(axis.ticks.length).toBeGreaterThan(2)
+    expect(axis.ticks.length).toBeLessThan(16)
+  })
+
+  /**
+   * A point-dated saga (Barbarossa: 1941) has no extent for a rule to divide,
+   * and its steps are proportions of the campaign rather than dates. Ruling it
+   * in months would invent a date for every one of them.
+   */
+  it('refuses to rule a saga dated to a single year, and says which year it is', () => {
+    const axis = axisTicks(ddaySpan, 1200)
+    expect(axis.unit).toBe('none')
+    expect(axis.ticks).toEqual([{ u: 0, label: '1944', major: true }])
+  })
+
+  it('names a moment at the rule’s own resolution and no finer', () => {
+    expect(formatAt(1944.5, 'year')).toBe('1945')
+    expect(formatAt(1944.5, 'month')).toBe('Jul')
+    expect(formatAt(1944.5, 'month', true)).toBe('Jul 1944')
+    expect(formatAt(1944.0, 'month')).toBe('Jan 1944')
+    expect(formatAt(1944.43, 'day', true)).toMatch(/^\d+ Jun 1944$/)
+    // outside the calendar's reach the answer is the year, not a made-up month
+    expect(formatAt(-250000, 'month')).toBe(formatAt(-250000, 'year'))
+  })
+
+  it('dates a station the same way, and says a one-year period once', () => {
+    const [britain, holocaust, stalingrad] = ['battle-britain', 'holocaust', 'stalingrad'].map(
+      (id) => stations(ww2, ww2Span).find((s) => s.step.id === id)!,
+    )
+    expect(stationTime(britain, ww2Span, 'year')).toBe('1940')
+    expect(stationTime(holocaust, ww2Span, 'year')).toBe('1941 – 1945')
+    expect(stationTime(stalingrad, ww2Span, 'year')).toBe('1942') // 1941.9–1942.4, one year
+    expect(stationTime(britain, ww2Span, 'month')).toBe('Nov 1939')
+  })
+
+  it('is part of the rail’s own layout, measured over the width it is drawn at', () => {
+    const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
+    expect(rail.axis.unit).toBe('year')
+    expect(rail.axis.ticks.length).toBe(7)
   })
 })
 
-describe('stationAt — the pointer’s answer is the step that owns the moment', () => {
-  const rail = layoutRail(stations(dday, ddaySpan), 900)
-  const idAt = (x: number) => stationAt(rail, x)?.step.id
+describe('prev / next — the other half of the dual system', () => {
+  const ids = ww2.map((s) => s.id)
 
-  it('is the step whose window the pixel falls in, half-open like stepWindows', () => {
-    const beachhead = rail.stations[1]
-    expect(idAt(beachhead.from)).toBe('beachhead')
-    expect(idAt(beachhead.to - 0.001)).toBe('beachhead')
-    expect(idAt(beachhead.to)).toBe('cherbourg')
+  it('walks [the overview, …the steps] one stop at a time', () => {
+    expect(stepBy(ids, undefined, 1)).toEqual({ to: 'battle-britain' })
+    expect(stepBy(ids, 'battle-britain', 1)).toEqual({ to: 'barbarossa' })
+    expect(stepBy(ids, 'barbarossa', -1)).toEqual({ to: 'battle-britain' })
   })
 
-  it('opens at both ends: before the first station and after the last', () => {
-    expect(idAt(0)).toBe('six-june')
-    expect(idAt(rail.width)).toBe('breakout')
+  it('lands on the overview coming back off the first step', () => {
+    expect(stepBy(ids, 'battle-britain', -1)).toEqual({ to: undefined })
+  })
+
+  it('stops at both ends rather than wrapping — a span is not a ring', () => {
+    expect(stepBy(ids, undefined, -1)).toBeNull()
+    expect(stepBy(ids, 'vj-day', 1)).toBeNull()
+    expect(stepBy([], undefined, 1)).toBeNull()
+    expect(stepBy([], undefined, -1)).toBeNull()
+  })
+
+  it('treats an id this saga does not have as the overview', () => {
+    expect(stepBy(ids, 'kiev', 1)).toEqual({ to: 'battle-britain' })
+    expect(stepBy(ids, 'kiev', -1)).toBeNull()
+  })
+
+  it('reaches every step in a finite number of presses, in time order', () => {
+    const walked: (string | undefined)[] = []
+    for (let at: string | undefined; ; ) {
+      const next = stepBy(ids, at, 1)
+      if (!next) break
+      walked.push((at = next.to))
+    }
+    expect(walked).toEqual(ids)
   })
 })
 
@@ -244,15 +343,5 @@ describe('the breadcrumb', () => {
   it('does nothing for a crumb that is not on the stack', () => {
     expect(backPressesTo(['ww2'], 'ww2', 'moon-landing')).toBe(0)
     expect(backPressesTo([], undefined, 'ww2')).toBe(0)
-  })
-})
-
-describe('labelRows', () => {
-  it('is one row when every name fits beside its own station', () => {
-    expect(labelRows([0, 300, 600, 900], [0, 300, 600], ['A', 'B', 'C'])).toBe(1)
-  })
-  it('is two when stacking is what buys the room', () => {
-    const names = ['Attack on Pearl Harbor', 'Battle of Midway', 'Battle of Stalingrad']
-    expect(labelRows([0, 80, 160, 900], [0, 80, 160], names)).toBe(2)
   })
 })

@@ -96,6 +96,9 @@ const railOf = (page) =>
         on: b.classList.contains('on'),
         cursor: b.classList.contains('cursor'),
         named: b.classList.contains('named'),
+        lane: Number(b.dataset.lane),
+        // the CENTRE, which is the claim a station makes about when it happened
+        cx: Math.round(r.x + r.width / 2),
         x: Math.round(r.x),
         w: Math.round(r.width),
         h: Math.round(r.height),
@@ -110,6 +113,18 @@ const railOf = (page) =>
       span: document.querySelector('[data-test="saga-span"]')?.textContent.trim() ?? null,
       scrollW: document.querySelector('[data-test="saga-timeline"] .track')?.scrollWidth ?? 0,
       clientW: document.querySelector('[data-test="saga-timeline"] .track')?.clientWidth ?? 0,
+      // the rule: what a reader reads the dates off
+      ticks: [...document.querySelectorAll('[data-test="saga-tick"]')].map((t) => ({
+        label: t.textContent.trim(),
+        cx: Math.round(t.getBoundingClientRect().x),
+      })),
+      list: [...document.querySelectorAll('[data-test="saga-list-item"]')].map((r) => ({
+        step: r.dataset.step,
+        text: r.textContent.replace(/\s+/g, ' ').trim(),
+        on: r.classList.contains('on'),
+      })),
+      prevOn: !document.querySelector('[data-test="saga-prev"]')?.disabled,
+      nextOn: !document.querySelector('[data-test="saga-next"]')?.disabled,
       stations,
       stack: [...window.__events.focusStack],
       step: window.__events.stepId ?? null,
@@ -148,14 +163,89 @@ await check('the era rail is gone and the saga rail is in its place', () => {
 await check('all eleven steps are stations, in order, and none has overflowed', () => {
   ok(war.stations.length === 11, `${war.stations.length} stations`)
   ok(war.scrollW <= war.clientW + 1, `the rail scrolls on a desktop (${war.scrollW} > ${war.clientW})`)
-  for (const s of war.stations) {
-    ok(s.x >= -1 && s.x + s.w <= 1281, `${s.step} runs ${s.x}..${s.x + s.w}`)
-    ok(s.w >= 43, `${s.step} is ${s.w}px wide — not a target`)
+  for (const s of war.stations) ok(s.x >= -1 && s.x + s.w <= 1281, `${s.step} runs ${s.x}..${s.x + s.w}`)
+  const xs = war.stations.map((s) => s.cx)
+  eq(xs, [...xs].sort((a, b) => a - b), 'stations out of time order')
+})
+
+/* THE DEFECT, AS A MEASUREMENT.
+   The rail used to widen every station to a 44px slab, which spread the last
+   four steps of the war — six months of it — across a quarter of the rail. They
+   are where they happened now: the axis is ruled in years and the stations line
+   up on it. */
+await check('the rail is ruled in years, from the war’s own start to its own end', () => {
+  eq(war.ticks.map((t) => t.label), ['1939', '1940', '1941', '1942', '1943', '1944', '1945'], 'ticks')
+  const gaps = war.ticks.slice(1).map((t, i) => t.cx - war.ticks[i].cx)
+  for (const g of gaps) ok(Math.abs(g - gaps[0]) <= 2, `uneven year ticks: ${gaps}`)
+})
+await check('the last four steps stand in the last months, not over a quarter of the rail', () => {
+  const at = (id) => war.stations.find((s) => s.step === id).cx
+  const tick = (y) => war.ticks.find((t) => t.label === y).cx
+  const pile = ['ve-day', 'trinity', 'hiroshima', 'vj-day'].map(at)
+  ok(pile[3] - pile[0] < 0.1 * war.rail.w, `the end of the war spans ${pile[3] - pile[0]}px`)
+  // …and each one lands on its own date: D-Day at 0.78 of 1939–1945 is late 1943
+  ok(Math.abs(at('vj-day') - tick('1945')) <= 2, `VJ Day is ${at('vj-day')}, 1945 is ${tick('1945')}`)
+  ok(at('d-day') > tick('1943') && at('d-day') < tick('1944'), `D-Day sits at ${at('d-day')}`)
+})
+await check('a crowded mark drops to the next lane rather than moving off its date', () => {
+  const lanes = war.stations.map((s) => s.lane)
+  ok(Math.max(...lanes) >= 1, 'nothing hung below the axis on an eleven-step war')
+  ok(Math.max(...lanes) <= 2, `${Math.max(...lanes) + 1} lanes — the rail is not that tall`)
+  for (const lane of new Set(lanes)) {
+    const row = war.stations.filter((s) => s.lane === lane).map((s) => s.cx)
+    for (let i = 1; i < row.length; i++)
+      ok(row[i] - row[i - 1] >= 19, `two marks ${row[i] - row[i - 1]}px apart in lane ${lane}`)
   }
 })
 await check('every station advertises the descent, since every step of the war is one', () => {
   ok(war.stations.every((s) => s.entrance), 'a station is not marked as an entrance')
   ok(war.crumbs.length === 1 && /World War II/.test(war.crumbs[0]), `crumbs: ${war.crumbs}`)
+})
+
+/* --------------------------------- the dual system's other half ---------- */
+console.log('\n(a2) prev, next, and the list of every step')
+await page.click('[data-test="saga-list-toggle"]')
+await page.waitForSelector('[data-test="saga-list"]')
+const listed = await railOf(page)
+await shot(page, 'a2-step-list-open')
+console.log(`    ${listed.list.length} rows: ${listed.list.slice(0, 3).map((r) => r.text).join(' | ')} …`)
+await check('the list names the overview and every step, by name and by date', () => {
+  eq(listed.list.map((r) => r.step), ['overview', ...listed.stations.map((s) => s.step)], 'rows')
+  ok(listed.list[0].on, 'the overview is not marked as where the reader is')
+  ok(/1939 – 1945/.test(listed.list[0].text), `overview row: "${listed.list[0].text}"`)
+  // every row carries a date, at the resolution the axis is ruled in
+  for (const r of listed.list.slice(1)) ok(/19\d\d/.test(r.text), `no date on "${r.text}"`)
+})
+await check('a row of the list reaches a station the rail packs into ten pixels', async () => {
+  // Trinity is one of the four moments in the last 7% of the war: on the rail
+  // its mark is a few pixels from its neighbours', and this is how it is opened
+  await page.click('[data-test="saga-list-item"][data-step="trinity"]')
+  await settle(page, 2400)
+  const at = await railOf(page)
+  eq(at.stack, ['ww2', 'trinity'], 'focus stack') // every step of the war is an entrance
+  await page.evaluate(() => window.__events.focusBack())
+  await settle(page, 1800)
+})
+await page.evaluate(() => document.querySelector('[data-test="saga-timeline"]').focus())
+await page.click('[data-test="saga-next"]')
+await page.click('[data-test="saga-next"]')
+await settle(page, 900)
+const walked = await railOf(page)
+await shot(page, 'a2-next-twice', { x: 0, y: walked.rail.y - 4, width: 1280, height: walked.rail.h + 8 })
+await check('next walks the stations without descending through the entrances', () => {
+  const on = walked.stations.filter((s) => s.cursor)
+  ok(on.length === 1 && on[0].step === 'barbarossa', `cursor on ${on.map((s) => s.step)}`)
+  eq(walked.stack, ['ww2'], 'a press of next descended')
+  ok(!walked.prevOn === false, 'prev is dead two steps in')
+})
+await page.click('[data-test="saga-prev"]')
+await page.click('[data-test="saga-prev"]')
+await settle(page, 900)
+const home = await railOf(page)
+await check('and prev comes back off the first step onto the overview, then stops', () => {
+  ok(home.stations.every((s) => !s.cursor), 'the cursor is still on a station at the overview')
+  ok(home.step === null, `still in step ${home.step}`)
+  ok(!home.prevOn, 'prev is live at the beginning of the saga — it wrapped')
 })
 
 console.log('\n(b) a step of the war highlighted, then the descent')
@@ -279,11 +369,23 @@ await shot(phone, 'g-phone-rail')
 console.log(
   `    rail ${small.rail.w}x${small.rail.h} at y=${small.rail.y}, track scrolls ${small.scrollW}>${small.clientW}`,
 )
-await check('every station is a thumb wide, by scrolling rather than by shrinking', () => {
+await check('the phone stretches the span rather than bending it', () => {
   ok(small.stations.length === 11, `${small.stations.length} stations`)
-  for (const s of small.stations) ok(s.w >= 43, `${s.step} is ${s.w}px wide`)
-  ok(small.scrollW > small.clientW, 'eleven 44px stations fitted a 390px phone without scrolling?')
+  ok(small.scrollW > small.clientW, 'eleven stations fitted a 390px phone without scrolling?')
   ok(small.rail.h >= 44, `the rail is ${small.rail.h}px tall`)
+  // every mark inside the track, and every lane inside the rail
+  for (const s of small.stations) {
+    ok(s.lane <= 2, `${s.step} is in lane ${s.lane}`)
+    ok(s.h >= 22 && s.w >= 22, `${s.step} is a ${s.w}x${s.h} target`)
+  }
+})
+await check('and the plain way through is on the phone too: prev, the list, next', async () => {
+  const nav = await phone.evaluate(() => ({
+    prev: !!document.querySelector('[data-test="saga-prev"]'),
+    next: !!document.querySelector('[data-test="saga-next"]'),
+    list: !!document.querySelector('[data-test="saga-list-toggle"]'),
+  }))
+  ok(nav.prev && nav.next && nav.list, `nav cluster: ${JSON.stringify(nav)}`)
 })
 await check('the pill still clears the rail (the mobile sheet’s --bar-clear is untouched)', async () => {
   const gap = await phone.evaluate(() => {

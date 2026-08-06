@@ -114,9 +114,23 @@ console.log('\n(a) pin artwork at real size — glyphs, the ring, and a stacked 
     }
   })
   await check('a war pin carries swords and a trade pin carries coins, at the minor size', () => {
-    ok(/M8.1 15.1L16 7.2/.test(marks.war), 'no swords on the war pin')
-    ok(/a3.8 1.5 0 1 0/.test(marks.trade), 'no coins on the trade pin')
+    // four strokes and three ellipses — the registry's own geometry, emitted
+    // (lib/present/pin.ts, `GlyphPart`). The numbers are not asserted here: what
+    // size they may be is the glyph budget's business (tests/eventPins.test.ts).
+    ok((marks.war.match(/<path d="M[\d.]+ [\d.]+L/g) ?? []).length === 4, 'no swords on the war pin')
+    ok((marks.trade.match(/<ellipse/g) ?? []).length === 3, 'no coins on the trade pin')
     ok(/r="3.6"/.test(marks.plain), 'the default pin lost its plain dot')
+  })
+  await check('and the swords keep clear of the head and of the saga ring', async () => {
+    // the reported fault was the tips being eaten by the rim; the budget is
+    // checked in the unit tests, and this is the same claim about what SHIPPED
+    const reach = await page.evaluate(async () => {
+      const m = await import('/history-web/src/lib/present/pin.ts')
+      return { r: m.glyphReach(m.TAG_GLYPHS.war), budget: m.GLYPH_R, coins: m.glyphReach(m.TAG_GLYPHS.economy) }
+    })
+    ok(reach.r <= reach.budget, `the swords reach ${reach.r} of ${reach.budget}`)
+    ok(reach.coins <= reach.budget, `the coins reach ${reach.coins} of ${reach.budget}`)
+    ok(reach.budget < 6.6, `the budget ${reach.budget} touches the saga ring at 6.6`)
   })
   await check('the saga ring is drawn, and a badge carries it for a member', () => {
     ok(/r="7.1"/.test(marks.saga), 'no ring on the saga pin')

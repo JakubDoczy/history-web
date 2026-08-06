@@ -1,5 +1,6 @@
 import { assertNever, type MapPin } from './events'
 import {
+  pinTitle,
   resolveClusterSpec,
   resolvePinSpec,
   type ClusterSpec,
@@ -117,14 +118,25 @@ const GLOW =
 const SAGA_RING = (ink: string) =>
   `<circle cx="12" cy="11" r="7.1" fill="none" stroke="${ink}" stroke-width="1" opacity="0.75"/>`
 
-/** A category mark from the registry, in the pin's ink (lib/present/pin.ts). */
+/**
+ * A category mark from the registry, in the pin's ink (lib/present/pin.ts).
+ *
+ * The registry holds geometry, not path data, so that how much room a glyph
+ * takes is a measurable fact about it (`glyphReach`) rather than a reading of a
+ * `d` string. This is where it becomes SVG, and it is the only place that
+ * knows a stroke is round-capped — which is also what makes the reach exact.
+ */
 const markSvg = (art: GlyphArt, ink: string): string =>
   art
     .map((p) =>
-      p.fill
-        ? `<path d="${p.d}" fill="${ink}" opacity="0.97"/>`
-        : `<path d="${p.d}" fill="none" stroke="${ink}" stroke-width="${p.width ?? 1.6}"` +
-          ` stroke-linecap="round" stroke-linejoin="round" opacity="0.97"/>`,
+      p.kind === 'stroke'
+        ? `<path d="M${p.from[0]} ${p.from[1]}L${p.to[0]} ${p.to[1]}" fill="none" stroke="${ink}"` +
+          ` stroke-width="${p.width}" stroke-linecap="round" opacity="0.97"/>`
+        : `<ellipse cx="${p.at[0]}" cy="${p.at[1]}" rx="${p.rx}" ry="${p.ry}"` +
+          (p.width === undefined
+            ? ` fill="${ink}"`
+            : ` fill="none" stroke="${ink}" stroke-width="${p.width}"`) +
+          ` opacity="0.97"/>`,
     )
     .join('')
 
@@ -242,7 +254,7 @@ export function pinElement(e: MapPin, ctx: PinCtx, onClick: () => void): HTMLEle
   const el = document.createElement('div')
   el.className = spec.classes.join(' ')
   el.innerHTML = pinSvg(spec)
-  el.title = e.name
+  el.title = pinTitle(e)
   el.style.setProperty(
     '--pin-shift',
     `${pinShiftPercent(spec.footprint ? AREA_BOX_H : BOX_H, TIP_Y).toFixed(2)}%`,

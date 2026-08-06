@@ -42,23 +42,6 @@ export function stepActive(key: string, active: number, count: number): number |
 }
 
 /**
- * The same ring, read left to right.
- *
- * A row of stations on a rail (components/SagaTimeline.vue) is a listbox laid
- * on its side: the arithmetic of "where does this key move the marker" is
- * identical, only the two keys that spell it change. Translating the keys is
- * the whole of the difference, and it keeps one implementation of the wrap —
- * which is the part with a decision in it.
- */
-export const stepActiveX = (key: string, active: number, count: number): number | null => {
-  // A rail owns the horizontal keys and nothing else. ArrowUp/ArrowDown are
-  // deliberately NOT passed through: on a rail they mean nothing, and a control
-  // that swallows them takes the page's scroll with them.
-  const vertical = { ArrowLeft: 'ArrowUp', ArrowRight: 'ArrowDown', Home: 'Home', End: 'End' }[key]
-  return vertical ? stepActive(vertical, active, count) : null
-}
-
-/**
  * The active row for a NEW QUERY.
  *
  * It goes back to the top rather than trying to follow the row that was

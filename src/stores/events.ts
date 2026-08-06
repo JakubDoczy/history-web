@@ -155,6 +155,38 @@ export const opensExpanded = (item: Subject | undefined, viewportWidthPx: number
   !!sagaOf(item) && viewportWidthPx >= SIDE_BY_SIDE_MIN_PX
 
 /**
+ * …and where the panel goes when a STEP is opened. The same viewport rule, asked
+ * about a step — one function beside the other rather than a flag threaded
+ * through `selectStep`.
+ *
+ * ON A PHONE THE ANSWER IS ALWAYS THE PILL. A step is a moment of a plan and the
+ * thing it puts on the screen is INK: the June front, the beachhead, the axis of
+ * an advance. On a phone the article is a sheet over the map, so opening a step
+ * used to answer "show me this moment" by covering the moment with its own
+ * caption — the reader reported exactly that ("clicking on a step shows you the
+ * text, the drawing of a step is behind the text"). The page is one tap away on
+ * the pill, where every other reading in the mode already is, and the pill names
+ * the step so the reader can see where they are standing.
+ *
+ * With room for both, a step with a PAGE still opens it: there the article sits
+ * beside the map and reading it costs the map nothing. A step with no page never
+ * opens anything — it is a filter of the plan, and a panel over the plan it just
+ * filtered is the same mistake in miniature — but it does not fold an article
+ * the reader had up either, unless the panel was on some other part.
+ */
+export const stepOpensExpanded = (
+  step: Step,
+  ctx: { fromPart: boolean; expanded: boolean; viewportWidthPx: number },
+): boolean =>
+  ctx.viewportWidthPx < SIDE_BY_SIDE_MIN_PX
+    ? false
+    : step.page
+      ? true
+      : ctx.fromPart
+        ? false
+        : ctx.expanded
+
+/**
  * A JSON fetch that fails by returning undefined rather than by throwing, and
  * that treats an HTTP error as a failure.
  *
@@ -823,9 +855,9 @@ export const useEventStore = defineStore('events', {
      *  · its **highlights**, if it names any, are pinned and accented — see
      *    `highlightedIds` and `Step.highlights`;
      *  · the step's **page** replaces the article's body, with the step's name as
-     *    its heading and a way back — and only when there is one, because a step
-     *    that is purely a filter of the map should not open a panel over the map
-     *    it just filtered;
+     *    its heading and a way back — where there is one, and where there is room
+     *    for it beside the map (`stepOpensExpanded`: on a phone the map wins and
+     *    the page waits on the pill);
      *  · the **camera** moves, if the step says where; if it does not, the view
      *    is left exactly where the reader put it, which is the more common and
      *    the less rude case;
@@ -882,8 +914,11 @@ export const useEventStore = defineStore('events', {
       if (step.child) return this.showOnMap(step.child)
       this.selectedId = item.id
       this.stepId = step.id
-      if (step.page) this.focusExpanded = true
-      else if (fromPart) this.focusExpanded = false
+      this.focusExpanded = stepOpensExpanded(step, {
+        fromPart,
+        expanded: this.focusExpanded,
+        viewportWidthPx: useViewStore().viewportWidthPx,
+      })
       // The step's own time, projected back onto the event's real years — its
       // START, which for a point is the whole of it and for a stretch is where
       // the reader is being put.

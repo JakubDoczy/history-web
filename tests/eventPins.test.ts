@@ -8,7 +8,11 @@ import {
   pinTier,
   resolveClusterSpec,
   resolvePinSpec,
+  GLYPH_R,
+  glyphReach,
+  pinTitle,
   TAG_GLYPHS,
+  type GlyphArt,
 } from '../src/lib/present/pin'
 import type { RenderMode } from '../src/lib/present/mode'
 import type { Tier } from '../src/lib/eventTiers'
@@ -115,11 +119,23 @@ describe('pinSvg', () => {
 describe('category glyphs', () => {
   const dot = '<circle cx="12" cy="11" r="3.6"'
 
+  /**
+   * The one distinctive piece of what a part is drawn as. The registry holds
+   * geometry now (see `GlyphPart`), so this is the assertion's own reading of
+   * it — deliberately not a call into `markSvg`, which is the thing under test.
+   */
+  const drawnAs = (art: GlyphArt) =>
+    art.map((p) =>
+      p.kind === 'stroke'
+        ? `M${p.from[0]} ${p.from[1]}L${p.to[0]} ${p.to[1]}`
+        : `cx="${p.at[0]}" cy="${p.at[1]}" rx="${p.rx}"`,
+    )
+
   it('puts the registry mark in the head instead of the dot', () => {
     for (const tag of ['war', 'economy'] as const) {
       const svg = pinSvg(ev({ tags: [tag] }), false)
       expect(svg, tag).not.toContain(dot)
-      for (const part of TAG_GLYPHS[tag]!) expect(svg, tag).toContain(part.d)
+      for (const part of drawnAs(TAG_GLYPHS[tag]!)) expect(svg, tag).toContain(part)
     }
   })
 
@@ -138,34 +154,59 @@ describe('category glyphs', () => {
     // the composite (a category mark over the route motif) was drawn and looked
     // at, and two marks do not fit in seven pixels — see resolvePinSpec
     const route = pinSvg(ev({ tags: ['economy'], paths: [[[0, 0], [1, 1]]] }), false)
-    for (const part of TAG_GLYPHS.economy!) expect(route).not.toContain(part.d)
+    for (const part of drawnAs(TAG_GLYPHS.economy!)) expect(route).not.toContain(part)
     const area = pinSvg(ev({ tags: ['war'], area: [[0, 0], [1, 1], [2, 0]] }), false)
-    for (const part of TAG_GLYPHS.war!) expect(area).not.toContain(part.d)
+    for (const part of drawnAs(TAG_GLYPHS.war!)) expect(area).not.toContain(part)
   })
 
-  it('keeps every mark inside the head, so nothing is clipped by the box', () => {
-    /**
-     * The corners of the box one glyph part draws in — enough for the two
-     * idioms the registry uses: straight strokes (whose extremes are their own
-     * points) and the `M cx-rx cy a rx ry …` ellipse.
-     */
-    const extremes = (d: string): [number, number][] => {
-      const ellipse = d.match(/^M(-?[\d.]+) (-?[\d.]+)a([\d.]+) ([\d.]+)/)
-      if (ellipse) {
-        const [x0, y, rx, ry] = ellipse.slice(1).map(Number)
-        return [-ry, ry].flatMap((dy): [number, number][] => [
-          [x0, y + dy],
-          [x0 + 2 * rx, y + dy],
-        ])
-      }
-      return [...d.matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])])
-    }
-    // the glyph is drawn in the 24x32 box about (12, 11); the saga ring sits at
-    // r=7.1, and a mark reaching past it would cross its own event's ring
-    for (const art of Object.values(TAG_GLYPHS))
-      for (const p of art!)
-        for (const [x, y] of extremes(p.d))
-          expect(Math.hypot(x - 12, y - 11), p.d).toBeLessThanOrEqual(7.1)
+  /**
+   * THE REPORTED FAULT, as a number.
+   *
+   * The swords were drawn out to 6.4 box units and the saga ring's inner edge is
+   * at 6.6, so on a saga's own pin the mark ran into its ring and, at 1x, into
+   * the rim behind it: "the crossed swords icon is a bit too large inside the
+   * pin so you only see parts of the swords". The budget below is what the
+   * registry is authored to now, and this is the check that it stays true of
+   * whatever is added to it next.
+   */
+  describe('the glyph budget', () => {
+    /** The head's coloured disc, inside its 1.5-wide outline. */
+    const HEAD_R = 9 - 0.75
+    /** The saga ring (lib/eventPins.ts) sits at 7.1 and is 1 unit wide. */
+    const RING_INNER = 7.1 - 0.5
+
+    it('leaves clear room inside the head, and inside the saga ring', () => {
+      expect(GLYPH_R).toBeLessThan(RING_INNER - 0.5)
+      expect(GLYPH_R).toBeLessThan(HEAD_R - 2)
+    })
+
+    it('holds for every mark in the registry', () => {
+      for (const [tag, art] of Object.entries(TAG_GLYPHS))
+        expect(glyphReach(art!), tag).toBeLessThanOrEqual(GLYPH_R)
+    })
+
+    it('measures a stroke by its far end plus its round cap', () => {
+      // a blade from the centre straight out to (12, 5), 2 units wide
+      expect(glyphReach([{ kind: 'stroke', from: [12, 11], to: [12, 5], width: 2 }])).toBeCloseTo(7)
+      // …and an ellipse by its own boundary, wherever it is centred
+      expect(glyphReach([{ kind: 'ellipse', at: [12, 11], rx: 3, ry: 1 }])).toBeCloseTo(3, 1)
+      // and an offset one by its true far corner, not by centre + ry: a wide
+      // coin sitting below the middle reaches further sideways than downward
+      expect(glyphReach([{ kind: 'ellipse', at: [12, 14], rx: 3, ry: 1, width: 2 }])).toBeCloseTo(5.37, 1)
+    })
+
+    it('is a real shrink on the swords, which is what the reader saw', () => {
+      // the shipped mark is smaller than the one that collided with the ring
+      expect(glyphReach(TAG_GLYPHS.war!)).toBeLessThan(6.4)
+    })
+  })
+})
+
+describe('a pin’s hover', () => {
+  it('says a saga is one, and how many steps are behind it', () => {
+    expect(pinTitle(ev({ name: 'World War II' }))).toBe('World War II')
+    expect(pinTitle(ev({ name: 'World War II', steps: [{ id: 'a', name: 'A', at: 0 }] })))
+      .toBe('World War II\nSaga · 1 steps')
   })
 })
 

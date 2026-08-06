@@ -55,7 +55,11 @@ Pins gain a small glyph inside the existing pin silhouette, chosen by the
 item's **primary tag category** (which already picks the pin colour — one
 source of truth, glyph and colour resolved side by side in `present/pin.ts`):
 
-- **war** — crossed swords.
+- **war** — crossed swords, drawn inside a stated budget (`GLYPH_R`): the
+  head's own radius less the saga ring and a margin. The registry holds
+  geometry, not path data, so "does this fit" is measured rather than
+  guessed (`glyphReach`) — the first swords did not, and came back to the
+  reader as fragments.
 - **trade** — a balanced pair of scales (or stacked coins if scales read
   badly at 12–16 px; decide by looking, at real pin size).
 - **trade path / route events** — the trade glyph over the existing route
@@ -78,3 +82,26 @@ saga/steps. Item 5 (the step timeline that replaces the main timeline while
 a saga is on the map) builds directly on this model: a station on that
 timeline that carries `child` is an entrance — it advertises descent and
 pushes focus, with the timeline re-anchoring to the child's span.
+
+## The rail's contract, as corrected (round 44)
+
+Three rules the implementation may not trade away; the whole of the
+reasoning is in docs/plan-ui-polish.md item 5 and in the module comment of
+lib/present/sagaTimeline.ts.
+
+1. **The rail is a timeline.** Stations stand at their true moment in the
+   saga's span, under a visible rule (years / months / days, chosen from
+   the span and the width). Crowding may drop a mark into a lower lane; it
+   may never move it along the axis. A saga dated to a single point has no
+   rule — its axis is dashed, and its steps are proportions, which is what
+   the data says and no more.
+2. **The rail is one half of a pair.** The other half is the plain way
+   through — prev, next, and a list of every step by name and date —
+   mounted with the rail. The keyboard drives the same pair. A step that is
+   an entrance is moved to, never entered, by prev/next: descending is a
+   change of context and has to be asked for (Enter, or a press).
+3. **A saga is entered by its own action.** "Walk the steps" on the
+   article, in brass, ahead of the generic Show on map; and on a phone,
+   opening a step shows the step's ink with the panel left as a pill that
+   names it. A saga's whole promise is a sequence on a map — every control
+   that leads into one says so.

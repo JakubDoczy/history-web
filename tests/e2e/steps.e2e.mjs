@@ -92,6 +92,9 @@ const stateOf = (page) =>
       return c && { text: c.textContent.trim(), on: c.classList.contains('on') }
     })(),
     page: document.querySelector('[data-test="step-page"] h3')?.textContent ?? null,
+    minimised: window.__events.panelMinimised,
+    // what the pill says about where the reader is standing (EventPanel.vue)
+    pillStep: document.querySelector('[data-test="pill-step"]')?.textContent.replace(/\s+/g, ' ').trim() ?? null,
   }))
 
 const settle = async (page, ms = 1400) => {
@@ -371,6 +374,7 @@ const strip = await phone.$eval('[data-test="saga-timeline"]', (el) => {
     narrowest: Math.min(
       ...[...el.querySelectorAll('[data-test="saga-station"]')].map((b) => b.getBoundingClientRect().width),
     ),
+    nav: !!el.querySelector('[data-test="saga-next"]'),
   }
 })
 console.log(
@@ -378,18 +382,42 @@ console.log(
     `, ${Math.round(strip.overPill ?? -1)}px below the pill, stations scroll: ${strip.scrollable}` +
     `, narrowest ${Math.round(strip.narrowest)}px`,
 )
-await check('the rail stays on screen, under the pill, with pressable stations', () => {
+await check('the rail stays on screen, under the pill, with reachable stations', () => {
   ok(strip.left >= 0 && strip.right <= 390, `rail runs ${strip.left}..${strip.right}`)
   ok(strip.overPill !== null && strip.overPill >= 0, `the pill overlaps the rail by ${-strip.overPill}px`)
-  ok(strip.narrowest >= 43, `the narrowest station is ${strip.narrowest}px`)
+  // A station is its mark now — it stands on its own date and is not widened to
+  // a thumb (see lib/present/sagaTimeline.ts). What owes the thumb a target is
+  // the nav cluster beside the rail, which is the other half of the pair.
+  ok(strip.narrowest >= 22, `the narrowest station is ${strip.narrowest}px`)
+  ok(strip.nav, 'no prev/next/list on the phone')
 })
+/* THE MAP FIRST, on a phone (see `stepOpensExpanded` in stores/events.ts).
+   The reported fault: "clicking on a step shows you the text — the drawing of a
+   step is behind the text". Now the step's ink is what a tap answers with, the
+   pill names the step so the reader can see where they are, and the page is one
+   tap further on. */
 await phone.click('[data-step="typhoon"]')
 await settle(phone, 2400)
-await shot(phone, '08-phone-step-page')
+await shot(phone, '08-phone-step-map-first')
 const phoneStep = await stateOf(phone)
-await check('a step page opens over the map on a phone too', () => {
+console.log(`    pill says "${phoneStep.pillStep}", page up: ${phoneStep.page !== null}`)
+await check('a step on a phone answers with the DRAWING, not with its own text', () => {
   ok(phoneStep.step === 'typhoon', `step is ${phoneStep.step}`)
-  ok(phoneStep.page?.includes('Typhoon'), `page heading: ${phoneStep.page}`)
+  ok(phoneStep.minimised, 'the text sheet opened over the map the step just drew')
+  ok(phoneStep.page === null, `the step page is up: ${phoneStep.page}`)
+  ok(phoneStep.layers.length > 0, 'no ink for the step the reader opened')
+})
+await check('…and the pill says which step, since it is the only chrome left', () => {
+  ok(/Typhoon/.test(phoneStep.pillStep ?? ''), `the pill says "${phoneStep.pillStep}"`)
+  ok(/^4/.test(phoneStep.pillStep ?? ''), `the pill does not number it: "${phoneStep.pillStep}"`)
+})
+await check('the page is one tap away, on the pill, where every reading in the mode is', async () => {
+  await phone.click('[data-test="pill-expand"]')
+  await phone.waitForSelector('[data-test="step-page"]', { timeout: 10000 })
+  await settle(phone, 800)
+  const up = await stateOf(phone)
+  await shot(phone, '08b-phone-step-page-one-tap-away')
+  ok(up.page?.includes('Typhoon'), `page heading: ${up.page}`)
 })
 await check('the rail is not buried under the open step page', async () => {
   const hit = await phone.evaluate(() => {

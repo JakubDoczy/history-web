@@ -34,15 +34,66 @@ long events): on PC the open window shows the overview page immediately
 advertised (affordance on the step strip / a "details" cue), instead of
 being discoverable only by accident.
 
-## 5. Step timeline replaces the main timeline (next round)
+## 5. Step timeline replaces the main timeline — shipped, then corrected
 
-While an operation is shown on the map, the bottom timeline swaps to a
-linear step timeline for that operation: steps as clickable stations in
-order, current step highlighted, click-through advances the map drawing
-and the window page. Era/main timeline returns on exit. This is a
-structural change to TimelineBar/StepStrip interplay — design before
-code: one component owning "which timeline is mounted", driven by the
-focus store, no v-if soup.
+While a saga is shown on the map the bottom timeline swaps to that saga's
+own rail: its steps as stations, current step highlighted, click-through
+advancing the map drawing and the window page. The era rail returns on
+exit. One component owns "which timeline is mounted"
+(components/BottomRail.vue), driven by the focus store.
+
+**The correction (round 44).** The first cut relaxed every station's
+target to a 44 px slab and clamped the mark into it. That inverted the
+priority — legibility bought with the truth — and the reader said so:
+*"it's not a proper timeline since I don't see time and it's spaced
+uniformly, not according to when it happened."* The contract now:
+
+- **A TRUE AXIS.** A station is drawn at its own moment in the saga's
+  span and nowhere else; no relaxation, ever. Above the stations is a
+  rule in the era rail's own idiom (gridline, stub, label beside it),
+  ruled in the finest unit the span and the width allow — years for the
+  war, months for a saga that ran a dated year, days below that. A
+  point-dated saga (Barbarossa: 1941) has no extent to divide, so its
+  axis is dashed and unruled and its stations stand in the proportion
+  they were authored in.
+- **CROWDING COSTS LANES, NOT POSITIONS.** A mark with no room beside its
+  neighbour drops to the next lane down and keeps a stem back to the
+  axis. Three lanes; past that the marks share one and overlap, which is
+  an honest picture of four moments in eleven pixels.
+- **A DUAL SYSTEM.** The rail is the picture; beside it, at the rail's
+  edge, is the index: prev, next, and a list of every step by name and
+  date (with the overview at the top of it). The arrow keys are the same
+  action as prev/next. Both walk `[overview, …steps]` and stop at the
+  ends rather than wrapping. A press opens a step that is a page of this
+  saga; a step that is an ENTRANCE into another item is only moved to,
+  and Enter or a click descends — walking into a child on an arrow key
+  would take the rail off the screen.
+
+## 5b. A saga's own call to action, and the map-first step (round 44)
+
+- **"Walk the steps"** (EventPanel.vue) is the prominent action on a
+  saga's article — filled brass, its own row, the step count on it —
+  because *"show on map right now is also to just center on the
+  location"* and a plan of eleven moments could not be told from a pin.
+  The generic **Show on map** stays where it was, secondary, in the date
+  line; a saga with an area keeps both. The pin's hover says
+  "Saga · 11 steps" (`pinTitle`).
+- **On a phone a step shows the MAP.** Selecting a step — by station, by
+  list row or by prev/next — leaves the panel as the pill, names the step
+  on it, and does not open the text sheet: the drawing is the point and
+  the sheet was covering it. Desktop is unchanged. The rule is a variant
+  of the existing viewport rule (`stepOpensExpanded` beside
+  `opensExpanded`, stores/events.ts), not a new flag.
+
+## 5c. Pin glyph metrics (round 44)
+
+The crossed swords reached 6.4 units of the pin's 24×32 box, which is
+past the saga ring's inner edge at 6.6 and near the head's rim: *"the
+crossed swords icon is a bit too large inside the pin so you only see
+parts of the swords."* The registry now holds glyph **geometry** rather
+than path strings, so the ink a mark covers is measurable (`glyphReach`),
+and every entry is authored inside one budget (`GLYPH_R`) that a unit
+test enforces. Verified by close crop at 1x, not magnified.
 
 ## 6. Map mode: first-class toggle + drawn cartography (next round)
 

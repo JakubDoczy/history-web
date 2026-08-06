@@ -5,6 +5,7 @@ import {
   FOCUS_STACK_CAP,
   SIDE_BY_SIDE_MIN_PX,
   opensExpanded,
+  stepOpensExpanded,
   useEventStore,
 } from '../src/stores/events'
 import { useSettingsStore } from '../src/stores/settings'
@@ -1492,6 +1493,64 @@ describe('stepped focus', () => {
     expect(events.panelMinimised).toBe(true)
     events.selectStep('june') // a page: the article comes up to hold it
     expect(events.panelMinimised).toBe(false)
+  })
+
+  /**
+   * THE MAP WINS ON A PHONE.
+   *
+   * A step's whole point is the ink it puts on the ground, and on a phone the
+   * article is a sheet over that ground: "clicking on a step shows you the text
+   * — the drawing of a step is behind the text". So a step never opens the sheet
+   * there, however much page it carries; the pill names it and the page is one
+   * tap away, exactly where every other reading in the mode already is.
+   */
+  describe('opening a step on a phone puts the map first', () => {
+    const phone = () => (useViewStore().viewportWidthPx = 390)
+
+    it('keeps the pill for a step WITH a page', () => {
+      phone()
+      const events = store()
+      events.showOnMap('op')
+      expect(events.panelMinimised).toBe(true) // …it was a pill already
+      events.selectStep('june') // the step that carries a page
+      expect(events.stepId).toBe('june')
+      expect(events.panelMinimised).toBe(true)
+    })
+
+    it('folds an article the reader had opened, rather than leaving it over the ink', () => {
+      phone()
+      const events = store()
+      events.showOnMap('op')
+      events.toggleFocusExpanded() // the reader pulled the article up to read it
+      expect(events.panelMinimised).toBe(false)
+      events.selectStep('june')
+      expect(events.panelMinimised).toBe(true)
+    })
+
+    it('still gives the page back on the way to the overview', () => {
+      phone()
+      const events = store()
+      events.showOnMap('op')
+      events.selectStep('june')
+      events.toggleFocusExpanded() // one tap on the pill: the step's page
+      expect(events.panelMinimised).toBe(false)
+      expect(events.activeStep?.id).toBe('june')
+    })
+
+    it('is the same viewport rule the saga overview obeys, asked about a step', () => {
+      const page = { id: 'a', name: 'A', time: { kind: 'point', year: 0 }, page: 'x' } as Parameters<
+        typeof stepOpensExpanded
+      >[0]
+      const bare = { ...page, page: undefined }
+      const at = (viewportWidthPx: number) => ({ fromPart: false, expanded: false, viewportWidthPx })
+      expect(stepOpensExpanded(page, at(SIDE_BY_SIDE_MIN_PX))).toBe(true)
+      expect(stepOpensExpanded(page, at(SIDE_BY_SIDE_MIN_PX - 1))).toBe(false)
+      // a step with no page opens nothing, but leaves an open article alone…
+      expect(stepOpensExpanded(bare, { ...at(1600), expanded: true })).toBe(true)
+      // …unless the panel was on some other part of the saga, which it replaces
+      expect(stepOpensExpanded(bare, { ...at(1600), expanded: true, fromPart: true })).toBe(false)
+      expect(stepOpensExpanded(bare, { ...at(390), expanded: true })).toBe(false)
+    })
   })
 
   it('flies the camera only for a step that says where to look', () => {

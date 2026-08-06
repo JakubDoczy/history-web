@@ -5,7 +5,7 @@ import { useTimeStore } from '../stores/time'
 import { formatTime, formatYear } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
 import { anchorYearOf, assertNever, timeOf, type Item, type Place } from '../lib/events'
-import { resolvePillKind } from '../lib/present/saga'
+import { resolvePillKind, sagaOf } from '../lib/present/saga'
 import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
 
 const events = useEventStore()
@@ -64,6 +64,46 @@ const mapId = computed(() => events.selectedId ?? events.selected?.id ?? '')
  * not there, rather than there and inert.
  */
 const mappable = computed(() => !!events.mapTarget(mapId.value))
+
+/**
+ * THE SAGA'S OWN CALL TO ACTION.
+ *
+ * "Show on map" is the generic action and it means whatever the item's geometry
+ * means — centre on a point, fit a footprint, draw a route. On an event told in
+ * steps that undersells the thing badly: what waits behind it is a plan, a rail
+ * of eleven named moments and a drawing per moment, and the reader could not
+ * tell that apart from "put a pin in the middle of Europe" ("I asked you for
+ * some obvious indication… because show on map right now is also to just center
+ * on the location").
+ *
+ * So a saga gets its own primary action, in the saga's own vocabulary, and the
+ * generic one stays where it was as the secondary. The wording is "Walk the
+ * steps":
+ *
+ *  · it is the same imperative voice as "Show on map", and shorter, which is
+ *    part of how it earns the prominent slot;
+ *  · "steps" is the word the rail, the pill, the list and the docs already use,
+ *    so the button names the thing the reader will find;
+ *  · "walk" says the one thing "show" cannot — that there is a sequence, and
+ *    that you move along it, which is exactly the difference that was invisible;
+ *  · and it is not "play", which would promise a transport this app does not
+ *    have (nothing auto-advances; every step is a press).
+ */
+const sagaSteps = computed(() => sagaOf(event.value ?? undefined))
+
+/**
+ * The step the reader is standing in, as the PILL names it.
+ *
+ * With the map given priority on a phone (`stepOpensExpanded` in
+ * stores/events.ts) the pill is the only chrome left over the drawing, so it
+ * carries the step's number and name — the same two things its station on the
+ * rail carries — and the page stays one tap away on the pill itself.
+ */
+const pillStep = computed(() => {
+  const step = events.activeStep
+  if (!step || events.selectedId !== events.focus?.itemId) return null
+  return { name: step.name, ordinal: events.focusSteps.findIndex((s) => s.id === step.id) + 1 }
+})
 
 /* --- the four relation sections, in precedence order ----------------------
    `parent` / `strong` / `weak` in the data, materialised both ways by the
@@ -250,7 +290,13 @@ onBeforeUnmount(() => inflight?.abort())
           @click="events.toggleFocusExpanded()"
         >
           <span class="pill-name">{{ e.name }}</span>
-          <span class="pill-kind">{{ pillKind }}</span>
+          <!-- Inside a step the pill says WHICH — on a phone it is the only
+               thing on screen that does (see `pillStep`). -->
+          <span v-if="pillStep" class="pill-step" data-test="pill-step">
+            <span class="pill-step-n tnum" aria-hidden="true">{{ pillStep.ordinal }}</span>
+            <span class="pill-step-name">{{ pillStep.name }}</span>
+          </span>
+          <span v-else class="pill-kind">{{ pillKind }}</span>
         </button>
         <!-- Not a bare chevron. A chevron on a bar over a map is ambiguous —
              it could as easily mean "more of the map" — and the word is the
@@ -340,6 +386,28 @@ onBeforeUnmount(() => inflight?.abort())
         Show on map
       </button>
     </p>
+
+    <!-- THE SAGA'S CALL TO ACTION (see `sagaSteps`). The prominent action on a
+         saga's article, in brass, above everything it is prominent over — the
+         generic "Show on map" is still up there in the date line, secondary,
+         for the reader who only wants the place. -->
+    <button
+      v-if="sagaSteps && mappable"
+      class="saga-cta"
+      data-test="saga-cta"
+      :title="`Put this on the map and walk its ${sagaSteps.length} steps`"
+      @click="events.showOnMap(mapId)"
+    >
+      <!-- a rail with its stations: the control this button leads to, drawn -->
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 12h18" />
+        <circle cx="6" cy="12" r="2.1" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none" />
+        <circle cx="18" cy="12" r="2.1" fill="currentColor" stroke="none" />
+      </svg>
+      <span class="saga-cta-label">Walk the steps</span>
+      <span class="saga-cta-count tnum">{{ sagaSteps.length }}</span>
+    </button>
 
     <!-- a life's two fixed points, as buttons: they move the globe and the clock -->
     <p v-if="places.length" class="places">
@@ -643,6 +711,40 @@ onBeforeUnmount(() => inflight?.abort())
   text-transform: uppercase;
   color: var(--brass);
 }
+/* The step chip: the same slot the kind chip uses, filled rather than outlined,
+   because it names a place the reader is standing in rather than a category the
+   item belongs to. Numbered like its station on the rail. */
+.pill-step {
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  border-radius: var(--r-pill);
+  padding: 1px 8px 1px 4px;
+  background: var(--brass-soft);
+  box-shadow: inset 0 0 0 1px var(--brass-line);
+  font-family: var(--cond);
+  font-size: var(--t-eyebrow);
+  letter-spacing: 0.06em;
+  color: var(--brass);
+}
+.pill-step-n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--brass);
+  color: var(--void);
+  font-size: var(--t-micro);
+}
+.pill-step-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .pill-btn {
   flex: none;
   display: grid;
@@ -859,6 +961,54 @@ h2 {
 }
 .show-on-map svg {
   opacity: 0.85;
+}
+
+/* THE SAGA CTA. Filled brass, full measure, its own row: everything the
+   secondary "Show on map" above it is not. It is the only filled control in the
+   article, which is the whole of how a reader knows it is THE thing to press
+   (see `sagaSteps`). */
+.saga-cta {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  width: 100%;
+  box-sizing: border-box;
+  margin: var(--s1) 0 var(--s3);
+  padding: 9px var(--s3);
+  border: 0;
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, #edb877, var(--brass));
+  color: var(--void);
+  font-family: var(--cond);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 2px 14px rgba(227, 167, 88, 0.22);
+  transition:
+    filter var(--fast),
+    transform var(--fast);
+}
+.saga-cta:hover {
+  filter: brightness(1.08);
+}
+.saga-cta:active {
+  transform: scale(0.99);
+}
+.saga-cta-label {
+  flex: 1;
+  text-align: left;
+}
+/* The count rides on the button because it is the size of the promise: eleven
+   moments, not one. */
+.saga-cta-count {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: rgba(6, 10, 18, 0.18);
+  font-size: var(--t-eyebrow);
+  letter-spacing: 0.06em;
 }
 
 /* a life's birth and death places: chips that fly the globe there */
