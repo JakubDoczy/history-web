@@ -443,7 +443,7 @@ onBeforeUnmount(() => inflight?.abort())
         <circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none" />
         <circle cx="18" cy="12" r="2.1" fill="currentColor" stroke="none" />
       </svg>
-      <span class="saga-cta-label">Show steps on map</span>
+      <span class="saga-cta-label">Show detailed timeline</span>
       <span class="saga-cta-count tnum">{{ sagaSteps.length }}</span>
     </button>
 

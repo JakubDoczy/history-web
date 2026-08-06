@@ -406,8 +406,8 @@ const cta = await pc.evaluate(() => {
 })
 await shot(pc, 'g-saga-cta-renamed')
 console.log(`    "${cta.label}" · ${cta.count} — beside the generic "${cta.generic}"`)
-await check('the CTA is "Show steps on map", with the step count still on it', () => {
-  ok(cta.label === 'Show steps on map', `the CTA reads "${cta.label}"`)
+await check('the CTA is "Show detailed timeline", with the step count still on it', () => {
+  ok(cta.label === 'Show detailed timeline', `the CTA reads "${cta.label}"`)
   ok(!/walk/i.test(cta.label + cta.title), `"Walk" survives somewhere: ${cta.label} / ${cta.title}`)
   ok(cta.count === '11', `the count reads "${cta.count}"`)
   ok(cta.generic === 'Show on map', `the generic action reads "${cta.generic}"`)
