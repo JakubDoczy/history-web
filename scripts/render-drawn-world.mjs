@@ -36,7 +36,7 @@ const { DrawnRenderer } = await import('../src/lib/drawnTile.ts')
 const { TILE_PX, BASE_LEVEL, tileCols, tileRows } = await import('../src/lib/tilePyramid.ts')
 
 const read = (f) => JSON.parse(readFileSync(join(root, 'public/data/map', f), 'utf8'))
-const world = buildWorld(read('land-110m.json'), read('world-50m.json'), read('water-50m.json'))
+const world = buildWorld(read('land-110m.json'), read('land-50m.json'), read('water-50m.json'))
 
 const z = BASE_LEVEL
 const cols = tileCols(z)

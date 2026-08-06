@@ -74,17 +74,17 @@ export const DRAWN_ERA_FROM = -10_000
  * Provenance, shown in the panel exactly as a sensor's would be — and, for the
  * first second of a session, the CACHE KEY that retires the first tiles drawn.
  *
- * The rasterizer starts on the 55 kB 110m coastline and switches to the 1.05 MB
- * 50m file (with the borders, rivers and lakes, which only exist there) when it
- * has parsed. Tiles are keyed by source label and pinned while wanted, so
- * without two labels the tiles a view happened to ask for in that window would
- * be the tiles it kept — measured in the browser as a Europe at continental
- * zoom with no rivers and no borders on it, indefinitely.
+ * The rasterizer starts on the 55 kB 110m coastline and switches to the 50m
+ * files (the finer coast, and the rivers and lakes, which only exist there)
+ * when they have parsed. Tiles are keyed by source label and pinned while
+ * wanted, so without two labels the tiles a view happened to ask for in that
+ * window would be the tiles it kept — measured in the browser as a Europe at
+ * continental zoom with a blunt coast and no rivers on it, indefinitely.
  */
 export const DRAWN_LABEL = 'Drawn — Natural Earth 50m'
 export const DRAWN_LABEL_COARSE = 'Drawn — Natural Earth 110m'
 export const DRAWN_ATTRIBUTION =
-  'Coastlines, borders, rivers and lakes: Natural Earth (public domain), drawn on device'
+  'Coastlines, rivers and lakes: Natural Earth (public domain), drawn on device'
 
 /**
  * Pixels per degree the source can honestly serve.

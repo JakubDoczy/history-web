@@ -217,7 +217,7 @@ await check('a tile renders inside the 8 ms budget in the worker', () => {
 
 /* ============================================ (c) regional zoom — coast ink */
 console.log('\n(c) regional zoom — coastline detail')
-// the Aegean: coast, islands, and a border in the water
+// the Aegean: coast and islands, at the density that shows the double ink
 await look(page, 37.6, 24.5, 0.055, 9000)
 const contrast = await frameStats(await shot(page, 'c-drawn-coast'))
 console.log(`      luminance ${contrast.min.toFixed(0)} … ${contrast.max.toFixed(0)}`)

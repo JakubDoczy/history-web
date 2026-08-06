@@ -35,8 +35,8 @@ export interface DrawnTileResponse {
    *
    * The caller has to know, and the reason is the cache. A tile is keyed by
    * (z, x, y, source label) and held for as long as it is wanted, so the tiles
-   * drawn in the first second — from 110m coastline, with no borders, rivers or
-   * lakes in the file at all — would be the tiles that view keeps forever. The
+   * drawn in the first second — from a 110m coastline, with no rivers or lakes in
+   * the file at all — would be the tiles that view keeps forever. The
    * label changes when this arrives, which retires them by making every key a
    * new one; the old ones fall out of the cache unwanted.
    */
@@ -58,8 +58,7 @@ ctx.onmessage = async (e: MessageEvent<DrawnTileRequest>) => {
     // The coarse coastline resolves first and the fine one replaces it in
     // place, so the first tiles of a session are drawn before the 50m parse
     // would allow. A tile drawn from 110m is not wrong, only blunt — and it has
-    // no borders, rivers or lakes at all, because those live only in the other
-    // two files — so the upgrade is announced and the caller retires them.
+    // no rivers and no lakes at all, because those live only in the other file — so the upgrade is announced and the caller retires them.
     renderer ??= loadWorld(base, () => ctx.postMessage({ id: 0, ms: 0, upgraded: true })).then(
       (w) => new DrawnRenderer(w),
     )

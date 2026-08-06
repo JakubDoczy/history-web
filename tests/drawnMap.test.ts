@@ -59,7 +59,7 @@ import { DEFAULT_PALETTE } from '../src/lib/palette'
 const read = (f: string) => JSON.parse(readFileSync(`public/data/map/${f}`, 'utf8'))
 let cached: DrawnWorld | undefined
 const world = (): DrawnWorld =>
-  (cached ??= buildWorld(read('land-110m.json'), read('world-50m.json'), read('water-50m.json')))
+  (cached ??= buildWorld(read('land-110m.json'), read('land-50m.json'), read('water-50m.json')))
 
 const surface = () => {
   const canvas = createCanvas(TILE_PX, TILE_PX)
@@ -70,7 +70,7 @@ const surface = () => {
   }
 }
 
-/** A tile over western Europe: coast, islands, borders, rivers, open sea. */
+/** A tile over western Europe: coast, islands, rivers, open sea. */
 const EUROPE = (z: number) => ({
   z,
   x: Math.floor(0.53 * 2 ** z),
@@ -201,6 +201,46 @@ describe('the rasterizer', () => {
     expect(max).toBeGreaterThan(200)
     // …and no pixel is a photograph's blue: the whole plate is warm
     for (let i = 0; i < px.length; i += 4) expect(px[i + 2]).toBeLessThanOrEqual(px[i] + 2)
+  })
+
+  it('draws no political boundary: the paper is the same sheet in every year', () => {
+    // THE POINT OF THIS FILE'S ROUND. The rasterizer used to stroke Natural
+    // Earth's `countries` into every tile, which put MODERN borders under a
+    // nations layer that draws 73 era-accurate polities and changes with the
+    // year: at 1500 a reader got Burgundy's frontier and France's printed on
+    // top of each other, and only one of them knew what year it was.
+    //
+    // Measured on the ground rather than on the source, because "the call is
+    // gone" is a claim about this file and "there is no line there" is a claim
+    // about the map. Two boxes with hundreds of kilometres of pure political
+    // line and nothing else drawn in them — no coast, no river, no lake:
+    const r = new DrawnRenderer(world())
+    const lum = (px: Uint8ClampedArray, i: number) =>
+      0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]
+    // …and a threshold that admits everything the map IS allowed to draw here.
+    // Land is 236,226,200 (lum 228); the graticule hairline reduces it to ~205
+    // and the dark fleck to ~225; a lake fill is 194. The border stroke this
+    // test is about landed at 150, and coast and river ink are darker still.
+    const INK_FLOOR = 190
+    const inked = (t: { z: number; x: number; y: number }) => {
+      const s = surface()
+      r.draw(s.ctx, t)
+      const px = s.pixels()
+      let n = 0
+      for (let i = 0; i < px.length; i += 4) if (lum(px, i) < INK_FLOOR) n++
+      return n
+    }
+    // z=6 tile 34,12 — Libya/Niger/Chad, 11.25..16.875E by 16.875..22.5N. Three
+    // national frontiers meet inside it and nothing physical is drawn there at
+    // all. Measured against the border pass this round removed: 538 pixels.
+    expect(inked({ z: 6, x: 34, y: 12 })).toBe(0)
+    // z=6 tile 36,11 — 22.5..28.125E by 22.5..28.125N, which is 600 km of the
+    // Libya/Egypt frontier: a line ruled along the 25th meridian by a treaty in
+    // 1925, drawn across sand that has no coast, no river and no lake in it.
+    // Same measurement: 512 pixels before, none now.
+    expect(inked({ z: 6, x: 36, y: 11 })).toBe(0)
+    // …and the test is not vacuous: the same threshold on a coast is thousands.
+    expect(inked(EUROPE(6))).toBeGreaterThan(2000)
   })
 
   it('renders a tile inside the 8 ms budget', () => {
@@ -352,14 +392,14 @@ describe('the drawn source in the pipeline', () => {
 
   it('retires the tiles it drew before the 50m data landed', () => {
     // The cache is keyed by (z, x, y, source label) and pins whatever the view
-    // wants, so a tile drawn from the 110m stand-in — which has no borders, no
+    // wants, so a tile drawn from the 110m stand-in — a blunt coastline with no
     // rivers and no lakes in the file at all — would be the tile that view kept
     // for as long as it looked there. Two labels is what makes that impossible:
     // the upgrade renames the source, every key becomes a new key, and the old
     // tiles stop being wanted.
     expect(DRAWN_LABEL).not.toBe(DRAWN_LABEL_COARSE)
     const coarse = buildWorld(read('land-110m.json'))
-    expect(coarse.countries).toBeUndefined()
+    expect(coarse.land).toBeUndefined()
     expect(coarse.rivers).toBeUndefined()
     expect(coarse.lakes).toBeUndefined()
   })

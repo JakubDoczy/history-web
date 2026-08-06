@@ -269,7 +269,7 @@ export function layerOf(topo: Topology, name: string, closed: boolean, smooth = 
  * The whole vector world, in two stages.
  *
  * `coarseLand` is 110m — 55 kB — and is what the first drawn tile is drawn
- * from; the rest is 50m and 1.05 MB, and replaces it the moment it has parsed.
+ * from; the rest is 50m and 841 kB, and replaces it the moment it has parsed.
  * That is the only job 110m has left, and it is not the job the design expected
  * it to have: the measurement (scripts/measure-drawn.mjs) says 110m survives
  * the half-pixel filter with 4 992 segments at the BASE level against 50m's
@@ -286,7 +286,6 @@ export interface DrawnWorld {
   coarseLand: Layer
   /** The 50m layers; absent until the second stage lands. */
   land?: Layer
-  countries?: Layer
   rivers?: Layer
   lakes?: Layer
 }
@@ -296,16 +295,24 @@ export function buildWorld(coarse: Topology, fine?: Topology, water?: Topology):
   return {
     coarseLand: layerOf(coarse, 'land', true),
     land: fine && layerOf(fine, 'land', true),
-    countries: fine && layerOf(fine, 'countries', true),
     rivers: water && layerOf(water, 'rivers', false, true),
     lakes: water && layerOf(water, 'lakes', true, true),
   }
 }
 
-/** Where the vendored files live, relative to the app's base URL. */
+/**
+ * Where the vendored files live, relative to the app's base URL.
+ *
+ * Physical geography only. `land-50m.json` was `world-50m.json` and carried a
+ * `countries` object as well; the drawn map stopped drawing borders (they are
+ * the time-aware nations layer's, see lib/drawnTile.ts) and the vendor script
+ * stopped extracting them, which took the file from 746 kB to 538 kB: 362 arcs
+ * that only ever described an interior boundary, plus the 736-feature object
+ * that indexed them.
+ */
 export const MAP_DATA = {
   coarse: 'land-110m.json',
-  fine: 'world-50m.json',
+  fine: 'land-50m.json',
   water: 'water-50m.json',
 } as const
 
@@ -313,7 +320,7 @@ export const MAP_DATA = {
  * Fetch and decode, coarse first.
  *
  * The promise resolves on 55 kB, so the drawn map can start rendering tiles
- * about 300 ms before the 1.05 MB of 50m geometry has been parsed into typed
+ * about 300 ms before the 841 kB of 50m geometry has been parsed into typed
  * arrays; `onFine` fires when it has, and the caller re-renders. Nothing waits
  * on the second stage and nothing breaks if it never arrives.
  */
@@ -323,7 +330,6 @@ export async function loadWorld(base = '/', onFine?: (w: DrawnWorld) => void): P
   const world = buildWorld(await get(MAP_DATA.coarse))
   void rest.then(([fine, water]) => {
     world.land = layerOf(fine, 'land', true)
-    world.countries = layerOf(fine, 'countries', true)
     world.rivers = layerOf(water, 'rivers', false, true)
     world.lakes = layerOf(water, 'lakes', true, true)
     onFine?.(world)

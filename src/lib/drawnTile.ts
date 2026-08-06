@@ -35,6 +35,17 @@ import { TILE_PX, tileBbox } from './tilePyramid'
  * the simplified `Path2D` for a feature at a level is built once and then
  * *translated* into each tile that wants it. A coastline crossing sixteen tiles
  * is one path, sixteen `setTransform` calls.
+ *
+ * WHAT IS NOT HERE: political boundaries. The paper carries physical geography
+ * only — coast, rivers, lakes, graticule — because the paper is the same sheet
+ * in every year and a border is not. This globe already answers "who held this
+ * ground" with the nations layer: 73 era-accurate polities, redrawn as the
+ * reader moves through time and re-inked for parchment (`inkOnPaper`). An
+ * earlier round also stroked Natural Earth's `countries` into the tiles, so a
+ * reader at 1500 got a modern France printed under the polity that actually
+ * held it — dashed, permanent, and contradicting the layer above it. Two
+ * answers to one question is one too many, and the one that goes is the one
+ * that does not know what year it is.
  */
 
 /**
@@ -52,8 +63,6 @@ export const PAPER = {
   ink: '#2e2519',
   /** The second, thinner pass that suggests a drawn rather than plotted line. */
   inkSoft: 'rgba(46, 37, 25, 0.34)',
-  /** Political boundaries: present, and never competing with the coast. */
-  border: 'rgba(120, 82, 44, 0.55)',
   river: 'rgba(74, 92, 96, 0.62)',
   lake: '#cdc2a4',
   graticule: 'rgba(70, 56, 36, 0.16)',
@@ -77,7 +86,7 @@ export const PAPER = {
  * 110m is not a level of detail for this map, it is a *floor*: at every level
  * the drawn map exists at, it is throwing away ten times the geometry a tile
  * pixel could show. It is still shipped and still drawn — for the ~300 ms
- * between the 55 kB file parsing and the 1.05 MB one, and for any tile asked
+ * between the 55 kB file parsing and the 841 kB one, and for any tile asked
  * for in that window (see `loadWorld`). So the switch is availability as much
  * as level, which is what `landAt` below expresses.
  */
@@ -139,7 +148,7 @@ export const levelOf = (r: TileRequest): number =>
   r.z + Math.log2((r.px ?? TILE_PX) / TILE_PX)
 
 /** Ink weights, in tile pixels; constant at every level, as a drawn map's are. */
-const INK = { coast: 1.15, coastSoft: 0.7, border: 0.85, river: 0.8, graticule: 0.5 } as const
+const INK = { coast: 1.15, coastSoft: 0.7, river: 0.8, graticule: 0.5 } as const
 /** The fixed offset of the second stroke. Sub-pixel, and never per tile. */
 const INK_OFFSET = { x: 0.55, y: 0.4 } as const
 
@@ -360,8 +369,9 @@ export const waterAlpha = (level: number): number =>
  *  3. the land, filled over it, which is what turns the wash into a band that
  *     hugs the coast from the outside only. No offsetting, no distance field:
  *     the land is its own mask;
- *  4. lakes, rivers, the graticule, the borders — everything that is drawn ON
- *     the map rather than being the map;
+ *  4. lakes, rivers and the graticule — everything that is drawn ON the map
+ *     rather than being the map. Political boundaries are NOT among them: they
+ *     are the nations layer's, because they are a function of the year;
  *  5. the coastline ink, last of the line work, so nothing crosses it;
  *  6. the fleck, over everything, because paper is in front of the ink.
  */
@@ -383,7 +393,6 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
   }
   const bleed = WASH_PX + 2
   const [landLayer, landName] = landAt(world, level)
-  const fine = landName === 'land'
   const landNear = shapesNear(landLayer, near)
 
   ctx.save()
@@ -461,25 +470,6 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
   }
 
   graticule(ctx, level, originX, originY, px, paths.worldPx)
-
-  if (fine && world.countries) {
-    ctx.strokeStyle = PAPER.border
-    ctx.lineWidth = INK.border
-    ctx.setLineDash([5, 3.5])
-    eachShape(
-      ctx,
-      paths,
-      world.countries!,
-      'countries',
-      shapesNear(world.countries!, near),
-      originX,
-      originY,
-      px,
-      2,
-      (p) => ctx.stroke(p),
-    )
-    ctx.setLineDash([])
-  }
 
   // 5 — the coastline, in two exact strokes: the confident one, and a thinner
   // pass at a fixed sub-pixel offset. NOT a jitter — see the determinism rule.

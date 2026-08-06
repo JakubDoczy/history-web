@@ -30,7 +30,7 @@ const { DrawnRenderer, MIN_SEG_PX, levelOf } = await import('../src/lib/drawnTil
 const { tileBbox, TILE_PX } = await import('../src/lib/tilePyramid.ts')
 
 const read = (f) => JSON.parse(readFileSync(join(root, 'public/data/map', f), 'utf8'))
-const world = buildWorld(read('land-110m.json'), read('world-50m.json'), read('water-50m.json'))
+const world = buildWorld(read('land-110m.json'), read('land-50m.json'), read('water-50m.json'))
 
 /** Segments a layer contributes at a level, after the half-pixel filter. */
 function segments(layer, level) {

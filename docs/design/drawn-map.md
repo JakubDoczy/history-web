@@ -118,7 +118,7 @@ equirect world texture swapped in through the existing paleo crossfade; map mode
 replacing the schematic surface treatment with `RenderMode` unchanged; and a
 right-side two-state SVG toggle on the same setting the panel writes.
 
-Six things the contract did not say, and one it did.
+Seven things the contract did not say, and one it did.
 
 1. **The sharp/blurred ratio cannot carry a drawing.** The contract expected the
    shader's existing trick to be "self-consistent by construction" for a drawn
@@ -144,12 +144,12 @@ Six things the contract did not say, and one it did.
 3. **110m is not a level of detail, it is a floor.** Measured, 110m survives the
    half-pixel filter with 4 992 segments at the *base* level against 50m's
    55 055 — it is the coarser answer everywhere the drawn map is ever drawn. It
-   is kept because it is 55 kB against 1.05 MB: the loader resolves on it, the
+   is kept because it is 55 kB against 841 kB: the loader resolves on it, the
    first tiles are drawn from it, and the 50m file replaces it in place. That
    needed a second source label (`DRAWN_LABEL_COARSE`), because the tile cache
    is keyed by label and pins what the view wants — without it, a Europe that
-   happened to load in that first second kept a coastline with no rivers and no
-   borders on it for as long as anyone looked there.
+   happened to load in that first second kept a blunt coastline with no rivers
+   on it for as long as anyone looked there.
 4. **`Z_MAX` is above the level the geometry saturates at, on purpose.** The
    contract's rule — where 50m stops adding segments per tile — measures 6, not
    the 8–9 it guessed. But stopping there and magnifying puts a coastline on
@@ -175,10 +175,21 @@ Six things the contract did not say, and one it did.
    coast's 0.0036°. One Chaikin pass at load turns the staircase into a curve;
    past level 7 they fade out and by 9 they are gone, because 4 km is 26 tile
    pixels there and that is a flight of steps, not a river.
+8. **Borders are the nations layer's, not the paper's.** The contract said
+   nothing about political boundaries and the first build stroked Natural
+   Earth's `countries` into every tile, which was wrong for this app in the one
+   way that matters: this globe already draws borders, from 73 era-accurate
+   polities that change with the year and are re-inked for parchment
+   (`inkOnPaper`), so a reader at 1500 got a modern France printed under
+   whoever actually held that ground — dashed, permanent, and contradicting the
+   layer above it. The paper now carries physical geography only: coast,
+   rivers, lakes, graticule, ocean wash, fleck. Dropping `countries` from the
+   vendored topology also dropped the 362 arcs that only ever described an
+   interior boundary — 746 kB → 538 kB — and 52 kB off the world texture.
 
 Numbers, measured on this machine (`npm run map:measure`, and the in-browser
 worker under SwiftShader): tile render 0.9 ms mean / 3.1 ms worst in node and
 0.76–1.4 ms mean / 8–10 ms worst in the browser worker, against an 8 ms budget;
 the worst case is the first tile of a level, which builds the paths every later
-tile of that level reuses. Vector data 1.10 MB over three files; the world
-texture 453 kB.
+tile of that level reuses. Vector data 894 kB over three files; the world
+texture 403 kB.
