@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import GlobeView from '../components/GlobeView.vue'
 import TopBar from '../components/TopBar.vue'
-import TimelineBar from '../components/TimelineBar.vue'
+import BottomRail from '../components/BottomRail.vue'
 import EventPanel from '../components/EventPanel.vue'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import SearchBox from '../components/SearchBox.vue'
@@ -49,7 +49,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
     <ScaleBar v-if="settings.scaleBar" />
   </Transition>
   <EventPanel />
-  <TimelineBar />
+  <BottomRail />
 </template>
 
 <style scoped>

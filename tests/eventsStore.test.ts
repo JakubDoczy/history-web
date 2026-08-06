@@ -955,6 +955,28 @@ describe('focus navigation, inside a plan and back out', () => {
     expect(events.focusReturnTo?.id).toBe('barbarossa')
   })
 
+  /**
+   * The saga timeline's breadcrumb is a reading of the stack and nothing else
+   * (components/SagaTimeline.vue): it grows on a descent, shrinks on the way
+   * back, and pressing a crumb is spelt with `focusBack` — so there is no
+   * second navigation state that could disagree with the first.
+   */
+  it('names the whole stack for the breadcrumb, outermost first', () => {
+    const events = store()
+    events.showOnMap('barbarossa')
+    expect(events.focusTrail.map((i) => i.id)).toEqual(['barbarossa'])
+    events.showOnMap('kiev') // a part: pushes
+    expect(events.focusTrail.map((i) => i.id)).toEqual(['barbarossa', 'kiev'])
+    events.select('village') // reading a part of the part: the stack is unchanged
+    expect(events.focusTrail.map((i) => i.id)).toEqual(['barbarossa', 'kiev'])
+    // …and one press per rung, which is what `backPressesTo` counts out
+    events.focusBack() // spent on the selection
+    events.focusBack() // pops kiev
+    expect(events.focusTrail.map((i) => i.id)).toEqual(['barbarossa'])
+    events.dismiss()
+    expect(events.focusTrail).toEqual([])
+  })
+
   it('opens the battle expanded even when the operation was minimised', () => {
     // Owner call: tapping a child pin says "tell me about this one" — the
     // article opens expanded regardless of the shape the context's panel was in.

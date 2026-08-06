@@ -7,7 +7,6 @@ import { renderRichText } from '../lib/richtext'
 import { anchorYearOf, assertNever, timeOf, type Item, type Place } from '../lib/events'
 import { resolvePillKind } from '../lib/present/saga'
 import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
-import StepStrip from './StepStrip.vue'
 
 const events = useEventStore()
 const time = useTimeStore()
@@ -217,10 +216,14 @@ onBeforeUnmount(() => inflight?.abort())
        Now closing removes the host synchronously, and the inner swap only ever
        chooses between two elements that both exist. -->
   <div v-if="events.selected" class="panel-host">
-    <!-- The authored steps of the focused event, above the pill's row. Outside
-         the swap below on purpose: it belongs to the FOCUS, not to whichever
-         shape the panel is in, and it must not fold away with the article. -->
-    <StepStrip />
+    <!-- The authored steps of the focused saga used to be a strip of chips
+         here, over the map. They are the bottom rail now
+         (components/SagaTimeline.vue): the same eleven steps, in a control
+         whose layout can hold eleven of them, mounted exactly when this strip
+         was. Two controls with the same content and the same lifetime are one
+         control drawn twice, so this one went rather than being hidden. What
+         stayed in the panel is the step PAGE and its way back to the overview,
+         which are readings and belong with the article. -->
     <!-- Two shapes of the same panel. The article is the default; the pill is
          what focus mode leaves behind so the map is unobstructed (see
          `focusStack` in stores/events.ts). `mode="out-in"` because they are not
@@ -279,7 +282,7 @@ onBeforeUnmount(() => inflight?.abort())
         v-else
         key="article"
         class="sheet panel scroll-y"
-        :class="{ 'has-minimise': events.focus, 'has-strip': events.focusSteps.length }"
+        :class="{ 'has-minimise': events.focus }"
       >
     <span class="grabber" aria-hidden="true" />
     <!-- In focus mode the article can fold back down to the pill without
@@ -508,14 +511,6 @@ onBeforeUnmount(() => inflight?.abort())
   padding: var(--s3) var(--s5) var(--s5);
   z-index: var(--z-event-panel);
   animation: panel-in var(--slow);
-}
-/* A stepped event's article stops short of the corner the step strip is in.
-   Without this a long step page reaches the bottom of the screen and paints
-   over the one control that steps to the next step — on a phone that is the
-   whole strip, and the reader would have to close the page to see it again.
-   The band reserved is exactly the pill's row plus the strip's (tokens.css). */
-.panel.has-strip {
-  max-height: calc(100dvh - 66px - var(--safe-t) - var(--strip-clear) - var(--s1));
 }
 @keyframes panel-in {
   from {
@@ -1153,14 +1148,6 @@ ul {
     max-height: calc(100dvh - var(--bar-clear) - var(--rail-clear) - 2 * var(--s2));
     padding: var(--s4) var(--s4) var(--s4);
     animation-name: sheet-in;
-  }
-  /* The sheet stands on the strip's row rather than on the rail. On a phone the
-     sheet occupies the same corner the strip does, so without this the chips
-     are simply not there while a step page is open — and the strip is how the
-     reader gets to the NEXT step. */
-  .panel.has-strip {
-    bottom: calc(var(--strip-clear) + var(--s1));
-    max-height: calc(100dvh - var(--bar-clear) - var(--strip-clear) - var(--s1) - var(--s2));
   }
   @keyframes sheet-in {
     from {

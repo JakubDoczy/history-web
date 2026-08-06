@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { NO_ACTIVE, clampActive, stepActive } from '../src/lib/listbox'
+import { NO_ACTIVE, clampActive, stepActive, stepActiveX } from '../src/lib/listbox'
 
 describe('stepActive', () => {
   it('walks down and up the list', () => {
@@ -51,5 +51,21 @@ describe('clampActive', () => {
     expect(clampActive(7)).toBe(0)
     expect(clampActive(1)).toBe(0)
     expect(clampActive(0)).toBe(NO_ACTIVE)
+  })
+})
+
+describe('stepActiveX — the same ring, read left to right', () => {
+  it('spells the vertical arithmetic with the horizontal keys', () => {
+    expect(stepActiveX('ArrowRight', NO_ACTIVE, 4)).toBe(0)
+    expect(stepActiveX('ArrowRight', 3, 4)).toBe(0) // the row wraps, like the list
+    expect(stepActiveX('ArrowLeft', NO_ACTIVE, 4)).toBe(3)
+    expect(stepActiveX('ArrowLeft', 0, 4)).toBe(3)
+    expect(stepActiveX('Home', 2, 4)).toBe(0)
+    expect(stepActiveX('End', 0, 4)).toBe(3)
+  })
+
+  it('leaves the keys a rail does not own alone — Enter takes the station', () => {
+    for (const key of ['Enter', ' ', 'Escape', 'Tab', 'ArrowUp', 'ArrowDown'])
+      expect(stepActiveX(key, 0, 4), key).toBeNull()
   })
 })

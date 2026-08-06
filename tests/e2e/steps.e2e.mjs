@@ -79,11 +79,18 @@ const stateOf = (page) =>
     cursor: window.__time.currentTime,
     selection: { ...window.__time.selection },
     pins: document.querySelectorAll('.event-pin').length,
-    chips: [...document.querySelectorAll('[data-test="step-chip"]')].map((b) => ({
+    // The steps are the bottom RAIL now (components/SagaTimeline.vue), not a
+    // strip of chips over the map: one station per step, and "the whole of it"
+    // is the innermost breadcrumb rather than a leading chip.
+    chips: [...document.querySelectorAll('[data-test="saga-station"]')].map((b) => ({
       step: b.dataset.step,
-      text: b.textContent.trim(),
+      text: b.querySelector('.label')?.textContent.trim() ?? '',
       on: b.classList.contains('on'),
     })),
+    overview: (() => {
+      const c = document.querySelector('[data-test="saga-crumb"][data-step="overview"]')
+      return c && { text: c.textContent.trim(), on: c.classList.contains('on') }
+    })(),
     page: document.querySelector('[data-test="step-page"] h3')?.textContent ?? null,
   }))
 
@@ -145,13 +152,14 @@ console.log(
   `    ${overview.layers.length} layers, ${overview.visible.length} pins, chips: ` +
     overview.chips.map((c) => c.text).join(' | '),
 )
-await check('the strip appears, Overview first, one chip per step in time order', () => {
+await check('the rail appears, one station per step in time order, on the overview', () => {
   eq(
     overview.chips.map((c) => c.step),
-    ['overview', 'border-battles', 'smolensk', 'kiev', 'typhoon', 'counteroffensive'],
-    'chips',
+    ['border-battles', 'smolensk', 'kiev', 'typhoon', 'counteroffensive'],
+    'stations',
   )
-  ok(overview.chips[0].on, 'Overview is not the selected chip on arrival')
+  ok(overview.overview?.on, 'the saga crumb does not read as the overview on arrival')
+  ok(!overview.chips.some((c) => c.on), 'a station is lit on arrival')
 })
 await check('the overview is the whole plan — every layer, no step', () => {
   ok(overview.step === null, `arrived on step ${overview.step}`)
@@ -349,25 +357,31 @@ await settle(phone, 1200)
 await phone.evaluate(() => window.__events.showOnMap('barbarossa'))
 await settle(phone, 2800)
 await shot(phone, '07-phone-overview')
-const strip = await phone.$eval('[data-test="step-strip"]', (el) => {
+const strip = await phone.$eval('[data-test="saga-timeline"]', (el) => {
   const r = el.getBoundingClientRect()
   const pill = document.querySelector('[data-test="panel-pill"]')?.getBoundingClientRect()
+  const track = el.querySelector('.track')
   return {
     left: r.left,
     right: r.right,
-    bottom: r.bottom,
+    top: r.top,
     width: r.width,
-    overPill: pill ? pill.top - r.bottom : null,
-    scrollable: el.querySelector('.steps').scrollWidth > el.querySelector('.steps').clientWidth,
+    overPill: pill ? r.top - pill.bottom : null,
+    scrollable: track.scrollWidth > track.clientWidth,
+    narrowest: Math.min(
+      ...[...el.querySelectorAll('[data-test="saga-station"]')].map((b) => b.getBoundingClientRect().width),
+    ),
   }
 })
 console.log(
-  `    strip ${Math.round(strip.width)}px wide at x=${Math.round(strip.left)}..${Math.round(strip.right)}` +
-    `, ${Math.round(strip.overPill ?? -1)}px above the pill, chips scroll: ${strip.scrollable}`,
+  `    rail ${Math.round(strip.width)}px wide at x=${Math.round(strip.left)}..${Math.round(strip.right)}` +
+    `, ${Math.round(strip.overPill ?? -1)}px below the pill, stations scroll: ${strip.scrollable}` +
+    `, narrowest ${Math.round(strip.narrowest)}px`,
 )
-await check('the strip stays on screen and sits above the pill', () => {
-  ok(strip.left >= 0 && strip.right <= 390, `strip runs ${strip.left}..${strip.right}`)
-  ok(strip.overPill !== null && strip.overPill >= 0, `overlaps the pill by ${-strip.overPill}px`)
+await check('the rail stays on screen, under the pill, with pressable stations', () => {
+  ok(strip.left >= 0 && strip.right <= 390, `rail runs ${strip.left}..${strip.right}`)
+  ok(strip.overPill !== null && strip.overPill >= 0, `the pill overlaps the rail by ${-strip.overPill}px`)
+  ok(strip.narrowest >= 43, `the narrowest station is ${strip.narrowest}px`)
 })
 await phone.click('[data-step="typhoon"]')
 await settle(phone, 2400)
@@ -377,14 +391,14 @@ await check('a step page opens over the map on a phone too', () => {
   ok(phoneStep.step === 'typhoon', `step is ${phoneStep.step}`)
   ok(phoneStep.page?.includes('Typhoon'), `page heading: ${phoneStep.page}`)
 })
-await check('the strip is not buried under the open step page', async () => {
+await check('the rail is not buried under the open step page', async () => {
   const hit = await phone.evaluate(() => {
-    const strip = document.querySelector('[data-test="step-strip"]')
-    const r = strip.getBoundingClientRect()
+    const rail = document.querySelector('[data-test="saga-timeline"]')
+    const r = rail.getBoundingClientRect()
     const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)
-    return { covered: !strip.contains(el), tag: el?.className ?? '?' }
+    return { covered: !rail.contains(el), tag: el?.className ?? '?' }
   })
-  ok(!hit.covered, `the strip is under ${hit.tag}`)
+  ok(!hit.covered, `the rail is under ${hit.tag}`)
 })
 
 await phone.click('[data-test="step-back"]')

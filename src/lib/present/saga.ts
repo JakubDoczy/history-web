@@ -1,5 +1,6 @@
 import { assertNever, featureOf, type Item, type Subject } from '../events'
 import type { Step } from '../steps'
+import type { Time } from '../time'
 
 /**
  * SAGAHOOD, RESOLVED — the presentation layer's answer to "is this a saga?".
@@ -30,6 +31,30 @@ import type { Step } from '../steps'
  */
 export const sagaOf = (i: Subject | undefined): readonly Step[] | undefined =>
   i?.kind === 'event' && i.steps?.length ? i.steps : undefined
+
+/**
+ * A saga with the two things a rail needs to draw it: its steps and the span
+ * they are measured against (see lib/steps.ts, rule 3).
+ *
+ * The pair, resolved once, because the alternative is a component asking
+ * `focused.kind === 'event' && focused.time` for itself — which is the same
+ * opinion about the domain `sagaOf` exists to keep out of components, and the
+ * two halves must come from the SAME item or the fractions are measured against
+ * someone else's years.
+ */
+export interface SagaView {
+  id: string
+  name: string
+  steps: readonly Step[]
+  span: Time
+}
+
+export const sagaViewOf = (i: Subject | undefined): SagaView | undefined => {
+  const steps = sagaOf(i)
+  return steps && i?.kind === 'event'
+    ? { id: i.id, name: i.name, steps, span: i.time }
+    : undefined
+}
 
 /**
  * What one chip on the step strip IS.

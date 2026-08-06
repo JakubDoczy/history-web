@@ -145,8 +145,11 @@ const stateOf = (page) =>
     focus: window.__events.focus?.itemId,
     selected: window.__events.selectedId,
     step: window.__events.stepId ?? null,
-    count: document.querySelector('[data-test="step-count"]')?.textContent ?? null,
-    chips: [...document.querySelectorAll('[data-test="step-chip"]')].map((b) => ({
+    // The strip of chips is the bottom RAIL now (components/SagaTimeline.vue):
+    // a station per step, and the breadcrumb naming the stack.
+    count: document.querySelector('[data-test="saga-span"]')?.textContent ?? null,
+    crumbs: [...document.querySelectorAll('[data-test="saga-crumb"]')].map((c) => c.textContent.trim()),
+    chips: [...document.querySelectorAll('[data-test="saga-station"]')].map((b) => ({
       step: b.dataset.step,
       entrance: b.dataset.entrance !== undefined,
       on: b.classList.contains('on'),
@@ -174,19 +177,18 @@ await page.evaluate(() => window.__events.showOnMap('ww2'))
 await settle(page, 2800)
 const war = await stateOf(page)
 await shot(page, '05-ww2-strip')
-console.log(`    ${war.count}, ${war.chips.length} chips, ${war.sagaPins} saga pins on the globe`)
-await check('it opens on its overview, with the strip saying what it is', () => {
+console.log(`    ${war.count}, ${war.chips.length} stations, ${war.sagaPins} saga pins on the globe`)
+await check('it opens on its overview, with the rail saying what it is', () => {
   ok(war.step === null, `landed on step ${war.step}`)
-  ok(/^SAGA/i.test(war.count.trim()), `the strip says "${war.count}"`)
-  ok(war.count.includes('11'), `the strip counts "${war.count}"`)
+  ok(/1939/.test(war.count), `the rail says "${war.count}"`)
+  ok(war.count.includes('11'), `the rail counts "${war.count}"`)
+  ok(war.crumbs.length === 1 && /World War II/.test(war.crumbs[0]), `crumbs: ${war.crumbs}`)
 })
-await check('every chip is an entrance, and says so', () => {
-  const steps = war.chips.filter((c) => c.step !== 'overview')
-  ok(steps.length === 11, `${steps.length} chips`)
-  ok(steps.every((c) => c.entrance), 'a step chip is not marked as an entrance')
-  ok(!war.chips.find((c) => c.step === 'overview').entrance, 'Overview reads as an entrance')
+await check('every station is an entrance, and says so', () => {
+  ok(war.chips.length === 11, `${war.chips.length} stations`)
+  ok(war.chips.every((c) => c.entrance), 'a station is not marked as an entrance')
 })
-const stripBox = await page.locator('[data-test="step-strip"]').boundingBox()
+const stripBox = await page.locator('[data-test="saga-timeline"]').boundingBox()
 await shot(page, '06-entrance-chips', {
   x: Math.round(stripBox.x) - 6,
   y: Math.round(stripBox.y) - 6,
@@ -214,10 +216,12 @@ await check('the map is the child’s: its own plan, its own steps', () => {
   ok(dday.layers > 0, 'no plan on the globe')
   eq(
     dday.chips.map((c) => c.step),
-    ['overview', 'six-june', 'beachhead', 'cherbourg', 'breakout'],
-    'chips',
+    ['six-june', 'beachhead', 'cherbourg', 'breakout'],
+    'stations',
   )
-  ok(dday.chips.slice(1).every((c) => !c.entrance), 'D-Day’s own steps read as entrances')
+  ok(dday.chips.every((c) => !c.entrance), 'D-Day’s own steps read as entrances')
+  // …and the rail says where the reader is, which the strip could not
+  eq(dday.crumbs, ['World War II', 'D-Day landings'], 'crumbs')
 })
 
 console.log('\n(d) one deeper — a step of the campaign inside the war')
@@ -242,7 +246,7 @@ await check('back to the war, on its OVERVIEW rather than on the chip pressed', 
   eq(out.stack, ['ww2'], 'focus stack')
   ok(out.selected === 'ww2', `panel on ${out.selected}`)
   ok(out.step === null, `came back into step ${out.step}`)
-  ok(out.chips.length === war.chips.length, 'the strip did not come back')
+  ok(out.chips.length === war.chips.length, 'the war’s own rail did not come back')
 })
 
 console.log('\n(f) map mode — the ring and the glyphs are not a photographic trick')

@@ -493,6 +493,22 @@ export const useEventStore = defineStore('events', {
       // Without the fallback the mode would be on with nothing named.
       return id ? (index.byId.get(id) ?? index.pin(id)) : undefined
     },
+    /**
+     * The whole focus stack as items, outermost first — what the saga
+     * timeline's breadcrumb names ("World War II ▸ D-Day landings").
+     *
+     * A reading of `focusStack`, not a second copy of it: the crumbs appear and
+     * go as the stack grows and shrinks, and pressing one is spelt with the
+     * ordinary rungs (`focusBack`), so there is no second navigation state that
+     * could come to disagree with this one. An id the index has not loaded yet
+     * is dropped rather than named "undefined" — chunks stream.
+     */
+    focusTrail(state): Subject[] {
+      void state.revision
+      return state.focusStack
+        .map((id) => index.byId.get(id) ?? index.pin(id))
+        .filter((i): i is Subject => !!i)
+    },
     /** The child events focus mode is forcing onto the globe. */
     focusChildren(state): HistoricalEvent[] {
       void state.revision

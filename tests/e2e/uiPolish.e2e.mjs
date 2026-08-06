@@ -12,8 +12,11 @@
  *   3. an expanded stack is joined to its members by STRAIGHT leader lines —
  *      measured as the sag of the drawn geometry against the straight chord,
  *      before and after, with the old parabola put back through the live layer;
- *   4. an operation opens with its overview already up, with the step strip
- *      advertising how many pages there are.
+ *   4. an operation opens with its overview already up, with the count of its
+ *      pages advertised. (Item 5 moved that advertisement off the step strip
+ *      and onto the rail itself — components/SagaTimeline.vue — so this now
+ *      reads the rail. What is being checked is unchanged: arriving on the
+ *      overview, and the existence of the pages being visible without a click.)
  *
  * Run:  node tests/e2e/uiPolish.e2e.mjs
  * Env:  CHROME_PATH        Chromium/Chrome executable
@@ -157,6 +160,20 @@ if (!pillState.focus) {
   await pc.evaluate(() => window.__events.showOnMap(window.__events.visible[0].id))
   await settle(pc, 1200)
 }
+// …and it may have landed on a SAGA, which opens on its overview rather than as
+// a pill (`opensExpanded`) — this section is about the pill's geometry, so fold
+// it down. Without this the whole file stopped here whenever `vostok-1` was not
+// in the loaded chunks, which is how it stood before item 5 touched it.
+if (!(await pc.evaluate(() => window.__events.panelMinimised))) {
+  await pc.evaluate(() => window.__events.toggleFocusExpanded())
+  await settle(pc, 800)
+}
+// The panel's own fold is a Vue <Transition mode="out-in">, and under
+// swiftshader the two animation frames it waits for can take seconds — the
+// store is minimised long before the pill is in the DOM. Waiting for the
+// element rather than reading it on the next line is the difference between
+// this file measuring the pill and this file throwing at it.
+await pc.waitForSelector('[data-test="panel-pill"]', { timeout: 20_000 })
 const pill = await rect(pc, '[data-test="panel-pill"]')
 const railRect = await rect(pc, 'footer, .timeline, .rail')
 await shot(pc, 'c-pc-minimised-pill-bottom-centre')
@@ -344,26 +361,29 @@ const op = await pc.evaluate(() => ({
   minimised: window.__events.panelMinimised,
   step: window.__events.stepId ?? null,
   steps: window.__events.focusSteps.length,
-  count: document.querySelector('[data-test="step-count"]')?.textContent?.trim() ?? null,
-  chips: [...document.querySelectorAll('[data-test="step-chip"]')].map((b) => ({
-    text: b.textContent.trim(),
-    framed: getComputedStyle(b).borderTopColor,
+  count: document.querySelector('[data-test="saga-span"]')?.textContent?.trim() ?? null,
+  chips: [...document.querySelectorAll('[data-test="saga-station"]')].map((b) => ({
+    text: b.querySelector('.label')?.textContent.trim() ?? '',
+    numbered: !!b.querySelector('.num')?.textContent.trim(),
+    named: b.classList.contains('named'),
   })),
   article: !!document.querySelector('.panel'),
 }))
-await shot(pc, 'e-pc-operation-overview-and-strip')
-console.log(`    ${op.steps} steps, strip says "${op.count}", article up: ${op.article}`)
+await shot(pc, 'e-pc-operation-overview-and-rail')
+console.log(`    ${op.steps} steps, the rail says "${op.count}", article up: ${op.article}`)
 await check('the overview is up on arrival, with no second click', () => {
   ok(op.minimised === false, 'the panel folded to the pill')
   ok(op.article, 'no article on screen')
   ok(op.step === null, `landed on step ${op.step}`)
 })
-await check('the strip advertises the pages that exist', () => {
-  ok(op.count === `${op.steps} steps`, `count reads "${op.count}" for ${op.steps} steps`)
-  ok(op.chips.length === op.steps + 1, `${op.chips.length} chips for ${op.steps} steps`)
-  // a chip is framed while still: the border is not transparent
-  const bare = op.chips.filter((c) => /rgba\(.*, ?0\)/.test(c.framed))
-  ok(bare.length === 0, `${bare.length} chips are still borderless`)
+await check('the rail advertises the pages that exist', () => {
+  // Item 5 moved the advertisement from a strip of chips over the map to the
+  // rail itself: the count rides in the rail's span readout, and every step is
+  // a numbered station wearing its own name.
+  ok(op.count.endsWith(`${op.steps} steps`), `the rail reads "${op.count}" for ${op.steps} steps`)
+  ok(op.chips.length === op.steps, `${op.chips.length} stations for ${op.steps} steps`)
+  ok(op.chips.every((c) => c.numbered), 'a station carries no number')
+  ok(op.chips.every((c) => c.named && c.text), 'a five-station rail is hiding a name')
 })
 
 /* ========================================================= the phone ==== */
@@ -399,12 +419,12 @@ await phone.evaluate(() => window.__events.showOnMap('barbarossa'))
 await settle(phone, 2000)
 const opPhone = await phone.evaluate(() => ({
   minimised: window.__events.panelMinimised,
-  strip: !!document.querySelector('[data-test="step-strip"]'),
+  strip: !!document.querySelector('[data-test="saga-timeline"]'),
 }))
 await shot(phone, 'f-mobile-operation-pill')
 await check('a phone keeps the map uncovered and the strip reachable', () => {
   ok(opPhone.minimised, 'the article covered the plan on a phone')
-  ok(opPhone.strip, 'no step strip on the phone')
+  ok(opPhone.strip, 'no saga rail on the phone')
 })
 
 console.log(`\n${passed} passed, ${failures.length} failed`)
