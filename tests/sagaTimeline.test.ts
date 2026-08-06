@@ -5,6 +5,7 @@ import {
   LANE_GAP_PX,
   MAX_LANES,
   MIN_LABEL_PX,
+  minLabelPx,
   MIN_STATION_PX,
   RAIL_PAD,
   axisTicks,
@@ -16,31 +17,43 @@ import {
   layoutRail,
   railWidth,
   railX,
+  spread,
+  stationAt,
   stationTime,
+  stationUnit,
   stations,
   stepBy,
 } from '../src/lib/present/sagaTimeline'
 
 /**
- * The corpus's own two shapes, because they are the two the layout has to
- * survive: World War II, eleven steps across six years with four of them piled
- * into the last 7%, and D-Day, four steps inside a span that is a single point.
+ * The two shapes the layout has to survive.
+ *
+ * WORLD WAR II, as the corpus now dates it: eleven steps across six years, at
+ * their own dates, with four of them piled into the last four months. Every
+ * time here is a real one (round 45) — the fractions this fixture used to carry
+ * were proportions of the war rather than dates, and put D-Day in 1943.
+ *
+ * And a POINT-DATED saga, which no longer exists in the corpus but is still a
+ * shape the schema allows: four steps written as proportions inside a span with
+ * no extent at all. It has no rule and its stations are spaced evenly, because
+ * there is nothing else honest to do with them (see `spread`).
  */
 const ww2Raw: RawStep[] = [
-  { id: 'battle-britain', name: 'Battle of Britain', at: 0.14, child: 'battle-britain' },
-  { id: 'barbarossa', name: 'Operation Barbarossa', at: 0.28, child: 'barbarossa' },
-  { id: 'pearl-harbor', name: 'Attack on Pearl Harbor', at: 0.37, child: 'pearl-harbor' },
-  { id: 'holocaust', name: 'The Holocaust', start: 0.38, end: 0.95, child: 'holocaust' },
-  { id: 'midway', name: 'Battle of Midway', at: 0.45, child: 'midway' },
-  { id: 'stalingrad', name: 'Battle of Stalingrad', start: 0.48, end: 0.57, child: 'stalingrad' },
-  { id: 'd-day', name: 'D-Day landings', at: 0.78, child: 'd-day' },
-  { id: 've-day', name: 'Victory in Europe', at: 0.93, child: 've-day' },
-  { id: 'trinity', name: 'Trinity nuclear test', at: 0.96, child: 'trinity' },
-  { id: 'hiroshima', name: 'Atomic bombings', at: 0.97, child: 'hiroshima' },
-  { id: 'vj-day', name: 'Victory over Japan', at: 1, child: 'vj-day' },
+  { id: 'battle-britain', name: 'Battle of Britain', start: 1940.52322, end: 1940.83197, child: 'battle-britain' },
+  { id: 'barbarossa', name: 'Operation Barbarossa', start: 1941.4726, end: 1941.9274, child: 'barbarossa' },
+  { id: 'holocaust', name: 'The Holocaust', start: 1941.4726, end: 1945.34932, child: 'holocaust' },
+  { id: 'pearl-harbor', name: 'Attack on Pearl Harbor', at: 1941.93288, child: 'pearl-harbor' },
+  { id: 'midway', name: 'Battle of Midway', start: 1942.42329, end: 1942.43151, child: 'midway' },
+  { id: 'stalingrad', name: 'Battle of Stalingrad', start: 1942.64247, end: 1943.08904, child: 'stalingrad' },
+  { id: 'd-day', name: 'D-Day landings', start: 1944.43033, end: 1944.56421, child: 'd-day' },
+  { id: 've-day', name: 'Victory in Europe', at: 1945.34932, child: 've-day' },
+  { id: 'trinity', name: 'Trinity nuclear test', at: 1945.53836, child: 'trinity' },
+  { id: 'hiroshima', name: 'Atomic bombings', start: 1945.59589, end: 1945.60411, child: 'hiroshima' },
+  { id: 'vj-day', name: 'Victory over Japan', at: 1945.62055, child: 'vj-day' },
 ]
 const ww2: Step[] = parseSteps(ww2Raw)
-const ww2Span = timeFrom(1939, 1945)
+/** 1 September 1939 – 2 September 1945. */
+const ww2Span = timeFrom(1939.66712, 1945.66986)
 
 const dday: Step[] = parseSteps([
   { id: 'six-june', name: '6 June', at: 0 },
@@ -65,9 +78,9 @@ describe('stations', () => {
 
   it('carries a period step’s own end, and a moment’s is its own start', () => {
     const by = new Map(stations(ww2, ww2Span).map((s) => [s.step.id, s]))
-    expect(by.get('holocaust')!.u).toBeCloseTo(0.38)
-    expect(by.get('holocaust')!.uEnd).toBeCloseTo(0.95)
-    expect(by.get('midway')!.uEnd).toBe(by.get('midway')!.u)
+    expect(by.get('holocaust')!.u).toBeCloseTo(0.3008) // 22 June 1941
+    expect(by.get('holocaust')!.uEnd).toBeCloseTo(0.947) // 8 May 1945
+    expect(by.get('pearl-harbor')!.uEnd).toBe(by.get('pearl-harbor')!.u)
   })
 
   /**
@@ -123,10 +136,10 @@ describe('placement is the truth about when', () => {
   it('bands a period from its own start to its own end, and a moment not at all', () => {
     const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
     const by = new Map(rail.stations.map((s) => [s.step.id, s]))
-    expect(by.get('midway')!.band).toBeUndefined()
+    expect(by.get('pearl-harbor')!.band).toBeUndefined()
     const band = by.get('holocaust')!.band!
-    expect(band.x).toBeCloseTo(railX(0.38, 1200))
-    expect(band.x + band.w).toBeCloseTo(railX(0.95, 1200))
+    expect(band.x).toBeCloseTo(railX(by.get('holocaust')!.u, 1200))
+    expect(band.x + band.w).toBeCloseTo(railX(by.get('holocaust')!.uEnd, 1200))
   })
 
   it('is not knocked over by a saga with one step, or by a rail with no width', () => {
@@ -159,8 +172,11 @@ describe('lanes — what crowding is allowed to change', () => {
     expect(lanes.length).toBe(6)
   })
 
-  it('gives the war two lanes on a desktop and three on a phone’s scrolling rail', () => {
-    expect(layoutRail(stations(ww2, ww2Span), ww2Span, 1200).lanes).toBe(2)
+  it('gives the war all three lanes — four of its steps are inside four months', () => {
+    // VE Day, Trinity, Hiroshima and VJ Day are 8 May to 15 August 1945, which
+    // on a desktop is 49 px of a 1200 px rail. That pile-up IS the summer of
+    // 1945, and the lanes are how it is drawn without moving anything.
+    expect(layoutRail(stations(ww2, ww2Span), ww2Span, 1200).lanes).toBe(3)
     expect(layoutRail(stations(ww2, ww2Span), ww2Span, 390).lanes).toBe(3)
     expect(layoutRail(stations(dday, ddaySpan), ddaySpan, 1200).lanes).toBe(1)
   })
@@ -171,16 +187,28 @@ describe('labels', () => {
     const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
     for (const s of rail.stations) {
       expect(s.labelPx === 0 || s.labelPx >= MIN_LABEL_PX, s.step.id).toBe(true)
+      // …and the DATE goes beside the name only where both fit: below that the
+      // name goes alone rather than being cut to an initial by it
+      const need = minLabelPx(stationAt(s, ww2Span, rail.stations.length))
+      expect(s.dated, s.step.id).toBe(s.labelPx >= need)
       const next = rail.stations.find((o) => o.lane === s.lane && o.x > s.x)
       if (s.labelPx && next) expect(s.x + s.labelPx).toBeLessThanOrEqual(next.x)
     }
     // and the pile-up at the end of the war is where the names drop out
-    expect(rail.stations.filter((s) => !s.labelPx).map((s) => s.step.id)).toContain('trinity')
+    expect(rail.stations.filter((s) => !s.labelPx).map((s) => s.step.id)).toContain('vj-day')
   })
 
-  it('names more than half of them at rest — the eleven-chip overflow, solved', () => {
+  it('names the ones the true dates leave room for, and drops them into the pile', () => {
     const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
-    expect(rail.stations.filter((s) => s.labelPx).length).toBeGreaterThan(5)
+    const named = rail.stations.filter((s) => s.labelPx)
+    expect(named.length).toBeGreaterThanOrEqual(4)
+    // and every name that was dropped is one of the crowded ones: the summer of
+    // 1945, and the two steps that open on the same day as their neighbour
+    for (const s of rail.stations)
+      if (!s.labelPx)
+        expect([
+          'barbarossa', 'pearl-harbor', 'midway', 've-day', 'trinity', 'hiroshima', 'vj-day',
+        ]).toContain(s.step.id)
   })
 
   it('names every station of an uncrowded saga', () => {
@@ -190,8 +218,10 @@ describe('labels', () => {
 
   it('hangs the last names the other way off their marks, so nothing runs off the rail', () => {
     const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
-    for (const s of rail.stations)
-      expect(s.flip, s.step.id).toBe(s.x + labelWidth(s.step.name) > rail.width)
+    for (const s of rail.stations) {
+      const whole = `${s.step.name} ${stationAt(s, ww2Span, rail.stations.length)}`
+      expect(s.flip, s.step.id).toBe(s.x + labelWidth(whole) > rail.width)
+    }
     expect(rail.stations[0].flip).toBe(false)
     expect(rail.stations[rail.stations.length - 1].flip).toBe(true)
   })
@@ -201,11 +231,13 @@ describe('the axis — a rule the reader can read the dates off', () => {
   it('rules a six-year war in years, inside its own span', () => {
     const axis = axisTicks(ww2Span, 1200)
     expect(axis.unit).toBe('year')
-    expect(axis.ticks.map((t) => t.label)).toEqual(['1939', '1940', '1941', '1942', '1943', '1944', '1945'])
+    // the war opens in September 1939 and ends in September 1945, so the rule
+    // runs 1940..1945 — the round years INSIDE its own span, and no others
+    expect(axis.ticks.map((t) => t.label)).toEqual(['1940', '1941', '1942', '1943', '1944', '1945'])
     for (const t of axis.ticks) expect(t.u).toBeGreaterThanOrEqual(0)
     for (const t of axis.ticks) expect(t.u).toBeLessThanOrEqual(1)
-    expect(axis.ticks[0].u).toBe(0)
-    expect(axis.ticks[axis.ticks.length - 1].u).toBe(1)
+    expect(axis.ticks[0].u).toBeGreaterThan(0)
+    expect(axis.ticks[axis.ticks.length - 1].u).toBeLessThan(1)
   })
 
   it('coarsens rather than crowding when the rail is narrow', () => {
@@ -250,7 +282,8 @@ describe('the axis — a rule the reader can read the dates off', () => {
   })
 
   it('names a moment at the rule’s own resolution and no finer', () => {
-    expect(formatAt(1944.5, 'year')).toBe('1945')
+    // the year a date is IN, never the nearest one: 1944.5 is July 1944
+    expect(formatAt(1944.5, 'year')).toBe('1944')
     expect(formatAt(1944.5, 'month')).toBe('Jul')
     expect(formatAt(1944.5, 'month', true)).toBe('Jul 1944')
     expect(formatAt(1944.0, 'month')).toBe('Jan 1944')
@@ -259,20 +292,59 @@ describe('the axis — a rule the reader can read the dates off', () => {
     expect(formatAt(-250000, 'month')).toBe(formatAt(-250000, 'year'))
   })
 
-  it('dates a station the same way, and says a one-year period once', () => {
-    const [britain, holocaust, stalingrad] = ['battle-britain', 'holocaust', 'stalingrad'].map(
-      (id) => stations(ww2, ww2Span).find((s) => s.step.id === id)!,
-    )
-    expect(stationTime(britain, ww2Span, 'year')).toBe('1940')
-    expect(stationTime(holocaust, ww2Span, 'year')).toBe('1941 – 1945')
-    expect(stationTime(stalingrad, ww2Span, 'year')).toBe('1942') // 1941.9–1942.4, one year
-    expect(stationTime(britain, ww2Span, 'month')).toBe('Nov 1939')
+  it('dates a station one notch finer than its rule, and says a shared year once', () => {
+    const st = (id: string) => stations(ww2, ww2Span).find((s) => s.step.id === id)!
+    // the war is ruled in years; its stations are dated in months
+    expect(stationUnit(ww2Span)).toBe('month')
+    expect(stationAt(st('battle-britain'), ww2Span, 11)).toBe('Jul – Oct 1940')
+    expect(stationAt(st('pearl-harbor'), ww2Span, 11)).toBe('Dec 1941')
+    expect(stationAt(st('holocaust'), ww2Span, 11)).toBe('Jun 1941 – May 1945')
+    // a period inside one month says that month once
+    expect(stationAt(st('midway'), ww2Span, 11)).toBe('Jun 1942')
+    // …and a campaign of seven weeks is dated to the day
+    const dd = timeFrom(1944.43033, 1944.56421)
+    const six = stations(parseSteps([{ id: 'a', name: 'a', at: 1944.43033 }]), dd)[0]
+    expect(stationUnit(dd)).toBe('day')
+    expect(stationAt(six, dd, 1)).toBe('6 Jun 1944')
+  })
+
+  /**
+   * NOTHING SAYS MORE THAN IT KNOWS. A saga ruled in years dates its stations
+   * in months — but a step written as a whole year was not dated to a month by
+   * whoever wrote it, and the rail may not put one on it.
+   */
+  it('leaves a step dated to a whole year saying the year', () => {
+    const span = timeFrom(1750, 1760)
+    const s = stations(parseSteps([{ id: 'a', name: 'a', at: 1755 }]), span)[0]
+    expect(stationUnit(span)).toBe('month')
+    expect(stationAt(s, span, 1)).toBe('1755')
+  })
+
+  /**
+   * A POINT-DATED saga has no dates to give: every step resolves to the same
+   * year, and the authored fractions are proportions of a campaign. The rail
+   * spaces them evenly and numbers them, which is the whole of what it knows.
+   */
+  it('numbers the stations of a saga that has no dates, and spaces them evenly', () => {
+    const rail = layoutRail(stations(dday, ddaySpan), ddaySpan, 1200)
+    expect(rail.axis.unit).toBe('none')
+    const slots = [0.125, 0.375, 0.625, 0.875]
+    expect(spread(stations(dday, ddaySpan), 'none')).toEqual(slots)
+    expect(rail.stations.map((s) => s.x)).toEqual(slots.map((u) => railX(u, 1200)))
+    // equal gaps, and neither end on the rail's own edge
+    const gaps = rail.stations.slice(1).map((s, i) => s.x - rail.stations[i].x)
+    expect(new Set(gaps).size).toBe(1)
+    expect(rail.stations.map((s) => stationAt(s, ddaySpan, 4))).toEqual([
+      '1 of 4', '2 of 4', '3 of 4', '4 of 4',
+    ])
+    // and no bands: a length of an evenly spaced axis is not a length of time
+    expect(rail.stations.every((s) => !s.band)).toBe(true)
   })
 
   it('is part of the rail’s own layout, measured over the width it is drawn at', () => {
     const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
     expect(rail.axis.unit).toBe('year')
-    expect(rail.axis.ticks.length).toBe(7)
+    expect(rail.axis.ticks.length).toBe(6) // 1940..1945, inside 1939.7..1945.7
   })
 })
 

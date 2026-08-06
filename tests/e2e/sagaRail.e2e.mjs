@@ -102,12 +102,14 @@ const railOf = (page) =>
         x: Math.round(r.x),
         w: Math.round(r.width),
         h: Math.round(r.height),
-        label: label?.textContent.trim(),
+        label: label?.textContent.replace(/\s+/g, ' ').trim(),
       }
     })
     return {
       rail: box && { x: Math.round(box.x), y: Math.round(box.y), w: Math.round(box.width), h: Math.round(box.height) },
       era: !!document.querySelector('.rail:not(.saga)'),
+      // an unruled axis, drawn dashed: the point-dated saga's rail
+      dashed: !!document.querySelector('[data-test="saga-timeline"] .inner.dateless'),
       strip: !!document.querySelector('[data-test="step-strip"]'), // the retired chips
       crumbs: [...document.querySelectorAll('[data-test="saga-crumb"]')].map((c) => c.textContent.trim()),
       span: document.querySelector('[data-test="saga-span"]')?.textContent.trim() ?? null,
@@ -174,7 +176,9 @@ await check('all eleven steps are stations, in order, and none has overflowed', 
    are where they happened now: the axis is ruled in years and the stations line
    up on it. */
 await check('the rail is ruled in years, from the war’s own start to its own end', () => {
-  eq(war.ticks.map((t) => t.label), ['1939', '1940', '1941', '1942', '1943', '1944', '1945'], 'ticks')
+  // 1940..1945: the round years INSIDE 1 September 1939 – 2 September 1945,
+  // which is what the war is dated to since round 45 gave its steps real dates
+  eq(war.ticks.map((t) => t.label), ['1940', '1941', '1942', '1943', '1944', '1945'], 'ticks')
   const gaps = war.ticks.slice(1).map((t, i) => t.cx - war.ticks[i].cx)
   for (const g of gaps) ok(Math.abs(g - gaps[0]) <= 2, `uneven year ticks: ${gaps}`)
 })
@@ -183,14 +187,23 @@ await check('the last four steps stand in the last months, not over a quarter of
   const tick = (y) => war.ticks.find((t) => t.label === y).cx
   const pile = ['ve-day', 'trinity', 'hiroshima', 'vj-day'].map(at)
   ok(pile[3] - pile[0] < 0.1 * war.rail.w, `the end of the war spans ${pile[3] - pile[0]}px`)
-  // …and each one lands on its own date: D-Day at 0.78 of 1939–1945 is late 1943
-  ok(Math.abs(at('vj-day') - tick('1945')) <= 2, `VJ Day is ${at('vj-day')}, 1945 is ${tick('1945')}`)
-  ok(at('d-day') > tick('1943') && at('d-day') < tick('1944'), `D-Day sits at ${at('d-day')}`)
+  // …and each one lands on its own DATE, which is the round-45 fix: VJ Day is
+  // 15 August 1945, past the 1945 gridline, and D-Day is June 1944 rather than
+  // the late 1943 the authored proportions used to put it at
+  ok(at('vj-day') > tick('1945'), `VJ Day is ${at('vj-day')}, 1945 is ${tick('1945')}`)
+  ok(at('d-day') > tick('1944') && at('d-day') < tick('1945'), `D-Day sits at ${at('d-day')}`)
+  // eight months of 1945 is about an eighth of a year-ruled rail's year
+  const year = tick('1945') - tick('1944')
+  ok(Math.abs(at('vj-day') - tick('1945') - 0.62 * year) < 0.05 * year, 'VJ Day is not mid-August')
 })
 await check('a crowded mark drops to the next lane rather than moving off its date', () => {
   const lanes = war.stations.map((s) => s.lane)
   ok(Math.max(...lanes) >= 1, 'nothing hung below the axis on an eleven-step war')
   ok(Math.max(...lanes) <= 2, `${Math.max(...lanes) + 1} lanes — the rail is not that tall`)
+  // …and the names that fit carry their dates: the round-45 report was "there
+  // are no dates", and a rule two rows up is not an answer to "when is this one"
+  const dated = war.stations.filter((s) => /\d{4}$/.test(s.label ?? ''))
+  ok(dated.length >= 4, `only ${dated.length} stations of the war say when they are`)
   for (const lane of new Set(lanes)) {
     const row = war.stations.filter((s) => s.lane === lane).map((s) => s.cx)
     for (let i = 1; i < row.length; i++)
@@ -270,7 +283,25 @@ console.log(`    crumbs ${dday.crumbs.join(' ▸ ')}, stations ${dday.stations.m
 await check('the rail re-anchors to the child’s own span and steps', () => {
   eq(dday.stations.map((s) => s.step), ['six-june', 'beachhead', 'cherbourg', 'breakout'], 'stations')
   ok(dday.stations.every((s) => !s.entrance), 'D-Day’s own steps read as entrances')
-  ok(dday.stations.every((s) => s.named), 'a four-station rail is hiding a name')
+  // …all but the assault, which opens the day before the beachhead step and is
+  // 22 px from it on a 1280 px rail: its name is on its tap, its hover and the
+  // list, which is what the dual system is for
+  ok(dday.stations.filter((s) => s.named).length >= 3, 'a four-station rail is hiding two names')
+})
+/* THE ROUND-45 DEFECT, as a measurement. Normandy was dated to the point 1944,
+   so the rail drew a dashed unruled axis with its four stations standing in the
+   proportion someone typed them in — "it looks random and without dates". The
+   steps carry their real dates now (6 June to 25 July 1944) and the day ladder
+   from round 44 finally has data to draw. */
+await check('D-Day is ruled in days, and every station says its own date', () => {
+  ok(dday.ticks.length >= 4, `a dashed unruled axis: ${dday.ticks.length} tick(s)`)
+  for (const t of dday.ticks) ok(/^\d+ [A-Z][a-z]{2}$/.test(t.label), `tick "${t.label}" is not a day`)
+  ok(!dday.dashed, 'the axis is still drawn dashed, which means unruled')
+  for (const s of dday.stations)
+    ok(/\d{4}$/.test(s.label ?? ''), `station ${s.step} reads "${s.label}" — no date`)
+  // …and 6 June is the first thing on it, where the rule says June is
+  const six = dday.stations.find((s) => s.step === 'six-june')
+  ok(/6 Jun 1944/.test(six.label), `the assault reads "${six.label}"`)
 })
 await check('the breadcrumb names the stack', () => {
   eq(dday.crumbs, ['World War II', 'D-Day landings'], 'crumbs')
@@ -330,7 +361,11 @@ await shot(page, 'f-era-rail-restored')
 await check('the era rail is back, with the timeline where the reader left it', () => {
   ok(out.era, 'no era rail after the focus ended')
   ok(!out.rail, 'the saga rail outlived the focus')
-  ok(Math.abs(out.year - beforeYear) < 1e-6 || out.year === 1941, `the cursor moved to ${out.year}`)
+  // 1941, or a date inside it: walking a saga moves the CURSOR to the step's
+  // own moment, and since round 45 that moment is 22 June 1941 rather than the
+  // bare year. What must not have moved is the window (checked next).
+  ok(Math.abs(out.year - beforeYear) < 1e-6 || Math.floor(out.year) === 1941,
+    `the cursor moved to ${out.year}`)
 })
 await check('the selected year is inside the restored window', () =>
   page.evaluate(() => {

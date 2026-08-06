@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import {
+  formatOn,
   formatYear,
   clamp,
   toWarp,
@@ -616,6 +617,27 @@ describe('Time', () => {
       expect(formatTime(point)).toBe('1969')
       expect(formatTime(period)).toBe('1939 – 1945')
       expect(formatTime(pointTime(-99))).toBe('100 BCE')
+    })
+
+    /**
+     * A DATE IS NAMED BY THE YEAR IT IS IN (round 45).
+     *
+     * The corpus dates things to the day now — World War II opens on 1
+     * September 1939, which is the year 1939.667 — and `formatYear` rounds,
+     * because its own callers are continuous positions on the era rail. Every
+     * item's own time goes through `formatOn` instead, or the war would have
+     * been captioned "1940 – 1946".
+     */
+    it('names an item’s date by the year it falls in, not the nearest one', () => {
+      expect(formatOn(1939.667)).toBe('1939')
+      expect(formatOn(1945.67)).toBe('1945')
+      expect(formatOn(1944)).toBe('1944') // the integers are unchanged
+      expect(formatTime(timeFrom(1939.66712, 1945.66986))).toBe('1939 – 1945')
+    })
+
+    it('says a period inside one year once, rather than twice', () => {
+      // Normandy: 6 June to 25 July 1944. The rail says the months.
+      expect(formatTime(timeFrom(1944.43033, 1944.56421))).toBe('1944')
     })
   })
 

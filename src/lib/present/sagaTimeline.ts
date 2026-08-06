@@ -1,5 +1,5 @@
 import { atFraction, orderedSteps, stepFraction, stepTimeYears, type Step } from '../steps'
-import { formatYear, timeEnd, timeExtent, timeStart, type Time, type Year } from '../time'
+import { formatOn, timeEnd, timeExtent, timeStart, type Time, type Year } from '../time'
 import { resolveStepChip, type StepChip } from './saga'
 
 /**
@@ -76,6 +76,21 @@ export const MIN_STATION_PX = 44
 export const MIN_LABEL_PX = 56
 
 /**
+ * The room a station's label needs before it is worth drawing at rest.
+ *
+ * A label is a name AND ITS DATE, and only the name gives room up (the date is
+ * the half the reader asked for, so it does not shrink). Measured against the
+ * constant alone, a 130 px slot on a phone drew "S. 10 Jul – 10 Sep 1941" — the
+ * whole date and an initial where the name was. So the date's own width is part
+ * of the threshold, and what `MIN_LABEL_PX` means is what it always meant: how
+ * much NAME is worth an ellipsis.
+ *
+ * Under it the label is dropped and shown whole when the reader asks about the
+ * station — the hover, the cursor, the open step — and named in the list.
+ */
+export const minLabelPx = (at: string): number => MIN_LABEL_PX + labelWidth(at)
+
+/**
  * Rough width of a character at the rail's label size — deliberately a little
  * generous. It is only ever asked "does this name WANT more room than there is",
  * and the answer that follows (hang this one the other way) is safe when it
@@ -86,6 +101,18 @@ export const LABEL_CHAR_PX = 6.4
 
 /** Air between a mark and its own label, and between a label and the next mark. */
 const LABEL_GAP_PX = 14
+
+/**
+ * The mark's own width (`--mark` in the view; the desktop value, and a phone's
+ * is 14) — half of which is on the far side of the next station's position.
+ *
+ * The room a label gets used to be measured to the next mark's CENTRE, which
+ * left its last eight pixels underneath that mark. That was invisible while a
+ * label was one ellipsised string: what went under the mark was the ellipsis.
+ * With a date at the end of it — the half that does not shrink — it was the
+ * year, and "Jul – Oct 1940" was drawn as "Jul – Oct 194".
+ */
+export const MARK_PX = 16
 
 /**
  * How close two marks may be in the same lane before the second drops to the
@@ -182,9 +209,8 @@ function calendarOf(t: Year): { m: number; d: number } | undefined {
  */
 export function formatAt(t: Year, unit: AxisUnit, full = false): string {
   const cal = unit === 'month' || unit === 'day' ? calendarOf(t) : undefined
-  if (!cal) return formatYear(t)
-  // The year a date is IN — `formatYear` rounds, and June 1944 is not 1945.
-  const y = formatYear(Math.floor(t))
+  if (!cal) return formatOn(t)
+  const y = formatOn(t)
   if (unit === 'day') return `${cal.d} ${MONTHS[cal.m]}${full ? ` ${y}` : ''}`
   return full || cal.m === 0 ? `${MONTHS[cal.m]} ${y}` : MONTHS[cal.m]
 }
@@ -199,15 +225,15 @@ export function formatAt(t: Year, unit: AxisUnit, full = false): string {
  * inherit is the warp, because a saga's span is short enough that display space
  * and year space are the same space.
  *
- * A POINT-DATED saga is the one case with no rule at all: it has no extent, its
- * steps are proportions rather than dates (see 2 above), and the single tick
- * returned is the year itself. The view draws that axis dashed — a rule with no
- * divisions on it, which is what the data supports.
+ * A POINT-DATED saga is the one case with no rule at all: it has no extent, so
+ * there is nothing to divide, and the single tick returned is the year itself.
+ * The view draws that axis dashed — a rule with no divisions on it, which is
+ * what the data supports. Where its stations then stand is `spread`.
  */
 export function axisTicks(span: Time, width: number): Axis {
   const [from, to] = timeExtent(span)
   const len = to - from
-  if (len <= 0) return { unit: 'none', ticks: [{ u: 0, label: formatYear(from), major: true }] }
+  if (len <= 0) return { unit: 'none', ticks: [{ u: 0, label: formatOn(from), major: true }] }
   const ideal = len / Math.max(2, Math.floor(width / TICK_PX))
   const s = SPACINGS.find((c) => c.years >= ideal) ?? SPACINGS[SPACINGS.length - 1]
   const ticks: Tick[] = []
@@ -248,6 +274,17 @@ export interface PlacedStation extends Station {
   lane: number
   /** Room the label has at rest, in px; 0 means "only when asked about". */
   labelPx: number
+  /**
+   * Is there room for the DATE beside the name at rest?
+   *
+   * Below `minLabelPx` there is not, and then the name goes on alone rather
+   * than being cut to an initial by a date that will not shrink — a rail of
+   * five bands and no names is a worse answer to "there are no dates" than a
+   * rail of five names. The date is never lost: the label is shown WHOLE, date
+   * and all, in the three states where the reader is asking about one station,
+   * and the list spells out every one of them at once.
+   */
+  dated: boolean
   /**
    * Does the whole name hang to the LEFT of the mark?
    *
@@ -303,6 +340,31 @@ const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v)
 export const railWidth = (clientWidth: number, count: number): number =>
   Math.max(clientWidth, count * MIN_STATION_PX)
 
+/**
+ * WHERE THE STATIONS STAND, in 0..1 of the rail.
+ *
+ * At their own moments — that is the whole contract (see 1 above) — with one
+ * exception, and it is not a relaxation of that rule but the absence of any
+ * data to apply it to. A saga dated to a single point has no extent, so its
+ * steps' fractions are proportions of a campaign that someone typed rather than
+ * dates anything can be read off. Drawing them as positions was the rail
+ * claiming a precision the corpus does not have, and it was read as exactly
+ * that: *"it looks random and without dates"*.
+ *
+ * So an unruled rail spaces its stations EVENLY. It says one true thing — this
+ * came after that — instead of a false one, and the labels (`stationAt`, which
+ * numbers them when there is no date) carry the rest. The moment such a saga is
+ * given real dates it gets the true axis back, with no code path to switch.
+ */
+export const spread = (sts: readonly Station[], unit: AxisUnit): number[] =>
+  unit !== 'none'
+    ? sts.map((s) => s.u)
+    : // One equal slot each, and the mark stands in the middle of its own slot.
+      // Not `i / (n - 1)`, which is even in the same sense and puts the last
+      // station hard against the end of the rail, where there is no room for
+      // its name — on a rail whose names are the whole of what it has to say.
+      sts.map((_, i) => (i + 0.5) / sts.length)
+
 /** Where a fraction of the span sits on a rail of this width, padded at both ends. */
 export const railX = (u: number, width: number, pad = RAIL_PAD): number =>
   (pad + u * (1 - 2 * pad)) * width
@@ -332,10 +394,11 @@ export function laneOf(xs: readonly number[]): number[] {
 /** The room a name wants, in px — the same eyeballed metric the era bands use. */
 export const labelWidth = (name: string): number => name.length * LABEL_CHAR_PX + 4
 
-/** Room from a station's mark to the next mark IN ITS OWN LANE. */
+/** Room from a station's mark to the next mark IN ITS OWN LANE — its near edge. */
 const labelRoom = (xs: readonly number[], lanes: readonly number[], i: number, width: number) => {
   for (let j = i + 1; j < xs.length; j++)
-    if (lanes[j] === lanes[i]) return Math.max(0, xs[j] - xs[i] - LABEL_GAP_PX)
+    if (lanes[j] === lanes[i])
+      return Math.max(0, xs[j] - xs[i] - LABEL_GAP_PX - MARK_PX / 2)
   return Math.max(0, width - xs[i] - LABEL_GAP_PX)
 }
 
@@ -351,7 +414,8 @@ export function layoutRail(
   const width = railWidth(clientWidth, sts.length)
   const axis = axisTicks(span, width)
   if (!sts.length) return { width, lanes: 1, axis, stations: [] }
-  const xs = sts.map((s) => railX(s.u, width))
+  const us = spread(sts, axis.unit)
+  const xs = us.map((u) => railX(u, width))
   const lanes = laneOf(xs)
   return {
     width,
@@ -359,34 +423,95 @@ export function layoutRail(
     axis,
     stations: sts.map((s, i) => {
       const room = labelRoom(xs, lanes, i, width)
+      const at = stationAt(s, span, sts.length)
       return {
         ...s,
         x: xs[i],
-        band: s.uEnd > s.u ? { x: xs[i], w: railX(s.uEnd, width) - xs[i] } : undefined,
+        // A band is a length of the axis, so it exists only where the axis is
+        // one: on an evenly spaced rail (`spread`) the distance between two
+        // marks means nothing and a bar drawn across it would mean less.
+        band:
+          axis.unit !== 'none' && s.uEnd > s.u
+            ? { x: xs[i], w: railX(s.uEnd, width) - xs[i] }
+            : undefined,
         lane: lanes[i],
         // The ROOM, not the guess at the name's width: the cap exists to keep a
         // label off its neighbour, and capping it at an estimate of its own
         // width instead put an ellipsis on names that had a clear rail in front
         // of them the moment the estimate was a pixel short.
         labelPx: room >= MIN_LABEL_PX ? room : 0,
-        flip: xs[i] + labelWidth(s.step.name) > width,
+        dated: room >= minLabelPx(at),
+        // The name AND the date it now carries: the date is pinned (it is the
+        // half a truncation must not eat), so it is the pair that decides which
+        // way the whole label hangs.
+        flip: xs[i] + labelWidth(`${s.step.name} ${at}`) > width,
       }
     }),
   }
 }
 
 /**
- * What the list and the tooltip call a station's moment.
+ * The unit a STATION's date is written in — one notch finer than its rule.
  *
- * At the axis's own resolution — a station on a year rule says "1942", one on a
- * month rule says "Jun 1944" — so the two halves of the dual system agree about
- * how precise this corpus is. A period whose ends round to the same name says it
- * once rather than saying "1942 – 1942".
+ * Two things this is not. It is not the rule's own unit: a rule says how the
+ * span divides, and "1941" beside both Barbarossa and Pearl Harbor answers the
+ * reader's question ("when is this one?") with the tick they are already
+ * standing on. And it is not read off the live rail width: D-Day's axis rules
+ * in months on a 390 px phone and in days on a desktop, and a label that says
+ * "Jun" on one and "6 Jun" on the other is a fact that changes when you turn
+ * the phone. So it is asked of the SPAN, at the density a desktop rail has, and
+ * then sharpened by one — which is the difference between a picture of the war
+ * and a date for each of its moments.
+ *
+ * Nothing is invented by the sharpening: a step dated to a whole year still
+ * says the year (see `stationTime`), and outside the calendar's reach the month
+ * form falls back to the year on its own (`calendarOf`).
+ */
+const FINER: Record<AxisUnit, AxisUnit> = {
+  year: 'month',
+  month: 'day',
+  day: 'day',
+  none: 'none',
+}
+export const stationUnit = (span: Time): AxisUnit => FINER[axisTicks(span, TICK_PX * 11).unit]
+
+/**
+ * What the rail, the list and the tooltip call a station's moment.
+ *
+ * Read on its own, so it carries its year — but only once: a period inside a
+ * single year is "22 Jun – 9 Jul 1941", the way anyone would write it, and one
+ * whose ends have the same name at this resolution says that name once.
+ *
+ * NOTHING SAYS MORE THAN IT KNOWS. A step dated to a whole year is written as
+ * that year whatever the rest of the saga is dated to, because "Jan 1750" is a
+ * claim about a month that the value 1750 does not make.
  */
 export function stationTime(s: Station, span: Time, unit: AxisUnit): string {
   const t = stepTimeYears(s.step, span)
-  const [a, b] = [formatAt(timeStart(t), unit, true), formatAt(timeEnd(t), unit, true)]
-  return a === b ? a : `${a} – ${b}`
+  const at = (v: Year, full = true) => formatAt(v, Number.isInteger(v) ? 'year' : unit, full)
+  const [a, b] = [at(timeStart(t)), at(timeEnd(t))]
+  if (a === b) return a
+  // the year is the END's to carry when both ends are inside it
+  const year = (s: string) => s.slice(s.lastIndexOf(' ') + 1)
+  return `${year(a) === year(b) ? at(timeStart(t), false) : a} – ${b}`
+}
+
+/**
+ * THE DATE EVERY STATION CARRIES — beside its name on the rail, in its row in
+ * the list, and in its tooltip.
+ *
+ * A rule along the top is a picture of time; it is not an answer to "when was
+ * this one", and a reader on a phone sees two of its labels at a time. So the
+ * station says its own date, always, and the rule is what puts the dates in
+ * proportion rather than what carries them.
+ *
+ * Where there is no date to say — a saga dated to a single point, whose steps
+ * are an order and nothing more — it says the order instead: "3 of 5", which is
+ * the true statement the evenly spaced rail is making (see `spread`).
+ */
+export const stationAt = (s: Station, span: Time, count: number): string => {
+  const unit = stationUnit(span)
+  return unit === 'none' ? `${s.ordinal} of ${count}` : stationTime(s, span, unit)
 }
 
 /* ------------------------------------------------ the other half of the dual */

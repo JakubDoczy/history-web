@@ -1553,6 +1553,66 @@ describe('stepped focus', () => {
     })
   })
 
+  /**
+   * SHOW ON MAP DOES NOT LEAVE THE STEP (round 45).
+   *
+   * The reader reported it in one line: *"clicking on a step in an operation and
+   * then 'show on map' takes you back to overview"*. `enterFocus` cleared
+   * `stepId` on every call, which is right for a NEW context — the step
+   * belonged to the event being left — and wrong for the one it was already in.
+   *
+   * "Show on map" is a statement about the camera: put this in front of me. The
+   * two controls that mean "the whole of it" are the innermost crumb and the
+   * overview row of the list, and both go through `selectStep()`.
+   */
+  describe('show on map keeps the place the reader is standing in', () => {
+    for (const [where, px] of [
+      ['a phone', 390],
+      ['a desktop', 1440],
+    ] as const)
+      it(`keeps the open step on ${where}`, () => {
+        useViewStore().viewportWidthPx = px
+        const events = store()
+        events.showOnMap('op')
+        events.selectStep('kiev')
+        expect(events.stepId).toBe('kiev')
+        const seq = events.flyTo?.seq ?? 0
+        events.showOnMap('op') // the generic action, on the article
+        expect(events.stepId).toBe('kiev')
+        expect(events.focusStack).toEqual(['op'])
+        expect(events.selectedId).toBe('op')
+        // …and it did what it says: the camera moved to the item's own frame
+        expect(events.flyTo!.seq).toBeGreaterThan(seq)
+      })
+
+    it('still opens a NEW context on its overview', () => {
+      const events = store([part('village', 'op')])
+      events.showOnMap('op')
+      events.selectStep('kiev')
+      events.showOnMap('village') // a part of it: a push, and a new context
+      expect(events.focusStack).toEqual(['op', 'village'])
+      expect(events.stepId).toBeUndefined()
+    })
+
+    it('leaves the step only where the reader asked to — the overview control', () => {
+      const events = store()
+      events.showOnMap('op')
+      events.selectStep('kiev')
+      events.selectStep() // the innermost crumb, and the list's overview row
+      expect(events.stepId).toBeUndefined()
+    })
+
+    it('walks the steps from the overview into the overview, as designed', () => {
+      // "Walk the steps" is `showOnMap` on the saga's own article: arriving is
+      // arriving on the whole of it (lib/steps.ts, rule 1), and the rail is
+      // what walks from there.
+      const events = store()
+      events.showOnMap('op')
+      expect(events.stepId).toBeUndefined()
+      expect(events.focusSteps.map((s) => s.id)).toEqual(['june', 'kiev', 'december'])
+    })
+  })
+
   it('flies the camera only for a step that says where to look', () => {
     const events = store()
     events.showOnMap('op')

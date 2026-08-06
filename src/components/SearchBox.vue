@@ -3,7 +3,7 @@ import { computed, nextTick, ref, onMounted, useTemplateRef, watch } from 'vue'
 import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
-import { clamp, formatYear } from '../lib/time'
+import { clamp, formatOn } from '../lib/time'
 import { NO_ACTIVE, clampActive, stepActive } from '../lib/listbox'
 import type { Item } from '../lib/events'
 
@@ -146,7 +146,7 @@ function pick(id: string) {
       >
         <span class="name">{{ e.name }}</span>
         <span v-if="badge(e)" class="kind" data-test="kind-badge">{{ badge(e) }}</span>
-        <span class="year tnum">{{ formatYear(events.focusYear(e.id) ?? 0) }}</span>
+        <span class="year tnum">{{ formatOn(events.focusYear(e.id) ?? 0) }}</span>
       </li>
     </ul>
     <p v-else-if="query.trim()" class="empty">Nothing matches. Try a name or a tag like “war”.</p>

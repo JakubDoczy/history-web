@@ -95,6 +95,31 @@ than path strings, so the ink a mark covers is measurable (`glyphReach`),
 and every entry is authored inside one budget (`GLYPH_R`) that a unit
 test enforces. Verified by close crop at 1x, not magnified.
 
+## 5d. The four regressions the phone found (round 45)
+
+Reported off a real device, all four reproduced before they were fixed
+(tests/e2e/repro45.e2e.mjs, shots in /tmp/shots45).
+
+- **The pill's restore control was broken on a phone.** `.pill-restore`
+  keeps `display: flex` from the desktop rule, where it carries the word
+  "Restore"; the phone rule hides the word and pins the button back to a
+  38 px square, and a flex box ignores the `justify-items` half of
+  `place-items`. The chevron sat flush against the left edge of its own
+  brass ring with 22 px of empty frame beside it. It is centred now,
+  stated in the base rule so no override can lose it again.
+- **The rails had no dates on them.** Two causes, one symptom. The steps
+  of all three sagas were authored as PROPORTIONS of the span, so D-Day
+  stood between 1943 and 1944 on the war's rail, and Barbarossa and
+  Normandy — both dated to a single year — had no rule at all: a dashed
+  axis and four unlabelled marks *"at random"*. Every step in the corpus
+  now carries its real date, the two campaigns carry their real spans
+  (22 June – 5 December 1941; 6 June – 25 July 1944), and every station
+  carries its own date beside its name. The month and day tick ladder
+  from round 44 draws for the first time.
+- **"Show on map" left the step.** `enterFocus` cleared `stepId`
+  unconditionally, which is right for a new context and wrong for the one
+  it is already in. See rule 6 in docs/design/sagas.md.
+
 ## 6. Map mode: first-class toggle + drawn cartography (next round)
 
 - A visible side toggle (icon) switches globe/map rendering mode; no

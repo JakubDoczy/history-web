@@ -201,7 +201,10 @@ await check('the chip is the selected one', () => {
   eq(kiev.chips.filter((c) => c.on).map((c) => c.step), ['kiev'], 'selected chips')
 })
 await check('the cursor moved and the selection band did not', () => {
-  ok(kiev.cursor === 1941, `cursor at ${kiev.cursor}`)
+  // 16 September 1941 — the day the ring closed east of Kiev. Since round 45
+  // the steps carry real dates, so the cursor lands on the step's own moment
+  // rather than on the bare year the campaign used to be dated to.
+  ok(Math.floor(kiev.cursor) === 1941, `cursor at ${kiev.cursor}`)
   eq(kiev.selection, overview.selection, 'selection band')
 })
 
@@ -213,7 +216,11 @@ await shot(page, '03-step-december')
 await check('the December front is drawn and the June border is not', () => {
   ok(dec.layers.some((l) => l.includes('5 December')), 'the December front is missing')
   ok(!dec.layers.some((l) => l.includes('22 June')), 'the June border is still drawn')
-  ok(dec.layers.some((l) => l.includes('Rostov')), 'the Rostov annotation is missing')
+  // Rostov was retaken on 29 NOVEMBER, which is inside Typhoon's window and not
+  // inside the counteroffensive's — the step opens on 5 December. With real
+  // dates on the layers (round 45) the ink follows the calendar rather than the
+  // proportions it was authored in; the counteroffensive page still names it.
+  ok(!dec.layers.some((l) => l.includes('Rostov')), 'Rostov is dated 29 November, not December')
 })
 await check('per-step annotations do not leak between steps', () => {
   ok(!dec.layers.some((l) => l.includes('Brest')), 'a June annotation is on the December map')

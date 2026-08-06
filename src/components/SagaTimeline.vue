@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useEventStore } from '../stores/events'
-import { formatTime } from '../lib/time'
+import { formatTime, timeExtent } from '../lib/time'
 import { NO_ACTIVE } from '../lib/listbox'
 import type { SagaView } from '../lib/present/saga'
 import {
   backPressesTo,
   crumbs,
+  formatAt,
   layoutRail,
   railX,
-  stationTime,
+  stationAt,
   stations,
   stepBy,
   type PlacedStation,
@@ -54,13 +55,24 @@ onBeforeUnmount(() => resizeObs.disconnect())
 const rail = computed(() => layoutRail(stations(props.saga.steps, props.saga.span), props.saga.span, width.value))
 const ids = computed(() => rail.value.stations.map((s) => s.step.id))
 const trail = computed(() => crumbs(events.focusTrail))
-const span = computed(() => formatTime(props.saga.span))
+/**
+ * The saga's own span, at the resolution its rule is drawn in: a war says
+ * "1939 – 1945" and a campaign that ran seven weeks says "6 Jun – 25 Jul 1944",
+ * which is the whole point of having dated it.
+ */
+const span = computed(() => {
+  const { unit } = rail.value.axis
+  const [a, b] = timeExtent(props.saga.span)
+  if (unit !== 'month' && unit !== 'day') return formatTime(props.saga.span)
+  return `${formatAt(a, unit)} – ${formatAt(b, unit, true)}`
+})
 const count = computed(() => {
   const n = props.saga.steps.length
   return `${n} ${n === 1 ? 'step' : 'steps'}`
 })
-/** A station's date, at the resolution the axis is ruled in — never finer. */
-const dateOf = (s: PlacedStation) => stationTime(s, props.saga.span, rail.value.axis.unit)
+/** A station's date, at the resolution the saga's own span supports. */
+const dateOf = (s: PlacedStation) =>
+  stationAt(s, props.saga.span, rail.value.stations.length)
 /** A tick's pixel, through the same map the stations are placed by. */
 const tickX = (u: number) => railX(u, rail.value.width)
 
@@ -287,7 +299,7 @@ function goToCrumb(id: string, current: boolean) {
         >
         <span
           class="axis"
-          :title="rail.axis.unit === 'none' ? `${span} — dated to the year, so the steps stand in the proportion they were authored` : undefined"
+          :title="rail.axis.unit === 'none' ? `${span} — dated to a single point, so the steps stand in order rather than at dates` : undefined"
         />
         <button
           v-for="s in rail.stations"
@@ -343,15 +355,24 @@ function goToCrumb(id: string, current: boolean) {
               <path d="M6 9l6 6 6-6" />
             </svg>
           </span>
-          <!-- The name, with the room the layout could find it. `asked` is the
-               states in which the reader is asking about ONE station, and there
-               the label is shown whole, over its neighbours. -->
+          <!-- The name AND ITS DATE, with the room the layout could find them.
+               The date does not shrink: a rule two rows up is a picture of the
+               span, not an answer to "when was this one", and on a phone the
+               reader can see two of its labels at a time. Where the slot is too
+               narrow for both (`dated`) the name goes alone and the date comes
+               back with the whole label — which is `asked`, the three states in
+               which the reader is asking about ONE station and it is drawn over
+               its neighbours. -->
           <span
             class="label"
             :class="{ free: asked(s.step.id) || !s.labelPx, flip: s.flip }"
             :style="{ maxWidth: (s.labelPx || 220) + 'px' }"
-            >{{ s.step.name }}</span
           >
+            <span class="label-name">{{ s.step.name }}</span>
+            <i v-if="s.dated || asked(s.step.id) || !s.labelPx" class="label-at tnum">{{
+              dateOf(s)
+            }}</i>
+          </span>
         </button>
       </div>
     </div>
@@ -792,13 +813,18 @@ function goToCrumb(id: string, current: boolean) {
   /* clear of the mark, and of the 5px the free label's own ground reaches back */
   left: calc(50% + var(--mark) / 2 + 6px);
   transform: translateY(-50%);
+  /* A row of two, because the two parts do not give room up equally: the NAME
+     truncates and the DATE never does. A single ellipsised string would have
+     eaten the date first, which is the one thing the reader asked for. */
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
   font-family: var(--cond);
   font-size: var(--t-xs);
   letter-spacing: 0.03em;
   color: var(--frost-dim);
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   /* A map label's halo: the rule's gridlines and a neighbouring period's band
      both pass behind these names, and the dark ground cut around each glyph is
      what keeps the line from reading as a strike-through. */
@@ -808,8 +834,24 @@ function goToCrumb(id: string, current: boolean) {
   transition: color var(--fast);
   pointer-events: none;
 }
+.label-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.label-at {
+  flex: none;
+  font-size: var(--t-micro);
+  font-style: normal;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
 .station.on .label {
   color: var(--brass);
+}
+.station.on .label-at {
+  color: var(--brass);
+  opacity: 0.85;
 }
 .station:hover .label,
 .station.cursor .label {
@@ -833,6 +875,7 @@ function goToCrumb(id: string, current: boolean) {
 .label.free.flip {
   left: auto;
   right: calc(50% + var(--mark) / 2 + 6px);
+  justify-content: flex-end;
   text-align: right;
 }
 .station:not(.named) .label {

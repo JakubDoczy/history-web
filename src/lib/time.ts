@@ -33,6 +33,19 @@ export function formatYear(t: Year): string {
 const trim = (n: number) => `${+n.toPrecision(3)}`
 
 /**
+ * A DATE, named by the year it falls IN.
+ *
+ * `formatYear` rounds, which is right for the era rail — its positions are
+ * continuous and the nearest round year is the label a reader wants. It is
+ * wrong for an authored instant: an event dated to 6 June 1944 is a year
+ * 1944.43, and rounding says 1944 only by luck. September 1939 says 1940.
+ *
+ * So anything naming a thing's own time goes through here. On the integers the
+ * whole corpus used to be, it is the identity.
+ */
+export const formatOn = (t: Year): string => formatYear(Math.floor(t))
+
+/**
  * Display warp: asinh centered on the present. Near the center asinh(x) ≈ x
  * (linear), far away ≈ sign·ln(2|x|) (logarithmic), transitioning smoothly —
  * so a decade-wide window is effectively linear, ~100 years is nearly linear,
@@ -152,13 +165,21 @@ export function timeIntersects(t: Time, start: Year, end: Year): boolean {
   return a <= end && b >= start
 }
 
-/** A span the reader is shown: "1939 – 1945", or just "1969". */
+/**
+ * A span the reader is shown: "1939 – 1945", or just "1969".
+ *
+ * A period whose two ends fall in the same year says it once — Normandy runs
+ * from 6 June to 25 July 1944 and "1944 – 1944" is a worse answer than "1944".
+ * The rail says the months (see `stationTime`); this is the year.
+ */
 export function formatTime(t: Time): string {
   switch (t.kind) {
     case 'point':
-      return formatYear(t.year)
-    case 'period':
-      return `${formatYear(t.start)} – ${formatYear(t.end)}`
+      return formatOn(t.year)
+    case 'period': {
+      const [a, b] = [formatOn(t.start), formatOn(t.end)]
+      return a === b ? a : `${a} – ${b}`
+    }
     default:
       return assertNever(t)
   }

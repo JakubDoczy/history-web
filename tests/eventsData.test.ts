@@ -33,9 +33,11 @@ import {
 import { drawingPoints, isDrawing, routeDrawingFor } from '../src/lib/drawing'
 import {
   atFraction,
+  isFractionAt,
   orderedSteps,
   parseSteps,
   stepAt,
+  stepTimeYears,
   stepProblems,
   stepPageLinkIds,
   type Step,
@@ -45,7 +47,8 @@ import { FIT_FOV, MAX_FIT_ALTITUDE, POINT_CAP_DEG, altitudeForCapDeg, focusTarge
 import { separationDeg } from '../src/lib/queryIndex'
 import { viewSpanDeg, visibleSpanDeg } from '../src/lib/detailImagery'
 import { TAGS } from '../src/lib/tags'
-import { MIN_TIME, MAX_TIME, timeFrom, timeStart } from '../src/lib/time'
+import { MIN_TIME, MAX_TIME, timeEnd, timeExtent, timeFrom, timeStart } from '../src/lib/time'
+import { formatAt } from '../src/lib/present/sagaTimeline'
 import { internalLinkIds, renderRichText } from '../src/lib/richtext'
 
 // The dataset ships as era chunks under public/data/events (see
@@ -898,9 +901,12 @@ describe('items — behaviour through the query layer', () => {
     // of them is unranked (see the staged-focus tests below): the operation's
     // parts are regional battles that never make the global cut, and focus mode
     // is where they get their pins.
+    // In the order they happened, which round 45 made a real order: every one
+    // of these carries its own dates now (22 June to 2 October 1941), so this
+    // is the invasion read from the border to the gates of Moscow.
     expect(index.childrenOf('barbarossa').map((e) => e.id)).toEqual([
-      'minsk-pocket', 'smolensk-1941', 'kiev-pocket', 'moscow-1941', 'leningrad-siege',
-      'brest-fortress', 'uman-pocket', 'tallinn-evacuation',
+      'minsk-pocket', 'brest-fortress', 'smolensk-1941', 'uman-pocket',
+      'kiev-pocket', 'tallinn-evacuation', 'leningrad-siege', 'moscow-1941',
     ])
     expect(index.childrenOf('d-day').map((e) => e.id)).toEqual([
       'pointe-du-hoc', 'villers-bocage', 'cherbourg-1944',
@@ -1475,7 +1481,9 @@ describe('items — stepped focus', () => {
       const war = rawById.get('ww2') as RawEvent
       const chips = order(war)
       expect(chips.map((s) => s.id)).toEqual([
-        'battle-britain', 'barbarossa', 'pearl-harbor', 'holocaust', 'midway',
+        // dated, so ordered: the Holocaust opens with Barbarossa (June 1941)
+        // and Pearl Harbor is that December
+        'battle-britain', 'barbarossa', 'holocaust', 'pearl-harbor', 'midway',
         'stalingrad', 'd-day', 've-day', 'trinity', 'hiroshima', 'vj-day',
       ])
       // every chip is an entrance: this saga is a table of contents, not a plan
@@ -1500,6 +1508,55 @@ describe('items — stepped focus', () => {
     )
     expect(beaches).toHaveLength(5)
     for (const l of beaches) expect(l.at, 'a beach name is tied to one step').toBeUndefined()
+  })
+
+  /**
+   * THE STEPS ARE DATED (round 45).
+   *
+   * They were proportions — `at: 0.78` of the war, which drew D-Day in 1943 and
+   * left every station of Barbarossa and Normandy on an unruled dashed axis
+   * with no date on it at all: *"it looks random and without dates"*. Every one
+   * of them is a datable historical moment and is now written as one, which is
+   * what gives the rail a rule to draw and each station a date to carry.
+   *
+   * The check is on the CORPUS rather than on the layout, because it is the
+   * corpus that regressed: a step written back as a fraction of the span would
+   * pass every layout test in tests/sagaTimeline.test.ts.
+   */
+  it('dates every step of every saga to a real moment inside its own span', () => {
+    for (const e of rawEvents.filter((x) => x.steps)) {
+      const [from, to] = timeExtent(timeFrom(e.start, e.end))
+      expect(to, `${e.id} is a saga dated to a single point`).toBeGreaterThan(from)
+      for (const s of e.steps!)
+        for (const v of [s.at, s.start, s.end])
+          if (v !== undefined) {
+            expect(isFractionAt(v), `${e.id}/${s.id} is dated as a proportion`).toBe(false)
+            expect(v, `${e.id}/${s.id}`).toBeGreaterThanOrEqual(from)
+            expect(v, `${e.id}/${s.id}`).toBeLessThanOrEqual(to)
+          }
+    }
+  })
+
+  /**
+   * …and they are the RIGHT dates. Six moments anyone can check, one per saga
+   * end, read back through the same fold the rail reads them through.
+   */
+  it('puts the landings on 6 June 1944 and the invasion on 22 June 1941', () => {
+    const on = (id: string, step: string) => {
+      const e = rawById.get(id) as RawEvent
+      const s = order(e).find((x) => x.id === step)!
+      return formatAt(timeStart(stepTimeYears(s, timeFrom(e.start, e.end))), 'day', true)
+    }
+    expect(on('d-day', 'six-june')).toBe('6 Jun 1944')
+    expect(on('d-day', 'breakout')).toBe('19 Jul 1944') // Saint-Lô, and Cobra on the 25th
+    expect(on('barbarossa', 'border-battles')).toBe('22 Jun 1941')
+    expect(on('barbarossa', 'counteroffensive')).toBe('5 Dec 1941')
+    expect(on('ww2', 'd-day')).toBe('6 Jun 1944')
+    expect(on('ww2', 'pearl-harbor')).toBe('7 Dec 1941')
+    // and the wars themselves run from their first day to their last
+    const war = byId.get('ww2') as HistoricalEvent
+    expect(formatAt(timeStart(war.time), 'day', true)).toBe('1 Sep 1939')
+    expect(formatAt(timeEnd(war.time), 'day', true)).toBe('2 Sep 1945')
   })
 })
 

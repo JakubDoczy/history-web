@@ -753,7 +753,8 @@ export const useEventStore = defineStore('events', {
      */
     enterFocus(id: string) {
       const focusId = topFocus(this.focusStack)
-      if (focusId === id) {
+      const staying = focusId === id
+      if (staying) {
         // already the context — "Show on map" pressed again on the open article
       } else if (focusId !== undefined && isPartOf(focusId, id)) {
         this.focusStack.push(id)
@@ -761,9 +762,18 @@ export const useEventStore = defineStore('events', {
       } else {
         this.focusStack = [id]
       }
-      // A new context always opens on its overview, never on a step — the one
+      // A NEW context always opens on its overview, never on a step — the one
       // that was open belonged to the event being left (see `stepId`).
-      this.stepId = undefined
+      //
+      // Re-entering the context already in focus is the other case entirely,
+      // and it used to be answered the same way: pressing "Show on map" while
+      // standing in Kiev threw the reader back to the whole of Barbarossa,
+      // undoing the step they had just chosen ("clicking on a step and then
+      // show on map takes you back to overview"). Show on map is a statement
+      // about the CAMERA — put this in front of me — and it keeps the place
+      // the reader is standing in. Leaving a step is what the overview crumb
+      // and the list's overview row are for, and they say so.
+      if (!staying) this.stepId = undefined
       // The mode is always on its own item: this is what makes the invariant
       // hold no matter which way the caller arrived (a pin, a link, a search).
       this.selectedId = id

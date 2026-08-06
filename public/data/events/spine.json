@@ -2571,8 +2571,8 @@
  {
   "id": "ww2",
   "name": "World War II",
-  "start": 1939,
-  "end": 1945,
+  "start": 1939.66712,
+  "end": 1945.66986,
   "lat": 52.5,
   "lng": 13.4,
   "priority": 98,
@@ -2595,70 +2595,75 @@
    {
     "id": "battle-britain",
     "name": "Battle of Britain",
-    "at": 0.14,
-    "child": "battle-britain"
+    "child": "battle-britain",
+    "start": 1940.52322,
+    "end": 1940.83197
    },
    {
     "id": "barbarossa",
     "name": "Operation Barbarossa",
-    "at": 0.28,
-    "child": "barbarossa"
+    "child": "barbarossa",
+    "start": 1941.4726,
+    "end": 1941.9274
    },
    {
     "id": "pearl-harbor",
     "name": "Attack on Pearl Harbor",
-    "at": 0.37,
-    "child": "pearl-harbor"
+    "child": "pearl-harbor",
+    "at": 1941.93288
    },
    {
     "id": "holocaust",
     "name": "The Holocaust",
-    "start": 0.38,
-    "end": 0.95,
-    "child": "holocaust"
+    "child": "holocaust",
+    "start": 1941.4726,
+    "end": 1945.34932
    },
    {
     "id": "midway",
     "name": "Battle of Midway",
-    "at": 0.45,
-    "child": "midway"
+    "child": "midway",
+    "start": 1942.42329,
+    "end": 1942.43151
    },
    {
     "id": "stalingrad",
     "name": "Battle of Stalingrad",
-    "start": 0.48,
-    "end": 0.57,
-    "child": "stalingrad"
+    "child": "stalingrad",
+    "start": 1942.64247,
+    "end": 1943.08904
    },
    {
     "id": "d-day",
     "name": "D-Day landings",
-    "at": 0.78,
-    "child": "d-day"
+    "child": "d-day",
+    "start": 1944.43033,
+    "end": 1944.56421
    },
    {
     "id": "ve-day",
     "name": "Victory in Europe",
-    "at": 0.93,
-    "child": "ve-day"
+    "child": "ve-day",
+    "at": 1945.34932
    },
    {
     "id": "trinity",
     "name": "Trinity nuclear test",
-    "at": 0.96,
-    "child": "trinity"
+    "child": "trinity",
+    "at": 1945.53836
    },
    {
     "id": "hiroshima",
     "name": "Atomic bombings of Hiroshima and Nagasaki",
-    "at": 0.97,
-    "child": "hiroshima"
+    "child": "hiroshima",
+    "start": 1945.59589,
+    "end": 1945.60411
    },
    {
     "id": "vj-day",
     "name": "Victory over Japan",
-    "at": 1,
-    "child": "vj-day"
+    "child": "vj-day",
+    "at": 1945.62055
    }
   ]
  },

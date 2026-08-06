@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
-import { formatTime, formatYear } from '../lib/time'
+import { formatOn, formatTime } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
 import { anchorYearOf, assertNever, timeOf, type Item, type Place } from '../lib/events'
 import { resolvePillKind, sagaOf } from '../lib/present/saga'
@@ -38,8 +38,8 @@ const when = computed(() => {
   switch (i.kind) {
     case 'person':
       return i.died === undefined
-        ? `b. ${formatYear(i.born)}`
-        : `${formatYear(i.born)} – ${formatYear(i.died)}`
+        ? `b. ${formatOn(i.born)}`
+        : `${formatOn(i.born)} – ${formatOn(i.died)}`
     case 'event':
       // One fold over the variant, rather than a truthy test on an optional
       // `end` — which read an event dated to the year 0 as a point by accident.
@@ -137,7 +137,7 @@ const stepPage = computed(() => {
 
 /** Persons and concepts are chipped; an event is the unmarked case (as in search). */
 const badge = (i: Item) => (i.kind === 'event' ? '' : i.kind)
-const yearOf = (id: string) => formatYear(events.focusYear(id) ?? 0)
+const yearOf = (id: string) => formatOn(events.focusYear(id) ?? 0)
 
 const places = computed(() => {
   const p = person.value
@@ -479,7 +479,7 @@ onBeforeUnmount(() => inflight?.abort())
       <ul>
         <li v-for="p in partOf" :key="p.id">
           <a @click="goTo(p.id)">{{ p.name }}</a>
-          <span class="year tnum">{{ formatYear(anchorYearOf(p)) }}</span>
+          <span class="year tnum">{{ formatOn(anchorYearOf(p)) }}</span>
         </li>
       </ul>
     </div>
@@ -489,7 +489,7 @@ onBeforeUnmount(() => inflight?.abort())
       <ul>
         <li v-for="c in children" :key="c.id">
           <a @click="goTo(c.id)">{{ c.name }}</a>
-          <span class="year tnum">{{ formatYear(anchorYearOf(c)) }}</span>
+          <span class="year tnum">{{ formatOn(anchorYearOf(c)) }}</span>
         </li>
       </ul>
     </div>
@@ -771,6 +771,13 @@ onBeforeUnmount(() => inflight?.abort())
    control that *moves something* is drawn in. */
 .pill-restore {
   display: flex;
+  align-items: center;
+  /* CENTRED, and stated here rather than left to the box. `.pill-btn` centres
+     with `place-items`, whose justify half a flex box ignores — so on a phone,
+     where the label is hidden and the button goes back to a 38px square, the
+     chevron sat flush against the left edge of its own brass ring with 22px of
+     empty frame beside it. That is what the reader saw as broken. */
+  justify-content: center;
   gap: 5px;
   width: auto;
   padding: 0 10px 0 7px;
@@ -1368,6 +1375,13 @@ ul {
   .pill-restore {
     padding: 0;
     width: 38px;
+  }
+  /* …and the glyph grows into the ring the word used to share with it. A 14 px
+     chevron centred in a 38 px circle reads as an empty frame with something
+     small in it, which is half of what was wrong with it before. */
+  .pill-restore svg {
+    width: 18px;
+    height: 18px;
   }
   .pill-restore-label {
     display: none;

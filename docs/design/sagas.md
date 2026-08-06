@@ -93,8 +93,10 @@ lib/present/sagaTimeline.ts.
    saga's span, under a visible rule (years / months / days, chosen from
    the span and the width). Crowding may drop a mark into a lower lane; it
    may never move it along the axis. A saga dated to a single point has no
-   rule — its axis is dashed, and its steps are proportions, which is what
-   the data says and no more.
+   rule — its axis is dashed, and its stations are spaced EVENLY and
+   numbered ("3 of 5"), because proportions someone typed are not
+   positions in time and were read as exactly that: *"it looks random and
+   without dates"*. The answer to a saga with no dates is dates (see 4).
 2. **The rail is one half of a pair.** The other half is the plain way
    through — prev, next, and a list of every step by name and date —
    mounted with the rail. The keyboard drives the same pair. A step that is
@@ -105,3 +107,22 @@ lib/present/sagaTimeline.ts.
    opening a step shows the step's ink with the panel left as a pill that
    names it. A saga's whole promise is a sequence on a map — every control
    that leads into one says so.
+
+## The rail's contract, round 45
+
+4. **Every station carries its own date.** Beside its name, always,
+   at the resolution the saga's span supports and one notch finer than the
+   rule — the rule is a picture of the span, not an answer to "when was
+   this one", and on a phone two of its labels are on screen at a time. A
+   step written as a whole year still says the year: nothing on the rail
+   says more than it knows. Where there is no date at all the station says
+   its place in the order instead.
+5. **A saga's steps are dated.** A step is a named historical moment and
+   is written as one — a year, to the day where the day is known — not as
+   a fraction of the span. The fractions the first corpus carried put
+   D-Day in 1943 and gave two of the three exemplars no axis at all. A
+   saga's own span is the true period its steps run over, and widening it
+   from a point is part of dating them.
+6. **Show on map keeps the step.** It is a statement about the camera:
+   put this in front of me. Only the innermost crumb and the list's
+   overview row leave a step, and both say so.
