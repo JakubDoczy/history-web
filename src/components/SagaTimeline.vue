@@ -50,15 +50,42 @@ import {
 const props = defineProps<{ saga: SagaView }>()
 const events = useEventStore()
 
+const railEl = useTemplateRef('railEl')
 const track = useTemplateRef('track')
 const width = ref(1)
 let resizeObs: ResizeObserver
+
+/**
+ * SAFARI'S OWN PINCH, refused.
+ *
+ * `touch-action: none` is the standard way to say "this gesture is mine", and
+ * in Chrome it covers the pinch. WebKit does not: its page zoom is driven by a
+ * gesture recogniser that touch-action has no say over, and the only thing that
+ * stands it down is `preventDefault` on the non-standard `gesturestart` —
+ * without which an iPhone answers a pinch on the rail by magnifying the page
+ * AND cancelling the pointers the rail was tracking, which is the worst of both
+ * (the rail does nothing and the reader is left in a zoomed page).
+ *
+ * Three events, because `gesturestart` alone leaves `gesturechange` free to
+ * carry on scaling once a gesture has begun some other way. They do not exist
+ * in Chrome, where these listeners are three no-ops. Not passive: an
+ * `addEventListener` on an element defaults to non-passive, which is what
+ * `preventDefault` needs, and these are named explicitly rather than folded
+ * into the template so that stays true where a linter would otherwise "fix" it.
+ */
+const GESTURES = ['gesturestart', 'gesturechange', 'gestureend']
+const refuse = (e: Event) => e.preventDefault()
+
 onMounted(() => {
   width.value = track.value!.clientWidth
   resizeObs = new ResizeObserver(() => (width.value = track.value!.clientWidth))
   resizeObs.observe(track.value!)
+  for (const g of GESTURES) railEl.value!.addEventListener(g, refuse)
 })
-onBeforeUnmount(() => resizeObs.disconnect())
+onBeforeUnmount(() => {
+  resizeObs.disconnect()
+  for (const g of GESTURES) railEl.value?.removeEventListener(g, refuse)
+})
 
 /* --- the window: what part of the span is on screen -------------------------
    The era rail's grammar, on a saga's span (lib/present/sagaTimeline.ts, note
@@ -158,6 +185,27 @@ function onWheel(e: WheelEvent) {
 function onPointerDown(e: PointerEvent) {
   pointers.set(e.pointerId, localX(e))
   panned = false
+  // A SECOND FINGER MAKES IT THE TRACK'S GESTURE.
+  //
+  // Touch pointers are implicitly captured to whatever they landed on, which
+  // for this rail is a station's <button>, its mark, or the SVG chevron inside
+  // it — every one of them a descendant of the track, so the moves bubble here
+  // and a pinch works. Until a finger leaves that subtree: a real thumb on a
+  // 90px strip crosses the rail's edge constantly, and the moment it does its
+  // events stop arriving and the pinch freezes half-done. Capturing both
+  // pointers to the track is what makes the gesture survive the reader's actual
+  // hands — the era rail (TimelineBar.vue) captures on every press for the same
+  // reason. Only from the second finger, though: capturing the first would
+  // retarget its `click` to the track and a press on a station would stop
+  // opening it, which is what the era rail can afford and this cannot.
+  if (pointers.size >= 2)
+    for (const id of pointers.keys())
+      try {
+        track.value!.setPointerCapture(id)
+      } catch {
+        // that pointer ended without an event reaching us; the map is cleaned
+        // up by the next up/cancel and there is nothing to capture
+      }
 }
 function onPointerMove(e: PointerEvent) {
   if (!pointers.has(e.pointerId)) return
@@ -322,6 +370,7 @@ function goToCrumb(id: string, current: boolean) {
 
 <template>
   <nav
+    ref="railEl"
     class="rail saga"
     data-test="saga-timeline"
     tabindex="0"
@@ -605,6 +654,29 @@ function goToCrumb(id: string, current: boolean) {
   -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--line);
   user-select: none;
+  /*
+   * THE WHOLE RAIL IS THE RAIL'S, not just the picture in it.
+   *
+   * `touch-action: none` used to sit on `.track` alone, and on a desktop that
+   * is indistinguishable from this. On a phone it is not: the rail is 116px
+   * tall and the top 26 of them are the breadcrumb and the Zoom / ‹ / Steps / ›
+   * row, which is where a thumb reaching for "the timeline" lands about a fifth
+   * of the time — and that row said `touch-action: auto`, so a pinch that
+   * caught it was not the rail's gesture at all but the BROWSER'S. Measured
+   * with real Touch events (tests/e2e/sagaRail.e2e.mjs): two fingers on the
+   * head row took the visual viewport from scale 1 to scale 5 and the rail's
+   * window never moved. A synthesised wheel could never have found it, because
+   * a wheel is not what touch-action is about.
+   *
+   * The era rail has always had this line on its ROOT (TimelineBar.vue) and
+   * that is why it pinches: it is one box with no interactive header on it.
+   * This is the same recipe, on a component that grew a header.
+   *
+   * WebKit needs the `gesturestart` refusal above as well — touch-action does
+   * not stand Safari's page zoom down. Two mechanisms because there are two
+   * browsers, not because either is a fallback for the other.
+   */
+  touch-action: none;
   z-index: var(--z-timeline);
   animation: rail-in var(--slow);
 }
@@ -636,6 +708,11 @@ function goToCrumb(id: string, current: boolean) {
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
+  /* Given back what the rail's blanket `touch-action: none` takes away: this is
+     a scroller (a phone's stack can be three deep and the trail runs off the
+     row), and exactly one direction of it is a scroll rather than a rail
+     gesture. Same reason, other axis, for `.list` below. */
+  touch-action: pan-x;
 }
 .crumbs::-webkit-scrollbar {
   display: none;
@@ -787,6 +864,10 @@ function goToCrumb(id: string, current: boolean) {
   max-height: min(46vh, 340px);
   box-sizing: border-box;
   list-style: none;
+  /* The index is the control that has to be as long as the saga, so it scrolls
+     — and it is inside the rail, whose `touch-action: none` would otherwise
+     make a phone's flick through eleven steps do nothing at all. */
+  touch-action: pan-y;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-md);

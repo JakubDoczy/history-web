@@ -77,17 +77,23 @@ const mappable = computed(() => !!events.mapTarget(mapId.value))
  * on the location").
  *
  * So a saga gets its own primary action, in the saga's own vocabulary, and the
- * generic one stays where it was as the secondary. The wording is "Walk the
- * steps":
+ * generic one stays where it was as the secondary. The wording is "Show steps
+ * on map":
  *
- *  · it is the same imperative voice as "Show on map", and shorter, which is
- *    part of how it earns the prominent slot;
+ *  · it is the same imperative voice as "Show on map", and reads as the same
+ *    sentence with the one word that matters added to it — which is exactly
+ *    the relation between the two buttons;
  *  · "steps" is the word the rail, the pill, the list and the docs already use,
  *    so the button names the thing the reader will find;
- *  · "walk" says the one thing "show" cannot — that there is a sequence, and
- *    that you move along it, which is exactly the difference that was invisible;
- *  · and it is not "play", which would promise a transport this app does not
- *    have (nothing auto-advances; every step is a press).
+ *  · "on map" is the promise the reader could not otherwise see kept: the
+ *    steps are not a table of contents in the article, they are drawn on the
+ *    globe, one by one, and that is what the press buys;
+ *  · and it is literal. The first wording was "Walk the steps", which said the
+ *    sequence but left where — a reader who has not seen the rail cannot tell
+ *    whether "walking" happens in the panel or on the planet, and a control
+ *    that has to be pressed to find out what it does is a control with a
+ *    private meaning. It is not "play" either, which would promise a transport
+ *    this app does not have (nothing auto-advances; every step is a press).
  */
 const sagaSteps = computed(() => sagaOf(event.value ?? undefined))
 
@@ -427,7 +433,7 @@ onBeforeUnmount(() => inflight?.abort())
       v-if="sagaSteps && mappable"
       class="saga-cta"
       data-test="saga-cta"
-      :title="`Put this on the map and walk its ${sagaSteps.length} steps`"
+      :title="`Show this on the map with its ${sagaSteps.length} steps drawn on it`"
       @click="events.showOnMap(mapId)"
     >
       <!-- a rail with its stations: the control this button leads to, drawn -->
@@ -437,7 +443,7 @@ onBeforeUnmount(() => inflight?.abort())
         <circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none" />
         <circle cx="18" cy="12" r="2.1" fill="currentColor" stroke="none" />
       </svg>
-      <span class="saga-cta-label">Walk the steps</span>
+      <span class="saga-cta-label">Show steps on map</span>
       <span class="saga-cta-count tnum">{{ sagaSteps.length }}</span>
     </button>
 

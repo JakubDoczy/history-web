@@ -6,6 +6,7 @@ import EventPanel from '../components/EventPanel.vue'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import SearchBox from '../components/SearchBox.vue'
 import ScaleBar from '../components/ScaleBar.vue'
+import UpdateToast from '../components/UpdateToast.vue'
 import { useSettingsStore } from '../stores/settings'
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useUiStore } from '../stores/ui'
@@ -50,6 +51,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   </Transition>
   <EventPanel />
   <BottomRail />
+  <!-- Not about the world on the map: about the page itself. See
+       components/UpdateToast.vue and lib/build.ts. -->
+  <UpdateToast />
 </template>
 
 <style scoped>

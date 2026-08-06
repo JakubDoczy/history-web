@@ -64,6 +64,10 @@
   --z-search: 7;
   --z-settings: 8;
   --z-topbar: 9;
+  /* The update notice, over everything: it is the only thing on screen that is
+     about the page itself rather than about the world on it, and a reader who
+     cannot see it goes on running a build from two rounds ago. */
+  --z-toast: 10;
 
   --rail: 92px; /* timeline height */
   /*

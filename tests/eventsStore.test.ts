@@ -1603,7 +1603,7 @@ describe('stepped focus', () => {
     })
 
     it('walks the steps from the overview into the overview, as designed', () => {
-      // "Walk the steps" is `showOnMap` on the saga's own article: arriving is
+      // "Show steps on map" is `showOnMap` on the saga's own article: arriving is
       // arriving on the whole of it (lib/steps.ts, rule 1), and the rail is
       // what walks from there.
       const events = store()

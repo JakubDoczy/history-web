@@ -242,8 +242,95 @@ export interface Axis {
   ticks: Tick[]
 }
 
-/** Room one tick label wants. The era rail's own density (TimelineBar.vue). */
+/**
+ * Room one tick label wants when the rail can afford to be CALM.
+ *
+ * The era rail's own density (`ticks` in TimelineBar.vue), and on a desktop it
+ * is the whole rule: a 1280 px rail divided eleven ways rules a six-year war in
+ * years, which is the picture the reader wants of a war. It is a comfort
+ * figure, not a collision figure — see `tickRoom` for the one that is.
+ */
 export const TICK_PX = 110
+
+/* ------------------------------------------------ the saga rail's own density
+ *
+ * THE DEFECT. `TICK_PX` alone, on a phone, said almost nothing. A 390 px rail
+ * divides three ways, so D-Day's seven weeks got ONE dated tick and the whole
+ * of the Second World War got two — *"a single tick"*, on a rule whose entire
+ * job is to put the stations in proportion. The number was not wrong; it was
+ * answering a different question. 110 px is the room the ERA rail's 11.5 px
+ * labels want, and this rail sets its ticks in 10 px condensed, where the
+ * widest label a rule can produce ("Jan 1944", "9501 BCE") measures 53 px.
+ *
+ * So the saga rail gets two rules instead of one, and they are different kinds
+ * of statement:
+ *
+ *  · CALM — `TICK_PX` of room per label. What the rail asks for when it can
+ *    have it, and what keeps a desktop's full war at six year-marks rather
+ *    than thirteen half-year ones. Unchanged from round 46.
+ *  · THE FLOOR — `MIN_TICKS` divisions, however narrow the rail. A rule with
+ *    one mark on it is not a rule. When calm leaves fewer than that, the
+ *    spacing refines — but only as far as the LABELS THEMSELVES allow, which
+ *    is measured (`tickRoom`) rather than assumed.
+ *
+ * The floor is what a phone lives on and the calm rule is what a desktop lives
+ * on, and neither can push the other into a picket fence: the floor may never
+ * choose a spacing whose own labels would touch, and the calm rule is coarsened
+ * if its choice would (which is also how a deep-time rail stops printing
+ * "12 ka" twice in a row).
+ */
+
+/**
+ * Width of one character of the tick's own type, in px — 10 px IBM Plex Sans
+ * Condensed with 0.06em of letter-spacing, MEASURED in the browser against the
+ * labels the rule actually produces, and then rounded up.
+ *
+ * Measured (fallback face, which is the wider of the two the stack can resolve
+ * to): "1940" 27.9, "13 Jun" 31.6, "30 Sep" 38.4, "Jan 1944" 48.8, "May 1945"
+ * 54.1, "10,000 BCE" 64.2. A line through the widest of those is 6.3·n + 3; 6.6
+ * and 4 sits above every one of them, which is the safe direction — the answer
+ * this feeds ("is there room for another tick?") is wrong when it
+ * under-estimates and merely conservative when it over-estimates. In IBM Plex
+ * Condensed proper the same strings are about a fifth narrower again.
+ */
+export const TICK_CHAR_PX = 6.6
+
+/** The label starts here, past its own gridline (`.tick i { left: 4px }`). */
+export const TICK_INSET_PX = 4
+
+/** Air between the end of one tick's label and the next tick's gridline. */
+export const TICK_AIR_PX = 10
+
+/**
+ * The room a tick label needs before the NEXT gridline — the collision figure.
+ *
+ * A label hangs to the right of its own mark, so the room is owed by the tick
+ * on the left, and this is measured against the string that tick will actually
+ * be drawn with rather than against a constant standing in for all of them.
+ */
+export const tickRoom = (label: string): number =>
+  TICK_INSET_PX + label.length * TICK_CHAR_PX + TICK_AIR_PX
+
+/**
+ * The fewest divisions worth calling a rule.
+ *
+ * Five, because a reader reads a POSITION off a rule by interpolating between
+ * marks: with two there is no interpolation to do, with three (the ends and the
+ * middle) everything between them is guessed, and five is where a 390 px phone
+ * stops having to guess. It is a floor, not a target — where the calm rule
+ * already clears it, nothing here does anything at all.
+ *
+ * Chosen against the corpus at the width that hurt, a 390 px phone at fit:
+ *
+ *   span             calm (TICK_PX)        with the floor
+ *   D-Day, 7 weeks   1 tick   (1 month)    5 ticks  (10 days), 72 px apart
+ *   WWII, 6 years    2 ticks  (5 years)    6 ticks  (1 year),  58 px apart
+ *
+ * and the widest label either rule draws wants 54 px, so both clear `tickRoom`
+ * with room to spare. A desktop's full war is untouched: six year-marks, 192 px
+ * apart, because the calm rule already gives more than five.
+ */
+export const MIN_TICKS = 5
 
 const DAY = 1 / 365.2425
 
@@ -379,17 +466,72 @@ export function axisTicks(span: Time, width: number, win: RailWindow = FULL_WIND
   if (len <= 0) return { unit: 'none', ticks: [{ u: 0, label: formatOn(from), major: true }] }
   const at = (v: number) => from + ((v - RAIL_PAD) / (1 - 2 * RAIL_PAD)) * len
   const [a, b] = [clampTo(at(win.u0), from, to), clampTo(at(win.u1), from, to)]
-  const ideal = (b - a) / Math.max(2, Math.floor(width / TICK_PX))
-  const s = SPACINGS.find((c) => c.years >= ideal) ?? SPACINGS[SPACINGS.length - 1]
-  const ticks = tickTimes(a, b, s).map((t) => {
-    const cal = calendarOf(t)
-    return {
-      u: (t - from) / len,
-      label: formatAt(t, s.unit),
-      major: s.unit === 'month' ? cal?.m === 0 : s.unit === 'day' ? cal?.d === 1 : true,
+
+  /** Pixels per year on this rail, through this window — the real scale. */
+  const px = (width * (1 - 2 * RAIL_PAD)) / (len * (win.u1 - win.u0))
+
+  const rule = (k: number): Tick[] => {
+    const s = SPACINGS[k]
+    return tickTimes(a, b, s).map((t) => {
+      const cal = calendarOf(t)
+      return {
+        u: (t - from) / len,
+        label: formatAt(t, s.unit),
+        major: s.unit === 'month' ? cal?.m === 0 : s.unit === 'day' ? cal?.d === 1 : true,
+      }
+    })
+  }
+
+  /**
+   * Would this rule draw two labels on top of each other — or two labels that
+   * say the same thing?
+   *
+   * The room is owed by the LEFT tick, because that is the one whose label
+   * reaches into the gap. The gap is taken from the ticks' own positions rather
+   * than from the nominal spacing, so a calendar month (28 to 31 days, against
+   * a nominal 30.44) is judged on where it actually falls.
+   */
+  const fits = (ts: readonly Tick[]): boolean => {
+    for (let i = 1; i < ts.length; i++) {
+      if (ts[i].label === ts[i - 1].label) return false
+      if ((ts[i].u - ts[i - 1].u) * len * px < tickRoom(ts[i - 1].label)) return false
     }
-  })
-  return { unit: s.unit, ticks }
+    return true
+  }
+
+  // 1. THE CALM RULE: `TICK_PX` of room per label, the era rail's own density.
+  const ideal = (b - a) / Math.max(2, Math.floor(width / TICK_PX))
+  let i = SPACINGS.findIndex((c) => c.years >= ideal)
+  if (i < 0) i = SPACINGS.length - 1
+  // …coarsened if it would collide anyway. It can, near an end of the span,
+  // where the window reaches past what there is to divide and the pixel budget
+  // and the visible span stop agreeing.
+  while (i < SPACINGS.length - 1 && !fits(rule(i))) i++
+
+  // 2. THE FLOOR: a rule needs divisions. Refine — as far as the labels allow,
+  // and no further than the coarsest spacing that clears the floor.
+  if (rule(i).length < MIN_TICKS) {
+    let finest = -1
+    for (let k = i - 1; k >= 0; k--) {
+      // Below one glyph plus its inset and its air nothing can be legible, and
+      // the spacings ascend — so nothing finer can be either. This is the
+      // loop's bound as well as its rule: without it, a rail showing three
+      // millennia would go on to lay out a rule of days over them (a million
+      // ticks) only to throw it away.
+      if (SPACINGS[k].years * px < tickRoom('0')) break
+      const ts = rule(k)
+      if (!fits(ts)) continue
+      finest = k
+      if (ts.length >= MIN_TICKS) {
+        finest = -1
+        i = k
+        break
+      }
+    }
+    // Nothing cleared the floor: take the most divisions that will fit at all.
+    if (finest >= 0) i = finest
+  }
+  return { unit: SPACINGS[i].unit, ticks: rule(i) }
 }
 
 /* -------------------------------------------------------------- the stations */

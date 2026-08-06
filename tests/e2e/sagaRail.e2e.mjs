@@ -423,11 +423,30 @@ await check('the phone fits the whole span in its own width — no second system
     ok(s.h >= 22 && s.w >= 22, `${s.step} is a ${s.w}x${s.h} target`)
   }
 })
+/* THE RULE A PHONE CAN READ A POSITION OFF (round 47).
+   *"D-Day at fit showed a single tick; WWII showed 2 years."* `TICK_PX` is the
+   room the ERA rail's 11.5px labels want, and this rail sets its ticks in 10px
+   condensed — so a 390px rail divided three ways said almost nothing. There is
+   a floor under the rule now (`MIN_TICKS`, lib/present/sagaTimeline.ts) and it
+   may only refine as far as the labels themselves allow. Measured here rather
+   than only in the unit tests because the thing under test is a claim about
+   PIXELS, and the browser is what has them. */
+await check('the fitted rule shows the war’s years, not two of six', () => {
+  const labels = small.ticks.map((t) => t.label)
+  ok(labels.length >= 5, `only ${labels.length} ticks at fit on a phone: ${labels.join(' ')}`)
+  eq(labels, ['1940', '1941', '1942', '1943', '1944', '1945'], 'the fitted phone rule')
+  // …and every one of them still has its own room: no two labels overlap
+  const gaps = small.ticks.slice(1).map((t, i) => t.cx - small.ticks[i].cx)
+  for (const g of gaps) ok(g > 40, `ticks ${g}px apart — closer than a label is wide`)
+})
+await shot(phone, 'b-ww2-fit-390', { x: 0, y: small.rail.y - 4, width: 390, height: small.rail.h + 8 })
+
 /* …and the gesture that replaced the scroll, on the device that needed it.
    Two fingers, because that is what a phone has: the pinch is the era rail's
    own idiom (TimelineBar.vue) and lands in the same pure window math the unit
    tests cover (tests/sagaTimeline.test.ts). What only a browser can settle is
    that it is WIRED — that the rule refines and the marks move apart. */
+let phoneHead
 const winOf = () =>
   phone.evaluate(() => document.querySelector('[data-test="saga-timeline"] .track').dataset.window)
 await check('a pinch on the rail zooms the window, and the rule refines with it', async () => {
@@ -478,6 +497,110 @@ await check('a pinch on the rail zooms the window, and the rule refines with it'
     { timeout: 15000 },
   )
 })
+/* ---------------------------------------------------------------- round 47
+   THE PINCH, WITH REAL TOUCHES.
+
+   The check above dispatches `PointerEvent`s at the element, which proves the
+   arithmetic is wired and proves nothing about the browser: a constructed event
+   is delivered wherever it is aimed, and `touch-action` — the property that
+   decides whether a pinch is the page's or the rail's — is never consulted at
+   all. So the rail passed that check while a real phone answered a pinch by
+   magnifying the whole document.
+
+   These drive `Input.dispatchTouchEvent` through CDP: real touch points, hit
+   tested by the compositor, subject to touch-action like a thumb. What they
+   found: the rail is 116px tall on a phone and the top 26 of them are the
+   breadcrumb and the Zoom/‹/Steps/› row, and `touch-action: none` sat on the
+   TRACK alone — so a pinch that caught the head row was the browser's, and it
+   took the visual viewport from scale 1 to scale 5. The era rail has always
+   carried the line on its root (TimelineBar.vue) and that is why it pinches. */
+const cdpFor = async (target) => {
+  let s = sessions.get(target)
+  if (!s) sessions.set(target, (s = await target.context().newCDPSession(target)))
+  return s
+}
+const touchOn = async (target, type, pts) =>
+  (await cdpFor(target)).send('Input.dispatchTouchEvent', {
+    type,
+    touchPoints: pts.map((p, i) => ({ x: p.x, y: p.y, id: i + 1, radiusX: 14, radiusY: 14, force: 1 })),
+  })
+/** Two fingers, moving apart, at the given heights. Returns the visual viewport
+ *  scale afterwards — 1 means the browser did NOT take the gesture. */
+async function realPinch(y1, y2, { steps = 8, by = 14 } = {}) {
+  await (await cdpFor(phone)).send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 })
+  const [x1, x2] = [120, 270]
+  await touchOn(phone, 'touchStart', [{ x: x1, y: y1 }, { x: x2, y: y2 }])
+  for (let i = 1; i <= steps; i++) {
+    await touchOn(phone, 'touchMove', [{ x: x1 - i * by, y: y1 }, { x: x2 + i * by, y: y2 }])
+    await phone.waitForTimeout(20)
+  }
+  await touchOn(phone, 'touchEnd', [])
+  await phone.waitForTimeout(150)
+  return phone.evaluate(() => visualViewport.scale)
+}
+const fitAgain = async () => {
+  await (await cdpFor(phone)).send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 })
+  await phone.evaluate(() => {
+    const b = document.querySelector('[data-test="saga-zoom"]')
+    if (b?.classList.contains('on')) b.click()
+  })
+  await phone.waitForTimeout(400)
+}
+
+await fitAgain()
+await check('a REAL two-finger pinch on the track zooms the rail, not the page', async () => {
+  const boxes = await phone.evaluate(() => {
+    const nav = document.querySelector('[data-test="saga-timeline"]')
+    const g = (e) => {
+      const r = e.getBoundingClientRect()
+      return { y: r.y, h: r.height }
+    }
+    return { track: g(nav.querySelector('.track')), head: g(nav.querySelector('.head')) }
+  })
+  const before = await winOf()
+  const scale = await realPinch(boxes.track.y + boxes.track.h / 2, boxes.track.y + boxes.track.h / 2)
+  const after = await winOf()
+  ok(after !== before, `real touches did not move the window (${before} -> ${after})`)
+  const [u0, u1] = after.split(',').map(Number)
+  ok(u1 - u0 < 0.9, `the pinch barely zoomed: window is ${(u1 - u0).toFixed(3)} of the span`)
+  ok(scale === 1, `the browser took the gesture and zoomed the page to ${scale}x`)
+  phoneHead = boxes.head
+})
+await fitAgain()
+await check('…and a pinch that lands on the rail’s HEAD never zooms the page', async () => {
+  // THE DEFECT, AS A MEASUREMENT. Before `touch-action: none` moved to the
+  // rail's root this returned 5: the reader's pinch magnified the document and
+  // left them in a zoomed page with the rail untouched.
+  const scale = await realPinch(phoneHead.y + phoneHead.h / 2, phoneHead.y + phoneHead.h / 2)
+  ok(scale === 1, `a pinch on the breadcrumb row zoomed the page to ${scale}x`)
+})
+await fitAgain()
+await check('the index still scrolls under the rail’s blanket touch-action', async () => {
+  // `touch-action: none` on the root is what makes the pinch the rail's; the
+  // two scrollers inside it have to have their own axis given back, or a
+  // phone's flick through eleven steps does nothing at all.
+  await phone.evaluate(() => document.querySelector('[data-test="saga-list-toggle"]').click())
+  await phone.waitForSelector('[data-test="saga-list"]', { timeout: 10_000 })
+  const axes = await phone.evaluate(() => {
+    const nav = document.querySelector('[data-test="saga-timeline"]')
+    const list = document.querySelector('[data-test="saga-list"]')
+    return {
+      rail: getComputedStyle(nav).touchAction,
+      track: getComputedStyle(nav.querySelector('.track')).touchAction,
+      crumbs: getComputedStyle(nav.querySelector('.crumbs')).touchAction,
+      list: list && getComputedStyle(list).touchAction,
+    }
+  })
+  eq(axes.rail, 'none', 'the rail root')
+  eq(axes.track, 'none', 'the track')
+  eq(axes.crumbs, 'pan-x', 'the breadcrumb scroller')
+  eq(axes.list, 'pan-y', 'the step index')
+  await phone.evaluate(() =>
+    document.querySelector('[data-test="saga-list-toggle"]').click(),
+  )
+})
+await fitAgain()
+
 await check('and the plain way through is on the phone too: prev, the list, next', async () => {
   const nav = await phone.evaluate(() => ({
     prev: !!document.querySelector('[data-test="saga-prev"]'),
@@ -502,6 +625,18 @@ await check('a tap descends, and the breadcrumb truncates rather than pushing th
   eq(tapped.stack, ['ww2', 'd-day'], 'focus stack')
   eq(tapped.crumbs, ['World War II', 'D-Day landings'], 'crumbs')
   ok(tapped.rail.w <= 390, `the rail is ${tapped.rail.w}px wide on a 390px phone`)
+})
+await shot(phone, 'a-dday-fit-390', { x: 0, y: tapped.rail.y - 4, width: 390, height: tapped.rail.h + 8 })
+/* THE SHORTEST SAGA IN THE CORPUS, at the width that showed it worst. Seven
+   weeks fitted on a 390px rail used to draw ONE tick — a lone "Jul", which is
+   not a rule and cannot be read a position off. The floor takes it to a 10-day
+   ladder rung, and every mark on it is a real date. */
+await check('D-Day’s seven weeks are ruled in dated days on a phone, not one lonely month', () => {
+  const labels = tapped.ticks.map((t) => t.label)
+  ok(labels.length >= 5, `only ${labels.length} tick(s) at fit: ${labels.join(' ')}`)
+  for (const l of labels) ok(/^\d+ [A-Z][a-z]{2}$/.test(l), `"${l}" is not a dated day tick`)
+  const gaps = tapped.ticks.slice(1).map((t, i) => t.cx - tapped.ticks[i].cx)
+  for (const g of gaps) ok(g > 55, `ticks ${g}px apart — closer than "17 Jun" is wide`)
 })
 
 console.log(`\n${passed} passed, ${failures.length} failed`)

@@ -102,11 +102,16 @@ lib/present/sagaTimeline.ts.
    mounted with the rail. The keyboard drives the same pair. A step that is
    an entrance is moved to, never entered, by prev/next: descending is a
    change of context and has to be asked for (Enter, or a press).
-3. **A saga is entered by its own action.** "Walk the steps" on the
-   article, in brass, ahead of the generic Show on map; and on a phone,
-   opening a step shows the step's ink with the panel left as a pill that
-   names it. A saga's whole promise is a sequence on a map — every control
-   that leads into one says so.
+3. **A saga is entered by its own action.** "Show steps on map" on the
+   article, in brass, with the step count on it, ahead of the generic Show
+   on map; and on a phone, opening a step shows the step's ink with the
+   panel left as a pill that names it. A saga's whole promise is a sequence
+   on a map — every control that leads into one says so, literally. The
+   label was "Walk the steps" through round 46 and it said the sequence
+   but not the place: a reader who has not yet seen the rail cannot tell
+   from it whether the walking happens in the panel or on the planet, and
+   a control whose meaning is private until it is pressed has no business
+   being the prominent one (round 47).
 
 ## The rail's contract, round 45
 
@@ -197,3 +202,58 @@ lib/present/sagaTimeline.ts.
     `.icon-c`); the phone reported the minimised window's chevron
     off-centre twice, and both earlier fixes argued with a layout instead
     of removing the dependence on one.
+
+## The rail's contract, round 47
+
+11. **A rule has a floor.** The tick density has two statements in it
+    now, not one. `TICK_PX` (110) is the CALM figure — the room the era
+    rail's labels want, which a desktop can afford and which leaves a
+    six-year war at six year-marks. `MIN_TICKS` (5) is the FLOOR: a rail
+    that would otherwise draw fewer than five divisions refines its
+    spacing until it does. *"D-Day at fit showed a single tick; WWII
+    showed 2 years"* — a 390px rail divided three ways, in labels set at
+    10px condensed where 110px was measured for 11.5px type.
+    - The floor may only refine **as far as the labels themselves
+      allow**. `tickRoom(label)` is the collision figure and it is
+      measured, not assumed: the string's own length at
+      `TICK_CHAR_PX` (6.6, measured in the browser and rounded up),
+      plus the 4px the label is inset from its gridline, plus 10px of
+      air. Nothing is drawn closer than that, at any zoom, at any
+      width — and no rule is chosen that would print the same label
+      twice in a row.
+    - It refines to the **coarsest** spacing that clears the floor,
+      never to the finest that fits: it adds marks where there were too
+      few and nowhere else. On a 390px phone that is a 10-day ladder
+      rung for D-Day's seven weeks (five dated marks, 72px apart) and a
+      one-year rule for the war (six, 58px apart). A 1280px desktop
+      never reaches for it: the calm rule already gives six.
+    - The calm rule is **coarsened** if its own choice would collide,
+      which it can near an end of the span where the window reaches
+      past what there is to divide. The collision proof is total.
+
+12. **The whole rail is the rail's, header and all.** `touch-action:
+    none` says "this gesture is mine", and it used to sit on the saga
+    rail's `.track` alone. A phone's saga rail is 116px tall and the top
+    26 of them are the breadcrumb and the Zoom / ‹ / Steps / › row — so
+    a pinch that caught that row was the BROWSER'S, and it took the
+    visual viewport from scale 1 to scale 5 while the rail's window
+    never moved. Measured with real Touch events; a synthesised
+    `PointerEvent` can never find it, because a constructed event is
+    delivered where it is aimed and `touch-action` is never consulted.
+    The era rail (TimelineBar.vue) has carried the line on its root
+    since it was written, which is why it pinches.
+    - The line is on the **root** now, and the two scrollers inside it
+      are given their own axis back (`pan-x` on the crumbs, `pan-y` on
+      the step index) — a blanket `none` would otherwise make a phone's
+      flick through eleven steps do nothing.
+    - WebKit needs a **second** mechanism: Safari's page zoom is driven
+      by a gesture recogniser touch-action has no say over, and only
+      `preventDefault` on the non-standard `gesturestart` /
+      `gesturechange` stands it down. Two mechanisms because there are
+      two browsers, not because either is a fallback for the other.
+    - A **second finger captures both pointers to the track**. Touch
+      pointers are implicitly captured to whatever they landed on, which
+      is fine while that is a descendant of the track and fatal the
+      moment a real thumb crosses the rail's edge mid-pinch. The first
+      finger is deliberately NOT captured: that would retarget its
+      `click` and a press on a station would stop opening it.

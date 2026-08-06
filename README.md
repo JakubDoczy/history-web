@@ -89,6 +89,15 @@ runs the tests first and refuses to publish if they fail:
 GITHUB_TOKEN=<token with repo access> ./scripts/deploy.sh
 ```
 
+**Which build is on a device.** Every build is stamped with its commit and its
+build time (`vite.config.ts`), compiled into the bundle *and* emitted beside
+`index.html` as `version.json`. The deploy script prints the stamp it published;
+the app prints its own at the foot of the Settings panel ("build a1b2c3d ·
+2026-08-06"). If the two differ, that tab is running cached code — GitHub Pages
+serves the HTML with a ten-minute `max-age` and a phone keeps it far longer — and
+the app will offer a reload within five minutes of coming back to the foreground.
+See `src/lib/build.ts`.
+
 ### Layout
 
 ```

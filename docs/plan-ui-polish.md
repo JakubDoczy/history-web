@@ -71,13 +71,20 @@ uniformly, not according to when it happened."* The contract now:
 
 ## 5b. A saga's own call to action, and the map-first step (round 44)
 
-- **"Walk the steps"** (EventPanel.vue) is the prominent action on a
+- **"Show steps on map"** (EventPanel.vue) is the prominent action on a
   saga's article — filled brass, its own row, the step count on it —
   because *"show on map right now is also to just center on the
   location"* and a plan of eleven moments could not be told from a pin.
   The generic **Show on map** stays where it was, secondary, in the date
   line; a saga with an area keeps both. The pin's hover says
   "Saga · 11 steps" (`pinTitle`).
+  The label was **"Walk the steps"** in rounds 44–46. It named the
+  sequence and hid the place: the same imperative voice, but "walk"
+  could as easily have meant walking through the article, and the one
+  thing the button had to say was that eleven moments get DRAWN ON THE
+  GLOBE. The new label is the generic one plus the word that makes it a
+  saga's, which is exactly the relation between the two controls
+  (round 47).
 - **On a phone a step shows the MAP.** Selecting a step — by station, by
   list row or by prev/next — leaves the panel as the pill, names the step
   on it, and does not open the text sheet: the drawing is the point and
@@ -174,6 +181,69 @@ Three reports off the same phone, and one of them for the second time.
   the rendered PATH's bounding box, and with the button's layout
   deliberately degraded to `display: block`. Rule 10; the rule itself is
   in styles/tokens.css.
+
+## 5f. Which build is this, and is it still the one being served? (round 47)
+
+*"I keep seeing the old build on my phone."* gh-pages was verifiably
+serving the current bundle — the hash was checked — and the device was
+verifiably showing symptoms one or two rounds old. Both were true.
+GitHub Pages hands out `index.html` with a ten-minute `max-age`, a
+mobile browser keeps its own copy well past that, and an SPA tab on a
+home screen is never reloaded at all. The cost was not only a stale
+screen: a reader reporting a fixed bug and a reader reporting a live one
+wrote the same sentence, and nothing in the product could tell them
+apart.
+
+- **One identity, emitted twice.** `vite.config.ts` stamps the git short
+  hash and an ISO build time INTO the bundle (`__BUILD_ID__` /
+  `__BUILD_AT__`) and beside it into `dist/version.json`. The first
+  cannot be stale — it is the same bytes as the code it describes. The
+  second is 60 bytes, so it can be re-fetched cheaply. Both are also
+  served in dev, so the mechanism is one code path in both modes.
+- **The settings footer prints it** — "build a1b2c3d · 2026-08-06",
+  selectable, quiet, at the foot of the panel. "Which build are you on?"
+  is a thing to read out now, not a thing to deduce.
+- **The toast asks; it never acts.** On load, on the tab becoming
+  visible, and on a five-minute timer while it is visible, the app
+  fetches `version.json?ts=<now>` with `cache: 'no-store'` (the query
+  gets past every cache the header does not). Two stamps that DIFFER —
+  not "are newer": a rollback is a deploy too — put up a small dark
+  notice above the rail: "New version · Reload · ✕". It never reloads by
+  itself, and once dismissed it does not come back for that build.
+  Anything that is not a clean payload (a 404 that serves index.html, a
+  captive portal, an outage) is not news and is answered with silence.
+- **No service worker, no PWA machinery.** Those control what a browser
+  caches; the problem here is one document and one long-lived tab, and a
+  service worker would add a second, longer-lived cache with an update
+  problem of its own — the shape of this bug, not its cure.
+- **`deploy.sh` prints the stamp** it just published, read out of
+  `dist/version.json` rather than recomputed, twice (top and bottom of
+  the run) and with the exact footer string a device should be showing.
+  A session log and a phone can now be compared.
+
+## 5g. The rule a phone can read, and the pinch it can make (round 47)
+
+- **The tick floor.** *"D-Day at fit showed a single tick; WWII showed 2
+  years."* `TICK_PX = 110` is the room the ERA rail's 11.5px labels
+  want; the saga rail sets its ticks in 10px condensed, where the widest
+  label a rule can produce measures 53px. Two statements now: the calm
+  rule (unchanged, and what a desktop lives on) and `MIN_TICKS = 5`, a
+  floor that refines the spacing until a rule has divisions in it — as
+  far as the labels themselves allow and no further (`tickRoom`,
+  measured in the browser). A 390px phone goes from 1 tick to 5 on
+  D-Day and from 2 to 6 on the war; a 1280px desktop is untouched.
+  docs/design/sagas.md, rule 11.
+- **The pinch that was the browser's.** `touch-action: none` sat on the
+  saga rail's `.track` and not on its 26px header, so a pinch that
+  caught the breadcrumb row zoomed the PAGE to 5x and left the rail
+  alone. Found with real Touch events through CDP — the existing
+  synthetic `PointerEvent` check could not have found it, because a
+  constructed event is delivered where it is aimed and `touch-action` is
+  never consulted. Fixed by mirroring the era rail's recipe (the line on
+  the root), plus the two scrollers' axes given back, a WebKit
+  `gesturestart` refusal, and pointer capture from the second finger.
+  docs/design/sagas.md, rule 12.
+- **"Show steps on map"** replaces "Walk the steps" — see 5b.
 
 ## 6. Map mode: first-class toggle + drawn cartography (next round)
 

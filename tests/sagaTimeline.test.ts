@@ -6,8 +6,11 @@ import {
   MAX_LANES,
   MIN_LABEL_PX,
   minLabelPx,
+  MIN_TICKS,
   MIN_WINDOW_DAYS,
   RAIL_PAD,
+  TICK_PX,
+  tickRoom,
   FULL_WINDOW,
   axisTicks,
   backPressesTo,
@@ -69,6 +72,15 @@ const dday: Step[] = parseSteps([
   { id: 'breakout', name: 'The breakout', at: 0.85 },
 ])
 const ddaySpan = pointTime(1944)
+
+/**
+ * D-Day AS THE CORPUS DATES IT: 6 June – 25 July 1944, seven weeks.
+ *
+ * The fixture above is the point-dated shape (an unruled rail); this is the
+ * real span, and it is the one the tick floor was measured against — it is the
+ * shortest saga in the corpus and the one that showed a single tick on a phone.
+ */
+const ddayReal = timeFrom(1944.43033, 1944.56421)
 
 describe('stations', () => {
   it('reads the steps in time order, numbered, whatever order they were typed in', () => {
@@ -608,21 +620,118 @@ describe('the tick ladder, walked by the zoom', () => {
   })
 
   /**
-   * THE DENSITY RULE IS THE COLLISION PROOF. A spacing is only chosen if the
-   * span it divides leaves each label `TICK_PX` of rail, so two labels cannot
-   * be drawn closer than one label is wide — at any zoom, at any width. Swept
-   * across both, and across the widths where `floor(width / TICK_PX)` ticks
-   * over, which is where a density rule breaks if it is going to.
+   * THE DENSITY RULE IS THE COLLISION PROOF. A spacing is only drawn if every
+   * label on it has the room ITS OWN STRING wants (`tickRoom`), so two labels
+   * cannot be drawn on top of each other — at any zoom, at any width, and
+   * whether the spacing was chosen by the calm rule or pushed there by the
+   * floor. Swept across both spans, and across the widths where
+   * `floor(width / TICK_PX)` ticks over, which is where a density rule breaks
+   * if it is going to.
    */
   it('leaves every tick label its room, at every zoom and every width', () => {
-    for (const width of [219, 220, 221, 320, 329, 330, 331, 390, 440, 660, 880, 1200, 1440]) {
-      for (let k = 1; k >= minWindow(ww2Span); k /= 1.3) {
-        const w = { u0: Math.max(0, 0.5 - k / 2), u1: Math.min(1, 0.5 + k / 2) }
-        const xs = axisTicks(ww2Span, width, w).ticks.map((t) => railX(t.u, width, w))
-        for (let i = 1; i < xs.length; i++)
-          expect(xs[i] - xs[i - 1], `w=${width} k=${k}`).toBeGreaterThan(90)
+    for (const span of [ww2Span, ddayReal])
+      for (const width of [219, 220, 221, 320, 329, 330, 331, 390, 440, 660, 880, 1200, 1440]) {
+        for (let k = 1; k >= minWindow(span); k /= 1.3) {
+          const w = { u0: Math.max(0, 0.5 - k / 2), u1: Math.min(1, 0.5 + k / 2) }
+          const ts = axisTicks(span, width, w).ticks
+          const xs = ts.map((t) => railX(t.u, width, w))
+          for (let i = 1; i < xs.length; i++)
+            expect(xs[i] - xs[i - 1], `w=${width} k=${k}: ${ts[i - 1].label}|${ts[i].label}`).toBeGreaterThanOrEqual(
+              tickRoom(ts[i - 1].label),
+            )
+        }
       }
+  })
+})
+
+/**
+ * THE FLOOR UNDER THE RULE (round 47).
+ *
+ * *"D-Day at fit showed a single tick; WWII showed 2 years."* `TICK_PX` is the
+ * room the ERA rail's labels want, and the saga rail sets its ticks in 10px
+ * condensed — so on a 390px phone the calm rule divided the rail three ways and
+ * a rule with one mark on it is not a rule. There are two statements now: the
+ * calm one, which a desktop lives on and which is unchanged, and a floor of
+ * `MIN_TICKS` divisions, which a phone lives on and which may only refine as
+ * far as the LABELS THEMSELVES allow.
+ */
+describe('the tick floor — a rule a phone can read a position off', () => {
+  const PHONE = 390
+  const labels = (span: typeof ww2Span, width: number) =>
+    axisTicks(span, width).ticks.map((t) => t.label)
+
+  it('rules D-Day’s seven weeks in days on a phone, not in one lonely month', () => {
+    const axis = axisTicks(ddayReal, PHONE)
+    expect(axis.unit).toBe('day')
+    expect(axis.ticks.length).toBeGreaterThanOrEqual(MIN_TICKS)
+    // a 10-day ladder rung, every mark a real date
+    expect(axis.ticks.map((t) => t.label)).toEqual(['7 Jun', '17 Jun', '27 Jun', '7 Jul', '17 Jul'])
+  })
+
+  it('shows the war’s years on a phone, where it used to show two of six', () => {
+    expect(labels(ww2Span, PHONE)).toEqual(['1940', '1941', '1942', '1943', '1944', '1945'])
+  })
+
+  it('leaves the desktop’s full war exactly as calm as it was', () => {
+    // the calm rule already clears the floor at 1280, so the floor does nothing
+    expect(labels(ww2Span, 1280)).toEqual(['1940', '1941', '1942', '1943', '1944', '1945'])
+    expect(axisTicks(ww2Span, 1280).ticks.length).toBeGreaterThanOrEqual(MIN_TICKS)
+  })
+
+  /**
+   * THE BOUNDARY THE CONSTANTS CHOSE. The floor refines to the COARSEST spacing
+   * that clears it — never to the finest that fits — so it adds marks where
+   * there were too few and nowhere else.
+   */
+  it('refines to the coarsest rule that clears the floor, and stops there', () => {
+    for (const [span, width] of [
+      [ddayReal, PHONE],
+      [ww2Span, PHONE],
+      [ww2Span, 320],
+      [timeFrom(1000, 2000), 300],
+    ] as const) {
+      const n = axisTicks(span, width).ticks.length
+      expect(n, `${width}px`).toBeGreaterThanOrEqual(MIN_TICKS)
+      // one notch coarser than what was chosen would have fallen short — that
+      // is what "coarsest that clears it" means, and it is the whole difference
+      // between a floor and a target
+      expect(n, `${width}px`).toBeLessThan(2 * MIN_TICKS + 4)
     }
+  })
+
+  /** Every mark the floor adds is a DATE. A denser rule that says less is not
+   *  the fix — the complaint was that the rail did not say when. */
+  it('never buys density with a repeated label', () => {
+    for (const span of [ddayReal, ww2Span, timeFrom(-12000, -9000), timeFrom(1000, 2000)])
+      for (const width of [280, 320, 360, 390, 430, 768, 1280]) {
+        const ls = axisTicks(span, width).ticks.map((t) => t.label)
+        for (let i = 1; i < ls.length; i++) expect(ls[i], `${width}px: ${ls}`).not.toBe(ls[i - 1])
+      }
+  })
+
+  /**
+   * The floor is a floor and the collision rule is a ceiling, and the ceiling
+   * wins: a rail too narrow for `MIN_TICKS` legible marks gets fewer marks
+   * rather than marks drawn on top of each other.
+   */
+  it('gives up divisions rather than legibility on a rail too narrow for both', () => {
+    const ts = axisTicks(ddayReal, 200).ticks
+    const xs = ts.map((t) => railX(t.u, 200))
+    for (let i = 1; i < xs.length; i++)
+      expect(xs[i] - xs[i - 1]).toBeGreaterThanOrEqual(tickRoom(ts[i - 1].label))
+  })
+
+  /** The label metric itself, against the strings that measured it. */
+  it('asks for room in proportion to the string, plus its inset and its air', () => {
+    expect(tickRoom('1940')).toBeLessThan(tickRoom('Jan 1940'))
+    expect(tickRoom('Jul')).toBeLessThan(tickRoom('17 Jun'))
+    // …and generously: measured in the browser at 10px condensed, "Jan 1944" is
+    // 48.8px of glyphs and "10,000 BCE" is 64.2
+    expect(tickRoom('Jan 1944')).toBeGreaterThan(48.8)
+    expect(tickRoom('10,000 BCE')).toBeGreaterThan(64.2)
+    // the calm density is still the wider of the two, which is why a desktop
+    // never reaches for the floor
+    expect(TICK_PX).toBeGreaterThan(tickRoom('Jan 1944'))
   })
 })
 

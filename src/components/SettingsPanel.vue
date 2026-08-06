@@ -8,6 +8,7 @@ import { useTimeStore } from '../stores/time'
 import { PALETTE_RANGE } from '../lib/palette'
 import { imageryCredit } from '../lib/paleo'
 import { PALEO_FRAMES } from '../data/paleoTextures'
+import { buildLabel } from '../lib/build'
 
 const events = useEventStore()
 const settings = useSettingsStore()
@@ -406,6 +407,16 @@ const imageryLine = () => {
           </label>
         </div>
       </section>
+
+      <!-- WHICH BUILD THIS IS.
+           Not a setting, and not decoration: it is the one thing on screen that
+           says whether the tab in front of the reader is the code that was
+           deployed. A phone can serve an SPA from a two-round-old cache for
+           days, and until this line existed "I still see the old bug" and "the
+           bug is back" were the same sentence. Selectable, quiet, and at the
+           foot of the panel where a version number has always lived. See
+           lib/build.ts. -->
+      <p class="build tnum" data-test="build-stamp">{{ buildLabel() }}</p>
     </div>
   </aside>
 </template>
@@ -760,6 +771,20 @@ input[type='range']::-moz-range-thumb {
   border: none;
   border-radius: 50%;
   background: var(--brass);
+}
+
+/* The build stamp: the quietest thing in the panel, and selectable — it exists
+   to be read out or copied into a message, which is the whole of its job. */
+.build {
+  margin: 0;
+  padding: var(--s3) var(--s4) var(--s4);
+  font-family: var(--cond);
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  opacity: 0.7;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .link {

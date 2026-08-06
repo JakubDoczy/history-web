@@ -7,8 +7,9 @@
     "noEmit": true,
     "skipLibCheck": true,
     /* `URL` and `import.meta.url`: real globals in Node, but declared only in
-       the DOM lib, and this project carries no @types/node. See vite.config.ts. */
+       the DOM lib, and this project carries no @types/node. See vite.config.ts,
+       and build/node.d.ts for the two Node signatures it does reach for. */
     "lib": ["ES2022", "DOM"]
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "build/node.d.ts"]
 }

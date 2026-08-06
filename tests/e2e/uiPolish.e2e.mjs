@@ -386,6 +386,61 @@ await check('the rail advertises the pages that exist', () => {
   ok(op.chips.every((c) => c.named && c.text), 'a five-station rail is hiding a name')
 })
 
+/* ------------------------- 5b. the saga's call to action, renamed (round 47) */
+console.log('\n(5b) a saga’s own action says where the steps go')
+await pc.evaluate(() => window.__events.dismiss())
+await pc.evaluate(() => window.__events.select('ww2'))
+await pc.waitForSelector('[data-test="saga-cta"]')
+await settle(pc, 600)
+const ctaBox = await rect(pc, '[data-test="saga-cta"]')
+const cta = await pc.evaluate(() => {
+  const b = document.querySelector('[data-test="saga-cta"]')
+  const cs = getComputedStyle(b)
+  return {
+    label: b.querySelector('.saga-cta-label').textContent.trim(),
+    count: b.querySelector('.saga-cta-count').textContent.trim(),
+    title: b.title,
+    filled: cs.backgroundImage !== 'none' || cs.backgroundColor !== 'rgba(0, 0, 0, 0)',
+    generic: document.querySelector('[data-test="show-on-map"]')?.textContent.trim(),
+  }
+})
+await shot(pc, 'g-saga-cta-renamed')
+console.log(`    "${cta.label}" · ${cta.count} — beside the generic "${cta.generic}"`)
+await check('the CTA is "Show steps on map", with the step count still on it', () => {
+  ok(cta.label === 'Show steps on map', `the CTA reads "${cta.label}"`)
+  ok(!/walk/i.test(cta.label + cta.title), `"Walk" survives somewhere: ${cta.label} / ${cta.title}`)
+  ok(cta.count === '11', `the count reads "${cta.count}"`)
+  ok(cta.generic === 'Show on map', `the generic action reads "${cta.generic}"`)
+})
+await check('…and it keeps its brass prominence over the generic action', () => {
+  ok(cta.filled, 'the CTA is no longer filled')
+  ok(ctaBox.w > 300, `the CTA is only ${Math.round(ctaBox.w)}px wide — it lost its own row`)
+})
+
+/* --------------------------------- 6. which build is this? (round 47) ------ */
+console.log('\n(6) the settings footer names the build')
+await pc.evaluate(() => window.__events.dismiss())
+await pc.click('[aria-label="Settings"]')
+await pc.waitForSelector('[data-test="build-stamp"]')
+const stamp = await pc.evaluate(() => ({
+  text: document.querySelector('[data-test="build-stamp"]').textContent.trim(),
+  served: null,
+}))
+stamp.served = await pc.evaluate(async () => (await (await fetch('version.json')).json()))
+await shot(pc, 'h-settings-build-stamp')
+console.log(`    footer: "${stamp.text}"  ·  served: ${JSON.stringify(stamp.served)}`)
+await check('the footer says which build the tab is running', () => {
+  ok(/^build \S+ · \d{4}-\d{2}-\d{2}$/.test(stamp.text), `footer reads "${stamp.text}"`)
+})
+/* THE WHOLE POINT OF THE PAIR: the string compiled into the bundle and the
+   string sitting beside index.html are the same string on a fresh load. When
+   they stop being the same, the tab is stale — which is the only thing the
+   toast below ever fires on. */
+await check('…and it agrees with the version.json the server is serving', () => {
+  ok(stamp.text.includes(stamp.served.id), `${stamp.text} vs ${stamp.served.id}`)
+  ok(stamp.text.endsWith(stamp.served.at.slice(0, 10)), `${stamp.text} vs ${stamp.served.at}`)
+})
+
 /* ========================================================= the phone ==== */
 // The desktop page goes first and is closed here: two software-GL globes in
 // one browser starve each other badly enough that the second page never
@@ -425,6 +480,62 @@ await shot(phone, 'f-mobile-operation-pill')
 await check('a phone keeps the map uncovered and the strip reachable', () => {
   ok(opPhone.minimised, 'the article covered the plan on a phone')
   ok(opPhone.strip, 'no saga rail on the phone')
+})
+
+/* --------------------------------- 7. the update toast (round 47) ---------- */
+// its own page again, and the phone's globe has to let go of the GPU first
+await phone.close()
+console.log('\n(7) a tab running an old build is told so, once, and asked')
+/* The stale-tab case, staged the only way a browser can stage it: the bundle is
+   what it is, so the SERVER's answer is what changes under it. That is exactly
+   the shape of the real failure — the tab is fine, the origin moved on. */
+const stale = await open(1440, 900)
+await check('a fresh tab whose build matches the server is left alone', async () => {
+  await stale.waitForTimeout(1200)
+  ok(
+    !(await stale.$('[data-test="update-toast"]')),
+    'the toast appeared on a tab that is already current',
+  )
+})
+await stale.route('**/version.json*', (route) =>
+  route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ id: 'deadbee', at: '2026-08-07T09:00:00Z' }),
+  }),
+)
+await check('coming back to a backgrounded tab finds the new build and offers a reload', async () => {
+  // past MIN_GAP_MS, so the visibility check is not debounced away — the guard
+  // that keeps flicking between apps down to one request
+  await stale.waitForTimeout(10_500)
+  await stale.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+  await stale.waitForSelector('[data-test="update-toast"]', { timeout: 15_000 })
+  const t = await stale.evaluate(() => {
+    const el = document.querySelector('[data-test="update-toast"]')
+    const r = el.getBoundingClientRect()
+    return {
+      text: el.textContent.replace(/\s+/g, ' ').trim(),
+      action: el.querySelector('[data-test="update-reload"]').textContent.trim(),
+      dismissible: !!el.querySelector('[data-test="update-dismiss"]'),
+      bottom: innerHeight - r.bottom,
+      clearsRail: r.bottom <= document.querySelector('.rail').getBoundingClientRect().top,
+    }
+  })
+  await shot(stale, 'i-update-toast')
+  console.log(`    "${t.text}" — ${Math.round(t.bottom)}px off the bottom`)
+  ok(/new version/i.test(t.text), `the toast reads "${t.text}"`)
+  ok(t.action === 'Reload', `the action reads "${t.action}"`)
+  ok(t.dismissible, 'the toast cannot be dismissed')
+  ok(t.clearsRail, 'the toast sits over the timeline instead of above it')
+})
+await check('…and it is gone for good once dismissed — it asks once per build', async () => {
+  await stale.click('[data-test="update-dismiss"]')
+  // detached rather than a fixed wait: under swiftshader the document timeline
+  // crawls, so Vue's leave transition takes about a second to resolve
+  await stale.waitForSelector('[data-test="update-toast"]', { state: 'detached', timeout: 15_000 })
+  await stale.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+  await stale.waitForTimeout(1500)
+  ok(!(await stale.$('[data-test="update-toast"]')), 'the dismissed toast came back')
 })
 
 console.log(`\n${passed} passed, ${failures.length} failed`)
