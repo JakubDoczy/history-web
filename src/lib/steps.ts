@@ -14,7 +14,7 @@ import { internalLinkIds } from './richtext'
  * STEPS — the authored moments inside one event.
  *
  * Focus mode answers "show me this". A stepped event answers the next question a
- * reader asks of an operation that ran for six months: *and then what?* The
+ * reader asks of a campaign that ran for six months: *and then what?* The
  * whole of Barbarossa on one map is four hundred thousand square kilometres of
  * ink laid down at once — every front, every pocket, every axis, true of no
  * single day. Steps cut that into the moments a historian would actually name.
@@ -124,6 +124,23 @@ export interface Step {
    */
   drawing?: Drawing
   /**
+   * THE STEP IS ANOTHER ITEM: an ENTRANCE rather than a page.
+   *
+   * A saga's step may be a whole event in its own right — World War II's
+   * "Operation Barbarossa" is Barbarossa, which has steps of its own and is a
+   * saga itself. Rather than copy that event's prose, its ink and its camera
+   * into a step, the step names it, and stepping in *descends*: the focus stack
+   * takes the child (`selectStep` in stores/events.ts), which is the same push
+   * "Show on map" on a child pin already does. Stepping back out is `focusBack`,
+   * the same way out as every other layer of the mode.
+   *
+   * That is why recursion needed no navigation state: the stack was already a
+   * stack. A step that carries this may omit `page`, `drawing` and `camera` —
+   * the child supplies all three — and a step that does not carry it behaves
+   * exactly as it always has.
+   */
+  child?: string
+  /**
    * Child events to lift while this step is open — ids of events whose `parent`
    * is the stepped event.
    *
@@ -161,6 +178,7 @@ export interface RawStep {
   page?: string
   camera?: StepCamera
   drawing?: Drawing
+  child?: string
   highlights?: string[]
 }
 
@@ -268,7 +286,7 @@ export interface StepWindow {
  *
  * The two ends are open on purpose. The FIRST window opens at -Infinity so that
  * anything dated before the first named moment still belongs to it — the
- * preliminaries of an operation are part of its opening, not of nothing — and
+ * preliminaries of a campaign are part of its opening, not of nothing — and
  * the LAST closes at +Infinity so that the high-water mark of a campaign belongs
  * to its final step however it was dated. Without both, a layer could fall
  * between the authored moments and vanish from every step while still being on
@@ -384,6 +402,7 @@ export function isRawStep(s: unknown): s is RawStep {
   }
   if (v.page !== undefined && (typeof v.page !== 'string' || !v.page)) return false
   if (v.drawing !== undefined && !isDrawing(v.drawing)) return false
+  if (v.child !== undefined && (typeof v.child !== 'string' || !v.child)) return false
   if (v.highlights !== undefined) {
     if (!Array.isArray(v.highlights) || !v.highlights.length) return false
     if (!v.highlights.every((h) => typeof h === 'string' && h.length > 0)) return false
@@ -422,6 +441,8 @@ export function stepProblems(
   },
   /** Ids of this event's children, when the caller knows them — see `highlights`. */
   childIds?: ReadonlySet<string>,
+  /** Every id in the corpus, when the caller knows them — see `Step.child`. */
+  itemIds?: ReadonlySet<string>,
 ): string[] {
   const { steps } = e
   if (steps === undefined) return []
@@ -444,6 +465,14 @@ export function stepProblems(
       if (v !== undefined && !isFractionAt(v) && (v < from || v > to))
         out.push(`${where} (${s.id}): ${v} is outside the event's span ${from}..${to}`)
     for (const p of markupProblems(s.page ?? '')) out.push(`${where} (${s.id}) page ${p}`)
+    // An entrance descends into the child. Into ITSELF it would descend for
+    // ever, which is the one cycle a single event can hold on its own; the rest
+    // of the acyclicity check is a walk over the corpus (build_event_chunks.py).
+    if (s.child !== undefined) {
+      if (s.child === e.id) out.push(`${where} (${s.id}): descends into its own event`)
+      else if (itemIds && !itemIds.has(s.child))
+        out.push(`${where} (${s.id}): descends into "${s.child}", which does not exist`)
+    }
     for (const h of s.highlights ?? [])
       if (childIds && !childIds.has(h))
         out.push(`${where} (${s.id}): highlights "${h}", which is not a child of this event`)

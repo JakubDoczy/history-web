@@ -53,6 +53,44 @@ export interface TierInput {
   score: number
   /** Minor-tier events are always tier 3, whatever they score. */
   minor?: boolean
+  /**
+   * An event told in steps (see docs/design/sagas.md), which is lifted exactly
+   * one tier — resolved by `sagaOf`, never sniffed for here.
+   */
+  saga?: boolean
+}
+
+/**
+ * THE SAGA LIFT, in rank space.
+ *
+ * A saga is a thing with chapters and a map, and the reader cannot know that
+ * until they open it — so it is worth a place nearer the front of the set than
+ * its rank alone would buy. The lift is exactly one tier: a tier-2 saga leads,
+ * a tier-3 saga joins the middle, and a saga already leading stays where it is
+ * (there is no tier 0 to invent).
+ *
+ * Two properties make it safe, and both are why it is written as a move in RANK
+ * SPACE rather than as a `tier - 1` on the way out:
+ *
+ *  · NOBODY IS DISPLACED. The cuts are thresholds, not quotas — each row is
+ *    compared against them independently — so moving one row's position cannot
+ *    push another row down. A top-tier plain event stays a top-tier plain event
+ *    however many sagas are on screen, which is the promise the contract makes.
+ *  · IT CANNOT OSCILLATE. The lifted position is a pure function of the rank,
+ *    computed BEFORE the hysteresis bands are applied, so the hysteresis sees a
+ *    saga exactly as it sees a plain event standing at that position. Lifting
+ *    afterwards would instead feed the lifted tier back in as the held tier on
+ *    the next query, and a saga would creep 3 → 2 → 1 with nothing having
+ *    changed on screen.
+ *
+ * The map is the band above, proportionally: a saga at the top of tier 3 lands
+ * at the top of tier 2, one at the bottom lands at the bottom. Order within the
+ * band is preserved, so two sagas keep their relative standing.
+ */
+export function liftedRank(i: number, n: number, c1: number, c2: number): number {
+  if (i >= c2) return c1 + ((i - c2) / Math.max(1e-9, n - c2)) * (c2 - c1)
+  if (i >= c1) return ((i - c1) / Math.max(1e-9, c2 - c1)) * c1
+  return i
 }
 
 /**
@@ -82,12 +120,15 @@ export function assignTiers(
       out.set(row.id, 3)
       continue
     }
+    // The lift first, so everything below it is the ordinary rule applied to a
+    // position — see `liftedRank`.
+    const pos = row.saga ? liftedRank(i, n, c1, c2) : i
     const held = prev?.get(row.id)
     // A boundary sits further out for an event already above it and further in
     // for one below: keeping what you have is easier than taking it.
     const cut1 = held === undefined ? c1 : held === 1 ? c1 * (1 + h) : c1 * (1 - h)
     const cut2 = held === undefined ? c2 : held === 3 ? c2 * (1 - h) : c2 * (1 + h)
-    out.set(row.id, i < cut1 ? 1 : i < Math.max(cut1, cut2) ? 2 : 3)
+    out.set(row.id, pos < cut1 ? 1 : pos < Math.max(cut1, cut2) ? 2 : 3)
   }
   return out
 }

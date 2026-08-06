@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pin artwork harness</title>
+    <style>
+      body {
+        margin: 0;
+        font: 12px/1.4 system-ui, sans-serif;
+        color: #fff;
+        background: #0b0f18;
+      }
+      .band {
+        padding: 14px 18px;
+      }
+      /* the two grounds a pin has to hold up against: a bright ocean and dark land */
+      .ocean {
+        background: #2f6f9f;
+      }
+      .land {
+        background: #2b2a24;
+      }
+      .row {
+        display: flex;
+        align-items: flex-end;
+        gap: 26px;
+        margin: 10px 0;
+      }
+      .cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .cap {
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        opacity: 0.85;
+        text-shadow: 0 1px 2px #000;
+      }
+      h2 {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin: 0 0 4px;
+        opacity: 0.7;
+      }
+      .zoom svg {
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./pins.harness.ts"></script>
+  </body>
+</html>

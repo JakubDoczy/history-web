@@ -2590,7 +2590,77 @@
   "image": {
    "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Into_the_Jaws_of_Death_23-0455M_edit.jpg?width=640",
    "caption": "US troops landing at Omaha Beach, 1944"
-  }
+  },
+  "steps": [
+   {
+    "id": "battle-britain",
+    "name": "Battle of Britain",
+    "at": 0.14,
+    "child": "battle-britain"
+   },
+   {
+    "id": "barbarossa",
+    "name": "Operation Barbarossa",
+    "at": 0.28,
+    "child": "barbarossa"
+   },
+   {
+    "id": "pearl-harbor",
+    "name": "Attack on Pearl Harbor",
+    "at": 0.37,
+    "child": "pearl-harbor"
+   },
+   {
+    "id": "holocaust",
+    "name": "The Holocaust",
+    "start": 0.38,
+    "end": 0.95,
+    "child": "holocaust"
+   },
+   {
+    "id": "midway",
+    "name": "Battle of Midway",
+    "at": 0.45,
+    "child": "midway"
+   },
+   {
+    "id": "stalingrad",
+    "name": "Battle of Stalingrad",
+    "start": 0.48,
+    "end": 0.57,
+    "child": "stalingrad"
+   },
+   {
+    "id": "d-day",
+    "name": "D-Day landings",
+    "at": 0.78,
+    "child": "d-day"
+   },
+   {
+    "id": "ve-day",
+    "name": "Victory in Europe",
+    "at": 0.93,
+    "child": "ve-day"
+   },
+   {
+    "id": "trinity",
+    "name": "Trinity nuclear test",
+    "at": 0.96,
+    "child": "trinity"
+   },
+   {
+    "id": "hiroshima",
+    "name": "Atomic bombings of Hiroshima and Nagasaki",
+    "at": 0.97,
+    "child": "hiroshima"
+   },
+   {
+    "id": "vj-day",
+    "name": "Victory over Japan",
+    "at": 1,
+    "child": "vj-day"
+   }
+  ]
  },
  {
   "id": "holocaust",

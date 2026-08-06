@@ -19,6 +19,7 @@ import { timeStart } from '../lib/time'
 import type { Drawing } from '../lib/drawing'
 import { orderedSteps, stepTimeYears, type Step } from '../lib/steps'
 import { resolveFocusInk } from '../lib/present/ink'
+import { sagaOf } from '../lib/present/saga'
 import { focusTargetFor, type FocusTarget } from '../lib/geoFocus'
 import { assignTiers, type Tier } from '../lib/eventTiers'
 import { internalLinkIds } from '../lib/richtext'
@@ -57,14 +58,14 @@ const DATA = `${import.meta.env.BASE_URL}data/events/`
  * for the same reason the top-N cap exists: "Contains" on World War II is a
  * hundred entries, and putting all of them on the globe would replace one open
  * article with a swarm. Fifteen is about what a fitted frame holds without the
- * pins colliding, and every real operation in the corpus has fewer parts.
+ * pins colliding, and every real saga in the corpus has fewer parts.
  */
 export const FOCUS_CHILD_CAP = 15
 
 /**
  * How many focus contexts the stack will hold (see `focusStack`).
  *
- * The real case is two — an operation, and a battle inside it the reader pressed
+ * The real case is two — a saga, and a battle inside it the reader pressed
  * "Show on map" on — and the corpus's parent chains are three deep at the very
  * most. The cap is not a UX rule, it is a bound: nothing here ever pops a frame
  * the user did not put on, so without one a long enough session down a chain of
@@ -96,17 +97,17 @@ const focusChildrenOf = (parentId: string, cap = FOCUS_CHILD_CAP): HistoricalEve
     .slice(0, cap)
 
 /**
- * Is `id` a *part of* `parentId` — a battle inside the operation?
+ * Is `id` a *part of* `parentId` — a battle inside the saga?
  *
  * This is the whole test the focus navigation turns on (see `select`), so it
  * asks the data rather than the fifteen pins the cap let through: a child listed
  * under "Contains" but ranked out of the pinned set is still part of the thing
- * on screen, and opening it should no more leave the operation than opening the
+ * on screen, and opening it should no more leave the saga than opening the
  * one next to it would. `visible` keeps a pin under it either way.
  *
  * Life markers (a person's birth, a death) are asked about too — they are pins
  * without a `parent`, so the answer is always no, which is the correct one: a
- * birth is related to a life, never contained by an operation.
+ * birth is related to a life, never contained by a saga.
  */
 const isPartOf = (parentId: string, id?: string): boolean => {
   if (!id) return false
@@ -133,14 +134,14 @@ export const SIDE_BY_SIDE_MIN_PX = 641
 /**
  * Does entering a focus leave the article UP, on its overview?
  *
- * For an OPERATION it does, on a desktop. An operation — an event with authored
- * steps (lib/steps.ts) — is the one kind of thing in the corpus whose focus is a
- * *reading* as well as a view: it has an overview page, a strip of numbered
- * pages under it, and a plan on the ground that the pages are about. Folding all
- * of that to a pill and asking the reader to press it again answers "show me
- * Barbarossa" with a two-word bar, and the overview — the thing rule 1 of
- * lib/steps.ts says is what you always land on — was reachable only by a second
- * click that nothing advertised.
+ * For a SAGA it does, on a desktop. A saga — an event told in steps
+ * (lib/steps.ts, docs/design/sagas.md) — is the one kind of thing in the corpus
+ * whose focus is a *reading* as well as a view: it has an overview page, a strip
+ * of numbered pages under it, and a plan on the ground that the pages are about.
+ * Folding all of that to a pill and asking the reader to press it again answers
+ * "show me Barbarossa" with a two-word bar, and the overview — the thing rule 1
+ * of lib/steps.ts says is what you always land on — was reachable only by a
+ * second click that nothing advertised.
  *
  * Everything else still minimises, which is the whole of "Show on map": a bare
  * point, a route, a footprint, a life marker has nothing to read that the map is
@@ -151,7 +152,7 @@ export const SIDE_BY_SIDE_MIN_PX = 641
  * to be shown; there the pill is right, and one tap brings the overview up.
  */
 export const opensExpanded = (item: Subject | undefined, viewportWidthPx: number): boolean =>
-  item?.kind === 'event' && !!item.steps?.length && viewportWidthPx >= SIDE_BY_SIDE_MIN_PX
+  !!sagaOf(item) && viewportWidthPx >= SIDE_BY_SIDE_MIN_PX
 
 /**
  * A JSON fetch that fails by returning undefined rather than by throwing, and
@@ -204,10 +205,10 @@ export const useEventStore = defineStore('events', {
      * they are the whole feature:
      *
      *  · the panel minimises to a pill (EventPanel.vue), so the map is not
-     *    behind an article — with one exception, an operation on a desktop,
+     *    behind an article — with one exception, a saga on a desktop,
      *    which lands on its overview instead (see `opensExpanded`);
      *  · the item's `drawing` renders (GlobeView.vue) — the one place it does;
-     *  · its child events get their pins (see `visible`), so an operation shows
+     *  · its child events get their pins (see `visible`), so a saga shows
      *    its battles;
      *  · and *nothing else* is on the globe: no unrelated pins, no nation
      *    borders. That is the point of the mode, and the reason it applies to a
@@ -219,8 +220,8 @@ export const useEventStore = defineStore('events', {
      * back the article, without closing it.
      *
      * A STACK, innermost last, because looking at something is a place you can
-     * be *inside of*. An operation's battles are on the globe precisely so they
-     * can be opened; opening one used to throw the operation away, so closing
+     * be *inside of*. A saga's battles are on the globe precisely so they
+     * can be opened; opening one used to throw the saga away, so closing
      * the battle landed on the default world rather than back where the reader
      * had been. Now:
      *
@@ -229,7 +230,7 @@ export const useEventStore = defineStore('events', {
      *    panel offers "← Operation Barbarossa" (see `focusReturnTo`);
      *  · pressing "Show on map" on that part *pushes* it: it becomes the
      *    context, with its own ink and its own parts, and leaving pops back to
-     *    the operation rather than to the world;
+     *    the saga rather than to the world;
      *  · a statement about anything else — a search hit, a link out of the
      *    family — empties the stack in one go (`clearFocus`).
      *
@@ -253,7 +254,7 @@ export const useEventStore = defineStore('events', {
      * the focused event actually declares.
      *
      * It belongs to the TOP of the focus stack, not to the stack: stepping into
-     * a battle inside a stepped operation and back out again returns to the
+     * a battle inside a stepped saga and back out again returns to the
      * overview rather than to whichever step was open, because the step is a
      * reading of one event and the reader has been somewhere else since.
      */
@@ -355,6 +356,10 @@ export const useEventStore = defineStore('events', {
         id: e.id,
         score: effectivePriority(e, selection.start, selection.end),
         minor: isMinor(e),
+        // Sagahood, resolved where every other presentation question about an
+        // item is (lib/present/saga.ts) — the tiers are the one place the
+        // corpus's own ranking is bent, and the bend is one tier (`liftedRank`).
+        saga: !!sagaOf(e),
       }))
       return (lastTiers = assignTiers(ranked, lastTiers))
     },
@@ -496,7 +501,7 @@ export const useEventStore = defineStore('events', {
     },
     /**
      * When the panel is open on a *part* of the focused item — a battle inside
-     * the operation — the item to go back to; `undefined` otherwise.
+     * the saga — the item to go back to; `undefined` otherwise.
      *
      * This is the back control's whole condition and its label ("← Operation
      * Barbarossa"), and it is why the reader can tell they are inside something
@@ -544,7 +549,7 @@ export const useEventStore = defineStore('events', {
      * The plan on the globe: the focused item's ink, resolved for the open step.
      *
      * The FOCUS's drawing, not the selection's — while a child battle is open
-     * inside an operation the operation's plan is what stays on the map. What
+     * inside a saga the saga's plan is what stays on the map. What
      * the step does to it — filter the parent's layers, merge the step's own —
      * is `resolveFocusInk` (lib/present/ink.ts) and lives there rather than
      * here, so the one rule that decides what is on the map is a pure function a
@@ -622,10 +627,10 @@ export const useEventStore = defineStore('events', {
      * with the panel.
      *
      * Selecting the focused item, or one of its PARTS, is not that. A battle is
-     * on the globe *because* the operation is being looked at, so opening it
-     * stays inside the operation: the ink and the sibling pins keep their places
+     * on the globe *because* the saga is being looked at, so opening it
+     * stays inside the saga: the ink and the sibling pins keep their places
      * and the article (or the pill — whichever shape the panel is in) swaps to
-     * the battle, with a way back to the operation on it.
+     * the battle, with a way back to the saga on it.
      */
     select(id?: string) {
       if (id === undefined) return this.close()
@@ -715,7 +720,7 @@ export const useEventStore = defineStore('events', {
       // hold no matter which way the caller arrived (a pin, a link, a search).
       this.selectedId = id
       // …and the panel folds to the pill, unless what was opened is an
-      // operation on a screen with room for both (see `opensExpanded`). Read
+      // saga on a screen with room for both (see `opensExpanded`). Read
       // after the stack and the selection are set, because it is asked about
       // the item now in focus.
       this.focusExpanded = opensExpanded(this.focused, useViewStore().viewportWidthPx)
@@ -746,7 +751,7 @@ export const useEventStore = defineStore('events', {
      *
      * This is what picking an era or an age means — the reader has asked for a
      * different *time*, which is a question about the whole world and not about
-     * whatever one operation was filling the globe. The era pickers call it
+     * whatever one saga was filling the globe. The era pickers call it
      * alongside `time.selectEra` (TopBar.vue, TimelineBar.vue) rather than the
      * time store calling it itself: time knows nothing about events, and this is
      * the composition point where the two are already spoken about together.
@@ -771,7 +776,7 @@ export const useEventStore = defineStore('events', {
      *
      * The test is intersection, not containment, and that margin is the design:
      * a band nudged off one end of a fifty-year war still touches it, and a
-     * reader stepping through the steps of an operation is moving the *cursor*
+     * reader stepping through the steps of a saga is moving the *cursor*
      * only (`setCursor` in stores/time.ts), which never narrows the band. The
      * mode dies when its subject has left the timeline entirely — no sooner.
      *
@@ -791,7 +796,10 @@ export const useEventStore = defineStore('events', {
      * Step into one of the focused event's steps — or, with no id, back out to
      * the overview. The step strip's only action (see components/StepStrip.vue).
      *
-     * Five things follow, and they are the feature:
+     * A step that names a `child` is an ENTRANCE and short-circuits all of the
+     * below: it descends into that item instead (see `Step.child`), which is
+     * `showOnMap` and therefore the existing stack. Everything else here is
+     * about a step that is a reading of THIS event, and five things follow:
      *
      *  · the **drawing** filters to the timeless layers plus that step's, and the
      *    step's own ink merges over the top (`focusDrawing`), so the June front
@@ -817,7 +825,7 @@ export const useEventStore = defineStore('events', {
      * Whichever chip is pressed, the **selection comes back to the focused
      * event** first. The strip is a control over one event — its own steps — and
      * a step's page belongs to that event's article, not to whatever else the
-     * panel happens to be open on: with a battle inside the operation open, the
+     * panel happens to be open on: with a battle inside the saga open, the
      * chip used to light up while its page stayed unreachable (the page renders
      * only on the focused event's own article, see `stepPage` in EventPanel.vue)
      * and `focusExpanded` force-opened the *battle's* article instead — a click
@@ -849,6 +857,13 @@ export const useEventStore = defineStore('events', {
       }
       const step = this.focusSteps.find((s) => s.id === id)
       if (!step) return
+      // AN ENTRANCE, not a page: the step *is* another item, so stepping in
+      // descends into it (see `Step.child`). Everything that follows — the push
+      // onto the focus stack, the child's own ink and steps, the way back out —
+      // is the machinery a "Show on map" from a child pin already uses. That is
+      // the whole of the recursion: no second navigation state, and no way for
+      // the two to disagree about where the reader is.
+      if (step.child) return this.showOnMap(step.child)
       this.selectedId = item.id
       this.stepId = step.id
       if (step.page) this.focusExpanded = true
@@ -881,7 +896,7 @@ export const useEventStore = defineStore('events', {
      *  · the **camera** frames its whole geometry (lib/geoFocus.ts): a point
      *    from a sensible height, a footprint or a route fitted with margin;
      *  · and the app is in **focus mode**: the article folds to a pill — or
-     *    stays up on its overview, for an operation with room beside the map
+     *    stays up on its overview, for a saga with room beside the map
      *    (`opensExpanded`) — and the globe clears down to this item, its
      *    children and its ink (see `focus`).
      *
@@ -897,9 +912,9 @@ export const useEventStore = defineStore('events', {
      * article it opened.
      *
      * Pressed on a PART of the item already in focus — a battle inside the
-     * operation — this pushes rather than replaces (see `enterFocus`), so the
-     * battle gets the map on the operation's terms and closing it comes back to
-     * the operation.
+     * saga — this pushes rather than replaces (see `enterFocus`), so the
+     * battle gets the map on the saga's terms and closing it comes back to
+     * the saga.
      */
     showOnMap(id: string) {
       // The one thing that can still refuse: an item with nowhere to go at all,

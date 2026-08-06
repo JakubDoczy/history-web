@@ -380,6 +380,28 @@ describe('validation — the runtime twin of validate_steps', () => {
     expect(isRawStep({ id: 'a', name: 'a', at: 0, highlights: [] })).toBe(false)
   })
 
+  it('rejects an entrance into nothing, or into its own event', () => {
+    const into = (child: string): RawStep[] => [{ id: 'a', name: 'a', at: 0, child }]
+    const corpus = new Set(['d-day', 'e'])
+    expect(stepProblems(event(into('d-day')), undefined, corpus)).toEqual([])
+    expect(stepProblems(event(into('nowhere')), undefined, corpus).join(' ')).toContain(
+      'does not exist',
+    )
+    // a step into its own event is the one cycle a single event can hold, and
+    // it is caught without knowing the corpus at all
+    expect(stepProblems(event(into('e'))).join(' ')).toContain('its own event')
+    // with no corpus to check against, an id is simply not resolved
+    expect(stepProblems(event(into('nowhere')))).toEqual([])
+    expect(isRawStep({ id: 'a', name: 'a', at: 0, child: '' })).toBe(false)
+    expect(isRawStep({ id: 'a', name: 'a', at: 0, child: 'd-day' })).toBe(true)
+  })
+
+  it('lets an entrance omit the page, the ink and the camera', () => {
+    // the child supplies all three; a step that carries nothing but an id, a
+    // name and a time is a complete entrance (docs/design/sagas.md)
+    expect(stepProblems(event([{ id: 'a', name: 'Normandy', at: 0.5, child: 'd-day' }]))).toEqual([])
+  })
+
   /**
    * `renderRichText` cannot throw — anything it does not recognise falls through
    * as escaped prose — so the only useful definition of "valid markup" is that

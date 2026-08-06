@@ -26,6 +26,11 @@ the whole graph, and all three are written on ONE side only:
            materialises the inverse (see buildRelations in src/lib/events.ts).
   weak     see-also. Informative but secondary. Symmetric, same rule.
 
+A fourth edge is not a relation but a route through one: a STEP's `child` (see
+validate_step_children), which makes that step an entrance into another item.
+It is checked on its own edges — resolvable, an event, acyclic — because
+nothing forces it to follow `parent`, and a loop in it is an infinite descent.
+
 One pair, one relation: containment beats strong, strong beats weak. Saying the
 same pair twice — from both ends, or at two strengths, or on top of a
 parent/child edge — is redundant, and this script prints it. The data tests
@@ -160,6 +165,7 @@ def validate(items: list[dict], ranked: list[str]) -> None:
         validate_points(e)
         validate_drawing(e)
         validate_steps(e, by_id)
+    validate_step_children(items, by_id)
     validate_relations(items, by_id)
 
 
@@ -445,6 +451,13 @@ def validate_steps(e: dict, by_id: dict) -> None:
     while it is open. A highlight that is not a child is a build failure: the
     whole of what it does is pin and accent a child pin, so naming something else
     is a line of data that can never have an effect.
+
+    Or it may be an ENTRANCE: a `child`, which makes the step another item and
+    makes stepping into it a descent (see Step.child in src/lib/steps.ts). Such a
+    step legitimately carries nothing but an id, a name and a time — the child
+    supplies its own page, ink and camera — so page/drawing/camera stay optional
+    here for it, as they are for every other step. What the child itself must be
+    is checked in validate_step_children, which needs the whole corpus.
     """
     steps = e.get('steps')
     if steps is None:
@@ -518,9 +531,79 @@ def validate_steps(e: dict, by_id: dict) -> None:
             alt = cam.get('altitude')
             if alt is not None and not (isinstance(alt, (int, float)) and alt > 0):
                 sys.exit(f'{e["id"]}: {where} ({sid}) camera altitude must be positive')
+        child = s.get('child')
+        if child is not None and (not isinstance(child, str) or not child):
+            sys.exit(f'{e["id"]}: {where} ({sid}) child must be an id')
         for k in s:
-            if k not in ('id', 'name', 'at', 'start', 'end', 'page', 'camera', 'drawing', 'highlights'):
+            if k not in (
+                'id', 'name', 'at', 'start', 'end', 'page', 'camera', 'drawing',
+                'child', 'highlights',
+            ):
                 sys.exit(f'{e["id"]}: {where} ({sid}) has unexpected key {k!r}')
+
+
+def validate_step_children(items: list[dict], by_id: dict) -> None:
+    """The step-child graph: every entrance resolves, and none of them loops.
+
+    Two checks, and the second is the one that needs the whole corpus.
+
+    RESOLVES. A `child` names an item that exists and is an EVENT. It is an
+    event because stepping into one is `showOnMap` (see selectStep in
+    src/stores/events.ts), which needs somewhere on the globe to go: a concept
+    has no place at all, so a chip pointing at one would be a chip that does
+    nothing, which is exactly the class of data error a build check exists for.
+
+    ACYCLIC, and checked on its own edges rather than on `parent`. The two
+    graphs are expected to agree — an entrance normally descends into a child
+    of the stepped event — but nothing in the model forces that, and "the
+    parent chain is acyclic" would not save a reader from ww2 -> d-day -> ww2.
+    A cycle here is an infinite descent: every step in it pushes another focus
+    context, for ever.
+    """
+    edges: dict[str, set[str]] = {}
+    for e in items:
+        for s in e.get('steps') or ():
+            child = s.get('child')
+            if child is None:
+                continue
+            if child == e['id']:
+                sys.exit(f'{e["id"]}: step {s["id"]!r} descends into its own event')
+            if child not in by_id:
+                sys.exit(f'{e["id"]}: step {s["id"]!r} descends into unknown item {child!r}')
+            if kind_of(by_id[child]) != 'event':
+                sys.exit(
+                    f'{e["id"]}: step {s["id"]!r} descends into {child!r}, '
+                    f'which is a {kind_of(by_id[child])} and has nowhere on the map to go'
+                )
+            edges.setdefault(e['id'], set()).add(child)
+
+    # iterative DFS with the usual three colours; the path is kept so the error
+    # names the loop rather than merely reporting that there is one
+    state: dict[str, int] = {}
+
+    def walk(start: str) -> None:
+        stack = [(start, iter(sorted(edges.get(start, ()))))]
+        path = [start]
+        state[start] = 1
+        while stack:
+            node, it = stack[-1]
+            nxt = next(it, None)
+            if nxt is None:
+                state[node] = 2
+                stack.pop()
+                path.pop()
+                continue
+            if state.get(nxt) == 1:
+                loop = ' -> '.join(path[path.index(nxt):] + [nxt])
+                sys.exit(f'step-child graph is a cycle: {loop}')
+            if state.get(nxt) != 2:
+                state[nxt] = 1
+                path.append(nxt)
+                stack.append((nxt, iter(sorted(edges.get(nxt, ())))))
+
+    for node in sorted(edges):
+        if state.get(node) is None:
+            walk(node)
 
 
 def main() -> None:

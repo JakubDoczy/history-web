@@ -1,8 +1,9 @@
 import { assertNever, featureOf, isMinor, type MapPin } from '../events'
 import type { PinDatum } from '../eventClusters'
 import type { Tier } from '../eventTiers'
-import { primaryTag, tagColor } from '../tags'
+import { primaryTag, tagColor, type Tag } from '../tags'
 import type { RenderCtx, RenderMode } from './mode'
+import { sagaOf } from './saga'
 
 /**
  * WHAT A PIN LOOKS LIKE — resolved from the domain, emitted by lib/eventPins.ts.
@@ -28,9 +29,99 @@ export type PinGlyph =
   /** A life marker: an open ring, so a birth never reads as an event. */
   | 'life'
 
+/* ------------------------------------------------------- category glyphs */
+
+/**
+ * One drawn part of a category glyph: SVG path data in the pin's own 24×32 box,
+ * centred on the head at (12, 11). Path data and nothing else — no rasters, so
+ * a glyph costs no request, scales with the pin and takes the ink colour of
+ * whichever mode it is drawn in.
+ */
+export interface GlyphPart {
+  d: string
+  /** Filled (a coin) rather than stroked (a blade). */
+  fill?: boolean
+  /** Stroke weight in box units; ignored when filled. */
+  width?: number
+}
+
+export type GlyphArt = readonly GlyphPart[]
+
+/**
+ * CROSSED SWORDS — war.
+ *
+ * Two blades and two guards, and the count is the design: at the size a pin
+ * head actually is (a 6–9 px circle inside a 12–16 px teardrop) every stroke
+ * costs contrast, and a blade with a pommel and a fuller is a smudge. The
+ * blades run corner to corner so the mark reads as an X first and as swords
+ * second, which is the right order — an X on a red pin already says "battle".
+ */
+const SWORDS: GlyphArt = [
+  { d: 'M8.1 15.1L16 7.2M15.9 15.1L8 7.2', width: 1.7 },
+  { d: 'M6.9 13.3L9.7 16.1M17.1 13.3L14.3 16.1', width: 1.5 },
+]
+
+/**
+ * STACKED COINS — trade (the `economy` tag, which is what this corpus calls it).
+ *
+ * Scales lost, and they lost at real size rather than on paper. Three candidates
+ * were rendered through this same resolver at the three sizes a pin is actually
+ * drawn at (tests/e2e/pins.harness.ts; the comparison is
+ * /tmp/shots42/glyph-candidates.png):
+ *
+ *  · SCALES are five thin strokes — post, beam, base and two pans — inside a
+ *    circle that is 7 px across on a leading pin and 4 px on a minor one. At
+ *    1x they anti-alias to grey and the pans close into the beam; the mark
+ *    survives only at the 4x zoom nobody looks at it from.
+ *  · A COIN PAIR (a disc and a ring, offset) holds its contrast but reads as a
+ *    key, or as a percent sign — two round things, no stack.
+ *  · A COIN STACK is three chunky horizontal marks. Horizontal strokes are the
+ *    one thing in this registry that cannot be confused with the war X, it
+ *    stays solid at the 18 px minor pin, and at 4x it is unmistakably coins.
+ *
+ * Which is the contract's own instruction taken literally — "stacked coins if
+ * scales read badly at 12–16 px; decide by looking, at real pin size".
+ */
+const COINS: GlyphArt = [
+  { d: 'M8.2 8.2a3.8 1.5 0 1 0 7.6 0a3.8 1.5 0 1 0 -7.6 0', fill: true },
+  { d: 'M8.2 11.4a3.8 1.5 0 1 0 7.6 0a3.8 1.5 0 1 0 -7.6 0', width: 1.2 },
+  { d: 'M8.2 14.6a3.8 1.5 0 1 0 7.6 0a3.8 1.5 0 1 0 -7.6 0', fill: true },
+]
+
+/**
+ * The registry: primary tag → the mark in the pin head.
+ *
+ * Keyed by the same tag that already picks the pin's colour (`tagColor`), so
+ * the two halves of "what kind of thing is this" are one lookup apart and can
+ * never disagree. Deliberately sparse: a category with no entry keeps today's
+ * plain dot, because a glyph nobody can read at 14 px is worse than the dot it
+ * replaced — the bar for adding one is that it survives `pinSvg` at height 18.
+ */
+export const TAG_GLYPHS: Partial<Record<Tag, GlyphArt>> = {
+  war: SWORDS,
+  economy: COINS,
+}
+
 /** Everything the renderer needs to draw one teardrop, and nothing else. */
 export interface PinSpec {
   glyph: PinGlyph
+  /**
+   * The category mark drawn in the head, or `null` for the categories that have
+   * none. Resolved beside the colour — see `TAG_GLYPHS`.
+   */
+  mark: GlyphArt | null
+  /**
+   * THE SAGA MARK: a thin concentric ring inside the pin head, drawn under the
+   * category glyph.
+   *
+   * Inside rather than outside, which is the one judgement in it. Outside the
+   * head are two rings already spoken for — the selection's halo and a step's
+   * accent — and a third ring out there would be a third thing to tell apart in
+   * the same two pixels of margin. Inside, the ring is unambiguous, it survives
+   * being selected, highlighted, hovered and tier-1-glowing all at once, and it
+   * is the same mark in both render modes.
+   */
+  saga: boolean
   /** The dashed ellipse under the tip — "this pin stands on a region". */
   footprint: boolean
   /** Height in px: priority, tier and selection already applied. */
@@ -68,6 +159,15 @@ export interface ClusterSpec {
   ink: string
   /** The tier-1 outer ring. */
   ring: boolean
+  /**
+   * The saga mark, when ANY member is a saga.
+   *
+   * A badge is a pin that swallowed several, so it has to say everything its
+   * members would have said (the same argument the accent below is here on). At
+   * the zoom a saga is fitted to, its own pin is often inside a badge, and a
+   * ring the reader cannot see is a ring that is not there.
+   */
+  saga: boolean
   /** The step accent, when the badge HIDES a child the step named. */
   accent: string | null
   classes: string[]
@@ -142,8 +242,21 @@ export function pinGlyphFor(e: MapPin): PinGlyph {
 export function resolvePinSpec(e: MapPin, ctx: PinCtx): PinSpec {
   const flat = ctx.mode === 'schematic'
   const glyph = pinGlyphFor(e)
+  // The category mark and the body colour are the same lookup, one line apart:
+  // both are what the primary tag says this pin IS.
+  //
+  // Only where the head would otherwise hold nothing but the plain dot, which
+  // is nine pins in ten. A route's winding line and a footprint's brackets are
+  // STRUCTURAL — they are what this pin's own geometry says, and the reader
+  // needs them to know the thing is openable — so they keep the head. The
+  // composite the design asked for (coins over the route motif) was drawn and
+  // looked at: at 14 px it is two marks in seven pixels and reads as neither.
+  // The route pin keeps its route; the colour still says trade.
+  const mark = glyph === 'dot' ? (TAG_GLYPHS[primaryTag(e)] ?? null) : null
   return {
     glyph,
+    mark,
+    saga: !!sagaOf(e),
     footprint: e.kind === 'event' && !!featureOf(e.location, 'area'),
     height: pinHeight(e, ctx.selected, ctx.tier),
     body: tagColor(primaryTag(e)),
@@ -165,6 +278,7 @@ export function resolvePinSpec(e: MapPin, ctx: PinCtx): PinSpec {
       // smallest size and go translucent, so they read as a layer underneath the
       // ranked ones rather than as competition for them
       ...(isMinor(e) ? ['event-pin--minor'] : []),
+      ...(sagaOf(e) ? ['event-pin--saga'] : []),
       ...(ctx.highlighted ? ['event-pin--accent'] : []),
       ...(flat ? ['event-pin--flat'] : []),
     ],
@@ -195,15 +309,17 @@ export function resolveClusterSpec(
     body: tagColor(primaryTag(members[0])),
     ink: INK[ctx.mode],
     ring: ctx.tier === 1 && ctx.mode !== 'schematic',
+    saga: members.some((m) => !!sagaOf(m)),
     // A badge is a pin that swallowed several, so it has to say everything its
     // members would have said. Without this, a step that highlights a child
     // sitting inside a cluster highlights nothing the reader can see — which is
-    // the common case at the zoom "Show on map" fits an operation to.
+    // the common case at the zoom "Show on map" fits a saga to.
     accent: ctx.highlighted ? ACCENT_COLOR : null,
     classes: [
       'event-pin',
       'event-pin--cluster',
       `event-pin--tier${ctx.tier}`,
+      ...(members.some((m) => sagaOf(m)) ? ['event-pin--saga'] : []),
       ...(ctx.highlighted ? ['event-pin--accent'] : []),
       ...(ctx.mode === 'schematic' ? ['event-pin--flat'] : []),
     ],
@@ -243,6 +359,11 @@ export const pinTier = (p: PinDatum, tiers: ReadonlyMap<string, Tier>): Tier =>
  * rebuilt at its new size, and one that does not must survive a scrub untouched
  * — which is what the hysteresis in lib/eventTiers.ts is for. So are the mode
  * and the step highlight, for exactly the same reason: both change the artwork.
+ *
+ * And so is sagahood, which is drawn (the ring) and which an item can *gain*:
+ * the same event arrives in the spine and again in its era chunk, and a merge
+ * replaces the object. Without this a pin that grew steps under a reader's
+ * cursor would keep the artwork it was built with.
  */
 export const pinStateKey = (
   p: PinDatum,
@@ -252,7 +373,10 @@ export const pinStateKey = (
   highlighted = false,
 ): string => {
   const m = mode === 'schematic' ? 's' : 'r'
+  const saga = (e: MapPin) => (sagaOf(e) ? 1 : 0)
   return p.kind === 'cluster'
-    ? `c:${p.id}:${tier}:${m}:${highlighted ? 1 : 0}:${p.members.map((e) => e.id).join('|')}`
-    : `e:${p.id}:${selectedId === p.id ? 1 : 0}:${tier}:${m}:${highlighted ? 1 : 0}`
+    ? `c:${p.id}:${tier}:${m}:${highlighted ? 1 : 0}:${p.members
+        .map((e) => `${e.id}${saga(e)}`)
+        .join('|')}`
+    : `e:${p.id}:${selectedId === p.id ? 1 : 0}:${tier}:${m}:${highlighted ? 1 : 0}:${saga(p.event)}`
 }

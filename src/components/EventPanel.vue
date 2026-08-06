@@ -4,7 +4,8 @@ import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { formatTime, formatYear } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
-import { anchorYearOf, assertNever, featureOf, timeOf, type Item, type Place } from '../lib/events'
+import { anchorYearOf, assertNever, timeOf, type Item, type Place } from '../lib/events'
+import { resolvePillKind } from '../lib/present/saga'
 import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
 import StepStrip from './StepStrip.vue'
 
@@ -26,15 +27,11 @@ const kindLabel = computed(() => ({ event: '', person: 'Person', concept: 'Conce
  * events and the word adds nothing next to a date — but the pill has no date and
  * no body, so something has to say what kind of thing this is.
  *
- * An event says what SHAPE it is instead, which is the most useful thing a pill
- * can say about one: a plan beats a route beats a bare point.
+ * Resolved in the presentation layer (`resolvePillKind`), beside every other
+ * answer to "what is this, as far as the reader is concerned": a saga beats a
+ * plan beats a route beats a bare point.
  */
-const pillKind = computed(() => {
-  const ev = event.value
-  if (!ev) return kindLabel.value
-  if (ev.drawing) return 'Plan'
-  return featureOf(ev.location, 'line') ? 'Route' : 'Event'
-})
+const pillKind = computed(() => resolvePillKind(e.value))
 
 /** The line under the title: a span, a lifespan, or the year an idea is anchored at. */
 const when = computed(() => {
@@ -85,13 +82,13 @@ const related = computed(() => events.strongOf(e.value.id))
 const seeAlso = computed(() => events.seeAlsoOf(e.value.id))
 
 /**
- * The STAGE PAGE the article is showing, if any — the authored text of the step
+ * The STEP PAGE the article is showing, if any — the authored text of the step
  * the reader has stepped into (see `selectStep` in stores/events.ts).
  *
  * Only on the focused event's OWN article. Opening a battle inside a stepped
- * operation swaps the panel to the battle, and the battle's article is about
- * the battle: it must not be overwritten by the text of a step of its parent,
- * even though that step is still what the map is filtered to.
+ * saga swaps the panel to the battle, and the battle's article is about the
+ * battle: it must not be overwritten by the text of a step of its parent, even
+ * though that step is still what the map is filtered to.
  */
 const stepPage = computed(() => {
   const step = events.activeStep
@@ -312,8 +309,8 @@ onBeforeUnmount(() => inflight?.abort())
     </button>
 
     <!-- The one breadcrumb there is, and only inside a focus: the reader is
-         looking at a battle *because* an operation is on the globe underneath
-         it, and this says so and takes them back (see `focusReturnTo`). "Part
+         looking at a battle *because* a saga is on the globe underneath it,
+         and this says so and takes them back (see `focusReturnTo`). "Part
          of" below still carries the whole chain; this is about where the map
          is, not about where the article sits in the hierarchy. -->
     <button
@@ -353,9 +350,9 @@ onBeforeUnmount(() => inflight?.abort())
       </button>
     </p>
 
-    <!-- ONE STAGE, INSTEAD OF THE WHOLE ARTICLE.
+    <!-- ONE STEP, INSTEAD OF THE WHOLE ARTICLE.
          A step page is a page, not a section appended to one: the reader
-         stepped into a moment of the operation and the panel is what tells them
+         stepped into a moment of the saga and the panel is what tells them
          about that moment, so the lead picture, the body and the four relation
          lists all step aside. The way back is the first thing in it and says
          where it goes, because there is no other affordance in the panel that

@@ -1126,25 +1126,49 @@ describe('every reachable state has a way out', () => {
     ...extra,
   })
   const corpus: RawEvent[] = [
-    // `op` carries steps, so the walk covers the one transition that is not the
-    // same for every item: entering a focus on an OPERATION leaves the article
-    // up rather than folding it to the pill (`opensExpanded`, and the view
-    // store's default width is a desktop one). Every invariant below is about
-    // there being a panel and about what it is on, so both shapes must be
-    // walked or the checks only ever see the pill.
-    plan('op', { steps: [{ id: 'first', name: 'First', at: 0 }] }),
-    plan('battle', { parent: 'op', priority: 60 }),
+    // `op` carries steps, so the walk covers the two transitions that are not
+    // the same for every item. One: entering a focus on a SAGA leaves the
+    // article up rather than folding it to the pill (`opensExpanded`, and the
+    // view store's default width is a desktop one) — every invariant below is
+    // about there being a panel and about what it is on, so both shapes must be
+    // walked or the checks only ever see the pill. Two: its second step is an
+    // ENTRANCE, so `selectStep` can push a whole context (see `Step.child`),
+    // and the walk covers descending into a child as well as arriving at one by
+    // pressing its pin.
+    plan('op', {
+      steps: [
+        { id: 'first', name: 'First', at: 0 },
+        { id: 'into', name: 'Into the battle', at: 0.5, child: 'battle' },
+      ],
+    }),
+    plan('battle', { parent: 'op', priority: 60, steps: [{ id: 'own', name: 'Own', at: 0 }] }),
     plan('village', { parent: 'battle', priority: 10 }),
     plan('elsewhere', { lat: 49.3, lng: -0.6 }),
   ]
 
-  type Snapshot = { focusStack: string[]; selectedId?: string; focusExpanded: boolean }
+  /**
+   * The state, exactly — and `stepId` is part of it now that a chip can move
+   * the machine. Without it in here the walk would restore a node with the
+   * wrong step open and the graph would stop being deterministic.
+   */
+  type Snapshot = {
+    focusStack: string[]
+    selectedId?: string
+    focusExpanded: boolean
+    stepId?: string
+  }
   const ids = ['op', 'battle', 'village', 'elsewhere']
+  /** Every chip the strip can offer, over both events that carry steps. */
+  const stepIds = ['first', 'into', 'own']
 
   /** Everything a user can do to this state machine, named. */
   const ACTIONS: [string, (e: ReturnType<typeof useEventStore>) => void][] = [
     ...ids.map((id) => [`select ${id}`, (e: ReturnType<typeof useEventStore>) => e.select(id)] as const),
     ...ids.map((id) => [`showOnMap ${id}`, (e: ReturnType<typeof useEventStore>) => e.showOnMap(id)] as const),
+    ...stepIds.map(
+      (id) => [`selectStep ${id}`, (e: ReturnType<typeof useEventStore>) => e.selectStep(id)] as const,
+    ),
+    ['selectStep()', (e) => e.selectStep()],
     ['close', (e) => e.close()],
     ['select()', (e) => e.select()],
     ['focusBack', (e) => e.focusBack()],
@@ -1157,13 +1181,16 @@ describe('every reachable state has a way out', () => {
     focusStack: [...e.focusStack],
     selectedId: e.selectedId,
     focusExpanded: e.focusExpanded,
+    stepId: e.stepId,
   })
   const restore = (e: ReturnType<typeof useEventStore>, s: Snapshot) => {
     e.focusStack = [...s.focusStack]
     e.selectedId = s.selectedId
     e.focusExpanded = s.focusExpanded
+    e.stepId = s.stepId
   }
-  const key = (s: Snapshot) => `${s.focusStack.join('>')}|${s.selectedId ?? '-'}|${s.focusExpanded}`
+  const key = (s: Snapshot) =>
+    `${s.focusStack.join('>')}|${s.selectedId ?? '-'}|${s.focusExpanded}|${s.stepId ?? '-'}`
 
   /** What the reader can see and press: an article, a pill, or nothing at all. */
   const panelOf = (e: ReturnType<typeof useEventStore>) =>
@@ -1204,6 +1231,35 @@ describe('every reachable state has a way out', () => {
     // and the deepest thing reachable is the chain of parts, capped
     expect(Math.max(...[...seen.keys()].map((k) => k.split('|')[0].split('>').filter(Boolean).length)))
       .toBeLessThanOrEqual(FOCUS_STACK_CAP)
+    // the step machine is walked, not merely present: some node has a step
+    // open, and the ENTRANCE has been taken (a two-deep stack reached by a
+    // chip, which is the transition the recursion added)
+    expect([...seen.keys()].some((k) => k.endsWith('|first'))).toBe(true)
+    // …and the ENTRANCE really descends, from EVERY state the saga can be in:
+    // the chip pushes the child and hands it the panel. That is the transition
+    // recursion added, and the one thing here no other action does.
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+    const events = useEventStore()
+    events.adopt(corpus)
+    let descents = 0
+    for (const k of seen.keys()) {
+      const [stack, sel, expanded, step] = k.split('|')
+      const focusStack = stack ? stack.split('>') : []
+      if (focusStack[focusStack.length - 1] !== 'op') continue
+      restore(events, {
+        focusStack,
+        selectedId: sel === '-' ? undefined : sel,
+        focusExpanded: expanded === 'true',
+        stepId: step === '-' ? undefined : step,
+      })
+      events.selectStep('into')
+      descents++
+      expect(events.focusStack.slice(-2), `from ${k}`).toEqual(['op', 'battle'])
+      expect(events.selectedId, `from ${k}`).toBe('battle')
+      expect(events.stepId, `from ${k}`).toBeUndefined()
+    }
+    expect(descents, 'the entrance chip was never pressed inside the saga').toBeGreaterThan(0)
   })
 
   it('never leaves the globe filtered with nothing on screen to unfilter it', () => {
@@ -1246,11 +1302,12 @@ describe('every reachable state has a way out', () => {
     const events = useEventStore()
     events.adopt(corpus)
     for (const [k, path] of seen) {
-      const [stack, sel, expanded] = k.split('|')
+      const [stack, sel, expanded, step] = k.split('|')
       restore(events, {
         focusStack: stack ? stack.split('>') : [],
         selectedId: sel === '-' ? undefined : sel,
         focusExpanded: expanded === 'true',
+        stepId: step === '-' ? undefined : step,
       })
       // one press per rung of the ladder, plus the one that closes the article
       let presses = 0
@@ -1566,6 +1623,93 @@ describe('stepped focus', () => {
     events.selectStep('june')
     events.select('battle')
     expect(texts(events)).toEqual(['June front', 'Army Group Centre'])
+  })
+
+  /* --- ENTRANCES: a step that is another item (docs/design/sagas.md) ------
+     The whole of the recursion is that the step hands the reader to the
+     existing focus machinery. So what these check is not new state — there is
+     none — but that the descent is exactly the push "Show on map" already
+     makes, and that the way back is the way back out of any other part. */
+  describe('a step that descends into a child', () => {
+    /** `op`, with one of its steps turned into an entrance to `battle`. */
+    const saga = (): RawEvent[] => [
+      op({
+        steps: [
+          steps[0],
+          { id: 'into', name: 'Battle', at: 0.45, child: 'battle' },
+          steps[2],
+        ],
+      }),
+      { ...part('battle', 'op'), steps: [{ id: 'own', name: 'Own', at: 0 }] },
+      part('village', 'battle'),
+    ]
+    const descend = () => {
+      const events = useEventStore()
+      events.adopt(saga())
+      events.showOnMap('op')
+      events.selectStep('into')
+      return events
+    }
+
+    it('pushes the child onto the focus stack rather than opening a step', () => {
+      const events = descend()
+      expect(events.focusStack).toEqual(['op', 'battle'])
+      expect(events.selectedId).toBe('battle')
+      // it is a context now, not a step of the one above it
+      expect(events.stepId).toBeUndefined()
+      expect(events.focus?.itemId).toBe('battle')
+    })
+
+    it('hands the strip over to the child’s own steps', () => {
+      const events = descend()
+      expect(events.focusSteps.map((s) => s.id)).toEqual(['own'])
+      // …and the child's parts are the pins, so the descent can continue
+      expect(events.focusChildren.map((e) => e.id)).toEqual(['village'])
+    })
+
+    it('comes back out to the parent’s OVERVIEW, by the ordinary way back', () => {
+      const events = descend()
+      events.focusBack()
+      expect(events.focusStack).toEqual(['op'])
+      expect(events.selectedId).toBe('op')
+      expect(events.stepId, 'came back into the step it left by').toBeUndefined()
+      expect(texts(events)).toHaveLength(4) // the whole plan again
+    })
+
+    it('closes out of it one layer at a time, like any other part', () => {
+      const events = descend()
+      events.close()
+      expect(events.focusStack).toEqual(['op'])
+      events.close()
+      expect(events.focusStack).toEqual([])
+      expect(events.selectedId).toBeUndefined()
+    })
+
+    it('leaves the map on the child, not on the parent’s step', () => {
+      const events = descend()
+      expect(events.flyTo).toMatchObject(events.mapTarget('battle')!)
+    })
+
+    it('descends again from the child, up to the stack cap', () => {
+      const events = descend()
+      events.showOnMap('village')
+      expect(events.focusStack).toEqual(['op', 'battle', 'village'])
+      events.focusBack()
+      events.focusBack()
+      expect(events.focusStack).toEqual(['op'])
+    })
+
+    it('does nothing when the child has not loaded yet', () => {
+      // chunks stream: a step may name an item this build has not merged. The
+      // build script rejects a dangling id, so this can only be a timing gap,
+      // and answering it by changing what is on the globe would be worse.
+      const events = useEventStore()
+      events.adopt([op({ steps: [{ id: 'into', name: 'Battle', at: 0.45, child: 'nowhere' }] })])
+      events.showOnMap('op')
+      events.selectStep('into')
+      expect(events.focusStack).toEqual(['op'])
+      expect(events.stepId).toBeUndefined()
+    })
   })
 })
 

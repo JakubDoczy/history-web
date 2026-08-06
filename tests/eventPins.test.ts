@@ -8,6 +8,7 @@ import {
   pinTier,
   resolveClusterSpec,
   resolvePinSpec,
+  TAG_GLYPHS,
 } from '../src/lib/present/pin'
 import type { RenderMode } from '../src/lib/present/mode'
 import type { Tier } from '../src/lib/eventTiers'
@@ -68,8 +69,10 @@ describe('pinSvg', () => {
     expect((svg.match(/<path/g) ?? []).length).toBe(5) // teardrop + four brackets
   })
 
-  it('gives a point event a plain dot and no footprint', () => {
-    const svg = pinSvg(ev(), false)
+  it('gives a point event with no category glyph a plain dot and no footprint', () => {
+    // politics is not in the glyph registry, and that is the default case: the
+    // dot is what a pin has always been and what most of the corpus still is
+    const svg = pinSvg(ev({ tags: ['politics'] }), false)
     expect(svg).not.toContain('pin-footprint')
     expect(svg).toContain('<circle cx="12" cy="11" r="3.6"')
   })
@@ -104,6 +107,98 @@ describe('pinSvg', () => {
   it('marks the selection with a halo and a white outline', () => {
     expect(pinSvg(ev(), true)).toContain('#ffe27a')
     expect(pinSvg(ev(), false)).not.toContain('#ffe27a')
+  })
+})
+
+/* -------------------------------------------- category glyphs and the saga */
+
+describe('category glyphs', () => {
+  const dot = '<circle cx="12" cy="11" r="3.6"'
+
+  it('puts the registry mark in the head instead of the dot', () => {
+    for (const tag of ['war', 'economy'] as const) {
+      const svg = pinSvg(ev({ tags: [tag] }), false)
+      expect(svg, tag).not.toContain(dot)
+      for (const part of TAG_GLYPHS[tag]!) expect(svg, tag).toContain(part.d)
+    }
+  })
+
+  it('leaves every other category exactly as it was', () => {
+    for (const tag of ['politics', 'science', 'culture', 'religion', 'exploration'] as const)
+      expect(pinSvg(ev({ tags: [tag] }), false), tag).toContain(dot)
+  })
+
+  it('reads the PRIMARY tag, the one that already picks the colour', () => {
+    const svg = pinSvg(ev({ tags: ['politics', 'war'] }), false)
+    expect(svg).toContain(dot)
+    expect(svg).toContain(TAG_COLORS.politics)
+  })
+
+  it('leaves a structural glyph alone: a route keeps its route, an area its brackets', () => {
+    // the composite (a category mark over the route motif) was drawn and looked
+    // at, and two marks do not fit in seven pixels — see resolvePinSpec
+    const route = pinSvg(ev({ tags: ['economy'], paths: [[[0, 0], [1, 1]]] }), false)
+    for (const part of TAG_GLYPHS.economy!) expect(route).not.toContain(part.d)
+    const area = pinSvg(ev({ tags: ['war'], area: [[0, 0], [1, 1], [2, 0]] }), false)
+    for (const part of TAG_GLYPHS.war!) expect(area).not.toContain(part.d)
+  })
+
+  it('keeps every mark inside the head, so nothing is clipped by the box', () => {
+    /**
+     * The corners of the box one glyph part draws in — enough for the two
+     * idioms the registry uses: straight strokes (whose extremes are their own
+     * points) and the `M cx-rx cy a rx ry …` ellipse.
+     */
+    const extremes = (d: string): [number, number][] => {
+      const ellipse = d.match(/^M(-?[\d.]+) (-?[\d.]+)a([\d.]+) ([\d.]+)/)
+      if (ellipse) {
+        const [x0, y, rx, ry] = ellipse.slice(1).map(Number)
+        return [-ry, ry].flatMap((dy): [number, number][] => [
+          [x0, y + dy],
+          [x0 + 2 * rx, y + dy],
+        ])
+      }
+      return [...d.matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])])
+    }
+    // the glyph is drawn in the 24x32 box about (12, 11); the saga ring sits at
+    // r=7.1, and a mark reaching past it would cross its own event's ring
+    for (const art of Object.values(TAG_GLYPHS))
+      for (const p of art!)
+        for (const [x, y] of extremes(p.d))
+          expect(Math.hypot(x - 12, y - 11), p.d).toBeLessThanOrEqual(7.1)
+  })
+})
+
+describe('the saga ring', () => {
+  const steps = [{ id: 'one', name: 'One', at: 0 }]
+  const RING = /r="7.1" fill="none"/
+
+  it('rings a stepped event and nothing else', () => {
+    expect(pinSvg(ev({ steps }), false)).toMatch(RING)
+    expect(pinSvg(ev(), false)).not.toMatch(RING)
+  })
+
+  it('survives selection, tier, both modes and every shape of pin', () => {
+    for (const mode of ['realistic', 'schematic'] as const)
+      for (const tier of [1, 2, 3] as Tier[])
+        for (const selected of [true, false])
+          for (const shape of [{}, { area: [[0, 0], [1, 1], [2, 0]] }, { paths: [[[0, 0], [1, 1]]] }])
+            expect(pinSvg(ev({ steps, ...shape }), selected, tier, mode), `${mode}/${tier}`)
+              .toMatch(RING)
+  })
+
+  it('shows on a badge when any member is a saga, and not otherwise', () => {
+    const plain = ev({ id: 'p' })
+    expect(clusterSvg([plain, ev({ id: 's', steps })])).toMatch(/r="15.8"/)
+    expect(clusterSvg([plain, ev({ id: 'q' })])).not.toMatch(/r="15.8"/)
+  })
+
+  it('rebuilds the pin if an event gains steps under the reader — a chunk merge', () => {
+    const before: PinDatum = {
+      kind: 'event', id: 'a', lat: 0, lng: 0, fanned: false, event: ev({ id: 'a' }),
+    }
+    const after: PinDatum = { ...before, event: ev({ id: 'a', steps }) }
+    expect(pinStateKey(before)).not.toBe(pinStateKey(after))
   })
 })
 

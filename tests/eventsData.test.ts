@@ -1232,6 +1232,18 @@ describe('items — drawings', () => {
  */
 describe('items — stepped focus', () => {
   const stepped = rawEvents.filter((e) => e.steps)
+  /**
+   * The sagas whose steps are a reading of INK: an event with a plan, whose
+   * steps tile that plan between them. Every claim below about layers, windows
+   * and annotations is about these, and only these.
+   *
+   * The other shape a saga can have is a table of contents — steps that are
+   * ENTRANCES into child events (see `Step.child`), which draw nothing of their
+   * own because the child supplies everything. World War II is that shape, and
+   * holding it to "every step owns a layer" would be holding it to a rule about
+   * a drawing it does not have.
+   */
+  const planned = stepped.filter((e) => e.drawing)
   /** The parsed event behind a raw one — what the resolvers actually read. */
   const parsed = (e: RawEvent) => byId.get(e.id) as HistoricalEvent
   /** Its steps in order, and the span they are measured in. */
@@ -1242,11 +1254,13 @@ describe('items — stepped focus', () => {
   const childIds = (id: string) => new Set(events.filter((c) => c.parent === id).map((c) => c.id))
 
   it('ships the exemplars, and steps nothing else yet', () => {
-    expect(stepped.map((e) => e.id).sort()).toEqual(['barbarossa', 'd-day'])
+    expect(stepped.map((e) => e.id).sort()).toEqual(['barbarossa', 'd-day', 'ww2'])
+    expect(planned.map((e) => e.id).sort()).toEqual(['barbarossa', 'd-day'])
   })
 
   it('is valid wherever it is present, against the event’s own span', () => {
-    for (const e of stepped) expect(stepProblems(e, childIds(e.id)), e.id).toEqual([])
+    for (const e of stepped)
+      expect(stepProblems(e, childIds(e.id), new Set(byId.keys())), e.id).toEqual([])
   })
 
   it('gives every step a unique id and a name inside one event', () => {
@@ -1273,9 +1287,12 @@ describe('items — stepped focus', () => {
     }
   })
 
-  it('writes a page on every step, in markup that renders and resolves', () => {
+  it('writes a page on every step that is one, in markup that renders and resolves', () => {
     for (const e of stepped) {
-      for (const s of e.steps!) {
+      // an entrance has no page BY DESIGN: it is a way into an item that has
+      // its own article, and copying that article into the step would be the
+      // corpus saying the same thing twice
+      for (const s of e.steps!.filter((s) => !s.child)) {
         expect(typeof s.page, `${e.id}/${s.id} has no page`).toBe('string')
         expect(s.page!.length, `${e.id}/${s.id}`).toBeGreaterThan(80)
         expect(renderRichText(s.page!)).toContain('<p>')
@@ -1311,8 +1328,8 @@ describe('items — stepped focus', () => {
     for (const e of stepped) expect(ink(e)).toBe(parsed(e).drawing)
   })
 
-  it('gives every step something of its own to draw', () => {
-    for (const e of stepped)
+  it('gives every step of a PLAN something of its own to draw', () => {
+    for (const e of planned)
       for (const s of order(e)) {
         const own = ink(e, s.id)!.layers.filter((l) => l.at !== undefined)
         expect(own.length, `${e.id}/${s.id} draws nothing of its own`).toBeGreaterThan(0)
@@ -1320,7 +1337,7 @@ describe('items — stepped focus', () => {
   })
 
   it('partitions the dated layers: each lands in exactly one step, none is lost', () => {
-    for (const e of stepped) {
+    for (const e of planned) {
       const dated = e.drawing!.layers.filter((l) => l.at !== undefined)
       const placed = order(e).flatMap(
         (s) => ink(e, s.id)!.layers.filter((l) => l.at !== undefined),
@@ -1335,7 +1352,7 @@ describe('items — stepped focus', () => {
    * fronts and the pockets come and go around them.
    */
   it('keeps the undated layers in every step', () => {
-    for (const e of stepped) {
+    for (const e of planned) {
       const timeless = e.drawing!.layers.filter((l) => l.at === undefined).length
       expect(timeless, `${e.id} has nothing that outlasts a step`).toBeGreaterThan(0)
       for (const s of order(e))
@@ -1345,7 +1362,7 @@ describe('items — stepped focus', () => {
   })
 
   it('carries per-step ANNOTATIONS — words on the map that come and go with their moment', () => {
-    for (const e of stepped) {
+    for (const e of planned) {
       const steps = order(e)
       const span = timeFrom(e.start, e.end)
       const dated = e.drawing!.layers.filter(
@@ -1395,6 +1412,79 @@ describe('items — stepped focus', () => {
     // and the three army-group axes belong to no single step
     for (const l of b.drawing!.layers.filter((l) => l.type === 'thrust'))
       expect(l.at, 'an axis of advance is tied to one step').toBeUndefined()
+  })
+
+  /**
+   * RECURSION, in the corpus rather than only in the type (docs/design/sagas.md).
+   *
+   * World War II is the saga whose steps are its own parts: each chip is an
+   * entrance into a child event, two of which (Barbarossa, D-Day) are sagas in
+   * their own right — so the reader can descend from the war into the campaign
+   * into the campaign's steps, and climb back out the way they came.
+   */
+  describe('entrances', () => {
+    /** Every `child` edge in the corpus, as `[event, step, child]`. */
+    const entrances = rawEvents.flatMap((e) =>
+      (e.steps ?? []).filter((s) => s.child).map((s) => [e.id, s.id, s.child!] as const),
+    )
+
+    it('ships them, and every one resolves to an event', () => {
+      expect(entrances.length).toBeGreaterThanOrEqual(4)
+      for (const [id, step, child] of entrances) {
+        const target = byId.get(child)
+        expect(target, `${id}/${step} descends into unknown ${child}`).toBeDefined()
+        // an entrance is `showOnMap`, which needs somewhere on the globe to go
+        expect(target!.kind, `${id}/${step} -> ${child}`).toBe('event')
+      }
+    })
+
+    it('descends along the containment it already declares', () => {
+      // not forced by the model — the validator checks the step graph on its own
+      // edges — but it is what the corpus means: a step of the war is a part of
+      // the war, and the pin is already on the globe when the chip is pressed
+      for (const [id, step, child] of entrances)
+        expect((byId.get(child) as HistoricalEvent).parent, `${id}/${step} -> ${child}`).toBe(id)
+    })
+
+    it('takes its chip name from the child, so nothing is said twice', () => {
+      for (const [id, step, child] of entrances) {
+        const s = rawById.get(id)!.steps!.find((s) => s.id === step)!
+        expect(s.name, `${id}/${step}`).toBe(byId.get(child)!.name)
+        expect(s.page, `${id}/${step} repeats the child article`).toBeUndefined()
+        expect(s.drawing, `${id}/${step}`).toBeUndefined()
+      }
+    })
+
+    it('never loops: the step-child graph is acyclic on its own edges', () => {
+      // the twin of validate_step_children in scripts/build_event_chunks.py. A
+      // cycle here is an infinite descent — every chip in it pushes a context.
+      const out = new Map<string, string[]>()
+      for (const [id, , child] of entrances) out.set(id, [...(out.get(id) ?? []), child])
+      const state = new Map<string, 'open' | 'done'>()
+      const walk = (id: string, trail: string[]) => {
+        expect(state.get(id) !== 'open', `cycle: ${[...trail, id].join(' -> ')}`).toBe(true)
+        if (state.get(id) === 'done') return
+        state.set(id, 'open')
+        for (const next of out.get(id) ?? []) walk(next, [...trail, id])
+        state.set(id, 'done')
+      }
+      for (const id of out.keys()) walk(id, [])
+    })
+
+    it('walks World War II down to a step of a campaign inside it', () => {
+      const war = rawById.get('ww2') as RawEvent
+      const chips = order(war)
+      expect(chips.map((s) => s.id)).toEqual([
+        'battle-britain', 'barbarossa', 'pearl-harbor', 'holocaust', 'midway',
+        'stalingrad', 'd-day', 've-day', 'trinity', 'hiroshima', 'vj-day',
+      ])
+      // every chip is an entrance: this saga is a table of contents, not a plan
+      expect(chips.every((s) => s.child)).toBe(true)
+      // …and two of the things it opens are themselves sagas, which is the
+      // recursion the design is for
+      const deeper = chips.filter((s) => (rawById.get(s.child!) as RawEvent)?.steps)
+      expect(deeper.map((s) => s.child)).toEqual(['barbarossa', 'd-day'])
+    })
   })
 
   it('steps D-Day from the assault to the breakout, in order', () => {

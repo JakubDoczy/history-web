@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
   DEFAULT_MODE,
+  resolvePillKind,
+  resolveStepChip,
+  sagaOf,
   OUTLINE_WIDTH,
   REALISTIC_BACKGROUND,
   SCHEMATIC_BACKGROUND,
@@ -66,6 +69,7 @@ describe('the resolvers are pure', () => {
     ['a route event', ev({ paths: [[[0, 0], [10, 10]]] })],
     ['an event with a plan', ev({ drawing: { layers: [{ type: 'marker', pos: [0, 0] }] } })],
     ['a life marker', lifeMarkersFor(einstein)[0]],
+    ['a saga', ev({ steps: [{ id: 'one', name: 'One', at: 0 }] })],
   ]
 
   for (const [what, pin] of pins)
@@ -146,6 +150,51 @@ describe('resolvePinSpec — the glyph is a statement about the model', () => {
   it('glows for tier 1 alone', () => {
     expect(resolvePinSpec(ev(), ctx({ tier: 1 })).glow).toBe(true)
     expect(resolvePinSpec(ev(), ctx({ tier: 2 })).glow).toBe(false)
+  })
+})
+
+/**
+ * SAGAHOOD IS RESOLVED, NOT SNIFFED FOR (lib/present/saga.ts).
+ *
+ * A saga is an event with steps and nothing else — no kind, no flag — so the
+ * one thing worth testing is that every consumer asks the same question of the
+ * same composition and gets the same answer.
+ */
+describe('sagaOf and its consumers', () => {
+  const steps = [{ id: 'one', name: 'One', at: 0 }]
+
+  it('is the steps, or nothing', () => {
+    expect(sagaOf(ev({ steps }))).toHaveLength(1)
+    expect(sagaOf(ev())).toBeUndefined()
+    expect(sagaOf(ev({ steps: [] }))).toBeUndefined() // absent is absent
+    expect(sagaOf(einstein)).toBeUndefined()
+    expect(sagaOf(lifeMarkersFor(einstein)[0])).toBeUndefined()
+    expect(sagaOf(undefined)).toBeUndefined()
+  })
+
+  it('is what the pin ring and the pill chip both read', () => {
+    expect(resolvePinSpec(ev({ steps }), ctx()).saga).toBe(true)
+    expect(resolvePinSpec(ev(), ctx()).saga).toBe(false)
+    expect(resolveClusterSpec([ev({ id: 'a' }), ev({ id: 'b', steps })], ctx()).saga).toBe(true)
+    expect(resolveClusterSpec([ev({ id: 'a' })], ctx()).saga).toBe(false)
+    expect(resolvePillKind(ev({ steps }))).toBe('Saga')
+  })
+
+  it('names the most specific true thing about everything else', () => {
+    expect(resolvePillKind(ev({ drawing: { layers: [{ type: 'marker', pos: [0, 0] }] } }))).toBe('Plan')
+    expect(resolvePillKind(ev({ paths: [[[0, 0], [1, 1]]] }))).toBe('Route')
+    expect(resolvePillKind(ev())).toBe('Event')
+    expect(resolvePillKind(einstein)).toBe('Person')
+    // a saga outranks its own plan: the reading is the thing a pill cannot show
+    expect(resolvePillKind(ev({ steps, drawing: { layers: [{ type: 'marker', pos: [0, 0] }] } })))
+      .toBe('Saga')
+  })
+
+  it('tells a page chip from an entrance', () => {
+    const page = { id: 'a', name: 'A', time: { kind: 'point' as const, year: 0 } }
+    expect(resolveStepChip(page)).toEqual({ kind: 'page', step: page })
+    const entrance = { ...page, child: 'd-day' }
+    expect(resolveStepChip(entrance)).toEqual({ kind: 'entrance', step: entrance, child: 'd-day' })
   })
 })
 

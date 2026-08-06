@@ -231,7 +231,7 @@ const pinEls = new Map<string, HTMLElement>()
  * Is this pin one the open step asked to be lifted? See `Step.highlights`.
  *
  * A BADGE counts if any of the pins it swallowed is one: at the zoom an
- * operation is fitted to, a named child is usually inside a cluster rather than
+ * saga is fitted to, a named child is usually inside a cluster rather than
  * standing on its own, and a highlight nobody can see is not a highlight.
  */
 const isHighlighted = (p: PinDatum) =>

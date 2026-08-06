@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useEventStore } from '../stores/events'
+import { resolveStepChip } from '../lib/present/saga'
 
 /**
- * THE STEP STRIP — the authored steps of the focused event, as chips.
+ * THE STEP STRIP — the steps of the focused SAGA, as chips.
  *
  * It belongs with the pill, not with the timeline, and it sits directly above
  * it: this is a control over *one event*, and putting it on the rail would say
@@ -28,20 +29,32 @@ import { useEventStore } from '../stores/events'
 const events = useEventStore()
 
 /**
- * "5 steps" — the strip saying, in words, that there is more here than the
- * article.
+ * "SAGA · 5 STEPS" — the strip saying, in words, what this is and that there is
+ * more here than the article.
  *
  * The chips alone did not carry that. They read as a row of labels about the
  * thing already on screen (which is what a row of borderless words on a map
- * looks like), so an operation's per-step detail was found by accident or not
- * at all. A count is the smallest honest advertisement there is: it names the
- * quantity of pages, so a reader can tell before clicking whether it is worth
- * a click.
+ * looks like), so the per-step detail was found by accident or not at all. The
+ * count is the smallest honest advertisement there is — it names the quantity
+ * of pages — and the word in front of it names the SHAPE: a saga is an event
+ * told in chapters, and that is worth one word of the reader's attention
+ * before they spend a click finding out.
  */
 const count = computed(() => {
   const n = events.focusSteps.length
-  return `${n} ${n === 1 ? 'step' : 'steps'}`
+  return `Saga · ${n} ${n === 1 ? 'step' : 'steps'}`
 })
+
+/**
+ * The chips, as what they ARE — a page of this event, or an entrance into
+ * another one (lib/present/saga.ts).
+ *
+ * Resolved rather than tested for in the template: pressing an entrance changes
+ * what the whole map is about, and the reader has to be able to see the
+ * difference before they press it, so it is a variant with two renderings and
+ * not a `v-if` on a field.
+ */
+const chips = computed(() => events.focusSteps.map(resolveStepChip))
 </script>
 
 <template>
@@ -67,17 +80,38 @@ const count = computed(() => {
     <span class="count" data-test="step-count">{{ count }}</span>
     <div class="steps scroll-x">
       <button
-        v-for="(s, i) in events.focusSteps"
-        :key="s.id"
+        v-for="(c, i) in chips"
+        :key="c.step.id"
         class="chip"
+        :class="{ on: events.stepId === c.step.id, entrance: c.kind === 'entrance' }"
         data-test="step-chip"
-        :data-step="s.id"
-        :class="{ on: events.stepId === s.id }"
-        :aria-pressed="events.stepId === s.id"
-        @click="events.selectStep(s.id)"
+        :data-step="c.step.id"
+        :data-entrance="c.kind === 'entrance' ? '' : undefined"
+        :aria-pressed="events.stepId === c.step.id"
+        :title="c.kind === 'entrance' ? `Go into ${c.step.name}` : undefined"
+        @click="events.selectStep(c.step.id)"
       >
         <span class="tick tnum" aria-hidden="true">{{ i + 1 }}</span>
-        <span class="label">{{ s.name }}</span>
+        <span class="label">{{ c.step.name }}</span>
+        <!-- The descent cue. A chevron pointing DOWN, in the app's own stroke
+             language (the pill's restore arrow, the panel's minimise): every
+             other chevron in this app means "there is another layer this way",
+             and this one means it about the map rather than about the panel. -->
+        <svg
+          v-if="c.kind === 'entrance'"
+          class="descend"
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </button>
     </div>
   </nav>
@@ -103,7 +137,7 @@ const count = computed(() => {
   display: flex;
   align-items: center;
   gap: var(--s1);
-  /* Shrink-to-fit up to the width of the window: a five-step operation with
+  /* Shrink-to-fit up to the width of the window: a five-step saga with
      the months in its chip names runs to about a thousand pixels, and a cap
      narrower than that would clip a chip mid-word on a desktop with room to
      spare. Narrower screens get the scroll instead (see `.steps`). */
@@ -126,7 +160,7 @@ const count = computed(() => {
   }
 }
 
-/* The steps scroll; "Overview" does not. A five-step operation on a phone
+/* The steps scroll; "Overview" does not. A five-step saga on a phone
    overflows, and the one chip that must always be reachable is the way out. */
 .steps {
   display: flex;
@@ -228,6 +262,29 @@ const count = computed(() => {
 .label {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* AN ENTRANCE reads as a way in, not as a page: the chevron is the affordance
+   and this is the frame around it. A page chip is a flat surface with a number
+   on it; an entrance is deeper — a stronger edge and a hint of the brass the
+   "on" state uses, so the row says at a glance which of its chips lead
+   somewhere else. Deliberately quieter than `.on`, which is a statement about
+   where the reader IS and must still outrank everything. */
+.chip.entrance {
+  border-color: var(--brass-line);
+  background: rgba(255, 255, 255, 0.07);
+}
+.chip.entrance .tick {
+  border-color: var(--brass-line);
+}
+.descend {
+  flex: none;
+  margin-left: 1px;
+  color: var(--brass);
+  opacity: 0.8;
+}
+.chip:hover .descend {
+  opacity: 1;
 }
 
 @media (max-width: 640px) {

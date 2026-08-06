@@ -327,7 +327,7 @@ export interface HistoricalEvent extends ItemBase, PinFields {
   drawing?: Drawing
   /**
    * HIERARCHICAL CONTAINMENT: the one relation with a direction. A battle is
-   * part of an operation, an operation part of a war. At most one parent, it
+   * part of a campaign, a campaign part of a war. At most one parent, it
    * must resolve to an event, and the graph is acyclic — all three checked by
    * scripts/build_event_chunks.py and again by the data tests.
    *

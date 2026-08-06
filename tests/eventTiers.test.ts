@@ -57,6 +57,63 @@ describe('assignTiers', () => {
   })
 })
 
+/**
+ * THE SAGA LIFT (docs/design/sagas.md, "Priority").
+ *
+ * Three claims, and the third is the one that needed the lift to be a move in
+ * rank space rather than a subtraction on the way out: a saga below the top
+ * tier goes up exactly one, a saga already at the top stays, and nobody else
+ * moves at all.
+ */
+describe('the saga lift', () => {
+  const n = 30
+  /** The same set twice: once with `at` plain, once with `at` a saga. */
+  const both = (at: number) => {
+    const rows = ranked(n)
+    const saga = rows.map((r, i) => (i === at ? { ...r, saga: true } : r))
+    return [tiersOf(rows)[at]!, tiersOf(saga)[at]!] as const
+  }
+
+  it('lifts a saga exactly one tier, wherever in the band it stands', () => {
+    for (const at of [6, 10, 17]) expect(both(at), `rank ${at}`).toEqual([2, 1])
+    for (const at of [18, 24, 29]) expect(both(at), `rank ${at}`).toEqual([3, 2])
+  })
+
+  it('leaves a saga that already leads exactly where it is', () => {
+    for (const at of [0, 3, 5]) expect(both(at), `rank ${at}`).toEqual([1, 1])
+  })
+
+  it('displaces nobody: a top-tier plain event keeps its tier', () => {
+    // every row in the set is a saga except the leader, which is the worst case
+    // for a rule that worked by quota. The cuts are thresholds, so it holds.
+    const rows = ranked(n).map((r, i) => (i === 0 ? r : { ...r, saga: true }))
+    expect(assignTiers(rows).get('e0')).toBe(1)
+    const plain = tiersOf(ranked(n))
+    for (const at of [1, 2, 3, 4, 5])
+      expect(assignTiers(rows).get(`e${at}`), `rank ${at}`).toBe(plain[at])
+  })
+
+  it('beats an equally ranked plain event, and never loses to one', () => {
+    // two neighbours with the same score, one on each side of a cut
+    for (let at = 0; at < n; at++) {
+      const [plain, saga] = both(at)
+      expect(saga, `rank ${at}`).toBeLessThanOrEqual(plain)
+    }
+  })
+
+  it('keeps the order of two sagas in the same band', () => {
+    const rows = ranked(n).map((r, i) => ([20, 25].includes(i) ? { ...r, saga: true } : r))
+    const out = assignTiers(rows)
+    expect(out.get('e20')!).toBeLessThanOrEqual(out.get('e25')!)
+  })
+
+  it('is still tier 3 for a minor pin, whatever it carries', () => {
+    // the corpus's own statement that this is background outranks the lift
+    const rows: TierInput[] = [{ id: 'm', score: 99, minor: true, saga: true }, ...ranked(9)]
+    expect(assignTiers(rows).get('m')).toBe(3)
+  })
+})
+
 describe('tier hysteresis', () => {
   const n = 30
   const c1 = TIER_CUTS[0] * n // 6
@@ -113,6 +170,25 @@ describe('tier hysteresis', () => {
     const prev = new Map<string, Tier>([['a', 1]])
     const without = ranked(30)
     expect(assignTiers(without, prev).has('a')).toBe(false)
+  })
+
+  it('settles a scrub for a SAGA too: the lift is a position, not a promotion', () => {
+    // the lift is applied before the hysteresis (see `liftedRank`), so a saga
+    // jittering around a cut behaves exactly as a plain event does there. Were
+    // it applied after — tier minus one, on the way out — the lifted tier would
+    // come back in as the held tier and the saga would creep 3 → 2 → 1 with
+    // nothing on screen having changed.
+    let prev: ReadonlyMap<string, Tier> = new Map()
+    const seen: Tier[] = []
+    for (let t = 0; t < 10; t++) {
+      const rank = t % 2 ? Math.floor(c2) : Math.floor(c2) - 1
+      prev = assignTiers(
+        setWith('a', rank).map((r) => (r.id === 'a' ? { ...r, saga: true } : r)),
+        prev,
+      )
+      seen.push(prev.get('a')!)
+    }
+    expect(new Set(seen.slice(1)).size).toBe(1)
   })
 
   it('never lets the memory invert the order of two neighbours by more than the band', () => {

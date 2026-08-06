@@ -3,6 +3,7 @@ import {
   resolveClusterSpec,
   resolvePinSpec,
   type ClusterSpec,
+  type GlyphArt,
   type PinCtx,
   type PinSpec,
 } from './present/pin'
@@ -20,6 +21,13 @@ import {
  * a life marker carries an open ring, so a birth is never mistaken for an event
  * that happened. The fill colour is the event's primary tag, so the globe reads
  * as one: red = war, blue = technology, grey = extinction…
+ *
+ * Where an event's geometry says nothing — the plain point, which is nine in ten
+ * of the corpus — its CATEGORY does instead: crossed swords on a war pin, coins
+ * on a trade one, and the plain dot everywhere the registry is silent (see
+ * `TAG_GLYPHS` in lib/present/pin.ts). And a SAGA — an event told in steps —
+ * carries a thin concentric ring inside its head, in both render modes and
+ * through selection, hover and clustering alike.
  *
  * Several events on the same spot collapse into a round count badge instead (see
  * lib/eventClusters.ts); it is deliberately not a teardrop, so a badge is never
@@ -98,9 +106,34 @@ const GLOW =
   '<circle cx="12" cy="11" r="11" fill="#fff" opacity="0.09"/>' +
   '<circle cx="12" cy="11" r="10.3" fill="none" stroke="#fff" stroke-width="2.6" opacity="0.22"/>'
 
+/**
+ * The saga ring: a thin circle inside the pin head, under everything else in it.
+ *
+ * Inside the head rather than around it — see `PinSpec.saga` for why — and drawn
+ * before the glyph so a mark that reaches the ring sits on top of it rather than
+ * being cut by it. One radius for every pin, so a globe of sagas reads as one
+ * mark repeated instead of as a family of near-circles.
+ */
+const SAGA_RING = (ink: string) =>
+  `<circle cx="12" cy="11" r="7.1" fill="none" stroke="${ink}" stroke-width="1" opacity="0.75"/>`
+
+/** A category mark from the registry, in the pin's ink (lib/present/pin.ts). */
+const markSvg = (art: GlyphArt, ink: string): string =>
+  art
+    .map((p) =>
+      p.fill
+        ? `<path d="${p.d}" fill="${ink}" opacity="0.97"/>`
+        : `<path d="${p.d}" fill="none" stroke="${ink}" stroke-width="${p.width ?? 1.6}"` +
+          ` stroke-linecap="round" stroke-linejoin="round" opacity="0.97"/>`,
+    )
+    .join('')
+
 /** The mark in the head, by glyph. The resolver chose which; this draws it. */
 const glyphSvg = (spec: PinSpec): string => {
   const { ink } = spec
+  // A category mark stands in for the plain dot: the resolver only ever hands
+  // one over for a pin whose head would otherwise hold nothing but that dot.
+  if (spec.mark) return markSvg(spec.mark, ink)
   switch (spec.glyph) {
     case 'route':
       return route(12, 11, ink)
@@ -151,6 +184,7 @@ export function pinSvg(spec: PinSpec): string {
     footprint +
     (spec.glow ? GLOW : '') +
     `<path d="${TEARDROP}" fill="${spec.body}" stroke="${spec.stroke}" stroke-width="1.5"/>` +
+    (spec.saga ? SAGA_RING(spec.ink) : '') +
     glyphSvg(spec) +
     halo +
     accent +
@@ -175,6 +209,11 @@ export function clusterSvg(spec: ClusterSpec): string {
     `<circle cx="20" cy="20" r="18" fill="${spec.body}" opacity="0.2"/>` +
     `<circle cx="20" cy="20" r="18" fill="none" stroke="${spec.body}" stroke-width="1.4" opacity="0.85"/>` +
     `<circle cx="20" cy="20" r="13.4" fill="${spec.body}" stroke="rgba(8,10,16,0.6)" stroke-width="1.6"/>` +
+    // The same mark a saga pin carries, in the badge's own geometry: inside the
+    // disc, thin, and clear of the tier ring outside it.
+    (spec.saga
+      ? `<circle cx="20" cy="20" r="15.8" fill="none" stroke="${spec.ink}" stroke-width="1.1" opacity="0.8"/>`
+      : '') +
     `<text x="20" y="20" text-anchor="middle" dominant-baseline="central"` +
     ` font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"` +
     ` font-size="${fontSize}" font-weight="700" fill="${spec.ink}">${spec.label}</text>` +

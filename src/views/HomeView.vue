@@ -18,7 +18,7 @@ const events = useEventStore()
 /**
  * Escape unwinds the app one layer at a time, outermost first: an open pop-over,
  * then focus mode — and focus mode is itself a stack, so `focusBack` takes one
- * rung of that (the part being read inside an operation, then the operation
+ * rung of that (the part being read inside a saga, then the saga
  * itself, then whatever it was opened from). It deliberately stops before
  * clearing the selection — one key press should undo one thing, and losing the
  * article you were reading because you wanted the map back is not what was
