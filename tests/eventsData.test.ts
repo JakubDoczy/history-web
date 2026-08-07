@@ -1259,9 +1259,19 @@ describe('items — stepped focus', () => {
   /** The ids of an event's children — what a `highlights` list may name. */
   const childIds = (id: string) => new Set(events.filter((c) => c.parent === id).map((c) => c.id))
 
-  it('ships the exemplars, and steps nothing else yet', () => {
-    expect(stepped.map((e) => e.id).sort()).toEqual(['barbarossa', 'd-day', 'ww2'])
+  it('ships the exemplars, and the corpus has grown into a stepped one', () => {
+    // Until round 53 this asserted the exemplars were the ONLY stepped items.
+    // The content pass promoted phased period events corpus-wide (the Black
+    // Death was the user's named example), so the exact list is now the data's
+    // business; what stays pinned is that the curated exemplars survive, that
+    // authored battle plans remain exactly where they were authored, and that
+    // sagahood stayed a deliberate act rather than a default (most of the
+    // corpus is still plain events).
+    const ids = stepped.map((e) => e.id)
+    expect(ids).toEqual(expect.arrayContaining(['barbarossa', 'd-day', 'ww2', 'black-death']))
     expect(planned.map((e) => e.id).sort()).toEqual(['barbarossa', 'd-day'])
+    expect(ids.length).toBeGreaterThan(40)
+    expect(ids.length).toBeLessThan(rawItems.length / 4)
   })
 
   it('is valid wherever it is present, against the event’s own span', () => {
