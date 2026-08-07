@@ -262,3 +262,95 @@ All of it is upstream of the tile source, so it fixes drawn and satellite modes
 together. Only drawn mode could be photographed here — the sandbox has no route
 to the WMS services — so the satellite half is carried by the unit tests on the
 same arithmetic.
+
+## Round 52 — the sea, and the mark on it
+
+Two reports, and neither is about geometry.
+
+**1. "The map could maybe use a slightly more contrasting palette (the sea is
+just another shade)."** It was. Land and sea differed by 26 of luminance and by
+nothing else — the sea was a *darker parchment* — so at world view the map read
+as one tone with the continents embossed on it, which is the failure mode of a
+two-tone palette that shares a hue.
+
+The sea is now the aged atlas's own answer: a duck-egg wash, desaturated
+blue-green leaning grey, against untouched warm parchment land.
+
+|              | rgb           | luminance | chroma | b − r |
+| ------------ | ------------- | --------- | ------ | ----- |
+| land         | 236, 226, 200 | 226       | 36     | −36   |
+| sea, before  | 211, 200, 168 | 200       | 43     | −43   |
+| sea, now     | 177, 191, 187 | 188       | 14     | +10   |
+
+Two numbers carry the decision. The separation is 38 of luminance instead of 26,
+and it is now a separation of **hue** as well — warm against cool, which the eye
+reads as two substances rather than two shades of one. And the same table is the
+answer to "I don't want this to look like a crazy colored painting": the new sea
+is a *less* saturated colour than the one it replaces (chroma 14 against 43).
+Only its direction changed.
+
+Four candidates were rendered through the rasterizer itself and compared at
+world, continental and coastal zoom. `A-celadon-faint` (luminance 196, b − r =
+−1) was still "another shade" — a neutral grey-green that reads as dust on the
+paper rather than as water. `C-slate-duck-egg` (182, +14) is the handsomer atlas
+and the bigger jump; at world view its sea begins to carry the picture instead of
+sitting under it. `B2-duck-egg-deep` is what shipped.
+
+Everything downstream was re-checked rather than re-tuned by taste:
+
+- the **shoreline wash** keeps its cadence (about 6, 13 and 21 of luminance below
+  the open sea) with a point of chroma added at each step, so the band still
+  deepens toward the coast; the **engraved tick** is the darkest of those steps
+  and needed nothing else;
+- the **lake** is the sea's tone five of luminance lighter, as it was;
+- the **river** ink is unchanged and is better off for it — it was already a cool
+  blue-grey chosen against warm paper, and it now agrees with the sea it runs
+  into;
+- the **graticule** is unchanged, and that is a measurement: a warm hairline at
+  this alpha is 11.2% Weber contrast on the new sea and 11.7% on the land,
+  against 10.7% and 11.7% before. It reads the same on both grounds, and it is
+  the same pen as the coast, which is why it is not re-tinted per ground;
+- the **fleck** stays warm on both grounds, because it is the sheet's own fibre
+  lying in front of the ink and must not know what it is over. It shows a little
+  more over the cool sea (8 of luminance against 5.5), which is the aged-paper
+  cue doing its job.
+
+The world texture is regenerated from the same renderer (391 kB, was 403). The
+sRGB encode, the determinism rule and the world-aligned fleck are untouched.
+
+**2. "In steps, 'x' mark is a bit too hard to see on the map."** Two faults with
+one shape, and the first is the reason the reader was navigating by the caption:
+the battle cross is authored `#ffd7a8`, a pale peach picked — like every accent
+on this globe — against a night-blue photograph. On `#ece2c8` parchment that is
+**1.16:1**. The D-Day plan's three crosses, its star pair and its dot were
+photographed with *nothing at all* under their labels. The second fault shows on
+the satellite ground too: the glyph carried no casing and is drawn in the same
+family as the thrust ribbons it sits on, so it dissolved exactly where a pocket
+closes — on top of the arrow.
+
+The fix is one treatment with two grounds (`markInk`, lib/present/ink.ts), and
+the tones are opposite by design:
+
+- **on paper** the mark is INK — the accent taken toward the map's own pen at a
+  heavier mix than a border gets (0.55 against 0.45, because a border is hundreds
+  of pixels of line and a cross is twelve). `#ffd7a8` becomes `#8c7559`, 3.2:1
+  against the land. Its casing is the paper's own highlight, the reserved halo a
+  cartographer leaves round a symbol, which is what lifts it off the ribbon;
+- **on a photograph** the mark keeps the colour it was chosen for and the casing
+  is the route casing, a shade heavier because a glyph's rim is thinner than a
+  line's.
+
+Plus weight and a rim: the cross's bars go from 0.26 to 0.34 of its size, and
+every glyph is drawn twice — a casing outset by 0.22 glyph units, then the mark.
+The outset is a true outset rather than a scale, because scaling an X scales its
+bars and leaves no rim along them; and on the cross it is **anisotropic** (all of
+it on the arms, 55% on the bars), because a casing that thickens as fast as it
+lengthens closes the notches and turns the X into a blot. That was photographed
+and reverted before it shipped.
+
+The dot, the star and the arrow get the same treatment, and needed it: the
+Moscow star is `#f2f6fc`, which on parchment was 1.08:1. The frontlines and
+thrusts were checked against the same glance test and left alone — they are
+screen-pixel lines and degree-wide ribbons in saturated colours, and they read on
+both grounds. At world view a marker is under a pixel and stays that way; it is a
+thing on the ground, and the pin above it is what says where the event is.

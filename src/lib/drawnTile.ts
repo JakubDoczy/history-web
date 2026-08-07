@@ -49,24 +49,89 @@ import { TILE_PX, tileBbox } from './tilePyramid'
  */
 
 /**
- * The palette. Warm, low-contrast, and deliberately not paper-white: the ink on
- * top has to be the darkest thing on screen, and the pins and battle-plan ink
- * that land over this have to read against it (see lib/present/ink.ts).
+ * The palette. Low-contrast and deliberately not paper-white: the ink on top has
+ * to be the darkest thing on screen, and the pins and battle-plan ink that land
+ * over this have to read against it (see lib/present/ink.ts).
+ *
+ * TWO GROUNDS, TWO SUBSTANCES — round 52. The first build made the sea a darker
+ * parchment, which is honest about one thing (it is the same sheet) and wrong
+ * about another: reported as *"the sea is just another shade"*, and it was. Land
+ * and sea differed by 26 of luminance and by nothing else, so at world view the
+ * map read as one tone with the continents faintly embossed on it.
+ *
+ * The sea is now the aged atlas's own answer — a duck-egg wash, desaturated
+ * blue-green leaning grey — and the land is untouched parchment. What that buys,
+ * measured:
+ *
+ *                       rgb           luminance   chroma   b − r
+ *     land          236,226,200          226        36      −36
+ *     sea, before   211,200,168          200        43      −43
+ *     sea, now      177,191,187          188        14      +10
+ *
+ * The separation is 38 of luminance instead of 26, and — the part that answers
+ * the report — it is a separation of HUE as well: warm against cool, which is
+ * two substances rather than two shades of one. And it is not a colour poster,
+ * by the same measurement: the new sea is a *less* saturated colour than the one
+ * it replaces (chroma 14 against 43). Only its direction changed.
+ *
+ * Four candidates were rendered through this rasterizer and compared at world,
+ * continental and coastal zoom before this one was picked. `A-celadon-faint`
+ * (luminance 196, b − r = −1) was still "another shade" — a neutral grey-green
+ * that reads as dust on the paper rather than as water. `B-duck-egg` (193, +9)
+ * reads as water but keeps most of the old value gap. `C-slate-duck-egg` (182,
+ * +14) is the handsomer atlas and the bigger jump, and at world view its sea
+ * starts to carry the picture instead of sitting under it. This one,
+ * `B2-duck-egg-deep`, is the one that changes the reading without changing the
+ * artifact.
  */
 export const PAPER = {
-  /** The sea: the deeper of the two grounds, so land reads as raised. */
-  ocean: '#d3c8a8',
-  /** …and the shoreline wash over it, palest first. */
-  wash: ['#cec2a0', '#c8bb96', '#c1b28b'],
+  /**
+   * The sea: the deeper and the COOLER of the two grounds, so land reads as
+   * raised *and* as a different material.
+   */
+  ocean: '#b1bfbb',
+  /**
+   * …and the shoreline wash over it, palest first, stepping about 6, 13 and 21
+   * of luminance below the open sea — the same cadence the warm palette had,
+   * with a point of chroma added at each step so the band deepens toward the
+   * coast the way an engraver's does.
+   */
+  wash: ['#aab9b5', '#a3b2ae', '#9aaaa6'],
   land: '#ece2c8',
-  /** Coastline ink. Warm near-black — a brown-black pen, never a blue-black. */
+  /**
+   * Coastline ink. Warm near-black — a brown-black pen, never a blue-black —
+   * and it stays warm over the cool sea, because a drawn map is drawn with ONE
+   * pen and the pen does not know what it is crossing.
+   */
   ink: '#2e2519',
   /** The second, thinner pass that suggests a drawn rather than plotted line. */
   inkSoft: 'rgba(46, 37, 25, 0.34)',
+  /**
+   * River ink, unchanged: it was already a cool blue-grey, chosen against warm
+   * paper, and it now agrees with the sea it runs into rather than contradicting
+   * it. Contrast against the land it mostly crosses is 85 of luminance.
+   */
   river: 'rgba(74, 92, 96, 0.62)',
-  lake: '#cdc2a4',
+  /** Inland water: the sea's tone, five of luminance lighter, as before. */
+  lake: '#acbab6',
+  /**
+   * The graticule, unchanged, and that is a measurement rather than an
+   * oversight: a warm hairline at this alpha loses 21 of luminance out of the
+   * new sea's 188 and 26 out of the land's 226 — 11.2% and 11.7% Weber contrast,
+   * against 10.7% and 11.7% on the old palette. It reads the same on both
+   * grounds after the change as it did before, and it is the same pen as the
+   * coast, which is why it is not re-tinted per ground.
+   */
   graticule: 'rgba(70, 56, 36, 0.16)',
-  /** Paper fleck, dark and light. Alpha is applied per fleck from the hash. */
+  /**
+   * Paper fleck, dark and light. Alpha is applied per fleck from the hash.
+   *
+   * Warm on both grounds, deliberately: the fleck is the sheet's own fibre lying
+   * in FRONT of the ink (step 6 below), so it is the one thing on the plate that
+   * must not know whether it is over land or sea. It shows a little more over the
+   * cool sea than it did over the warm one — 8 of luminance against 5.5 — which
+   * is the aged-paper cue doing its job, not a defect.
+   */
   fleckDark: '#8d7d5c',
   fleckLight: '#fbf3dc',
 } as const

@@ -32,6 +32,47 @@ import type { RenderCtx } from './mode'
 export const OUTLINE_WIDTH = { realistic: 2, schematic: 1.4 } as const
 
 /**
+ * HOW A POLITY IS FILLED, and whether its coast is inked — the two decisions
+ * the clipped nations data makes possible, and they differ by ground.
+ *
+ * The fill exists in both modes because it has to: once a polity is cut against
+ * the coastline, most of its boundary IS the coastline, and an outline-only
+ * island would be an island with nothing drawn on it. It is a wash rather than a
+ * colour — a border is still meant to read as a drawn line.
+ *
+ * The alpha differs because the grounds do. On the drawn map the ground is
+ * `#ece2c8` parchment and the ink is already taken toward the map's own pen
+ * (`inkOnPaper`), so a low wash separates cleanly and a heavier one would turn
+ * the paper into a poster. On the satellite photograph the ground is a dark,
+ * busy, high-variance image — coastline, cloud shadow, desert, ice — and the
+ * same alpha over it is not a tint, it is noise; it needs half again as much to
+ * read as a deliberate colour at all.
+ *
+ * COASTAL INK is the decision the design asked to be made by looking, and the
+ * answer came out different in the two modes:
+ *
+ *  · SCHEMATIC — off. The drawn map inks every coastline itself, in its own pen,
+ *    with an eleven-pixel shoreline wash over the top of it. A polity's outline
+ *    drawn there as well is a second coastline in a second colour a hair off the
+ *    first: at world view it reads as a thickened, muddied shore, and at any
+ *    zoom where the two lines separate it reads as an error, because it IS one.
+ *    Only the frontier is inked, and the wash meeting the map's own coast is
+ *    what says where the polity ends.
+ *  · REALISTIC — on. There is no coastline drawn on the photograph; the shore is
+ *    a change of colour in an image, which is not a line, and on the night side
+ *    it is not even that. The two were photographed side by side at Japan in
+ *    1900 (/tmp/shots52/nations/{after,nocoastink}-h-japan1900-realistic.png):
+ *    with the coastal edges inked the islands are a country, a crisp pale
+ *    outline against the sea; without them they are a brown wash whose edge
+ *    dissolves into a dark ocean, and Hokkaido stops being a shape at all. The
+ *    doubling that motivates dropping them in map mode cannot happen here,
+ *    because there is no first line to double — so the flag is per mode, and
+ *    this is the mode that keeps the whole outline.
+ */
+export const NATION_FILL_ALPHA = { realistic: 0.24, schematic: 0.16 } as const
+export const COASTAL_INK = { realistic: true, schematic: false } as const
+
+/**
  * INK ON PAPER — a colour chosen against a dark photograph, re-aimed at pale
  * parchment.
  *
@@ -40,7 +81,7 @@ export const OUTLINE_WIDTH = { realistic: 2, schematic: 1.4 } as const
  * of the nation colours sit in the top half of the value range because that is
  * what reads on black — `#ffe27a` for the selected pin's ring, `#b09a72` for
  * Sumer's border. Put the same colours on the drawn map's paper (`#ece2c8`
- * land, `#d3c8a8` sea) and the pale ones are gone: measured as luminance
+ * land, `#b1bfbb` sea) and the pale ones are gone: measured as luminance
  * contrast against the land tone, Sumer's border is 1.05:1 and the selection
  * ring is 1.11:1 — invisible, not merely quiet.
  *
@@ -60,6 +101,61 @@ export function inkOnPaper(hex: string, mix = 0.45): string {
 /** …and the same, only where the ground is paper. One call site's worth of `if`. */
 export const onGround = (hex: string, ctx: RenderCtx, mix?: number): string =>
   ctx.mode === 'schematic' ? inkOnPaper(hex, mix) : hex
+
+/**
+ * THE MARK AND ITS CASING — round 52, and the reported defect is the whole of it.
+ *
+ * *"In steps, 'x' mark is a bit too hard to see on the map."* Measured on the
+ * Kiev step of Barbarossa over the drawn map: the battle cross is authored
+ * `#ffd7a8`, a pale peach picked — like every accent on this globe — against a
+ * night-blue photograph. On `#ece2c8` parchment that is 1.16:1, which is not a
+ * quiet mark, it is no mark; the reader was navigating by the LABEL, and the
+ * three crosses on the D-Day plan were photographed with nothing under their
+ * captions at all. On the satellite ground the same cross does read, but it is
+ * drawn in the same family as the thrust ribbons it sits on and has no casing,
+ * so it dissolves exactly where a pocket closes — on top of the arrow.
+ *
+ * Two tones per ground, and they are opposite tones on purpose:
+ *
+ *  · ON PAPER the mark is INK — the accent taken toward the map's own pen, at a
+ *    heavier mix than a border gets. `#ffd7a8` at 0.55 is `#8c7559`, 3.2:1
+ *    against the land: a drawn symbol on a drawn map. The casing is then the
+ *    paper's own highlight, a reserved halo of the kind a cartographer leaves
+ *    round a symbol so it is not read as part of what it stands on. That is what
+ *    lifts the cross off the orange ribbon underneath it.
+ *  · ON A PHOTOGRAPH the mark keeps the colour it was chosen for, and the casing
+ *    is the route casing — the same near-black at a little more weight, because
+ *    a glyph's rim is a thinner thing than a line's. One treatment, two grounds,
+ *    and the rule that decides between them is the ground, not the call site.
+ *
+ * `mix` is 0.55 rather than the 0.45 a nation border gets because a mark is
+ * SMALL: a border is hundreds of pixels of line and can afford to be quiet, and
+ * a cross is twelve pixels across and cannot.
+ */
+export const MARK_MIX = 0.55
+
+/** The paper's own highlight: the reserved halo a symbol is set in. */
+export const MARK_CASING_PAPER = { color: '#fdf8ea', opacity: 0.92 } as const
+/** …and on a photograph, the route casing, a shade heavier for a smaller mark. */
+export const MARK_CASING_DARK = { color: '#03070d', opacity: 0.55 } as const
+
+export interface MarkInk {
+  /** The glyph itself. */
+  fill: string
+  /** The tone it is set in, drawn one step wider and underneath. */
+  casing: string
+  casingOpacity: number
+}
+
+/** How a small glyph is inked on the ground it landed on. */
+export function markInk(hex: string, ground: 'dark' | 'paper'): MarkInk {
+  const c = ground === 'paper' ? MARK_CASING_PAPER : MARK_CASING_DARK
+  return {
+    fill: ground === 'paper' ? inkOnPaper(hex, MARK_MIX) : hex,
+    casing: c.color,
+    casingOpacity: c.opacity,
+  }
+}
 
 /**
  * Radius of the dot marking a secondary site, in degrees of arc.

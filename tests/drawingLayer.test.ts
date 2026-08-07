@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { BufferGeometry, Mesh, Scene, Vector3 } from 'three'
+import { BufferGeometry, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three'
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import {
   DrawingLayer,
+  MARK_CASING_OUTSET,
   SURFACE_ALT,
   glyphShape,
   headOf,
@@ -15,6 +16,8 @@ import {
 } from '../src/lib/drawingLayer'
 import type { Drawing } from '../src/lib/drawing'
 import { ROUTE_STYLE, flowPhase, type GeoPath } from '../src/lib/paths'
+import { MARK_CASING_DARK, MARK_CASING_PAPER, markInk } from '../src/lib/present/ink'
+import { PAPER } from '../src/lib/drawnTile'
 
 const R = 100
 
@@ -110,6 +113,35 @@ describe('glyphShape', () => {
       .flat()
       .filter(([x, y]) => Math.abs(x) < 1e-6 || Math.abs(y) < 1e-6)
     expect(onAxis).toHaveLength(0)
+  })
+
+  /**
+   * ROUND 52 — the casing outset, which is what makes a small mark findable.
+   *
+   * The property that matters is not "the casing is bigger": a uniformly scaled
+   * X is bigger and leaves no rim along its bars, because the bars scale with
+   * it. What is asserted is that the outset shape CONTAINS the glyph with real
+   * clearance in every direction a mark can be looked at from.
+   *
+   * HALF the outset is the floor rather than all of it, because the cross grows
+   * anisotropically on purpose (`CROSS_CASING_BAR`): its arms take the whole
+   * outset and its bars take 55% of it, which is what keeps a cased X an X.
+   */
+  it('grows every glyph outward by the outset, bars included', () => {
+    for (const style of ['dot', 'cross', 'star', 'arrow'] as const) {
+      const plain = glyphShape(style)
+      const cased = glyphShape(style, MARK_CASING_OUTSET)
+      expect(cased.length, style).toBe(plain.length)
+      // sixteen directions round the glyph: how far the outline reaches each way
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2
+        const reach = (parts: [number, number][][]) =>
+          Math.max(...parts.flat().map(([x, y]) => x * Math.cos(a) + y * Math.sin(a)))
+        expect(reach(cased) - reach(plain), `${style} @ ${k}`).toBeGreaterThan(
+          MARK_CASING_OUTSET * 0.5,
+        )
+      }
+    }
   })
 })
 
@@ -223,10 +255,11 @@ describe('DrawingLayer', () => {
     // needs a DOM and is skipped in a headless run
     expect(layer.object.children.filter((c) => c instanceof Line2)).toHaveLength(2)
     // Line2 IS a Mesh (LineSegments2 extends it), so the solid meshes are the
-    // ones that are not fat lines: a thrust shaft, its arrowhead, one marker.
+    // ones that are not fat lines: a thrust shaft, its arrowhead, and the
+    // marker's TWO passes — its casing and the glyph over it (round 52).
     expect(
       layer.object.children.filter((c) => c instanceof Mesh && !(c instanceof Line2)),
-    ).toHaveLength(3)
+    ).toHaveLength(4)
     layer.dispose()
   })
 
@@ -589,6 +622,112 @@ describe('DrawingLayer routes', () => {
     )
     expect(layer.object.children).toHaveLength(0)
     expect(layer.hasFlow).toBe(false)
+    layer.dispose()
+  })
+})
+
+/**
+ * ROUND 52 — THE BATTLE X, REPORTED AS *"in steps, 'x' mark is a bit too hard to
+ * see on the map"*.
+ *
+ * It was two faults with one shape. The glyph carried no casing, so it was
+ * legible only where the ground happened to differ from it — and a battle plan's
+ * ground is its own thrust ribbons as often as it is the map. And its colour was
+ * a photograph's colour on both grounds: `#ffd7a8` measures 1.16:1 against the
+ * drawn map's parchment, which is not a faint mark, it is no mark at all.
+ *
+ * Both are now decided by the ground the layer was told it is on, which is the
+ * one thing a test can hold: build the same marker twice, once per ground, and
+ * assert the two passes and the two tones.
+ */
+describe('a marker and its casing', () => {
+  const meshes = (layer: DrawingLayer) =>
+    layer.object.children.filter((c): c is Mesh => c instanceof Mesh && !(c instanceof Line2))
+  const colorOf = (m: Mesh) => '#' + (m.material as MeshBasicMaterial).color.getHexString()
+  /** Farthest vertex from the globe centre-line of the glyph, in world units. */
+  const spread = (m: Mesh) => {
+    const pos = (m.geometry as BufferGeometry).getAttribute('position')
+    const centre = new Vector3()
+    for (let i = 0; i < pos.count; i++) centre.add(new Vector3().fromBufferAttribute(pos, i))
+    centre.divideScalar(pos.count)
+    let max = 0
+    for (let i = 0; i < pos.count; i++)
+      max = Math.max(max, new Vector3().fromBufferAttribute(pos, i).distanceTo(centre))
+    return max
+  }
+  const built = (ground: 'dark' | 'paper', style: 'cross' | 'dot' | 'star' | 'arrow' = 'cross') => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      { layers: [{ type: 'marker', pos: [32.4, 50.3], style, size: 0.3, color: '#ffd7a8' }] },
+      { color: '#fff', ground },
+    )
+    return layer
+  }
+  const lum = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+    const f = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+  }
+  const ratio = (a: string, b: string) =>
+    (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05)
+
+  it('draws every glyph twice: a casing, then the mark over it', () => {
+    for (const style of ['cross', 'dot', 'star', 'arrow'] as const) {
+      const layer = built('paper', style)
+      const [casing, mark] = meshes(layer)
+      expect(meshes(layer), style).toHaveLength(2)
+      // the casing is under the mark in paint order and wider than it on the
+      // ground — a rim, in the glyph's own units, not a second copy
+      expect(casing.renderOrder, style).toBeLessThan(mark.renderOrder)
+      expect(spread(casing), style).toBeGreaterThan(spread(mark) * 1.05)
+      layer.dispose()
+    }
+  })
+
+  it('inks the mark for the ground it landed on, and cases it in the opposite tone', () => {
+    const paper = built('paper')
+    const dark = built('dark')
+    const [paperCasing, paperMark] = meshes(paper).map(colorOf)
+    const [darkCasing, darkMark] = meshes(dark).map(colorOf)
+
+    // ON A PHOTOGRAPH nothing about the accent changes — it was picked against
+    // Blue Marble and it still works there — and the casing is the route's.
+    expect(darkMark).toBe('#ffd7a8')
+    expect(darkCasing).toBe(MARK_CASING_DARK.color)
+
+    // ON PAPER the mark is ink and the casing is the paper's own highlight: a
+    // reserved halo, which is what lifts the cross off the thrust under it.
+    expect(paperMark).not.toBe(darkMark)
+    expect(paperCasing).toBe(MARK_CASING_PAPER.color)
+    expect(lum(paperCasing)).toBeGreaterThan(lum(PAPER.land))
+    expect(lum(paperMark)).toBeLessThan(lum(PAPER.land))
+
+    // …and the number the report was about. 1.16:1 against the land tone before;
+    // a drawn mark on a drawn map is 3:1 or it is decoration.
+    expect(ratio('#ffd7a8', PAPER.land)).toBeLessThan(1.3)
+    expect(ratio(paperMark, PAPER.land)).toBeGreaterThan(3)
+
+    // THE GROUND A BATTLE MARK IS ACTUALLY ON is not the paper, it is the plan:
+    // a cross marks a pocket, and a pocket closes on top of the thrust that
+    // closed it. Inked, the mark alone is 1.87:1 against `#ff8a4c` — better than
+    // the 1.19:1 it was, and still not enough on its own. That is what the
+    // casing is for, and the casing is clear of both.
+    expect(ratio(paperMark, '#ff8a4c')).toBeGreaterThan(1.8)
+    expect(ratio(paperCasing, '#ff8a4c')).toBeGreaterThan(2)
+    expect(ratio(paperCasing, paperMark)).toBeGreaterThan(4)
+    paper.dispose()
+    dark.dispose()
+  })
+
+  it('rebuilds when the ground changes, because the ink does', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    const spec: Drawing = {
+      layers: [{ type: 'marker', pos: [32.4, 50.3], style: 'cross', size: 0.3, color: '#ffd7a8' }],
+    }
+    expect(layer.set(spec, { color: '#fff', ground: 'dark' })).toBe(true)
+    expect(colorOf(meshes(layer)[1])).toBe('#ffd7a8')
+    expect(layer.set(spec, { color: '#fff', ground: 'paper' })).toBe(true)
+    expect(colorOf(meshes(layer)[1])).toBe(markInk('#ffd7a8', 'paper').fill)
     layer.dispose()
   })
 })

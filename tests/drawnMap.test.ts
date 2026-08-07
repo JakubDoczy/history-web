@@ -200,8 +200,82 @@ describe('the rasterizer', () => {
     expect(min).toBeLessThan(70)
     expect(max).toBeLessThan(255)
     expect(max).toBeGreaterThan(200)
-    // …and no pixel is a photograph's blue: the whole plate is warm
-    for (let i = 0; i < px.length; i += 4) expect(px[i + 2]).toBeLessThanOrEqual(px[i] + 2)
+  })
+
+  /**
+   * ROUND 52 — the sea stops being another shade.
+   *
+   * This test used to assert one thing about every pixel on the plate: `blue <=
+   * red + 2`, "no pixel is a photograph's blue, the whole plate is warm". That
+   * was true and it was the defect — reported as *"the sea is just another
+   * shade"*. A warm sea under warm land differs from it in luminance alone, and
+   * 26 of luminance is an emboss, not a coastline.
+   *
+   * So the claim is replaced rather than relaxed, and it is a stronger claim
+   * than the one it retires: the two grounds must differ in HUE (one warm, one
+   * cool) *and* neither may be a colour a photograph would produce. The blue
+   * bound survives in the form that was actually defending something — a
+   * Blue-Marble ocean is `b > r + 18`, and nothing here comes near it.
+   */
+  it('gives the sea its own substance: warm land, cool sea, one aged sheet', () => {
+    const s = surface()
+    new DrawnRenderer(world()).draw(s.ctx, EUROPE(6))
+    const px = s.pixels()
+    const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
+    const lum = ([r, g, b]: number[]) => 0.2126 * r + 0.7152 * g + 0.0722 * b
+    const chroma = (c: number[]) => Math.max(...c) - Math.min(...c)
+    const land = hex(PAPER.land)
+    const sea = hex(PAPER.ocean)
+
+    // 1. the land is parchment and the sea is not: warm against cool
+    expect(land[2]).toBeLessThan(land[0] - 20)
+    expect(sea[2]).toBeGreaterThan(sea[0])
+
+    // 2. …and the pair is one aged paper artifact, not a poster. The measured
+    //    guarantee is that the NEW sea is a less saturated colour than the warm
+    //    one it replaced (chroma 43): the separation is direction, not colour.
+    expect(chroma(sea)).toBeLessThan(chroma(land))
+    expect(chroma(sea)).toBeLessThan(20)
+
+    // 3. …and it is a real separation. 26 of luminance was the complaint; this
+    //    is 38, and the wash steps below the sea from there.
+    expect(lum(land) - lum(sea)).toBeGreaterThan(32)
+    for (const [i, w] of PAPER.wash.entries()) {
+      expect(lum(hex(w))).toBeLessThan(lum(sea) - 4 * (i + 1))
+      expect(chroma(hex(w))).toBeLessThan(20)
+    }
+    // the lake belongs to the same water as the sea, within five of luminance
+    expect(Math.abs(lum(hex(PAPER.lake)) - lum(sea))).toBeLessThan(8)
+    expect(hex(PAPER.lake)[2]).toBeGreaterThan(hex(PAPER.lake)[0])
+
+    // 4. …and on the plate itself: no pixel is a photographed ocean, and no
+    //    pixel is more colourful than the paper's own tone range. Aggregated
+    //    and asserted once — a quarter of a million `expect` calls is a minute
+    //    of test time to say what two numbers say.
+    let coolest = -255
+    let mostColour = 0
+    for (let i = 0; i < px.length; i += 4) {
+      coolest = Math.max(coolest, px[i + 2] - px[i])
+      mostColour = Math.max(mostColour, chroma([px[i], px[i + 1], px[i + 2]]))
+    }
+    expect(coolest).toBeLessThan(18)
+    expect(mostColour).toBeLessThan(60)
+  })
+
+  it('keeps the graticule legible on both grounds', () => {
+    // The hairline is ONE pen at one alpha over two grounds now, so its contrast
+    // has to be checked on each. Weber contrast, which is what a hairline over a
+    // flat tone actually is: the old warm sea gave 10.7% and the land 11.7%.
+    const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
+    const lum = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    const m = /rgba?\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/.exec(PAPER.graticule)!
+    const pen = [+m[1], +m[2], +m[3]]
+    const a = +m[4]
+    for (const ground of [PAPER.land, PAPER.ocean]) {
+      const g = hex(ground)
+      const over = g.map((v, i) => v * (1 - a) + pen[i] * a)
+      expect((lum(g) - lum(over)) / lum(g)).toBeGreaterThan(0.1)
+    }
   })
 
   it('draws no political boundary: the paper is the same sheet in every year', () => {
@@ -427,7 +501,9 @@ describe('no chord across the world', () => {
     const z = 7
     const s = createCanvas(TILE_PX, TILE_PX)
     const ctx = s.getContext('2d')
-    const [or, og, ob] = [0xd3, 0xc8, 0xa8] // PAPER.ocean
+    // read from the palette rather than typed: this test is about ink where
+    // there should be none, not about which tone the sea is that round
+    const [or, og, ob] = [1, 3, 5].map((i) => parseInt(PAPER.ocean.slice(i, i + 2), 16))
     /** Open water: outside every land ring, and no vertex of anything within R. */
     const R = 0.7
     const dry = (lng: number, lat: number) => {

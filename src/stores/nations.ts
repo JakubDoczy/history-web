@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { markRaw } from 'vue'
 import { borderRings, visibleNations, type BorderRing, type Nation } from '../lib/nations'
 import { useTimeStore } from './time'
-import rawNations from '../data/nations.json'
+import rawNations from '../data/nations.clipped.json'
 
 /** Overlays only appear when zoomed into human-history scale. */
 const OVERLAY_MAX_SPAN = 10_000
@@ -16,13 +16,13 @@ export const useNationStore = defineStore('nations', {
      * The dataset, deliberately outside Vue's reactivity.
      *
      * It is loaded from JSON, never mutated, and made of deeply nested arrays —
-     * every polity holds keyframes holding rings holding thousands of [lng, lat]
-     * pairs. Handing that to `reactive()` walks the whole tree to wrap it in
+     * every polity holds keyframes holding pieces holding rings holding tens of
+     * thousands of coordinates. Handing that to `reactive()` walks the whole tree to wrap it in
      * proxies, and then every coordinate read on the way to the GPU goes through
      * a proxy trap. `markRaw` is the whole fix: the store's API is unchanged,
      * `all` is still a tracked property, only its contents stay plain objects.
      */
-    all: markRaw(rawNations as Nation[]),
+    all: markRaw(rawNations as unknown as Nation[]),
   }),
   getters: {
     /** The polities notable at the current time (already capped and size-sorted). */

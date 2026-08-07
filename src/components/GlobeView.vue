@@ -18,6 +18,7 @@ import { featureOf, type HistoricalEvent } from '../lib/events'
 import { AREA_CAP_RESOLUTION_DEG, ROUTE_FLOW_INTERVAL_MS, areaCapRing } from '../lib/paths'
 import type { Drawing } from '../lib/drawing'
 import { DrawingLayer, SURFACE_ALT } from '../lib/drawingLayer'
+import { FrontierLayer, inkPathsOf } from '../lib/frontierLayer'
 import type { Ring } from '../lib/nations'
 import { GlobeSurface } from '../lib/globeSurface'
 import { RenderPump } from '../lib/renderPump'
@@ -39,6 +40,8 @@ import { eraPlan, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { pinElement, clusterElement } from '../lib/eventPins'
 import {
+  COASTAL_INK,
+  NATION_FILL_ALPHA,
   onGround,
   pinStateKey,
   pinTier,
@@ -120,6 +123,8 @@ let drawnTiles: DrawnTiles | undefined
 let drawnPlan: ReturnType<typeof singleSourcePlan> | undefined
 /** The authored battle plan of the item in focus mode; nothing otherwise. */
 let drawing: DrawingLayer | undefined
+/** Nation frontiers — the inland edges only; see lib/frontierLayer.ts. */
+let frontiers: FrontierLayer | undefined
 /** The selected event's routes and their terminus dots. */
 let routes: DrawingLayer | undefined
 let resizeObs: ResizeObserver | undefined
@@ -476,7 +481,19 @@ onMounted(() => {
     // claims any. In every other respect it is what the layer would have built.
     .polygonCapMaterial((d) => {
       const p = asPoly(d)
-      return capMaterial(p.kind === 'area' ? tagColor(primaryTag(p.event)) : '', 0.22)
+      // A POLITY IS NOW A WASH, not an empty outline, and it has to be: three
+      // quarters of a clipped polity's boundary is coastline, which the drawn
+      // map inks itself and this layer therefore does not (see
+      // lib/frontierLayer.ts). Leave the cap invisible and Japan — all coast,
+      // no frontier — would have nothing on the map at all. The wash is what
+      // says how far a polity reached where no frontier is drawn, and because
+      // the geometry was cut against the map's own coastline it now stops
+      // exactly at the shore. Faint on purpose: a border is still a drawn line,
+      // and the fills of two neighbours must not read as a third colour where
+      // they meet. They cannot overlap any more — the build refuses to ship an
+      // overlap — so the alpha never compounds.
+      if (p.kind === 'area') return capMaterial(tagColor(primaryTag(p.event)), 0.22)
+      return capMaterial(onGround(p.nation.color, { mode: mode.value }), NATION_FILL_ALPHA[mode.value])
     })
     // No side colour at all, rather than a transparent one: three-globe reads
     // this as "no sides" and builds the cap alone, which is one fewer mesh and
@@ -502,10 +519,12 @@ onMounted(() => {
     // is #b09a72, which measures 1.05:1 against the drawn map's land tone, i.e.
     // gone. `onGround` takes it toward the map's own pen on paper and leaves it
     // alone on the photograph. See lib/present/ink.ts.
-    .polygonStrokeColor((d) => {
-      const p = asPoly(d)
-      return p.kind === 'area' ? '' : onGround(p.nation.color, { mode: mode.value })
-    })
+    // NO stroke on anything in this layer any more. An event footprint's
+    // outline has been a fat line in the DrawingLayer for several rounds; a
+    // nation's has just joined it in the FrontierLayer, because a closed loop is
+    // the one thing three-globe's stroke can draw and a clipped polity needs
+    // three quarters of its loop left undrawn.
+    .polygonStrokeColor(() => '')
     // Down near the ground, for the reason everything else is (SURFACE_ALT in
     // lib/drawingLayer.ts): at 0.004 a border slid 63 px against its own
     // coastline across a close frame. Not all the way down, though — three-globe
@@ -539,7 +558,13 @@ onMounted(() => {
     // It is spent only where it is needed: a nation border already comes with
     // vertices a fraction of a degree apart, and an area is one polygon at a
     // time.
-    .polygonCapCurvatureResolution((d) => (asPoly(d).kind === 'area' ? AREA_CAP_RESOLUTION_DEG : 5))
+    // Both kinds get the same resolution now, and the comment above is why: a
+    // 5° chord sags 6.06 km below the sphere against the 8.9 km the cap is
+    // lifted, which was tolerable while a nation's cap was invisible and is not
+    // now that it is a wash — the sag is exactly the "gaps, as if it is clipping
+    // the ocean" defect, and it is worst on the largest polygons, which is what
+    // an empire is.
+    .polygonCapCurvatureResolution(() => AREA_CAP_RESOLUTION_DEG)
     .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.0014 : 0.0012))
     .polygonLabel((d) => {
       const p = asPoly(d)
@@ -626,6 +651,8 @@ onMounted(() => {
       __events?: ReturnType<typeof useEventStore>
       __time?: ReturnType<typeof useTimeStore>
       __view?: ReturnType<typeof useViewStore>
+      __nations?: ReturnType<typeof useNationStore>
+      __politicalCost?: () => { pieces: number; capVertices: number; frontierSegments: number }
     }
     w.__globe = globe
     // the paleo frames can only be checked against a reference map at a stated
@@ -644,6 +671,25 @@ onMounted(() => {
     w.__events = events
     w.__time = time
     w.__view = view
+    // …and the political layer, for the same reason. The vertex budget of the
+    // clipped polities is not legible from a picture either: what a screenshot
+    // script needs is how many contour vertices the cap layer was handed and
+    // how many segments the frontier ink came to, at the exact year and camera
+    // the frame was taken at. See docs/design/nations-rework.md.
+    w.__nations = nations
+    w.__politicalCost = () => {
+      let capVertices = 0
+      let pieces = 0
+      let frontierSegments = 0
+      for (const entry of lastPolys) {
+        if (entry.kind !== 'full') continue
+        pieces++
+        for (const ring of entry.coordinates) capVertices += ring.length
+        for (const run of inkPathsOf(entry, COASTAL_INK[mode.value]))
+          frontierSegments += run.length - 1
+      }
+      return { pieces, capVertices, frontierSegments }
+    }
   }
 
   // CSS2DRenderer stamps a depth-sorted z-index (0..100) on every pin, and its
@@ -665,6 +711,7 @@ onMounted(() => {
   // rebuild re-smooths every voyage on it.
   drawing = new DrawingLayer(globe.scene(), radius)
   routes = new DrawingLayer(globe.scene(), radius)
+  frontiers = new FrontierLayer(globe.scene(), radius)
   // The renderer is what the atlas needs and all it needs: one immutable 4096
   // texture allocated once, written a slot at a time. There is no per-device
   // pixel cap any more because there is no full-texture upload to size — see
@@ -1205,6 +1252,15 @@ onMounted(() => {
       lastInk = ink
       lastPolys = next
       globe!.polygonsData(next)
+      // …and the political ink, which is the same list minus its coastlines.
+      // One layer, one draw call, rebuilt on exactly the changes the caps are
+      // rebuilt on — see lib/frontierLayer.ts for why it is not the polygon
+      // layer's stroke and not a DrawingLayer.
+      frontiers?.set(
+        next.filter((p): p is BorderEntry => p.kind === 'full'),
+        (e) => onGround(e.nation.color, { mode: ink }),
+        COASTAL_INK[ink],
+      )
       wake()
     }),
     // The selected event's routes: the lines and the dots on their ports. They
@@ -1422,6 +1478,7 @@ onBeforeUnmount(() => {
   atmosphere?.dispose()
   drawing?.dispose()
   routes?.dispose()
+  frontiers?.dispose()
   for (const m of capMaterials.values()) m.dispose()
   capMaterials.clear()
   resizeObs?.disconnect()

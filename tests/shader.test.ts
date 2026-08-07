@@ -518,13 +518,16 @@ describe('the area footprint cannot z-fight the map it sits on', () => {
 describe('no overlay outline is left to the polygon layer', () => {
   const src = readFileSync('src/components/GlobeView.vue', 'utf8')
 
-  it('gives an event footprint no stroke of its own', () => {
-    // The fill stays — it is the hover and click target, and a cap is a mesh so
-    // the polygon offset reaches it. The OUTLINE moved to the DrawingLayer,
-    // where it is a fat line and can be biased in depth-buffer units. A stroke
-    // here would be GL_LINES again, held off the planet by height alone.
+  it('gives NOTHING in the layer a stroke of its own', () => {
+    // The fills stay — they are the hover and click target, and a cap is a mesh
+    // so the polygon offset reaches it. Both outlines are lines elsewhere now:
+    // an event footprint's is a fat line in the DrawingLayer, a polity's is
+    // GL_LINES in the FrontierLayer, and the difference between them is that
+    // three-globe's stroke can only draw a CLOSED ring — which is exactly what
+    // a polity clipped to the coastline must not have, since three quarters of
+    // it is coastline the drawn map already inks.
     const stroke = src.slice(src.indexOf('.polygonStrokeColor'), src.indexOf('.polygonAltitude'))
-    expect(stroke).toMatch(/kind === 'area' \? '' :/)
+    expect(stroke).toMatch(/polygonStrokeColor\(\(\) => ''\)/)
   })
 
   it('draws that outline through the layer that owns lines on this globe', () => {
@@ -590,8 +593,12 @@ describe('an area cap is tessellated finely enough to stay above the planet', ()
     // are chords: 35 degrees of chord passes 295 km under the sphere against
     // the 9 km the cap is lifted, and the planet eats the middle of it. That is
     // the "clipping the ocean" report, and it is geometry, not depth.
+    // Every cap in the layer, not just a footprint's: a polity's cap is a
+    // visible wash now that its coastal edges are not inked, and 5 degrees of
+    // chord sags 6.1 km against the 8.9 km it is lifted — which is the same
+    // defect on the largest polygons in the corpus.
     expect(src).toMatch(
-      /polygonCapCurvatureResolution\(\(d\) => \(asPoly\(d\)\.kind === 'area' \? AREA_CAP_RESOLUTION_DEG : 5\)\)/,
+      /polygonCapCurvatureResolution\(\(\) => AREA_CAP_RESOLUTION_DEG\)/,
     )
     // ...and the resolution is the one the cap ring is densified to, not a
     // second copy of the number. They have to be the same: the layer decides

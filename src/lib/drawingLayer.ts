@@ -40,6 +40,7 @@ import {
   type DrawingSpec,
   type MarkerStyle,
 } from './drawing'
+import { markInk } from './present/ink'
 
 /**
  * The renderer for a `Drawing` (lib/drawing.ts): a three.js group built from the
@@ -275,6 +276,47 @@ export function offsetPoint(
 /* ------------------------------------------------------------ glyph shapes */
 
 /**
+ * Half-thickness of the battle cross's bars, in units of its size.
+ *
+ * ROUND 52: 0.26 before, and 0.26 is a fine nib. The reported fault was *"in
+ * steps, 'x' mark is a bit too hard to see on the map"*, and a cross authored at
+ * 0.02° of arc — the D-Day plan's — is about twelve screen pixels across at the
+ * zoom its step frames, so its bars were drawn three pixels wide with an
+ * antialiased edge eating one of them from each side. 0.36 is the broad nib a
+ * battle map is actually drawn with: half again the ink, at the same footprint,
+ * so the mark still means the same piece of ground.
+ */
+const CROSS_BAR = 0.34
+
+/**
+ * How much of the casing outset a cross's BARS take, against all of it on its
+ * arms.
+ *
+ * An X is read from the notches between its arms, and two bars that thicken as
+ * fast as they lengthen close them: two bars of half-width w crossing at 45°
+ * have their waist at w√2, so a casing at a full outset on both puts the waist
+ * at 0.82 of an arm that reaches 1.22 — and the mark stops looking like a battle
+ * cross and starts looking like a blot (it did; photographed on the first
+ * attempt at this fix). Growing the arms by the whole outset and the bars by
+ * half of it puts the waist at 0.65 against the same 1.22, so each arm stands
+ * about half its own length clear, which is what makes the shape an X.
+ */
+const CROSS_CASING_BAR = 0.55
+
+/**
+ * How far a glyph's casing stands outside the glyph, in units of its size.
+ *
+ * The same idea as `ROUTE_STYLE.haloStroke` — a rim of the opposing tone, so the
+ * mark is read against the casing rather than against whatever it landed on —
+ * and the same reason it is not simply a scaled-up copy of the glyph: scaling an
+ * X by 1.22 scales its BARS by 1.22 too, which for a bar 0.36 wide is a rim of
+ * four hundredths of the size and invisible. `glyphShape` therefore takes an
+ * OUTSET, in glyph units, and each shape grows by it in the direction that
+ * actually puts tone round its edge.
+ */
+export const MARK_CASING_OUTSET = 0.22
+
+/**
  * The 2-D outline of each marker glyph, in units of its `size` (a radius). x is
  * east, y is north before any bearing is applied.
  *
@@ -286,27 +328,35 @@ export function offsetPoint(
  * point renders as a lopsided dart (it did), so the star and the circle carry an
  * explicit centre as their first vertex and repeat their first ring point at the
  * end to close the loop.
+ *
+ * `outset` grows the shape outward by that many glyph units, for the casing pass
+ * (`MARK_CASING_OUTSET`). It is a true outset for the dot, the cross and the
+ * star; for the chevron it is a scale about the origin, which is the same thing
+ * everywhere except at the tail notch, where it deepens the notch by a fifth of
+ * the outset. A casing's job is a rim, and the notch has a rim either way.
  */
-export function glyphShape(style: MarkerStyle): [number, number][][] {
+export function glyphShape(style: MarkerStyle, outset = 0): [number, number][][] {
   switch (style) {
     case 'dot': {
+      const r = 1 + outset
       const ring: [number, number][] = [[0, 0]]
       for (let i = 0; i <= 18; i++) {
         const a = (i / 18) * Math.PI * 2
-        ring.push([Math.cos(a), Math.sin(a)])
+        ring.push([Math.cos(a) * r, Math.sin(a) * r])
       }
       return [ring]
     }
     case 'cross': {
       // The battle cross: an X, not a plus. A plus is a hospital and a church.
-      const t = 0.26
+      const t = CROSS_BAR + outset * CROSS_CASING_BAR
+      const l = 1 + outset
       const bar = (rot: number): [number, number][] =>
         (
           [
-            [-1, -t],
-            [1, -t],
-            [1, t],
-            [-1, t],
+            [-l, -t],
+            [l, -t],
+            [l, t],
+            [-l, t],
           ] as [number, number][]
         ).map(([x, y]) => [
           x * Math.cos(rot) - y * Math.sin(rot),
@@ -320,23 +370,27 @@ export function glyphShape(style: MarkerStyle): [number, number][][] {
       const pts: [number, number][] = [[0, 0]]
       for (let i = 0; i <= 10; i++) {
         const a = Math.PI / 2 + (i / 10) * Math.PI * 2
-        const r = i % 2 === 0 ? 1 : 0.42
+        const r = (i % 2 === 0 ? 1 : 0.42) + outset
         pts.push([Math.cos(a) * r, Math.sin(a) * r])
       }
       return [pts]
     }
-    case 'arrow':
+    case 'arrow': {
       // A chevron pointing north (+y) before the bearing rotates it: a broad
       // head with a notched tail, so it reads as an arrowhead rather than a
       // triangle sitting on the line.
+      const k = 1 + outset
       return [
-        [
-          [0, 1.15],
-          [-0.85, -0.6],
-          [0, -0.15],
-          [0.85, -0.6],
-        ],
+        (
+          [
+            [0, 1.15],
+            [-0.85, -0.6],
+            [0, -0.15],
+            [0.85, -0.6],
+          ] as [number, number][]
+        ).map(([x, y]) => [x * k, y * k]),
       ]
+    }
   }
 }
 
@@ -627,7 +681,8 @@ export class DrawingLayer {
   }
 
   private build(spec: DrawingSpec, fallbackColor: string, alt: number, order: number) {
-    const color = new Color(spec.color ?? fallbackColor)
+    const hex = spec.color ?? fallbackColor
+    const color = new Color(hex)
     switch (spec.type) {
       case 'route':
         for (const path of spec.paths) this.addRoute(path, color, spec, alt, order)
@@ -639,7 +694,7 @@ export class DrawingLayer {
         this.addThrust(spec, color, alt, order)
         break
       case 'marker':
-        this.addMarker(spec, color, alt, order)
+        this.addMarker(spec, hex, alt, order)
         break
       case 'label':
         this.addLabel(spec, alt)
@@ -896,41 +951,69 @@ export class DrawingLayer {
     this.geometries.push(headGeom)
   }
 
+  /**
+   * ONE MARKER: a casing in the opposing tone, and the glyph over it.
+   *
+   * The same two-pass arrangement `addRoute` uses, for the same reason and after
+   * the same report: a mark with no casing is legible only where the ground
+   * happens to differ from it, and the ground a battle plan is drawn on is
+   * whatever the map has there — a thrust ribbon, a coastline, a lake, or
+   * parchment the same value as the mark itself. What is new in round 52 is that
+   * BOTH tones are resolved from the ground (`markInk`), because the drawn map
+   * inverted the problem: on a photograph the glyph is bright and its casing
+   * dark, and on paper the glyph is ink and its casing is the paper's own
+   * highlight. See lib/present/ink.ts for the measurements.
+   *
+   * The casing is a wider glyph, not a wider line: `MARK_CASING_OUTSET`.
+   */
   private addMarker(
     spec: Extract<DrawingSpec, { type: 'marker' }>,
-    color: Color,
+    hex: string,
     alt: number,
     order: number,
   ) {
     const style = spec.style ?? 'dot'
     const size = spec.size ?? MARKER_SIZE_DEG
-    const geom = fanGeometry(
-      glyphShape(style),
-      spec.pos[0],
-      spec.pos[1],
-      size,
-      spec.bearing ?? 0,
-      this.radius,
-      // Exactly the altitude everything else is at. A marker used to be lifted a
-      // thousandth of a radius clear of the lines to keep a battle cross from
-      // z-fighting with the front it sits on; nothing here writes depth, so the
-      // lift bought nothing that KIND_ORDER was not already buying, and it cost
-      // 6 km of parallax between a cross and the line under it.
-      alt,
-    )
-    const mat = new MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity: 0.95,
-      side: DoubleSide,
-      depthWrite: false,
-      ...groundBias,
-    })
-    const mesh = new Mesh(geom, mat)
-    mesh.renderOrder = 12 + order
-    this.group.add(mesh)
-    this.geometries.push(geom)
-    this.materials.push(mat)
+    const ink = markInk(hex, this.ground)
+    const glyph = (outset: number) =>
+      fanGeometry(
+        glyphShape(style, outset),
+        spec.pos[0],
+        spec.pos[1],
+        size,
+        spec.bearing ?? 0,
+        this.radius,
+        // Exactly the altitude everything else is at. A marker used to be lifted a
+        // thousandth of a radius clear of the lines to keep a battle cross from
+        // z-fighting with the front it sits on; nothing here writes depth, so the
+        // lift bought nothing that KIND_ORDER was not already buying, and it cost
+        // 6 km of parallax between a cross and the line under it.
+        alt,
+      )
+    // Casing first and HALF A STEP below the glyph in paint order. Both passes
+    // are transparent and exactly coincident in depth, so back-to-front sorting
+    // has nothing to separate them and would pick an order per frame; the half
+    // step decides it here. It cannot reach the next layer, whose own casing is
+    // a whole step above.
+    for (const [outset, color, opacity, bump] of [
+      [MARK_CASING_OUTSET, ink.casing, ink.casingOpacity, 0],
+      [0, ink.fill, 0.95, 0.5],
+    ] as const) {
+      const geom = glyph(outset)
+      const mat = new MeshBasicMaterial({
+        color: new Color(color),
+        transparent: true,
+        opacity,
+        side: DoubleSide,
+        depthWrite: false,
+        ...groundBias,
+      })
+      const mesh = new Mesh(geom, mat)
+      mesh.renderOrder = 12 + order + bump
+      this.group.add(mesh)
+      this.geometries.push(geom)
+      this.materials.push(mat)
+    }
     // A marker's label goes ABOVE the glyph, not on it. The offset is in the
     // glyph's own units, so a big cross pushes its label further than a small
     // dot does and the gap looks the same at either size.

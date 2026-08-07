@@ -2,6 +2,11 @@ import { describe, it, expect } from 'vitest'
 import {
   activeKeyframe,
   borderRings,
+  decodeKeyframe,
+  decodeRing,
+  decodeRuns,
+  encodeRing,
+  frontierRuns,
   isNotable,
   keyframeArea,
   nationLabel,
@@ -9,11 +14,19 @@ import {
   signedRingArea,
   visibleNations,
   MAX_VISIBLE,
+  QUANTUM,
   type Nation,
+  type NationKeyframe,
   type Ring,
 } from '../src/lib/nations'
 
 const square = (size: number): Ring => [[0, 0], [size, 0], [size, size], [0, size]]
+
+/** A keyframe from plain rings — one piece per ring, no holes, no coast. */
+const kf = (time: number, ...rings: Ring[]): NationKeyframe => ({
+  time,
+  polys: rings.map((r) => [encodeRing(r)]),
+})
 
 const rome: Nation = {
   id: 'rome',
@@ -24,10 +37,10 @@ const rome: Nation = {
   visibleFrom: -270,
   visibleTo: 476,
   keyframes: [
-    { time: -270, rings: [square(1)] },
-    { time: -100, rings: [square(3)] },
-    { time: 117, rings: [square(5), square(1)] }, // greatest extent, mainland + an island
-    { time: 300, rings: [square(4)] },
+    kf(-270, square(1)),
+    kf(-100, square(3)),
+    kf(117, square(5), square(1)), // greatest extent, mainland + an island
+    kf(300, square(4)),
   ],
 }
 
@@ -81,7 +94,7 @@ describe('visibleNations', () => {
     to,
     visibleFrom: from,
     visibleTo: to,
-    keyframes: [{ time: from, rings: [square(size)] }],
+    keyframes: [kf(from, square(size))],
   })
 
   it('rotates the set as time moves', () => {
@@ -106,7 +119,20 @@ describe('nationLabel', () => {
   })
 })
 
-import rawNations from '../src/data/nations.json'
+import rawAuthored from '../src/data/nations.json'
+import rawNations from '../src/data/nations.clipped.json'
+
+/** The authoring file's shape: hand-drawn open CW rings, one list per keyframe. */
+interface Authored {
+  id: string
+  name: string
+  color: string
+  from: number
+  to: number
+  visibleFrom: number
+  visibleTo: number
+  keyframes: { time: number; rings: Ring[] }[]
+}
 
 /**
  * The shipped dataset against what the library and the globe layer assume of it.
@@ -115,8 +141,8 @@ import rawNations from '../src/data/nations.json'
  * wrong hemisphere, and a three-digit colour turns into an invalid hex once the
  * polygon layer appends its alpha.
  */
-describe('nations.json', () => {
-  const nations = rawNations as Nation[]
+describe('nations.json (authoring)', () => {
+  const nations = rawAuthored as unknown as Authored[]
 
   it('ships a curated world', () => {
     expect(nations.length).toBeGreaterThanOrEqual(40)
@@ -129,8 +155,8 @@ describe('nations.json', () => {
     // a notability window outside the polity's life could never draw anything
     expect(n.visibleFrom).toBeLessThanOrEqual(n.to)
     expect(n.visibleTo).toBeGreaterThanOrEqual(n.from)
-    expect(activeKeyframe(n, n.visibleFrom)).toBeDefined()
-    expect(activeKeyframe(n, n.visibleTo)).toBeDefined()
+    expect(activeKeyframe(n as unknown as Nation, n.visibleFrom)).toBeDefined()
+    expect(activeKeyframe(n as unknown as Nation, n.visibleTo)).toBeDefined()
   })
 
   it.each(nations.map((n) => [n.id, n] as const))('%s has usable keyframes', (_id, n) => {
@@ -174,7 +200,7 @@ describe('nations.json', () => {
   it.each([-2600, -2000, -1400, -1000, -700, -500, -320, -200, -100, 1, 100, 250, 400, 600, 700, 800, 1000, 1100, 1200, 1300, 1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 1930, 1950, 1980, 2000])(
     'shows a handful of polities at %i',
     (t) => {
-      const vis = visibleNations(nations, t)
+      const vis = visibleNations(rawNations as unknown as Nation[], t)
       expect(vis.length).toBeGreaterThanOrEqual(3)
       expect(vis.length).toBeLessThanOrEqual(8)
     },
@@ -195,7 +221,7 @@ describe('nations.json', () => {
  * inside this polity in this year". A missing keyframe fails one of them.
  */
 describe('borders at a date', () => {
-  const nations = rawNations as Nation[]
+  const nations = rawNations as unknown as Nation[]
 
   /** Ray cast in the plane; the rings are small enough that this is exact enough. */
   const inRing = (ring: Ring, lng: number, lat: number): boolean => {
@@ -207,11 +233,15 @@ describe('borders at a date', () => {
     }
     return inside
   }
+  /** Inside a PIECE: in its outer ring and in none of its holes. */
   const covers = (id: string, t: number, lng: number, lat: number): boolean => {
     const nation = nations.find((n) => n.id === id)
     if (!nation) throw new Error(`no nation ${id}`)
     const k = activeKeyframe(nation, t)
-    return !!k && k.rings.some((ring) => inRing(ring, lng, lat))
+    if (!k) return false
+    return decodeKeyframe(k).pieces.some(
+      (rings) => inRing(rings[0], lng, lat) && !rings.slice(1).some((h) => inRing(h, lng, lat)),
+    )
   }
 
   // [polity, year, place, lng, lat, inside?]
@@ -327,22 +357,22 @@ describe('borderRings', () => {
     const a = borderRings(rome, -150) // the -270 keyframe
     const b = borderRings(rome, -50) // the -100 one
     expect(b[0]).not.toBe(a[0])
-    expect(b[0].ring).toBe(rome.keyframes[1].rings[0])
+    expect(b[0].ring).toEqual(square(3))
   })
 
-  it('gives one entry per ring, in the keyframe order', () => {
+  it('gives one entry per PIECE, in the keyframe order', () => {
     const rings = borderRings(rome, 200) // greatest extent: mainland + island
     expect(rings).toHaveLength(2)
-    expect(rings.map((r) => r.ring)).toEqual(rome.keyframes[2].rings)
+    expect(rings.map((r) => r.ring)).toEqual([square(5), square(1)])
   })
 
   it('closes each ring exactly once, without touching the stored one', () => {
     const [entry] = borderRings(rome, -150)
-    const open = rome.keyframes[0].rings[0]
+    const open = square(1)
     expect(entry.coordinates).toHaveLength(1)
     expect(entry.coordinates[0]).toHaveLength(open.length + 1)
     expect(entry.coordinates[0][open.length]).toEqual(open[0])
-    expect(open).toHaveLength(4) // the source data is still open
+    expect(entry.ring).toHaveLength(4) // the decoded ring is still open
   })
 
   it('carries the label and the discriminant the polygon layer needs', () => {

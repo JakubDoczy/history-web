@@ -89,7 +89,12 @@ const shot = async (target, name) => {
  * The mask keeps the middle of the globe and nothing else: a centred disc of
  * 60% of the frame height, minus anything as dark as the board it sits on. That
  * excludes the bars, the timeline, the pins round the rim and the limb's own
- * antialiasing.
+ * antialiasing. What it does NOT exclude is a pin in the MIDDLE of the disc,
+ * which is why (a) hides them before it captures — see `hideOverlays`.
+ *
+ * `warm`, `cool` and `chroma` are round 52's: the drawn map is two grounds now
+ * (warm parchment, a duck-egg sea), so "is it a drawing" is no longer a claim
+ * about one tone. See the checks in (a).
  */
 async function frameStats(file) {
   const img = await loadImage(file)
@@ -103,6 +108,9 @@ async function frameStats(file) {
   let n = 0
   let blue = 0
   let warm = 0
+  let cool = 0
+  let chroma = 0
+  let chromaMax = 0
   let sr = 0
   let sg = 0
   let sb = 0
@@ -121,12 +129,50 @@ async function frameStats(file) {
       const l = 0.2126 * r + 0.7152 * gr + 0.0722 * b
       min = Math.min(min, l)
       max = Math.max(max, l)
+      const ch = Math.max(r, gr, b) - Math.min(r, gr, b)
+      chroma += ch
+      chromaMax = Math.max(chromaMax, ch)
       if (b > r + 18 && b > gr + 10) blue++
       if (r > b + 12) warm++
+      if (b > r + 4) cool++
     }
   }
-  return { n, blue: blue / n, warm: warm / n, mean: [sr / n, sg / n, sb / n], min, max }
+  return {
+    n,
+    blue: blue / n,
+    warm: warm / n,
+    cool: cool / n,
+    chroma: chroma / n,
+    chromaMax,
+    mean: [sr / n, sg / n, sb / n],
+    min,
+    max,
+  }
 }
+
+/**
+ * Hide everything that is not the map: the CSS2D pins, their labels and the
+ * chrome that floats over the globe.
+ *
+ * (a) asserts a property of the DRAWN SURFACE — that no blue-marble texel
+ * survives anywhere in map mode — and a pin is not the surface. It used to get
+ * away with measuring both: a blue cluster badge in the middle of the disc is
+ * about half a percent of the samples, and the threshold was half a percent.
+ * Round 52 spent that margin (the sea is a duck-egg wash now and the check had
+ * to be re-read anyway), so the measurement is made to mean what it says instead
+ * of being tuned around what it accidentally included.
+ */
+const hideOverlays = async (page, hidden) =>
+  page.evaluate((on) => {
+    const id = 'e2e-hide-overlays'
+    document.getElementById(id)?.remove()
+    if (!on) return
+    const el = document.createElement('style')
+    el.id = id
+    el.textContent =
+      '.event-pin, .drawing-label, .scene-label, [data-test="mode-toggle"] { visibility: hidden !important; }'
+    document.head.append(el)
+  }, hidden)
 
 /**
  * DPR 1 for the desktop pass, and this is a measurement rather than a taste:
@@ -170,20 +216,47 @@ console.log('\n(a) drawn world view')
 const page = await open(1280, 800)
 await setMode(page, 'schematic')
 await look(page, 20, 10, 2.4, 7000)
+await hideOverlays(page, true)
+await page.evaluate(() => window.__wake?.(400))
+await page.waitForTimeout(600)
 const drawnWorld = await frameStats(await shot(page, 'a-drawn-world'))
+await hideOverlays(page, false)
 console.log(`      surface mean rgb ${drawnWorld.mean.map((v) => v.toFixed(0)).join(',')}`)
 console.log(
-  `      blue-dominant ${(drawnWorld.blue * 100).toFixed(2)}%   warm ${(drawnWorld.warm * 100).toFixed(1)}%`,
+  `      blue-dominant ${(drawnWorld.blue * 100).toFixed(2)}%   ` +
+    `warm ${(drawnWorld.warm * 100).toFixed(1)}%   cool ${(drawnWorld.cool * 100).toFixed(1)}%   ` +
+    `chroma ${drawnWorld.chroma.toFixed(1)} mean / ${drawnWorld.chromaMax} worst`,
 )
 
 await check('no blue-marble pixel survives in drawn mode', () => {
   ok(drawnWorld.n > 5000, `only ${drawnWorld.n} surface samples`)
   ok(drawnWorld.blue < 0.005, `${(drawnWorld.blue * 100).toFixed(2)}% of the globe is blue`)
 })
-await check('the drawn globe is parchment: warm everywhere', () => {
-  ok(drawnWorld.warm > 0.9, `only ${(drawnWorld.warm * 100).toFixed(1)}% of the globe reads warm`)
-  const [r, , b] = drawnWorld.mean
-  ok(r > b + 20, `mean red ${r.toFixed(0)} is not clear of mean blue ${b.toFixed(0)}`)
+/**
+ * ROUND 52 — this check used to read "the drawn globe is parchment: warm
+ * everywhere", and 99% of the globe reading warm was exactly the reported
+ * defect: *"the sea is just another shade"*. Warm sea under warm land is one
+ * tone with the continents embossed on it.
+ *
+ * So the claim becomes the one the palette now makes, and it is harder to
+ * satisfy than the one it replaces — a poster passes "warm everywhere" as easily
+ * as a drawing does, and it cannot pass a bound on chroma:
+ *
+ *  · there is real parchment (the land is warm), and real water (the sea is not);
+ *  · together they cover the sheet — nothing on it is neither;
+ *  · and the whole plate is LOW CHROMA. This is the "not a crazy coloured
+ *    painting" line, expressed as a number: the drawn map's most colourful tone
+ *    is its own warm paper.
+ */
+await check('the drawn globe is two grounds of one aged sheet', () => {
+  ok(drawnWorld.warm > 0.25, `only ${(drawnWorld.warm * 100).toFixed(1)}% of the globe reads warm`)
+  ok(drawnWorld.cool > 0.25, `only ${(drawnWorld.cool * 100).toFixed(1)}% of the globe reads cool`)
+  ok(
+    drawnWorld.warm + drawnWorld.cool > 0.9,
+    `${((1 - drawnWorld.warm - drawnWorld.cool) * 100).toFixed(1)}% of the globe is neither ground`,
+  )
+  // measured 25.2 with the era's nation washes on the globe; a poster is 60+
+  ok(drawnWorld.chroma < 34, `mean chroma ${drawnWorld.chroma.toFixed(1)} is a poster, not paper`)
 })
 
 /* ============================================== (b) continental zoom, Europe */
