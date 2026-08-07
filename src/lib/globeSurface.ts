@@ -752,8 +752,18 @@ void main() {
     float cols = exp2(uDetailZ);
     vec2 tile = vec2(vUv.x * cols, (1.0 - vUv.y) * cols * 0.5);
     vec2 up = tile * 0.5;                       // …and in the parent's grid
-    vec4 cell = atlasCell(floor(tile) - uDetailGrid.xy, uDetailGrid.zw, 0.0);
-    vec4 cellP = atlasCell(floor(up) - uDetailGridP.xy, uDetailGridP.zw, ${INDEX_ROWS}.0);
+    // THE COLUMN IS TAKEN THE SHORT WAY ROUND. A view straddling ±180 has a
+    // grid whose origin is near the last column and which runs on past zero
+    // (gridOf, lib/tileAtlas.ts), so the offset has to wrap with it — without
+    // the mod, every tile east of the seam lands at a negative cell, the range
+    // test rejects it, and the far half of the frame shows base map with a hard
+    // edge down the meridian. GLSL's mod is floored, so it is already positive.
+    vec2 gT = floor(tile) - uDetailGrid.xy;
+    vec2 gP = floor(up) - uDetailGridP.xy;
+    gT.x = mod(gT.x, cols);
+    gP.x = mod(gP.x, max(cols * 0.5, 1.0));
+    vec4 cell = atlasCell(gT, uDetailGrid.zw, 0.0);
+    vec4 cellP = atlasCell(gP, uDetailGridP.zw, ${INDEX_ROWS}.0);
     // R is the slot, offset by one so zero means absent; G is the fade
     float onT = step(0.5 / 255.0, cell.r) * cell.g;
     float onP = step(0.5 / 255.0, cellP.r) * cellP.g;

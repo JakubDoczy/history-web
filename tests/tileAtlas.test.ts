@@ -10,10 +10,11 @@ import {
   SlotMap,
   buildIndex,
   fitLevel,
+  gridCol,
   gridOf,
   lowTapPx,
 } from '../src/lib/tileAtlas'
-import { BASE_LEVEL, TILE_PX, tilesCovering, type Tile } from '../src/lib/tilePyramid'
+import { BASE_LEVEL, TILE_PX, tileCols, tilesCovering, type Tile } from '../src/lib/tilePyramid'
 import { viewBbox, Z_MAX, baseTexelsPerScreenPx } from '../src/lib/detailImagery'
 import { targetLevel } from '../src/lib/tilePyramid'
 
@@ -59,6 +60,41 @@ describe('gridOf', () => {
     const view = viewBbox(45, 10, 0.02, 1.6)
     const [, , w, h] = gridOf(tilesCovering(view, 10))
     expect(w * h).toBe(tilesCovering(view, 10).length)
+  })
+
+  /**
+   * ROUND 51, DEFECT 2 — the grid has to wrap or the seam is a wall.
+   *
+   * Read as a plain minimum and maximum, a set straddling ±180 is the WHOLE
+   * WORLD's width: 512 columns at z 9, twenty times the index texture, so
+   * `atlasCell` rejects every cell and both halves of the frame fall through to
+   * the base map. What the reader saw was the near side sharp (its tiles were
+   * requested) and the far side not, with the change on the meridian rather
+   * than at the edge of the screen.
+   */
+  it('finds the origin the long way round when the tiles cross the seam', () => {
+    const n = tileCols(9)
+    expect(gridOf([t(n - 2, 4), t(n - 1, 4), t(0, 4), t(1, 4)])).toEqual([n - 2, 4, 4, 1])
+    // …and is unchanged for every set that does not cross it
+    expect(gridOf([t(4, 7), t(6, 7), t(5, 9)])).toEqual([4, 7, 3, 3])
+    expect(gridOf([t(0, 0)])).toEqual([0, 0, 1, 1])
+    expect(gridOf(Array.from({ length: n }, (_, x) => t(x, 0)))).toEqual([0, 0, n, 1])
+  })
+
+  it('is exactly the covering set of a view ON the seam, too', () => {
+    for (const lng of [180, -179.6, 179.6]) {
+      const view = viewBbox(56, lng, 0.02, 1.6)
+      const tiles = tilesCovering(view, 10)
+      const [x0, , w, h] = gridOf(tiles)
+      expect(w * h).toBe(tiles.length)
+      expect(w).toBeLessThanOrEqual(INDEX_W)
+      // every tile lands inside the grid once the column is taken the short way
+      for (const tile of tiles) {
+        const gx = gridCol(tile.x, x0, tileCols(10))
+        expect(gx).toBeGreaterThanOrEqual(0)
+        expect(gx).toBeLessThan(w)
+      }
+    }
   })
 })
 
@@ -238,6 +274,41 @@ describe('buildIndex', () => {
     for (const t of level) m.acquire(`${t.x}`, 0)
     const idx = buildIndex(10, level, [], (t) => m.slotOf(`${t.x}`), FADE_MS)
     expect(idx.resident).toBe(INDEX_W)
+  })
+
+  it('indexes a seam-crossing view on both sides of the meridian', () => {
+    // The wanted set of a Pacific view at z 10: the last two columns of the
+    // world and the first two. Before the wrap, `t.x - x0` put columns 0 and 1
+    // at cells -1022 and -1021, the range test dropped them, and everything
+    // east of the seam showed base map.
+    const n = tileCols(10)
+    const m = new SlotMap()
+    const level: Tile[] = []
+    for (const x of [n - 2, n - 1, 0, 1]) for (const y of [30, 31]) level.push({ z: 10, x, y })
+    for (const t of level) m.acquire(`${t.x}/${t.y}`, 0)
+    const idx = buildIndex(10, level, [], (t) => m.slotOf(`${t.x}/${t.y}`), FADE_MS)
+    expect(idx.grid).toEqual([n - 2, 30, 4, 2])
+    expect(idx.resident).toBe(8)
+    for (const t of level) {
+      const gx = gridCol(t.x, idx.grid[0], n)
+      expect(cell(idx.data, gx, t.y - 30).slot).toBe(m.slotOf(`${t.x}/${t.y}`)!.index)
+    }
+    // and each of the four columns got its own cell — no two tiles share one
+    expect(new Set(level.map((t) => gridCol(t.x, idx.grid[0], n))).size).toBe(4)
+  })
+
+  it('wraps the parent grid at the parent level, not the target one', () => {
+    const n = tileCols(9)
+    const m = new SlotMap()
+    const parent: Tile[] = [
+      { z: 9, x: n - 1, y: 15 },
+      { z: 9, x: 0, y: 15 },
+    ]
+    for (const t of parent) m.acquire(`p${t.x}`, 0)
+    const idx = buildIndex(10, [], parent, (t) => m.slotOf(`p${t.x}`), FADE_MS)
+    expect(idx.parent).toEqual([n - 1, 15, 2, 1])
+    expect(cell(idx.data, 0, INDEX_ROWS).slot).toBe(m.slotOf(`p${n - 1}`)!.index)
+    expect(cell(idx.data, 1, INDEX_ROWS).slot).toBe(m.slotOf('p0')!.index)
   })
 
   it('writes the whole index and nothing else, so a stale cell cannot survive', () => {

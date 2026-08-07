@@ -192,6 +192,25 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
  *
  * Matching the screen's shape matters: a square patch of ground on a portrait
  * phone at high latitude fetches roughly twice the area that is ever visible.
+ *
+ * LONGITUDE IS NOT CLAMPED, and that is round 51's fix for the antimeridian.
+ * It used to be — `clamp(lng ± span/2, -180, 180)` — and every consequence of
+ * the seam followed from those two calls: a view centred on 180° asked for the
+ * half of itself west of the meridian and no more, so the tiles east of it were
+ * never requested, never indexed and never uploaded, and the far half of the
+ * frame stayed at base-map resolution with a hard edge down the middle of the
+ * ocean. Exactly what the reader reported at Kamchatka/Alaska, in both drawn
+ * and satellite modes, because the clamp is upstream of the source.
+ *
+ * The representation chosen is UNCLAMPED DEGREES — `minLng` may be under -180
+ * and `maxLng` over it — rather than a wrapped range (`minLng > maxLng`). It
+ * keeps `minLng <= maxLng` true, which is what every span, centre, motion and
+ * placement calculation downstream already assumes: `maxLng - minLng` stays the
+ * width, `placeOnCanvas` stays linear, and `tilesCovering` — which has wrapped
+ * its column indices since phase 1 and until now had no caller that made it —
+ * needs no change at all. What did need changing is everything that turns a
+ * tile's COLUMN into a position in a fixed-size grid: `gridOf`, `buildIndex`
+ * and the shader's own index lookup (lib/tileAtlas.ts, lib/globeSurface.ts).
  */
 export function viewBbox(
   lat: number,
@@ -210,9 +229,9 @@ export function viewBbox(
   const lngSpan = clamp(groundWidth / Math.max(Math.cos((lat * Math.PI) / 180), 0.15), 0.001, 300)
   const minLat = clamp(lat - latSpan / 2, -90, 90)
   const maxLat = clamp(lat + latSpan / 2, -90, 90)
-  const minLng = clamp(lng - lngSpan / 2, -180, 180)
-  const maxLng = clamp(lng + lngSpan / 2, -180, 180)
-  return { minLat, minLng, maxLat, maxLng }
+  // …and no clamp here: see above. The span is already bounded to 300°, so the
+  // box can never be wider than the world, only across the seam from it.
+  return { minLat, minLng: lng - lngSpan / 2, maxLat, maxLng: lng + lngSpan / 2 }
 }
 
 /**
@@ -242,10 +261,23 @@ export const viewMotion = (a: Bbox | undefined, b: Bbox): number => {
   return Math.max(
     Math.abs(a.minLat - b.minLat) / lat,
     Math.abs(a.maxLat - b.maxLat) / lat,
-    Math.abs(a.minLng - b.minLng) / lng,
-    Math.abs(a.maxLng - b.maxLng) / lng,
+    Math.abs(wrapDeg(a.minLng - b.minLng)) / lng,
+    Math.abs(wrapDeg(a.maxLng - b.maxLng)) / lng,
   )
 }
+
+/**
+ * A longitude difference, taken the short way round: -180 … 180.
+ *
+ * The camera's longitude comes back from globe.gl already wrapped, so a drag
+ * across the antimeridian steps from 179.9 to -179.9 — half a degree of ground
+ * that reads as 359.8 degrees of jump. Unwrapped, that is a full reset of the
+ * motion state on every seam crossing: `restingAt` is thrown away, the camera
+ * is classified as moving, and the prefetch ring is withheld from a pan that
+ * never actually stopped. Measured as the difference between "the sharpening
+ * follows the camera across the seam" and "the sharpening restarts at it".
+ */
+export const wrapDeg = (d: number): number => d - 360 * Math.round(d / 360)
 
 /**
  * How far the view may drift *in total* and still count as a still camera.
@@ -642,6 +674,15 @@ export class DetailImagery {
    * anyone touching the globe, so the render pump has to keep drawing — the same
    * contract the cloud drift and the map fades are under.
    */
+  /**
+   * The ground the wanted set was cut to. Read by the instrument route only —
+   * it is what makes "did this view ask for the far side of the seam?" a fact
+   * an e2e can assert rather than infer (tests/e2e/repro51.e2e.mjs).
+   */
+  get wanted(): Bbox | undefined {
+    return this.want?.target
+  }
+
   get animating(): boolean {
     return this.backlog > 0 || !!this.index?.fading
   }

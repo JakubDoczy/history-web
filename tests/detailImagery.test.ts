@@ -21,7 +21,14 @@ import {
   pickSource,
   type Bbox,
 } from '../src/lib/detailImagery'
-import { TILE_BYTES, TILE_PX, targetLevel, tileSpanDeg, tilesCovering } from '../src/lib/tilePyramid'
+import {
+  TILE_BYTES,
+  TILE_PX,
+  targetLevel,
+  tileCols,
+  tileSpanDeg,
+  tilesCovering,
+} from '../src/lib/tilePyramid'
 import { ATLAS_UPLOADS_PER_FRAME } from '../src/lib/tileAtlas'
 
 describe('viewBbox', () => {
@@ -55,16 +62,50 @@ describe('viewBbox', () => {
     expect(portrait.maxLat - portrait.minLat).toBeCloseTo(landscape.maxLat - landscape.minLat, 6)
   })
 
-  it('never leaves valid geographic bounds', () => {
+  it('clamps latitude at the poles and never inverts', () => {
     for (const [lat, lng] of [[89.9, 179.9], [-89.9, -179.9], [90, 180], [-90, -180]] as const) {
       const b = viewBbox(lat, lng, 0.3)
       expect(b.minLat).toBeGreaterThanOrEqual(-90)
       expect(b.maxLat).toBeLessThanOrEqual(90)
-      expect(b.minLng).toBeGreaterThanOrEqual(-180)
-      expect(b.maxLng).toBeLessThanOrEqual(180)
       expect(b.maxLat).toBeGreaterThan(b.minLat)
       expect(b.maxLng).toBeGreaterThan(b.minLng)
     }
+  })
+
+  /**
+   * ROUND 51, DEFECT 2 — the antimeridian seam.
+   *
+   * The clamp that used to be on these two lines is what the reader saw as "a
+   * hard boundary somewhere in the ocean" near Kamchatka/Alaska with one side
+   * sharp and the other not: a view centred on the seam asked for the half of
+   * itself on the near side and stopped at 180, so the far half was never
+   * requested at any level and stayed base map.
+   */
+  it('crosses the antimeridian instead of stopping at it', () => {
+    const at180 = viewBbox(56, 180, 0.09, 1.6)
+    expect(at180.maxLng).toBeGreaterThan(180)
+    expect(at180.minLng).toBeLessThan(180)
+    // the box is the same WIDTH wherever it is centred: the seam is not a wall
+    const at0 = viewBbox(56, 0, 0.09, 1.6)
+    expect(at180.maxLng - at180.minLng).toBeCloseTo(at0.maxLng - at0.minLng, 9)
+    expect((at180.minLng + at180.maxLng) / 2).toBeCloseTo(180, 9)
+    // …and just past it, where the centre comes back wrapped to -180
+    const past = viewBbox(56, -179.5, 0.09, 1.6)
+    expect(past.minLng).toBeLessThan(-180)
+    expect(past.maxLng - past.minLng).toBeCloseTo(at0.maxLng - at0.minLng, 9)
+  })
+
+  it('asks for tiles on BOTH sides of the seam', () => {
+    // the whole point of not clamping: `tilesCovering` has wrapped its columns
+    // since phase 1 and until this round nothing ever handed it a box that made
+    // it do so
+    const tiles = tilesCovering(viewBbox(56, 180, 0.09, 1.6), 7)
+    const cols = new Set(tiles.map((t) => t.x))
+    expect([...cols].some((x) => x >= tileCols(7) - 2)).toBe(true)
+    expect([...cols].some((x) => x <= 1)).toBe(true)
+    // and no column is ever out of range
+    for (const t of tiles) expect(t.x).toBeGreaterThanOrEqual(0)
+    for (const t of tiles) expect(t.x).toBeLessThan(tileCols(7))
   })
 })
 
@@ -298,6 +339,7 @@ import {
   SETTLE_MS,
   viewBbox as viewBboxFor,
   viewMotion,
+  wrapDeg,
 } from '../src/lib/detailImagery'
 
 describe('viewMotion', () => {
@@ -325,6 +367,52 @@ describe('viewMotion', () => {
 
   it('counts the first frame as motion, since there is nothing to compare to', () => {
     expect(viewMotion(undefined, box(45, 10))).toBe(1)
+  })
+
+  /**
+   * ROUND 51, DEFECT 2 — the seam must not read as a jump.
+   *
+   * The camera's longitude comes back from globe.gl already wrapped, so a drag
+   * across ±180 steps from 179.9 to -179.9: half a degree of ground that reads
+   * as 359.8 degrees unless the difference is taken the short way round. Read
+   * long, every crossing resets `restingAt`, the camera is classified as moving
+   * and the prefetch ring is withheld from a pan that never stopped.
+   */
+  it('takes a pan across the antimeridian for what it is: half a degree', () => {
+    const west = { minLat: 54, maxLat: 58, minLng: 177.9, maxLng: 181.9 }
+    const east = { minLat: 54, maxLat: 58, minLng: -181.7, maxLng: -177.7 } // 0.4 further on
+    expect(viewMotion(west, east)).toBeCloseTo(0.1, 6)
+    expect(viewMotion(west, east)).toBeLessThan(viewMotion(box(45, 10), box(45, 11)))
+    // and it is symmetric — coming back is the same half degree
+    expect(viewMotion(east, west)).toBeCloseTo(viewMotion(west, east), 9)
+  })
+
+  it('is continuous across the seam: no step where the wrap happens', () => {
+    // walk a camera through 180 in tenths of a degree and watch the motion each
+    // step costs. Before the wrap the crossing step alone measured 89.95.
+    let prev: Bbox | undefined
+    const steps: number[] = []
+    for (let lng = 179.0; lng <= 181.01; lng += 0.1) {
+      const at = viewBboxFor(56, wrapDeg(lng), 0.02, 1.6)
+      if (prev) steps.push(viewMotion(prev, at))
+      prev = at
+    }
+    expect(Math.max(...steps)).toBeLessThan(Math.min(...steps) * 1.5 + 1e-6)
+  })
+
+  it('wrapDeg takes the short way round and nothing else', () => {
+    expect(wrapDeg(0)).toBe(0)
+    expect(wrapDeg(10)).toBe(10)
+    expect(wrapDeg(-10)).toBe(-10)
+    expect(wrapDeg(359.8)).toBeCloseTo(-0.2, 9)
+    expect(wrapDeg(-359.8)).toBeCloseTo(0.2, 9)
+    expect(Math.abs(wrapDeg(180))).toBe(180)
+    for (const d of [-540, -181, 0, 179, 181, 720]) {
+      expect(Math.abs(wrapDeg(d))).toBeLessThanOrEqual(180)
+      expect(Math.abs(Math.round((d - wrapDeg(d)) / 360) * 360 - (d - wrapDeg(d)))).toBeLessThan(
+        1e-9,
+      )
+    }
   })
 
   it('puts orbit damping below the threshold before it reaches zero', () => {

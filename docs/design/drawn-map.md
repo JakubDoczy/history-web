@@ -193,3 +193,72 @@ worker under SwiftShader): tile render 0.9 ms mean / 3.1 ms worst in node and
 the worst case is the first tile of a level, which builds the paths every later
 tile of that level reuses. Vector data 894 kB over three files; the world
 texture 403 kB.
+
+## Round 51 — two defects from the field, and what they were
+
+**1. The chord from South Africa to Chukotka.** Reported as *"one huge defect
+starting from a point in South Africa stretching through Ceylon, South Korea and
+ending somewhere around Kamchatka"*. It was one call: the path builder's
+antimeridian guard broke the subpath at a seam crossing and called `closePath()`
+first. `closePath` does not close along the seam — it closes back to the last
+`moveTo`, which for the first piece of a ring is *the ring's own first vertex*.
+`land-50m`'s Afro-Eurasia is one ring of 10 639 points beginning at 16.45° E,
+28.62° S (the mouth of the Orange River) and crossing ±180 twice in Chukotka, so
+the pen drew two chords from there to (179.87 E, 69.01 N) and (179.83 E,
+65.03 N) — the streak, and the reason it read as a thin lens rather than a line.
+It was in the world texture and in every streamed tile alike, because both come
+from `buildPath`. Not an arc-renumbering error, not Chaikin, not Path2D reuse:
+the decoded geometry has no segment over 180° that is not a seam crossing, which
+is now asserted.
+
+Rings are clipped to the ±180 strip at DECODE instead (`splitAtSeam`,
+lib/drawnGeometry.ts): the crossing gets its own interpolated vertex on both
+meridians, the ring is rotated to begin at a crossing so each piece starts and
+ends on a meridian, and closing a piece then runs down the meridian — which is
+where the data was clipped in the first place, and is the correct fill. A piece
+whose ends are on opposite meridians (a polar cap crossing an odd number of
+times — Antarctica) is closed around the near pole, so Antarctica now fills to
+90° S rather than being sealed with a bar across the Pacific at 84° S.
+
+Every edge inserted there is marked in `Shape.seam`, because it is a fact about
+the projection and not about a coast. The fill needs those edges; the pen must
+not follow them, or the Bering Strait grows a coastline with 22 px of shoreline
+wash down the 180th meridian. So `LevelPaths.path` returns `{ fill, stroke }` —
+the same `Path2D` object for all but the four shapes that met the seam. Cost:
+four extra paths per level.
+
+**2. The antimeridian seam in the streamer.** Reported as *"near Kamchatka /
+Alaska … hard boundary somewhere in the ocean … not on the edge of the screen
+but right in the middle"*. Phase 1 recorded the limit and it was the whole
+defect: `viewBbox` clamped longitude to ±180, so a view centred on the seam
+asked for only the half of itself on the near side. Measured in the browser at
+56° N, 180°, altitude 0.09: the wanted grid was `[124, 11, 4, 3]` of a
+128-column level — four columns, all west of the meridian — against six columns
+for the same camera at 174° or −174°. The far half was never requested at any
+level and stayed base map, with the step exactly on the meridian.
+
+`viewBbox` now returns unclamped degrees (`minLng` under −180, `maxLng` over
+it). That representation was chosen over a wrapped range because it keeps
+`minLng <= maxLng`, which every span, centre, motion and placement calculation
+downstream already assumes — `tilesCovering` has wrapped its columns since phase
+1 and needed no change at all; it simply now has a caller that makes it. What
+did need changing is everything that turns a column into a cell of a fixed-size
+grid:
+
+- `gridOf` finds the origin after the widest cyclic gap, so 254, 255, 0, 1 is
+  origin 254 width 4 rather than origin 0 width 256 (which `atlasCell` rejected
+  wholesale, dropping BOTH halves of the frame to base map);
+- `buildIndex` places a tile at `gridCol(t.x, x0, tileCols(t.z))`;
+- the surface shader takes the same modulo before the range test;
+- `centreFirst` measures the column distance the short way round, or the seam's
+  own ground — the middle of the frame — is the last tile in the plan;
+- `viewMotion` takes the longitude difference the short way round (`wrapDeg`).
+  The camera's longitude comes back from globe.gl already wrapped, so a drag
+  across the meridian steps 179.9 → −179.9: half a degree of ground that read as
+  359.8 degrees of jump, reset `restingAt` on every crossing and withheld the
+  prefetch ring from a pan that never stopped.
+
+All of it is upstream of the tile source, so it fixes drawn and satellite modes
+together. Only drawn mode could be photographed here — the sandbox has no route
+to the WMS services — so the satellite half is carried by the unit tests on the
+same arithmetic.

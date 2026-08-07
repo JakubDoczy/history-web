@@ -12,6 +12,7 @@ import {
   TICK_PX,
   tickRoom,
   FULL_WINDOW,
+  clipBand,
   axisTicks,
   backPressesTo,
   crumbs,
@@ -151,9 +152,12 @@ describe('placement is the truth about when', () => {
     const rail = layoutRail(stations(ww2, ww2Span), ww2Span, 1200)
     const by = new Map(rail.stations.map((s) => [s.step.id, s]))
     expect(by.get('pearl-harbor')!.band).toBeUndefined()
-    const band = by.get('holocaust')!.band!
-    expect(band.x).toBeCloseTo(railX(by.get('holocaust')!.u, 1200))
-    expect(band.x + band.w).toBeCloseTo(railX(by.get('holocaust')!.uEnd, 1200))
+    const h = by.get('holocaust')!
+    // `x` is measured from the mark, so a period wholly on screen starts at 0
+    expect(h.band!.x).toBe(0)
+    expect(h.x + h.band!.x + h.band!.w).toBeCloseTo(railX(h.uEnd, 1200))
+    // …and neither end was cut, so neither end is drawn open
+    expect(h.band).toMatchObject({ openL: false, openR: false, through: false })
   })
 
   it('is not knocked over by a saga with one step, or by a rail with no width', () => {
@@ -482,6 +486,70 @@ describe('the visible window', () => {
     expect(len(zoomWindow(w, 0.5, 0.5, min))).toBeCloseTo(min) // and stays there
   })
 
+  /**
+   * ROUND 51, DEFECT 3 — the − / + / fit cluster's arithmetic.
+   *
+   * The reader on the old single magnifier: *"I don't like how it just zooms
+   * you a bit and you can't use it to zoom more or less; but zoom back to fit
+   * timeline is nice."* What a press does is `zoomWindow(w, k, 0.5, floor)` and
+   * nothing else, so the whole of "repeatable, about the centre, to the same
+   * clamps every other gesture obeys" is a property of that call.
+   */
+  describe('a press of − or +', () => {
+    const PRESS = 1.6
+    const floorW = minWindow(ww2Span)
+    const inTo = (w: { u0: number; u1: number }, n: number) => {
+      for (let i = 0; i < n; i++) w = zoomWindow(w, 1 / PRESS, 0.5, floorW)
+      return w
+    }
+
+    it('is repeatable: every press moves the window until the clamp does', () => {
+      let w = FULL_WINDOW
+      const widths = [len(w)]
+      for (let i = 0; i < 20; i++) {
+        w = zoomWindow(w, 1 / PRESS, 0.5, floorW)
+        widths.push(len(w))
+      }
+      // strictly narrowing until the floor, then exactly the floor
+      for (let i = 1; i < widths.length; i++) {
+        expect(widths[i]).toBeLessThanOrEqual(widths[i - 1] + 1e-12)
+      }
+      expect(widths.at(-1)).toBeCloseTo(floorW, 9)
+      // and it takes a walk, not one press: the war is 2192 days and the floor
+      // is three, which is nine presses of 1.6
+      expect(widths.filter((v, i) => i > 0 && v < widths[i - 1] - 1e-9).length).toBeGreaterThan(6)
+    })
+
+    it('holds the window’s own centre, so nothing slides under the press', () => {
+      const w = { u0: 0.3, u1: 0.7 }
+      const mid = (x: { u0: number; u1: number }) => (x.u0 + x.u1) / 2
+      expect(mid(zoomWindow(w, 1 / PRESS, 0.5, floorW))).toBeCloseTo(mid(w), 9)
+      expect(mid(zoomWindow(w, PRESS, 0.5, floorW))).toBeCloseTo(mid(w), 9)
+    })
+
+    it('comes back out again — the half the old one-button control could not do', () => {
+      const deep = inTo(FULL_WINDOW, 5)
+      expect(len(deep)).toBeLessThan(0.2)
+      let w = deep
+      for (let i = 0; i < 5; i++) w = zoomWindow(w, PRESS, 0.5, floorW)
+      expect(len(w)).toBeCloseTo(1, 6)
+    })
+
+    it('is a no-op exactly at each clamp, which is what disables the button', () => {
+      const moves = (w: { u0: number; u1: number }, k: number) =>
+        Math.abs(len(zoomWindow(w, k, 0.5, floorW)) - len(w)) > 1e-6
+      expect(moves(FULL_WINDOW, PRESS)).toBe(false) // − at the whole span
+      expect(moves(FULL_WINDOW, 1 / PRESS)).toBe(true)
+      const floored = inTo(FULL_WINDOW, 40)
+      expect(moves(floored, 1 / PRESS)).toBe(false) // + at the three-day floor
+      expect(moves(floored, PRESS)).toBe(true)
+      // …and on a saga with no extent both are dead, which is why the cluster
+      // does not appear at all there
+      expect(minWindow(ddaySpan)).toBe(1)
+      expect(moves(FULL_WINDOW, 1 / PRESS)).toBe(true) // (the war still moves)
+    })
+  })
+
   it('sizes that floor from the span: about three days, whatever the saga is', () => {
     const days = (span: ReturnType<typeof timeFrom>) => {
       const [a, b] = timeExtent(span)
@@ -759,11 +827,66 @@ describe('the layout, re-derived per window', () => {
     expect(phone(over(ww2Span, 1939.7, 1940.2)).stations.at(-1)!.x).toBeGreaterThan(390)
   })
 
-  it('re-measures a period’s band against the window it is drawn in', () => {
-    const wide = phone().stations.find((s) => s.step.id === 'holocaust')!.band!
-    const near = phone(over(ww2Span, 1941, 1942)).stations.find((s) => s.step.id === 'holocaust')!
-      .band!
-    expect(near.w).toBeGreaterThan(wide.w * 5) // six years of it, over one year of rail
+  /**
+   * ROUND 51, DEFECT 4 — the bands stretched with the zoom.
+   *
+   * *"When you zoom in a timeline, underlines for every step stretch the more
+   * you zoom and eventually stretch from one side of the zoomed timeline to the
+   * other."* They did, without limit: `railX(uEnd) - railX(u)` is a length in
+   * window space, so at June 1944 the Holocaust's band measured 15 372 px on a
+   * 1280 px rail and at a week in 1942 four of them ran the full width over a
+   * rail with no station on it. The band is now the period CLIPPED to the
+   * window, and it says which of its ends were cut.
+   */
+  it('never draws a band wider than the rail, at any zoom', () => {
+    for (const w of [
+      FULL_WINDOW,
+      over(ww2Span, 1941, 1942),
+      over(ww2Span, 1944.4, 1944.5),
+      over(ww2Span, 1942.46, 1942.48),
+    ]) {
+      for (const s of phone(w).stations) {
+        if (!s.band) continue
+        expect(s.band.w).toBeGreaterThan(0)
+        expect(s.band.w).toBeLessThanOrEqual(390)
+        // and it never starts left of the rail either
+        expect(s.x + s.band.x).toBeGreaterThanOrEqual(-1e-6)
+        expect(s.x + s.band.x + s.band.w).toBeLessThanOrEqual(390 + 1e-6)
+      }
+    }
+  })
+
+  it('marks the end it had to cut, so the band reads as continuing', () => {
+    // June 1944: the Holocaust ran from 1941 to 1945, so at this window it has
+    // neither end on screen and is a continuation strip rather than an underline
+    const june44 = phone(over(ww2Span, 1944.4, 1944.5))
+    const holocaust = june44.stations.find((s) => s.step.id === 'holocaust')!
+    expect(holocaust.band).toMatchObject({ openL: true, openR: true, through: true })
+    expect(holocaust.band!.w).toBe(390)
+    // D-Day's own period starts inside the window and runs past its right edge
+    const dday = june44.stations.find((s) => s.step.id === 'd-day')!
+    expect(dday.band).toMatchObject({ openL: false, openR: true, through: false })
+    expect(dday.band!.x).toBe(0)
+  })
+
+  it('paints nothing for a period entirely off the window', () => {
+    // the other half of the defect: a step whose mark is thousands of pixels
+    // off screen still painted its bar across the middle of the rail
+    const week42 = phone(over(ww2Span, 1942.46, 1942.48))
+    const britain = week42.stations.find((s) => s.step.id === 'battle-britain')!
+    expect(britain.x).toBeLessThan(-390)
+    expect(britain.band).toBeUndefined()
+  })
+
+  it('clips a band to the window and to nothing else', () => {
+    // the pure function, stated on its own
+    expect(clipBand(10, 90, 100)).toEqual({ x: 0, w: 80, openL: false, openR: false, through: false })
+    expect(clipBand(-40, 60, 100)).toEqual({ x: 40, w: 60, openL: true, openR: false, through: false })
+    expect(clipBand(40, 160, 100)).toEqual({ x: 0, w: 60, openL: false, openR: true, through: false })
+    expect(clipBand(-40, 160, 100)).toEqual({ x: 40, w: 100, openL: true, openR: true, through: true })
+    expect(clipBand(-400, -300, 100)).toBeUndefined()
+    expect(clipBand(300, 400, 100)).toBeUndefined()
+    expect(clipBand(50, 50, 100)).toBeUndefined()
   })
 
   it('reports the window it was derived from, so the view has one source for it', () => {

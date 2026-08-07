@@ -148,9 +148,13 @@ const railOf = (page) =>
         })
         .filter((s) => s.cx > -400 && s.cx < 2000),
       window: nav.querySelector('.track').dataset.window,
+      // round 51: one magnifier became [−] [+] [fit] at the rail's right edge
       zoom: (() => {
-        const z = document.querySelector('[data-test="saga-zoom"]')
-        return z && { text: z.textContent.trim(), on: z.classList.contains('on') }
+        const at = (k) => {
+          const b = document.querySelector(`[data-test="saga-zoom-${k}"]`)
+          return b && !b.disabled
+        }
+        return { out: at('out'), in: at('in'), fit: at('fit') }
       })(),
     }
   })
@@ -306,7 +310,7 @@ console.log('\n===== (2) the rail zooms, and the rule refines =====')
     console.log(`  next → ${w.step} at x=${w.cx} inWindow=${w.inWindow} win=${w.win}, rule ${w.rule}`)
   await shot(page, 'e-desktop-next-panned-in', { ...band, y: after.rail[1] - 2 })
 
-  await page.click('[data-test="saga-zoom"]')
+  await page.click('[data-test="saga-zoom-fit"]')
   await page.waitForFunction(
     () => document.querySelector('[data-test="saga-timeline"] .track').dataset.window === '0.0000,1.0000',
     null,

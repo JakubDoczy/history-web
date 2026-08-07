@@ -10,6 +10,7 @@ import {
 } from '../src/lib/drawnGeometry'
 import {
   DrawnRenderer,
+  LevelPaths,
   LOD_Z,
   MIN_SEG_PX,
   PAPER,
@@ -294,6 +295,201 @@ describe('the rasterizer', () => {
   })
 })
 
+/**
+ * ROUND 51, DEFECT 1 — the chord from South Africa to Chukotka.
+ *
+ * Reported as "one huge defect starting from a point in South Africa stretching
+ * through Ceylon, South Korea and ending somewhere around Kamchatka". It was a
+ * `closePath()` at the antimeridian in the path builder: `closePath` closes to
+ * the last `moveTo`, which for the first piece of a ring is the RING'S OWN
+ * FIRST VERTEX — and Afro-Eurasia's ring 0 begins at 16.45° E, 28.62° S, the
+ * mouth of the Orange River. Two crossings, two chords, one lens across the
+ * Indian Ocean and the Pacific.
+ *
+ * Three tests, at three levels of the stack: the geometry may not contain such
+ * a segment, the pen may not draw one, and the ocean the reader named must have
+ * no ink in it.
+ */
+describe('no chord across the world', () => {
+  const layers = () => {
+    const w = world()
+    return [
+      ['coarse land', w.coarseLand],
+      ['land', w.land!],
+      ['rivers', w.rivers!],
+      ['lakes', w.lakes!],
+    ] as const
+  }
+
+  it('clips every ring to the ±180 strip at decode', () => {
+    for (const [name, layer] of layers()) {
+      for (let s = 0; s < layer.shapes.length; s++) {
+        const shape = layer.shapes[s]
+        for (let r = 0; r + 1 < shape.rings.length; r++) {
+          for (let i = shape.rings[r]; i + 1 < shape.rings[r + 1]; i++) {
+            const d = Math.abs(shape.pts[i * 2 + 2] - shape.pts[i * 2])
+            // the only edges left that span the world are the polar closures
+            // `splitAtSeam` inserts along ±90, and they are marked as such
+            if (d > 180) expect(`${name}#${s}:${i} seam=${shape.seam?.[i]}`).toContain('seam=1')
+          }
+        }
+      }
+    }
+  })
+
+  it('breaks a seam-crossing ring into pieces sealed on the meridian', () => {
+    // Afro-Eurasia: one ring in, two pieces out, each starting and ending on a
+    // meridian — which is what makes closing it a line down the seam rather
+    // than a line to South Africa.
+    const eurasia = world().land!.shapes.find(
+      (s) => s.bbox[0] <= -25 && s.bbox[2] >= 179 && s.bbox[3] > 70,
+    )!
+    expect(eurasia.seam).toBeDefined()
+    let sealed = 0
+    for (let r = 0; r + 1 < eurasia.rings.length; r++) {
+      const a = eurasia.rings[r]
+      const b = eurasia.rings[r + 1] - 1
+      if (Math.abs(eurasia.pts[a * 2]) !== 180) continue
+      sealed++
+      expect(Math.abs(eurasia.pts[b * 2])).toBe(180)
+      expect(eurasia.pts[a * 2]).toBe(eurasia.pts[b * 2])
+      expect(eurasia.seam![b]).toBe(1)
+    }
+    expect(sealed).toBe(2)
+  })
+
+  it('gives the pen a path with no seam edge on it', () => {
+    // The fill needs the meridian closures (they are what make the piece a
+    // polygon); the pen must not follow them, or the Bering Strait grows a
+    // coastline with shoreline wash down the 180th meridian. Recorded off a
+    // Path2D stand-in, because a built path cannot be read back.
+    class Rec {
+      ops: [string, number, number][] = []
+      moveTo(x: number, y: number) {
+        this.ops.push(['M', x, y])
+      }
+      lineTo(x: number, y: number) {
+        this.ops.push(['L', x, y])
+      }
+      closePath() {
+        this.ops.push(['Z', 0, 0])
+      }
+    }
+    const held = (globalThis as unknown as { Path2D: unknown }).Path2D
+    ;(globalThis as unknown as { Path2D: unknown }).Path2D = Rec
+    try {
+      const paths = new LevelPaths(BASE_LEVEL)
+      const worldPx = paths.worldPx
+      for (const [name, layer] of layers()) {
+        for (const which of ['fill', 'stroke'] as const) {
+          for (let i = 0; i < layer.shapes.length; i++) {
+            const ops = (paths.path(layer, name, i)[which] as unknown as Rec).ops
+            let at: [number, number] | undefined
+            let start: [number, number] | undefined
+            let long = 0
+            let polar = 0
+            for (const [op, x, y] of ops) {
+              if (op === 'M') at = start = [x, y]
+              else if (op === 'L' || op === 'Z') {
+                const to = op === 'Z' ? start! : ([x, y] as [number, number])
+                if (at && Math.hypot(to[0] - at[0], to[1] - at[1]) > worldPx * 0.05) {
+                  // ±90 is the world's own edge: a polar cap is closed round it
+                  if (Math.abs(at[1] - worldPx / 2) < 1 && Math.abs(to[1] - worldPx / 2) < 1) polar++
+                  else long++
+                }
+                at = op === 'Z' ? start : to
+              }
+            }
+            expect(`${name}/${which}#${i}: ${long}`).toBe(`${name}/${which}#${i}: 0`)
+            if (which === 'stroke') expect(polar).toBe(0)
+          }
+        }
+      }
+      expect(paths.worldPx).toBe(4096)
+    } finally {
+      ;(globalThis as unknown as { Path2D: unknown }).Path2D = held
+    }
+  })
+
+  it('leaves no ink along the reported transect: open ocean stays paper', () => {
+    // THE TRANSECT THE READER TRACED, walked and sampled. The two chords ran
+    // from Afro-Eurasia's first vertex (16.45 E, 28.62 S) to its two seam
+    // crossings in Chukotka (179.87 E, 69.01 N and 179.83 E, 65.03 N), so the
+    // line is stated here from its real endpoints rather than eyeballed off a
+    // screenshot.
+    //
+    // Which samples are used is DERIVED, not typed: a point counts as open
+    // ocean when no land, lake or river shape has a bounding box within half a
+    // degree of it — so the test cannot silently start probing Madagascar if
+    // the data is ever revendored.
+    const w = world()
+    const r = new DrawnRenderer(w)
+    const z = 7
+    const s = createCanvas(TILE_PX, TILE_PX)
+    const ctx = s.getContext('2d')
+    const [or, og, ob] = [0xd3, 0xc8, 0xa8] // PAPER.ocean
+    /** Open water: outside every land ring, and no vertex of anything within R. */
+    const R = 0.7
+    const dry = (lng: number, lat: number) => {
+      const box = { minLng: lng - R, maxLng: lng + R, minLat: lat - R, maxLat: lat + R }
+      for (const layer of [w.land!, w.lakes!, w.rivers!]) {
+        for (const i of shapesNear(layer, box)) {
+          const s = layer.shapes[i]
+          for (let r = 0; r + 1 < s.rings.length; r++) {
+            let inside = false
+            for (let a = s.rings[r], b = s.rings[r + 1] - 1; a < s.rings[r + 1]; b = a++) {
+              const [ax, ay] = [s.pts[a * 2], s.pts[a * 2 + 1]]
+              const [bx, by] = [s.pts[b * 2], s.pts[b * 2 + 1]]
+              if (Math.abs(ax - lng) < R && Math.abs(ay - lat) < R) return false
+              if (layer !== w.land) continue
+              if (ay > lat !== by > lat && lng < ((bx - ax) * (lat - ay)) / (by - ay) + ax)
+                inside = !inside
+            }
+            if (inside) return false
+          }
+        }
+      }
+      return true
+    }
+    const probes: [number, number][] = []
+    for (const end of [
+      [179.87, 69.01],
+      [179.83, 65.03],
+    ]) {
+      for (let t = 0.05; t < 1; t += 0.02) {
+        const lng = 16.45 + (end[0] - 16.45) * t
+        const lat = -28.62 + (end[1] + 28.62) * t
+        if (dry(lng, lat)) probes.push([lng, lat])
+      }
+    }
+    // the chords crossed a lot of water; if they did not, this test is not one
+    expect(probes.length).toBeGreaterThan(30)
+    for (const [lng, lat] of probes) {
+      const x = Math.floor(((lng + 180) / 360) * 2 ** z)
+      const y = Math.floor(((90 - lat) / 180) * 2 ** (z - 1))
+      r.draw(ctx as unknown as DrawCtx, { z, x, y })
+      const px = ctx.getImageData(0, 0, TILE_PX, TILE_PX).data
+      const b = tileBbox(z, x, y)
+      const ix = Math.round(((lng - b.minLng) / (b.maxLng - b.minLng)) * (TILE_PX - 1))
+      const iy = Math.round(((b.maxLat - lat) / (b.maxLat - b.minLat)) * (TILE_PX - 1))
+      // 24 of tolerance is the paper fleck and nothing else; the chord put land
+      // fill (94 away) and two coastline strokes (330) across every one of these.
+      let worst = 0
+      for (let dx = -3; dx <= 3; dx++) {
+        for (let dy = -3; dy <= 3; dy++) {
+          const i = ((iy + dy) * TILE_PX + ix + dx) * 4
+          worst = Math.max(
+            worst,
+            Math.abs(px[i] - or) + Math.abs(px[i + 1] - og) + Math.abs(px[i + 2] - ob),
+          )
+        }
+      }
+      const where = `${lng.toFixed(1)}E ${lat.toFixed(1)}N`
+      expect(`${where}: ${worst}`).toBe(`${where}: ${Math.min(worst, 24)}`)
+    }
+  })
+})
+
 describe('the levels the drawn source serves', () => {
   /** Segments of a layer that survive the half-pixel filter at a level. */
   const segments = (layer: Layer, level: number) => {
@@ -329,8 +525,11 @@ describe('the levels the drawn source serves', () => {
       prev = now
     }
     expect(saturates).toBe(DRAWN_GEOMETRY_Z - 1)
-    // nothing at all above it: every vertex the data has already survives
-    expect(segments(land, DRAWN_GEOMETRY_Z + 2)).toBe(segments(land, 12))
+    // nothing at all above it: every vertex the DATA has already survives. The
+    // slack is the antimeridian clip's own vertices, which are the projection's
+    // rather than the data's — `splitAtSeam` puts a point on ±180 beside a data
+    // point 0.01° away (Fiji), and 0.01° is half a tile pixel only above z 11.
+    expect(segments(land, 12) - segments(land, DRAWN_GEOMETRY_Z + 2)).toBeLessThanOrEqual(4)
     // …and the source still serves finer levels, because the PEN does not
     // saturate with the geometry: ink is a fixed 1.15 tile pixels, so stopping
     // at saturation and magnifying would put a coastline on screen 2^n times

@@ -10,7 +10,7 @@ import {
   type WebGLRenderer,
 } from 'three'
 import type { Bbox } from './detailImagery'
-import { BASE_LEVEL, TILE_PX, tilesCovering, type Tile } from './tilePyramid'
+import { BASE_LEVEL, TILE_PX, tileCols, tilesCovering, type Tile } from './tilePyramid'
 
 /**
  * One GPU-resident texture holding the pyramid tiles the view is made of, and
@@ -130,20 +130,49 @@ export const INDEX_ROWS = 8
 /** The grid a set of tiles occupies: origin column, origin row, width, height. */
 export type Grid = [number, number, number, number]
 
+/**
+ * …and the origin is found the LONG WAY ROUND when the set crosses ±180.
+ *
+ * A view straddling the antimeridian wants columns 254, 255, 0, 1 of a
+ * 256-column level. Read as plain minimum and maximum that is origin 0 and
+ * width 256 — a grid twenty times the index texture, which `atlasCell` then
+ * rejects wholesale, so nothing on either side of the seam resolves to a slot
+ * and the whole frame falls back to the base map. Round 51 reported it as a
+ * hard boundary in the middle of the Pacific with the near side sharp and the
+ * far side not.
+ *
+ * The origin is therefore the column after the widest gap in the cyclic
+ * sequence, and the width is what is left: 254 and 4 for the set above, and the
+ * plain answer for every set that does not wrap (whose widest gap is the one
+ * containing the seam). Column counts come from the tiles' own level, so no
+ * caller has to be told which world it is indexing.
+ */
 export const gridOf = (tiles: Tile[]): Grid => {
   if (!tiles.length) return [0, 0, 0, 0]
-  let x0 = Infinity
   let y0 = Infinity
-  let x1 = -Infinity
   let y1 = -Infinity
+  const seen = new Set<number>()
   for (const t of tiles) {
-    x0 = Math.min(x0, t.x)
     y0 = Math.min(y0, t.y)
-    x1 = Math.max(x1, t.x)
     y1 = Math.max(y1, t.y)
+    seen.add(t.x)
   }
-  return [x0, y0, x1 - x0 + 1, y1 - y0 + 1]
+  const n = tileCols(tiles[0].z)
+  const xs = [...seen].sort((a, b) => a - b)
+  // the gap that wraps the seam, first — every other gap is measured against it
+  let gap = xs[0] + n - xs[xs.length - 1]
+  let x0 = xs[0]
+  for (let i = 1; i < xs.length; i++) {
+    if (xs[i] - xs[i - 1] <= gap) continue
+    gap = xs[i] - xs[i - 1]
+    x0 = xs[i]
+  }
+  return [x0, y0, n - gap + 1, y1 - y0 + 1]
 }
+
+/** A tile's column in a grid, the short way round. */
+export const gridCol = (x: number, x0: number, cols: number): number =>
+  (((x - x0) % cols) + cols) % cols
 
 /**
  * The finest level whose view *and* its parent fit the atlas.
@@ -295,9 +324,11 @@ export function buildIndex(
   let resident = 0
   const write = (tiles: Tile[], [x0, y0, w, h]: Grid, rowBase: number, isTarget: boolean) => {
     for (const t of tiles) {
-      const gx = t.x - x0
+      // …the short way round, so a grid whose origin is 254 of 256 still places
+      // columns 0 and 1 at cells 2 and 3 rather than at -254 and -253
+      const gx = gridCol(t.x, x0, tileCols(t.z))
       const gy = t.y - y0
-      if (gx < 0 || gy < 0 || gx >= w || gy >= h || gx >= INDEX_W || gy >= INDEX_ROWS) continue
+      if (gy < 0 || gx >= w || gy >= h || gx >= INDEX_W || gy >= INDEX_ROWS) continue
       const slot = resolve(t)
       if (!slot) continue
       const f = fadeAt(slot.bornAt, now)

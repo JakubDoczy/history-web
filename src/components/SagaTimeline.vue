@@ -52,6 +52,14 @@ const events = useEventStore()
 
 const railEl = useTemplateRef('railEl')
 const track = useTemplateRef('track')
+/**
+ * The rail is as wide as the TRACK'S CONTENT BOX, which since round 51 is the
+ * element minus the gutter the zoom cluster stands in. Measured on `.inner`
+ * rather than on `.track` so that reserving that strip is one CSS declaration
+ * and not an arithmetic every caller has to remember: nothing is ever laid out
+ * under the controls, so nothing has to be drawn over.
+ */
+const inner = useTemplateRef('inner')
 const width = ref(1)
 let resizeObs: ResizeObserver
 
@@ -77,9 +85,9 @@ const GESTURES = ['gesturestart', 'gesturechange', 'gestureend']
 const refuse = (e: Event) => e.preventDefault()
 
 onMounted(() => {
-  width.value = track.value!.clientWidth
-  resizeObs = new ResizeObserver(() => (width.value = track.value!.clientWidth))
-  resizeObs.observe(track.value!)
+  width.value = inner.value!.clientWidth
+  resizeObs = new ResizeObserver(() => (width.value = inner.value!.clientWidth))
+  resizeObs.observe(inner.value!)
   for (const g of GESTURES) railEl.value!.addEventListener(g, refuse)
 })
 onBeforeUnmount(() => {
@@ -141,9 +149,17 @@ const offWindow = (s: PlacedStation) => s.x < -MARGIN_PX || s.x > width.value + 
    window math, so what a gesture can and cannot do (never out past the padded
    span, never in past a rule that has stopped refining) is stated once. */
 const ZOOM_STEP = 1.4
+/**
+ * …and the step a PRESS takes, which is bigger than the wheel's on purpose.
+ *
+ * A wheel notch is one of many and lands where the pointer is; a press is a
+ * deliberate act with no position in it, so it has to be worth making. 1.6 is
+ * four presses from the whole of a six-year war to a season and nine to the
+ * three-day floor — a walk short enough to be a walk and long enough to stop
+ * where the reader meant to.
+ */
+const ZOOM_PRESS = 1.6
 const DRAG_PX = 3
-/** Has the reader moved the window yet? Only the hint reads this. */
-const touched = ref(false)
 let anim = 0
 
 const slow = () => matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -164,7 +180,6 @@ function glide(to: RailWindow, ms = 240) {
 function setWin(w: RailWindow) {
   cancelAnimationFrame(anim)
   win.value = w
-  touched.value = true
 }
 const zoomBy = (k: number, at: number) =>
   zoomable.value && setWin(zoomWindow(win.value, k, at, floor.value))
@@ -237,20 +252,43 @@ function onPointerUp(e: PointerEvent) {
     tap = { t: 0, x }
   } else tap = { t, x }
 }
-/**
- * The zoom control — and the affordance, which is most of its job.
+/* --- the zoom cluster: [−] [+] [fit], at the rail's right edge --------------
  *
- * The era rail advertises its gestures with a grab cursor and an aria-label,
- * and a phone has neither. So the rail carries one visible control that says
- * the window can move: from rest it takes one step in, and once the window is
- * anything but the whole span it becomes the way back to it. One button, two
- * states, and the state is the readout.
+ * ROUND 51, DEFECT 3. There was one magnifier here, and it was one control
+ * doing two jobs badly: it took a single step in, then became the way back out,
+ * so the reader could never take a SECOND step in and could never come back one
+ * notch. In as many words: *"I don't like how it just zooms you a bit and you
+ * can't use it to zoom more or less; but zoom back to fit timeline is nice"*.
+ * It was also off-centre — an SVG in a grid cell beside a label that hides on a
+ * phone, measured 20 px left of its own button's middle.
+ *
+ * Three controls, then, each doing exactly one thing:
+ *
+ *  · − and + zoom the window about ITS OWN CENTRE by ZOOM_PRESS, repeatably,
+ *    to the same clamps every other gesture obeys (`zoomWindow`, the padded
+ *    span out and ~3 days in). About the centre rather than about a pointer
+ *    because a press has no position;
+ *  · fit returns to the whole span, which is the half of the old control the
+ *    reader asked to keep;
+ *  · each is disabled AT its clamp — visibly and in `aria-disabled` — so the
+ *    end of the walk is a fact on the screen rather than a press that does
+ *    nothing.
+ *
+ * Everything is a function of the window, so there is no zoom state here at all.
  */
+const zoomTo = (k: number) => setWin(zoomWindow(win.value, k, 0.5, floor.value))
+/** Would this factor actually move the window? The clamp, asked rather than guessed. */
+const wouldMove = (k: number) => {
+  const to = zoomWindow(win.value, k, 0.5, floor.value)
+  return Math.abs(to.u1 - to.u0 - (win.value.u1 - win.value.u0)) > 1e-6
+}
+const canOut = computed(() => zoomable.value && wouldMove(ZOOM_PRESS))
+const canIn = computed(() => zoomable.value && wouldMove(1 / ZOOM_PRESS))
+const zoomOut = () => canOut.value && zoomTo(ZOOM_PRESS)
+const zoomIn = () => canIn.value && zoomTo(1 / ZOOM_PRESS)
 function fit() {
-  if (!zoomable.value) return
-  touched.value = true
-  if (zoomed.value) glide(FULL_WINDOW)
-  else setWin(zoomWindow(win.value, 1 / ZOOM_STEP, 0.5, floor.value))
+  if (!zoomed.value) return
+  glide(FULL_WINDOW)
 }
 
 /* --- the cursor: what a press of Enter would take ---------------------------
@@ -298,6 +336,22 @@ function onKeydown(e: KeyboardEvent) {
     if (!s) return
     e.preventDefault()
     return void events.selectStep(s.step.id)
+  }
+  // The zoom cluster's keys. `+` arrives as '+' on a shifted row and as '=' on
+  // the unshifted one, and as 'Add'/'Subtract' from a numeric keypad; all of
+  // them mean the same press, and none of them is a character anything here
+  // types.
+  if (['-', '_', 'Subtract'].includes(e.key)) {
+    e.preventDefault()
+    return void zoomOut()
+  }
+  if (['+', '=', 'Add'].includes(e.key)) {
+    e.preventDefault()
+    return void zoomIn()
+  }
+  if (e.key === '0') {
+    e.preventDefault()
+    return void fit()
   }
   const dir = { ArrowRight: 1, ArrowLeft: -1 }[e.key] as 1 | -1 | undefined
   if (dir === undefined) return // not ours — Escape still unwinds the mode (HomeView)
@@ -406,39 +460,6 @@ function goToCrumb(id: string, current: boolean) {
       <!-- THE OTHER HALF OF THE DUAL SYSTEM. Three plain targets at the rail's
            edge: back one, the whole list, forward one. -->
       <div class="nav">
-        <!-- The window's own control, and the rail's one visible statement that
-             the window can move at all (see `fit`). It stands down entirely on
-             a saga with no extent, where there is nothing to zoom into. -->
-        <button
-          v-if="zoomable"
-          class="nav-btn zoom-btn"
-          data-test="saga-zoom"
-          :class="{ on: zoomed, hint: !touched }"
-          :aria-label="zoomed ? 'Fit the whole saga' : 'Zoom in'"
-          :title="
-            zoomed
-              ? 'Fit the whole saga — drag to pan, scroll or pinch to zoom'
-              : 'Zoom in — or scroll, pinch or double-tap the rail; drag to pan'
-          "
-          @click="fit()"
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="-12 -12 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <circle cx="-1.5" cy="-1.5" r="6.5" />
-            <path d="M3.2 3.2L9 9" />
-            <path v-if="!zoomed" d="M-1.5 -4.5v6M-4.5 -1.5h6" />
-            <path v-else d="M-4.5 -1.5h6" />
-          </svg>
-          <span class="zoom-label">{{ zoomed ? 'Fit' : 'Zoom' }}</span>
-        </button>
         <button
           class="nav-btn icon-c"
           data-test="saga-prev"
@@ -471,6 +492,52 @@ function goToCrumb(id: string, current: boolean) {
           <svg class="glyph" width="13" height="13" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M-3 -6L3 0L-3 6" /></svg>
         </button>
       </div>
+    </div>
+
+    <!-- THE ZOOM CLUSTER, pinned to the rail's right edge and to nothing else.
+         Three presses, three jobs (see `zoomOut` / `zoomIn` / `fit`), each an
+         `.icon-c` whose glyph is centred by translation off its own middle
+         rather than by whatever the surrounding layout thinks a middle is —
+         round 47's rule, and the reason the old magnifier sat 20 px left of
+         its button. It stands down entirely on a saga with no extent, where
+         there is nothing to zoom into. -->
+    <div v-if="zoomable" class="zoomer" data-test="saga-zoomer" role="group" aria-label="Rail zoom">
+      <button
+        class="zoom-btn icon-c"
+        data-test="saga-zoom-out"
+        :disabled="!canOut"
+        :aria-disabled="!canOut"
+        title="Zoom out"
+        aria-label="Zoom out"
+        @click="zoomOut()"
+      >
+        <svg class="glyph" width="16" height="16" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M-6 0h12" /></svg>
+      </button>
+      <button
+        class="zoom-btn icon-c"
+        data-test="saga-zoom-in"
+        :disabled="!canIn"
+        :aria-disabled="!canIn"
+        title="Zoom in"
+        aria-label="Zoom in"
+        @click="zoomIn()"
+      >
+        <svg class="glyph" width="16" height="16" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M-6 0h12M0 -6v12" /></svg>
+      </button>
+      <button
+        class="zoom-btn icon-c fit-btn"
+        data-test="saga-zoom-fit"
+        :disabled="!zoomed"
+        :aria-disabled="!zoomed"
+        title="Fit the whole saga"
+        aria-label="Fit the whole saga"
+        @click="fit()"
+      >
+        <!-- Four corners round a full width: "the whole of it", drawn as the
+             frame it puts back. Symmetric about the viewBox centre by
+             construction, so there is nothing for a layout to get wrong. -->
+        <svg class="glyph" width="16" height="16" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M-7 -3.5v-3.5h3.5M3.5 -7h3.5v3.5M7 3.5v3.5h-3.5M-3.5 7h-3.5v-3.5" /><path d="M-7 0h14" /></svg>
+      </button>
     </div>
 
     <!-- THE LIST. Over the rail rather than in it: the rail is a fixed box the
@@ -517,7 +584,7 @@ function goToCrumb(id: string, current: boolean) {
       @pointerup="onPointerUp"
       @pointercancel="onPointerUp"
     >
-      <div class="inner" :class="{ dateless: rail.axis.unit === 'none' }">
+      <div ref="inner" class="inner" :class="{ dateless: rail.axis.unit === 'none' }">
         <!-- THE RULE. The era rail's idiom at a saga's scale: a gridline down
              the whole track, a stronger stub at the axis, the label beside it. -->
         <span
@@ -580,8 +647,16 @@ function goToCrumb(id: string, current: boolean) {
             }"
           />
           <!-- A period is a stretch of the span, and says so: the band is the
-               step's own end, which the step's window deliberately is not. -->
-          <span v-if="s.band" class="band" aria-hidden="true" :style="{ width: s.band.w + 'px' }" />
+               step's own end, which the step's window deliberately is not —
+               clipped to what is on screen, and fading out where it runs on
+               past an edge rather than butting hard against it (`clipBand`). -->
+          <span
+            v-if="s.band"
+            class="band"
+            :class="{ 'open-l': s.band.openL, 'open-r': s.band.openR, through: s.band.through }"
+            aria-hidden="true"
+            :style="{ left: `calc(50% + ${s.band.x}px)`, width: s.band.w + 'px' }"
+          />
           <span class="mark">
             <span class="num tnum" aria-hidden="true">{{ s.ordinal }}</span>
             <!-- The descent cue, in the app's own stroke language (the list's
@@ -640,6 +715,11 @@ function goToCrumb(id: string, current: boolean) {
   --lane-1: 26px;
   --lane-h: 16px;
   --mark: 16px;
+  /* The zoom cluster and the strip it stands in. A column of three plus its
+     gaps has to fit inside --rail (92px desktop, 116 under a saga on a phone),
+     which is the whole reason 28 rather than 32. */
+  --zoom-btn: 28px;
+  --zoom-gutter: 34px;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -823,28 +903,54 @@ function goToCrumb(id: string, current: boolean) {
 .list-btn.on svg {
   transform: rotate(180deg);
 }
-/* The zoom control, and with it the whole of the rail's "this moves" cue. Two
-   slow breaths on first mount and then it is furniture: an affordance that goes
-   on waving is a nag, and the reader who has already zoomed knows. */
-.zoom-btn.hint {
-  animation: zoom-hint 2s var(--ease) 0.7s 2;
+/* --- the zoom cluster, at the rail's right edge ---------------------------
+   Pinned to the edge rather than laid out in the head row: it is the WINDOW's
+   control, not one of the walk's, and the walk (prev / Steps / next) keeps the
+   place it had. Vertically centred on the track so it reads as belonging to the
+   picture; `.list-shade`'s z-index is 1, so 2 keeps it pressable with the list
+   open, as `.nav` already does.
+
+   The old control's two-breath hint went with it: there are three visible
+   controls now, they are stated in a row, and an affordance that waves at a
+   reader who can see it is a nag. */
+.zoomer {
+  position: absolute;
+  z-index: 2;
+  right: 3px;
+  top: 2px;
+  bottom: calc(2px + var(--safe-b));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
-@keyframes zoom-hint {
-  30% {
-    border-color: var(--brass-line);
-    color: var(--brass);
-  }
-  70% {
-    border-color: var(--brass-line);
-    color: var(--brass);
-  }
+.zoom-btn {
+  width: var(--zoom-btn);
+  height: var(--zoom-btn);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: rgba(13, 20, 32, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--frost-dim);
+  cursor: pointer;
+  transition:
+    color var(--fast),
+    border-color var(--fast),
+    background-color var(--fast);
 }
-.zoom-label {
-  font-family: var(--cond);
-  font-size: var(--t-eyebrow);
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.zoom-btn:hover:not(:disabled) {
+  border-color: var(--brass-line);
+  color: var(--brass);
+}
+/* AT A CLAMP, and saying so. The end of the walk is a fact on the screen. */
+.zoom-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.fit-btn:not(:disabled) {
+  color: var(--brass);
+  border-color: var(--brass-line);
 }
 
 /* --- the list, opened upward out of the rail --- */
@@ -945,6 +1051,23 @@ function goToCrumb(id: string, current: boolean) {
   overflow: hidden;
   touch-action: none;
   cursor: grab;
+  box-sizing: border-box;
+}
+/* THE ZOOM CLUSTER'S OWN STRIP, given up by the two rows it stands beside.
+   Reserved rather than overlaid: `.inner` is what the rail is measured on (see
+   the ref in the script), so no station and no tick is ever laid out under the
+   controls and none has to be drawn over, and the head's own row ends before
+   them rather than under them. A column of three costs the rail 44 px of 1280
+   on a desktop and 46 of 390 on a phone — against 104 and 140 for the same
+   three in a row, which is why the cluster stands up rather than lying down.
+   34 px and not a pixel more, and that is measured rather than chosen: at 1440
+   the last station of Barbarossa's five has 58 px of label room against a floor
+   of 56, so a wider strip is a name lost.
+   Conditional on the cluster existing: a saga with no extent has no zoom, so it
+   gets the whole width back. */
+.rail:has(.zoomer) .track,
+.rail:has(.zoomer) .head {
+  padding-right: var(--zoom-gutter);
 }
 .track:active {
   cursor: grabbing;
@@ -1117,7 +1240,14 @@ function goToCrumb(id: string, current: boolean) {
 
 /* A period's band: from the step's own start to its own end, along its lane —
    under the mark's own row rather than through it, so it underlines the name
-   instead of striking it out. */
+   instead of striking it out.
+
+   ROUND 51. The length is now the period CLIPPED TO THE WINDOW (`clipBand`),
+   and `left` is set per station because a period whose start is off the left
+   edge begins at the edge rather than at its mark. What is left to say in CSS
+   is what a cut END looks like: an open edge fades out over 22px, so the band
+   reads as "continues" rather than as "stops here". A hard edge at the window
+   boundary would be a claim about time that the data does not make. */
 .band {
   position: absolute;
   top: calc(50% + var(--mark) / 2 - 3px);
@@ -1126,6 +1256,31 @@ function goToCrumb(id: string, current: boolean) {
   border-radius: 2px;
   background: linear-gradient(90deg, var(--patina), rgba(111, 179, 168, 0.25));
   opacity: 0.75;
+}
+/* Cut at an edge: no cap, and the ink runs out into it. */
+.band.open-r {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
+}
+.band.open-l {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  mask-image: linear-gradient(90deg, transparent, #000 22px);
+}
+.band.open-l.open-r {
+  mask-image: linear-gradient(90deg, transparent, #000 22px, #000 calc(100% - 22px), transparent);
+}
+/* A period that CONTAINS the window has no end to show at this zoom, and a
+   rail-wide underline for each of them is noise rather than information: it
+   becomes a hairline continuation strip and the station's own label carries
+   the fact. Measured: at June 1944 the Holocaust's band was 15 372 px of a
+   1280 px rail, and four of them stacked over a week in 1942. */
+.band.through {
+  height: 1px;
+  top: calc(50% + var(--mark) / 2 - 2px);
+  opacity: 0.3;
+  background: var(--patina);
 }
 
 .label {
@@ -1227,21 +1382,18 @@ function goToCrumb(id: string, current: boolean) {
   .meta {
     display: none;
   }
-  .list-label,
-  .zoom-label {
+  .list-label {
     display: none;
   }
-  /* With their words gone these are icon buttons, so their glyphs are placed
-     the way every other icon-only control's is — by geometry, not by asking a
-     grid where the middle of a box with a hidden child in it is. See the icon
-     rule in styles/tokens.css, and the pill's chevron, which is why it exists. */
-  .list-btn,
-  .zoom-btn {
+  /* With its word gone this is an icon button, so its glyph is placed the way
+     every other icon-only control's is — by geometry, not by asking a grid
+     where the middle of a box with a hidden child in it is. See the icon rule
+     in styles/tokens.css, and the pill's chevron, which is why it exists. */
+  .list-btn {
     position: relative;
     padding: 0;
   }
-  .list-btn > .glyph,
-  .zoom-btn > .glyph {
+  .list-btn > .glyph {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -1250,6 +1402,20 @@ function goToCrumb(id: string, current: boolean) {
   .nav-btn {
     height: 22px;
     min-width: 26px;
+  }
+  /* A THUMB'S TARGET IS 44, AND THE INK IS 34. Three 44px boxes stacked are
+     138px and a phone's saga rail is 116, so the visible control is 34 and the
+     hit area is grown to 44 by a pseudo-element — which costs the layout
+     nothing and the thumb nothing either. The strip the rail gives up is 38px
+     of 390 rather than 140. */
+  .rail {
+    --zoom-btn: 34px;
+    --zoom-gutter: 38px;
+  }
+  .zoom-btn::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
   }
   .row {
     min-height: 40px;

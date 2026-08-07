@@ -106,10 +106,13 @@ export const bboxOf = (t: Tile): Bbox => tileBbox(t.z, t.x, t.y)
  * Every tile of a level that touches a rectangle.
  *
  * Longitude wraps and latitude clamps, because those are the two things the
- * sphere does and the integers do not. Nothing in the current pipeline hands
- * this a wrapping box — `viewBbox` clamps to -180..180 — but a tile index east
- * of the antimeridian is still a real tile of the world, and returning the one
- * on the far side is the only answer that is not a hole.
+ * sphere does and the integers do not. This wrapped from the day it was
+ * written and, until round 51, nothing ever handed it a box that made it: the
+ * phase-1 note here read "nothing in the current pipeline hands this a wrapping
+ * box — `viewBbox` clamps to -180..180", and that clamp was the antimeridian
+ * seam the field reported. `viewBbox` now returns unclamped degrees and this
+ * line is live; what had to change with it is everything that turns a column
+ * into a cell of a fixed grid (`gridOf`, `buildIndex`, the surface shader).
  */
 export function tilesCovering(b: Bbox, z: number): Tile[] {
   const span = tileSpanDeg(z)
@@ -166,15 +169,23 @@ export interface TilePlan {
   ring: Tile[]
 }
 
-/** Centre-out, so a partial arrival fills the middle of the frame first. */
+/**
+ * Centre-out, so a partial arrival fills the middle of the frame first.
+ *
+ * The column distance is taken the short way round the world. A view centred on
+ * the antimeridian has a centre column of `n` (or of -0.5), and read plainly the
+ * tile right beside it at column 0 is then the FURTHEST tile in the plan —
+ * so the seam's own ground, which is the middle of the frame, was asked for last
+ * and arrived last.
+ */
 const centreFirst = (tiles: Tile[], view: Bbox, z: number): Tile[] => {
   const span = tileSpanDeg(z)
+  const n = tileCols(z)
   const cx = ((view.minLng + view.maxLng) / 2 + 180) / span
   const cy = (90 - (view.minLat + view.maxLat) / 2) / span
-  return [...tiles].sort(
-    (a, b) =>
-      (a.x + 0.5 - cx) ** 2 + (a.y + 0.5 - cy) ** 2 - ((b.x + 0.5 - cx) ** 2 + (b.y + 0.5 - cy) ** 2),
-  )
+  const wrap = (d: number) => d - n * Math.round(d / n)
+  const far = (t: Tile) => wrap(t.x + 0.5 - cx) ** 2 + (t.y + 0.5 - cy) ** 2
+  return [...tiles].sort((a, b) => far(a) - far(b))
 }
 
 export function tilePlan(view: Bbox, z: number): TilePlan {

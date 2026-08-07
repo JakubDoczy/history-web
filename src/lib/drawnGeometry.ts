@@ -40,6 +40,17 @@ export interface Shape {
   rings: Uint32Array
   /** minLng, minLat, maxLng, maxLat. */
   bbox: [number, number, number, number]
+  /**
+   * Which edges are the ANTIMERIDIAN'S rather than the coast's.
+   *
+   * 1 at point `i` means the edge leaving `i` — or, at a ring's last point, the
+   * edge that closes it — was inserted by `splitAtSeam` and is not a line
+   * anybody drew. A fill needs those edges (they are what makes the piece a
+   * polygon); a pen must not follow them, or a reader at the Bering Strait gets
+   * a coastline with shoreline wash down the 180th meridian. Absent on the
+   * shapes that never met the seam, which is all but four of 1427.
+   */
+  seam?: Uint8Array
 }
 
 /** A named layer plus the bucket index over it. */
@@ -180,20 +191,156 @@ function stitch(arcs: Float64Array[], ids: number[]): number[] {
   return out
 }
 
-function shapeOf(arcs: Float64Array[], part: number[][]): Shape | undefined {
-  const runs = part.map((ids) => stitch(arcs, ids)).filter((r) => r.length >= 4)
+/* ------------------------------------------------------------------ the seam */
+
+/**
+ * THE ANTIMERIDIAN, and the defect it caused.
+ *
+ * Natural Earth carries a handful of rings with vertices on both sides of ±180
+ * — Afro-Eurasia (because Chukotka reaches past it), Antarctica, Fiji, Wrangel
+ * — and in a plate carrée picture a straight segment between two of them is a
+ * line drawn across the whole world. An earlier round answered that in the path
+ * builder by breaking the subpath at the jump and calling `closePath()` first.
+ * `closePath` does not close along the seam: it closes back to the last
+ * `moveTo`, which for the first piece of a ring is *the ring's own first
+ * vertex*. Afro-Eurasia's ring starts at 16.45° E, 28.62° S — the mouth of the
+ * Orange River — and crosses the seam twice, so the pen drew two chords from
+ * South Africa to Chukotka. That is the streak the reader reported: "from a
+ * point in South Africa … through Ceylon, South Korea … north of Kamchatka".
+ *
+ * The answer is to clip the ring to the ±180 strip HERE, once, at decode:
+ *
+ *  · the crossing is given its own vertex, interpolated onto the meridian, on
+ *    both sides of it, so no segment ever spans the seam;
+ *  · the ring is rotated to begin at a crossing, so each piece both starts and
+ *    ends on a meridian and closing it runs *down the meridian* — which is
+ *    where the data was clipped in the first place and is the correct fill;
+ *  · a piece whose two ends are on OPPOSITE meridians — a polar cap, where the
+ *    coast crosses the seam an odd number of times — is closed around the near
+ *    pole instead, so Antarctica fills to 90° S rather than being sealed with a
+ *    bar across the Pacific;
+ *  · every edge inserted here is marked in `Shape.seam`, because it is a fact
+ *    about the projection and not about the coast: the fill uses it, the pen
+ *    steps over it (lib/drawnTile.ts).
+ *
+ * After this no shape in the world has a segment longer than 180° of longitude,
+ * which is the invariant the regression test asserts.
+ */
+const seamMeet = (ax: number, ay: number, bx: number, by: number): [number, number] => {
+  const exit = ax > 0 ? 180 : -180
+  const d = bx + (exit > 0 ? 360 : -360) - ax
+  const t = d === 0 ? 0 : (exit - ax) / d
+  return [exit, ay + t * (by - ay)]
+}
+
+/** True where the step from a to b is the seam rather than 359° of ground. */
+const jumpsSeam = (a: number, b: number) => Math.abs(b - a) > 180
+
+/** One piece, sealed: down the meridian if it can be, around the pole if not. */
+function sealPiece(run: number[], flags: number[]): void {
+  const x0 = run[0]
+  const xn = run[run.length - 2]
+  if (x0 === xn) {
+    // both ends on the same meridian: the closing edge IS the meridian
+    flags[flags.length - 1] = 1
+    return
+  }
+  // …and where they are not, the ring wrapped a pole. Round it: down this
+  // meridian, across the top (or bottom) of the world, back up the other.
+  const pole = (run[1] + run[run.length - 1]) / 2 >= 0 ? 90 : -90
+  flags[flags.length - 1] = 1
+  run.push(xn, pole)
+  flags.push(1)
+  run.push(x0, pole)
+  flags.push(1)
+}
+
+/**
+ * A stitched run, clipped to the ±180 strip. Returns the pieces and, for each,
+ * the per-point "the edge leaving this point is the seam's" flags.
+ */
+export function splitAtSeam(run: number[], closed: boolean): { run: number[]; seam: number[] }[] {
+  const m = run.length / 2
+  if (m < 2) return [{ run, seam: new Array(m).fill(0) }]
+  if (!closed) {
+    const out: { run: number[]; seam: number[] }[] = []
+    let cur = [run[0], run[1]]
+    let flags = [0]
+    for (let i = 1; i < m; i++) {
+      if (jumpsSeam(run[(i - 1) * 2], run[i * 2])) {
+        const [x, y] = seamMeet(run[(i - 1) * 2], run[(i - 1) * 2 + 1], run[i * 2], run[i * 2 + 1])
+        cur.push(x, y)
+        flags.push(0)
+        out.push({ run: cur, seam: flags })
+        cur = [-x, y]
+        flags = [0]
+      }
+      cur.push(run[i * 2], run[i * 2 + 1])
+      flags.push(0)
+    }
+    out.push({ run: cur, seam: flags })
+    return out
+  }
+  // A closed ring is cyclic, so the repeated last vertex is dropped and the
+  // walk starts at the first crossing — which is what turns the ring's opening
+  // fragment and its closing fragment back into the one piece they are.
+  const n = run[0] === run[(m - 1) * 2] && run[1] === run[(m - 1) * 2 + 1] ? m - 1 : m
+  if (n < 2) return [{ run, seam: new Array(m).fill(0) }]
+  const cut = (i: number) => jumpsSeam(run[i * 2], run[((i + 1) % n) * 2])
+  let first = -1
+  for (let i = 0; i < n && first < 0; i++) if (cut(i)) first = i
+  if (first < 0) return [{ run, seam: new Array(m).fill(0) }]
+  const meet = (i: number) =>
+    seamMeet(run[i * 2], run[i * 2 + 1], run[((i + 1) % n) * 2], run[((i + 1) % n) * 2 + 1])
+  const out: { run: number[]; seam: number[] }[] = []
+  let cur: number[] = []
+  let flags: number[] = []
+  const enter = (i: number) => {
+    const [x, y] = meet(i)
+    cur.push(-x, y)
+    flags.push(0)
+  }
+  enter(first)
+  for (let s = 1; s <= n; s++) {
+    const i = (first + s) % n
+    cur.push(run[i * 2], run[i * 2 + 1])
+    flags.push(0)
+    if (!cut(i)) continue
+    const [x, y] = meet(i)
+    cur.push(x, y)
+    flags.push(0)
+    sealPiece(cur, flags)
+    if (cur.length >= 6) out.push({ run: cur, seam: flags })
+    cur = []
+    flags = []
+    if (s < n) enter(i)
+  }
+  return out
+}
+
+function shapeOf(arcs: Float64Array[], part: number[][], closed: boolean): Shape | undefined {
+  const runs = part
+    .flatMap((ids) => splitAtSeam(stitch(arcs, ids), closed))
+    .filter((r) => r.run.length >= 4)
   if (!runs.length) return undefined
-  const total = runs.reduce((n, r) => n + r.length, 0)
+  const total = runs.reduce((n, r) => n + r.run.length, 0)
   const pts = new Float64Array(total)
   const rings = new Uint32Array(runs.length + 1)
+  const seam = new Uint8Array(total / 2)
+  let seamed = false
   let at = 0
   let w = Infinity
   let s = Infinity
   let e = -Infinity
   let n = -Infinity
-  runs.forEach((run, i) => {
+  runs.forEach(({ run, seam: flags }, i) => {
     rings[i] = at / 2
     pts.set(run, at)
+    for (let k = 0; k < flags.length; k++) {
+      if (!flags[k]) continue
+      seam[at / 2 + k] = 1
+      seamed = true
+    }
     at += run.length
     for (let k = 0; k < run.length; k += 2) {
       if (run[k] < w) w = run[k]
@@ -203,7 +350,7 @@ function shapeOf(arcs: Float64Array[], part: number[][]): Shape | undefined {
     }
   })
   rings[runs.length] = at / 2
-  return { pts, rings, bbox: [w, s, e, n] }
+  return { pts, rings, bbox: [w, s, e, n], ...(seamed ? { seam } : {}) }
 }
 
 /**
@@ -219,6 +366,12 @@ function shapeOf(arcs: Float64Array[], part: number[][]): Shape | undefined {
  * so it costs nothing per tile and cannot make two tiles disagree.
  */
 function chaikin(shape: Shape, closed: boolean): Shape {
+  // A corner cut across a seam closure would pull the ring off the meridian and
+  // leave a gap there. No river or lake in the vendored data crosses ±180 (the
+  // decode asserts it in tests/drawnMap.test.ts), so the honest answer is to
+  // leave a split shape exactly as the clipper left it rather than to invent a
+  // rule for a case that does not occur.
+  if (shape.seam) return shape
   const out: number[] = []
   const rings = new Uint32Array(shape.rings.length)
   for (let r = 0; r + 1 < shape.rings.length; r++) {
@@ -252,7 +405,7 @@ export function layerOf(topo: Topology, name: string, closed: boolean, smooth = 
   const object = topo.objects[name]
   const shapes: Shape[] = []
   for (const part of object ? partsOf(object) : []) {
-    const shape = shapeOf(arcs, part)
+    const shape = shapeOf(arcs, part, closed)
     if (shape) shapes.push(smooth ? chaikin(shape, closed) : shape)
   }
   const lists: number[][] = []

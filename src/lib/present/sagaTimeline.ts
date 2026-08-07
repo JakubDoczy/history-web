@@ -549,12 +549,43 @@ export interface Station {
   uEnd: number
 }
 
+/**
+ * A period's underline, clipped to the window it is drawn in.
+ *
+ * ROUND 51, DEFECT 4. The band used to be the whole period in window space —
+ * `railX(uEnd) - railX(u)` — which is a length that GROWS WITH THE ZOOM without
+ * limit: measured on World War II zoomed to June 1944, the Holocaust's band was
+ * 15 372 px on a 1280 px rail, and at a week in 1942 four bands ran the full
+ * width of a rail with no station on it at all. The reader: *"underlines for
+ * every step stretch the more you zoom and eventually stretch from one side of
+ * the zoomed timeline to the other"*.
+ *
+ * So a band now paints its TRUE EXTENT CLIPPED TO THE WINDOW, and says where it
+ * was cut. `x` is measured from the station's own mark (0 = the mark), so the
+ * mark stays where it is: crowding costs lanes, never positions.
+ */
+export interface Band {
+  /** Left edge, in px from the mark. Zero unless the period starts off-window. */
+  x: number
+  /** Visible length, in px. Never more than the rail is wide. */
+  w: number
+  /** The period runs on past the left / right edge of the window. */
+  openL: boolean
+  openR: boolean
+  /**
+   * The period CONTAINS the whole window, so there is no end of it to see.
+   * Drawn as a thin muted continuation strip: the reader's cue at this zoom is
+   * the station and its label, and a rail-wide underline is not one.
+   */
+  through: boolean
+}
+
 /** A station with its geometry on a rail of a known width. */
 export interface PlacedStation extends Station {
   /** The mark, in px. Its true position, and no other. */
   x: number
-  /** A period's band, in px. Absent for a moment. */
-  band?: { x: number; w: number }
+  /** A period's band, clipped to the window. Absent for a moment, or off-window. */
+  band?: Band
   /** Which lane it hangs in (0 = on the axis). See `laneOf`. */
   lane: number
   /** Room the label has at rest, in px; 0 means "only when asked about". */
@@ -711,6 +742,30 @@ const labelRoom = (xs: readonly number[], lanes: readonly number[], i: number, w
 }
 
 /**
+ * A period's own start and end, in rail px, cut down to what is on screen.
+ *
+ * `undefined` where none of it is: a step whose whole period is off the window
+ * paints nothing, which is what stops eleven invisible steps from stacking
+ * eleven full-width bars over a rail showing a week.
+ *
+ * The clip is to the window EXACTLY, not to the window plus a margin, so no
+ * band can ever be wider than the rail — that is the property the defect was
+ * the absence of, and it is asserted rather than approximated.
+ */
+export function clipBand(from: number, to: number, width: number): Band | undefined {
+  const x0 = Math.max(from, 0)
+  const x1 = Math.min(to, width)
+  if (x1 <= x0) return undefined
+  return {
+    x: x0 - from,
+    w: x1 - x0,
+    openL: from < -0.5,
+    openR: to > width + 0.5,
+    through: from <= 0 && to >= width,
+  }
+}
+
+/**
  * The whole geometry of the rail: the rule, and where each station's mark, band
  * and label go, for a given element width AND VISIBLE WINDOW.
  *
@@ -748,7 +803,7 @@ export function layoutRail(
         // marks means nothing and a bar drawn across it would mean less.
         band:
           axis.unit !== 'none' && s.uEnd > s.u
-            ? { x: xs[i], w: railX(s.uEnd, width, win) - xs[i] }
+            ? clipBand(xs[i], railX(s.uEnd, width, win), width)
             : undefined,
         lane: lanes[i],
         // The ROOM, not the guess at the name's width: the cap exists to keep a

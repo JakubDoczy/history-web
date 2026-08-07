@@ -257,3 +257,64 @@ lib/present/sagaTimeline.ts.
       moment a real thumb crosses the rail's edge mid-pinch. The first
       finger is deliberately NOT captured: that would retarget its
       `click` and a press on a station would stop opening it.
+
+## The rail's contract, round 51
+
+13. **The window has three controls, at the rail's right edge: [−] [+]
+    [fit].** Rule 7 ended with one magnifier that took a step in from
+    rest and became Fit once the window had moved, and it was one
+    control doing two jobs badly: there was no second step in and no way
+    back out one notch. The reader, in as many words — *"I don't like
+    how it just zooms you a bit and you can't use it to zoom more or
+    less; but zoom back to fit timeline is nice."*
+    - **− and + zoom about the window's own centre** by a fixed 1.6 per
+      press, repeatably, to the same clamps every other gesture obeys
+      (`zoomWindow(w, k, 0.5, minWindow(span))`): the padded span out,
+      about three days in. About the centre rather than about a pointer,
+      because a press has no position. Nine presses walk a six-year war
+      to its floor.
+    - **fit is kept exactly as it was** — the whole padded span, on a
+      short eased glide — because that is the half the reader asked to
+      keep.
+    - **Each is disabled AT its clamp**, visibly and in `aria-disabled`,
+      so the end of the walk is a fact on the screen rather than a press
+      that does nothing. The cluster does not exist at all on a saga
+      with no extent.
+    - The cluster is **pinned to the rail's right edge** and floats over
+      the track's right end; the walk (prev / Steps / next) keeps the
+      place in the head row it had. Each button is an `.icon-c` with a
+      `.glyph` centred by translation (rule 10) — the old magnifier was
+      an SVG in a grid cell beside a label that hides on a phone, and
+      measured 20 px left of its own button's middle. 28 px targets on a
+      desktop, 44 on a phone.
+    - **Keyboard**: `-`, `+` (and `=`) and `0` while the rail has focus.
+    - The old control's two-breath first-mount pulse went with it. There
+      are three visible controls now and they are stated in a row; an
+      affordance that waves at a reader who can already see it is a nag.
+
+14. **A band paints its own extent, clipped to the window — never the
+    window's.** A period's underline was `railX(uEnd) - railX(u)`, a
+    length in WINDOW space, so it grew without limit as the reader
+    zoomed: measured on World War II at June 1944 the Holocaust's band
+    was 15 372 px on a 1280 px rail, and at a week in 1942 four bands
+    ran the full width of a rail with no station on it at all. *"When
+    you zoom in a timeline, underlines for every step stretch the more
+    you zoom and eventually stretch from one side of the zoomed timeline
+    to the other."*
+    - `clipBand(from, to, width)` cuts the period to the window and
+      returns **where it was cut**: `openL` / `openR` for an end that
+      continues past an edge, `through` for a period that contains the
+      whole window.
+    - An open end **fades out** over 22 px instead of butting hard
+      against the edge, so the band reads as "continues" rather than as
+      "stops here" — a hard edge at a window boundary is a claim about
+      time the data does not make.
+    - A period that **contains the whole window** becomes a hairline
+      continuation strip at 0.3 opacity. At that zoom the reader's cue
+      is the station and its label; a rail-wide underline is not one,
+      and several stacked are noise.
+    - A period **entirely off the window paints nothing**. Stations off
+      the window are still laid out — they are still facts, and rule 1
+      keeps their positions truthful — but a bar from a mark 15 000 px
+      away is not a fact about what is on screen.
+    - Positions are untouched: crowding costs lanes, never positions.

@@ -169,18 +169,25 @@ const hash2 = (x: number, y: number, salt: number): number => {
 export class LevelPaths {
   /** World width in pixels at this level; height is half of it. */
   readonly worldPx: number
-  private paths = new Map<string, Path2D>()
+  private paths = new Map<string, ShapePaths>()
 
   constructor(readonly level: number) {
     this.worldPx = TILE_PX * 2 ** level
   }
 
   /** …in world pixels, simplified to half a pixel, closed if the layer is. */
-  path(layer: Layer, name: string, index: number): Path2D {
+  path(layer: Layer, name: string, index: number): ShapePaths {
     const key = `${name}:${index}`
     const held = this.paths.get(key)
     if (held) return held
-    const built = buildPath(layer.shapes[index], this.worldPx, layer.closed)
+    const shape = layer.shapes[index]
+    const fill = buildPath(shape, this.worldPx, layer.closed, false)
+    // Same object where there is nothing to leave out, which is every shape but
+    // the four that met the antimeridian: one path, one build, no extra memory.
+    const built: ShapePaths = {
+      fill,
+      stroke: shape.seam ? buildPath(shape, this.worldPx, layer.closed, true) : fill,
+    }
     this.paths.set(key, built)
     return built
   }
@@ -190,48 +197,61 @@ export class LevelPaths {
   }
 }
 
-function buildPath(shape: Shape, worldPx: number, closed: boolean): Path2D {
+/**
+ * One shape at one level, in the two forms the drawing needs.
+ *
+ * They differ only where a ring was clipped to the ±180 strip (`splitAtSeam` in
+ * lib/drawnGeometry.ts): the fill wants the meridian edges that make the piece
+ * a polygon, and the pen must not follow them — a shoreline wash down the 180th
+ * meridian is a coast that does not exist. `stroke === fill` for every shape
+ * that never met the seam.
+ */
+export interface ShapePaths {
+  fill: Path2D
+  stroke: Path2D
+}
+
+function buildPath(shape: Shape, worldPx: number, closed: boolean, penOnly: boolean): Path2D {
   const p = new Path2D()
   const k = worldPx / 360 // plate carrée: the same scale on both axes
-  const { pts, rings } = shape
+  const { pts, rings, seam } = shape
+  // Only the pen ever lifts, and only over an edge the projection put there.
+  const cuts = penOnly ? seam : undefined
   for (let r = 0; r + 1 < rings.length; r++) {
     const from = rings[r]
     const to = rings[r + 1]
     if (to - from < 2) continue
-    let lng = pts[from * 2]
-    let lx = (lng + 180) * k
+    let lx = (pts[from * 2] + 180) * k
     let ly = (90 - pts[from * 2 + 1]) * k
     p.moveTo(lx, ly)
     // The half-pixel filter. Written as a Manhattan distance on purpose: it is
     // the same decision for every tile at this level (that is what makes the
     // joins agree), and a hypot per point over 1.4 M points is real time spent
     // to move the threshold by at most 40%.
+    //
+    // NO SEAM BRANCH. There used to be one here, and it is what drew the chord
+    // from South Africa to Chukotka: it closed the subpath at a crossing, and
+    // `closePath` closes to the last `moveTo` — the ring's first vertex — not
+    // to the seam. Rings are now clipped to the strip at decode, so no segment
+    // reaching this loop spans more than 180° of longitude, and the only long
+    // ones left are the polar closures, which are `seam` and belong to the fill.
     for (let i = from + 1; i < to; i++) {
-      const lng2 = pts[i * 2]
-      const x = (lng2 + 180) * k
+      const x = (pts[i * 2] + 180) * k
       const y = (90 - pts[i * 2 + 1]) * k
-      // THE SEAM. A handful of features — Russia, Fiji, Kiribati, Antarctica —
-      // carry rings with vertices on both sides of the antimeridian, and a
-      // straight segment between two of them is a line drawn across the entire
-      // world: it showed as two hard horizontal bars through the Pacific in the
-      // first world texture, at exactly Fiji's and Chukotka's latitudes.
-      // Breaking the subpath there is also the correct FILL: canvas closes each
-      // subpath implicitly, so the two halves close along the seam, which is
-      // where the data was clipped in the first place.
-      if (Math.abs(lng2 - lng) > 180) {
-        if (closed) p.closePath()
+      if (cuts?.[i - 1]) {
         p.moveTo(x, y)
-      } else if (i === to - 1 || Math.abs(x - lx) + Math.abs(y - ly) >= MIN_SEG_PX) {
+      } else if (
+        i === to - 1 ||
+        seam?.[i] ||
+        seam?.[i - 1] ||
+        Math.abs(x - lx) + Math.abs(y - ly) >= MIN_SEG_PX
+      ) {
         p.lineTo(x, y)
-      } else {
-        lng = lng2
-        continue
-      }
-      lng = lng2
+      } else continue
       lx = x
       ly = y
     }
-    if (closed) p.closePath()
+    if (closed && !cuts?.[to - 1]) p.closePath()
   }
   return p
 }
@@ -259,11 +279,12 @@ function eachShape(
   originY: number,
   px: number,
   bleed: number,
+  which: 'fill' | 'stroke',
   draw: (path: Path2D) => void,
 ) {
   for (const i of near) {
     const shape = layer.shapes[i]
-    const path = paths.path(layer, name, i)
+    const path = paths.path(layer, name, i)[which]
     for (const shift of shiftsFor(shape.bbox, paths.worldPx, originX - bleed, originX + px + bleed)) {
       ctx.setTransform(1, 0, 0, 1, shift - originX, -originY)
       draw(path)
@@ -417,7 +438,7 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
   widths.forEach((w, i) => {
     ctx.strokeStyle = PAPER.wash[i]
     ctx.lineWidth = w
-    eachShape(ctx, paths, landLayer, landName, landNear, originX, originY, px, bleed, (p) =>
+    eachShape(ctx, paths, landLayer, landName, landNear, originX, originY, px, bleed, 'stroke', (p) =>
       ctx.stroke(p),
     )
   })
@@ -429,7 +450,7 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
   ctx.lineWidth = WASH_PX * 1.6
   ctx.lineCap = 'butt'
   ctx.setLineDash([0.9, 3.6])
-  eachShape(ctx, paths, landLayer, landName, landNear, originX, originY, px, bleed, (p) =>
+  eachShape(ctx, paths, landLayer, landName, landNear, originX, originY, px, bleed, 'stroke', (p) =>
     ctx.stroke(p),
   )
   ctx.setLineDash([])
@@ -437,7 +458,7 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
 
   // 3 — the land, which is also the wash's mask
   ctx.fillStyle = PAPER.land
-  eachShape(ctx, paths, landLayer, landName, landNear, originX, originY, px, 0, (p) =>
+  eachShape(ctx, paths, landLayer, landName, landNear, originX, originY, px, 0, 'fill', (p) =>
     ctx.fill(p, 'evenodd'),
   )
 
@@ -447,12 +468,14 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
     ctx.globalAlpha = water
     const lakes = shapesNear(world.lakes, near)
     ctx.fillStyle = PAPER.lake
-    eachShape(ctx, paths, world.lakes, 'lakes', lakes, originX, originY, px, 0, (p) =>
+    eachShape(ctx, paths, world.lakes, 'lakes', lakes, originX, originY, px, 0, 'fill', (p) =>
       ctx.fill(p, 'evenodd'),
     )
     ctx.strokeStyle = PAPER.river
     ctx.lineWidth = INK.river * 0.8
-    eachShape(ctx, paths, world.lakes, 'lakes', lakes, originX, originY, px, 2, (p) => ctx.stroke(p))
+    eachShape(ctx, paths, world.lakes, 'lakes', lakes, originX, originY, px, 2, 'stroke', (p) =>
+      ctx.stroke(p),
+    )
     ctx.lineWidth = INK.river
     eachShape(
       ctx,
@@ -464,6 +487,7 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
       originY,
       px,
       2,
+      'stroke',
       (p) => ctx.stroke(p),
     )
     ctx.globalAlpha = 1
@@ -477,7 +501,7 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
   ctx.lineWidth = INK.coastSoft
   for (const i of landNear) {
     const shape = landLayer.shapes[i]
-    const path = paths.path(landLayer, landName, i)
+    const path = paths.path(landLayer, landName, i).stroke
     for (const shift of shiftsFor(shape.bbox, paths.worldPx, originX - bleed, originX + px + bleed)) {
       ctx.setTransform(1, 0, 0, 1, shift - originX + INK_OFFSET.x, -originY + INK_OFFSET.y)
       ctx.stroke(path)
@@ -485,7 +509,7 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
   }
   ctx.strokeStyle = PAPER.ink
   ctx.lineWidth = INK.coast
-  eachShape(ctx, paths, landLayer, landName, landNear, originX, originY, px, bleed, (p) =>
+  eachShape(ctx, paths, landLayer, landName, landNear, originX, originY, px, bleed, 'stroke', (p) =>
     ctx.stroke(p),
   )
 
