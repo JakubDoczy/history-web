@@ -1,0 +1,41 @@
+{
+ "spine": "spine.json",
+ "chunks": [
+  {
+   "file": "deep-time.json",
+   "from": -4500000000,
+   "to": 2026,
+   "count": 83
+  },
+  {
+   "file": "ancient.json",
+   "from": -10000,
+   "to": 1644,
+   "count": 117
+  },
+  {
+   "file": "medieval.json",
+   "from": 527,
+   "to": 1922,
+   "count": 94
+  },
+  {
+   "file": "early-modern.json",
+   "from": 1500,
+   "to": 1912,
+   "count": 92
+  },
+  {
+   "file": "modern.json",
+   "from": 1803.37671,
+   "to": 2026,
+   "count": 118
+  },
+  {
+   "file": "contemporary.json",
+   "from": 1945,
+   "to": 2026,
+   "count": 100
+  }
+ ]
+}

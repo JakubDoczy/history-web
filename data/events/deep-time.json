@@ -1,0 +1,2061 @@
+[
+ {
+  "id": "earth-formation",
+  "name": "Formation of the Earth",
+  "start": -4500000000,
+  "end": -4450000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 100,
+  "tags": [
+   "geology"
+  ],
+  "summary": "The Earth formed approximately 4.54 billion years ago by accretion of material from the solar nebula.",
+  "body": "Earth formed about **4.54 billion years ago** out of the disc of dust and gas left over from the Sun's formation. Successively larger fragments of that material collided and stuck together until a planet-sized body had assembled, most of it within about 10 to 20 million years. The heat released left the surface molten, and the planet sorted itself into a metallic core and a rocky mantle.\n\nIron and other heavy metals sank towards the centre in an episode sometimes called the iron catastrophe, within roughly ten million years of the start of accretion; lighter silicates rose to form the mantle and the earliest crust. Core formation gave the planet a magnetic field. That first crust was repeatedly destroyed and remade, and no rock of it survives anywhere.\n\nThe age is established by radiometric dating rather than by any surviving terrestrial rock. Meteorites that never melted preserve the age of the solar system's first solids, about 4.567 billion years; the oldest terrestrial material of any kind is detrital zircon from Western Australia at about 4.4 billion years. The conventional figure for Earth itself carries an uncertainty of around one per cent.\n\nWithin the first hundred million years a Mars-sized body struck the growing planet, and the debris became [the Moon](event:theia-impact). Gases released from the interior, together with water most likely delivered by asteroidal material, condensed into [the first oceans](event:first-oceans). The Hadean eon, which covers this whole interval, ended about 4 billion years ago.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/History_of_Earth).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/History_of_Earth"
+   }
+  ],
+  "strong": [
+   "theia-impact"
+  ]
+ },
+ {
+  "id": "theia-impact",
+  "name": "Giant impact forms the Moon",
+  "start": -4450000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 99,
+  "tags": [
+   "geology"
+  ],
+  "summary": "A Mars-sized body, Theia, collided with the proto-Earth; debris from the impact coalesced into the Moon.",
+  "body": "The giant-impact hypothesis is the standard explanation for the Moon's origin. A protoplanet about the size of Mars, named Theia, struck [the proto-Earth](event:earth-formation) roughly 4.5 billion years ago — between about 20 and 100 million years after the solar system formed, with several recent estimates clustering nearer 4.45 billion. Material vaporised and thrown into orbit by the collision re-accumulated as the Moon.\n\nThree lines of evidence support it. The Earth–Moon system carries an anomalously high angular momentum, which a glancing impact would supply. The Moon has only a small iron core, as expected if it formed largely from mantle material while Theia's core sank into Earth. And lunar and terrestrial rocks have stable-isotope ratios identical to within measurement error, which points to a common origin.\n\nThat last point is also the hypothesis's main difficulty. A simple impact model predicts that the Moon should be built mostly from the impactor and should therefore differ isotopically from Earth. Models that mix the two bodies more thoroughly, or that begin with a faster-spinning proto-Earth, are attempts to resolve it; the abundance of water and of volatile elements in lunar basalts is a further open question.\n\nThe aftermath left Earth spinning with a day of about five hours, which tides have since slowed, and the Moon much closer than it is now. The Moon's pull has kept Earth's axial tilt from wandering as widely as it otherwise would.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Giant-impact_hypothesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Giant-impact_hypothesis"
+   }
+  ],
+  "weak": [
+   "first-oceans"
+  ]
+ },
+ {
+  "id": "first-oceans",
+  "name": "First oceans",
+  "start": -4400000000,
+  "lat": -26.1,
+  "lng": 117.0,
+  "priority": 74,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Liquid water condensed on Earth's surface as the crust cooled.",
+  "body": "Liquid water was present at Earth's surface very early — by about 4.4 billion years ago, within roughly 150 million years of [the planet's formation](event:earth-formation). The evidence is indirect, because no rock of that age survives; what remains are individual crystals eroded out of rock that is itself long gone.\n\nDetrital zircons from the Jack Hills of Western Australia have been dated to 4.404 ± 0.008 billion years, and their oxygen-isotope ratios indicate that the magma they crystallised from had interacted with water at or near the surface. Pillow basalts from the Isua belt in Greenland, which form only under water, show unambiguously that oceans existed by 3.8 billion years ago.\n\nWhere the water came from is still argued. Earth may have accreted water-bearing material directly, since its building blocks were not all dry; it may have been delivered later by asteroids in a late veneer; or it may have arrived with the body that formed the Moon. The deuterium-to-hydrogen ratio of seawater matches carbonaceous asteroids far better than it matches most comets, which is the main reason asteroids are now favoured over comets as the principal source.\n\nOnce oceans existed they never wholly disappeared, and they are the setting in which [life](event:abiogenesis) appears not long afterwards.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Origin_of_water_on_Earth).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Origin_of_water_on_Earth"
+   }
+  ]
+ },
+ {
+  "id": "late-heavy-bombardment",
+  "name": "Late Heavy Bombardment",
+  "start": -4100000000,
+  "end": -3800000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 82,
+  "tags": [
+   "geology"
+  ],
+  "summary": "A hypothesised spike in asteroid and comet impacts on the inner Solar System, inferred from the ages of lunar impact melts; the evidence is disputed.",
+  "body": "The Late Heavy Bombardment is a hypothesised interval, roughly 4.1 to 3.8 billion years ago, during which the Moon and the other inner planets were struck far more often than before or since. It was proposed after the Apollo missions returned impact-melt rocks whose ages clustered in a narrow band near 3.9 billion years.\n\nThe leading explanation is the Nice model, in which a late rearrangement of the giant planets' orbits scattered small bodies from the outer solar system and the asteroid belt inward. On that account the Moon's great impact basins — Imbrium, Serenitatis, Nectaris — all date from one episode.\n\nThe hypothesis is contested. Most Apollo samples come from a small area of the near side, and the clustering of ages may record ejecta from a single basin, Imbrium, rather than a solar-system-wide event. The absence of older impact melts may mean that they were destroyed rather than that earlier impacts did not occur. Later work on lunar and asteroidal meteorites has not settled the question, and definitive evidence is still lacking.\n\nEarth, being larger, would have received far more impacts than the Moon, but plate tectonics and erosion have erased every crater of that age, so nothing on Earth tests the idea directly. [The oldest continental crust](event:earliest-continents) and the first chemical traces of [life](event:abiogenesis) both date from around the end of the proposed interval.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Heavy_Bombardment).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Late_Heavy_Bombardment"
+   }
+  ],
+  "strong": [
+   "earliest-continents"
+  ]
+ },
+ {
+  "id": "abiogenesis",
+  "name": "Origin of life",
+  "start": -3800000000,
+  "end": -3400000000,
+  "lat": -32.0,
+  "lng": 116.0,
+  "priority": 98,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Self-replicating chemical systems emerged, likely around hydrothermal vents, forming the first cellular life.",
+  "body": "Abiogenesis is the natural process by which living systems arose from non-living chemistry. It is understood not as a single event but as a sequence of steps of increasing complexity: the synthesis of organic molecules, the appearance of self-replicating polymers, and the enclosure of that chemistry within a membrane. The geological record places the transition between roughly 4.3 and 3.5 billion years ago.\n\nThe earliest claimed physical evidence — putative microbialites in the Nuvvuagittuq greenstone belt of Quebec, possibly 4.28 billion years old — is disputed. Biogenic graphite in 3.7-billion-year-old metasedimentary rocks from Greenland, identified by its depleted carbon-13 content, is more widely accepted, and the 3.48-billion-year-old [stromatolites](event:stromatolites) of the Dresser Formation in Western Australia are the oldest structures most researchers accept as built by life.\n\nSeveral hypotheses compete over the setting and the chemistry. The RNA world proposes an early phase in which RNA both carried information and catalysed reactions, before DNA and proteins divided those roles between them. Submarine alkaline hydrothermal vents are a favoured environment because they maintain a continuous chemical disequilibrium between hydrogen-rich fluid and carbon dioxide dissolved in seawater. The Miller–Urey experiment of 1952 showed that amino acids form spontaneously from simple gases under prebiotic conditions, though the strongly reducing atmosphere it assumed is no longer thought to be the right one.\n\nEvery organism alive descends from a single ancestral population, the last universal common ancestor. Reconstructions from genes shared across the tree of life describe it as already complex: anaerobic, dependent on the Wood–Ljungdahl pathway for fixing carbon, and living in a hydrothermal setting. It was not the first life, only the one lineage whose descendants survive.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Abiogenesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Abiogenesis"
+   }
+  ],
+  "strong": [
+   "first-oceans"
+  ]
+ },
+ {
+  "id": "earliest-continents",
+  "name": "Formation of earliest continental crust",
+  "start": -3800000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 71,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Light crustal material accumulated into protocontinents, the first permanent continental landmasses.",
+  "body": "Earth's earliest crust was destroyed about as fast as it formed. By roughly 3.8 billion years ago, patches of thick, silica-rich crust had become buoyant enough to resist being recycled into the mantle. These are the cratons: the ancient, stable cores around which every modern continent has since been assembled.\n\nA craton has two parts. The shield is the crystalline basement where it reaches the surface, as in Canada, Scandinavia, Western Australia and southern Africa; the platform is the same basement buried under younger sedimentary cover. What keeps a craton intact is its root — a keel of mantle extending several hundred kilometres down, depleted in iron and unusually dry, and so buoyant and stiff enough to ride above the convecting mantle for billions of years.\n\nMost cratonisation happened during the Archean, between about 4 and 2.5 billion years ago, with further additions through the Proterozoic. The oldest intact rock yet dated, the Acasta Gneiss of north-western Canada, is about 4.03 billion years old.\n\nContinental crust is the raw material of every later supercontinent — [Rodinia](event:rodinia), [Pangaea](event:pangaea) — and its weathering is one of the principal long-term controls on atmospheric carbon dioxide.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Craton).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Craton"
+   }
+  ]
+ },
+ {
+  "id": "stromatolites",
+  "name": "Earliest stromatolites",
+  "start": -3480000000,
+  "lat": -21.0,
+  "lng": 119.5,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Layered microbial structures in Western Australia provide some of the earliest direct evidence of life.",
+  "body": "Part of [Origin of life](event:abiogenesis). Stromatolites are layered sedimentary structures built by communities of microbes, and they are among the oldest direct evidence of life on Earth. The Dresser and Strelley Pool formations of the Pilbara craton in Western Australia contain examples dated to about 3.48 billion years ago.\n\nThey form where a microbial mat — usually dominated by cyanobacteria — traps and binds sediment with the sticky polysaccharides it secretes, and where carbonate precipitates between the grains. The mat grows upward to stay in the light, and the result is a domed or columnar rock of fine laminations, each one a former mat surface.\n\nTelling a stromatolite built by microbes from a similar shape precipitated chemically is a persistent difficulty, and the biological origin of the oldest examples has been argued over for decades. Supporting evidence includes clusters of organic globules and particular carbonate microtextures preserved within the laminae.\n\nStromatolites were a major component of shallow marine environments through the Precambrian and were at their most abundant about 1.25 billion years ago, after which they declined — probably because grazing and burrowing animals began to destroy the mats. Living examples survive where the water is too saline for grazers, notably at Hamelin Pool in Shark Bay, Western Australia.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Stromatolite).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Stromatolite"
+   }
+  ],
+  "parent": "abiogenesis",
+  "weak": [
+   "oxygenic-photosynthesis"
+  ]
+ },
+ {
+  "id": "anoxygenic-photosynthesis",
+  "name": "Anoxygenic photosynthesis",
+  "start": -3000000000,
+  "lat": -21.0,
+  "lng": 119.5,
+  "priority": 60,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Purple and green bacteria evolved photosynthetic pathways that used hydrogen sulphide and dissolved iron as electron donors rather than water.",
+  "body": "Anoxygenic photosynthesis captures light energy without splitting water and without releasing oxygen. It is used by several groups of bacteria — purple bacteria, green sulphur bacteria, heliobacteria and filamentous phototrophs among them — and it evolved before the oxygen-producing kind.\n\nInstead of water, these organisms take electrons from hydrogen sulphide, molecular hydrogen or dissolved ferrous iron, all of which give up electrons more readily than water does. The waste products are elemental sulphur or oxidised iron rather than oxygen, and only a single photosystem is required. Archean sediments, in which ferric iron minerals are scarce, are consistent with photosynthesis of this kind operating long before free oxygen was being made anywhere.\n\nThe pathway was the dominant form of photosynthesis for hundreds of millions of years, and it remains widespread: in anoxic sediments, in stratified lakes, in hot springs, around hydrothermal vents and in the lower layers of microbial mats — anywhere light penetrates but oxygen does not.\n\nIts successor, [oxygenic photosynthesis](event:oxygenic-photosynthesis), uses water, which is effectively unlimited. That is why it displaced anoxygenic pathways from sunlit surface waters and went on to change the composition of the atmosphere.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Anoxygenic_photosynthesis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Anoxygenic_photosynthesis"
+   }
+  ],
+  "strong": [
+   "oxygenic-photosynthesis"
+  ]
+ },
+ {
+  "id": "banded-iron-formations-peak",
+  "name": "Peak of banded iron formations",
+  "start": -2800000000,
+  "end": -1800000000,
+  "lat": -26.1,
+  "lng": 117.0,
+  "priority": 68,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Iron oxides and silica were deposited in layers as oxygen from biological sources reacted with dissolved iron in the oceans.",
+  "body": "Banded iron formations are sedimentary rocks made of alternating layers of iron oxide and iron-poor chert or shale. Individual formations can be hundreds of metres thick and traceable for hundreds of kilometres. Nearly all are Precambrian: most accumulated in the late Archean, between about 2.8 and 2.5 billion years ago, with a second concentration around 1.85 billion years ago.\n\nThey are read as a record of the oxygenation of the oceans. The early sea held large quantities of dissolved ferrous iron, which stays in solution only where there is no oxygen. Oxygen released by [cyanobacteria](event:oxygenic-photosynthesis) converted it to insoluble ferric iron, which precipitated to the sea floor. The banding records a cycling between iron-rich and silica-rich deposition — annual or tidal rather than daily — though the mechanism behind it is still argued.\n\nA small number of much younger formations, around 750 million years old, are associated with the glacial deposits of [Snowball Earth](event:snowball-earth), when an ocean sealed beneath ice would again have gone anoxic.\n\nThey are the world's principal source of iron ore, holding more than sixty per cent of global reserves, and are mined in Australia, Brazil, Canada, India, Russia, South Africa, Ukraine and the United States.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Banded_iron_formation).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Banded_iron_formation"
+   }
+  ],
+  "weak": [
+   "earliest-continents"
+  ]
+ },
+ {
+  "id": "oxygenic-photosynthesis",
+  "name": "Oxygenic photosynthesis evolves",
+  "start": -2700000000,
+  "lat": -21.0,
+  "lng": 119.5,
+  "priority": 89,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Cyanobacteria evolved the ability to split water molecules using light energy, producing free oxygen as a byproduct.",
+  "body": "Cyanobacteria evolved a form of photosynthesis that splits water to obtain electrons and releases oxygen as waste. It is the single metabolic innovation that changed the composition of Earth's atmosphere, and every plant and alga performs it today using chloroplasts descended from cyanobacteria taken up as endosymbionts.\n\nSplitting water demands a far stronger oxidant than earlier [anoxygenic pathways](event:anoxygenic-photosynthesis) needed. It is achieved by linking two photosystems in series and by a manganese cluster that strips electrons from water molecules four at a time. What it buys is an inexhaustible electron donor: unlike hydrogen sulphide or dissolved iron, water is everywhere.\n\nWhen this happened is not settled. Geological evidence puts oxygenic photosynthesis in place by at least 2.45 to 2.32 billion years ago; arguments from biomarkers and molecular clocks for cyanobacteria at 2.7 or even 3.5 billion years are contested. Atmospheric oxygen nonetheless stayed at or below about a thousandth of a per cent of today's level until 2.4 billion years ago, because the oxygen produced was consumed as fast as it was made — by dissolved iron, by volcanic gases and by reduced minerals at the surface.\n\nOnce those sinks were exhausted, oxygen accumulated: the [Great Oxidation Event](event:great-oxidation).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cyanobacteria).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cyanobacteria"
+   }
+  ],
+  "strong": [
+   "great-oxidation"
+  ]
+ },
+ {
+  "id": "great-oxidation",
+  "name": "Great Oxidation Event",
+  "start": -2460000000,
+  "end": -2060000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 98,
+  "tags": [
+   "geology",
+   "climate",
+   "biology"
+  ],
+  "summary": "Free oxygen accumulated in the atmosphere for the first time, proving toxic to most existing life and oxidising iron across the planet's surface.",
+  "body": "The Great Oxidation Event was the first accumulation of free oxygen in Earth's atmosphere and shallow seas, beginning about 2.46 to 2.43 billion years ago. Oxygen made by [cyanobacteria](event:oxygenic-photosynthesis) had been consumed for hundreds of millions of years by dissolved iron, volcanic gases and reduced minerals; once those sinks could no longer keep up, it began to build up in the air. It was the largest change in the chemistry of the planet's surface since the oceans formed.\n\nThe consequences ran in several directions at once. Oxygen destroyed atmospheric methane, a far stronger greenhouse gas than carbon dioxide, and the loss of that warming is the standard explanation for [the Huronian glaciation](event:huronian-glaciation). It was lethal to most of the anaerobic life then existing, and one estimate puts the resulting reduction of the biosphere at around eighty per cent. It also made aerobic respiration possible, which extracts far more energy per unit of food than fermentation, and it built an ozone layer. By reacting with rock at the surface it more than doubled the number of mineral species on Earth, adding some 2,500 varieties.\n\nOxygen did not simply rise and stay. It overshot in the middle of the event and then fell back, and the atmosphere held only around a tenth of its modern oxygen content by the end. It stayed near that level for more than a billion years afterwards, until the [Neoproterozoic oxygenation](event:tonian-oxygenation). The phases are set out in the steps.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Oxidation_Event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Great_Oxidation_Event"
+   }
+  ],
+  "steps": [
+   {
+    "id": "accumulation",
+    "name": "Oxygen begins to accumulate",
+    "at": -2430000000,
+    "page": "Sulphur isotopes in sedimentary rocks record the disappearance of mass-independent fractionation, a signature that can only be produced when the atmosphere is essentially free of oxygen and ultraviolet light reaches sulphur dioxide unshielded. Its loss, between about 2.46 and 2.43 billion years ago, is the sharpest marker of the transition, and it is what dates the event.\n\nOxygen levels at this stage were still tiny by modern standards, but enough to change how iron, sulphur and manganese behaved at the Earth's surface — and enough to begin destroying atmospheric methane."
+   },
+   {
+    "id": "huronian",
+    "name": "Huronian glaciation",
+    "start": -2400000000,
+    "end": -2100000000,
+    "child": "huronian-glaciation"
+   },
+   {
+    "id": "lomagundi",
+    "name": "Lomagundi–Jatuli excursion",
+    "start": -2300000000,
+    "end": -2060000000,
+    "page": "The largest and longest positive carbon-isotope excursion in the geological record, registered in carbonate rocks on several continents. A carbonate signature this heavy implies that organic carbon was being buried on an enormous scale, and burying organic carbon is what leaves oxygen behind. Estimates of atmospheric oxygen during the excursion run as high as modern levels.\n\nIt is the high-water mark of the event rather than its steady state: the excursion ends, and the isotopic record swings back."
+   },
+   {
+    "id": "fallback",
+    "name": "Return to low oxygen",
+    "at": -2060000000,
+    "page": "The Lomagundi excursion is followed by a sharp reversal associated with the deposition of vast volumes of organic-rich black shale, known as the Shunga–Francevillian event. Oxygen production could not be sustained at the earlier rate once the nutrients supporting it had been drawn down, and atmospheric oxygen fell back to a low level.\n\nIt stayed there for most of the next billion and a half years, an interval sometimes called the boring billion, until the [Tonian oxygenation](event:tonian-oxygenation) began to raise it again."
+   }
+  ],
+  "strong": [
+   "banded-iron-formations-peak"
+  ]
+ },
+ {
+  "id": "huronian-glaciation",
+  "name": "Huronian glaciation",
+  "start": -2400000000,
+  "end": -2100000000,
+  "lat": 46.5,
+  "lng": -81.0,
+  "priority": 77,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "The first documented global glaciation occurred when rising atmospheric oxygen destroyed methane, reducing greenhouse warming.",
+  "body": "Part of [Great Oxidation Event](event:great-oxidation). The Huronian glaciation was a long series of ice ages between about 2.4 and 2.1 billion years ago, the earliest for which there is good evidence. It is named for glacial deposits north of Lake Huron in Ontario, and equivalent rocks are known from Michigan, Wyoming, Nunavut, South Africa, India and Australia.\n\nThree distinct glacial episodes are recorded in the Ontario sequence, preserved in the Ramsay Lake, Bruce and Gowganda formations. The standard explanation ties them to the rise of oxygen: methane was a major greenhouse gas in the earlier atmosphere, and oxygen destroys it, converting it to the much weaker carbon dioxide and water vapour. The Sun was also fainter than it is today, and heat flow from the planet's interior was in decline.\n\nWhether Earth froze over entirely, as the later [Cryogenian glaciations](event:snowball-earth) may have done, is not established. Palaeomagnetic evidence for ice at low latitudes is disputed, and glacial deposits interbedded with carbonates suggest temperate intervals between the advances.\n\nSpanning some 300 million years, it is among the longest glacial epochs in Earth's history.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Huronian_glaciation).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Huronian_glaciation"
+   }
+  ],
+  "parent": "great-oxidation",
+  "weak": [
+   "snowball-earth"
+  ]
+ },
+ {
+  "id": "eukaryotes",
+  "name": "First eukaryotic cells",
+  "start": -1800000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 91,
+  "tags": [
+   "biology"
+  ],
+  "summary": "A cell engulfed another cell, retaining it as an internal organelle; this established the compartmented eukaryotic cell with mitochondria.",
+  "body": "Eukaryotes are organisms whose cells keep their DNA inside a membrane-bound nucleus. Every animal, plant, fungus and alga is one, along with a great many single-celled organisms. The lineage arose when an archaeon took up a bacterium and kept it: that bacterium became the mitochondrion, and the merger is the defining event of eukaryogenesis.\n\nGenomic work places the host among the Asgard archaea and the endosymbiont among the alphaproteobacteria. A second, later merger — this time with a cyanobacterium — produced chloroplasts, and with them the whole photosynthetic side of the eukaryotes, the algae and eventually the land plants. Both organelles still carry small genomes of their own and divide independently of the cell around them.\n\nDating the origin is difficult. Fossils that can be assigned confidently to living eukaryotic groups appear about 1.2 billion years ago, with red algae among the earliest. Older candidates exist — organic-walled microfossils from the Ruyang Group in China, 1.8 to 1.6 billion years old — but their affinities are uncertain, and molecular clocks generally give older dates than the fossils do.\n\nThe last eukaryotic common ancestor was a population rather than an individual, and it already had a nucleus, a flagellum, aerobic mitochondria and the machinery of [sexual reproduction](event:sexual-reproduction). What compartmentalisation and mitochondria bought was energy available per gene, which is the usual explanation for why this lineage alone produced large, complex [multicellular](event:multicellular-eukaryotes) bodies.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Eukaryote).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Eukaryote"
+   }
+  ],
+  "strong": [
+   "multicellular-eukaryotes"
+  ]
+ },
+ {
+  "id": "acritarchs",
+  "name": "Acritarchs and earliest eukaryotic fossils",
+  "start": -1500000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Microfossils with multiple wall layers indicate that eukaryotic life was diversifying before the emergence of animals and plants.",
+  "body": "Part of [First eukaryotic cells](event:eukaryotes). Acritarchs are small organic-walled microfossils whose biological affinities cannot be established with confidence. The name is a deliberate catch-all: it groups fossils by preservation and shape rather than by relationship, and different acritarchs almost certainly come from unrelated organisms.\n\nMost are thought to be the resting cysts of single-celled marine algae, comparable to those made by living dinoflagellates. They are built of a tough, decay-resistant organic material and are recovered by dissolving the surrounding rock in hydrofluoric acid. The earliest specimens confidently identified as eukaryotic come from rocks between about 2.15 and 1.95 billion years old; older Archean examples may well be prokaryotic.\n\nBecause they are abundant, widespread and quick to change, acritarchs are valuable index fossils for dating Palaeozoic marine rocks where nothing else is available, and for reconstructing ancient marine environments.\n\nTheir record also tracks the fortunes of the plankton. Diversity and size increased sharply around a billion years ago, with the appearance of elaborate spines usually read as defences against predators; the [Cryogenian glaciations](event:snowball-earth) cut diversity heavily; the group flourished again through the [Cambrian](event:cambrian-explosion) and the rest of the Palaeozoic, and collapsed at the end of the Permian.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Acritarch).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Acritarch"
+   }
+  ],
+  "parent": "eukaryotes",
+  "weak": [
+   "ediacaran"
+  ]
+ },
+ {
+  "id": "multicellular-eukaryotes",
+  "name": "First multicellular eukaryotes",
+  "start": -1200000000,
+  "end": -900000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 74,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Eukaryotic cells formed multicellular colonies with specialised functions, establishing multicellular life.",
+  "body": "Multicellularity — cells staying together and dividing labour rather than dispersing — evolved independently many times over. Estimates run to at least twenty-five separate origins among eukaryotes and several among bacteria. Complex multicellularity, with genuinely differentiated tissues, arose in only six eukaryotic groups: animals, fungi, land plants, and the green, red and brown algae.\n\nThe earliest widely accepted eukaryotic example is *Bangiomorpha pubescens*, a filamentous red alga from Arctic Canada about 1.05 billion years old, which shows differentiated cells and a holdfast for anchoring to the sea floor. Older candidates are contested: the centimetre-scale coiled fossil *Grypania* and the Francevillian structures from Gabon, both Palaeoproterozoic, may or may not be eukaryotic or even biological. Decimetre-scale multicellular fossils are known from about 1.56 billion years ago in China.\n\nExplanations for the transition include cells failing to separate after division and then specialising, aggregation of separate cells into a colony, and defence against single-celled predators, which cannot swallow a clump. Rising oxygen is a common permissive factor in these accounts, since a larger body needs more of it to diffuse inward.\n\nComplex multicellular life became abundant only much later, after the [Cryogenian glaciations](event:snowball-earth) — with the [Ediacaran biota](event:ediacaran) and then the [Cambrian explosion](event:cambrian-explosion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Multicellular_organism).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Multicellular_organism"
+   }
+  ],
+  "strong": [
+   "ediacaran"
+  ]
+ },
+ {
+  "id": "sexual-reproduction",
+  "name": "Evolution of sexual reproduction",
+  "start": -1200000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Eukaryotes evolved meiosis and cellular fusion, allowing genetic recombination and accelerated adaptation to environmental change.",
+  "body": "Sexual reproduction combines meiosis, which halves the number of chromosomes, with the fusion of two gametes, which restores it. Offspring therefore carry a reshuffled mixture of two parents' genes rather than a copy of one. It is an ancestral eukaryotic trait: the last common ancestor of all [eukaryotes](event:eukaryotes) already had it.\n\nEstimates for its origin range from about two billion years ago to about 1.2 billion. The oldest fossil usually cited as direct evidence is *Bangiomorpha pubescens*, a red alga from Arctic Canada roughly 1.05 billion years old, which preserves differentiated spores and so implies a sexual life cycle.\n\nWhy sex persists is a long-standing problem, because it is expensive. An asexual population of the same size produces twice as many offspring per generation, since males bear none — the two-fold cost of sex. The main proposed compensations are that recombination during meiosis repairs double-strand breaks in DNA and masks harmful recessive mutations; that reshuffling genes lets a host stay ahead of faster-breeding parasites, the Red Queen argument; and that recombination can undo the irreversible accumulation of deleterious mutations that afflicts asexual lineages, known as Muller's ratchet.\n\nWhatever the balance among those, recombination gave eukaryotes a faster route to variation than mutation alone, and it is the genetic setting for the later evolution of [multicellular bodies](event:multicellular-eukaryotes).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Evolution_of_sexual_reproduction).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Evolution_of_sexual_reproduction"
+   }
+  ],
+  "strong": [
+   "eukaryotes"
+  ],
+  "weak": [
+   "multicellular-eukaryotes"
+  ]
+ },
+ {
+  "id": "rodinia",
+  "name": "Rodinia supercontinent",
+  "start": -1100000000,
+  "end": -750000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 74,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Nearly all continental crust consolidated into a single supercontinent before subsequent rifting and dispersal.",
+  "body": "Rodinia was a supercontinent that assembled most of the world's continental crust between about 1.26 and 0.90 billion years ago and broke apart between roughly 750 and 633 million years ago. It was surrounded by a single superocean, Mirovia.\n\nIts existence is inferred from matching belts of deformed rock on continents now far apart, chiefly the Grenville orogeny of eastern North America and its equivalents in Scandinavia, South America, Africa, India, Australia and Antarctica. The arrangement of the core cratons is reasonably well established; the positions of Siberia and the Chinese blocks relative to Laurentia are not, and several competing reconstructions are in use.\n\nRodinia matters most for what its breakup did. Rifting created long stretches of new continental margin at low latitudes, flooded continental interiors with shallow seas, and exposed fresh basalt to tropical rainfall. Silicate weathering consumes carbon dioxide, so a great deal of new rock weathering in the wet tropics is one of the standard explanations for the extreme cooling that followed — the [Cryogenian glaciations](event:snowball-earth) between 717 and 635 million years ago — and, indirectly, for the conditions in which large multicellular life appeared.\n\nContinental crust gathered again into [Pangaea](event:pangaea) some 400 million years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Rodinia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Rodinia"
+   }
+  ],
+  "strong": [
+   "pangaea"
+  ],
+  "weak": [
+   "snowball-earth"
+  ]
+ },
+ {
+  "id": "tonian-oxygenation",
+  "name": "Tonian oxygenation and radiation",
+  "start": -1000000000,
+  "end": -720000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 62,
+  "tags": [
+   "climate",
+   "biology"
+  ],
+  "summary": "Atmospheric oxygen levels increased episodically during this period while eukaryotic life diversified.",
+  "body": "The Tonian, from 1,000 to 720 million years ago, is the first period of the Neoproterozoic. It is the interval in which [Rodinia](event:rodinia) began to come apart, atmospheric oxygen rose again after more than a billion years at a low level, and eukaryotic life diversified in ways visible in the fossil record.\n\nAt least two distinct oxygenation episodes are recorded in the Tonian, part of the longer Neoproterozoic Oxygenation Event. Carbon-isotope values in marine carbonates rise substantially in the later part of the period, which implies large-scale burial of organic carbon and therefore a net release of oxygen. Higher oxygen made possible the energy-hungry metabolic pathways characteristic of later animal life.\n\nThe biological changes run alongside. [Acritarchs](event:acritarchs) underwent their first large radiation. Fossils interpreted as sponges have been reported from rocks 890 to 800 million years old, and structures resembling fungal mycelium from 810 to 715 million years ago. Early seaweeds appear, while [stromatolites](event:stromatolites), which had dominated shallow marine environments for two billion years, begin their long decline.\n\nThe period ends with the onset of the [Cryogenian glaciations](event:snowball-earth).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tonian).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tonian"
+   }
+  ],
+  "strong": [
+   "snowball-earth"
+  ]
+ },
+ {
+  "id": "snowball-earth",
+  "name": "Snowball Earth",
+  "start": -720000000,
+  "end": -635000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 96,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Glaciers advanced toward the equator, possibly covering the entire ocean surface, during the Cryogenian period.",
+  "body": "Snowball Earth is the hypothesis that the planet froze from the poles almost or entirely to the equator during the Cryogenian period, between about 717 and 635 million years ago. Two glaciations are involved: the Sturtian, roughly 717 to 660 million years ago, and the Marinoan, roughly 650 to 635. Each lasted for tens of millions of years, far longer than any later ice age.\n\nThe evidence is geological. Glacial deposits of this age are found on nearly every continent, and palaeomagnetic measurements place some of them — in Svalbard, Greenland and Australia — at tropical latitudes at the time. Dropstones released from floating ice sit embedded in marine sediments. Above the glacial rocks lie distinctive layers of carbonate, tens of metres thick and deposited very rapidly; these cap carbonates are read as the product of intense chemical weathering under a carbon-dioxide-rich atmosphere immediately after the ice melted. [Banded iron formations](event:banded-iron-formations-peak) briefly reappear, which requires an ocean that had gone anoxic beneath a lid of ice.\n\nThe usual account of how it began involves large volcanic provinces erupting in the wet tropics as [Rodinia](event:rodinia) broke apart: weathering the fresh basalt drew down carbon dioxide, cooling produced ice, and ice reflected sunlight, cooling the planet further. Ending it required volcanic carbon dioxide to accumulate for millions of years beneath the ice until the greenhouse effect overwhelmed the albedo — after which deglaciation would have been very fast.\n\nA weaker version, the slushball, keeps a belt of open or thin ice around the equator. Some sedimentary structures indicate moving ice and open water, and climate models have difficulty freezing the whole ocean without altering other assumptions. Either way the episodes end immediately before the appearance of the [Ediacaran biota](event:ediacaran) and, a little later, the [Cambrian explosion](event:cambrian-explosion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Snowball_Earth).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Snowball_Earth"
+   }
+  ],
+  "strong": [
+   "ediacaran"
+  ]
+ },
+ {
+  "id": "ediacaran",
+  "name": "Ediacaran biota",
+  "start": -575000000,
+  "end": -539000000,
+  "lat": -31.3,
+  "lng": 138.6,
+  "priority": 77,
+  "tags": [
+   "biology"
+  ],
+  "summary": "The first large soft-bodied multicellular organisms appeared in the fossil record.",
+  "body": "The Ediacaran biota were the first large, complex multicellular organisms — mostly soft-bodied, mostly fixed in place, and mostly of uncertain relationship to anything alive. They are named after the Ediacara Hills of South Australia, where they were first recognised, and they have been found on every continent except Antarctica.\n\nThree successive assemblages are distinguished. The Avalon assemblage, about 575 to 565 million years ago and known best from Newfoundland and from Charnwood Forest in England, is dominated by deep-water rangeomorphs such as *Charnia*, built on a repeating fractal branching plan. The White Sea assemblage, 560 to 550 million years ago in Russia and Australia, is the most diverse and includes *Dickinsonia* and *Kimberella*. The Nama assemblage, 550 to 539 million years ago in Namibia, shows high turnover and preserves the first animals with mineralised skeletons.\n\nWhat these organisms were is still argued. They have been interpreted as animals, as algae, as lichens or fungi, as giant protists, and as an extinct grade of their own, the Vendobionta. Sterol biomarkers extracted from *Dickinsonia* in 2018 support an animal affinity for at least that genus, and *Kimberella* is associated with scratch marks that look like grazing traces.\n\nAlmost all of them disappear at the base of the Cambrian, 538.8 million years ago. The microbial mats they lived on disappear at the same time, which may be the point: burrowing and grazing animals of the [Cambrian explosion](event:cambrian-explosion) destroyed the substrate the whole community depended on.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ediacaran_biota).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ediacaran_biota"
+   }
+  ],
+  "strong": [
+   "cambrian-explosion"
+  ]
+ },
+ {
+  "id": "cambrian-explosion",
+  "name": "Cambrian explosion",
+  "start": -538800000,
+  "end": -515000000,
+  "lat": 51.4,
+  "lng": -116.5,
+  "priority": 97,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Nearly all modern animal body plans appeared in the fossil record within a period of tens of millions of years.",
+  "body": "The Cambrian explosion was an interval beginning about 538.8 million years ago during which most major animal groups appear in the fossil record for the first time. Within roughly 13 to 25 million years, animals with hard parts, jointed limbs, eyes and predatory habits are present in marine sediments worldwide, where before there had been little but microbes, algae and the soft-bodied [Ediacaran biota](event:ediacaran).\n\nThree deposits of exceptional preservation carry most of what is known. The Chengjiang fauna of Yunnan and Sirius Passet in northern Greenland are early Cambrian; the [Burgess Shale](event:burgess-shale-fauna) of British Columbia is about 508 million years old. All three preserve soft tissue, which ordinary fossilisation destroys, and so record animals that would otherwise be invisible.\n\nNo single cause is agreed. Rising oxygen would have permitted larger and more active bodies. The appearance of predation could have set off an arms race between armour and the means of breaking it, though predators existed before the Cambrian. Changes in the developmental genes that govern body plans, particularly the Hox genes, allow large morphological changes to follow from small genetic ones. Higher calcium concentrations in seawater would have made mineralised skeletons cheaper to build.\n\nHow sudden it really was is also disputed. Molecular clocks put the divergence of the major animal lineages well back into the Neoproterozoic, and trace fossils show bilaterian animals moving through sediment before the Cambrian. Some researchers argue that the radiation was no faster than others in animal history, and that its apparent abruptness owes much to the sudden preservability of skeletons and to the incompleteness of the earlier record.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cambrian_explosion).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cambrian_explosion"
+   }
+  ],
+  "weak": [
+   "ordovician-reef-ecosystems"
+  ]
+ },
+ {
+  "id": "trilobite-diversification",
+  "name": "Trilobite diversification and radiation",
+  "start": -520000000,
+  "end": -505000000,
+  "lat": 24.7,
+  "lng": 102.9,
+  "priority": 57,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Armoured arthropods with complex eyes and jointed limbs diversified throughout the oceans.",
+  "body": "Part of [Cambrian explosion](event:cambrian-explosion). Trilobites were marine arthropods with a three-lobed, heavily mineralised exoskeleton. They appear about 521 million years ago, radiate through the Cambrian and Ordovician, and are among the most abundant fossils of the whole Palaeozoic: more than 22,000 species have been described.\n\nThe body has three parts — a head shield, a thorax of between two and 103 articulated segments, and a tail plate — and the shell is calcite reinforced with calcium phosphate in a lattice of chitin. Their eyes are unusual: the lenses are calcite crystals oriented so that they focus light, the only mineral eyes known, and some species carried thousands of them. Many could roll up for protection, and all of them moulted, which is why one animal can leave many fossils.\n\nDiversity peaked in the late Cambrian and the Ordovician, which marks the high point of their range of form. The [end-Ordovician extinction](event:ordovician-extinction) removed several groups, but about three-quarters of the late Ordovician fauna survived into the Silurian, after which the group declined steadily through the Devonian. Only two genera were still alive at the end of the Permian, and neither survived [the extinction](event:permian-extinction) there.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Trilobite).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Trilobite"
+   }
+  ],
+  "parent": "cambrian-explosion",
+  "strong": [
+   "burgess-shale-fauna"
+  ]
+ },
+ {
+  "id": "burgess-shale-fauna",
+  "name": "Burgess Shale exceptional preservation",
+  "start": -508000000,
+  "lat": 51.4372,
+  "lng": -116.4739,
+  "priority": 74,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Rapid sediment deposition buried soft-bodied animals, preserving anatomical details normally lost in fossil formation.",
+  "body": "Part of [Cambrian explosion](event:cambrian-explosion). The Burgess Shale, in Yoho National Park in the Canadian Rockies, preserves a middle Cambrian marine community about 508 million years old in exceptional detail, including animals with no mineralised parts at all. Charles Walcott found it on 30 August 1909 and collected some 65,000 specimens over the following two decades.\n\nPreservation happened because animals were swept off a shallow carbonate platform and buried rapidly in fine mud at the foot of it, before decay could proceed far. Soft tissues survive as carbonaceous films less than a micrometre thick — guts, gills, limbs, eyes, and in a few cases nervous tissue.\n\nThe fauna includes *Anomalocaris*, a large swimming predator; *Opabinia*, with five eyes and a grasping proboscis; *Hallucigenia*, which was reconstructed upside down for years; *Wiwaxia*, armoured with scales and spines; and *Pikaia*, a chordate.\n\nWalcott assigned everything he found to living groups. Reinterpretation from the 1970s onward found many animals that fitted nowhere, and Stephen Jay Gould's *Wonderful Life* (1989) presented them as failed experiments in body plan and as evidence that the history of life was contingent. Simon Conway Morris argued in reply that nearly all of them can be placed within or close to modern phyla, and that reading is now the more common one. The site has been a UNESCO World Heritage Site since 1980.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Burgess_Shale).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Burgess_Shale"
+   }
+  ],
+  "parent": "cambrian-explosion",
+  "weak": [
+   "ediacaran"
+  ]
+ },
+ {
+  "id": "ordovician-reef-ecosystems",
+  "name": "Ordovician reef and coral ecosystems",
+  "start": -485000000,
+  "end": -445000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Shallow-water reef ecosystems constructed by corals, sponges, and bryozoans became prominent seafloor features.",
+  "body": "Reefs built by animals became a permanent feature of shallow seas during the Ordovician, 485 to 443 million years ago. Tabulate and rugose corals, stromatoporoid sponges and bryozoans replaced the microbial and archaeocyathid mounds of the Cambrian, and the kind of rigid framework they built has had counterparts in every period since.\n\nThe change was one part of a much larger event, the Great Ordovician Biodiversification Event, which ran from roughly 497 to 467 million years ago. The number of marine orders doubled and the number of families roughly tripled. Brachiopods, bryozoans, crinoids, gastropods, bivalves, cephalopods and graptolites all radiated; plankton and the animals feeding on it diversified in step; and [trilobites](event:trilobite-diversification) and cephalopods colonised open water. The result was a marine fauna dominated by attached suspension feeders, which persisted for the rest of the Palaeozoic.\n\nProposed drivers include rising oxygen, cooling seas, palaeogeographic and tectonic changes that created more shallow shelf, and increased nutrient delivery from mountain building. Reefs then became engines of diversification in their own right, since a rigid framework creates a great many small habitats.\n\nMuch of it was undone at the end of the period by the [Ordovician–Silurian extinction](event:ordovician-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ordovician).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ordovician"
+   }
+  ],
+  "strong": [
+   "ordovician-extinction"
+  ]
+ },
+ {
+  "id": "early-fish",
+  "name": "Radiation of early fish and agnathans",
+  "start": -480000000,
+  "end": -440000000,
+  "lat": -23.7,
+  "lng": 133.9,
+  "priority": 65,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Jawless fish diversified in freshwater and marine environments, establishing vertebrates as a successful lineage.",
+  "body": "Vertebrates begin as small, jawless, filter-feeding animals. The earliest are Cambrian — *Myllokunmingia* and *Haikouichthys* from the Chengjiang deposits of Yunnan, which already have a notochord, segmented muscle blocks and gills. Conodonts, known mainly from their tooth-like elements, appear at about the same time and persist until the Triassic.\n\nFrom the middle Ordovician onward, armoured jawless fish collectively called ostracoderms spread through marine and fresh water. *Arandaspis* from central Australia and *Sacabambaspis* from Bolivia are among the earliest with substantial bony armour. Groups such as the osteostracans and heterostracans carried heavy dermal head shields; the thelodonts had small mineralised scales instead. None had jaws or paired fins in the modern sense, and most lived on or near the bottom.\n\nBone, dentine and enamel — the tissues later vertebrates use for skeletons and teeth — appear first in this armour, which is why the origin of the vertebrate skeleton is bound up with these animals.\n\nJaws evolved in the early Silurian by modification of the foremost gill arches, and the [jawed fish](event:devonian-fish-revolution) that resulted took over during the Devonian. Jawless fish declined sharply and never recovered; only the hagfish and lampreys survive.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Agnatha).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Agnatha"
+   }
+  ],
+  "strong": [
+   "devonian-fish-revolution"
+  ]
+ },
+ {
+  "id": "land-plants",
+  "name": "Plants colonise the land",
+  "start": -470000000,
+  "end": -420000000,
+  "lat": 52.0,
+  "lng": -3.5,
+  "priority": 87,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Spore-bearing plants colonized terrestrial environments, beginning the development of continental vegetation.",
+  "body": "Plants moved onto land in the middle Ordovician, around 470 million years ago. The first evidence is not of plants themselves but of their spores: cryptospores with tough sporopollenin walls, recovered from Ordovician rocks in Saudi Arabia and elsewhere on Gondwana, comparable to those produced by living liverworts.\n\nLand plants descend from freshwater green algae, from among the charophytes — the group modern stoneworts belong to. The move demanded solutions to desiccation, structural support and the transport of water, and these arrived over the following hundred million years rather than at once. Simple conducting cells appear in the Silurian; true vascular tissue with lignin-strengthened walls, which resists collapse under tension, follows, and *Cooksonia* from the later Silurian is the earliest known vascular plant. Roots developed gradually through the Devonian, from rhizoids a few millimetres deep to systems reaching nearly a metre. Broad leaves became common around 360 million years ago, once falling carbon dioxide made a large light-gathering surface worth its cost in water.\n\nThe consequences for the planet were large. Roots broke up rock and acidified soils, deepening chemical weathering and drawing down carbon dioxide; sediment began to be retained on land, and mudrock becomes markedly more common in the record from the Ordovician onward. [Animals followed the vegetation](event:silurian-land-colonisation) ashore, and by the Carboniferous plants had built [forests](event:carboniferous-forests) dense enough to bury carbon on a global scale.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Evolutionary_history_of_plants).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Evolutionary_history_of_plants"
+   }
+  ],
+  "strong": [
+   "silurian-land-colonisation",
+   "carboniferous-forests"
+  ]
+ },
+ {
+  "id": "ordovician-extinction",
+  "name": "Ordovician–Silurian extinction",
+  "start": -445000000,
+  "end": -443000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 84,
+  "tags": [
+   "extinction",
+   "biology"
+  ],
+  "summary": "Approximately 85% of marine species went extinct as glaciation locked up seawater and drained the shallow continental shelves.",
+  "body": "The Late Ordovician mass extinction, about 445 to 443 million years ago, was the first of the five largest extinctions in the fossil record and the second largest by proportion of genera lost. Between 49 and 60 per cent of marine genera and close to 85 per cent of marine species disappeared. Life was still almost entirely marine, so the event is recorded only in the sea.\n\nIt came in two pulses. The first, at the Katian–Hirnantian boundary, coincides with the rapid growth of an ice sheet over Gondwana, which then lay across the South Pole. The world shifted from greenhouse to icehouse within a geologically short time; sea level fell, draining the shallow continental shelves where most life lived, and water temperatures dropped faster than warm-adapted species could tolerate.\n\nThe second pulse came in the late Hirnantian as the glaciation ended. Rising sea level was accompanied by widespread anoxia and euxinia — oxygen-depleted, sulphidic water — which spread across the shelves and persisted into the early Silurian.\n\nBrachiopods, bryozoans, [trilobites](event:trilobite-diversification), conodonts, echinoderms, corals and graptolites were all heavily affected, and the [reef ecosystems](event:ordovician-reef-ecosystems) of the period were dismantled. Unlike later extinctions it eliminated few whole groups: the fauna that recovered through the Silurian was much the same one, at lower diversity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Ordovician_mass_extinction).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Late_Ordovician_mass_extinction"
+   }
+  ],
+  "strong": [
+   "devonian-extinction"
+  ]
+ },
+ {
+  "id": "silurian-land-colonisation",
+  "name": "Silurian land colonisation by arthropods",
+  "start": -440000000,
+  "end": -420000000,
+  "lat": 57.3,
+  "lng": -2.6,
+  "priority": 65,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Millipedes and early arachnids colonized terrestrial environments, breathing air and hunting among primitive plants.",
+  "body": "Animals followed plants onto land during the Silurian, 443 to 419 million years ago. The colonists were arthropods — millipedes, centipedes and early arachnids — small, still dependent on damp ground, but breathing air.\n\n*Pneumodesmus newmani*, from Stonehaven in Scotland, is the oldest animal known to have breathed air: its cuticle preserves spiracles, and it dates to about 425 million years ago. *Kampecaris obanensis* from Kerrera in the Inner Hebrides is a millipede of similar age. Trigonotarbids, extinct relatives of spiders, are known from around 420 million years ago in Britain, and comparable faunas come from Wales and Germany. Trackways and burrows extend the record a little further back.\n\nThese animals lived among the first vascular [land plants](event:land-plants) — low, leafless, spore-bearing forms such as *Cooksonia*, rarely more than a few centimetres tall. The earliest terrestrial food webs seem to have been built on decaying plant matter and on predation: there is little evidence of anything eating living plant tissue at this stage, and the arachnids were hunters.\n\nVertebrates were still confined to the water, and would not follow for another forty million years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Silurian).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Silurian"
+   }
+  ],
+  "weak": [
+   "early-fish"
+  ]
+ },
+ {
+  "id": "devonian-fish-revolution",
+  "name": "Devonian fish diversification and radiation",
+  "start": -419000000,
+  "end": -372000000,
+  "lat": 48.1,
+  "lng": -66.4,
+  "priority": 71,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Diverse jawed fish with varied body forms dominated the oceans during the Age of Fishes.",
+  "body": "The Devonian, 419 to 359 million years ago, is called the Age of Fishes because every major group of fish either appeared or reached its greatest diversity during it. Jawed vertebrates, which had evolved in the Silurian, displaced the [jawless fish](event:early-fish) that preceded them.\n\nPlacoderms — jawed fish with articulated bony armour over the head and trunk — were the dominant group for much of the period, and included *Dunkleosteus*, a predator several metres long with shearing bony plates in place of teeth. Cartilaginous fish, ancestors of sharks and rays, diversified alongside them, as did the two great groups of bony fish: the ray-finned fish, which today account for most vertebrate species, and the lobe-finned fish, whose paired fins contain a single proximal bone and a jointed skeleton beyond it.\n\nThat last arrangement is the one that became a limb. Lobe-finned fish such as *Eusthenopteron* and *Tiktaalik* show progressively more weight-bearing fin skeletons, flatter heads and more mobile necks, and it is from within this group that the first [tetrapods](event:tetrapods) came.\n\nThe period ends badly for fish. The [Late Devonian extinctions](event:devonian-extinction) eliminated the placoderms entirely and finished the armoured jawless fish with them.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Devonian).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Devonian"
+   }
+  ],
+  "strong": [
+   "tetrapods"
+  ]
+ },
+ {
+  "id": "tetrapods",
+  "name": "Vertebrates walk on land",
+  "start": -375000000,
+  "lat": 79.0,
+  "lng": -84.0,
+  "priority": 84,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Lobe-finned fish with weight-bearing limbs, exemplified by Tiktaalik, moved onto land.",
+  "body": "Tetrapods — four-limbed vertebrates, a group that includes all amphibians, reptiles, birds and mammals — evolved from lobe-finned fish during the Devonian. Their origin is among the best-documented major transitions in the fossil record, though the sequence is less tidy than it once appeared.\n\nThe oldest evidence is a set of trackways at Zachełmie in Poland, made about 390 million years ago by an animal walking on limbs with digits. Fragmentary body fossils of *Elginerpeton* from Scotland and *Obruchevichthys* from Latvia follow at around 380 million years, though not everyone accepts them as tetrapods. Nearly complete skeletons appear late in the Devonian: *Acanthostega* and *Ichthyostega* from East Greenland, which had limbs with digits — eight of them on *Acanthostega* — but also internal gills and a tail fin.\n\n*Tiktaalik roseae*, found on Ellesmere Island in the Canadian Arctic in 2004 and about 375 million years old, is a lobe-finned fish rather than a tetrapod: a flattened skull, a neck, and fin skeletons robust enough to prop the body up. It postdates the Polish trackways, which is the main reason the transition is now thought to have begun earlier than the body fossils by themselves would suggest.\n\nThese animals were aquatic, and limbs appear to have evolved for moving through shallow, weed-choked water rather than for walking on land. Fully terrestrial tetrapods, with the [amniotic egg](event:amniotic-egg) to free them from standing water, are a Carboniferous development.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tetrapod).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tetrapod"
+   }
+  ]
+ },
+ {
+  "id": "devonian-extinction",
+  "name": "Late Devonian extinction",
+  "start": -372000000,
+  "end": -359000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 77,
+  "tags": [
+   "extinction",
+   "biology"
+  ],
+  "summary": "A series of extinction pulses over millions of years eliminated most reef ecosystems and shallow marine fauna.",
+  "body": "The Late Devonian extinction was not one event but a series of pulses spread over some fifteen million years at the end of the period. Two are severe enough to be named: the Kellwasser event, at the Frasnian–Famennian boundary about 372 million years ago, and the Hangenberg event, at the very end of the Devonian about 359 million years ago.\n\nThe losses were concentrated in shallow tropical seas. Around 40 per cent of marine species died in the Kellwasser event alone; across the whole interval perhaps 22 per cent of marine families, 57 per cent of genera and at least three-quarters of species failed to reach the Carboniferous. Reef builders were hit hardest — the stromatoporoid sponges and the tabulate and rugose corals nearly vanished, and reefs on that scale did not return for over a hundred million years. Placoderms were halved and then eliminated, and the armoured jawless fish went with them.\n\nBoth events are marked by black shale, the sediment of oxygen-starved water. The most-cited trigger is the spread of [land plants](event:land-plants): deep-rooting trees weathered rock, released nutrients into rivers and fertilised coastal seas into algal blooms that stripped the water of oxygen. The same weathering drew down carbon dioxide and cooled the climate. Volcanism from the Viluy province in Siberia has been proposed as a further cause.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Devonian_extinction).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Late_Devonian_extinction"
+   }
+  ],
+  "weak": [
+   "permian-extinction"
+  ]
+ },
+ {
+  "id": "carboniferous-forests",
+  "name": "Carboniferous coal forests",
+  "start": -359000000,
+  "end": -299000000,
+  "lat": 50.0,
+  "lng": -1.0,
+  "priority": 74,
+  "tags": [
+   "biology",
+   "geology"
+  ],
+  "summary": "Extensive swamp forests of lycopod trees accumulated large quantities of carbon that eventually became coal deposits.",
+  "body": "The coal forests were vast swamp and riverbank forests that covered much of the tropics during the later Carboniferous and the Permian. Their buried and compressed remains became most of the coal mined in Europe and eastern North America.\n\nThe dominant trees were lycopsids — *Lepidodendron* and *Sigillaria* — which grew to thirty metres or more on unbranched trunks supported by thick bark rather than by wood, alongside giant horsetails, tree ferns and early seed plants. Carbon accumulated because the equatorial belt of Euramerica lay over subsiding basins that stayed wet, so that dead plant matter piled up in waterlogged, acidic peat faster than it could rot. An older explanation — that fungi capable of breaking down lignin had not yet evolved — is now regarded as at most part of the answer.\n\nAtmospheric oxygen rose to perhaps 25 to 30 per cent, against 21 per cent today, and the period is known for very large arthropods: the griffinfly *Meganeura*, with a wingspan of about 75 centimetres, and the millipede relative *Arthropleura*, up to 2.6 metres long.\n\nThe forests fragmented around 305 million years ago, in an episode called the Carboniferous rainforest collapse, as the climate began swinging between humid and arid. Tree ferns replaced the lycopsids, and drier conditions favoured the [amniotes](event:amniotic-egg) over the amphibians. The coal itself was dug up and burned 300 million years later, in the [Industrial Revolution](event:industrial-revolution).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Coal_forest).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Coal_forest"
+   }
+  ],
+  "weak": [
+   "synapsid-domination"
+  ]
+ },
+ {
+  "id": "pangaea",
+  "name": "Pangaea supercontinent",
+  "start": -335000000,
+  "end": -175000000,
+  "lat": 0,
+  "lng": 10,
+  "priority": 93,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Nearly all continental landmasses united into a single supercontinent surrounded by the Panthalassic Ocean.",
+  "body": "Pangaea was a supercontinent that assembled during the Carboniferous, around 335 million years ago, and began to break apart at the end of the Triassic, about 200 million years ago. It brought nearly all of the world's continental crust into one mass, surrounded by a single superocean, Panthalassa, with the Tethys opening into it from the east.\n\nIts existence is why the same Permian and Triassic land fossils — *Glossopteris*, *Lystrosaurus*, *Mesosaurus*, *Cynognathus* — are found on continents now separated by oceans, an argument Alfred Wegener made in 1912 and which was accepted only after seafloor spreading was demonstrated in the 1960s. Matching mountain belts and rock sequences across the Atlantic point the same way.\n\nA single landmass has little coastline for its area, and the interior of Pangaea was consequently very dry: one of the most extensive desert systems in Earth's history occupied it, with short rainy seasons even well inland. The loss of shallow continental shelf, where most marine life lives, is among the background stresses often invoked for the severity of the [end-Permian extinction](event:permian-extinction).\n\nBreakup came in three phases. Rifting between North America and Africa began in the Triassic and had opened the central [Atlantic](event:atlantic-opening) by about 175 million years ago. Gondwana came apart from the Early Cretaceous, separating Africa, South America, India, Antarctica and Australia. Finally, in the early Cenozoic, Laurentia parted from Eurasia and the Norwegian Sea opened, 60 to 55 million years ago. The continents are still moving.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pangaea).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Pangaea"
+   }
+  ]
+ },
+ {
+  "id": "amniotic-egg",
+  "name": "Evolution of the amniotic egg",
+  "start": -320000000,
+  "lat": 45.7,
+  "lng": -64.4,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "The evolution of the amniotic egg permitted vertebrate reproduction independent of aquatic environments.",
+  "body": "Part of [Vertebrates walk on land](event:tetrapods). The amniotic egg encloses the embryo in a set of membranes that do, inside the shell, what a pond did for an amphibian embryo. The amnion holds fluid around the embryo, the chorion handles gas exchange, the allantois stores waste, and a large yolk supplies food. Together with internal fertilisation and a water-resistant skin, this is what freed vertebrate reproduction from standing water.\n\nIt also allowed the egg to grow larger and to exchange gas faster, so that a bigger and more active embryo could reach full development before hatching.\n\nThe oldest amniotes known from body fossils are *Hylonomus lyelli* and *Asaphestera*, small lizard-like animals about 318 million years old, found inside the hollow stumps of fossil trees at Joggins in Nova Scotia. *Casineria* from Scotland, around 340 million years old, lies close to the ancestry. Clawed footprints reported in 2025 from the Snowy Plains Formation in Australia, dated between 359 and 354 million years ago, would push the group's origin back into the Devonian.\n\nAlmost immediately after appearing, amniotes divided into two lineages that between them account for most large land vertebrates since: the synapsids, leading to [mammals](event:synapsid-domination), and the sauropsids, leading to reptiles, [dinosaurs](event:first-dinosaurs) and birds.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Amniote).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Amniote"
+   }
+  ],
+  "parent": "tetrapods",
+  "weak": [
+   "first-dinosaurs"
+  ]
+ },
+ {
+  "id": "synapsid-domination",
+  "name": "Synapsid domination of Permian terrestrial ecosystems",
+  "start": -298000000,
+  "end": -260000000,
+  "lat": 33.0,
+  "lng": -99.0,
+  "priority": 65,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Synapsids, the amniote lineage leading to mammals, dominated terrestrial ecosystems as herbivores and predators.",
+  "body": "Synapsids are the branch of the [amniotes](event:amniotic-egg) that leads to mammals. They are distinguished by a single opening in the skull behind each eye socket, which gives the jaw muscles more room and a stronger bite. The earliest appear near the end of the Carboniferous, around 315 to 307 million years ago, and they were the largest land vertebrates of the Permian.\n\nThe early forms, informally called pelycosaurs, include *Dimetrodon*, a sprawling predator up to about four metres long with a tall skin-covered sail on its back, abundant in the red beds of Texas and Oklahoma. From one pelycosaur group came the therapsids, with more upright limbs, more differentiated teeth and probably higher metabolic rates. Therapsids dominated Permian land faunas as both herbivores — the barrel-bodied dicynodonts — and predators, the sabre-toothed gorgonopsians.\n\nThe [end-Permian extinction](event:permian-extinction) reduced them severely. Only the dicynodonts and a few carnivorous lines survived into the Triassic, where [archosaurs](event:first-dinosaurs) took over the large-bodied roles. One group of small, increasingly mammal-like cynodonts persisted through that displacement, and it is from these that the first [mammaliaforms](event:triassic-mammalian-radiation) emerged in the Late Triassic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Synapsida).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Synapsida"
+   }
+  ],
+  "strong": [
+   "triassic-mammalian-radiation"
+  ]
+ },
+ {
+  "id": "permian-extinction",
+  "name": "Permian–Triassic extinction",
+  "start": -252000000,
+  "end": -251880000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 97,
+  "tags": [
+   "extinction",
+   "geology"
+  ],
+  "summary": "Approximately 81% of marine species and 70% of land vertebrates went extinct in Earth's most severe biotic crisis.",
+  "body": "The Permian–Triassic extinction, about 252 million years ago, was the most severe biotic crisis in the fossil record, and is sometimes called the Great Dying. Around 81 per cent of marine species and some 70 per cent of terrestrial vertebrate species disappeared, along with 57 per cent of families and 62 per cent of genera. Precise dating of the boundary beds in South China places the main extinction between 251.941 and 251.880 million years ago — a window of roughly sixty thousand years.\n\nThe accepted cause is the eruption of the [Siberian Traps](event:siberian-traps), one of the largest volcanic events known. Magma intruded thick sequences of coal, carbonate and evaporite in the Tunguska basin and cooked them, so that the eruptions released far more carbon and halogen gas than the lava alone would have. Atmospheric carbon dioxide rose from roughly 400 to 2,500 parts per million and global temperature by around 8 °C. The oceans warmed, acidified and lost their oxygen; large areas became euxinic, charged with hydrogen sulphide. Ozone depletion and acid rain are also invoked.\n\nAlmost nothing was spared. Eight or nine orders of insects vanished — the only mass extinction that seriously affected them. [Trilobites](event:trilobite-diversification) ended here, as did the eurypterids and most of the range of form among crinoids, brachiopods and ammonoids. Around 93 per cent of foraminifera died. Reefs disappeared for millions of years. On land the [synapsids](event:synapsid-domination) that had dominated the Permian were reduced to a handful of surviving lines.\n\nRecovery was slow and uneven. Some local marine communities were re-established within one or two million years and marine ecosystems were functioning again by the Middle Triassic, but terrestrial vertebrate faunas took around thirty million years to regain their complexity, and global marine diversity far longer. The depleted world of the Early Triassic is the one in which the [first dinosaurs](event:first-dinosaurs) appeared.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Permian%E2%80%93Triassic_extinction_event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Permian%E2%80%93Triassic_extinction_event"
+   }
+  ],
+  "strong": [
+   "first-dinosaurs"
+  ]
+ },
+ {
+  "id": "siberian-traps",
+  "name": "Siberian Traps eruptions",
+  "start": -252000000,
+  "end": -250000000,
+  "lat": 67.0,
+  "lng": 100.0,
+  "priority": 77,
+  "tags": [
+   "geology",
+   "disaster"
+  ],
+  "summary": "One of Earth's largest known volcanic events covered millions of square kilometres of Siberia with basalt.",
+  "body": "Part of [Permian–Triassic extinction](event:permian-extinction). The Siberian Traps are the remains of one of the largest volcanic events in Earth's history: a flood basalt province covering some seven million square kilometres of northern Eurasia, with an estimated volume of around four million cubic kilometres of igneous rock. Eruption spanned roughly two million years across the Permian–Triassic boundary, about 252 million years ago.\n\nWhat makes the province exceptional is not only its size but what it erupted through. The Tunguska basin beneath it holds thick Palaeozoic carbonates and evaporites and Carboniferous–Permian coal measures. Magma intruded these rocks as sills and heated them, driving off carbon dioxide, sulphur dioxide, methane and halogen compounds — chlorine and fluorine — in quantities far beyond what the magma itself would have degassed.\n\nThe consequences attributed to that release are global warming, ocean acidification, ocean anoxia and euxinia, destruction of the ozone layer, acid rain and metal poisoning. Together they are the accepted explanation for the severity of the extinction at the boundary.\n\nMuch of the lava is still there, exposed across the Putorana and Central Siberian plateaus, where it weathers into the stepped terraces that the word *trap* refers to.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siberian_Traps).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Siberian_Traps"
+   }
+  ],
+  "area": [
+   [
+    80,
+    55
+   ],
+   [
+    90,
+    72
+   ],
+   [
+    110,
+    74
+   ],
+   [
+    125,
+    66
+   ],
+   [
+    118,
+    54
+   ],
+   [
+    100,
+    50
+   ],
+   [
+    85,
+    50
+   ]
+  ],
+  "parent": "permian-extinction"
+ },
+ {
+  "id": "ichthyosaur-radiation",
+  "name": "Ichthyosaur radiation and dominance",
+  "start": -250000000,
+  "end": -94000000,
+  "lat": 50.7,
+  "lng": -2.9,
+  "priority": 60,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Dolphin-shaped marine reptiles that hunted the seas from the early Triassic until the Late Cretaceous.",
+  "body": "Ichthyosaurs were marine reptiles with a fish-like body: a fusiform trunk, a dorsal fin, paddle-shaped limbs and a vertical tail fin. They appear about 250 million years ago, early in the Triassic, and the last of them disappear around 94 million years ago in the Late Cretaceous.\n\nThey are a standard example of convergent evolution, having arrived from a terrestrial reptilian ancestor at a shape close to that of tuna and dolphins. Like whales they were air-breathing and bore live young, which is directly attested by fossils preserved in the act of giving birth. They had the largest eye sockets of any known vertebrate, which is usually read as an adaptation for hunting at depth or in low light.\n\nSizes ranged from about one metre to enormous. The Triassic *Shonisaurus* exceeded fifteen metres, and jaw fragments assigned to *Ichthyotitan* imply an animal of perhaps twenty-five.\n\nThey were the dominant marine reptiles of the Triassic and Early Jurassic, and afterwards shared the seas with plesiosaurs and, later, mosasaurs. Diversity fell in two steps during the Cenomanian, as specialised feeders disappeared and only generalist predators were left, before the group ended entirely. Mary Anning and her brother found the first complete ichthyosaur skull at Lyme Regis in 1811–12, among the earliest specimens described scientifically.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ichthyosaur).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ichthyosaur"
+   }
+  ],
+  "strong": [
+   "eocene-whale-evolution"
+  ],
+  "weak": [
+   "cretaceous-seaway"
+  ]
+ },
+ {
+  "id": "first-dinosaurs",
+  "name": "First dinosaurs",
+  "start": -233000000,
+  "lat": -29.0,
+  "lng": -67.0,
+  "priority": 84,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Small bipedal archosaurs from what is now Argentina mark the origin of the dinosaurian lineage.",
+  "body": "Dinosaurs originated in the Middle to Late Triassic, roughly twenty million years after the [end-Permian extinction](event:permian-extinction). The oldest substantial fossils come from the Ischigualasto Formation in north-western Argentina, dated to 231–230 million years ago, and from rocks of similar age in Brazil and Zimbabwe. *Herrerasaurus* and *Eoraptor* from Ischigualasto were bipedal and lightly built.\n\nThey were a minor part of Triassic land faunas, which were dominated by other archosaurs — the crocodile-line pseudosuchians — together with surviving [synapsids](event:synapsid-domination) and large amphibians. What distinguished dinosaurs anatomically was a hip socket open at its centre and a thigh bone with an inturned head, giving limbs held directly beneath the body rather than sprawling.\n\nTheir rise was a consequence of the [end-Triassic extinction](event:triassic-extinction) 201.4 million years ago, which removed most of the competing archosaur groups. Dinosaurs then dominated terrestrial ecosystems for the next 135 million years, through the Jurassic and the Cretaceous, reaching sizes no land animal has matched before or since.\n\nThe non-avian lineages ended at the [Cretaceous–Paleogene boundary](event:kpg-extinction) 66 million years ago. [Birds](event:first-birds), which are themselves dinosaurs, did not.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dinosaur).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dinosaur"
+   }
+  ],
+  "strong": [
+   "sauropod-gigantism"
+  ]
+ },
+ {
+  "id": "triassic-mammalian-radiation",
+  "name": "First mammaliaforms",
+  "start": -225000000,
+  "end": -200000000,
+  "lat": 51.4,
+  "lng": -3.2,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "The earliest mammals and related forms appeared as small animals during the rise of dinosaurian dominance.",
+  "body": "Mammaliaformes is the group containing mammals and their closest extinct relatives. Its members appear in the Late Triassic, around 205 million years ago, evolving from small cynodonts — the last surviving branch of the [synapsids](event:synapsid-domination) that had dominated the Permian.\n\nThey were shrew-sized. *Morganucodon*, known from thousands of specimens in fissure fillings in the limestone of South Wales and from China, was about ten centimetres long; *Hadrocodium*, from the Early Jurassic of China, was little more than three. Most were nocturnal insectivores, and their fossils are found alongside those of far larger [dinosaurs](event:first-dinosaurs).\n\nWhat separates them from their ancestors is mostly internal. The teeth came to occlude precisely and were replaced only once, so that food could be chewed rather than merely gripped. The jaw joint moved to a new pair of bones, and two of the old jaw bones migrated into the middle ear, where they remain in every mammal. Patterns of tooth replacement in morganucodonts imply that the young were suckled, and preserved impressions show that fur was already present.\n\nSmall size and nocturnal habits persisted through the Mesozoic. Crown mammals — the group containing monotremes, marsupials and placentals — date from the Jurassic, with *Juramaia*, the earliest known eutherian, at about 160 million years. The pattern changed only after the [K–Pg extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Mammaliaformes).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Mammaliaformes"
+   }
+  ]
+ },
+ {
+  "id": "triassic-extinction",
+  "name": "Triassic–Jurassic extinction",
+  "start": -201400000,
+  "lat": 0,
+  "lng": -30.0,
+  "priority": 77,
+  "tags": [
+   "extinction",
+   "geology"
+  ],
+  "summary": "Approximately 50% of known species went extinct during volcanic activity from the Central Atlantic Magmatic Province and Pangaea fragmentation.",
+  "body": "The Triassic–Jurassic extinction, 201.4 million years ago, is one of the five largest in the fossil record. Between 23 and 34 per cent of marine genera were lost, and about 42 per cent of terrestrial tetrapod species.\n\nThe conodonts, part of marine ecosystems since the Cambrian, were wiped out entirely. So were most ammonoid groups, particularly the ceratitids, and some 96 per cent of coral genera. On land the losses fell heavily on the groups that had shared the Triassic with the earliest [dinosaurs](event:first-dinosaurs): the large temnospondyl amphibians, and the crocodile-line archosaurs — phytosaurs, aetosaurs and rauisuchids — leaving only the ancestors of the crocodilians.\n\nThe cause is the Central Atlantic Magmatic Province, an enormous flood basalt province erupted as [Pangaea](event:pangaea) began to rift along what became the [Atlantic](event:atlantic-opening). Carbon dioxide concentrations roughly quadrupled, producing rapid warming, ocean acidification and anoxia, along with a documented pulse of mercury.\n\nDinosaurs came through comparatively intact and radiated into the vacated niches within a few million years, which is why Jurassic faunas look so different from Triassic ones. Crocodylomorphs did much the same in the water.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Triassic%E2%80%93Jurassic_extinction_event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Triassic%E2%80%93Jurassic_extinction_event"
+   }
+  ],
+  "strong": [
+   "first-dinosaurs"
+  ],
+  "weak": [
+   "ordovician-extinction"
+  ]
+ },
+ {
+  "id": "atlantic-opening",
+  "name": "Opening of the Atlantic",
+  "start": -180000000,
+  "end": 2026,
+  "lat": 30.0,
+  "lng": -40.0,
+  "priority": 57,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Rifting of Pangaea initiated the formation of a new ocean basin along the developing Mid-Atlantic Ridge.",
+  "body": "Part of [Pangaea supercontinent](event:pangaea). The Atlantic began as a rift in the interior of Pangaea and has been widening ever since. Rifting between North America and north-west Africa started in the Triassic and was producing ocean floor in the central Atlantic by about 175 million years ago; the South Atlantic opened from the Early Cretaceous as South America separated from Africa; the North Atlantic, between Greenland and Europe, opened last, 60 to 55 million years ago.\n\nNew crust is made along the Mid-Atlantic Ridge, a submarine mountain chain running the length of the ocean, where the plates pull apart and mantle material rises to fill the gap. The average spreading rate is about 2.5 centimetres a year. The ridge rises above sea level in Iceland, where the plate boundary can be walked across at Þingvellir.\n\nThe Atlantic sea floor supplied the decisive evidence for plate tectonics. Basalt records the direction of Earth's magnetic field as it cools, and the field reverses at irregular intervals, so the floor on either side of the ridge carries a matching, symmetrical pattern of magnetic stripes — a record of the ocean's own manufacture, mapped through the late 1950s and 1960s. Nowhere on Earth is there ocean floor much older than about 180 million years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Atlantic_Ocean).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Atlantic_Ocean"
+   }
+  ],
+  "parent": "pangaea",
+  "weak": [
+   "himalaya-uplift"
+  ]
+ },
+ {
+  "id": "sauropod-gigantism",
+  "name": "Sauropod gigantism and herbivory",
+  "start": -180000000,
+  "end": -145000000,
+  "lat": 39.7,
+  "lng": -108.5,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Quadrupedal dinosaurs achieved the largest body sizes known for terrestrial animals, reaching several tens of metric tonnes.",
+  "body": "Sauropods were quadrupedal, long-necked, long-tailed herbivorous dinosaurs, and they include the largest animals that have ever lived on land. Unequivocal sauropods appear in the Early Jurassic, the group reached its greatest diversity in the Late Jurassic around 150 million years ago, and titanosaurs remained abundant until the [end of the Cretaceous](event:kpg-extinction).\n\nThe largest are known only from partial skeletons, so mass estimates carry wide error bars. *Argentinosaurus* is reconstructed at 35 to 36 metres long and 65 to 80 tonnes; some *Barosaurus* material implies an animal longer still. Nineteenth-century claims for larger animals, such as *Amphicoelias fragillimus* at 58 metres, are now regarded as exaggerated or unverifiable.\n\nSeveral features made the size possible. The bones of the neck and trunk were pneumatic — hollowed out by air sacs connected to the lungs — so that a very long neck need not be unliftably heavy. The head was small and simple, with peg-like or spoon-shaped teeth that cropped vegetation without chewing it and were replaced every few weeks; digestion happened in a very large gut instead. The limbs were pillar-like, and the animals grew fast and laid many small eggs rather than bearing a few large young.\n\n*Brachiosaurus*, *Diplodocus* and *Apatosaurus* come from the Morrison Formation of the western United States; closely comparable animals are known from Tendaguru in Tanzania.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sauropoda).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Sauropoda"
+   }
+  ],
+  "weak": [
+   "theropod-radiation"
+  ]
+ },
+ {
+  "id": "theropod-radiation",
+  "name": "Theropod radiation and predatory dominance",
+  "start": -170000000,
+  "end": -66000000,
+  "lat": 45.8,
+  "lng": -106.5,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Bipedal carnivorous dinosaurs became the dominant apex predators, evolving from small forms to giants.",
+  "body": "Theropods were the bipedal, mostly carnivorous dinosaurs. They appear in the Late Triassic, about 231 million years ago, and were the dominant land predators for the rest of the Mesozoic — and, as birds, they remain the most species-rich group of land vertebrates.\n\nThe range of size within the group is extreme. *Anchiornis*, a feathered Jurassic form, weighed about 110 grams; *Tyrannosaurus*, *Giganotosaurus*, *Carcharodontosaurus* and *Spinosaurus* were all in the region of twelve metres and several tonnes. Living theropods run from the bee hummingbird at under two grams to the ostrich.\n\nFeathers were not an avian invention. They are now known from across the coelurosaurs — the group that includes tyrannosaurs and *Velociraptor* as well as birds — in forms ranging from simple filaments to fully vaned flight feathers, and some large species appear to have lost them again. Hollow bones, wishbones, air-sac lungs, brooding of nests and three-fingered hands all appear in theropods well before flight does.\n\n[Birds](event:first-birds) evolved from small coelurosaurs during the Jurassic, and are the only dinosaurs to have survived the [K–Pg extinction](event:kpg-extinction).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Theropoda).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Theropoda"
+   }
+  ],
+  "strong": [
+   "first-birds"
+  ]
+ },
+ {
+  "id": "first-birds",
+  "name": "Archaeopteryx and the first birds",
+  "start": -150000000,
+  "lat": 48.9,
+  "lng": 11.2,
+  "priority": 68,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Feathered theropods from the Jurassic lagoon deposits at Solnhofen record dinosaurs at an intermediate stage on the way to birds.",
+  "body": "*Archaeopteryx* is a small feathered dinosaur from the Solnhofen limestone of southern Germany, about 150 million years old, and the best-known transitional fossil between non-avian dinosaurs and birds. Fourteen body fossils are known, all from the same lagoon deposits; the first was described in 1861, two years after *On the Origin of Species*, and it has been central to arguments about transitional forms ever since.\n\nIt was about the size of a raven — up to half a metre long, with a wingspan around 70 centimetres and a mass between 500 grams and a kilogram. Its feathers are modern in structure and asymmetrical in the way flight feathers are; it had a wishbone and broad wings. It also had small teeth, a long bony tail, three clawed fingers on each hand and a hyperextensible second toe of the kind *Velociraptor* had.\n\nWhether it counts as the earliest bird or as a close relative just outside the group has moved back and forth as feathered dinosaurs have been described from China and analyses rerun. The question is now about where a line is drawn rather than about what the animal was.\n\nBirds are [dinosaurs](event:theropod-radiation), and the only lineage of them to survive the [end-Cretaceous extinction](event:kpg-extinction). About 11,000 species are alive today.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Archaeopteryx).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Archaeopteryx"
+   }
+  ],
+  "weak": [
+   "kpg-extinction"
+  ]
+ },
+ {
+  "id": "flowering-plants",
+  "name": "Rise of flowering plants",
+  "start": -130000000,
+  "end": -70000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 65,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Flowering plants appeared and, through interactions with insect pollinators, became the dominant plant group globally.",
+  "body": "Flowering plants, or angiosperms, enclose their seeds within a carpel and reproduce through flowers. They appear suddenly and already diverse in the fossil record of the Early Cretaceous, around 130 million years ago, and by the end of the period they had replaced conifers as the dominant canopy trees over much of the world. About 300,000 species are known today, in 416 families — the great majority of all land plants.\n\nTheir fossil appearance and their molecular history do not agree. Genetic evidence places the divergence of the angiosperm lineage from other seed plants far earlier, possibly in the late Devonian around 365 million years ago, leaving a long interval with no accepted fossils in it.\n\nThat mismatch, and the speed of the radiation once it began, is what Darwin called an \"abominable mystery\" in a letter of 1879. The usual resolution invokes co-evolution with animal pollinators: nectar, scent and coloured petals buy directed transfer of pollen, and specialisation between a flower's shape and a pollinator's anatomy isolates populations from one another, so that new species form quickly. Enclosed seeds, faster life cycles and more efficient water transport are also cited.\n\nGrasses, which are angiosperms, went on to restructure terrestrial ecosystems a second time in the [Miocene](event:miocene-grassland-expansion).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Flowering_plant).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Flowering_plant"
+   }
+  ],
+  "strong": [
+   "miocene-grassland-expansion"
+  ],
+  "weak": [
+   "cretaceous-warmth"
+  ]
+ },
+ {
+  "id": "cretaceous-warmth",
+  "name": "Cretaceous greenhouse climate",
+  "start": -120000000,
+  "end": -66000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 62,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "The Cretaceous was among Earth's warmest periods, with atmospheric CO2 levels several times higher than modern concentrations.",
+  "body": "The Cretaceous was one of the warmest intervals of the Phanerozoic, and the mid-Cretaceous, from about 120 to 90 million years ago, was its warmest phase. There were no permanent polar ice caps; forests grew within the Arctic and Antarctic circles, and shallow seas flooded large areas of the continents as sea level stood well above its present height.\n\nWarmth peaked around 94 million years ago, at the Cenomanian–Turonian thermal maximum. Tropical sea-surface temperatures reached 30 to 42 °C, deep ocean water was 15 to 20 °C warmer than today, and mean annual temperatures at the poles exceeded 14 °C. Carbon dioxide concentrations of 1,000 to 1,400 parts per million are estimated for the mid-Cretaceous, sustained by unusually vigorous submarine volcanism along fast-spreading ridges and large oceanic plateaus.\n\nWarm, sluggishly circulating oceans repeatedly ran short of oxygen. These oceanic anoxic events buried enormous quantities of organic carbon, and the source rocks they left behind account for a large share of the world's petroleum. Chalk — the rock the period is named for — accumulated across shelf seas such as the [Western Interior Seaway](event:cretaceous-seaway) from the skeletons of calcareous plankton.\n\nCooling had already begun in the Late Cretaceous when the [Chicxulub impact](event:chicxulub) ended the period.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cretaceous"
+   }
+  ],
+  "strong": [
+   "cretaceous-seaway"
+  ]
+ },
+ {
+  "id": "cretaceous-seaway",
+  "name": "Cretaceous Western Interior Seaway",
+  "start": -100000000,
+  "end": -66000000,
+  "lat": 43.0,
+  "lng": -100.0,
+  "priority": 57,
+  "tags": [
+   "geology",
+   "biology"
+  ],
+  "summary": "A shallow inland sea extended from the Arctic to the Gulf of Mexico, hosting mosasaurs, plesiosaurs, and ammonites.",
+  "body": "The Western Interior Seaway was a shallow sea that split North America in two for most of the Late Cretaceous, from about 100 to 66 million years ago. At its greatest extent it ran more than 3,200 kilometres from the Arctic Ocean to the Gulf of Mexico, was up to 970 kilometres wide, and reached about 760 metres deep.\n\nIt formed as the crust east of the rising Laramide mountain belt was pushed down under the weight of it, and seawater transgressed south into the resulting basin. Warm and shallow, it laid down chalk and organic-rich shale over an enormous area.\n\nIts fauna is among the best known of any Cretaceous sea. Mosasaurs and plesiosaurs were the large predators; the bony fish *Xiphactinus* reached four to five metres; ammonites, belemnites and inoceramid bivalves were abundant; and the flightless diving bird *Hesperornis* and the flying *Ichthyornis* lived along it, together with large pterosaurs. The Niobrara Chalk and Pierre Shale of Kansas, Nebraska and the Dakotas are the classic collecting grounds, with exposures such as Monument Rocks.\n\nContinued Laramide uplift drained the seaway southwards, and it was gone by the early Paleocene.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Western_Interior_Seaway).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Western_Interior_Seaway"
+   }
+  ]
+ },
+ {
+  "id": "placental-radiation",
+  "name": "Rise of eutherian mammals",
+  "start": -95000000,
+  "end": -66000000,
+  "lat": 44.0,
+  "lng": 103.0,
+  "priority": 65,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Small eutherians, the lineage leading to placental mammals, spread and diversified while dinosaurs dominated terrestrial ecosystems.",
+  "body": "Placental mammals — the group containing every living mammal except the monotremes and marsupials — carry their young in the uterus to a late stage of development, sustained by a placenta. The wider group they belong to, the eutherians, is much older than the placental orders themselves.\n\nEutherians are known from the Middle Jurassic, about 170 million years ago; *Juramaia* from China is the earliest. Through the Cretaceous they remained small, largely nocturnal insectivores, well represented in fossil assemblages from China and Mongolia but absent from any large-bodied role, since [dinosaurs](event:theropod-radiation) occupied those.\n\nWhen the modern placental orders separated is disputed. Molecular clocks put the divergence of the three major placental lineages between about 120 and 105 million years ago, deep in the Cretaceous. The fossil record does not support that: the earliest undisputed placental fossils are at or just below the [Cretaceous–Paleogene boundary](event:kpg-extinction), with *Protungulatum* appearing a few hundred thousand years before it.\n\nThe reading now generally favoured is a short fuse — that the lineages had originated and begun to diverge in the Late Cretaceous, but that their [radiation into large-bodied and diurnal roles](event:paleocene-mammal-radiation) came only once the extinction had removed the animals occupying them.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Placentalia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Placentalia"
+   }
+  ],
+  "strong": [
+   "paleocene-mammal-radiation"
+  ]
+ },
+ {
+  "id": "deccan-traps",
+  "name": "Deccan Traps eruptions",
+  "start": -66300000,
+  "end": -65500000,
+  "lat": 19.0,
+  "lng": 76.0,
+  "priority": 62,
+  "tags": [
+   "geology",
+   "disaster"
+  ],
+  "summary": "Flood basalt eruptions occurred in western India during the interval of the Chicxulub impact.",
+  "body": "The Deccan Traps are a flood basalt province covering about 500,000 square kilometres of west-central India, with a preserved volume near one million cubic kilometres; the original extent may have been three times as large. The stepped hills the lava flows weather into give the province its name.\n\nEruption spanned roughly 66.3 to 65.6 million years ago — 600,000 to 800,000 years straddling the [Cretaceous–Paleogene boundary](event:kpg-extinction) — with the most intense phase possibly lasting less than 30,000 years. The source was the Réunion hotspot, a mantle plume that India was then passing over and that still builds volcanic islands in the Indian Ocean.\n\nBecause the eruptions coincide with the extinction, they were for a time proposed as its cause, or as a co-cause alongside the [Chicxulub impact](event:chicxulub). That view has lost ground. Sulphur dioxide from the eruptions is estimated to have cooled the planet by around 2 °C, which stresses ecosystems but does not by itself explain the pattern of losses, and climate modelling published in 2020 favoured the impact alone. Some recent work argues that volcanic carbon dioxide may even have shortened the impact winter.\n\nVolcanic provinces of this scale have been implicated in other mass extinctions, most clearly the [Siberian Traps](event:siberian-traps) at the end of the Permian.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Deccan_Traps).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Deccan_Traps"
+   }
+  ],
+  "area": [
+   [
+    72,
+    16
+   ],
+   [
+    73,
+    22
+   ],
+   [
+    78,
+    23
+   ],
+   [
+    80,
+    18
+   ],
+   [
+    78,
+    14
+   ],
+   [
+    74,
+    13
+   ]
+  ],
+  "weak": [
+   "siberian-traps"
+  ]
+ },
+ {
+  "id": "chicxulub",
+  "name": "Chicxulub impact",
+  "start": -66000000,
+  "lat": 21.4,
+  "lng": -89.5,
+  "priority": 93,
+  "tags": [
+   "geology",
+   "disaster"
+  ],
+  "summary": "A 10-kilometre-diameter asteroid impacted the Yucatán platform, releasing energy equivalent to billions of Hiroshima bombs.",
+  "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). The Chicxulub crater lies buried beneath the northern Yucatán Peninsula and the sea floor off it, centred near the town of Chicxulub Puerto. It is 180 to 200 kilometres across and about a kilometre below younger sediment, and it was made 66 million years ago by an asteroid roughly ten kilometres in diameter — most probably a carbonaceous chondrite from beyond Jupiter's orbit.\n\nEstimates of the energy released span two orders of magnitude, from tens of millions to billions of megatonnes of TNT equivalent, with winds above 1,000 kilometres an hour near the site. What made it globally lethal, however, was the target: the platform is thick carbonate and sulphur-rich gypsum, and vaporising them injected carbon dioxide and enormous quantities of sulphate aerosol into the stratosphere, where they blocked sunlight and later fell as acid rain.\n\nIt was found by accident. Glen Penfield and Antonio Camargo identified a buried circular magnetic and gravity anomaly during petroleum exploration in 1978, and their interpretation went largely unnoticed until Alan Hildebrand made contact in 1990; drill samples containing shock-metamorphic minerals confirmed it, and the identification was published in 1991. In 2016 a joint expedition drilled the offshore peak ring to 1,335 metres below the sea floor, recovering rock that had been fluidised by the impact and thrown back inward.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chicxulub_crater).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Chicxulub_crater"
+   }
+  ],
+  "area": [
+   [
+    -92,
+    19
+   ],
+   [
+    -91,
+    22
+   ],
+   [
+    -88,
+    22.5
+   ],
+   [
+    -86,
+    21
+   ],
+   [
+    -87,
+    19
+   ],
+   [
+    -90,
+    18
+   ]
+  ],
+  "parent": "kpg-extinction",
+  "weak": [
+   "toba"
+  ]
+ },
+ {
+  "id": "kpg-extinction",
+  "name": "Cretaceous–Paleogene extinction",
+  "start": -66000000,
+  "lat": 21.4,
+  "lng": -89.5,
+  "priority": 97,
+  "tags": [
+   "extinction",
+   "biology"
+  ],
+  "summary": "Approximately 75% of all species, including all non-avian dinosaurs, went extinct during a geologically brief interval.",
+  "body": "The Cretaceous–Paleogene extinction, 66 million years ago, ended the Mesozoic era and killed about three-quarters of the plant and animal species on Earth. All non-avian dinosaurs died, along with the pterosaurs, the mosasaurs and plesiosaurs, the ammonites and most of the calcareous plankton. Almost no land animal heavier than about 25 kilograms survived.\n\nThe cause is the impact of an asteroid at [Chicxulub](event:chicxulub) on the Yucatán platform. The first evidence was chemical: a thin clay layer at the boundary, found worldwide, containing far more iridium than Earth's crust normally holds but about as much as a meteorite. Shocked quartz, glass spherules and then a crater of the right age and size followed.\n\nThe immediate mechanism was the loss of sunlight. Dust and sulphate aerosols from vaporised rock spread through the stratosphere and shut down photosynthesis for months to years, collapsing food chains on land and in the surface ocean. Wildfires, a pulse of acid rain and megatsunamis exceeding a hundred metres in shallow seas added to it. The [Deccan Traps](event:deccan-traps) were erupting at the same time and had already been altering the climate, though modelling now assigns them a secondary role.\n\nSurvival was selective in ways that make sense of that mechanism. Small burrowing and semi-aquatic animals came through better than large surface-dwelling ones, and freshwater communities, which run on detritus rather than on living plants, did far better than terrestrial and marine ones dependent on photosynthesis. Among tetrapods the survivors were [birds](event:first-birds), crocodilians, turtles, lizards, snakes, amphibians and [mammals](event:paleocene-mammal-radiation) — and it is the last of those that filled the emptied world.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cretaceous%E2%80%93Paleogene_extinction_event).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cretaceous%E2%80%93Paleogene_extinction_event"
+   }
+  ],
+  "strong": [
+   "deccan-traps",
+   "placental-radiation"
+  ]
+ },
+ {
+  "id": "paleocene-mammal-radiation",
+  "name": "Paleocene mammalian radiation",
+  "start": -66000000,
+  "end": -56000000,
+  "lat": 44.5,
+  "lng": -108.5,
+  "priority": 71,
+  "tags": [
+   "biology"
+  ],
+  "summary": "After dinosaur extinction, mammals increased rapidly in taxonomic diversity and body size, occupying newly vacant ecological roles.",
+  "body": "Part of [Cretaceous–Paleogene extinction](event:kpg-extinction). The Paleocene, from 66 to 56 million years ago, is the ten-million-year interval in which the world reassembled after the extinction and mammals moved into the roles that had been vacated.\n\nPlant communities recovered first, in a documented sequence: an immediate spike of fern spores directly above the boundary clay, then pioneering species, then slowly diversifying forests that stayed species-poor for most of the epoch. The climate was a greenhouse one, with no permanent polar ice and global mean temperatures around 24 to 25 °C.\n\nAverage mammal body size increased sharply above the boundary and kept increasing. Within a few million years there were herbivores the size of sheep and larger — the archaic hoofed condylarths, the bulky pantodonts — along with the carnivorous mammals that hunted them, and the first plesiadapiforms, close relatives of the primates. The sequence is exceptionally well recorded in the Bighorn Basin of Wyoming, where successive faunas are stacked in continuous sediment. Birds also radiated quickly, and included large flightless predators.\n\nThe epoch ends abruptly at the [Paleocene–Eocene Thermal Maximum](event:petm), after which the modern orders of hoofed mammals and primates are all present.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paleocene).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Paleocene"
+   }
+  ],
+  "parent": "kpg-extinction",
+  "weak": [
+   "petm"
+  ]
+ },
+ {
+  "id": "petm",
+  "name": "Paleocene–Eocene Thermal Maximum",
+  "start": -56000000,
+  "end": -55800000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 74,
+  "tags": [
+   "climate"
+  ],
+  "summary": "A large carbon input to the atmosphere caused global warming of 5–8 °C within several thousand years.",
+  "body": "The Paleocene–Eocene Thermal Maximum was an episode of rapid global warming about 56 million years ago. Global temperatures rose by 5 to 8 °C, tropical sea surfaces exceeded 36 °C, and the whole event — onset, peak and recovery — lasted roughly 200,000 years.\n\nIt is identified by a sharp negative excursion in carbon isotopes recorded in marine and terrestrial carbonates at more than 130 sites worldwide. A shift of that kind requires the addition of a very large quantity of carbon depleted in carbon-13 to the ocean and atmosphere; estimates run into thousands of gigatonnes. Candidate sources include volcanic carbon from the North Atlantic Igneous Province, dissociation of methane hydrates on the sea floor, and the cooking of organic-rich sediment by intruding magma.\n\nThe ocean acidified, and carbonate that had been accumulating on the deep sea floor dissolved. Between 35 and 50 per cent of deep-sea benthic foraminifera became extinct within about a thousand years — the largest deep-ocean extinction of the Cenozoic. On land, mammal faunas turned over rapidly: several modern orders, among them the artiodactyls, perissodactyls and primates, appear and spread across the northern continents at this point, and many lineages became temporarily smaller.\n\nIt is the closest geological analogue to present-day [greenhouse warming](event:global-warming), though the comparison cuts the other way on rate: carbon is being released today several times faster than it was during the PETM.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Paleocene%E2%80%93Eocene_Thermal_Maximum).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Paleocene%E2%80%93Eocene_Thermal_Maximum"
+   }
+  ],
+  "strong": [
+   "eocene-climatic-optimum"
+  ],
+  "weak": [
+   "global-warming"
+  ]
+ },
+ {
+  "id": "eocene-climatic-optimum",
+  "name": "Early Eocene Climatic Optimum",
+  "start": -54000000,
+  "end": -49000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 60,
+  "tags": [
+   "climate"
+  ],
+  "summary": "The warmest sustained interval of the Cenozoic, with no polar ice and forests growing inside the Arctic Circle.",
+  "body": "The Early Eocene Climatic Optimum, from about 54 to 49 million years ago, was the warmest sustained interval of the Cenozoic. It followed a series of shorter warming events, of which the [PETM](event:petm) was the largest, and it is the peak of the greenhouse world that preceded the long cooling towards the present ice-age climate.\n\nThere was no permanent ice at either pole. Tropical sea-surface temperatures have been reconstructed at 36 °C and above, and deep ocean water was far warmer than today. Tropical forest extended into what is now northern North America and Europe, palms grew in Alaska, and forests of swamp cypress and dawn redwood covered Ellesmere Island inside the Arctic Circle, where crocodilians and turtles also lived. Carbon dioxide concentrations were several times the pre-industrial level.\n\nMammals of the early Eocene were small — around 60 per cent of the size of their Paleocene predecessors — and it is in this interval that the oldest fossils of most modern mammal orders appear.\n\nCooling set in from about 49 million years ago and continued, helped by the carbon burial of the Azolla event in the Arctic and by the drawdown of carbon dioxide through [Himalayan](event:himalaya-uplift) weathering, until [Antarctica glaciated](event:antarctic-glaciation) 34 million years ago.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_Eocene_Climatic_Optimum).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Early_Eocene_Climatic_Optimum"
+   }
+  ]
+ },
+ {
+  "id": "eocene-whale-evolution",
+  "name": "Whale evolution from terrestrial mammals",
+  "start": -50000000,
+  "end": -34000000,
+  "lat": 33.0,
+  "lng": 72.0,
+  "priority": 74,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Artiodactyl mammals returned to marine environments and evolved into fully aquatic cetaceans.",
+  "body": "Whales evolved from land mammals during the Eocene, and the sequence is one of the most completely documented transitions in the fossil record. Their ancestors were even-toed ungulates; the closest living relatives of whales are hippopotamuses, with which they last shared an ancestor about 55 million years ago.\n\nThe stages are known largely from rocks in Pakistan and India, laid down along the shore of the closing Tethys. *Pakicetus*, about 50 million years old, was a wading freshwater animal, recognisable as a cetacean only from the structure of its ear bones. *Ambulocetus*, some 49 million years old, was a crocodile-like predator of bays and estuaries. The remingtonocetids and protocetids that follow are progressively more marine: eyes reduced, nostrils migrating back along the skull, and the semicircular canals of the inner ear shrinking to the small size typical of fully aquatic animals — a change regarded as a point of no return. Protocetids such as *Rodhocetus* and *Maiacetus* spread beyond Asia to Africa, Europe and North America; a *Maiacetus* fossil preserving a foetus positioned head-first suggests that birth still took place on land.\n\nThe first obligate swimmers are the basilosaurids of the late Eocene, 41 to 34 million years ago — *Basilosaurus*, long-bodied and with vestigial hind limbs, and the smaller *Dorudon*, both well represented at Wadi Al-Hitan in Egypt. The two modern groups, the baleen and the toothed whales, separated around 34 to 28 million years ago, and echolocation appears with the latter.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Evolution_of_cetaceans).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Evolution_of_cetaceans"
+   }
+  ],
+  "weak": [
+   "placental-radiation"
+  ]
+ },
+ {
+  "id": "himalaya-uplift",
+  "name": "Uplift of the Himalaya",
+  "start": -50000000,
+  "end": 2026,
+  "lat": 28.0,
+  "lng": 86.9,
+  "priority": 60,
+  "tags": [
+   "geology"
+  ],
+  "summary": "Collision of the Indian plate with Asian continental crust produced the world's highest mountain range and altered global climate.",
+  "body": "The Himalaya are the product of a continental collision that began about 55 million years ago, when the northward-moving Indian plate met Eurasia and the ocean between them closed. Neither plate could be subducted, so the crust thickened and rose. The range now runs 2,400 kilometres in an arc from the Indus to the Brahmaputra, with more than a hundred peaks above 7,200 metres and Mount Everest at 8,848.86 metres.\n\nThe collision has not finished. India still moves north at about 67 millimetres a year, of which some 20 are absorbed by thrusting along the southern front of the range; the mountains rise about 5 millimetres a year, and around 7 at the syntaxes at either end, where the arc bends sharply. Great earthquakes on the frontal thrusts are the direct consequence.\n\nThe range remade the climate of Asia. It blocks cold northerly air from reaching the subcontinent and forces the summer monsoon to rise and drop its moisture on the southern slopes, leaving arid basins and deserts — the Taklamakan, the Gobi — in the rain shadow beyond.\n\nUplift on this scale also exposes enormous quantities of fresh silicate rock to chemical weathering, which consumes atmospheric carbon dioxide. That drawdown is one of the standard explanations for the long Cenozoic cooling that ended in the [Quaternary ice ages](event:quaternary-ice-ages).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Himalayas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Himalayas"
+   }
+  ],
+  "weak": [
+   "antarctic-glaciation"
+  ]
+ },
+ {
+  "id": "antarctic-glaciation",
+  "name": "Antarctica freezes",
+  "start": -34000000,
+  "lat": -82.0,
+  "lng": 20.0,
+  "priority": 71,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Declining atmospheric CO2 and opening of the Drake Passage enabled permanent ice sheet formation at the South Pole.",
+  "body": "A permanent ice sheet formed over Antarctica about 34 million years ago, at the Eocene–Oligocene boundary. The event marks the change from the greenhouse world that had prevailed since the [Cretaceous](event:cretaceous-warmth) to the icehouse world that has held ever since, and ice has been present on the continent from that point to the present.\n\nThe principal cause was falling atmospheric carbon dioxide. Modelling places the threshold for continental glaciation near 600 parts per million, and levels crossed it during the late Eocene; a favourable orbital configuration set the timing of the onset itself, in a step known as the Oi-1 event.\n\nThe opening of the ocean gateways around Antarctica — the Tasman Gateway and the Drake Passage — allowed the Antarctic Circumpolar Current to establish itself and thermally isolate the continent. This was long regarded as the main cause, and models now generally give it a supporting role behind carbon dioxide.\n\nThe ice sheet today covers 98 per cent of Antarctica, some 14 million square kilometres, averages more than two kilometres thick and holds 26.5 million cubic kilometres of ice: about 61 per cent of the world's fresh water, and the equivalent of roughly 53 metres of sea level.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Antarctic_ice_sheet).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Antarctic_ice_sheet"
+   }
+  ],
+  "strong": [
+   "eocene-climatic-optimum"
+  ]
+ },
+ {
+  "id": "oligocene-cooling",
+  "name": "Oligocene transition and global cooling",
+  "start": -34000000,
+  "end": -23000000,
+  "lat": -82.0,
+  "lng": 20.0,
+  "priority": 68,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Climate shifted from warm and humid to cooler and more arid conditions over millions of years.",
+  "body": "Part of [Antarctica freezes](event:antarctic-glaciation). The Oligocene, from 33.9 to 23 million years ago, was cooler and drier than anything before it in the Cenozoic. Global temperature fell by 5 to 6 °C across the Eocene–Oligocene transition, and by the end of that transition the world's ice was about a quarter more extensive than today's.\n\nThe epoch opens with a faunal turnover in Europe known as the Grande Coupure, when the retreat of the Obik Sea across western Siberia opened a land connection and Asian mammals replaced much of the endemic European fauna.\n\nFalling temperature and falling carbon dioxide together pushed vegetation away from closed forest. Tropical forest contracted towards the equator while open woodland, scrub and the first extensive grasslands spread through the middle latitudes. Grasses using the C4 photosynthetic pathway, which is more efficient where carbon dioxide is scarce, appear during this interval.\n\nMammal faunas changed accordingly, and most modern families are recognisable by the end of the epoch. Body sizes were generally small, with conspicuous exceptions such as *Paraceratherium*, a hornless rhinoceros relative and the largest land mammal known. The trend continued into the [Miocene](event:miocene-grassland-expansion), when grasslands became a dominant biome in their own right.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oligocene).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Oligocene"
+   }
+  ],
+  "parent": "antarctic-glaciation",
+  "weak": [
+   "miocene-grassland-expansion"
+  ]
+ },
+ {
+  "id": "miocene-grassland-expansion",
+  "name": "Miocene grassland expansion",
+  "start": -20000000,
+  "end": -5000000,
+  "lat": 0.0,
+  "lng": 0.0,
+  "priority": 65,
+  "tags": [
+   "biology",
+   "climate"
+  ],
+  "summary": "Grassland vegetation expanded across continents, restructuring terrestrial ecosystems toward grazing-based food webs.",
+  "body": "Grasslands spread across every inhabited continent during the Miocene, 23 to 5.3 million years ago, and in doing so restructured terrestrial ecosystems around grazing.\n\nThe epoch began warm — the Middle Miocene Climatic Optimum, around 16 million years ago, with carbon dioxide between 300 and 500 parts per million — and then cooled, sharply during the Late Miocene Cooling between about 7 and 5.3 million years ago, when ocean temperatures reached near-modern values. Cooler, drier and more seasonal conditions favoured grasses over trees. Grasses using the C4 photosynthetic pathway, which tolerates low carbon dioxide and high temperatures, became ecologically important between about 7 and 6 million years ago.\n\nGrass is abrasive: it accumulates silica, and a grazing animal takes in grit with it. The response among herbivores was hypsodonty — high-crowned teeth with a long reserve of enamel — which evolved repeatedly in horses, antelopes, camels and rhinoceroses. Longer legs and life in herds belong to the same package, since open country offers no cover. Lineages that could not make the shift declined.\n\nAfrica's savannas date from this transition, and so does much of the context for [ape and hominin evolution](event:hominin-split): around a hundred ape species lived across Africa, Asia and Europe during the Miocene, and the hominin lineage separates from that of chimpanzees near its close.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Miocene).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Miocene"
+   }
+  ],
+  "weak": [
+   "hominin-split"
+  ]
+ },
+ {
+  "id": "hominin-split",
+  "name": "Human–chimpanzee divergence",
+  "start": -7000000,
+  "end": -6000000,
+  "lat": 7.5,
+  "lng": 17.0,
+  "priority": 82,
+  "tags": [
+   "biology"
+  ],
+  "summary": "The hominin and chimpanzee lineages diverged in Africa.",
+  "body": "The hominin lineage — the branch leading to modern humans — separated from the branch leading to chimpanzees and bonobos in Africa in the late Miocene. The date is estimated from the number of genetic differences between the living species and the rate at which such differences accumulate, and it has moved as those rates have been re-measured: recent whole-genome analyses give 6.3 to 5.5 million years ago, while other studies allow a range from about 13 to 4.7 million.\n\nNo fossil has been identified with confidence as the last common ancestor, and the candidates near the divergence are all contested. *Sahelanthropus tchadensis*, from Chad and about 7 million years old, has a skull base that has been read as indicating upright posture, but it may equally be a Miocene ape with convergent features. *Orrorin tugenensis*, from Kenya and about 6 million years old, has a thigh bone with features shared with later hominins. *Ardipithecus*, at around 5.5 to 4.4 million years, most probably postdates the split.\n\nPart of the difficulty is that speciation is not an event. The two lineages appear to have continued exchanging genes for some time after they began to separate, so the question of when they split has no single answer.\n\nWhat follows in the hominin line is [habitual bipedalism](event:lucy), well before any enlargement of the brain.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Chimpanzee%E2%80%93human_last_common_ancestor).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Chimpanzee%E2%80%93human_last_common_ancestor"
+   }
+  ],
+  "strong": [
+   "stone-tools"
+  ]
+ },
+ {
+  "id": "messinian",
+  "name": "Messinian salinity crisis",
+  "start": -5960000,
+  "end": -5330000,
+  "lat": 38.0,
+  "lng": 15.0,
+  "priority": 60,
+  "tags": [
+   "geology"
+  ],
+  "summary": "The Mediterranean basin became isolated from the Atlantic and underwent extensive evaporation, leaving kilometre-thick salt deposits.",
+  "body": "The Messinian salinity crisis was the near-total desiccation of the Mediterranean between 5.96 and 5.33 million years ago. Tectonic movement along the Gibraltar arc restricted and then closed the connection to the Atlantic; with evaporation far exceeding what the rivers supplied, the sea shrank into hypersaline lakes lying kilometres below global sea level.\n\nThe result is a body of salt beneath the Mediterranean floor amounting to more than a million cubic kilometres — around fifty times the salt dissolved in the sea today. Glacio-eustatic sea-level changes worked with the tectonics: falls during northern hemisphere cooling deepened the isolation, and brief reconnections refilled the basin repeatedly before the final closure at about 5.6 million years ago, after which the basin is thought to have dried out within a thousand years.\n\nIt ended with the Zanclean flood at 5.33 million years ago, when the Atlantic broke back through at Gibraltar. Early reconstructions had this happening catastrophically, in as little as a couple of years; more recent work argues for a less violent and more gradual reflooding, and the question is open.\n\nMarine life in the Mediterranean was largely wiped out and recolonised from the Atlantic afterwards, which is why its fauna is a depleted version of the Atlantic's. Land animals that crossed to islands while the basin was dry — in the Balearics, for instance — were left isolated there for the following five million years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Messinian_salinity_crisis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Messinian_salinity_crisis"
+   }
+  ],
+  "weak": [
+   "himalaya-uplift"
+  ]
+ },
+ {
+  "id": "stone-tools",
+  "name": "First stone tools",
+  "start": -3300000,
+  "end": -2600000,
+  "lat": -2.7,
+  "lng": 36.2,
+  "priority": 87,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Hominins began deliberately producing stone cutting tools, initiating the archaeological record.",
+  "body": "The deliberate flaking of stone to make cutting edges is where the archaeological record begins. The oldest claimed tools come from Lomekwi 3, west of Lake Turkana in Kenya, and are dated to 3.3 million years ago; they are large and heavy, struck by techniques unlike what follows, and whether they represent a tradition continuous with later toolmaking has not been established.\n\nThe first widespread industry is the Oldowan, which now reaches back to about 2.9 million years ago at Nyayanga in Kenya, with well-known assemblages from Gona in Ethiopia at 2.6 million and from Olduvai Gorge in Tanzania, where Louis Leakey found the first examples in the 1930s. The technique is simple — a few flakes struck from a cobble with a hammerstone — but the flakes cut well, and the cores were used too.\n\nWho made them is unsettled. They are conventionally attributed to early *Homo*, but the oldest examples predate the genus, and *Australopithecus garhi* and *Paranthropus* have both been proposed. More than one lineage may have been making them.\n\nWhat the tools gave access to was meat, and — by breaking bones — marrow: energy-dense foods otherwise very hard for a primate to obtain. Cut-marked bones appear alongside them, and the change in diet is generally connected to the later increase in brain size. The [Acheulean hand-axe](event:hand-axe-tool-tradition) follows about 1.76 million years ago.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Oldowan).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Oldowan"
+   }
+  ],
+  "strong": [
+   "fire-control"
+  ]
+ },
+ {
+  "id": "lucy",
+  "name": "Australopithecus and habitual bipedalism",
+  "start": -3200000,
+  "lat": 11.1,
+  "lng": 40.6,
+  "priority": 82,
+  "tags": [
+   "biology"
+  ],
+  "summary": "The Lucy skeleton showed that upright walking evolved millions of years before the enlargement of the human brain.",
+  "body": "Part of [Human–chimpanzee divergence](event:hominin-split). Lucy is a partial skeleton of *Australopithecus afarensis*, catalogued AL 288-1, found on 24 November 1974 by Donald Johanson and Tom Gray at Hadar in the Afar region of Ethiopia. About 40 per cent of one individual was recovered — several hundred fragments, with no bone duplicated — and volcanic ash layers bracketing the fossil date it to about 3.2 million years ago.\n\nShe stood roughly 1.1 metres tall and weighed around 29 kilograms. The pelvis, the inward-angled knee and the curvature of the lower spine show that she walked upright habitually, while the brain was about the size of a chimpanzee's. That combination is the point of the fossil: it established that bipedalism came first in human evolution and brain enlargement long afterwards, reversing an older assumption.\n\nTrails of footprints preserved in volcanic ash at Laetoli in Tanzania, about 3.66 million years old, record the same kind of walking — a heel-strike gait with the big toe in line rather than splayed — made by animals of the same species.\n\nThe skeleton is named after a Beatles song played at the camp on the night it was found. Australopiths of this kind are the population from which [the first stone toolmakers](event:stone-tools) and, later, the genus *Homo* emerged.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Lucy_(Australopithecus)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Lucy_(Australopithecus"
+   }
+  ],
+  "parent": "hominin-split",
+  "weak": [
+   "stone-tools"
+  ]
+ },
+ {
+  "id": "quaternary-ice-ages",
+  "name": "Quaternary ice ages begin",
+  "start": -2580000,
+  "end": -11700,
+  "lat": 60.0,
+  "lng": -45.0,
+  "priority": 84,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Northern hemisphere ice sheets advanced and retreated repeatedly on orbital time scales.",
+  "body": "The Quaternary glaciation began 2.58 million years ago and is still in progress: the present is an interglacial within it, not a time outside it. Northern hemisphere ice sheets have grown and collapsed repeatedly through the period, while Antarctica has stayed glaciated throughout.\n\nThe rhythm is set by variations in Earth's orbit, the Milankovitch cycles. Eccentricity varies on a period near 100,000 years, axial tilt between about 22 and 24.5 degrees on 41,000 years, and precession on roughly 26,000. None of these changes the total sunlight the Earth receives by much; what they change is its distribution across seasons and latitudes, and what matters is whether northern summers are cool enough to leave the previous winter's snow unmelted.\n\nFor the first million and a half years the cycles followed the 41,000-year tilt period. After the Mid-Pleistocene Transition, about a million years ago, they lengthened to roughly 100,000 years and grew much larger in amplitude, for reasons still debated. Eight complete cycles have run in the last 740,000 years.\n\nAt their maxima the ice sheets were at least four kilometres thick and sea level stood about 120 metres lower than today. They ground down and rebuilt the landscapes of northern Europe, Canada and Siberia, and left millions of lakes behind them, among them the Great Lakes and the Baltic. The whole of hominin evolution and dispersal has taken place within this climate regime.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Quaternary_glaciation).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Quaternary_glaciation"
+   }
+  ],
+  "strong": [
+   "megafauna-pleistocene",
+   "holocene"
+  ]
+ },
+ {
+  "id": "homo-erectus",
+  "name": "Homo erectus spreads out of Africa",
+  "start": -1900000,
+  "end": -110000,
+  "lat": -2.0,
+  "lng": 36.0,
+  "priority": 82,
+  "tags": [
+   "biology",
+   "exploration"
+  ],
+  "summary": "The first hominin with modern body proportions, ranging from Africa to Java and northern China.",
+  "body": "*Homo erectus* was the first hominin with essentially modern body proportions — long legs, short arms, a narrow pelvis and a barrel chest, built for walking and running over distance rather than for climbing. It appeared in Africa around 2 million years ago and is the first human species known to have left it.\n\nIts range was enormous. Fossils at Dmanisi in Georgia date to 1.85 to 1.78 million years ago; sites in Java, including Sangiran and Mojokerto, to between 1.8 and 1.6 million; and Zhoukoudian near Beijing, source of the Peking Man material, is younger again. In Africa the best-known specimen is the Turkana Boy, a nearly complete juvenile skeleton from Kenya.\n\nAdults stood between about 1.4 and 1.7 metres and weighed around 50 kilograms. Brain volume varied widely across the species' range and its two-million-year span, from well under 1,000 cubic centimetres in early African specimens to about 1,000 in East Asian ones — above the australopiths, below modern humans. The species is associated with the [Acheulean hand-axe](event:hand-axe-tool-tradition) industry in Africa and western Eurasia, though East Asian populations went on using simpler choppers, and with the earliest and most contested evidence for [fire](event:fire-control).\n\nThe last known populations, in Java, date to between about 117,000 and 108,000 years ago. Nearly two million years is the longest span documented for any human species.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_erectus).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Homo_erectus"
+   }
+  ],
+  "strong": [
+   "fire-control",
+   "hand-axe-tool-tradition"
+  ]
+ },
+ {
+  "id": "hand-axe-tool-tradition",
+  "name": "Acheulean hand-axe tradition",
+  "start": -1760000,
+  "end": -300000,
+  "lat": 4.1,
+  "lng": 35.9,
+  "priority": 62,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Symmetrical stone hand-axes produced by early humans are found across Africa, Europe, and Asia.",
+  "body": "Part of [First stone tools](event:stone-tools). The Acheulean is the stone tool industry defined by the hand-axe: a large oval or pear-shaped core worked on both faces to a symmetrical edge running most of the way around it. It appears about 1.76 million years ago at Kokiselei in West Turkana, Kenya — with a 2023 claim from Ethiopia at 1.95 million — and it persisted, with modifications, for well over a million years.\n\nMaking one means roughing out the shape with a hammerstone and then finishing it with a softer hammer of bone, antler or wood, which detaches thinner flakes with more control. That is a sequence of operations carried out towards a form the maker must already have in mind, and the standardisation of that form across Africa, western Asia, South Asia and Europe is the first unambiguous archaeological evidence of planning and of a transmitted technique.\n\nThe earliest makers were *Homo ergaster*, that is early [*Homo erectus*](event:homo-erectus); later users included *Homo heidelbergensis* and early [Neanderthals](event:neanderthals). East Asian assemblages of comparable age are mostly simpler choppers, and why that is has been argued over for decades.\n\nWhat hand-axes were for is not settled either — butchery is the usual answer, with digging, woodworking and use as a portable source of flakes also proposed. Prepared-core techniques displaced the Acheulean in Europe and the Middle East by about 125,000 years ago, and it survived latest in East Asia.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Acheulean).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Acheulean"
+   }
+  ],
+  "parent": "stone-tools"
+ },
+ {
+  "id": "fire-control",
+  "name": "Control of fire",
+  "start": -1000000,
+  "lat": -28.4,
+  "lng": 24.3,
+  "priority": 85,
+  "tags": [
+   "technology"
+  ],
+  "summary": "Hominins developed the ability to produce and maintain fire, affecting diet, safety, and social organisation.",
+  "body": "The control of fire changed what early humans could eat, where they could live and how long their day was. When it began is among the harder questions in palaeoanthropology, because the traces fire leaves are easily produced by natural burning and easily destroyed.\n\nThe earliest claims are contested. Burnt bone and ashed plant material from Wonderwerk Cave in South Africa, found deep inside the cave and identified by micromorphology and infrared spectroscopy, are dated between about 1.8 and 1.0 million years ago. Reddened sediment at Koobi Fora in Kenya, consistent with heating to 200–400 °C, is around 1.5 million years old. Neither is universally accepted, and most evidence for controlled fire in the Lower Palaeolithic is regarded as uncertain.\n\nFirmer evidence comes later. Gesher Benot Ya'aqov in Israel, about 780,000 years old, preserves repeatedly used hearth areas and burnt fish teeth in a pattern that indicates cooking. From 400,000 to 300,000 years ago hearths become common and unambiguous across Europe, western Asia and Africa; by around 125,000 years ago fire use is effectively universal among anatomically modern humans.\n\nThe cooking hypothesis holds that fire's main effect was nutritional: cooked food yields more usable energy for less chewing and less gut, which would help pay for a large brain. Critics point out that the archaeological timing fits the expansion of the brain poorly, and that fire's other benefits — warmth, protection from predators, light after dark — do not depend on cooking at all.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Control_of_fire_by_early_humans).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Control_of_fire_by_early_humans"
+   }
+  ]
+ },
+ {
+  "id": "homo-sapiens",
+  "name": "Origin of Homo sapiens",
+  "start": -315000,
+  "lat": 31.9,
+  "lng": -8.7,
+  "priority": 96,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Anatomically modern humans originated in Africa, with the oldest known fossils from Jebel Irhoud, Morocco.",
+  "body": "*Homo sapiens* emerged in Africa at least 300,000 years ago. The oldest fossils generally assigned to the species come from Jebel Irhoud in Morocco and are about 315,000 years old: the face is essentially modern, while the braincase is still long and low. Omo Kibish in Ethiopia, at about 233,000 years, provides the oldest anatomically modern skeleton, and Herto and Florisbad add further early material.\n\nThe picture that has replaced a single point of origin is a pan-African one. Different populations across the continent carried different combinations of modern and archaic features, and gene flow between them — over tens of thousands of years and thousands of kilometres — assembled the modern form, rather than any one lineage evolving it in isolation. The molecular evidence fits: the most recent common ancestor of living mitochondrial lineages dates to roughly 148,000 to 99,000 years ago and of Y chromosomes to 156,000 to 120,000, both long after the species itself appears.\n\nBehavioural modernity — pigments, ornaments, composite tools, long-distance transport of raw material, systematic use of marine resources — accumulates over a long period, from perhaps 160,000 years ago onward, rather than arriving all at once.\n\nEarly excursions out of Africa are documented at Misliya Cave in Israel between 194,000 and 177,000 years ago and at Skhul and Qafzeh between 120,000 and 100,000, with a contested claim at Apidima in Greece around 210,000. None of those populations left descendants. The [dispersal that populated the world](event:out-of-africa) came later, between about 70,000 and 50,000 years ago, and by then *Homo sapiens* shared the planet with [Neanderthals](event:neanderthals), [Denisovans](event:denisovans) and at least two other human species.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_sapiens).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Homo_sapiens"
+   }
+  ],
+  "strong": [
+   "out-of-africa",
+   "cave-art"
+  ]
+ },
+ {
+  "id": "denisovans",
+  "name": "Denisovan presence in Asia",
+  "start": -200000,
+  "end": -32000,
+  "lat": 51.4,
+  "lng": 84.7,
+  "priority": 57,
+  "tags": [
+   "biology"
+  ],
+  "summary": "A human species related to Neanderthals ranged across Siberia, Central Asia, and into tropical regions, with DNA sequences preserved in modern Oceanian populations.",
+  "body": "The Denisovans are an extinct group of archaic humans, sister to the [Neanderthals](event:neanderthals), that ranged across Asia from roughly 200,000 to 32,000 years ago. They are unusual in having been identified from DNA before they were described from bones: the first evidence, published in 2010, was a genome sequenced from a juvenile finger bone excavated in 2008 at Denisova Cave in the Altai Mountains of southern Siberia.\n\nPhysical remains are still sparse and scattered. Denisova Cave has yielded fragments dated between about 195,000 and 51,600 years ago. A mandible from Baishiya Karst Cave on the Tibetan Plateau is more than 160,000 years old; a tooth from Tam Ngu Hao 2 in Laos is 164,000 to 131,000; a jaw dredged from the Penghu Channel off Taiwan is 190,000 to 130,000; and the Harbin cranium from north-east China, over 146,000 years old, has been assigned to them on protein and DNA evidence. The range therefore runs from Siberia and high Tibet to the tropics.\n\nThey interbred with modern humans during the [dispersal out of Africa](event:out-of-africa). Denisovan ancestry accounts for roughly 5 per cent of the genomes of Papuans, Aboriginal Australians and Philippine Negritos, and about 0.2 per cent in mainland Asians and Native Americans. At least one inherited variant is demonstrably functional: the version of the EPAS1 gene that helps Tibetans tolerate low oxygen at altitude came from them.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Denisovan).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Denisovan"
+   }
+  ],
+  "strong": [
+   "neanderthals"
+  ]
+ },
+ {
+  "id": "homo-sapiens-africa",
+  "name": "Homo sapiens African diversification",
+  "start": -200000,
+  "end": -100000,
+  "lat": 5.4,
+  "lng": 35.9,
+  "priority": 71,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Anatomically modern humans dispersed throughout Africa, with populations interacting and exchanging genetic material.",
+  "body": "Part of [Origin of Homo sapiens](event:homo-sapiens). Between roughly 200,000 and 100,000 years ago modern humans were an African species, living in populations that were separated for long stretches and then exchanged genes again.\n\nThe fossils of this interval come from widely scattered places and do not converge on any one region: Omo Kibish and Herto in Ethiopia, Florisbad and Klasies River in South Africa, Ngaloba in Tanzania. Reconstructions of ancient African population structure from modern genomes point the same way, to a set of subdivided populations connected by intermittent migration rather than to a single ancestral group in a single place.\n\nThat is the model — sometimes called African multiregionalism, or a structured pan-African origin — which has largely replaced the idea of one small founding population. Modern anatomy and modern behaviour did not appear together in one lineage; they were assembled from features that arose in different places and spread by gene flow.\n\nThe consequence for what came afterwards is that the [population that left Africa](event:out-of-africa) carried only a fraction of the species' variation. African populations remain the most genetically diverse in the world, and every non-African population descends from that narrow sample.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Recent_African_origin_of_modern_humans).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Recent_African_origin_of_modern_humans"
+   }
+  ],
+  "parent": "homo-sapiens",
+  "weak": [
+   "out-of-africa"
+  ]
+ },
+ {
+  "id": "homo-floresiensis",
+  "name": "Homo floresiensis on Flores",
+  "start": -100000,
+  "end": -50000,
+  "lat": -8.53,
+  "lng": 120.44,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "A small-bodied human species persisted on an Indonesian island, possibly derived from *Homo erectus*.",
+  "body": "*Homo floresiensis* was a small-bodied human species that lived on the Indonesian island of Flores. The first remains were excavated from Liang Bua cave on 2 September 2003, and the skeletal material there is now dated between about 100,000 and 60,000 years ago, with associated stone tools ranging from 190,000 to 50,000.\n\nAn adult stood roughly 1.1 metres tall and weighed around 25 kilograms. The most complete individual, LB1, had a brain volume of about 380 cubic centimetres — comparable to a chimpanzee's, and less than half that of *Homo erectus*, from which the species probably derives. More than 10,000 stone artefacts have been recovered from the cave, including flakes, points, blades and perforators, and there is disputed evidence for the hunting of juvenile *Stegodon*, a dwarf elephant relative that shared the island.\n\nThe small size was at first explained as pathology in a modern human — microcephaly, Down syndrome and iodine deficiency were all proposed — and those explanations have been rejected: detailed analysis found no pathology, and older fossils from Mata Menge elsewhere on Flores, about 700,000 years old, show the same small size in an earlier population. Island dwarfing, a common response among large mammals isolated where resources are limited, is the accepted account.\n\nModern humans reached the region around 50,000 years ago, at about the point the species disappears from the record.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Homo_floresiensis).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Homo_floresiensis"
+   }
+  ],
+  "weak": [
+   "denisovans"
+  ]
+ },
+ {
+  "id": "toba",
+  "name": "Toba supereruption",
+  "start": -74000,
+  "lat": 2.7,
+  "lng": 98.9,
+  "priority": 62,
+  "tags": [
+   "disaster",
+   "geology"
+  ],
+  "summary": "The largest known volcanic eruption of the last two million years deposited ash across South Asia.",
+  "body": "The Youngest Toba eruption, about 74,000 years ago at what is now Lake Toba in Sumatra, was the largest explosive volcanic eruption of the Quaternary. Argon-argon dating gives 73,880 ± 320 years. It reached the top of the volcanic explosivity index, at 8, and ejected an estimated 3,800 cubic kilometres of material — some 1,800 as ash fall and 2,000 as ignimbrite.\n\nIts ash is a marker horizon across more than 38 million square kilometres. A layer five centimetres thick was laid down across the Indian subcontinent, and three and a half centimetres in the South China Sea.\n\nThe eruption became widely known through the Toba catastrophe hypothesis, put forward in the 1990s: that the volcanic winter it caused lasted six to ten years, was followed by a thousand-year cold period, and cut the human population to a few thousand individuals, leaving a bottleneck visible in modern DNA.\n\nThat hypothesis is no longer supported. Climate modelling gives a maximum global cooling of about 3.5 °C, returning to within the range of natural variability roughly five years after the eruption. Sediment cores from Lake Malawi show no volcanic winter in East Africa at the time, and archaeological sequences in South Africa run through the ash layer without interruption. The eruption was enormous; its effect on people appears to have been far smaller than was claimed.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Youngest_Toba_eruption).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Youngest_Toba_eruption"
+   }
+  ]
+ },
+ {
+  "id": "out-of-africa",
+  "name": "Out of Africa dispersal",
+  "start": -70000,
+  "end": -13000,
+  "lat": 12.8,
+  "lng": 43.3,
+  "priority": 94,
+  "tags": [
+   "exploration",
+   "biology"
+  ],
+  "summary": "Modern humans dispersed from Africa and colonized every habitable continent within tens of thousands of years.",
+  "body": "The dispersal out of Africa is the expansion, between about 70,000 and 50,000 years ago, that put modern humans on every habitable continent. Every population living outside Africa today descends from it. The founding group was small — genetic evidence points to a few thousand people at most, carrying mitochondrial haplogroup L3 — and most probably crossed at the southern end of the Red Sea, at Bab-el-Mandeb, or overland through Sinai.\n\nIt was not the first attempt. Modern humans reached the Levant at Misliya Cave 194,000 to 177,000 years ago and at Skhul and Qafzeh 120,000 to 100,000 years ago, and there are early finds in Arabia and possibly Greece. None of those populations left descendants in the modern gene pool.\n\nAlong the way the dispersing population met and interbred with the archaic humans already in Eurasia. About 2 per cent of the genome of every non-African alive today is [Neanderthal](event:neanderthals), from admixture dated between roughly 65,000 and 47,000 years ago, and [Denisovan](event:denisovans) ancestry runs from 0.2 per cent in mainland Asia to around 5 per cent in New Guinea and Aboriginal Australia.\n\nThe speed of the expansion is its most striking feature. [Australia](event:sahul) was reached by 65,000 to 50,000 years ago, across open water; Europe by 45,000; Siberia by 40,000 and the Russian Arctic by 27,000; and [the Americas](event:americas-peopling), the last continents, by about 16,000 years ago. The steps below follow that sequence.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Early_human_migrations).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Early_human_migrations"
+   }
+  ],
+  "steps": [
+   {
+    "id": "crossing",
+    "name": "Crossing into Eurasia",
+    "start": -70000,
+    "end": -60000,
+    "page": "A population carrying mitochondrial haplogroup L3 leaves north-east Africa, most probably by way of the Bab-el-Mandeb strait at the southern end of the Red Sea, where the crossing is narrowest and sea level during a glacial period stood far lower than today. An overland route through Sinai and the Levant is the alternative, and the two are not exclusive.\n\nThe genetic signal is of a founder group small enough that the whole of non-African humanity carries a subset of African variation. The route beyond the crossing is usually reconstructed as a southern one, along the coasts of Arabia, Iran and South Asia, which is also the fastest way to reach [Sahul](event:sahul)."
+   },
+   {
+    "id": "sahul",
+    "name": "Peopling of Australia",
+    "at": -65000,
+    "child": "sahul"
+   },
+   {
+    "id": "europe",
+    "name": "Arrival in Europe",
+    "at": -45000,
+    "page": "Modern humans are securely present in Europe from about 45,000 years ago, with early sites in Bulgaria, Italy and Germany; some of the earliest individuals sequenced carry Neanderthal ancestry from interbreeding only a few generations back. They arrive into a continent occupied by [Neanderthals](event:neanderthals) and share it with them for several thousand years.\n\nThe Upper Palaeolithic industries belong to this period — blades struck from prepared cores, bone and antler points, eyed needles — and so do the earliest European [painted caves](event:cave-art)."
+   },
+   {
+    "id": "neanderthals",
+    "name": "Neanderthals disappear",
+    "at": -40000,
+    "child": "neanderthals"
+   },
+   {
+    "id": "americas",
+    "name": "Peopling of the Americas",
+    "start": -16000,
+    "end": -13000,
+    "child": "americas-peopling"
+   }
+  ],
+  "weak": [
+   "toba"
+  ]
+ },
+ {
+  "id": "sahul",
+  "name": "Peopling of Australia",
+  "start": -65000,
+  "lat": -12.4,
+  "lng": 132.9,
+  "priority": 74,
+  "tags": [
+   "exploration"
+  ],
+  "summary": "Humans crossed open ocean to reach Sahul, the combined landmass of Australia and New Guinea.",
+  "body": "Part of [Out of Africa dispersal](event:out-of-africa). Sahul was the single landmass formed by Australia, New Guinea and Tasmania when sea level was low, and reaching it required a genuine sea voyage. Even at the glacial minimum the island chain between Sunda and Sahul left crossings of tens of kilometres of open water, with a shortest leg of around 90 kilometres and the destination not visible from the departure point.\n\nEstimates for the arrival cluster between 65,000 and 50,000 years ago. The Madjedbebe rock shelter in Arnhem Land has produced artefacts dated by optically stimulated luminescence to about 65,000 years; the reliability of that date has been questioned, and genomic evidence for the ancestry of living Aboriginal Australians tends to support a somewhat later arrival, after about 50,000 years ago.\n\nTwo broad routes through Wallacea have been proposed: a northern one by way of Sulawesi to New Guinea, and a southern one by way of Timor to north-western Australia. Either way, the people who made the crossing were among the earliest mariners known anywhere.\n\nThe oldest human remains on the continent are from Lake Mungo in New South Wales, about 41,000 years old, and include a cremation. Around sixty species of Australian [large marsupials, birds and reptiles](event:megafauna-pleistocene) disappear from about 46,000 years ago, and how much of that was caused by people is still argued.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Prehistory_of_Australia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Prehistory_of_Australia"
+   }
+  ],
+  "parent": "out-of-africa",
+  "weak": [
+   "americas-peopling"
+  ]
+ },
+ {
+  "id": "megafauna-pleistocene",
+  "name": "Pleistocene megafauna diversity",
+  "start": -50000,
+  "end": -10000,
+  "lat": 65.0,
+  "lng": 140.0,
+  "priority": 62,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Large ice-age animals — mammoths, giant ground sloths, cave bears — inhabited the continents during the Pleistocene.",
+  "body": "Megafauna — conventionally, land animals over about 45 kilograms — were far more diverse during the Pleistocene than they are now. Mammoths and mastodons, woolly rhinoceroses, giant ground sloths, glyptodonts, cave bears, sabre-toothed cats, dire wolves, giant kangaroos and wombats, moa and elephant birds all lived alongside modern humans.\n\nMost of them disappeared in a wave of extinctions running from about 50,000 to 10,000 years ago, unevenly across the continents. Sahul lost around 88 per cent of its megafaunal species by roughly 50,000 years ago; North America 72 per cent between 13,800 and 11,400 years ago; South America 83 per cent by about 13,000. Northern Eurasia lost its megafauna in a longer, staggered sequence, while Africa and southern Asia lost comparatively little. In total about 65 per cent of megafaunal species went, and around 80 per cent of mammals over a tonne.\n\nTwo explanations compete. The overkill hypothesis notes that the extinctions follow the arrival of modern humans on each landmass, that projectile points are found embedded in some carcasses, and that Africa — where large animals evolved alongside hominins — kept most of its fauna. The climate hypothesis points to the rapid habitat changes at the end of the last glaciation. A 2025 review found the literature still deeply divided, though the balance of recent work favours a substantial human role acting together with climate.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Megafauna).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Megafauna"
+   }
+  ],
+  "weak": [
+   "americas-peopling"
+  ]
+ },
+ {
+  "id": "cave-art",
+  "name": "Upper Paleolithic cave art",
+  "start": -40000,
+  "end": -12000,
+  "lat": 45.0,
+  "lng": 1.2,
+  "priority": 80,
+  "tags": [
+   "culture"
+  ],
+  "summary": "Painted cave sites at Chauvet, Lascaux, and Sulawesi display evidence of symbolic expression and artistic production.",
+  "body": "Painted and engraved images in caves and rock shelters are the most conspicuous surviving record of Upper Palaeolithic symbolic behaviour. The subjects are overwhelmingly large animals — bison, horses, aurochs, deer, lions, rhinoceroses, mammoths — together with hand stencils, dots and geometric signs. Human figures are rare, and landscapes absent.\n\nThe practice was not a European invention. The oldest known figurative painting is a scene of human-like figures and a pig from Leang Karampuang on Sulawesi, dated to about 51,200 years ago; a hand stencil on Muna, also in Indonesia, has been dated to around 67,800. In Europe the red discs and hand stencils of El Castillo in Spain are about 40,000 years old, the lions and rhinoceroses of Chauvet in France roughly 35,000, the horses of Lascaux about 17,000 and the bison of Altamira about 15,500.\n\nThe pigments are earth colours and charcoal — red and yellow ochre, haematite, manganese oxide — applied with finger, pad or brush, or blown around a hand to leave a stencil. Many images use the natural relief of the rock, and many are deep inside caves that had to be lit and worked in for long periods.\n\nWhy they were made is unknown. Hunting magic, shamanic practice, initiation, record-keeping and teaching have all been proposed, and none of them can be tested.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Cave_painting).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Cave_painting"
+   }
+  ],
+  "weak": [
+   "gobekli-tepe"
+  ]
+ },
+ {
+  "id": "neanderthals",
+  "name": "Neanderthals disappear",
+  "start": -40000,
+  "lat": 36.1,
+  "lng": -5.3,
+  "priority": 74,
+  "tags": [
+   "biology"
+  ],
+  "summary": "The last Neanderthal populations in Iberia and the Caucasus went extinct following millennia of overlap with modern humans.",
+  "body": "Part of [Out of Africa dispersal](event:out-of-africa). Neanderthals were a human species that occupied Europe and western and central Asia through the Middle and Late Pleistocene, from about 55 degrees north down to the Levant, and as far east as Denisova Cave in Siberia. They disappear around 40,000 years ago, though populations in southern Iberia and at Gibraltar may have persisted to 35,000 or 32,000.\n\nThey were stocky and powerfully built — males averaging about 1.65 metres and 75 kilograms — with a long low skull, a heavy continuous brow ridge and a projecting mid-face. Their brains were larger than the modern average, around 1,640 cubic centimetres in males, though organised somewhat differently.\n\nThey made Mousterian stone tools using prepared-core technique, maintained fire, hunted large game, ate a wide range of plants, used ochre and manganese pigments, and buried at least some of their dead. Claims that they made cave art rest on uranium-series dates from three Spanish caves that would predate the arrival of modern humans, and remain contested.\n\nAbout 2 per cent of the genome of every living non-African is Neanderthal, and roughly a fifth of the Neanderthal genome survives, distributed in fragments across modern people. Their disappearance is generally attributed to some combination of competition with modern humans, chronically small and fragmented populations, and climate instability, rather than to any single cause.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Neanderthal).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Neanderthal"
+   }
+  ],
+  "parent": "out-of-africa",
+  "weak": [
+   "cave-art"
+  ]
+ },
+ {
+  "id": "lgm",
+  "name": "Last Glacial Maximum",
+  "start": -26500,
+  "end": -19000,
+  "lat": 55.0,
+  "lng": -40.0,
+  "priority": 80,
+  "tags": [
+   "climate"
+  ],
+  "summary": "Ice sheets achieved their maximum extent and sea levels dropped approximately 125 metres below present values.",
+  "body": "Part of [Quaternary ice ages begin](event:quaternary-ice-ages). The Last Glacial Maximum was the most recent peak of the ice ages, between about 26,000 and 19,000 years ago. Around 21,000 years ago global mean temperature was roughly 6 °C below today's, and sea level stood about 125 metres lower.\n\nThe Laurentide ice sheet covered Canada and reached the Missouri and Ohio rivers, standing over three kilometres thick at its dome; the Fennoscandian sheet covered northern Europe with its margin running through Germany and Poland; Patagonia, the Alps, the Andes and the Himalaya carried ice of their own. Permanent ice covered about 8 per cent of the Earth's surface and a quarter of its land.\n\nWater locked into that ice exposed continental shelf. Beringia joined Siberia to Alaska, Doggerland joined Britain to the continent, and Sundaland joined the Indonesian islands to mainland Asia. Those are the surfaces people walked across, and most of the archaeology of that walking is now under water.\n\nThe world was also drier and dustier than today. Deserts expanded, forest contracted into refugia, and steppe and tundra covered enormous areas. Human populations in Europe fell — by as much as 60 per cent on some estimates — and concentrated in southern refuges. The retreat of the ice from about 19,000 years ago opened the routes to [the Americas](event:americas-peopling).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Last_Glacial_Maximum).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Last_Glacial_Maximum"
+   }
+  ],
+  "parent": "quaternary-ice-ages",
+  "strong": [
+   "americas-peopling"
+  ]
+ },
+ {
+  "id": "americas-peopling",
+  "name": "Peopling of the Americas",
+  "start": -16000,
+  "end": -13000,
+  "lat": 65.0,
+  "lng": -165.0,
+  "priority": 84,
+  "tags": [
+   "exploration"
+  ],
+  "summary": "Humans crossed Beringia and dispersed southward along the Pacific coast, colonizing two empty continents.",
+  "body": "Part of [Out of Africa dispersal](event:out-of-africa). The Americas were the last continents people reached. The academic consensus places arrival between about 20,000 and 15,000 years ago, by way of Beringia, the land bridge exposed between Siberia and Alaska while sea level was low.\n\nGenetic work describes the sequence. An Ancient Beringian population separated from Siberians around 36,000 years ago, was effectively isolated by about 25,000, and split into the lineages ancestral to later Native American populations between 17,000 and 14,500 years ago.\n\nThe route south was long assumed to be the ice-free corridor between the Laurentide and Cordilleran ice sheets, but that corridor became biologically passable only around 13,000 to 12,000 years ago, which is too late for the earliest sites. A Pacific coastal route, supported by kelp forests and marine resources, is now the more common explanation.\n\nMonte Verde in southern Chile, at 14,500 years, was the first site widely accepted as older than the Clovis culture, and others followed: Buttermilk Creek in Texas at 15,500, Paisley Caves in Oregon at 14,300, Swan Point in Alaska at 14,000. Human footprints at White Sands in New Mexico have been dated to as much as 23,000 years ago; that dating has been challenged and re-defended and is not settled. However it began, the spread was fast — people reached the southern end of South America within a few thousand years of entering the continent.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Settlement_of_the_Americas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Settlement_of_the_Americas"
+   }
+  ],
+  "parent": "out-of-africa"
+ },
+ {
+  "id": "dog-domestication",
+  "name": "Domestication of the dog",
+  "start": -15000,
+  "lat": 50.0,
+  "lng": 10.0,
+  "priority": 59,
+  "tags": [
+   "biology",
+   "technology"
+  ],
+  "summary": "Wolves became the first domesticated animal, thousands of years before any crop or livestock.",
+  "body": "The dog was the first domesticated animal, and the only one domesticated by hunter-gatherers, thousands of years before any crop or any livestock. Its ancestor is the grey wolf — or rather an extinct wolf population from which modern wolves also descend.\n\nGenetic divergence between the dog and wolf lineages is estimated at 40,000 to 20,000 years ago, which is an upper bound on domestication rather than a date for it. The oldest remains that are undisputedly dogs are more recent: the Erralla dog from northern Spain, 17,400 to 17,100 years old, and the Bonn-Oberkassel burial in Germany, about 14,200 years old, in which a dog was interred with two people — the earliest known joint burial of the two species, and evidence that the animal had been cared for through a serious illness.\n\nWhere it happened is unresolved. A 2021 review argued for Siberia around 23,000 years ago, with dogs spreading east into the Americas and west across Eurasia; western Europe and East Asia have also been proposed. Ancient genomes indicate at least two source populations: early dogs of north-eastern Europe, Siberia and the Americas share one origin, while those of the Middle East, Africa and southern Europe carry ancestry from another.\n\nThe domestication of [livestock and crops](event:animal-domestication) followed only after the end of the last glaciation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Origin_of_the_domestic_dog).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Origin_of_the_domestic_dog"
+   }
+  ],
+  "strong": [
+   "animal-domestication"
+  ],
+  "weak": [
+   "sahul"
+  ]
+ },
+ {
+  "id": "younger-dryas",
+  "name": "Younger Dryas cold snap",
+  "start": -12900,
+  "end": -11700,
+  "lat": 60.0,
+  "lng": -30.0,
+  "priority": 65,
+  "tags": [
+   "climate"
+  ],
+  "summary": "The warming world returned to near-glacial conditions for over a millennium, then warmed again within decades.",
+  "body": "Part of [Quaternary ice ages begin](event:quaternary-ice-ages). The Younger Dryas was a return to near-glacial conditions between about 12,900 and 11,700 years ago, in the middle of the warming that followed the [Last Glacial Maximum](event:lgm). It is named after *Dryas octopetala*, an arctic flower whose pollen reappears in Scandinavian lake sediments from this interval.\n\nThe cooling was concentrated in the northern hemisphere: about 3 °C over North America, 2 to 6 °C in Europe and up to 10 °C in Greenland, where ice cores record the change taking three years or less. Winters were far colder while summers changed little. The southern hemisphere warmed at the same time — the seesaw pattern expected if the cause was a slowdown of the Atlantic meridional overturning circulation, which carries heat northward, and that is the consensus explanation.\n\nWhat weakened the circulation is less certain. The traditional answer, a sudden discharge of meltwater from glacial Lake Agassiz into the North Atlantic, has little direct geological support; a Mackenzie River route has been proposed instead, and so has a cluster of volcanic eruptions immediately beforehand. A comet impact has been argued for repeatedly and is rejected by most specialists.\n\nIt ended as abruptly as it began, with warming of several degrees over about fifty years. That termination defines the start of the [Holocene](event:holocene), and the pressure the cold snap put on foragers in the Levant is often connected to the beginnings of [agriculture](event:agriculture).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Younger_Dryas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Younger_Dryas"
+   }
+  ],
+  "parent": "quaternary-ice-ages"
+ },
+ {
+  "id": "holocene",
+  "name": "Start of the Holocene",
+  "start": -11700,
+  "lat": 72.0,
+  "lng": -38.0,
+  "priority": 84,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "The current interglacial commenced, establishing the stable, warm climate in which all human civilisation developed.",
+  "body": "The Holocene is the current geological epoch, beginning 11,700 years before 2000 and continuing to the present. It is the interglacial that followed the last glaciation, and every settled human society has existed within it.\n\nIts base is defined not by a date but by a physical section: a horizon in the NGRIP2 ice core from central Greenland marking the end of the [Younger Dryas](event:younger-dryas), ratified as the epoch's global stratotype in 2008. The warming it records was several degrees within a few decades.\n\nThree ages were formally defined in 2018. The Greenlandian runs from 11,700 to 8,200 years ago; the Northgrippian from 8,200 to 4,200, beginning at the 8.2-kiloyear cold event caused by the final drainage of the North American proglacial lakes; and the Meghalayan from 4,200 years ago to the present, beginning with a drought of roughly two centuries recorded across the northern hemisphere.\n\nSea level rose tens of metres over the first few thousand years as the ice sheets melted, then stabilised. The climate has been comparatively steady, though not without variability — the 8.2-kiloyear event, and cycles of between one and two and a half thousand years. [Agriculture](event:agriculture) was adopted independently in several regions between about 10,000 and 7,000 years ago, and everything usually called history follows from it.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Holocene).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Holocene"
+   }
+  ],
+  "strong": [
+   "younger-dryas",
+   "agriculture"
+  ]
+ }
+]
