@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
   ATLAS_COLS,
   ATLAS_PX,
@@ -9,8 +9,10 @@ import {
   LOW_PX,
   SlotMap,
   buildIndex,
+  TileAtlas,
   fitLevel,
   gridCol,
+  gridCovering,
   gridOf,
   lowTapPx,
 } from '../src/lib/tileAtlas'
@@ -98,6 +100,53 @@ describe('gridOf', () => {
   })
 })
 
+describe('gridCovering', () => {
+  /**
+   * The arithmetic and the definition, held equal.
+   *
+   * `gridCovering` exists so `fitLevel` can ask "does this fit" without
+   * building the tile arrays to find out — which matters now that the level it
+   * is handed may lag the camera by an octave and a half and therefore may not
+   * fit at all. It is only safe if it is the same answer, so this is the test
+   * that makes it the same answer: every level from the first streamable one to
+   * the sharp source's ceiling, over views at the equator, at high latitude, at
+   * the pole and astride the antimeridian.
+   */
+  const views = [
+    viewBbox(45, 10, 0.02, 1.6),
+    viewBbox(45, 10, 0.4, 1.6),
+    viewBbox(-72, -140, 0.05, 0.6),
+    viewBbox(89.4, 0, 0.3, 2.2),
+    viewBbox(-89.6, 33, 0.3, 2.2),
+    viewBbox(56, 180, 0.09, 1.4),
+    viewBbox(56, -179.7, 0.09, 1.4),
+    viewBbox(0, 179.9, 1.2, 1),
+    viewBbox(0, 0, 1.3, 3),
+  ]
+
+  it('is exactly gridOf(tilesCovering) at every level and every view', () => {
+    for (const v of views) {
+      for (let z = BASE_LEVEL; z <= Z_MAX; z++) {
+        expect({ v, z, g: gridCovering(v, z) }).toEqual({
+          v,
+          z,
+          g: gridOf(tilesCovering(v, z)),
+        })
+      }
+    }
+  })
+
+  it('allocates no tiles to answer a question about their number', () => {
+    // The point of the function, stated as the thing it must not do: a level
+    // the camera has left can want a 29x29 grid, and discovering that 29 > 16
+    // must not cost 841 objects three times an animation frame.
+    const wide = viewBbox(0, 0, 1.3, 3)
+    const [, , w, h] = gridCovering(wide, 12)
+    expect(w * h).toBeGreaterThan(1000)
+    expect(fitLevel(wide, 12)).toBeLessThan(12)
+  })
+})
+
 describe('fitLevel', () => {
   const view = (alt: number, aspect = 1.6) => viewBbox(45, 10, alt, aspect)
 
@@ -138,6 +187,68 @@ describe('fitLevel', () => {
 
   it('never falls below the first streaming level', () => {
     expect(fitLevel(viewBbox(0, 0, 2, 1), 12, 4)).toBe(BASE_LEVEL + 1)
+  })
+})
+
+describe('the low tap, and who reads it', () => {
+  /**
+   * A renderer that records where each upload landed, and a canvas that records
+   * that it was drawn on. Between them they answer the only question this lever
+   * asks: does a tile the shader PAINTS still pay for the reduced copy the
+   * ratio path divides by?
+   */
+  const rig = () => {
+    const uploads: string[] = []
+    const reductions: number[] = []
+    const canvas = () => {
+      const c = {
+        width: 0,
+        height: 0,
+        getContext: () => ({
+          imageSmoothingQuality: 'low',
+          canvas: c,
+          drawImage: (_i: unknown, _x: number, _y: number, w: number) => reductions.push(w),
+        }),
+      }
+      return c
+    }
+    vi.stubGlobal('document', { createElement: () => canvas() })
+    const renderer = {
+      copyTextureToTexture: (_src: unknown, dst: { image: { width: number } }) =>
+        uploads.push(dst.image.width === ATLAS_PX ? 'sharp' : 'low'),
+    }
+    return { uploads, reductions, renderer }
+  }
+  afterEach(() => vi.unstubAllGlobals())
+
+  const tile = { width: TILE_PX, height: TILE_PX } as unknown as CanvasImageSource
+
+  it('holds a ratio-mode tile twice: sharp, and at the base map density', () => {
+    const { uploads, reductions, renderer } = rig()
+    const atlas = new TileAtlas(renderer as never)
+    atlas.put('9/1/1/s', tile, 9, 0)
+    expect(uploads).toEqual(['sharp', 'low'])
+    // 512 down to the tile's own base-map extent, then back out to the slot
+    expect(reductions).toEqual([lowTapPx(9), LOW_PX])
+    atlas.dispose()
+  })
+
+  it('holds a painted tile once, because nothing samples the other one', () => {
+    // `uDetailPaint = 1` multiplies the sharp/blurred ratio out of the shader
+    // entirely (globeSurface: `mix(stack, 1.0, uDetailPaint)`), so in map mode
+    // the reduced copy is computed, uploaded and never read. What it cost per
+    // tile was a main-thread `drawImage` of 512² down to as little as 8² at
+    // high smoothing quality — the last CPU rasterisation in the upload path —
+    // plus a second GL call.
+    const { uploads, reductions, renderer } = rig()
+    const atlas = new TileAtlas(renderer as never)
+    atlas.put('9/1/1/drawn', tile, 9, 0, false)
+    expect(uploads).toEqual(['sharp'])
+    expect(reductions).toEqual([])
+    // …and the slot bookkeeping is untouched: the tile is as resident as ever
+    expect(atlas.slots.slotOf('9/1/1/drawn')).toBeDefined()
+    expect(atlas.writes).toBe(1)
+    atlas.dispose()
   })
 })
 

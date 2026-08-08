@@ -172,3 +172,132 @@ Era gating (`IMAGERY_ERA_FROM`, pre-era zoom clamp), attribution plumbing,
 `detailWanted` hysteresis, motion-deferred publishes, frame-on-demand wakes,
 and the texStorage2D shape rules (never resize a published canvas). All
 existing tests keep passing; new pure functions get their own.
+
+## Round 54 — the gesture, and the four things it was paying for
+
+Phase 2 wrote down its own honest limit: *"a zoom across three levels rebuilds
+the atlas repeatedly — 95 MB across 91 frames; a level-blend would cut the
+churn."* The field then reported it from the other end — *"zooming in the drawn
+map is incredibly choppy / slow. Panning is also not optimal, especially in
+higher zoom levels."*
+
+The instrument for it is `tests/e2e/drawnPerf.e2e.mjs`, and it counts EVENTS
+rather than milliseconds, because under SwiftShader a millisecond says more
+about the machine than about the code: GL calls and bytes per frame at
+`WebGL2RenderingContext`, worker messages and queue depth at `Worker.prototype`,
+`update` / `pin` / `pump` / `absorb` / `reindex` / `TileAtlas.put` timed at their
+own prototypes, decoded-cache and slot-map keys snapshotted per frame so
+eviction is a difference of sets, and — the number the round turned out to be
+about — how many tiles are drawn, decoded and cached that never reach a slot at
+all.
+
+Attribution, drawn mode, scripted world→z9 zoom over 91 frames, before:
+
+| what                                   |  before |
+| -------------------------------------- | ------: |
+| pyramid levels entered                 |       6 |
+| tiles rendered in the worker           |     176 |
+| …that never reached an atlas slot      |      99 |
+| slot uploads (sharp + reduced)         | 114 + 114 |
+| bytes across the bus                   |  116 MB |
+| decoded tiles evicted                  |     105 |
+| `update` p95 on the main thread        |  1.9 ms |
+
+Four levers, and what each was worth.
+
+1. **The streamed level lags the camera through a gesture** (`heldLevel`,
+   `HOLD_MAGNIFY` 1.5, `HOLD_MINIFY` 1.0). Every level of the pyramid is a
+   different set of tiles, so chasing the density through a continuous zoom does
+   not sharpen the picture level by level — it throws the atlas away once per
+   level and starts refilling it at two slots a frame, and the camera leaves
+   before the refill finishes. During a gesture the level therefore stays where
+   it is and the shader magnifies it, which is what the fallback chain was built
+   to do and what a *drawing* survives better than a photograph. A still camera
+   always gets the level it wants, so the resting picture is unchanged; the
+   settle timer re-derives the frame from the camera it stopped at, because
+   nothing else would ever tell the pipeline the gesture had ended. Measured:
+   6 levels → 4 (an inward zoom snaps every ~2 octaves, not every one), 176
+   renders → 62, 116 MB → 64 MB, 105 evictions → 0.
+
+2. **A local source may not render ahead of the atlas** (`LOCAL_RENDER_AHEAD`).
+   `TILE_INFLIGHT` is six because six is what a browser keeps on the wire, and
+   that is right for a cost which is LATENCY — a request already made costs
+   nothing more to leave outstanding. A rasterizer inverts it: the cost is CPU,
+   it is not paid until the tile is drawn, and it is about a millisecond, so six
+   in flight drains in six milliseconds and refills from a plan that is stale
+   before the atlas has absorbed a quarter of it. The local queue is now bounded
+   by what the atlas can take — one frame of headroom over the upload budget.
+   Measured on the pan at z9: 61 of 117 cached tiles wasted → 19 of 77.
+
+3. **No reduced copy where the shader paints** (`SourcePlan.paint`,
+   `TileAtlas.put(…, lowTap)`). The atlas holds every tile twice because the
+   sharp/blurred ratio needs something to divide by. Map mode multiplies that
+   ratio out (`uDetailPaint = 1`), so for a drawn tile the reduction was a
+   main-thread `drawImage` of 512² down to as little as 8² at high smoothing
+   quality — the last CPU rasterisation anywhere in the upload path — plus a
+   second GL call, per tile, for a texel no fragment samples. 114 reductions and
+   114 uploads per zoom → 0. The realistic branch is untouched and still holds
+   both copies.
+
+4. **Two smaller ones the instrument convicted.** `update` is reached two to
+   three times per animation frame (the camera-change handler and the render
+   tick both go through it), and the plan is a pure function of the view and the
+   level — so an identical plan is no longer recomputed, and `pin` fell from 230
+   calls a zoom to 87. `fitLevel` asked "does this grid fit" by building the
+   tile arrays (`gridCovering` answers it arithmetically), which matters now
+   that it is handed levels that do not fit. And `DrawnRenderer`'s three-level
+   path cache is kept in recency order rather than insertion order, so a camera
+   that goes out and comes back no longer evicts the level it is drawing.
+
+After, same route, same virtual clock:
+
+| what                              |  before |   after |
+| --------------------------------- | ------: | ------: |
+| pyramid levels entered            |       6 |       4 |
+| tiles rendered                    |     176 |      62 |
+| …never slotted                    |      99 |      12 |
+| slot uploads                      | 114+114 |    64+0 |
+| bytes across the bus              |  116 MB |   64 MB |
+| decoded tiles evicted             |     105 |       0 |
+| `update` p95                      |  1.9 ms |  0.5 ms |
+| `TileAtlas.put` p95               |  0.9 ms |  0.2 ms |
+| pump wakes                        |     540 |     424 |
+
+One correctness fix fell out of lever 2 and is the reason `pump` now runs after
+`absorb`: `pump` reads the backlog to decide how far ahead to render, and
+`absorb` is what recomputes it, so asking first asks against the previous
+frame's answer — and on the frame that absorbs the last decoded tiles, `absorb`
+empties the backlog and `animating` with it, leaving nothing to ask for the
+frame on which the remaining tiles would have been requested. `animating ===
+false` has to mean the picture is complete; the render pump parks on it.
+
+### What this did not fix, and why
+
+**A zoom OUT is bounded by the atlas, not by policy.** Outward, holding a finer
+level means covering four times the ground at that level per octave, and
+`fitLevel` refuses it as soon as the grid and its parent stop fitting 64 slots
+and the 16×8 index — so past about one octave the refusal is certain and the
+level follows the camera whatever the rule says. Measured, the outward zoom
+streams *more* than before (136 uploads against 68) and that is the honest
+reading of it: the old build was so far behind that it never indexed levels 7
+and 8 at all — the reader saw base map through two octaves — where the new one
+keeps a picture on screen the whole way at half the per-upload main-thread cost.
+Fewer bytes there would need a different lever: a coarser index texture, or a
+rule that says a receding camera is not worth sharpening at all.
+
+**Cost-aware eviction was not implemented.** A drawn tile costs ~1 ms to redraw
+and a satellite tile a network round trip, and they share one 192 MB
+`TileCache`, so a drawn session can in principle evict expensive tiles to hold
+cheap ones. The instrument never caught it doing harm: after lever 1 the drawn
+working set fits the budget with room (evictions 105 → 0 on the zoom, 0 on the
+pan), and the two labels only coexist across a mode switch. A per-source budget
+would be code and a policy in defence of a case the numbers do not show.
+
+**The measurements are counts, and only counts.** SwiftShader renders this
+surface at roughly a megapixel a second, and at level 9 with the atlas branch
+live that is about a tenth of a frame a second — slow enough that the harness's
+own settle takes seconds of wall time, and slow enough that a wall-time number
+from it would be meaningless. Every figure above is a count of something that
+happened, on a virtual 60 Hz clock, over a camera path driven from inside the
+page; the millisecond columns are medians and p95s over hundreds of calls of
+main-thread JS, which is the one thing the software rasteriser does not inflate.

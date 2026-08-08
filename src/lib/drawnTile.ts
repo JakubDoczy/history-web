@@ -591,6 +591,9 @@ export function drawTile(ctx: DrawCtx, world: DrawnWorld, req: TileRequest, path
  * Three levels resident covers the pyramid's own working set — a view streams
  * its target level and its parent, and a zoom adds the next one — and each is a
  * few hundred `Path2D` objects. A fourth would be a level the camera has left.
+ *
+ * "The level the camera has left" is a claim about RECENCY, so the map is kept
+ * in recency order rather than in insertion order; see `paths`.
  */
 export class DrawnRenderer {
   private levels = new Map<number, LevelPaths>()
@@ -601,17 +604,26 @@ export class DrawnRenderer {
   ) {}
 
   paths(level: number): LevelPaths {
-    let held = this.levels.get(level)
-    if (!held) {
-      held = new LevelPaths(level)
+    const held = this.levels.get(level)
+    if (held) {
+      // …and asking for a level is what makes it recent. Insertion order alone
+      // said "age since first drawn", which is the wrong order for a camera
+      // that goes back: a zoom out to a level still on screen, then in again,
+      // evicted the level being drawn RIGHT NOW because it happened to be the
+      // first of the three built. Every path of it is then rebuilt from the
+      // point arrays, which is the 8–10 ms first-tile-of-a-level cost paid
+      // again for geometry that was already there.
+      this.levels.delete(level)
       this.levels.set(level, held)
-      // insertion order is age; the oldest level is the one the camera left
-      while (this.levels.size > this.keep) {
-        const oldest = this.levels.keys().next().value as number
-        this.levels.delete(oldest)
-      }
+      return held
     }
-    return held
+    const built = new LevelPaths(level)
+    this.levels.set(level, built)
+    while (this.levels.size > this.keep) {
+      const oldest = this.levels.keys().next().value as number
+      this.levels.delete(oldest)
+    }
+    return built
   }
 
   draw(ctx: DrawCtx, req: TileRequest) {

@@ -1,5 +1,6 @@
 import type { WebGLRenderer } from 'three'
 import {
+  BASE_LEVEL,
   TILE_MEMORY_BUDGET,
   TILE_PX,
   TileCache,
@@ -280,6 +281,18 @@ export const viewMotion = (a: Bbox | undefined, b: Bbox): number => {
 export const wrapDeg = (d: number): number => d - 360 * Math.round(d / 360)
 
 /**
+ * Exact equality of two view rectangles.
+ *
+ * Exact rather than tolerant on purpose: `viewBbox` is a pure function of the
+ * camera, so two calls with the same camera give bit-identical numbers, and
+ * anything a tolerance would additionally accept is a camera that really did
+ * move. It is only ever used to skip recomputing a plan that cannot have
+ * changed.
+ */
+export const sameBbox = (a: Bbox, b: Bbox): boolean =>
+  a.minLat === b.minLat && a.maxLat === b.maxLat && a.minLng === b.minLng && a.maxLng === b.maxLng
+
+/**
  * How far the view may drift *in total* and still count as a still camera.
  *
  * Small, but not zero: orbit damping keeps the camera creeping for the better
@@ -546,6 +559,18 @@ export interface SourcePlan {
   at(z: number, sharpDisabled: boolean): TileSource
   /** Does a failure from this plan mean anything? Local rendering never retries. */
   remote: boolean
+  /**
+   * Does the shader PAINT these tiles on, or divide the base map by them?
+   *
+   * The atlas holds every tile twice — sharp, and reduced to the base map's own
+   * density — because the ratio path needs a blurred tap to divide by
+   * (lib/tileAtlas.ts, LOW_PX). Paint mode does not: `uDetailPaint = 1` cancels
+   * the ratio entirely and the tile is the ground. So this is not a rendering
+   * choice made twice, it is the one choice read by both halves — the shader
+   * asks it as `DETAIL_MODE`, and the upload path asks it here to know whether
+   * the reduction is worth making at all.
+   */
+  paint?: boolean
 }
 
 export const IMAGERY_PLAN: SourcePlan = {
@@ -555,14 +580,97 @@ export const IMAGERY_PLAN: SourcePlan = {
 }
 
 /** …and the trivial plan a local source needs: one source at every level. */
-export const singleSourcePlan = (source: TileSource, zMax: number): SourcePlan => ({
+export const singleSourcePlan = (source: TileSource, zMax: number, paint = false): SourcePlan => ({
   zMax,
   at: () => source,
   remote: false,
+  paint,
 })
 
 /** How long the camera must hold still before the prefetch ring is worth spending. */
 export const SETTLE_MS = 280
+
+/**
+ * The pyramid level a view wants, before it is rounded to a level that exists.
+ *
+ * `targetLevel` is the ceiling of this, and the ceiling is right for choosing a
+ * level: imagery must never be blurrier than the screen it is on. It is the
+ * wrong thing to compare two moments of a gesture with, because a zoom that
+ * moves the density by a tenth of an octave either side of a boundary changes
+ * the ceiling twice and the picture not at all. The lag rule below is written
+ * against the continuous number for exactly that reason.
+ */
+export const levelWanted = (baseTexels: number): number =>
+  BASE_LEVEL - Math.log2(Math.max(baseTexels, 1e-9))
+
+/**
+ * How far the streamed level may lag the camera DURING A GESTURE, up and down.
+ *
+ * This is round 54's answer to the field report ("zooming in the drawn map is
+ * incredibly choppy"), and to the honest limit phase 2 wrote down for itself:
+ * *"a zoom across three levels rebuilds the atlas repeatedly — 95 MB across 91
+ * frames; a level-blend would cut the churn."*
+ *
+ * What made it churn is that every level of the pyramid is a DIFFERENT SET OF
+ * TILES. Chasing the density through a continuous zoom therefore does not
+ * sharpen the picture level by level; it throws the whole atlas away once per
+ * level and starts refilling it at two slots a frame, and the camera leaves
+ * before the refill finishes. Measured on the scripted world→z9 zoom, drawn
+ * mode: six levels crossed, 177 tiles rendered, 110 slot uploads, 112 MB — and
+ * 132 of the 244 tiles the cache took in never reached a slot at all, because
+ * the level they belonged to was gone before the upload budget reached them.
+ * Half the work of the gesture was for pictures nobody ever saw.
+ *
+ * The fix is the one the pyramid was already built for. A resident level that
+ * is one or two octaves too coarse is not a hole — the shader magnifies it, and
+ * on a *drawing* that reads as a slightly heavier pen rather than as a blurred
+ * photograph (which is the whole reason `DRAWN_Z_MAX` is above the level the
+ * geometry saturates at). So during a gesture the streamed level simply stays
+ * where it is, and every tile of it is already resident: a zoom inside the band
+ * costs zero renders and zero uploads. When the camera stops, the level snaps
+ * to what the camera actually wants and the picture sharpens into it through
+ * the same per-slot dissolve everything else arrives by. Nothing about the
+ * resting picture changes — which is the requirement, and is what the pixel
+ * diff in tests/e2e/drawnMap.e2e.mjs is there to hold.
+ *
+ * The two bounds are not the same number, and the asymmetry is structural
+ * rather than a taste:
+ *
+ *  · MAGNIFY (the camera has come closer than the held level) is 1.5 octaves.
+ *    Holding a coarser level costs NOTHING — its tiles are resident, its grid
+ *    is shrinking, and the shader was already magnifying it. The only cost is
+ *    softness, and 1.5 octaves of magnification on a drawn coastline is about
+ *    what one wheel-notch of overshoot already looked like.
+ *  · MINIFY (the camera has pulled back past the held level) is 1.0 octave,
+ *    and it is bounded by the atlas rather than by preference: holding a finer
+ *    level while the frame grows means covering four times the ground at that
+ *    level per octave, and `fitLevel` refuses it as soon as the grid and its
+ *    parent stop fitting 64 slots. Past one octave the refusal is certain, so
+ *    the rule states the limit instead of discovering it.
+ */
+export const HOLD_MAGNIFY = 1.5
+export const HOLD_MINIFY = 1.0
+
+/**
+ * Which level to stream: the one the camera wants, or the one already resident.
+ *
+ * `held` is the level the last frame actually used — after `fitLevel`, so it is
+ * a level that fits — and `undefined` before anything has streamed. A still
+ * camera always gets `wanted`, which is what makes the lag invisible at rest
+ * and keeps every settled view byte-identical to the view before this rule
+ * existed.
+ */
+export const heldLevel = (
+  held: number | undefined,
+  wantedFrac: number,
+  wanted: number,
+  still: boolean,
+): number => {
+  if (held === undefined || still) return wanted
+  if (wantedFrac - held > HOLD_MAGNIFY) return wanted
+  if (held - wantedFrac > HOLD_MINIFY) return wanted
+  return held
+}
 
 /**
  * How many tile requests may be outstanding at once.
@@ -574,6 +682,17 @@ export const SETTLE_MS = 280
  * re-picks the next six from wherever the camera has got to.
  */
 export const TILE_INFLIGHT = 6
+
+/**
+ * How far a LOCAL source may render ahead of the atlas.
+ *
+ * Counted in tiles that are decoded, wanted, and still waiting for a slot —
+ * `backlog`, the same number that keeps the render pump awake. Two is
+ * `ATLAS_UPLOADS_PER_FRAME`, so four is one animation frame of headroom over
+ * the budget: a tile is always ready the moment a slot frees, and nothing is
+ * drawn for a frame the uploader will never catch up with. See `pump`.
+ */
+export const LOCAL_RENDER_AHEAD = ATLAS_UPLOADS_PER_FRAME * 2
 
 /**
  * Arrivals no longer need collecting.
@@ -658,6 +777,14 @@ export class DetailImagery {
   private creditAt = 0
   /** Attribution text by source label, so the panel can describe what is shown. */
   private attributions = new Map<string, string>()
+  /**
+   * The level the last frame actually streamed, and whether it is behind the
+   * camera on purpose. See `heldLevel`.
+   */
+  private held?: number
+  private lagging = false
+  /** The last camera this was updated with, so the settle can re-derive from it. */
+  private last?: [number, number, number, number, number, number]
 
   constructor(opts: DetailImageryOptions = {}) {
     this.tileBudget = opts.tileBudget ?? TILE_MEMORY_BUDGET
@@ -744,36 +871,75 @@ export class DetailImagery {
       return
     }
 
+    this.last = [lat, lng, altitude, screenPx, aspect, fovDeg]
+
     // Three numbers describe everything the pipeline does with this frame: the
     // ground in view, the pyramid level that matches the screen's density, and
     // the tiles that follow from the two. All pure, all in lib/tilePyramid.ts
     // and lib/tileAtlas.ts.
     const target = viewBbox(lat, lng, altitude, aspect, PATCH_MARGIN, fovDeg)
-    // `fitLevel` is the only place resolution is ever given up, and it is the
-    // atlas's 64 slots doing the giving — the same 4096² ceiling `patchPixelCap`
-    // used to enforce on a canvas.
-    const z = fitLevel(
-      target,
-      targetLevel(baseTexelsPerScreenPx(altitude, screenPx, fovDeg), this.plan.zMax),
-    )
-    this.want = { target, plan: tilePlan(target, z) }
 
     // Is the camera moving *at all*? Measured from where it last counted as
     // having moved, never from the previous frame: a gesture is a displacement
     // over a window of time, and a per-frame comparison can only see a speed.
-    // See MOTION_EPS. The one thing that still reads it is the prefetch ring.
+    // See MOTION_EPS. It is answered BEFORE the level is chosen because the
+    // level now depends on it — a still camera streams what it wants and a
+    // moving one may keep what it has (see `heldLevel`) — and answering it
+    // afterwards would have spent a whole frame on the previous gesture's
+    // classification.
     if (viewMotion(this.restingAt, target) > MOTION_EPS) {
       this.movedAt = Date.now()
       this.restingAt = target
     }
 
-    // Asking for a tile is idempotent — the cache and the in-flight set dedupe
-    // by key — so there is no "has the view moved enough to be worth a request"
-    // question left to get wrong, and no request to cancel when it moves again.
-    this.pin()
-    this.pump()
+    const dense = baseTexelsPerScreenPx(altitude, screenPx, fovDeg)
+    const wanted = targetLevel(dense, this.plan.zMax)
+    // …and what the camera gets, which through a gesture may be the level it
+    // already has. The picture is a magnification of a resident level rather
+    // than a rebuild of the atlas; see HOLD_MAGNIFY.
+    const pick = heldLevel(this.held, levelWanted(dense), wanted, this.still)
+    // `fitLevel` is the only place resolution is ever given up, and it is the
+    // atlas's 64 slots doing the giving — the same 4096² ceiling `patchPixelCap`
+    // used to enforce on a canvas. It is also what bounds the lag on the way
+    // out: a held level whose grid no longer fits is refused here.
+    const z = fitLevel(target, pick)
+    this.held = z
+    // Lagging means THE HOLD DEVIATED, not merely that the level is not the
+    // density's first choice. `fitLevel` also lowers the level — permanently,
+    // on a dense enough screen — and reading that as a lag would arm the
+    // settle's replay forever, which is a timer firing four times a second at
+    // rest for a view that is already correct. Frame-on-demand is a promise
+    // about a parked globe and this is one of the things that could break it.
+    this.lagging = pick !== wanted
+
+    // The plan is a pure function of (target, z), and `update` is reached two
+    // or three times per animation frame — the camera-change handler and the
+    // render tick both go through it. Recomputing an identical plan is three
+    // `tilesCovering` sweeps, three sorts and a hundred string keys for an
+    // answer that cannot have changed; the parts that CAN change on the clock
+    // rather than on the camera — the upload budget and the fades — are below.
+    if (!this.want || this.want.plan.z !== z || !sameBbox(this.want.target, target)) {
+      this.want = { target, plan: tilePlan(target, z) }
+      // Asking for a tile is idempotent — the cache and the in-flight set dedupe
+      // by key — so there is no "has the view moved enough to be worth a
+      // request" question left to get wrong, and no request to cancel when it
+      // moves again.
+      this.pin()
+    }
     const now = Date.now()
+    // ABSORB BEFORE PUMPING, which is the order the local queue's bound makes
+    // necessary. `pump` now reads `backlog` to decide how far ahead of the
+    // atlas a local source may render, and `absorb` is what recomputes it —
+    // so asking first asks against the previous frame's answer, and the frame
+    // that frees the queue is not the frame that refills it. At best that
+    // costs a frame of latency on every tile; at worst the last absorb of a
+    // view empties `backlog`, `animating` goes false with it, and nothing asks
+    // for the frame on which the remaining tiles would have been requested —
+    // leaving the settle timer 280 ms later as the only thing that finishes
+    // the picture. Neither is a trade worth making for an ordering that buys
+    // nothing: a request is asynchronous either way.
     this.absorb(now)
+    this.pump()
     this.reindex(now)
     this.arm()
   }
@@ -836,6 +1002,25 @@ export class DetailImagery {
   private pump() {
     const w = this.want
     if (!w || this.disabled) return
+    // A LOCAL SOURCE MAY NOT RENDER AHEAD OF THE ATLAS.
+    //
+    // `TILE_INFLIGHT` is six because six is what a browser will keep on the
+    // wire, and it is the right number for a thing whose cost is *latency*: a
+    // request already made costs nothing more to leave outstanding, so starting
+    // early is free and arriving late is the only risk. A local rasterizer
+    // inverts that. Its cost is CPU, it is not paid until the tile is drawn,
+    // and it is roughly a millisecond — so six in flight drains in six
+    // milliseconds and refills from a plan that will be three frames stale
+    // before the atlas, which absorbs two slots per frame, has taken a quarter
+    // of it. The renderer runs about ten times faster than the uploader and the
+    // surplus is pure waste: measured on the scripted zoom out, 68 of 104 tiles
+    // drawn, decoded and cached never reached a slot at all.
+    //
+    // So the local queue is bounded by what the atlas can actually take. One
+    // frame's worth of headroom over the upload budget keeps a tile ready
+    // whenever a slot frees, and stops the rasterizer drawing pictures for a
+    // camera position the uploader will never reach.
+    if (!this.plan.remote && this.backlog >= LOCAL_RENDER_AHEAD) return
     const src = this.sourceAt(w.plan.z)
     const queue = [...w.plan.fallback, ...w.plan.level]
     // The ring is spent out of *headroom*, and only at rest. The frame's own
@@ -945,8 +1130,15 @@ export class DetailImagery {
     this.attributions.set(src.label, src.attribution ?? '')
     this.strikes = 0
     if (gen !== this.generation) return
+    // COUNTED, not flagged. It used to be `max(backlog, 1)`, which was enough
+    // for the only reader it had — `animating`, which asks "is there work left"
+    // — but a flag cannot bound a queue. A local source resolves on a microtask
+    // and `pump` below re-fills from inside that resolution, so a whole plan
+    // was drawn in one frame's cascade before `absorb` ever ran to say how far
+    // ahead the renderer had got. One more decoded tile with no slot is exactly
+    // what has just happened; `absorb` recomputes the exact figure every frame.
+    this.backlog++
     this.pump() // a slot came free
-    this.backlog = Math.max(this.backlog, 1)
     this.onReady?.()
   }
 
@@ -963,8 +1155,18 @@ export class DetailImagery {
     if (this.settle !== undefined) return
     this.settle = setTimeout(() => {
       this.settle = undefined
-      if (this.still) this.pump()
-      else this.arm()
+      if (!this.still) return this.arm()
+      // A gesture that ended on a held level has to be told the gesture ended.
+      // Nothing else would tell it: `update` runs on frames the camera moves,
+      // and by definition this is the first moment it has not — so without this
+      // the view would keep the coarse level it was magnifying and never
+      // sharpen into the one it stopped at. Re-deriving from the camera it
+      // stopped at is what makes the lag a property of the GESTURE and not of
+      // the resting picture. It terminates: the replay runs with `still` true,
+      // so `heldLevel` returns the wanted level, `lagging` goes false, and the
+      // timer it arms takes the plain branch below.
+      if (this.lagging && this.last) this.update(...this.last)
+      else this.pump()
     }, SETTLE_MS)
   }
 
@@ -999,7 +1201,9 @@ export class DetailImagery {
       const image = this.tiles.get(key)
       if (!image) continue
       if (budget > 0) {
-        this.atlas.put(key, image, t.z, now)
+        // …without the reduced copy where the shader paints rather than
+        // divides: see SourcePlan.paint and TileAtlas.put.
+        this.atlas.put(key, image, t.z, now, !this.plan.paint)
         budget--
         this.credit--
       } else left++
@@ -1051,6 +1255,11 @@ export class DetailImagery {
     // no longer on screen
     this.want = undefined
     this.backlog = 0
+    // The held level is a claim that a level is RESIDENT and worth magnifying.
+    // Nothing here is resident any more — the plan changed, or the camera left
+    // the streaming range — so the next view picks its level from the camera.
+    this.held = undefined
+    this.lagging = false
     if (!this.inflight.size) return
     // in-flight tiles still land in the cache — they are as true as ever — but
     // they resolve into a dead generation and reach no screen

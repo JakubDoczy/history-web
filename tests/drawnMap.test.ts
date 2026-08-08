@@ -335,6 +335,26 @@ describe('the rasterizer', () => {
     expect(Math.max(...times)).toBeLessThan(8)
   })
 
+  it('keeps the level it is drawing, not the level it drew first', () => {
+    // `keep = 3` is the pyramid's own working set — a view streams its target
+    // level and its parent, and a zoom adds the next one — but which three is a
+    // question about RECENCY, and the map used to answer it with insertion
+    // order. A camera that goes out and comes back therefore evicted the level
+    // it was drawing right then, because that level happened to be the first of
+    // the three built, and every path of it was rebuilt from the point arrays:
+    // the 8–10 ms first-tile-of-a-level cost, paid again for geometry that was
+    // already there.
+    const s = surface()
+    const r = new DrawnRenderer(world())
+    for (const z of [6, 7, 8]) r.draw(s.ctx, EUROPE(z))
+    const six = r.paths(6)
+    expect(six.size).toBeGreaterThan(0)
+    r.draw(s.ctx, EUROPE(6)) // …the camera comes back
+    r.draw(s.ctx, EUROPE(9)) // …and then goes somewhere new
+    expect(r.paths(6)).toBe(six) // level 6 survived; it is the one in use
+    expect(r.paths(7).size).toBe(0) // level 7 is the one the camera left
+  })
+
   it('draws from 110m until the 50m data lands, and from 50m after', () => {
     const coarseOnly = buildWorld(read('land-110m.json'))
     expect(landAt(coarseOnly, 9)[1]).toBe('coarse')
@@ -688,6 +708,21 @@ describe('the drawn source in the pipeline', () => {
     // server to demote and no strike to count
     expect(plan.remote).toBe(false)
     expect(IMAGERY_PLAN.remote).toBe(true)
+  })
+
+  it('tells the upload path what the shader already knows: this one is painted', () => {
+    // The atlas holds every tile twice — sharp, and reduced to the base map's
+    // density — because the ratio path divides by the second one. Paint mode
+    // multiplies that ratio out (`uDetailPaint = 1`), so for a drawn tile the
+    // reduction is a main-thread `drawImage` of 512 down to as little as 8 at
+    // high smoothing quality, plus a GL call, for a texel no fragment samples.
+    // One flag, read by both halves of the same decision — see DETAIL_MODE.
+    expect(singleSourcePlan(fake, DRAWN_Z_MAX, true).paint).toBe(true)
+    expect(singleSourcePlan(fake, DRAWN_Z_MAX).paint).toBe(false)
+    expect(IMAGERY_PLAN.paint ?? false).toBe(false)
+    // and it is the same answer the shader is given for the same mode
+    expect(DETAIL_MODE.paint).toBe(1)
+    expect(DETAIL_MODE.ratio).toBe(0)
   })
 
   it('paints the tile on rather than pushing the base map with it', () => {

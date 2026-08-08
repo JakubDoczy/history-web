@@ -22,6 +22,7 @@ import {
   type Bbox,
 } from '../src/lib/detailImagery'
 import {
+  BASE_LEVEL,
   TILE_BYTES,
   TILE_PX,
   targetLevel,
@@ -29,7 +30,7 @@ import {
   tileSpanDeg,
   tilesCovering,
 } from '../src/lib/tilePyramid'
-import { ATLAS_UPLOADS_PER_FRAME } from '../src/lib/tileAtlas'
+import { ATLAS_UPLOADS_PER_FRAME, fitLevel } from '../src/lib/tileAtlas'
 
 describe('viewBbox', () => {
   it('is centred on the requested point', () => {
@@ -335,8 +336,14 @@ import { afterEach, beforeEach, vi } from 'vitest'
 import {
   altitudeForFrameKm,
   DetailImagery,
+  HOLD_MAGNIFY,
+  HOLD_MINIFY,
+  LOCAL_RENDER_AHEAD,
   MOTION_EPS,
   SETTLE_MS,
+  heldLevel,
+  levelWanted,
+  sameBbox,
   viewBbox as viewBboxFor,
   viewMotion,
   wrapDeg,
@@ -1219,5 +1226,327 @@ describe('a slow pan is a pan', () => {
     // ring spent during a movement nobody can see.
     const perFrame = (MOTION_EPS / SETTLE_MS) * 16 * 0.5
     expect(drag(perFrame, 90).stillFrames).toBeGreaterThan(0)
+  })
+})
+
+/**
+ * THE LEVEL A GESTURE STREAMS — round 54.
+ *
+ * The field report was "zooming in the drawn map is incredibly choppy". The
+ * instrument (tests/e2e/drawnPerf.e2e.mjs) attributed it: a scripted world→z9
+ * zoom crossed six pyramid levels, and every level is a different set of tiles,
+ * so the atlas was thrown away and refilled six times at two slots a frame.
+ * 177 tiles rendered, 110 uploaded, 112 MB — and 132 of the 244 tiles the cache
+ * took in never reached a slot at all, because the level they belonged to was
+ * gone before the upload budget reached them.
+ *
+ * These are the rules that stop it, tested as arithmetic and then as behaviour.
+ */
+describe('the level a gesture streams', () => {
+  it('measures the wanted level continuously, so a boundary is not an event', () => {
+    // targetLevel is the ceiling of this, and a ceiling is the right thing to
+    // *choose* a level with and the wrong thing to *compare two moments* with.
+    expect(levelWanted(1)).toBe(BASE_LEVEL)
+    expect(levelWanted(0.5)).toBe(BASE_LEVEL + 1)
+    expect(levelWanted(0.25)).toBe(BASE_LEVEL + 2)
+    // …and it is exactly what targetLevel rounds
+    for (const t of [0.9, 0.4, 0.13, 0.02, 0.004]) {
+      expect(targetLevel(t, 12)).toBe(Math.min(12, Math.ceil(levelWanted(t))))
+    }
+  })
+
+  it('gives a still camera the level it wants, always', () => {
+    // the whole of "no behaviour change at rest": the lag is a property of the
+    // gesture and of nothing else, so a settled view is the view it always was
+    for (const held of [undefined, 4, 6, 9, 12]) {
+      expect(heldLevel(held, 8.2, 9, true)).toBe(9)
+    }
+  })
+
+  it('keeps a resident level through a zoom rather than chasing the density', () => {
+    // 1.5 octaves of magnification: the shader was already magnifying the level
+    // it holds, its tiles are resident, and its grid only shrinks as the camera
+    // comes in. Inside the band a zoom costs no render and no upload at all.
+    expect(heldLevel(6, 6.0, 6, false)).toBe(6)
+    expect(heldLevel(6, 7.4, 8, false)).toBe(6)
+    expect(heldLevel(6, 7.5, 8, false)).toBe(6)
+    expect(heldLevel(6, 7.6, 8, false)).toBe(8)
+    expect(HOLD_MAGNIFY).toBe(1.5)
+  })
+
+  it('gives the level up sooner on the way out, because the atlas makes it', () => {
+    // Holding a FINER level while the frame grows means four times the ground
+    // per octave at that level, and fitLevel refuses it as soon as the grid and
+    // its parent stop fitting 64 slots. Past one octave that refusal is
+    // certain, so the rule states the limit rather than discovering it.
+    expect(heldLevel(9, 8.2, 9, false)).toBe(9)
+    expect(heldLevel(9, 8.0, 8, false)).toBe(9)
+    expect(heldLevel(9, 7.9, 8, false)).toBe(8)
+    expect(HOLD_MINIFY).toBeLessThan(HOLD_MAGNIFY)
+  })
+
+  it('has nothing to hold before anything is resident', () => {
+    expect(heldLevel(undefined, 7.2, 8, false)).toBe(8)
+  })
+
+  it('knows two views are the same view without a tolerance to tune', () => {
+    const a = viewBboxFor(45, 10, 0.02, 1.6)
+    expect(sameBbox(a, viewBboxFor(45, 10, 0.02, 1.6))).toBe(true)
+    expect(sameBbox(a, viewBboxFor(45, 10.000001, 0.02, 1.6))).toBe(false)
+  })
+})
+
+describe('what a scripted zoom costs the pipeline', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    FakeImage.reset()
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  /**
+   * The same camera path the browser instrument drives, on the fake clock:
+   * ninety frames from a world view down to the sharp source's ceiling, one
+   * `update` per frame, everything on the wire landing as it would.
+   */
+  const zoom = (from: number, to: number, frames = 90) => {
+    const d = new DetailImagery()
+    const levels = new Set<number>()
+    for (let i = 0; i < frames; i++) {
+      d.update(45, 10, from * (to / from) ** (i / (frames - 1)), 900, 1.4)
+      if (d.index) levels.add(d.index.z)
+      FakeImage.landAll(4)
+      vi.advanceTimersByTime(16)
+    }
+    return { d, levels, requests: FakeImage.requests.length }
+  }
+
+  /** The level the OLD rule streamed on each frame of the same path. */
+  const chased = (from: number, to: number, frames = 90) => {
+    const seen = new Set<number>()
+    for (let i = 0; i < frames; i++) {
+      const alt = from * (to / from) ** (i / (frames - 1))
+      const view = viewBboxFor(45, 10, alt, 1.4)
+      seen.add(fitLevel(view, targetLevel(baseTexelsPerScreenPx(alt, 900), Z_MAX)))
+    }
+    return seen
+  }
+
+  it('does not rebuild the atlas once per level the camera passes through', () => {
+    // Every level of the pyramid is a DIFFERENT SET OF TILES, so a level the
+    // camera enters and leaves inside a gesture is an atlas thrown away and
+    // refilled at two slots a frame for a picture that is gone before it is
+    // finished. This is the count of those, before and after, on one path.
+    const { d, levels } = zoom(1.2, 0.004)
+    const before = chased(1.2, 0.004)
+    expect(before.size).toBeGreaterThanOrEqual(8)
+    expect(levels.size).toBeLessThan(before.size)
+    // …and the shape of the rule: a snap every HOLD_MAGNIFY octaves at worst,
+    // so the count is about half, not a few per cent
+    expect(levels.size).toBeLessThanOrEqual(Math.ceil(before.size / HOLD_MAGNIFY))
+    d.dispose()
+  })
+
+  it('asks for tiles for the levels it streams and for no others', () => {
+    // Not a proxy: every request is a tile that has to be drawn or fetched,
+    // decoded, cached, and uploaded into a slot the camera may already have
+    // left. This is the count the browser instrument reports as `workerReqs`,
+    // where the same path in drawn mode went from 177 renders to the number in
+    // the round's table.
+    const { d, requests, levels } = zoom(1.2, 0.004)
+    const asked = new Set(FakeImage.requests.map(levelOf))
+    // a level is streamed with its parent under it, and nothing else is asked
+    // for at all — no level is paid for that never reached the index
+    for (const l of asked) expect([...levels].some((z) => z === l || z - 1 === l)).toBe(true)
+    expect(requests).toBeLessThan(chased(1.2, 0.004).size * 40)
+    d.dispose()
+  })
+
+  it('sharpens to the level the camera stopped at, once it has stopped', () => {
+    // The requirement the lag is bounded by. Nothing else would tell the
+    // pipeline the gesture ended — `update` runs on frames the camera moves,
+    // and this is the first moment it has not — so the settle timer re-derives
+    // the whole frame from the camera it stopped at.
+    const { d } = zoom(1.2, 0.004)
+    const alt = 0.004
+    const wanted = fitLevel(viewBboxFor(45, 10, alt, 1.4), targetLevel(baseTexelsPerScreenPx(alt, 900), Z_MAX))
+    // the gesture may well have ended magnifying a coarser level…
+    vi.advanceTimersByTime(SETTLE_MS * 3)
+    FakeImage.landAll()
+    vi.advanceTimersByTime(SETTLE_MS * 3)
+    // …and a settled camera is on the level it asked for, as it always was
+    expect(d.still).toBe(true)
+    expect(d.index?.z).toBe(wanted)
+    d.dispose()
+  })
+
+  it('forgets the level it held when the view it was resident in goes away', () => {
+    // A held level is a claim that a level is RESIDENT and worth magnifying.
+    // Leaving the streaming range or switching source makes that claim false.
+    const { d } = zoom(1.2, 0.004)
+    d.update(45, 10, 2.5, 900, 1.4) // out of streaming range: nothing is resident
+    FakeImage.reset()
+    d.update(45, 10, 0.004, 900, 1.4)
+    const wanted = fitLevel(viewBboxFor(45, 10, 0.004, 1.4), targetLevel(baseTexelsPerScreenPx(0.004, 900), Z_MAX))
+    expect(FakeImage.requests.map(levelOf).every((l) => l === wanted - 1)).toBe(true)
+    d.dispose()
+  })
+})
+
+/**
+ * WORKER PARITY WITH THE NETWORK — the second half of round 54.
+ *
+ * `TILE_INFLIGHT` is six because six is what a browser keeps on the wire, and
+ * that is the right number for a cost that is LATENCY: a request already made
+ * costs nothing more to leave outstanding. A local rasterizer inverts it. Its
+ * cost is CPU, it is not paid until the tile is drawn, and it is about a
+ * millisecond — so six in flight drains in six milliseconds and refills from a
+ * plan that goes stale long before the atlas, which takes two slots a frame,
+ * has absorbed a quarter of it. Measured in the browser on the scripted zoom
+ * out: 68 of the 104 tiles drawn, decoded and cached never reached a slot.
+ */
+describe('a local source renders no further ahead than the atlas can take', () => {
+  const flush = async () => {
+    for (let i = 0; i < 12; i++) await Promise.resolve()
+  }
+  const localPlan = (drawn: string[], remote = false) => ({
+    zMax: 9,
+    remote,
+    paint: true,
+    at: () => ({
+      label: 'local',
+      pxPerDeg: 1e4,
+      render: (t: { z: number; x: number; y: number }) => {
+        drawn.push(`${t.z}/${t.x}/${t.y}`)
+        return Promise.resolve({ width: TILE_PX, height: TILE_PX } as unknown as CanvasImageSource)
+      },
+    }),
+  })
+
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  /**
+   * One scripted stretch of frames, in its own clock.
+   *
+   * The timers are cleared around it deliberately: a `DetailImagery` left alive
+   * keeps a settle armed, and one instance's settle firing inside another
+   * instance's frames is the kind of cross-talk that makes a comparison say the
+   * opposite of what it measures.
+   */
+  const run = async (drawn: string[], remote: boolean, frames = 12) => {
+    vi.clearAllTimers()
+    const d = new DetailImagery({ plan: localPlan(drawn, remote) })
+    for (let i = 0; i < frames; i++) {
+      // A dense, wide frame on purpose: the rule is about a plan LARGER than
+      // the atlas can absorb in the frames available, which is exactly the
+      // condition a gesture is in and a small test view is not.
+      d.update(45, 10, 0.05, 1800, 2.5)
+      await flush()
+      vi.advanceTimersByTime(16)
+    }
+    return d
+  }
+
+  it('keeps the drawn-but-unslotted queue inside one frame of headroom', async () => {
+    const drawn: string[] = []
+    const d = await run(drawn, false)
+    expect(drawn.length).toBeGreaterThan(0)
+    expect(d.atlas.writes).toBeGreaterThan(0)
+    // Everything drawn is either in a slot or within the headroom the rule
+    // allows. Without the rule this difference is the whole rest of the plan.
+    expect(drawn.length - d.atlas.writes).toBeLessThanOrEqual(LOCAL_RENDER_AHEAD + TILE_INFLIGHT)
+    expect(LOCAL_RENDER_AHEAD).toBe(ATLAS_UPLOADS_PER_FRAME * 2)
+    d.dispose()
+  })
+
+  it('does not throttle a source whose cost is a round trip, only one whose cost is CPU', async () => {
+    // The same path, the same arrival schedule, the plan marked remote: a
+    // request already on the wire is sunk cost and starting early is free.
+    const local: string[] = []
+    const remote: string[] = []
+    const a = await run(local, false)
+    a.dispose()
+    const b = await run(remote, true)
+    b.dispose()
+    expect(remote.length).toBeGreaterThan(local.length)
+  })
+
+  it('still finishes the view: the gate is a rate, not a ceiling', async () => {
+    const drawn: string[] = []
+    const d = await run(drawn, false, 60)
+    expect(d.status).toBe('ready')
+    expect(d.index?.resident ?? 0).toBeGreaterThan(0)
+    // and nothing is left waiting once the atlas has caught up
+    expect(d.animating).toBe(false)
+    d.dispose()
+  })
+
+  it('is finished when it says it is finished, with no tile left unasked', async () => {
+    // The failure this is here for: `pump` used to run BEFORE `absorb`, so it
+    // decided how far ahead the renderer might run from the previous frame's
+    // backlog. On the frame that absorbed the last decoded tiles it therefore
+    // did nothing, `absorb` then emptied the backlog and with it `animating`,
+    // and a view that still had tiles it had never asked for stopped asking.
+    // Photographed in the browser as a settled camera holding 16 of its 21
+    // tiles until the settle timer noticed 280 ms later. `animating === false`
+    // has to mean the picture is complete, or nothing downstream can trust it.
+    // Checked on EVERY frame rather than at the end, and that is the point:
+    // the settle timer rescues the end — 280 ms later it pumps again and the
+    // view completes — so an end-state assertion cannot see a gap. What has to
+    // hold is the CLAIM: `animating === false` with nothing in flight means the
+    // picture is complete, and every reader of it (the render pump, which parks
+    // on it, and this round's instrument, which waits on it) depends on that.
+    // Bounding the local queue is the change that could have broken it.
+    //
+    // The renderer answers on the NEXT frame here rather than in the same
+    // microtask, which is the only thing about this harness that has to be
+    // true of the real one: a worker reply crosses a message port, so the
+    // frame that asks is never the frame that receives, and the pipeline's
+    // bookkeeping has to be correct on the frame in between.
+    const drawn: string[] = []
+    const waiting: (() => void)[] = []
+    vi.clearAllTimers()
+    const d = new DetailImagery({
+      plan: {
+        zMax: 9,
+        remote: false,
+        paint: true,
+        at: () => ({
+          label: 'local',
+          pxPerDeg: 1e4,
+          render: (t: { z: number; x: number; y: number }) => {
+            drawn.push(`${t.z}/${t.x}/${t.y}`)
+            return new Promise<CanvasImageSource>((res) =>
+              waiting.push(() => res({ width: TILE_PX, height: TILE_PX } as unknown as CanvasImageSource)),
+            )
+          },
+        }),
+      },
+    })
+    const inner = d as unknown as {
+      want?: { plan: { level: unknown[]; fallback: unknown[] } }
+      inflight: Set<string>
+    }
+    const holes: number[] = []
+    for (let i = 0; i < 60; i++) {
+      for (const r of waiting.splice(0)) r()
+      await flush()
+      d.update(45, 10, 0.05, 1800, 2.5)
+      await flush()
+      const wanted = inner.want ? inner.want.plan.level.length + inner.want.plan.fallback.length : 0
+      if (!d.animating && inner.inflight.size === 0 && (d.index?.resident ?? 0) < wanted) holes.push(i)
+      vi.advanceTimersByTime(16)
+    }
+    // the first frame is legitimately empty: nothing has been asked for yet
+    expect(holes.filter((i) => i > 0)).toEqual([])
+    expect(d.index?.resident).toBe(
+      inner.want!.plan.level.length + inner.want!.plan.fallback.length,
+    )
+    d.dispose()
   })
 })

@@ -1371,7 +1371,10 @@ onMounted(() => {
       if (kind === 'drawn') {
         if (!drawnPlan) {
           drawnTiles = new DrawnTiles(import.meta.env.BASE_URL)
-          drawnPlan = singleSourcePlan(drawnTiles.source, DRAWN_Z_MAX)
+          // …and `paint`, which is the upload path's half of `DETAIL_MODE`
+          // below: a drawn tile IS the ground, so the reduced copy the
+          // sharp/blurred ratio divides by is never sampled and is never made.
+          drawnPlan = singleSourcePlan(drawnTiles.source, DRAWN_Z_MAX, true)
           // The 50m geometry landing renames the source, which retires every
           // tile drawn from the 110m stand-in. Nothing else would ask for the
           // new ones: the camera has not moved, so the tick's own guard would

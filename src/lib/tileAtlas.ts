@@ -10,7 +10,7 @@ import {
   type WebGLRenderer,
 } from 'three'
 import type { Bbox } from './detailImagery'
-import { BASE_LEVEL, TILE_PX, tileCols, tilesCovering, type Tile } from './tilePyramid'
+import { BASE_LEVEL, TILE_PX, tileCols, tileRows, tileSpanDeg, type Tile } from './tilePyramid'
 
 /**
  * One GPU-resident texture holding the pyramid tiles the view is made of, and
@@ -175,6 +175,38 @@ export const gridCol = (x: number, x0: number, cols: number): number =>
   (((x - x0) % cols) + cols) % cols
 
 /**
+ * The same grid, from the rectangle instead of from the tiles.
+ *
+ * `gridOf(tilesCovering(view, z))` is the definition and this is the arithmetic
+ * that definition reduces to — asserted equal over a sweep of views, levels and
+ * seam crossings in tests/tileAtlas.test.ts, which is what makes it safe to use
+ * where only the SHAPE of the grid is wanted.
+ *
+ * Why it exists: `fitLevel` asks "does the grid at this level fit" and threw
+ * away two whole tile arrays per candidate level to find out. That was free
+ * while the starting level was always the density's own answer — a handful of
+ * tiles, at most one iteration. Round 54 lets the streaming level LAG the camera
+ * through a gesture (see `heldLevel`), so `fitLevel` is now handed levels that
+ * do not fit and has to walk down to one that does; materialising a 29x29 tile
+ * array to discover that 29 > 16 is the kind of allocation a zoom does three
+ * times a frame. This allocates one four-element grid and nothing else.
+ */
+export function gridCovering(b: Bbox, z: number): Grid {
+  const span = tileSpanDeg(z)
+  const n = tileCols(z)
+  const m = tileRows(z)
+  const x0 = Math.floor((b.minLng + 180) / span)
+  const x1 = Math.max(x0, Math.ceil((b.maxLng + 180) / span) - 1)
+  const y0 = Math.max(0, Math.min(m - 1, Math.floor((90 - b.maxLat) / span)))
+  const y1 = Math.max(0, Math.min(m - 1, Math.max(y0, Math.ceil((90 - b.minLat) / span) - 1)))
+  const w = Math.min(x1 - x0 + 1, n) // a box wider than the world is the world
+  // …and a set that covers every column has no gap to find an origin after, so
+  // it is the whole world starting at zero — which is what `gridOf` answers for
+  // the same set.
+  return [w === n ? 0 : (((x0 % n) + n) % n), y0, w, y1 - y0 + 1]
+}
+
+/**
  * The finest level whose view *and* its parent fit the atlas.
  *
  * The old pipeline capped resolution with `patchPixelCap`: a composite could not
@@ -189,8 +221,8 @@ export const gridCol = (x: number, x0: number, cols: number): number =>
  */
 export function fitLevel(view: Bbox, z: number, capacity = ATLAS_SLOTS): number {
   for (let level = z; level > BASE_LEVEL + 1; level--) {
-    const [, , gw, gh] = gridOf(tilesCovering(view, level))
-    const [, , pw, ph] = gridOf(tilesCovering(view, level - 1))
+    const [, , gw, gh] = gridCovering(view, level)
+    const [, , pw, ph] = gridCovering(view, level - 1)
     if (gw <= INDEX_W && gh <= INDEX_ROWS && gw * gh + pw * ph <= capacity) return level
   }
   return BASE_LEVEL + 1
@@ -416,8 +448,22 @@ export class TileAtlas {
    * 512 down to the tile's base-map extent, then out to the fixed 64 the slot
    * holds — so the shader needs no per-level size and the second tap is a
    * genuine low-pass rather than a bilinear guess at one.
+   *
+   * `lowTap` is round 54, and it is not a quality setting — it is the answer to
+   * "does anything read this". The reduced copy exists for ONE consumer: the
+   * sharp/blurred ratio in the surface shader. In paint mode that ratio is
+   * multiplied out (`detailGain = mix(1.0, mix(stack, 1.0, uDetailPaint), …)`
+   * with `uDetailPaint = 1`), so every byte of it is computed, uploaded and
+   * discarded. The drawn map is paint mode always (`DETAIL_MODE.paint`, and
+   * `resolveGlobeStyle` gives schematic nothing else), so a drawn tile was
+   * paying a main-thread `drawImage` of 512² down to as little as 8² at
+   * `imageSmoothingQuality: 'high'` — the one piece of CPU rasterisation left
+   * anywhere in the upload path — plus a second GL call, per tile, for a texel
+   * no fragment ever samples. Measured on the scripted zoom: 110 reductions and
+   * 110 extra `texSubImage2D` calls per gesture. The pixels are identical by
+   * construction; see the shader note at DETAIL_MODE.
    */
-  put(key: string, image: CanvasImageSource, z: number, now: number): Slot | undefined {
+  put(key: string, image: CanvasImageSource, z: number, now: number, lowTap = true): Slot | undefined {
     const slot = this.slots.acquire(key, now)
     if (!slot) return slot
     this.writes++
@@ -425,6 +471,8 @@ export class TileAtlas {
     const x = (slot.index % ATLAS_COLS) * TILE_PX
     const y = Math.floor(slot.index / ATLAS_COLS) * TILE_PX
     this.blit(this.sharp, image, x, y, TILE_PX)
+    // …and the reduction only where the shader will read it. See `lowTap`.
+    if (!lowTap) return slot
     const low = this.reduce(image, lowTapPx(z))
     if (low) {
       const lx = (slot.index % ATLAS_COLS) * LOW_PX
