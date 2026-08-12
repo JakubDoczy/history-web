@@ -122,6 +122,10 @@ function onHandleUp(e: PointerEvent) {
   if (!dragEdge.value) return
   dragEdge.value = null
   ;(e.currentTarget as Element).releasePointerCapture(e.pointerId)
+  // The drag wins over the lock, and then teaches it: the band the reader just
+  // made is how much time they want at this depth, so the next locked click
+  // uses their proportions rather than the shipped ones (stores/time.ts).
+  time.learnLock()
 }
 
 // --- interactions: drag = pan, pinch/wheel = zoom, click = set time ---
@@ -178,10 +182,40 @@ function onPointerUp(e: PointerEvent) {
   if (sub) {
     events.dismiss()
     time.selectEra(sub)
-  } else time.setTime(toT(localX(e)))
+  } else time.scrubTo(toT(localX(e)))
 }
 function onWheel(e: WheelEvent) {
   time.zoom(e.deltaY > 0 ? 1.2 : 1 / 1.2, localX(e) / width.value)
+}
+
+/**
+ * THE RANGE LOCK, as a padlock on the rail.
+ *
+ * The reader asked for the locked behaviour to be the default and for "some
+ * kind of a nice button for it with tooltip and everything", so the control is
+ * on the rail itself rather than in the settings panel — it is about the rail,
+ * it is the thing that explains why a click now moves the whole view, and a
+ * default that surprises you needs its off switch within reach of the surprise.
+ *
+ * Quiet until wanted: 26px in the rail's top corner, frost when off, brass when
+ * on (the app's chip language for "this is engaged"), and the sentence that
+ * says what each state does appears on hover AND on keyboard focus — which is
+ * the reason the tooltip is an element and not a `title` attribute.
+ */
+const lockTip = computed(() => {
+  const state = time.rangeLock
+    ? 'Range follows the year as you click. Click to unlock.'
+    : 'Range stays put; only the year moves. Click to lock.'
+  // Offered only when there is something to restore — the reader's own
+  // proportions, learnt from a dragged handle or a picked era.
+  return time.rangeLock && !time.lockIsDefault
+    ? `${state} Double-click to restore the default spread.`
+    : state
+})
+/** A double press is two toggles — which is a no-op — plus the reset. */
+function onLockReset() {
+  time.resetLock()
+  time.setRangeLock(true)
 }
 </script>
 
@@ -268,6 +302,48 @@ function onWheel(e: WheelEvent) {
     >
       <span class="knob" />
       <span class="flag tnum">{{ formatYear(time.currentTime) }}</span>
+    </div>
+
+    <!-- The range lock. `.stop` on both pointer events, not just on the click:
+         the rail captures its own pointer and reads the *up* as a scrub, so a
+         press that only stopped the click would still move the year. -->
+    <div class="lock-c">
+      <button
+        class="lock icon-c"
+        :class="{ on: time.rangeLock }"
+        type="button"
+        :aria-pressed="time.rangeLock"
+        aria-label="Range lock"
+        aria-describedby="range-lock-tip"
+        data-test="range-lock"
+        @pointerdown.stop
+        @pointerup.stop
+        @click.stop="time.toggleRangeLock()"
+        @dblclick.stop="onLockReset"
+      >
+        <!-- A PADLOCK, in geometry (styles/tokens.css: icons are never type).
+             One body, centred on the viewBox; the state is the hasp, which
+             closes onto it or lifts 1.5 units clear of it and loses its right
+             leg. Nothing else changes, so the toggle reads as one object
+             opening rather than as two different icons. -->
+        <svg
+          class="glyph"
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <rect x="4.5" y="11" width="15" height="9.5" rx="2.2" />
+          <path v-if="time.rangeLock" d="M8 11V7.5a4 4 0 0 1 8 0V11" />
+          <path v-else d="M8 11V6a4 4 0 0 1 8 0" />
+          <path d="M12 14.2v3.1" />
+        </svg>
+      </button>
+      <span id="range-lock-tip" class="tip" role="tooltip">{{ lockTip }}</span>
     </div>
   </div>
 </template>
@@ -580,5 +656,89 @@ function onWheel(e: WheelEvent) {
 .cursor.flip .flag {
   left: auto;
   right: 6px;
+}
+
+/* --- the range lock ---
+   The rail's top corner, because the rail is what it changes. It is the only
+   thing on the rail that is a *control* rather than a reading, so it states a
+   border and a fill of its own; everything else here is drawn ink.
+   The one thing it can cover is a selection handle sitting hard against the
+   right edge — 26 of that handle's 92 px, with the rest still grabbable. */
+.lock-c {
+  position: absolute;
+  top: 3px;
+  right: calc(var(--s2) + var(--safe-r));
+}
+.lock {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: rgba(13, 20, 32, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--frost-dim);
+  cursor: pointer;
+  transition:
+    color var(--fast),
+    border-color var(--fast),
+    background-color var(--fast);
+}
+.lock:hover {
+  color: var(--frost);
+  border-color: var(--brass-line);
+}
+/* brass = engaged, the same statement the icon buttons in the top bar make */
+.lock.on {
+  color: var(--brass);
+  border-color: var(--brass-line);
+  background: var(--brass-soft);
+}
+.lock.on:hover {
+  border-color: var(--brass);
+}
+
+/* An element, not a `title`: a keyboard reader gets it on focus, and the two
+   sentences it holds are the whole explanation of a default that changes what
+   a click does. Inside the rail, which clips — so it hangs below the button
+   rather than above it, where there is no room. */
+.tip {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  width: max-content;
+  max-width: 216px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: rgba(9, 14, 23, 0.96);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  line-height: 1.35;
+  color: var(--frost-dim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fast);
+}
+.lock:hover + .tip,
+.lock:focus-visible + .tip {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  /* a thumb's target, and a tip hung off the FOOT of the rail instead of off
+     the button: 84px of rail minus a 30px button leaves less room below it
+     than two lines of type need, and the rail clips. */
+  .lock {
+    width: 30px;
+    height: 30px;
+  }
+  .tip {
+    top: auto;
+    bottom: calc(var(--safe-b) + 3px);
+    max-width: 240px;
+  }
 }
 </style>

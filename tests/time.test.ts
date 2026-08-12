@@ -22,7 +22,8 @@ import {
 } from '../src/lib/time'
 import { HISTORICAL } from '../src/lib/eras'
 import { FIT_MS, useTimeStore } from '../src/stores/time'
-import { windowFitting } from '../src/lib/selection'
+import { windowFitting, type Span } from '../src/lib/selection'
+import { LOCK_SCALE, LOCK_SPLIT } from '../src/lib/rangeLock'
 
 describe('formatYear', () => {
   it.each([
@@ -655,5 +656,180 @@ describe('Time', () => {
       for (const [a, b] of [[y - 1, y + 1], [y, y], [y + 1, y + 2]])
         expect(timeIntersects(point, a, b)).toBe(timeIntersects(degenerate, a, b))
     }
+  })
+})
+
+/* ----------------------------------------------------------- the range lock */
+
+/**
+ * THE LOCK: a press on the rail brings the range with it, at the scale the
+ * depth deserves. The maths is tests/rangeLock.test.ts; this is the store's
+ * half — that the default is on, that the window and the band and the cursor
+ * all land together, that the drag wins and teaches, that the era overrides,
+ * and that with the lock off the rail behaves exactly as it did before.
+ */
+describe('the range lock', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  const width = (s: Span) => s.end - s.start
+
+  it('is on by default, on the reader’s own proportions', () => {
+    const s = useTimeStore()
+    expect(s.rangeLock).toBe(true)
+    expect(s.lockScale).toBe(LOCK_SCALE)
+    expect(s.lockSplit).toBe(LOCK_SPLIT)
+    expect(s.lockIsDefault).toBe(true)
+  })
+
+  it('gives a click near the present one year back and five forward', () => {
+    const s = useTimeStore()
+    s.scrubTo(2000)
+    expect(s.currentTime).toBe(2000)
+    expect(s.selection).toEqual({ start: 1999, end: 2005 })
+    // the window frames the band with the era fit's own 5% of air, so the band
+    // is what the rail is showing rather than a hairline on it
+    expect(s.range.start).toBeLessThan(1999)
+    expect(s.range.end).toBeGreaterThan(2005)
+    expect(width(s.range)).toBeLessThan(9)
+  })
+
+  it('gives a click at 1 Ma a window a hundred thousand times wider', () => {
+    const s = useTimeStore()
+    s.scrubTo(1990)
+    const near = width(s.selection)
+    s.scrubTo(-1e6)
+    expect(s.currentTime).toBe(-1e6)
+    expect(width(s.selection)).toBeCloseTo(0.2 * (1e6 + MAX_TIME), 0)
+    expect(width(s.selection) / near).toBeGreaterThan(20_000)
+  })
+
+  it('works at −2.5 Ga, where the years are large negatives', () => {
+    const s = useTimeStore()
+    s.scrubTo(-2.5e9)
+    expect(s.currentTime).toBe(-2.5e9)
+    expect(s.selection.start).toBeLessThan(-2.5e9)
+    expect(s.selection.end).toBeGreaterThan(-2.5e9)
+    expect(s.selection.start).toBeGreaterThanOrEqual(MIN_TIME)
+    expect(width(s.selection)).toBeCloseTo(0.2 * (2.5e9 + MAX_TIME), 0)
+  })
+
+  it('keeps the rail’s standing invariants at every depth', () => {
+    const s = useTimeStore()
+    for (const y of [MIN_TIME, -2.5e9, -1e6, -10_000, 0, 1500, 1990, 2020, MAX_TIME]) {
+      s.scrubTo(y)
+      expect(s.currentTime).toBeGreaterThanOrEqual(s.selection.start)
+      expect(s.currentTime).toBeLessThanOrEqual(s.selection.end)
+      expect(s.selection.start).toBeGreaterThanOrEqual(s.range.start)
+      expect(s.selection.end).toBeLessThanOrEqual(s.range.end)
+    }
+  })
+
+  it('converges instead of ratcheting: the same depth is the same scale', () => {
+    // the span is a function of the clicked year alone, never of the window it
+    // was clicked in — so a reader clicking about in one era stays at one zoom
+    const s = useTimeStore()
+    s.scrubTo(-1e6)
+    const first = width(s.selection)
+    s.scrubTo(-1e6)
+    expect(width(s.selection)).toBe(first)
+    s.scrubTo(-1.02e6)
+    expect(width(s.selection) / first).toBeCloseTo(1.02, 2)
+  })
+
+  it('unlocked, a press on the rail is setTime to the byte', () => {
+    const locked = useTimeStore()
+    locked.setRangeLock(false)
+    const plain = useTimeStore(createPinia())
+    for (const y of [1990, 1200, -10_000, 1500, MAX_TIME]) {
+      locked.scrubTo(y)
+      plain.setTime(y)
+      expect(locked.range).toEqual(plain.range)
+      expect(locked.selection).toEqual(plain.selection)
+      expect(locked.currentTime).toEqual(plain.currentTime)
+    }
+  })
+
+  it('lets the drag win, and learns the reader’s proportions from it', () => {
+    const s = useTimeStore()
+    s.setRange({ start: -2e6, end: 0 }) // zoomed out by hand
+    s.setTime(-1e6)
+    s.setSelection(-1.5e6, -0.5e6) // …and both handles dragged wide open
+    s.learnLock() // (TimelineBar calls this when the handle is released)
+    expect(s.lockIsDefault).toBe(false)
+    expect(s.lockScale).toBeCloseTo(1e6 / (1e6 + MAX_TIME), 3)
+    expect(s.lockSplit).toBeCloseTo(0.5, 3)
+    // the next click is answered in those proportions, at whatever depth
+    s.scrubTo(-2e6)
+    expect(width(s.selection) / 2e6).toBeCloseTo(1, 2)
+    expect((s.currentTime - s.selection.start) / width(s.selection)).toBeCloseTo(0.5, 2)
+  })
+
+  it('resets to the shipped proportions on demand', () => {
+    const s = useTimeStore()
+    s.scrubTo(-1e6)
+    s.setSelection(-1.5e6, -0.5e6)
+    s.learnLock()
+    expect(s.lockIsDefault).toBe(false)
+    s.resetLock()
+    expect(s.lockIsDefault).toBe(true)
+    s.scrubTo(-1e6)
+    expect(width(s.selection)).toBeCloseTo(0.2 * (1e6 + MAX_TIME), 0)
+  })
+
+  it('learns nothing while it is off', () => {
+    const s = useTimeStore()
+    s.setRangeLock(false)
+    s.setSelection(-1.5e6, -0.5e6)
+    s.setTime(-1e6)
+    s.learnLock()
+    expect(s.lockIsDefault).toBe(true)
+  })
+
+  it('toggles, and nothing moves until the next press', () => {
+    const s = useTimeStore()
+    s.scrubTo(1500) // locked: the rail is framed on 1482–1588
+    const framed = { ...s.range }
+    s.toggleRangeLock()
+    expect(s.rangeLock).toBe(false)
+    expect(s.range).toEqual(framed)
+    s.scrubTo(1550) // unlocked: the cursor moves, the window does not
+    expect(s.range).toEqual(framed)
+    expect(s.currentTime).toBe(1550)
+  })
+
+  /**
+   * Picking an era means "show me this era", not "recentre my relative window
+   * on its edge" — so the fit wins over the lock. And then the era teaches it:
+   * the lock's next answer is at the era's own scale, which is the reading a
+   * reader who just asked for an era would expect.
+   */
+  it('lets an era pick override it, and takes the era as the new scale', () => {
+    const s = useTimeStore()
+    const medieval = HISTORICAL.find((e) => e.name === 'Medieval')!
+    s.scrubTo(1990)
+    s.selectEra(medieval)
+    expect(s.selection).toEqual({ start: 500, end: 1500 }) // the era, outright
+    expect(s.range).toEqual(windowFitting(medieval)) // …and the era fit, +5%
+    expect(s.lockIsDefault).toBe(false)
+    // the cursor landed on 1500, so the era is a 1000-year window at a depth of
+    // 526 years — k ≈ 1.9, with the year at its far end
+    expect(s.lockScale).toBeCloseTo(1000 / (MAX_TIME - 1500), 3)
+    expect(s.lockSplit).toBe(1)
+    const before = width(s.selection)
+    s.scrubTo(1000)
+    expect(width(s.selection) / before).toBeGreaterThan(1) // the era's scale, at 1000
+  })
+
+  it('leaves the saga rail’s cursor moves alone', () => {
+    // setCursor is a step of a saga: a statement about where inside an event
+    // the reader is, not a request to reframe the rail
+    const s = useTimeStore()
+    s.setRange({ start: 1900, end: 2000 })
+    s.setSelection(1939, 1945)
+    const band = s.selection
+    s.setCursor(1941)
+    expect(s.currentTime).toBe(1941)
+    expect(s.selection).toBe(band)
+    expect(s.range).toEqual({ start: 1900, end: 2000 })
   })
 })

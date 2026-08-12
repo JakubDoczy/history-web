@@ -8,6 +8,13 @@ import {
   windowFitting,
   type Span,
 } from '../lib/selection'
+import {
+  DEFAULT_LOCK,
+  deriveLock,
+  isDefaultLock,
+  lockedWindow,
+  type Lock,
+} from '../lib/rangeLock'
 import type { Era } from '../lib/eras'
 
 /**
@@ -56,9 +63,34 @@ export const useTimeStore = defineStore('time', {
     range: { ...HOME_WINDOW },
     /** Sub-range of `range` that filters what the globe shows (see stores/events). */
     selection: { ...HOME_SELECTION },
+    /**
+     * THE RANGE LOCK, on by default.
+     *
+     * On, a click on the rail brings the band and the window with it, at a width
+     * derived from how deep the click landed (see lib/rangeLock.ts). Off, a
+     * click does what it always did: the cursor moves and the view stays.
+     *
+     * Default ON because the reader asked for it as the default — and because
+     * the off behaviour is what they were complaining about. It is one press to
+     * get back, and the press is on the rail (see TimelineBar.vue).
+     *
+     * It is not persisted, because nothing in this app is: there is not a single
+     * `localStorage` in src/, and the imagery, palette, cloud and map-mode
+     * settings all come back to their defaults on reload. Adding a private
+     * store for one flag would make this the only setting that survives, which
+     * is a stranger answer than "no setting does".
+     */
+    rangeLock: true,
+    /** The lock's two relative parameters — the reader's own, once they have
+     *  dragged a handle or picked an era. See `learnLock`. */
+    lockScale: DEFAULT_LOCK.scale,
+    lockSplit: DEFAULT_LOCK.split,
   }),
   getters: {
     span: (s) => s.range.end - s.range.start,
+    /** Whether the lock is still on the shipped proportions — the reset
+     *  affordance is offered only when there is something to reset. */
+    lockIsDefault: (s): boolean => isDefaultLock({ scale: s.lockScale, split: s.lockSplit }),
   },
   actions: {
     /**
@@ -74,6 +106,72 @@ export const useTimeStore = defineStore('time', {
       // extendSelectionTo publishes nothing for a year already inside the band,
       // and the band it was inside may be one a cancelled fit left off the rail.
       this.settleSelection()
+    },
+    /**
+     * A PRESS ON THE RAIL. The one entry point the lock applies to.
+     *
+     * Unlocked it *is* `setTime`, to the byte: the cursor moves, the band grows
+     * only if it has to, the window is untouched. Locked, the click also says
+     * what to look at — the band becomes the window the depth deserves
+     * (`lockedWindow`) and the view flies to frame it, which is the same
+     * gesture, the same 5% of air and the same 320 ms as picking an era.
+     *
+     * Everything else that moves the cursor is deliberately NOT this: a step of
+     * a saga (`setCursor`), a search result or an event's date (`focusTime`,
+     * `setTime`) are the app answering a question about a *thing*, and
+     * re-framing the rail around it is not part of that answer.
+     *
+     * Note what the locked branch does not do: it never asks where the window
+     * currently is. The span is a function of the clicked year alone, so
+     * clicking twice at the same depth lands on the same scale rather than
+     * ratcheting — the rule converges instead of zooming in forever.
+     */
+    scrubTo(t: Year) {
+      if (!this.rangeLock) return this.setTime(t)
+      cancelFit() // a scrub outranks a fit still in flight
+      const band = lockedWindow(clamp(t), this.lockScale, this.lockSplit)
+      const target = windowFitting(band)
+      // Selection first and directly, window second — the order `selectEra`
+      // explains: a band written through `setSelection` would be clipped by the
+      // window it is on its way out of.
+      const selection = clampSelection(band, target)
+      if (!sameSpan(selection, this.selection)) this.selection = selection
+      const currentTime = clamp(t, selection.start, selection.end)
+      if (currentTime !== this.currentTime) this.currentTime = currentTime
+      this.fitWindow(target)
+    },
+    /** Turn the lock on or off. Nothing moves until the next press on the rail. */
+    setRangeLock(on: boolean) {
+      this.rangeLock = on
+    },
+    toggleRangeLock() {
+      this.rangeLock = !this.rangeLock
+    },
+    /** Back to the shipped proportions — 1 year back and 5 forward at the
+     *  present, and a fifth of the distance to it everywhere else. */
+    resetLock() {
+      this.lockScale = DEFAULT_LOCK.scale
+      this.lockSplit = DEFAULT_LOCK.split
+    },
+    /**
+     * THE DRAG WINS, AND THEN IT TEACHES.
+     *
+     * A window the user made themselves — a handle dragged, an era picked — is
+     * a statement about how much time they want to see at this depth, so the
+     * lock reads its own two parameters back off it (`deriveLock`) and answers
+     * the next click in the reader's proportions rather than the shipped ones.
+     *
+     * Only while the lock is on. Off, the two numbers are not in use and
+     * nothing should be quietly rewriting them: locking again resumes the
+     * proportions the lock itself was last taught, which is a smaller surprise
+     * than resuming a band the reader dragged for some other reason.
+     */
+    learnLock() {
+      if (!this.rangeLock) return
+      const prev: Lock = { scale: this.lockScale, split: this.lockSplit }
+      const { scale, split } = deriveLock(this.selection, this.currentTime, prev)
+      this.lockScale = scale
+      this.lockSplit = split
     },
     /**
      * Move the CURSOR and nothing else — no band, no window.
@@ -251,6 +349,14 @@ export const useTimeStore = defineStore('time', {
      * about a function two files away, and it is checked at the moment the band
      * is written rather than at the moment the tween lands (a tween any gesture
      * can cancel — see `settleSelection`).
+     *
+     * THE ERA OVERRIDES THE LOCK, and then teaches it. Picking an era says
+     * "show me this era", not "recentre my relative window on its edge", so the
+     * fit is the same one it always was and the lock does not get a vote. What
+     * happens afterwards is the natural reading of the same click: the era
+     * becomes the scale the reader is browsing at, so the lock learns k and the
+     * split from it (`learnLock`) and the next press on the rail continues at
+     * the era's own proportions rather than the shipped ones.
      */
     selectEra(era: Era) {
       cancelFit()
@@ -263,6 +369,7 @@ export const useTimeStore = defineStore('time', {
       // where it would drive the globe from a year the selection excludes.
       const currentTime = clamp(this.currentTime, selection.start, selection.end)
       if (currentTime !== this.currentTime) this.currentTime = currentTime
+      this.learnLock() // the era is the scale now; see the note above
       this.fitWindow(target)
     },
     /**
