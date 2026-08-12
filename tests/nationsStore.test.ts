@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { isReactive, toRaw } from 'vue'
 import { useNationStore } from '../src/stores/nations'
+import { useSettingsStore } from '../src/stores/settings'
 import { useTimeStore } from '../src/stores/time'
+import { MODERN_FROM } from '../src/lib/modernBorders'
 
 /**
  * What the globe's polygon layer actually receives.
@@ -48,5 +50,43 @@ describe('nation store', () => {
     const time = useTimeStore()
     time.range = { start: -1e6, end: 2000 }
     expect(nations.borders).toEqual([])
+  })
+
+  /**
+   * The modern states, which are ink and not polities: they never appear in
+   * `current` or `borders`, so nothing about the polygon layer, the ranking or
+   * `MAX_VISIBLE` can notice them.
+   */
+  describe('the modern states', () => {
+    const modernYear = () => {
+      const time = useTimeStore()
+      time.range = { start: 1900, end: 2024 }
+      time.currentTime = 2000
+    }
+
+    it('appears only inside its window, and never as a polity', () => {
+      const nations = useNationStore()
+      const time = useTimeStore()
+      expect(nations.modernBorders).toEqual([]) // 1200
+      modernYear()
+      expect(nations.modernBorders).toHaveLength(1)
+      expect(nations.current.map((n) => n.id)).toEqual(['usa', 'prc', 'india'])
+      expect(nations.borders.some((b) => b.nation.id.startsWith('modern'))).toBe(false)
+      time.currentTime = MODERN_FROM - 1
+      expect(nations.modernBorders).toEqual([])
+    })
+
+    it('goes away with the setting, and with a geological zoom', () => {
+      const nations = useNationStore()
+      const settings = useSettingsStore()
+      modernYear()
+      expect(settings.modernBorders).toBe(true)
+      settings.toggle('modernBorders')
+      expect(nations.modernBorders).toEqual([])
+      settings.toggle('modernBorders')
+      expect(nations.modernBorders).toHaveLength(1)
+      useTimeStore().range = { start: -1e6, end: 2000 }
+      expect(nations.modernBorders).toEqual([])
+    })
   })
 })

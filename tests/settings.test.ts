@@ -22,6 +22,10 @@ describe('settings store', () => {
     expect(MAX_EVENTS.max % MAX_EVENTS.step).toBe(0)
   })
 
+  it('draws the modern states by default, because nothing else draws 2000', () => {
+    expect(useSettingsStore().modernBorders).toBe(true)
+  })
+
   it('toggles each independently', () => {
     const s = useSettingsStore()
     s.toggle('clouds')

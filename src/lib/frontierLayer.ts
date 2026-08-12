@@ -1,5 +1,5 @@
 import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, type Scene } from 'three'
-import type { BorderRing, Ring } from './nations'
+import type { BorderRing, FrontierInk, Ring } from './nations'
 
 /**
  * POLITICAL INK — the part of a polity's boundary that is a frontier.
@@ -81,9 +81,29 @@ function pushLine(
   }
 }
 
-/** One entry's ink: its frontier runs, or its whole outline where coasts are kept. */
-export const inkPathsOf = (entry: BorderRing, coastal: boolean): Ring[] =>
-  coastal ? entry.coordinates : entry.frontier
+const NO_PATHS: Ring[] = []
+
+/**
+ * One entry's ink — which part of its boundary is drawn.
+ *
+ * Four answers rather than the boolean this was, and the two new ones exist for
+ * one situation each, both introduced by the modern-states layer (round 57):
+ *
+ *  · `coast` — the shore ONLY. A polity that has yielded its political ink to
+ *    the modern set still needs its outline on the photograph, where there is no
+ *    drawn coastline underneath it (see COASTAL_INK).
+ *  · `none` — nothing at all. The same polity on the drawn map, where the map
+ *    inks its own coast and the frontier is being drawn, better, by somebody
+ *    else. Its wash and its label stay; only the duplicate line goes.
+ */
+export const inkPathsOf = (entry: BorderRing, ink: FrontierInk): Ring[] =>
+  ink === 'all'
+    ? entry.coordinates
+    : ink === 'frontier'
+      ? entry.frontier
+      : ink === 'coast'
+        ? entry.coast
+        : NO_PATHS
 
 export class FrontierLayer {
   private geometry = new BufferGeometry()
@@ -128,10 +148,13 @@ export class FrontierLayer {
    *
    * `colorOf` is a parameter rather than `entry.nation.color` because a nation
    * colour was chosen against a dark photograph and has to be re-aimed at the
-   * drawn map's paper; the mode is the caller's business (see `onGround`).
+   * drawn map's paper; the mode is the caller's business (see `onGround`). So
+   * is `inkOf`, and for a sharper version of the same reason: which part of a
+   * boundary is worth drawing depends on what ELSE is on the map that year (see
+   * `inkPathsOf`), which this layer cannot know and its caller already does.
    */
-  set(entries: BorderRing[], colorOf: (e: BorderRing) => string, coastal: boolean): boolean {
-    const key = entries.map((e) => `${e.nation.id}:${colorOf(e)}`).join('|') + (coastal ? '#c' : '')
+  set(entries: BorderRing[], colorOf: (e: BorderRing) => string, inkOf: (e: BorderRing) => FrontierInk): boolean {
+    const key = entries.map((e) => `${e.nation.id}:${colorOf(e)}:${inkOf(e)}`).join('|')
     if (key === this.currentKey) return false
     this.currentKey = key
     const positions: number[] = []
@@ -139,7 +162,7 @@ export class FrontierLayer {
     const r = this.radius * (1 + FRONTIER_ALT)
     for (const entry of entries) {
       const color = rgb(colorOf(entry))
-      for (const path of inkPathsOf(entry, coastal)) pushLine(path, color, r, positions, colors)
+      for (const path of inkPathsOf(entry, inkOf(entry))) pushLine(path, color, r, positions, colors)
     }
     this.geometry.dispose()
     this.geometry = new BufferGeometry()

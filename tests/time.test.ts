@@ -21,9 +21,10 @@ import {
   type Time,
 } from '../src/lib/time'
 import { HISTORICAL } from '../src/lib/eras'
-import { FIT_MS, useTimeStore } from '../src/stores/time'
-import { windowFitting, type Span } from '../src/lib/selection'
-import { LOCK_SCALE, LOCK_SPLIT } from '../src/lib/rangeLock'
+import { useEventStore } from '../src/stores/events'
+import { FIT_MS, HOME_SELECTION, HOME_WINDOW, HOME_YEAR, useTimeStore } from '../src/stores/time'
+import { MIN_SEL_FRACTION, SLIDE_MARGIN, windowFitting, type Span } from '../src/lib/selection'
+import { LOCK_SCALE, LOCK_SPLIT, lockedWindow } from '../src/lib/rangeLock'
 
 describe('formatYear', () => {
   it.each([
@@ -73,12 +74,21 @@ describe('the end of time is the present', () => {
 describe('time store stops at the present', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('opens on a window that ends now', () => {
-    expect(useTimeStore().range.end).toBe(MAX_TIME)
+  it('opens on a window inside the ends of time, and reaches the present', () => {
+    // Round 57 moved the opening window off the present and onto 1400–1789, at
+    // the reader's request (see stores/time.ts HOME_WINDOW and 'the opening
+    // view' below). What this block is about is unchanged: nothing runs past
+    // the present, and a window taken there ends exactly there.
+    const s = useTimeStore()
+    expect(s.range.start).toBeGreaterThanOrEqual(MIN_TIME)
+    expect(s.range.end).toBeLessThanOrEqual(MAX_TIME)
+    s.setRange({ start: -550, end: MAX_TIME })
+    expect(s.range.end).toBe(MAX_TIME)
   })
 
   it('cannot scrub, focus or select past it', () => {
     const s = useTimeStore()
+    s.setRange({ start: -550, end: MAX_TIME }) // a window with the present on it
     s.setTime(9999)
     expect(s.currentTime).toBe(MAX_TIME)
     s.focusTime(4000)
@@ -304,6 +314,7 @@ describe('the selection follows the year you pick', () => {
   it('leaves the era combo setting the band outright', () => {
     const s = useTimeStore()
     const medieval = HISTORICAL.find((e) => e.name === 'Medieval')!
+    s.setRange({ start: -550, end: MAX_TIME }) // room for the years below
     s.setTime(1990) // opens the band out past 1945 to 1990
     expect(s.selection.end).toBe(1990)
     s.selectEra(medieval)
@@ -683,14 +694,15 @@ describe('the range lock', () => {
 
   it('gives a click near the present one year back and five forward', () => {
     const s = useTimeStore()
+    s.setRange({ start: 1900, end: MAX_TIME }) // a century, with 2000 well inside
+    const before = { ...s.range }
     s.scrubTo(2000)
     expect(s.currentTime).toBe(2000)
     expect(s.selection).toEqual({ start: 1999, end: 2005 })
-    // the window frames the band with the era fit's own 5% of air, so the band
-    // is what the rail is showing rather than a hairline on it
-    expect(s.range.start).toBeLessThan(1999)
-    expect(s.range.end).toBeGreaterThan(2005)
-    expect(width(s.range)).toBeLessThan(9)
+    // …and the rail did not move, because the band it asked for was already on
+    // it. Round 56 fitted the window to the band here — a 6.6-year rail — which
+    // is the shift the reader complained about. See 'the view holds still'.
+    expect(s.range).toEqual(before)
   })
 
   it('gives a click at 1 Ma a window a hundred thousand times wider', () => {
@@ -787,7 +799,7 @@ describe('the range lock', () => {
 
   it('toggles, and nothing moves until the next press', () => {
     const s = useTimeStore()
-    s.scrubTo(1500) // locked: the rail is framed on 1482–1588
+    s.scrubTo(1500) // locked: the band becomes 1482–1588, on a rail that holds still
     const framed = { ...s.range }
     s.toggleRangeLock()
     expect(s.rangeLock).toBe(false)
@@ -831,5 +843,206 @@ describe('the range lock', () => {
     expect(s.currentTime).toBe(1941)
     expect(s.selection).toBe(band)
     expect(s.range).toEqual({ start: 1900, end: 2000 })
+  })
+})
+
+/* --------------------------------------------- round 57: the two windows part */
+
+/**
+ * THE VIEW HOLDS STILL.
+ *
+ * The reader's complaint about the lock as it shipped: *"now the whole timeline
+ * shifts constantly when you click — don't do that. If possible (visible
+ * timeline is large enough), just shift selected range."*
+ *
+ * So a locked click moves the year and the band by the same relative rule it
+ * always did (tests/rangeLock.test.ts), and the VISIBLE window is now a
+ * separate question with three answers: nothing, a slide, and — only when no
+ * slide could hold the band — a widening. The geometry is
+ * `windowLeastMoved` (tests/selection.test.ts); this is the store using it.
+ */
+describe('the locked click and the visible window', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  const warp = (s: Span) => toWarp(s.end) - toWarp(s.start)
+  const width = (s: Span) => s.end - s.start
+  const inside = (b: Span, w: Span) => b.start >= w.start && b.end <= w.end
+
+  it('does not move the view at all when the band fits on it', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1400, end: 1789 })
+    const view = { ...s.range }
+    // three successive clicks, all landing bands inside 1400–1789
+    for (const y of [1500, 1600, 1450]) {
+      s.scrubTo(y)
+      expect(s.currentTime).toBe(y)
+      expect(s.range).toEqual(view) // strict: not "about the same window"
+      expect(inside(s.selection, s.range)).toBe(true)
+    }
+    // and the band did move, every time — this is not a test of a no-op click
+    expect(s.selection).toEqual(lockedWindow(1450))
+  })
+
+  it('publishes no new window object when it does not move it', () => {
+    // downstream watchers key on identity: an unchanged window that arrives as
+    // a fresh object re-runs the era plan, the border digest and the event query
+    const s = useTimeStore()
+    s.setRange({ start: 1400, end: 1789 })
+    const view = s.range
+    s.scrubTo(1500)
+    expect(s.range).toBe(view)
+  })
+
+  it('slides, minimally, when the band pokes out of the end', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1400, end: 1789 })
+    const before = { ...s.range }
+    s.scrubTo(1700) // band 1689.1 – 1754.3, comfortably inside: nothing moves
+    expect(s.range).toEqual(before)
+    s.scrubTo(1770) // band 1761.5 – 1812.7: 24 years past the right-hand edge
+    expect(s.range.start).toBeGreaterThan(before.start) // it slid RIGHT
+    expect(s.range.end).toBeGreaterThan(before.end)
+    expect(inside(s.selection, s.range)).toBe(true)
+    // the width is kept exactly (in warp, which is what the rail draws), so the
+    // reader's zoom survives the click — a slide, not a reframe
+    expect(warp(s.range)).toBeCloseTo(warp(before), 12)
+    // …and no further than it had to: the band is against the far margin
+    const air = toWarp(s.range.end) - toWarp(s.selection.end)
+    expect(air).toBeCloseTo(warp(s.range) * SLIDE_MARGIN, 9)
+  })
+
+  it('slides the other way just as little', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1400, end: 1789 })
+    const before = { ...s.range }
+    s.scrubTo(1405) // band 1300.8 – 1424.8: 99 years off the left-hand edge
+    expect(s.range.start).toBeLessThan(before.start)
+    expect(s.range.end).toBeLessThan(before.end)
+    expect(warp(s.range)).toBeCloseTo(warp(before), 12)
+    expect(inside(s.selection, s.range)).toBe(true)
+    const air = toWarp(s.selection.start) - toWarp(s.range.start)
+    expect(air).toBeCloseTo(warp(s.range) * SLIDE_MARGIN, 9)
+  })
+
+  it('widens only when no slide could hold the band', () => {
+    const s = useTimeStore()
+    s.setRange({ start: 1500, end: 1520 }) // 20 years of rail
+    s.scrubTo(1510) // …and a band of 103, which no slide of 20 can contain
+    expect(warp(s.range)).toBeGreaterThan(warp({ start: 1500, end: 1520 }))
+    expect(inside(s.selection, s.range)).toBe(true)
+    // exactly the band plus its two margins, and not the era fit's +5% recentre
+    expect(warp(s.range)).toBeCloseTo(warp(s.selection) / (1 - 2 * SLIDE_MARGIN), 9)
+    expect(s.range).not.toEqual(windowFitting(s.selection))
+  })
+
+  it('never zooms IN: a click inside a wide view leaves it wide', () => {
+    // the old fit did — a click at 1 Ma on the whole-of-time rail landed on a
+    // 200 ka window. The band is that narrow now; the rail is not.
+    const s = useTimeStore()
+    s.setRange({ start: MIN_TIME, end: MAX_TIME })
+    const whole = { ...s.range }
+    s.scrubTo(-1e6)
+    expect(s.range).toEqual(whole)
+    expect(s.currentTime).toBe(-1e6)
+    // An honest limit, and an old one: on a rail this wide the rule's 200 ka
+    // band is a third of a percent of it, and `clampSelection` will not let a
+    // band be narrower than 2% of the window — two handles that close together
+    // cannot be told apart, let alone grabbed. So the band lands at that floor
+    // (~340 ka here), centred on where the rule put it. Zoom in and the rule's
+    // own width is what you get; see the 1400–1789 cases above.
+    expect(warp(s.selection) / warp(s.range)).toBeCloseTo(MIN_SEL_FRACTION, 9)
+    expect(width(s.selection)).toBeGreaterThan(0.2 * (1e6 + MAX_TIME))
+    expect(s.selection.start).toBeLessThan(-1e6)
+    expect(s.selection.end).toBeGreaterThan(-1e6)
+  })
+
+  it('keeps the standing invariants through a run of clicks at every depth', () => {
+    const s = useTimeStore()
+    for (const y of [MIN_TIME, -2.5e9, -1e6, -10_000, 0, 1500, 1990, 2020, MAX_TIME]) {
+      s.scrubTo(y)
+      expect(s.currentTime).toBeGreaterThanOrEqual(s.selection.start)
+      expect(s.currentTime).toBeLessThanOrEqual(s.selection.end)
+      expect(inside(s.selection, s.range)).toBe(true)
+      expect(s.range.start).toBeGreaterThanOrEqual(MIN_TIME)
+      expect(s.range.end).toBeLessThanOrEqual(MAX_TIME)
+    }
+  })
+
+  it('still lets the drag teach it, and the taught click still holds the view', () => {
+    const s = useTimeStore()
+    s.setRange({ start: -2e6, end: 0 })
+    s.setTime(-1e6)
+    s.setSelection(-1.5e6, -0.5e6) // both handles dragged wide open
+    s.learnLock() // (TimelineBar calls this on pointer-up)
+    expect(s.lockIsDefault).toBe(false)
+    const view = { ...s.range }
+    s.scrubTo(-1.1e6) // the reader's proportions, in the reader's view
+    expect(width(s.selection) / 1.1e6).toBeCloseTo(1, 1)
+    expect((s.currentTime - s.selection.start) / width(s.selection)).toBeCloseTo(0.5, 2)
+    expect(s.range).toEqual(view) // …and the view stayed where they put it
+  })
+})
+
+/**
+ * THE OPENING VIEW, in the numbers it was asked for: *"by default, show 1400 –
+ * 1789, with year selected being fall of Constantinople (and default locked
+ * range)"*.
+ */
+describe('the opening view', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('is the early-modern rail, 1400–1789 exactly', () => {
+    expect(useTimeStore().range).toEqual({ start: 1400, end: 1789 })
+    expect(HOME_WINDOW).toEqual({ start: 1400, end: 1789 })
+  })
+
+  it('opens on the fall of Constantinople', () => {
+    expect(useTimeStore().currentTime).toBe(1453)
+    expect(HOME_YEAR).toBe(1453)
+  })
+
+  it('opens with the band a locked click on 1453 would have asked for', () => {
+    const s = useTimeStore()
+    expect(s.selection).toEqual(lockedWindow(1453))
+    expect(HOME_SELECTION).toEqual(lockedWindow(1453))
+    // stated as the rule rather than as a constant, because MAX_TIME is the
+    // current year: span = 0.2 × (present − 1453), one sixth of it before 1453
+    const span = LOCK_SCALE * (MAX_TIME - 1453)
+    expect(s.selection.start).toBeCloseTo(1453 - span * LOCK_SPLIT, 9)
+    expect(s.selection.end).toBeCloseTo(s.selection.start + span, 9)
+  })
+
+  it.runIf(PRESENT === 2026)('is, in 2026, the band 1433.9 – 1548.5', () => {
+    // the exact doubles, while the clock says 2026 — the guard is honest about
+    // why they are not frozen: the rule is relative to the present
+    const s = useTimeStore()
+    expect(s.selection.start).toBe(1433.9)
+    expect(s.selection.end).toBe(1548.5)
+    expect(s.selection.end - s.selection.start).toBeCloseTo(114.6, 9)
+  })
+
+  it('opens in a state the first locked click agrees with', () => {
+    // the band is inside the window, the year is inside the band, and a click
+    // on the year it opens on changes nothing at all
+    const s = useTimeStore()
+    expect(s.selection.start).toBeGreaterThan(s.range.start)
+    expect(s.selection.end).toBeLessThan(s.range.end)
+    expect(s.currentTime).toBeGreaterThan(s.selection.start)
+    expect(s.currentTime).toBeLessThan(s.selection.end)
+    const opening = { range: { ...s.range }, selection: { ...s.selection } }
+    s.scrubTo(1453)
+    expect(s.range).toEqual(opening.range)
+    expect(s.selection).toEqual(opening.selection)
+    expect(s.currentTime).toBe(1453)
+  })
+
+  it('does not select or open an event: what opens is a year', () => {
+    // the corpus has the fall of Constantinople (`fall-constantinople`, 1453,
+    // public/data/events/medieval.json) and the default deliberately does not
+    // touch it — no focus, no panel, nothing but the year on the rail
+    const s = useTimeStore()
+    expect(s.currentTime).toBe(1453)
+    expect(useEventStore().focus).toBeUndefined()
+    expect(useEventStore().selected).toBeUndefined()
   })
 })

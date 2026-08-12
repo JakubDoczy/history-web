@@ -148,7 +148,7 @@
   "start": -1800000000,
   "lat": 0,
   "lng": 0,
-  "priority": 91,
+  "priority": 92,
   "tags": [
    "biology"
   ],
@@ -218,7 +218,7 @@
   "end": -420000000,
   "lat": 52.0,
   "lng": -3.5,
-  "priority": 87,
+  "priority": 88,
   "tags": [
    "biology"
   ],
@@ -233,6 +233,49 @@
   "strong": [
    "silurian-land-colonisation",
    "carboniferous-forests"
+  ]
+ },
+ {
+  "id": "ordovician-extinction",
+  "name": "Ordovician–Silurian extinction",
+  "start": -445000000,
+  "end": -443000000,
+  "lat": 0,
+  "lng": 0,
+  "priority": 85,
+  "tags": [
+   "extinction",
+   "biology"
+  ],
+  "summary": "Approximately 85% of marine species went extinct as glaciation locked up seawater and drained the shallow continental shelves.",
+  "body": "The Late Ordovician mass extinction, about 445 to 443 million years ago, was the first of the five largest extinctions in the fossil record and the second largest by proportion of genera lost. Between 49 and 60 per cent of marine genera and close to 85 per cent of marine species disappeared. Life was still almost entirely marine, so the event is recorded only in the sea.\n\nIt came in two pulses. The first, at the Katian–Hirnantian boundary, coincides with the rapid growth of an ice sheet over Gondwana, which then lay across the South Pole. The world shifted from greenhouse to icehouse within a geologically short time; sea level fell, draining the shallow continental shelves where most life lived, and water temperatures dropped faster than warm-adapted species could tolerate.\n\nThe second pulse came in the late Hirnantian as the glaciation ended. Rising sea level was accompanied by widespread anoxia and euxinia (oxygen-depleted, sulphidic water), which spread across the shelves and persisted into the early Silurian.\n\nBrachiopods, bryozoans, [trilobites](event:trilobite-diversification), conodonts, echinoderms, corals and graptolites were all heavily affected, and the [reef ecosystems](event:ordovician-reef-ecosystems) of the period were dismantled. Unlike later extinctions it eliminated few whole groups: the fauna that recovered through the Silurian was much the same one, at lower diversity.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Late_Ordovician_mass_extinction).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Late_Ordovician_mass_extinction"
+   }
+  ],
+  "strong": [
+   "devonian-extinction"
+  ]
+ },
+ {
+  "id": "tetrapods",
+  "name": "Vertebrates walk on land",
+  "start": -375000000,
+  "lat": 79.0,
+  "lng": -84.0,
+  "priority": 85,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Lobe-finned fish with weight-bearing limbs, exemplified by Tiktaalik, moved onto land.",
+  "body": "Tetrapods, four-limbed vertebrates including all amphibians, reptiles, birds and mammals, evolved from lobe-finned fish during the Devonian. Their origin is among the best-documented major transitions in the fossil record, though the sequence is less tidy than it once appeared.\n\nThe oldest evidence is a set of trackways at Zachełmie in Poland, made about 390 million years ago by an animal walking on limbs with digits. Fragmentary body fossils of *Elginerpeton* from Scotland and *Obruchevichthys* from Latvia follow at around 380 million years, though not everyone accepts them as tetrapods. Nearly complete skeletons appear late in the Devonian: *Acanthostega* and *Ichthyostega* from East Greenland, which had limbs with digits (eight of them on *Acanthostega*) but also internal gills and a tail fin.\n\n*Tiktaalik roseae*, found on Ellesmere Island in the Canadian Arctic in 2004 and about 375 million years old, is a lobe-finned fish rather than a tetrapod: a flattened skull, a neck, and fin skeletons robust enough to prop the body up. It postdates the Polish trackways, which is the main reason the transition is now thought to have begun earlier than the body fossils by themselves would suggest.\n\nThese animals were aquatic, and limbs appear to have evolved for moving through shallow, weed-choked water rather than for walking on land. Fully terrestrial tetrapods, with the [amniotic egg](event:amniotic-egg) to free them from standing water, are a Carboniferous development.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tetrapod).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tetrapod"
+   }
   ]
  },
  {
@@ -277,6 +320,28 @@
   ],
   "strong": [
    "first-dinosaurs"
+  ]
+ },
+ {
+  "id": "first-dinosaurs",
+  "name": "First dinosaurs",
+  "start": -233000000,
+  "lat": -29.0,
+  "lng": -67.0,
+  "priority": 85,
+  "tags": [
+   "biology"
+  ],
+  "summary": "Small bipedal archosaurs from what is now Argentina mark the origin of the dinosaurian lineage.",
+  "body": "Dinosaurs originated in the Middle to Late Triassic, roughly twenty million years after the [end-Permian extinction](event:permian-extinction). The oldest substantial fossils come from the Ischigualasto Formation in north-western Argentina, dated to 231–230 million years ago, and from rocks of similar age in Brazil and Zimbabwe. *Herrerasaurus* and *Eoraptor* from Ischigualasto were bipedal and lightly built.\n\nThey were a minor part of Triassic land faunas, which were dominated by other archosaurs (the crocodile-line pseudosuchians), together with surviving [synapsids](event:synapsid-domination) and large amphibians. What distinguished dinosaurs anatomically was a hip socket open at its centre and a thigh bone with an inturned head, giving limbs held directly beneath the body rather than sprawling.\n\nTheir rise was a consequence of the [end-Triassic extinction](event:triassic-extinction) 201.4 million years ago, which removed most of the competing archosaur groups. Dinosaurs then dominated terrestrial ecosystems for the next 135 million years, through the Jurassic and the Cretaceous, reaching sizes no land animal has matched before or since.\n\nThe non-avian lineages ended at the [Cretaceous–Paleogene boundary](event:kpg-extinction) 66 million years ago. [Birds](event:first-birds), which are themselves dinosaurs, did not.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dinosaur).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dinosaur"
+   }
+  ],
+  "strong": [
+   "sauropod-gigantism"
   ]
  },
  {
@@ -360,7 +425,7 @@
   "end": -2600000,
   "lat": -2.7,
   "lng": 36.2,
-  "priority": 87,
+  "priority": 88,
   "tags": [
    "technology"
   ],
@@ -377,12 +442,37 @@
   ]
  },
  {
+  "id": "quaternary-ice-ages",
+  "name": "Quaternary ice ages begin",
+  "start": -2580000,
+  "end": -11700,
+  "lat": 60.0,
+  "lng": -45.0,
+  "priority": 85,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "Northern hemisphere ice sheets advanced and retreated repeatedly on orbital time scales.",
+  "body": "The Quaternary glaciation began 2.58 million years ago and is still in progress: the present is an interglacial within it, not a time outside it. Northern hemisphere ice sheets have grown and collapsed repeatedly through the period, while Antarctica has stayed glaciated throughout.\n\nThe rhythm is set by variations in Earth's orbit, the Milankovitch cycles. Eccentricity varies on a period near 100,000 years, axial tilt between about 22 and 24.5 degrees on 41,000 years, and precession on roughly 26,000. None of these changes the total sunlight the Earth receives by much; what they change is its distribution across seasons and latitudes, and what matters is whether northern summers are cool enough to leave the previous winter's snow unmelted.\n\nFor the first million and a half years the cycles followed the 41,000-year tilt period. After the Mid-Pleistocene Transition, about a million years ago, they lengthened to roughly 100,000 years and grew much larger in amplitude, for reasons still debated. Eight complete cycles have run in the last 740,000 years.\n\nAt their maxima the ice sheets were at least four kilometres thick and sea level stood about 120 metres lower than today. They ground down and rebuilt the landscapes of northern Europe, Canada and Siberia, and left millions of lakes behind them, among them the Great Lakes and the Baltic. The whole of hominin evolution and dispersal has taken place within this climate regime.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Quaternary_glaciation).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Quaternary_glaciation"
+   }
+  ],
+  "strong": [
+   "megafauna-pleistocene",
+   "holocene"
+  ]
+ },
+ {
   "id": "fire-control",
   "name": "Control of fire",
   "start": -1000000,
   "lat": -28.4,
   "lng": 24.3,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "technology"
   ],
@@ -477,6 +567,51 @@
   ]
  },
  {
+  "id": "americas-peopling",
+  "name": "Peopling of the Americas",
+  "start": -16000,
+  "end": -13000,
+  "lat": 65.0,
+  "lng": -165.0,
+  "priority": 85,
+  "tags": [
+   "exploration"
+  ],
+  "summary": "Humans crossed Beringia and dispersed southward along the Pacific coast, colonizing two empty continents.",
+  "body": "Part of [Out of Africa dispersal](event:out-of-africa). The Americas were the last continents people reached. The academic consensus places arrival between about 20,000 and 15,000 years ago, by way of Beringia, the land bridge exposed between Siberia and Alaska while sea level was low.\n\nGenetic work describes the sequence. An Ancient Beringian population separated from Siberians around 36,000 years ago, was effectively isolated by about 25,000, and split into the lineages ancestral to later Native American populations between 17,000 and 14,500 years ago.\n\nThe route south was long assumed to be the ice-free corridor between the Laurentide and Cordilleran ice sheets, but that corridor became biologically passable only around 13,000 to 12,000 years ago, which is too late for the earliest sites. A Pacific coastal route, supported by kelp forests and marine resources, is now the more common explanation.\n\nMonte Verde in southern Chile, at 14,500 years, was the first site widely accepted as older than the Clovis culture, and others followed: Buttermilk Creek in Texas at 15,500, Paisley Caves in Oregon at 14,300, Swan Point in Alaska at 14,000. Human footprints at White Sands in New Mexico have been dated to as much as 23,000 years ago; that dating has been challenged and re-defended and is not settled. However it began, the spread was fast, and people reached the southern end of South America within a few thousand years of entering the continent.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Settlement_of_the_Americas).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Settlement_of_the_Americas"
+   }
+  ],
+  "parent": "out-of-africa"
+ },
+ {
+  "id": "holocene",
+  "name": "Start of the Holocene",
+  "start": -11700,
+  "lat": 72.0,
+  "lng": -38.0,
+  "priority": 85,
+  "tags": [
+   "climate",
+   "geology"
+  ],
+  "summary": "The current interglacial commenced, establishing the stable, warm climate in which all human civilisation developed.",
+  "body": "The Holocene is the current geological epoch, beginning 11,700 years before 2000 and continuing to the present. It is the interglacial that followed the last glaciation, and every settled human society has existed within it.\n\nIts base is defined not by a date but by a physical section: a horizon in the NGRIP2 ice core from central Greenland marking the end of the [Younger Dryas](event:younger-dryas), ratified as the epoch's global stratotype in 2008. The warming it records was several degrees within a few decades.\n\nThree ages were formally defined in 2018. The Greenlandian runs from 11,700 to 8,200 years ago; the Northgrippian from 8,200 to 4,200, beginning at the 8.2-kiloyear cold event caused by the final drainage of the North American proglacial lakes; and the Meghalayan from 4,200 years ago to the present, beginning with a drought of roughly two centuries recorded across the northern hemisphere.\n\nSea level rose tens of metres over the first few thousand years as the ice sheets melted, then stabilised. The climate has been comparatively steady, though not without variability, including the 8.2-kiloyear event and cycles of between one and two and a half thousand years. [Agriculture](event:agriculture) was adopted independently in several regions between about 10,000 and 7,000 years ago.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Holocene).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Holocene"
+   }
+  ],
+  "strong": [
+   "younger-dryas",
+   "agriculture"
+  ]
+ },
+ {
   "id": "agriculture",
   "name": "Dawn of agriculture",
   "start": -10000,
@@ -561,7 +696,7 @@
   "start": -3200,
   "lat": 31.32,
   "lng": 45.64,
-  "priority": 95,
+  "priority": 96,
   "tags": [
    "culture",
    "technology"
@@ -585,7 +720,7 @@
   "start": -3099,
   "lat": 29.8494,
   "lng": 31.2506,
-  "priority": 87,
+  "priority": 88,
   "tags": [
    "politics"
   ],
@@ -608,7 +743,7 @@
   "end": -2539,
   "lat": 29.98,
   "lng": 31.13,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "culture",
    "technology"
@@ -633,7 +768,7 @@
   "end": -482,
   "lat": 27.47,
   "lng": 83.28,
-  "priority": 91,
+  "priority": 92,
   "tags": [
    "religion"
   ],
@@ -659,7 +794,7 @@
   "end": -478,
   "lat": 35.6,
   "lng": 116.99,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "culture",
    "religion"
@@ -707,7 +842,7 @@
   "end": -321,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "politics"
   ],
@@ -728,7 +863,7 @@
   "name": "Democracy",
   "kind": "concept",
   "anchorYear": -507,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "politics"
   ],
@@ -1073,7 +1208,7 @@
    ]
   ],
   "direction": "twoway",
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "economy",
    "exploration"
@@ -1095,7 +1230,7 @@
   "name": "The Silk Roads",
   "kind": "concept",
   "anchorYear": -129,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "economy",
    "exploration"
@@ -1125,7 +1260,7 @@
   "start": -26,
   "lat": 41.8929,
   "lng": 12.4854,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "politics"
   ],
@@ -1169,7 +1304,7 @@
   "start": 313,
   "lat": 45.8,
   "lng": 8.62,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "religion",
    "politics"
@@ -1232,7 +1367,7 @@
     34
    ]
   ],
-  "priority": 93,
+  "priority": 94,
   "tags": [
    "politics"
   ],
@@ -1329,7 +1464,7 @@
     29
    ]
   ],
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "war",
    "religion",
@@ -1729,7 +1864,7 @@
     36
    ]
   ],
-  "priority": 93,
+  "priority": 94,
   "tags": [
    "disease",
    "disaster"
@@ -1927,7 +2062,7 @@
   "start": 1440,
   "lat": 50.0,
   "lng": 8.27,
-  "priority": 92,
+  "priority": 93,
   "tags": [
    "technology",
    "culture"
@@ -1967,7 +2102,7 @@
     "url": "https://en.wikipedia.org/wiki/History_of_printing"
    }
   ],
-  "priority": 92
+  "priority": 93
  },
  {
   "id": "leonardo-da-vinci",
@@ -2009,10 +2144,10 @@
  {
   "id": "fall-constantinople",
   "name": "Fall of Constantinople",
-  "start": 1453,
+  "start": 1453.25068,
   "lat": 41.0161,
   "lng": 28.9258,
-  "priority": 90,
+  "priority": 91,
   "tags": [
    "war",
    "politics",
@@ -2022,11 +2157,1637 @@
   "strong": [
    "renaissance"
   ],
-  "body": "Constantinople fell to the Ottoman sultan Mehmed II on 29 May 1453, after a siege of fifty-three days. The last Roman emperor, Constantine XI, was killed in the fighting and his body was never identified. The empire that had governed from the city since 330 ended with him, 1,123 years after Constantine I founded it.\n\nThe city had never recovered from the [Fourth Crusade's](event:fourth-crusade) sack in 1204, its territory had shrunk to the walls and a few outposts, and perhaps 50,000 people lived among fields and ruins in a city built for many times that. The Theodosian walls, though, had turned back every attacker for a thousand years.\n\nMehmed brought about 80,000 men against some 7,000 defenders, and a siege train that included a bombard cast by the Hungarian engineer Orban which threw a stone ball of over half a tonne. He had part of his fleet dragged overland on greased rollers into the Golden Horn, past the chain across its mouth. The walls were breached repeatedly and repaired at night for seven weeks; the final assault came before dawn on 29 May and broke through near a gate that had been left open.\n\nMehmed entered the city that day, allowed the customary three days of plunder and then stopped it early, and made Constantinople his capital. Hagia Sophia became a mosque. He repopulated the city by resettlement and confirmed the Orthodox patriarch in office as head of his Christian subjects.\n\nEurope heard the news as a catastrophe. It helped push Greek scholars and manuscripts west into the [Renaissance](event:renaissance), and Ottoman control of the land routes east is part of the reason European states began looking for [a sea route to Asia](event:age-of-discovery).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Constantinople).",
+  "body": "Constantinople fell to the Ottoman sultan Mehmed II on 29 May 1453, after a siege of fifty-three days. The last Roman emperor, Constantine XI, was killed in the fighting and his body was never identified. The empire that had governed from the city since 330 ended with him, 1,123 years after Constantine I founded it.\n\nThe city had never recovered from the [Fourth Crusade's](event:fourth-crusade) sack in 1204, its territory had shrunk to the walls and a few outposts, and perhaps 50,000 people lived among fields and ruins in a city built for many times that. The Theodosian walls, though, had turned back every attacker for a thousand years.\n\nMehmed brought between 50,000 and 80,000 men against fewer than 8,000 defenders, and a siege train that included a bombard cast by the Hungarian engineer Orban which threw a stone ball of over half a tonne. The defence of the land walls was directed by the Genoese commander Giovanni Giustiniani. The siege ran in phases, from the first bombardment through the moving of a fleet overland into the Golden Horn to the assault of 29 May; the steps follow them in order.\n\nMehmed entered the city that day, allowed the customary three days of plunder and then stopped it early, and made Constantinople his capital. Hagia Sophia became a mosque. He repopulated the city by resettlement and confirmed the Orthodox patriarch in office as head of his Christian subjects.\n\nEurope received the news as a catastrophe. It helped push Greek scholars and manuscripts west into the [Renaissance](event:renaissance), and Ottoman control of the land routes east is part of the reason European states began looking for [a sea route to Asia](event:age-of-discovery).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Constantinople).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fall_of_Constantinople"
+   }
+  ],
+  "end": 1453.40685,
+  "steps": [
+   {
+    "id": "encampment",
+    "name": "The army before the walls",
+    "at": 1453.25068,
+    "camera": {
+     "lat": 41.0212,
+     "lng": 28.9505,
+     "altitude": 0.0045
+    },
+    "page": "Ottoman troops appeared before the land walls on 2 April 1453 and Mehmed II arrived with the main body on 5 April. Estimates of his army run from 50,000 to 80,000 men, against rather under 8,000 defenders for a perimeter of some twenty kilometres.\n\nThe defenders drew the great chain across the mouth of the Golden Horn, closing the harbour to the Ottoman fleet. Mehmed placed his own tent opposite the Mesoteichion, the middle stretch of wall where the Lycus stream crosses the line and the ground is lowest. Karaca Pasha took the northern sector, Ishak Pasha the ground from the Lycus down to the Marmara.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.006,
+       "label": "Ottoman army, from Edirne",
+       "path": [
+        [
+         28.87,
+         41.035
+        ],
+        [
+         28.895,
+         41.026
+        ],
+        [
+         28.911,
+         41.02
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        28.916,
+        41.019
+       ],
+       "label": "Mehmed II's camp"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.912,
+        41.033
+       ],
+       "label": "Karaca Pasha, northern sector"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.908,
+        41.001
+       ],
+       "label": "Ishak Pasha, southern sector"
+      },
+      {
+       "type": "frontline",
+       "color": "#f5a623",
+       "dash": "dashed",
+       "width": 3.0,
+       "label": "The chain across the Golden Horn",
+       "paths": [
+        [
+         [
+          28.979,
+          41.018
+         ],
+         [
+          28.9755,
+          41.0225
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        29.006,
+        41.042
+       ],
+       "label": "Ottoman fleet at the Double Columns"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        29.0567,
+        41.085
+       ],
+       "label": "Rumelihisari, built 1452"
+      }
+     ]
+    }
+   },
+   {
+    "id": "bombardment",
+    "name": "The bombardment opens",
+    "start": 1453.26164,
+    "end": 1453.29452,
+    "camera": {
+     "lat": 41.0174,
+     "lng": 28.9479,
+     "altitude": 0.0034
+    },
+    "page": "The siege proper began on 6 April, when the guns opened on the land walls. The largest was cast at Edirne by the Hungarian founder Orban and threw a stone ball of over half a tonne; it could be fired only a few times a day.\n\nThe batteries concentrated on the Mesoteichion and on the Charisius gate. Sections of the outer wall were brought down and rebuilt at night with earth, rubble and barrels, and the defenders held the repaired stockade rather than the breach. A general assault on 18 April was thrown back after several hours.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        28.918,
+        41.017
+       ],
+       "label": "Orban's great bombard"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.929,
+        41.03
+       ],
+       "label": "Battery, Charisius gate"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.916,
+        41.008
+       ],
+       "label": "Battery, southern walls"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.004,
+       "label": "Assault of 18 April",
+       "path": [
+        [
+         28.913,
+         41.018
+        ],
+        [
+         28.92,
+         41.0168
+        ],
+        [
+         28.924,
+         41.016
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.921,
+        41.0125
+       ],
+       "text": "Mesoteichion",
+       "size": "sm"
+      },
+      {
+       "type": "frontline",
+       "color": "#f5a623",
+       "dash": "dashed",
+       "width": 3.0,
+       "label": "The chain",
+       "paths": [
+        [
+         [
+          28.979,
+          41.018
+         ],
+         [
+          28.9755,
+          41.0225
+         ]
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "four-ships",
+    "name": "Four ships reach the Horn",
+    "at": 1453.3,
+    "camera": {
+     "lat": 41.0159,
+     "lng": 28.965,
+     "altitude": 0.003
+    },
+    "page": "On 20 April three Genoese ships carrying men and supplies from the pope, and one imperial transport carrying grain, met the Ottoman fleet off the city. The Ottoman vessels were smaller and lower and could not board the tall Genoese carracks.\n\nThe fight was watched from both shores. The four ships worked through, the chain was opened to let them into the Golden Horn, and Mehmed removed the fleet commander Baltaoglu. The action showed that the harbour could not be forced while the chain held.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.005,
+       "label": "The four ships, 20 April",
+       "path": [
+        [
+         28.99,
+         40.98
+        ],
+        [
+         29.0,
+         41.0
+        ],
+        [
+         28.988,
+         41.013
+        ],
+        [
+         28.979,
+         41.02
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.005,
+       "label": "Ottoman fleet intercepts",
+       "path": [
+        [
+         29.006,
+         41.042
+        ],
+        [
+         29.0,
+         41.02
+        ],
+        [
+         28.995,
+         41.006
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#f5a623",
+       "pos": [
+        28.996,
+        41.005
+       ],
+       "label": "Naval action off the point"
+      },
+      {
+       "type": "frontline",
+       "color": "#f5a623",
+       "dash": "dashed",
+       "width": 3.0,
+       "label": "The chain, opened",
+       "paths": [
+        [
+         [
+          28.979,
+          41.018
+         ],
+         [
+          28.9755,
+          41.0225
+         ]
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "overland",
+    "name": "Ships hauled into the Golden Horn",
+    "at": 1453.30548,
+    "camera": {
+     "lat": 41.0217,
+     "lng": 28.9604,
+     "altitude": 0.003
+    },
+    "page": "On 22 April Mehmed had about seventy vessels dragged out of the Bosphorus and hauled on greased rollers over the ridge behind Galata, then launched into the Golden Horn above the chain. The Genoese of Pera, formally neutral, did not stop the work.\n\nA fleet inside the harbour put the low sea walls along the Horn under threat and forced the defenders to spread their small numbers further. An attempt to burn the ships with fire ships on 28 April failed, and the captured survivors were executed within sight of the walls.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.005,
+       "label": "Ships hauled overland",
+       "path": [
+        [
+         29.0,
+         41.0392
+        ],
+        [
+         28.988,
+         41.035
+        ],
+        [
+         28.977,
+         41.033
+        ],
+        [
+         28.968,
+         41.0335
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        28.964,
+        41.033
+       ],
+       "label": "Ottoman ships in the Horn"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.004,
+       "label": "Fire ships, 28 April",
+       "path": [
+        [
+         28.956,
+         41.025
+        ],
+        [
+         28.96,
+         41.03
+        ],
+        [
+         28.963,
+         41.0322
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "color": "#f5a623",
+       "dash": "dashed",
+       "width": 3.0,
+       "label": "The chain, bypassed",
+       "paths": [
+        [
+         [
+          28.979,
+          41.018
+         ],
+         [
+          28.9755,
+          41.0225
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.986,
+        41.04
+       ],
+       "text": "Portage over the ridge",
+       "size": "sm"
+      }
+     ]
+    }
+   },
+   {
+    "id": "mines",
+    "name": "Mines and the siege tower",
+    "start": 1453.37123,
+    "end": 1453.39589,
+    "camera": {
+     "lat": 41.0203,
+     "lng": 28.9517,
+     "altitude": 0.0032
+    },
+    "page": "Between 16 and 25 May Ottoman sappers, many of them Saxon silver miners from Serbia, drove tunnels under the walls in the Blachernae sector. The defenders located them by countermining under the direction of the engineer Johannes Grant, and flooded, burned or fought them out underground.\n\nA wheeled siege tower brought up against the Caligaria gate on 18 May was destroyed the following night. A partial lunar eclipse on 22 May and heavy rain in the days after were read in the city as omens.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        28.937,
+        41.032
+       ],
+       "label": "Mines under the Blachernae wall"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.933,
+        41.03
+       ],
+       "label": "Siege tower, 18 May"
+      },
+      {
+       "type": "frontline",
+       "color": "#e5484d",
+       "dash": "dashed",
+       "width": 2.4,
+       "label": "Pontoon bridge across the Horn",
+       "paths": [
+        [
+         [
+          28.956,
+          41.0385
+         ],
+         [
+          28.95,
+          41.033
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.933,
+        41.038
+       ],
+       "text": "Blachernae",
+       "size": "sm"
+      }
+     ]
+    }
+   },
+   {
+    "id": "last-council",
+    "name": "The last days",
+    "start": 1453.39863,
+    "end": 1453.40411,
+    "camera": {
+     "lat": 41.0174,
+     "lng": 28.9474,
+     "altitude": 0.0034
+    },
+    "page": "Mehmed offered terms which would have left Constantine XI a ruler in the Morea if the city were surrendered; the offer was refused. On 26 and 27 May the Ottoman camp prepared for a general assault, and fires were lit along the lines.\n\nThe defenders spent 28 May repairing the stockade at the Lycus and carrying icons in procession through the streets. A service was held in Hagia Sophia that evening, attended by both Orthodox and Latin clergy. The gates behind the outer wall were locked so that the garrison could not fall back.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.004,
+       "color": "#eaf1fb",
+       "pos": [
+        28.9802,
+        41.0086
+       ],
+       "label": "Service in Hagia Sophia, 28 May"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#eaf1fb",
+       "pos": [
+        28.925,
+        41.017
+       ],
+       "label": "The stockade at the Lycus"
+      },
+      {
+       "type": "frontline",
+       "color": "#e5484d",
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "Ottoman lines, 28 May",
+       "paths": [
+        [
+         [
+          28.91,
+          40.996
+         ],
+         [
+          28.908,
+          41.01
+         ],
+         [
+          28.911,
+          41.021
+         ],
+         [
+          28.92,
+          41.032
+         ],
+         [
+          28.93,
+          41.04
+         ]
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "final-assault",
+    "name": "The final assault",
+    "at": 1453.40685,
+    "camera": {
+     "lat": 41.0205,
+     "lng": 28.9472,
+     "altitude": 0.0034
+    },
+    "page": "The assault began shortly after midnight on 29 May and came in three waves: irregular azaps first, then Anatolian regiments, then the janissaries. The weight fell on the Mesoteichion, with attacks on the Blachernae walls and from the ships in the Horn.\n\nGiovanni Giustiniani, who commanded the defence of the land walls, was wounded and carried off through the inner wall, and the stockade gave way behind him. A small postern, the Kerkoporta, was found open near Blachernae and Ottoman troops came through it. Constantine XI was killed in the fighting and his body was not identified. Mehmed entered the city that day and made it his capital.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.006,
+       "label": "Main assault, the Mesoteichion",
+       "path": [
+        [
+         28.908,
+         41.017
+        ],
+        [
+         28.918,
+         41.0165
+        ],
+        [
+         28.925,
+         41.016
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.005,
+       "label": "Assault on the Blachernae walls",
+       "path": [
+        [
+         28.923,
+         41.04
+        ],
+        [
+         28.933,
+         41.037
+        ],
+        [
+         28.94,
+         41.0345
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.004,
+       "label": "Landings from the Horn",
+       "path": [
+        [
+         28.964,
+         41.034
+        ],
+        [
+         28.958,
+         41.03
+        ],
+        [
+         28.954,
+         41.0285
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#f5a623",
+       "pos": [
+        28.925,
+        41.017
+       ],
+       "label": "Giustiniani wounded, the stockade lost"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.004,
+       "color": "#f5a623",
+       "pos": [
+        28.94,
+        41.034
+       ],
+       "label": "The Kerkoporta found open"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#f5a623",
+       "pos": [
+        28.9265,
+        41.015
+       ],
+       "label": "Constantine XI killed"
+      }
+     ]
+    }
    }
   ]
  },
@@ -2036,7 +3797,7 @@
   "start": 1492,
   "lat": 24.2,
   "lng": -74.5,
-  "priority": 90,
+  "priority": 91,
   "tags": [
    "exploration"
   ],
@@ -2468,7 +4229,7 @@
     -35
    ]
   ],
-  "priority": 90,
+  "priority": 91,
   "tags": [
    "economy",
    "politics",
@@ -2832,7 +4593,7 @@
   "end": 1800,
   "lat": 48.86,
   "lng": 2.35,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "culture",
    "science",
@@ -2877,7 +4638,7 @@
   "end": 1840,
   "lat": 53.48,
   "lng": -2.24,
-  "priority": 96,
+  "priority": 97,
   "tags": [
    "technology",
    "economy"
@@ -2985,7 +4746,7 @@
   "end": 1783.6726,
   "lat": 39.95,
   "lng": -75.16,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "politics",
    "war"
@@ -3050,7 +4811,7 @@
   "end": 1799.8589,
   "lat": 48.86,
   "lng": 2.35,
-  "priority": 94,
+  "priority": 95,
   "tags": [
    "politics"
   ],
@@ -3293,7 +5054,7 @@
     "url": "https://en.wikipedia.org/wiki/Abraham_Lincoln"
    }
   ],
-  "priority": 86
+  "priority": 87
  },
  {
   "id": "origin-species",
@@ -3341,7 +5102,7 @@
     "url": "https://en.wikipedia.org/wiki/Natural_selection"
    }
   ],
-  "priority": 91
+  "priority": 92
  },
  {
   "id": "us-civil-war",
@@ -3350,7 +5111,7 @@
   "end": 1865.39863,
   "lat": 37.5,
   "lng": -79.0,
-  "priority": 86,
+  "priority": 87,
   "tags": [
    "war",
    "politics"
@@ -3491,7 +5252,7 @@
     "url": "https://en.wikipedia.org/wiki/Mahatma_Gandhi"
    }
   ],
-  "priority": 86
+  "priority": 87
  },
  {
   "id": "albert-einstein",
@@ -3528,7 +5289,7 @@
     "url": "https://en.wikipedia.org/wiki/Albert_Einstein"
    }
   ],
-  "priority": 89
+  "priority": 90
  },
  {
   "id": "global-warming",
@@ -3566,7 +5327,7 @@
   "end": 1915,
   "lat": 46.95,
   "lng": 7.44,
-  "priority": 89,
+  "priority": 90,
   "tags": [
    "science"
   ],
@@ -3602,7 +5363,7 @@
     "url": "https://en.wikipedia.org/wiki/Theory_of_relativity"
    }
   ],
-  "priority": 89
+  "priority": 90
  },
  {
   "id": "ww1",
@@ -3611,7 +5372,7 @@
   "end": 1918.86164,
   "lat": 49.7,
   "lng": 3.5,
-  "priority": 94,
+  "priority": 95,
   "tags": [
    "war"
   ],
@@ -3725,7 +5486,7 @@
   "end": 1923,
   "lat": 59.94,
   "lng": 30.31,
-  "priority": 89,
+  "priority": 90,
   "tags": [
    "politics",
    "war"
@@ -3868,7 +5629,7 @@
   "end": 1939,
   "lat": 40.71,
   "lng": -74.01,
-  "priority": 86,
+  "priority": 87,
   "tags": [
    "economy"
   ],
@@ -4035,7 +5796,7 @@
   "end": 1945,
   "lat": 50.03,
   "lng": 19.2,
-  "priority": 86,
+  "priority": 87,
   "tags": [
    "war",
    "politics",
@@ -4063,7 +5824,7 @@
   "start": 1945,
   "lat": 34.39,
   "lng": 132.45,
-  "priority": 86,
+  "priority": 87,
   "tags": [
    "war",
    "science"
@@ -4082,12 +5843,127 @@
   ]
  },
  {
+  "id": "decolonisation",
+  "name": "Decolonisation",
+  "start": 1945,
+  "end": 1975,
+  "lat": 0.0,
+  "lng": 20.0,
+  "area": [
+   [
+    -17,
+    15
+   ],
+   [
+    -17,
+    28
+   ],
+   [
+    10,
+    34
+   ],
+   [
+    32,
+    32
+   ],
+   [
+    43,
+    12
+   ],
+   [
+    51,
+    12
+   ],
+   [
+    40,
+    -5
+   ],
+   [
+    35,
+    -25
+   ],
+   [
+    20,
+    -35
+   ],
+   [
+    12,
+    -18
+   ],
+   [
+    8,
+    4
+   ],
+   [
+    -8,
+    5
+   ],
+   [
+    -17,
+    10
+   ]
+  ],
+  "priority": 85,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Within thirty years of the Second World War the European overseas empires came apart, and some seventy new states took their place.",
+  "body": "Between 1945 and 1975 the European overseas empires dissolved. Britain, France, the Netherlands, Belgium and Portugal withdrew from, or were driven out of, most of Asia and Africa. Membership of the [United Nations](event:un-founded) rose from 51 states to more than 140 over the same period, and the map of the world took roughly the shape it has now.\n\nThe war was the trigger. It had exhausted the imperial powers, destroyed the prestige of European rule in Asia, and armed and organised colonial populations. Both the United States and the Soviet Union were hostile to the old empires, for different reasons, and the [Cold War](event:cold-war) gave nationalist movements outside sponsors and leverage.\n\nHow it happened varied enormously. Some transfers were negotiated within a few years: [India and Pakistan](event:indian-independence) in 1947, Ghana in 1957, and most of French West and Equatorial Africa in 1960. Others were long wars: Indochina to 1954, Algeria from 1954 to 1962, and the Portuguese territories until the regime in Lisbon itself fell in 1974.\n\nThe new states inherited borders drawn by colonial administrators, economies built to export a few raw materials, and thin civil services. Several later conflicts (Kashmir after [partition](event:partition), Biafra, Congo and Rwanda) ran along lines the empires left behind.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Decolonization).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Decolonization"
+   }
+  ],
+  "steps": [
+   {
+    "id": "asia-first",
+    "name": "Independence in Asia (1945–1954)",
+    "start": 1945,
+    "end": 1954.55205,
+    "page": "The first wave came in Asia, where Japanese conquest had broken European authority. The Philippines became independent of the United States in 1946. The Dutch fought a four-year war in Indonesia before recognising its independence in 1949. Burma and Ceylon left the British empire in 1948. France fought on in Indochina until the defeat at Dien Bien Phu in May 1954; Cambodia and Laos were already independent, and Vietnam was partitioned pending elections that were never held, the opening of [the Vietnam War](event:vietnam-war)."
+   },
+   {
+    "id": "india-1947",
+    "name": "Independence of India and Pakistan",
+    "child": "indian-independence",
+    "at": 1947.62055
+   },
+   {
+    "id": "algeria",
+    "name": "The Algerian War (1954–1962)",
+    "start": 1954.83425,
+    "end": 1962.50822,
+    "page": "Algeria had been governed as part of France since 1848 and held about a million European settlers. The Front de Libération Nationale began an insurrection on 1 November 1954, and the war that followed involved half a million French troops, systematic torture, and the resettlement of much of the rural population. It brought down the Fourth Republic in 1958 and returned Charles de Gaulle to power. Independence came on 5 July 1962 after the Évian agreements; most of the settler population left within months. Estimates of the Algerian dead range from a quarter of a million to a million."
+   },
+   {
+    "id": "suez-1956",
+    "name": "Suez and the loss of European prestige (1956)",
+    "at": 1956.8265,
+    "page": "Egypt nationalised the Suez Canal Company in July 1956; Britain, France and Israel invaded in October under a secretly agreed plan. American financial pressure and Soviet threats forced them out within weeks. The [crisis](event:suez-crisis) demonstrated in public that Britain and France could no longer act against Washington's wishes, and it was read across Africa and Asia as proof that the imperial powers could be faced down. Harold Macmillan's 'wind of change' speech in Cape Town followed less than four years later."
+   },
+   {
+    "id": "year-of-africa",
+    "name": "The Year of Africa (1960)",
+    "at": 1960,
+    "page": "Seventeen African countries became independent during 1960, thirteen of them French: eight from French West Africa and five from French Equatorial Africa, along with Nigeria, Somalia, Madagascar and the Belgian Congo. Ghana had led the way in 1957 under Kwame Nkrumah and Sudan in 1956. Congo's independence on 30 June was followed within weeks by mutiny, the secession of Katanga and a United Nations intervention, which showed how little the departing powers had left behind in the way of working administration."
+   },
+   {
+    "id": "portuguese-empire",
+    "name": "The end of the Portuguese empire (1974–1975)",
+    "start": 1974.3137,
+    "end": 1975,
+    "page": "Portugal held on longest, fighting simultaneous wars in Angola, Mozambique and Guinea-Bissau from 1961. The cost of them brought down the dictatorship at home: army officers overthrew the Estado Novo in the Carnation Revolution of 25 April 1974, and the new government withdrew. Guinea-Bissau, Mozambique, Cape Verde, São Tomé and Príncipe and Angola all became independent in 1974–75. Angola and Mozambique went straight into civil wars in which the [Cold War](event:cold-war) powers, South Africa and Cuba all took part."
+   }
+  ]
+ },
+ {
   "id": "indian-independence",
   "name": "Independence of India and Pakistan",
   "start": 1947,
   "lat": 28.61,
   "lng": 77.21,
-  "priority": 86,
+  "priority": 87,
   "tags": [
    "politics"
   ],
@@ -4160,6 +6036,25 @@
   ]
  },
  {
+  "id": "prc-founded",
+  "name": "People's Republic of China proclaimed",
+  "start": 1949,
+  "lat": 39.9075,
+  "lng": 116.3914,
+  "priority": 85,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Mao Zedong declared the PRC from Tiananmen after the Communist victory in the civil war.",
+  "body": "Mao Zedong proclaimed the People's Republic of China from the Gate of Heavenly Peace in Beijing on 1 October 1949. The Chinese Communist Party had won the civil war against the Kuomintang, whose government withdrew to Taiwan and continued to claim to rule all China, a dispute still unsettled.\n\nThe new state governed some 540 million people in a country wrecked by decades of war and invasion. Land was redistributed and landlords were tried and killed in large numbers; industry was nationalised; the Soviet Union supplied the model and, for a decade, the engineers. The Great Leap Forward of 1958–62 tried to industrialise at speed through collectivised agriculture and produced a famine in which tens of millions died.\n\nThe [Cultural Revolution](event:cultural-revolution) followed from 1966 until Mao's death in 1976. After 1978 Deng Xiaoping's reforms opened the economy to markets, private enterprise and foreign investment while the party kept its monopoly of political power, an arrangement reasserted by force at [Tiananmen Square](event:tiananmen-square) in 1989. Several hundred million people moved out of poverty, and China became the world's second-largest economy.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Proclamation_of_the_People%27s_Republic_of_China).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Proclamation_of_the_People%27s_Republic_of_China"
+   }
+  ]
+ },
+ {
   "id": "dna-structure",
   "name": "Structure of DNA",
   "start": 1953,
@@ -4190,7 +6085,7 @@
   "end": 1975.5411,
   "lat": 28.57,
   "lng": -80.65,
-  "priority": 87,
+  "priority": 88,
   "tags": [
    "exploration",
    "science"
@@ -4377,7 +6272,7 @@
     45
    ]
   ],
-  "priority": 87,
+  "priority": 88,
   "tags": [
    "politics"
   ],

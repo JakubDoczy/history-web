@@ -16,6 +16,8 @@
  *      show through anywhere the drawn base texture had not taken over.
  *   b. continental zoom (Europe) — the streamed drawn tiles have arrived.
  *   c. regional zoom — the coastline detail: double ink and the shoreline wash.
+ *   c2. the 10m rung: that a world view never fetched it, that a coast does,
+ *      that the source is renamed when it lands, and what a tile costs then.
  *   d. a WWII battle plan over the drawn map.
  *   e. the side toggle, both states and hovered.
  *   f. a phone.
@@ -181,8 +183,17 @@ const hideOverlays = async (page, hidden) =>
  * atlas branch adds four texture taps per fragment, took minutes to capture.
  * The phone pass keeps a retina ratio, because a phone frame is small.
  */
+/**
+ * Every URL the page or its workers asked for, in order.
+ *
+ * The drawn map's vector data is fetched INSIDE the tile worker, and this is
+ * where the progressive load is proved: a world view must not ask for the 10m
+ * file. Playwright reports a dedicated worker's requests against its page.
+ */
+const requests = []
 async function open(width, height, deviceScaleFactor = 1) {
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor })
+  page.on('request', (r) => requests.push(r.url()))
   page.on('console', (m) => m.type() === 'error' && console.log('  [console]', m.text()))
   await page.goto(base, { timeout: 90_000 })
   await page.addStyleTag({
@@ -288,6 +299,9 @@ await check('a tile renders inside the 8 ms budget in the worker', () => {
   ok(mean < 8, `mean render ${mean.toFixed(2)} ms`)
 })
 
+/** What had been fetched before the camera ever reached a regional view. */
+const tenAtContinental = requests.filter((u) => u.includes('land-10m.json')).length
+
 /* ============================================ (c) regional zoom — coast ink */
 console.log('\n(c) regional zoom — coastline detail')
 // the Aegean: coast and islands, at the density that shows the double ink
@@ -301,14 +315,73 @@ await check('the ink reaches the page: a dark line on light paper', () => {
   ok(contrast.max > 170, `lightest surface pixel is only ${contrast.max.toFixed(0)}`)
 })
 
+/* ==================================== (c2) the third rung, and what it costs */
+/**
+ * ROUND 57 — the 10m rung, and the claim that a world view does not pay for it.
+ *
+ * The whole progressive load is one call: the rasterizer asks for the 3.3 MB
+ * file the first time it draws a plate at level 7 or finer. That is a claim
+ * about NETWORK TRAFFIC, so it is checked as network traffic — the fetch runs
+ * inside the tile worker, and Playwright reports a worker's requests on the
+ * page that owns it. Steps (a) and (b) have already looked at the world and at
+ * a continent by the time this runs, so "not yet" here is a measurement of both.
+ */
+console.log('\n(c2) the 10m rung')
+const wanted = (f) => requests.filter((u) => u.includes(f)).length
+console.log(
+  `      after world + continent + regional: ` +
+    requests
+      .filter((u) => /land-\d+m\.json|water-50m\.json/.test(u))
+      .map((u) => u.split('/').pop())
+      .join(', '),
+)
+await check('the world view does not pay for the 10m file', () => {
+  ok(wanted('land-110m.json') === 1, `110m fetched ${wanted('land-110m.json')} times`)
+  ok(wanted('land-50m.json') === 1, `50m fetched ${wanted('land-50m.json')} times`)
+  // …and the one that matters: it was not asked for at world or continental
+  // zoom, only after the camera reached a coast in (c)
+  ok(tenAtContinental === 0, 'the 10m file was fetched before anything needed it')
+  ok(wanted('land-10m.json') === 1, `10m fetched ${wanted('land-10m.json')} times`)
+})
+
+// …and when it lands, the source is renamed, which is what retires the tiles
+// drawn from 50m at these levels (the cache is keyed by the label).
+await page.waitForFunction(() => /10m/.test(window.__detail.sourceLabel), null, { timeout: 60_000 })
+await look(page, 61.3, 6.0, 0.055, 9000)
+const fjord = await page.evaluate(() => ({
+  source: window.__detail.sourceLabel,
+  z: window.__detail.index?.z,
+  resident: window.__detail.index?.resident,
+  ms: window.__drawn?.times.slice(-60) ?? [],
+}))
+await shot(page, 'c2-drawn-fjords-10m')
+const fjordMean = fjord.ms.reduce((a, b) => a + b, 0) / Math.max(1, fjord.ms.length)
+console.log(
+  `      ${fjord.source} @ z${fjord.z}, ${fjord.resident} tiles resident; ` +
+    `render ${fjordMean.toFixed(2)} ms mean / ${Math.max(0, ...fjord.ms).toFixed(2)} ms worst ` +
+    `(n=${fjord.ms.length})`,
+)
+await check('the finer rung takes over, and stays inside the budget', () => {
+  ok(/10m/.test(fjord.source), `source is ${fjord.source}`)
+  ok(fjord.z >= 7, `streaming level ${fjord.z}`)
+  ok(fjordMean < 8, `mean render ${fjordMean.toFixed(2)} ms`)
+})
+
 /* ================================================ (d) a battle plan on paper */
 console.log('\n(d) a WWII battle plan over the drawn map')
-await page.evaluate(() => window.__setTime(1941))
-await page.waitForFunction(() => window.__events.byId('barbarossa'), null, { timeout: 60_000 })
+/* Round 57's narrow opening window means a bare __setTime(1941) extends the
+ * selection band only TO 1941.0 — Barbarossa (22 Jun – 5 Dec 1941) then sits
+ * past the band's edge and is culled, so select/enterFocus refuse it. The
+ * harness states its own band, the same premise steps.e2e.mjs records. */
 await page.evaluate(() => {
-  window.__events.select('barbarossa')
-  window.__events.enterFocus?.('barbarossa')
+  window.__time.setSelection(1938, 1946)
+  window.__setTime(1941)
 })
+await page.waitForFunction(() => window.__events.byId('barbarossa'), null, { timeout: 60_000 })
+// showOnMap is the store's own entry into a saga's plan (select + focus +
+// camera); the select/enterFocus pair this file used before round 57 predates
+// the focus stack and silently leaves focus null against it.
+await page.evaluate(() => window.__events.showOnMap('barbarossa'))
 await page.waitForTimeout(1200)
 await look(page, 52, 30, 0.5, 7000)
 await shot(page, 'd-drawn-battleplan')

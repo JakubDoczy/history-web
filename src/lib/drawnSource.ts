@@ -2,7 +2,7 @@ import type { Tile } from './tilePyramid'
 import { TILE_PX } from './tilePyramid'
 import type { TileSource } from './detailImagery'
 import { DrawnRenderer, type DrawCtx } from './drawnTile'
-import { loadWorld } from './drawnGeometry'
+import { loadWorld, type DrawnStage } from './drawnGeometry'
 import type { DrawnTileRequest, DrawnTileResponse } from './drawnTile.worker'
 
 /**
@@ -21,30 +21,47 @@ import type { DrawnTileRequest, DrawnTileResponse } from './drawnTile.worker'
  */
 
 /**
- * The finest level worth rendering.
+ * The finest level worth rendering. Was 9 on 50m data; 10m moved it to 11.
  *
- * Two measurements bracket it (scripts/measure-drawn.mjs):
+ * The rule is round 49's, unchanged, and it is worth restating because it is
+ * what makes this number a measurement rather than a preference:
  *
- *  · the vector data SATURATES at level 6 — 59 374 of 59 406 segments already
- *    survive the half-pixel filter there, and levels 8 and up add none at all.
- *    By the letter of "where the geometry stops improving" the answer is 6.
- *  · the pen does not saturate with it. Ink is 1.15 tile pixels at every level
+ *  · the vector data SATURATES at some level — every vertex it owns survives
+ *    the half-pixel filter — and past that a finer level is the same polyline
+ *    magnified. For 50m that is level 6; for 10m it is level 8.
+ *  · the PEN does not saturate with it. Ink is 1.15 tile pixels at every level
  *    by design (a drawn map's line weight does not change with the scale it is
- *    printed at), so stopping at 6 and magnifying to a regional view would put
- *    a coastline on screen eight times too heavy — the one thing a *drawing*
- *    cannot survive, where a photograph merely goes soft.
+ *    printed at), so stopping at saturation and letting the pyramid magnify
+ *    would put a coastline on screen 2ⁿ times too heavy — the one thing a
+ *    drawing cannot survive, where a photograph merely goes soft.
+ *  · so the ceiling is where the facets themselves become the picture: the
+ *    finest level at which the median segment of the data is still under about
+ *    seventy tile pixels of straight line.
  *
- * 9 is where those two meet. At level 9 one tile pixel is 153 m and the median
- * 50m coastline segment is 7.6 km — fifty pixels — so the polygonisation is
- * already the limit on what is being said, and level 10 would only draw the
- * same facets more sharply. Above it the pyramid's existing coarse-level
- * fallback magnifies, which on a drawing reads as a heavier pen rather than as
- * a blurred photograph.
+ * Both halves move by the same two levels, which is why the answer does:
+ *
+ *     data   saturates   median segment   that segment at Z_MAX   Z_MAX
+ *      50m       6         0.0985° / 7.6 km    71.7 px at z9        9
+ *      10m       8         0.0176° / 1.5 km    51.3 px at z11      11
+ *
+ * Level 12 is refused by both halves: the median facet there is 103 px, longer
+ * than anything this map has ever shipped, and a reader cannot reach it anyway
+ * — `MIN_ALTITUDE_DETAIL` holds the closest view at a 100 km frame, which wants
+ * level 11 on a desktop. The ceiling now matches the camera instead of being
+ * two levels under it, and the drawing AT the ceiling is finer than the old
+ * ceiling's was (51 px of facet against 72).
  */
-export const DRAWN_Z_MAX = 9
+export const DRAWN_Z_MAX = 11
 
-/** The level the vector data stops adding segments at. Measured; see above. */
-export const DRAWN_GEOMETRY_Z = 6
+/**
+ * The level the vector data stops adding segments at. Measured; see above.
+ *
+ * This is 10m's saturation, because 10m is what the source serves at the levels
+ * near the ceiling. 50m's is 6 and 110m's is 4; both are asserted in
+ * tests/drawnMap.test.ts, because the three together are what say that each
+ * rung is a rung and not a preference.
+ */
+export const DRAWN_GEOMETRY_Z = 8
 
 /**
  * The year drawn tiles start streaming.
@@ -83,6 +100,35 @@ export const DRAWN_ERA_FROM = -10_000
  */
 export const DRAWN_LABEL = 'Drawn — Natural Earth 50m'
 export const DRAWN_LABEL_COARSE = 'Drawn — Natural Earth 110m'
+/**
+ * …and the third, which arrives on demand rather than on load.
+ *
+ * The 10m file is 851 kB gzipped and is fetched the first time a plate is drawn
+ * at `LOD_FINE_Z` or finer, so this label appears only for a reader who has
+ * zoomed to a coast. It retires the 50m tiles for exactly the reason the 50m
+ * label retires the 110m ones — the cache is keyed by label and pins what the
+ * view wants, so a Norway that arrived a second before the upgrade would keep
+ * its blunter coastline for as long as anyone looked at it.
+ *
+ * Note what the label does NOT claim: that every tile under it is drawn from
+ * 10m geometry. It is a stamp on the geometry the renderer HOLDS. A level-5
+ * plate is still drawn from 50m (see `landAt`) because at level 5 the two are
+ * the same drawing, and it is cached under this name because that is the state
+ * of the world it came out of.
+ */
+export const DRAWN_LABEL_FINE = 'Drawn — Natural Earth 10m'
+
+/** Which label each parse stage brings, and in which order they may arrive. */
+export const DRAWN_LABELS: Record<DrawnStage, string> = {
+  '50m': DRAWN_LABEL,
+  '10m': DRAWN_LABEL_FINE,
+}
+const STAGE_RANK: Record<string, number> = {
+  [DRAWN_LABEL_COARSE]: 0,
+  [DRAWN_LABEL]: 1,
+  [DRAWN_LABEL_FINE]: 2,
+}
+
 export const DRAWN_ATTRIBUTION =
   'Coastlines, rivers and lakes: Natural Earth (public domain), drawn on device'
 
@@ -117,7 +163,7 @@ export class DrawnTiles {
   private canvas?: HTMLCanvasElement
   /** Render times, newest last — the budget is asserted from outside. */
   readonly times: number[] = []
-  /** Fires when the 50m geometry lands and the label changes under the caller. */
+  /** Fires when a finer file lands and the label changes under the caller. */
   onUpgrade?: () => void
 
   constructor(private base = '/') {
@@ -135,7 +181,7 @@ export class DrawnTiles {
     try {
       const w = new Worker(new URL('./drawnTile.worker.ts', import.meta.url), { type: 'module' })
       w.onmessage = (e: MessageEvent<DrawnTileResponse>) => {
-        if (e.data.upgraded) return this.upgrade()
+        if (e.data.upgraded) return this.upgrade(e.data.upgraded)
         const done = this.pending.get(e.data.id)
         this.pending.delete(e.data.id)
         if (e.data.ms) this.times.push(e.data.ms)
@@ -155,16 +201,23 @@ export class DrawnTiles {
   }
 
   /**
-   * The 50m data has landed, so everything drawn before it is a different map.
+   * A finer file has landed, so everything drawn before it is a different map.
    *
    * Renaming the source is the whole mechanism: `DetailImagery` builds its cache
    * keys from the label on every frame, so the next frame wants a set of tiles
-   * that does not exist yet and asks for them, and the 110m ones stop being
+   * that does not exist yet and asks for them, and the older ones stop being
    * wanted and fall out of the cache on their own.
+   *
+   * Ranked rather than replaced, because two stages are now in flight and their
+   * order is not guaranteed: a reader who opens the app already zoomed in asks
+   * for 10m from the first tile drawn, and a slow 50m response behind a fast
+   * 10m one would otherwise rename the source BACKWARDS and retire the better
+   * tiles in favour of blunter ones.
    */
-  private upgrade() {
-    if (this.source.label === DRAWN_LABEL) return
-    this.source.label = DRAWN_LABEL
+  private upgrade(stage: DrawnStage) {
+    const label = DRAWN_LABELS[stage]
+    if (STAGE_RANK[label] <= STAGE_RANK[this.source.label]) return
+    this.source.label = label
     this.onUpgrade?.()
   }
 
@@ -190,7 +243,9 @@ export class DrawnTiles {
    */
   private async renderHere(t: Tile): Promise<CanvasImageSource> {
     if (typeof document === 'undefined') throw new Error('no canvas')
-    this.local ??= loadWorld(this.base, () => this.upgrade()).then((w) => new DrawnRenderer(w))
+    this.local ??= loadWorld(this.base, (stage) => this.upgrade(stage)).then(
+      (w) => new DrawnRenderer(w),
+    )
     const drawn = await this.local
     const canvas = (this.canvas ??= Object.assign(document.createElement('canvas'), {
       width: TILE_PX,

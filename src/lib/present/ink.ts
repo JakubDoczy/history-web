@@ -8,6 +8,7 @@ import {
 import { keepsLayer, stepOwner, type Step } from '../steps'
 import { PAPER } from '../drawnTile'
 import type { RenderCtx } from './mode'
+import type { BorderRing, FrontierInk } from '../nations'
 
 /**
  * WHAT GOES ON THE GROUND — the two drawings the globe puts under an item, both
@@ -71,6 +72,59 @@ export const OUTLINE_WIDTH = { realistic: 2, schematic: 1.4 } as const
  */
 export const NATION_FILL_ALPHA = { realistic: 0.24, schematic: 0.16 } as const
 export const COASTAL_INK = { realistic: true, schematic: false } as const
+
+/**
+ * THE MODERN STATES' PEN — quieter than a polity's, and neutral.
+ *
+ * A modern frontier is context: it is the only political line on this globe
+ * that is not an answer to the year the reader chose, so it is the only one
+ * drawn in no colour at all. The pale grey reads on the photograph as it
+ * stands; on paper `inkOnPaper` takes it a fifth of the way to the map's pen
+ * rather than the 0.45 a polity border gets, which lands it at about 2.7:1
+ * against the land tone — under a polity's 3.0-3.4, which is the whole point.
+ * A whisper, and legible.
+ */
+export const MODERN_BORDER = { color: '#9aa0a8', mix: 0.2 } as const
+
+/**
+ * WHO INKS WHICH BORDER, when both layers are on the globe at once.
+ *
+ * From `MODERN_FROM` the globe draws Natural Earth's surveyed frontiers, and
+ * the historical corpus still draws the United States, China and India in those
+ * years with hand-authored extents whose frontiers are hundreds of kilometres
+ * off the same lines. Drawing both is two pens on one border — the defect this
+ * whole rework exists to remove — so while the modern set is on, a polity keeps
+ * its wash, its label and (on the photograph, where nothing else draws a shore)
+ * its coastline, and gives up its frontier.
+ *
+ * It is a function of the ENTRY LIST rather than of the year because that is
+ * what the caller has and what the test can build: `modern` is the store's
+ * modern entries, nought or one, and the plan is the two accessors the ink
+ * layer takes.
+ */
+export function frontierInkPlan(
+  modern: readonly BorderRing[],
+  ctx: RenderCtx,
+): { colorOf: (e: BorderRing) => string; inkOf: (e: BorderRing) => FrontierInk } {
+  const isModern = (e: BorderRing) => modern.includes(e)
+  const yielded = modern.length > 0
+  return {
+    colorOf: (e) =>
+      isModern(e)
+        ? onGround(MODERN_BORDER.color, ctx, MODERN_BORDER.mix)
+        : onGround(e.nation.color, ctx),
+    inkOf: (e) =>
+      isModern(e)
+        ? 'all'
+        : COASTAL_INK[ctx.mode]
+          ? yielded
+            ? 'coast'
+            : 'all'
+          : yielded
+            ? 'none'
+            : 'frontier',
+  }
+}
 
 /**
  * INK ON PAPER — a colour chosen against a dark photograph, re-aimed at pale

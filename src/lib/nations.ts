@@ -304,7 +304,24 @@ export interface BorderRing {
    * the ink lies on the edge of the fill rather than on a chord under it.
    */
   frontier: Ring[]
+  /**
+   * …and the other half of the same boundary: the polylines that ARE the coast.
+   *
+   * Drawn only where there is no drawn coastline to double (the photograph), and
+   * only when this polity has yielded its political ink to somebody else — which
+   * happens in exactly one situation, and round 57 added it. From `MODERN_FROM`
+   * the globe draws Natural Earth's present-day frontiers as context
+   * (lib/modernBorders.ts), and the three polities the historical corpus still
+   * draws in those years — the United States, China, India — have hand-authored
+   * frontiers hundreds of kilometres off the surveyed ones. Two lines for one
+   * border is the defect this whole rework exists to remove, so the crude one
+   * steps aside. Its wash, its label and its shore stay.
+   */
+  coast: Ring[]
 }
+
+/** Which part of a polity's boundary the ink layer draws. See `inkPathsOf`. */
+export type FrontierInk = 'all' | 'frontier' | 'coast' | 'none'
 
 /**
  * A STORED EDGE IS A CHORD; THE GLOBE WANTS AN ARC. Round 55's whole fix.
@@ -348,28 +365,33 @@ export const BORDER_SEGMENT_DEG = AREA_CAP_RESOLUTION_DEG
 const ringCache = new Map<string, BorderRing[]>()
 
 /**
- * The inland runs of one ring, as open polylines.
+ * One KIND of edge of a ring, as open polylines: the frontier or the coast.
  *
- * A run wraps the ring's end, so the walk starts after the first coastal edge
- * where there is one — otherwise a frontier that happens to straddle vertex 0
- * comes out as two lines with a gap between them at an arbitrary place.
+ * A run wraps the ring's end, so the walk starts after the first edge of the
+ * OTHER kind where there is one — otherwise a frontier that happens to straddle
+ * vertex 0 comes out as two lines with a gap between them at an arbitrary place.
+ *
+ * The two callers are exact complements (`want` 0 is inland, 1 is coast) and
+ * that is worth having in one function rather than two: it is the guarantee
+ * that "the ink layer draws the coast instead of the frontier" cannot quietly
+ * become "the ink layer draws a slightly different set of edges".
  */
-export function frontierRuns(ring: Ring, coastal: Uint8Array): Ring[] {
+export function edgeRuns(ring: Ring, coastal: Uint8Array, want: 0 | 1): Ring[] {
   const n = ring.length
   if (!n) return []
   let first = -1
   for (let i = 0; i < n; i++)
-    if (coastal[i]) {
+    if ((coastal[i] ? 1 : 0) !== want) {
       first = i
       break
     }
-  if (first < 0) return [[...ring, ring[0]]] // no coast at all: the whole ring
+  if (first < 0) return [[...ring, ring[0]]] // all of it is what we want: the whole ring
   const out: Ring[] = []
   let cur: Ring = []
   for (let s = 1; s <= n; s++) {
     const i = (first + s) % n
-    if (coastal[i]) {
-      // The run already ends at ring[i]: the previous inland edge pushed its own
+    if ((coastal[i] ? 1 : 0) !== want) {
+      // The run already ends at ring[i]: the previous kept edge pushed its own
       // far end, which is this edge's near end. Pushing it again duplicates the
       // last vertex and draws a zero-length segment.
       if (cur.length) {
@@ -384,6 +406,12 @@ export function frontierRuns(ring: Ring, coastal: Uint8Array): Ring[] {
   if (cur.length > 1) out.push(cur)
   return out.filter((r) => r.length > 1)
 }
+
+/** The inland runs of one ring — the political ink. */
+export const frontierRuns = (ring: Ring, coastal: Uint8Array): Ring[] => edgeRuns(ring, coastal, 0)
+
+/** …and its complement, the shore. Drawn only where nothing else draws it. */
+export const coastRuns = (ring: Ring, coastal: Uint8Array): Ring[] => edgeRuns(ring, coastal, 1)
 
 /** The border rings in force at t, as objects stable across ticks. */
 export function borderRings(n: Nation, t: Year): BorderRing[] {
@@ -404,6 +432,9 @@ export function borderRings(n: Nation, t: Year): BorderRing[] {
       label,
       frontier: rings
         .flatMap((r, i) => frontierRuns(r, coastal[p][i]))
+        .map((run) => densifyPath(run, BORDER_SEGMENT_DEG) as Ring),
+      coast: rings
+        .flatMap((r, i) => coastRuns(r, coastal[p][i]))
         .map((run) => densifyPath(run, BORDER_SEGMENT_DEG) as Ring),
     }))
     ringCache.set(key, entries)

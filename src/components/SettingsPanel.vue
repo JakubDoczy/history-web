@@ -10,6 +10,7 @@ import { imageryCredit } from '../lib/paleo'
 import { framesFor } from '../data/paleoTextures'
 import { DRAWN_ATTRIBUTION } from '../lib/drawnSource'
 import { buildLabel } from '../lib/build'
+import { MODERN_FROM } from '../lib/modernBorders'
 
 const events = useEventStore()
 const settings = useSettingsStore()
@@ -417,6 +418,24 @@ const imageryLine = () => {
             />
             <span>Scale bar</span>
           </label>
+
+          <!-- The one border setting there is. The era's own polities are not
+               optional — they are what the globe is for — but the modern states
+               are context printed under them, and a reader looking at 1992 for
+               the empires may not want today's map showing through. -->
+          <label class="row">
+            <input
+              type="checkbox"
+              :checked="settings.modernBorders"
+              @change="settings.toggle('modernBorders')"
+            />
+            <span>Modern state borders</span>
+          </label>
+          <p class="hint">
+            Natural Earth's present-day frontiers, drawn as context from
+            {{ MODERN_FROM }} — the first year they are true, given the patch set
+            for the states that have split since.
+          </p>
         </div>
       </section>
 

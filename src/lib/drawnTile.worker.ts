@@ -1,4 +1,4 @@
-import { loadWorld } from './drawnGeometry'
+import { loadWorld, type DrawnStage } from './drawnGeometry'
 import { DrawnRenderer, type DrawCtx } from './drawnTile'
 import { TILE_PX } from './tilePyramid'
 
@@ -31,7 +31,8 @@ export interface DrawnTileResponse {
   /** Wall time of the render itself, so the budget can be asserted from outside. */
   ms: number
   /**
-   * Announced once, when the 50m geometry has parsed and the drawing changes.
+   * Announced when a finer file has parsed and the drawing changes: '50m' on
+   * load, '10m' only if somebody drew a plate fine enough to ask for it.
    *
    * The caller has to know, and the reason is the cache. A tile is keyed by
    * (z, x, y, source label) and held for as long as it is wanted, so the tiles
@@ -40,7 +41,7 @@ export interface DrawnTileResponse {
    * label changes when this arrives, which retires them by making every key a
    * new one; the old ones fall out of the cache unwanted.
    */
-  upgraded?: true
+  upgraded?: DrawnStage
 }
 
 const ctx = self as unknown as {
@@ -59,7 +60,7 @@ ctx.onmessage = async (e: MessageEvent<DrawnTileRequest>) => {
     // place, so the first tiles of a session are drawn before the 50m parse
     // would allow. A tile drawn from 110m is not wrong, only blunt — and it has
     // no rivers and no lakes at all, because those live only in the other file — so the upgrade is announced and the caller retires them.
-    renderer ??= loadWorld(base, () => ctx.postMessage({ id: 0, ms: 0, upgraded: true })).then(
+    renderer ??= loadWorld(base, (stage) => ctx.postMessage({ id: 0, ms: 0, upgraded: stage })).then(
       (w) => new DrawnRenderer(w),
     )
     const drawn = await renderer

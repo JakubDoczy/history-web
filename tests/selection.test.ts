@@ -145,8 +145,12 @@ describe('time store selection', () => {
 
   it('opens on the documented default framing', () => {
     const s = useTimeStore()
-    expect(s.range).toEqual({ start: -550, end: MAX_TIME })
-    expect(s.selection).toEqual({ start: 500, end: 1945 })
+    // Round 57, at the reader's request: the early-modern rail, the fall of
+    // Constantinople on it, and the band a locked click on 1453 asks for. The
+    // exact numbers are asserted in tests/time.test.ts, 'the opening view'.
+    expect(s.range).toEqual({ start: 1400, end: 1789 })
+    expect(s.currentTime).toBe(1453)
+    expect(inside(s.selection, s.range)).toBe(true)
   })
 
   it('zoom and pan drag the selection along with the window', () => {
@@ -161,6 +165,7 @@ describe('time store selection', () => {
 
   it('setSelection normalizes and clamps', () => {
     const s = useTimeStore()
+    s.setRange({ start: -550, end: MAX_TIME }) // room either side of the years below
     s.setSelection(1800, 1000)
     expect(s.selection.start).toBeCloseTo(1000, 6)
     expect(s.selection.end).toBeCloseTo(1800, 6)
@@ -181,7 +186,7 @@ describe('time store selection', () => {
     expect(warpWidth(s.range)).toBeCloseTo(warpWidth(s.selection) * 1.1, 9)
     expect(inside(s.selection, s.range)).toBe(true)
 
-    expect(s.currentTime).toBe(1500) // still inside the era: untouched
+    expect(s.currentTime).toBe(1453) // still inside the era: untouched
 
     const stone = HISTORICAL[0]
     s.selectEra(stone)
@@ -205,7 +210,11 @@ describe('event store visibility follows the selection', () => {
       id, name: id, start, lat: 0, lng: 0, priority: 1, tags: ['war'], summary: '',
     })
     events.adopt([ev('classical', -300), ev('medieval', 1200), ev('modern', 2000)])
-    expect(events.visible.map((e) => e.id)).toEqual(['medieval']) // default 500–1945
+    // its own band, stated: the app now opens on 1434–1549 (round 57), and this
+    // is about what the filter does, not about what the app opens on
+    time.setRange({ start: -550, end: MAX_TIME })
+    time.setSelection(500, 1945)
+    expect(events.visible.map((e) => e.id)).toEqual(['medieval'])
     time.setSelection(-550, 0)
     expect(events.visible.map((e) => e.id)).toEqual(['classical'])
   })
@@ -218,6 +227,8 @@ describe('event store visibility follows the selection', () => {
       id, name: id, start, lat: 0, lng: 0, priority: 1, tags: ['war'], summary: '',
     })
     events.adopt([ev('classical', -300), ev('medieval', 1200), ev('modern', 2000)])
+    time.setRange({ start: -550, end: MAX_TIME }) // a window with all three on it
+    time.setSelection(500, 1945)
     expect(events.visible.map((e) => e.id)).toEqual(['medieval'])
 
     time.setTime(events.focusYear('modern')!) // a search / panel jump forward
@@ -237,6 +248,8 @@ import {
   mergedEdge,
   tweenWindow,
   windowFitting,
+  windowLeastMoved,
+  SLIDE_MARGIN,
 } from '../src/lib/selection'
 import { fromWarp } from '../src/lib/time'
 
@@ -434,5 +447,136 @@ describe('time store: era fit', () => {
       g.requestAnimationFrame = oldRaf
       g.matchMedia = oldMm
     }
+  })
+})
+
+/**
+ * THE LEAST MOVE — round 57.
+ *
+ * `windowFitting` reframes, `windowContaining` reframes with more air, and this
+ * one moves the view as little as a view can be moved: not at all when the span
+ * is already on it, a slide when it pokes out, and a widening only when no
+ * slide of that width could hold it. It is what a locked click on the rail now
+ * does to the visible window (stores/time.ts `scrubTo`), and the reason the
+ * rail stops jumping under a reader who is clicking about inside it.
+ */
+describe('windowLeastMoved', () => {
+  const view = { start: 1400, end: 1789 }
+
+  it('returns the window unchanged when the span is already on it', () => {
+    for (const band of [
+      { start: 1450, end: 1550 },
+      { start: 1400, end: 1789 }, // exactly the window
+      { start: 1400, end: 1401 }, // touching the left edge counts as on it
+      { start: 1788, end: 1789 }, // …and the right
+    ])
+      expect(windowLeastMoved(band, view)).toEqual(view)
+  })
+
+  it('keeps the width exactly when it slides', () => {
+    const out = windowLeastMoved({ start: 1700, end: 1850 }, view)
+    expect(warpWidth(out)).toBeCloseTo(warpWidth(view), 12)
+    expect(out.start).toBeGreaterThan(view.start)
+    expect(inside({ start: 1700, end: 1850 }, out)).toBe(true)
+  })
+
+  it('slides no further than the margin it owes', () => {
+    const band = { start: 1700, end: 1850 }
+    const out = windowLeastMoved(band, view)
+    // the band ends against the far margin: any less and it would be off the
+    // rail, any more and the view moved for nothing
+    const air = toWarp(out.end) - toWarp(band.end)
+    expect(air).toBeCloseTo(warpWidth(out) * SLIDE_MARGIN, 9)
+    // …and the near end is where the slide left it, not recentred
+    expect(toWarp(band.start) - toWarp(out.start)).toBeGreaterThan(air)
+  })
+
+  it('slides left the same way', () => {
+    const band = { start: 1300, end: 1450 }
+    const out = windowLeastMoved(band, view)
+    expect(out.end).toBeLessThan(view.end)
+    expect(warpWidth(out)).toBeCloseTo(warpWidth(view), 12)
+    const air = toWarp(band.start) - toWarp(out.start)
+    expect(air).toBeCloseTo(warpWidth(out) * SLIDE_MARGIN, 9)
+  })
+
+  it('never moves the view when it does not have to, at any depth', () => {
+    const whole = { start: MIN_TIME, end: MAX_TIME }
+    for (const band of [
+      { start: -3e9, end: -2e9 },
+      { start: -1.2e6, end: -0.8e6 },
+      { start: 1999, end: 2005 },
+    ])
+      expect(windowLeastMoved(band, whole)).toEqual(whole)
+  })
+
+  it('widens only when the width it has cannot hold the span', () => {
+    const narrow = { start: 1500, end: 1520 }
+    const band = { start: 1450, end: 1560 }
+    const out = windowLeastMoved(band, narrow)
+    expect(warpWidth(out)).toBeGreaterThan(warpWidth(narrow))
+    // exactly the span plus its two margins — the least width that holds it
+    expect(warpWidth(out)).toBeCloseTo(warpWidth(band) / (1 - 2 * SLIDE_MARGIN), 9)
+    expect(inside(band, out)).toBe(true)
+    // the margin is 4% of the WINDOW rather than 5% of the span, so the widened
+    // window is a shade tighter than the era fit's frame — 1.087 span-widths
+    // against 1.1 — and, unlike the fit, it is reached only when a slide could
+    // not have done the job
+    expect(warpWidth(out)).toBeLessThan(warpWidth(windowFitting(band)))
+    expect(windowLeastMoved({ start: 1505, end: 1515 }, narrow)).toEqual(narrow)
+  })
+
+  it('never widens for a span that would fit after a slide', () => {
+    // the span is wider than half the window and hangs off the end; a fit would
+    // have zoomed, a slide is enough
+    const band = { start: 1650, end: 1800 }
+    const out = windowLeastMoved(band, view)
+    expect(warpWidth(out)).toBeCloseTo(warpWidth(view), 12)
+  })
+
+  it('clamps against the ends of time by sliding, not by shrinking', () => {
+    const atEnd = windowLeastMoved({ start: 2020, end: MAX_TIME }, { start: 1400, end: 1789 })
+    expect(atEnd.end).toBe(MAX_TIME)
+    expect(atEnd.start).toBeGreaterThanOrEqual(MIN_TIME)
+    expect(inside({ start: 2020, end: MAX_TIME }, atEnd)).toBe(true)
+    const atStart = windowLeastMoved({ start: MIN_TIME, end: -4.4e9 }, { start: -1e6, end: 0 })
+    expect(atStart.start).toBe(MIN_TIME)
+    expect(inside({ start: MIN_TIME, end: -4.4e9 }, atStart)).toBe(true)
+  })
+
+  it('holds the whole of time when asked for the whole of time', () => {
+    const out = windowLeastMoved({ start: MIN_TIME, end: MAX_TIME }, { start: 1900, end: 2000 })
+    expect(out).toEqual({ start: MIN_TIME, end: MAX_TIME })
+  })
+
+  it('orders a span handed over backwards', () => {
+    expect(windowLeastMoved({ start: 1850, end: 1700 }, view)).toEqual(
+      windowLeastMoved({ start: 1700, end: 1850 }, view),
+    )
+  })
+
+  it('always ends with the span on the rail, from any window and any span', () => {
+    const spans = [
+      { start: 1999, end: 2005 },
+      { start: -1.2e6, end: -0.8e6 },
+      { start: MIN_TIME, end: -4e9 },
+      { start: 500, end: 1500 },
+      { start: 2020, end: MAX_TIME },
+    ]
+    const views = [
+      { start: 1400, end: 1789 },
+      { start: MIN_TIME, end: MAX_TIME },
+      { start: 1500, end: 1520 },
+      { start: -3e9, end: -2.9e9 },
+      { start: 1900, end: MAX_TIME },
+    ]
+    for (const band of spans)
+      for (const win of views) {
+        const out = windowLeastMoved(band, win)
+        expect(inside(band, out)).toBe(true)
+        expect(out.start).toBeGreaterThanOrEqual(MIN_TIME)
+        expect(out.end).toBeLessThanOrEqual(MAX_TIME)
+        expect(out.end).toBeGreaterThan(out.start)
+      }
   })
 })

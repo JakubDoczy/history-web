@@ -2,8 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { createCanvas, Path2D as NodePath2D } from '@napi-rs/canvas'
 import {
+  CHUNK_DEG,
   buildWorld,
   bucketsCovering,
+  layerOf,
   shapesNear,
   type DrawnWorld,
   type Layer,
@@ -11,6 +13,7 @@ import {
 import {
   DrawnRenderer,
   LevelPaths,
+  LOD_FINE_Z,
   LOD_Z,
   MIN_SEG_PX,
   PAPER,
@@ -25,6 +28,8 @@ import {
   DRAWN_GEOMETRY_Z,
   DRAWN_LABEL,
   DRAWN_LABEL_COARSE,
+  DRAWN_LABEL_FINE,
+  DRAWN_LABELS,
   DRAWN_PX_PER_DEG,
   DRAWN_Z_MAX,
 } from '../src/lib/drawnSource'
@@ -61,6 +66,19 @@ const read = (f: string) => JSON.parse(readFileSync(`public/data/map/${f}`, 'utf
 let cached: DrawnWorld | undefined
 const world = (): DrawnWorld =>
   (cached ??= buildWorld(read('land-110m.json'), read('land-50m.json'), read('water-50m.json')))
+
+/**
+ * …and the same world with the third rung on it.
+ *
+ * Kept apart from `world()` on purpose. The 10m layer arrives on demand in the
+ * app and is absent for most of a session, so the tests that describe the map
+ * without it are describing a state it really has; and the decode is 700 ms,
+ * which is not worth paying in the tests that never draw finer than level 6.
+ */
+let cachedFine: Layer | undefined
+const fineLand = (): Layer =>
+  (cachedFine ??= layerOf(read('land-10m.json'), 'land', true, { chunk: true }))
+const fineWorld = (): DrawnWorld => ({ ...world(), fineLand: fineLand() })
 
 const surface = () => {
   const canvas = createCanvas(TILE_PX, TILE_PX)
@@ -609,30 +627,78 @@ describe('the levels the drawn source serves', () => {
     return kept
   }
 
-  it('derives Z_MAX from where the geometry stops adding, and says why it is higher', () => {
-    const land = world().land!
-    // the measured claim: the last level that recovers more than 1% more of the
-    // data than the one below it
-    let saturates = BASE_LEVEL
-    let prev = segments(land, BASE_LEVEL)
-    for (let z = BASE_LEVEL + 1; z <= 12; z++) {
-      const now = segments(land, z)
-      if (now / prev > 1.01) saturates = z
+  /** The last level that recovers >1% more of a layer than the one below it. */
+  const saturationOf = (layer: Layer) => {
+    let sat = BASE_LEVEL
+    let prev = segments(layer, BASE_LEVEL)
+    for (let z = BASE_LEVEL + 1; z <= 14; z++) {
+      const now = segments(layer, z)
+      if (now / prev > 1.01) sat = z
       prev = now
     }
-    expect(saturates).toBe(DRAWN_GEOMETRY_Z - 1)
-    // nothing at all above it: every vertex the DATA has already survives. The
-    // slack is the antimeridian clip's own vertices, which are the projection's
-    // rather than the data's — `splitAtSeam` puts a point on ±180 beside a data
-    // point 0.01° away (Fiji), and 0.01° is half a tile pixel only above z 11.
-    expect(segments(land, 12) - segments(land, DRAWN_GEOMETRY_Z + 2)).toBeLessThanOrEqual(4)
-    // …and the source still serves finer levels, because the PEN does not
-    // saturate with the geometry: ink is a fixed 1.15 tile pixels, so stopping
-    // at saturation and magnifying would put a coastline on screen 2^n times
-    // too heavy. See DRAWN_Z_MAX.
+    return sat + 1
+  }
+
+  /** The median segment of a layer, in degrees — which is what a pixel measures. */
+  const medianSegment = (layer: Layer) => {
+    const d: number[] = []
+    for (const shape of layer.shapes)
+      for (let r = 0; r + 1 < shape.rings.length; r++)
+        for (let i = shape.rings[r]; i + 1 < shape.rings[r + 1]; i++) {
+          if (shape.seam?.[i]) continue
+          d.push(
+            Math.hypot(
+              shape.pts[i * 2 + 2] - shape.pts[i * 2],
+              shape.pts[i * 2 + 3] - shape.pts[i * 2 + 1],
+            ),
+          )
+        }
+    d.sort((a, b) => a - b)
+    return d[d.length >> 1]
+  }
+  const facetPx = (deg: number, z: number) => (deg * TILE_PX * 2 ** z) / 360
+
+  it('gives each rung a level where the one below it has nothing left to say', () => {
+    // Three files, three saturation levels, and they are what LOD_Z and
+    // LOD_FINE_Z are chosen from: a rung is worth loading exactly where the rung
+    // under it has run out of vertices a tile pixel could show.
+    expect(saturationOf(world().coarseLand)).toBe(4)
+    expect(saturationOf(world().land!)).toBe(6)
+    expect(saturationOf(fineWorld().fineLand!)).toBe(DRAWN_GEOMETRY_Z)
+    expect(DRAWN_GEOMETRY_Z).toBe(8)
+    // …and the switch to 10m is at or above the level 50m stops improving at,
+    // never below it: below, the finer file would cost 851 kB to draw the same
+    // coastline.
+    expect(LOD_FINE_Z).toBeGreaterThanOrEqual(saturationOf(world().land!))
+    // nothing at all above saturation: every vertex the DATA has already
+    // survives. The slack is the clip's own vertices — the antimeridian's and
+    // (on 10m) the chunk walls' — which are the projection's and the decoder's
+    // rather than the data's.
+    const land = fineWorld().fineLand!
+    expect(segments(land, 13) / segments(land, DRAWN_GEOMETRY_Z) - 1).toBeLessThan(0.001)
+  })
+
+  it('derives Z_MAX from saturation and from how long a facet is at it', () => {
+    // …and the source still serves finer levels than the data saturates at,
+    // because the PEN does not saturate with it: ink is a fixed 1.15 tile
+    // pixels, so stopping at saturation and magnifying would put a coastline on
+    // screen 2^n times too heavy. See DRAWN_Z_MAX.
     expect(DRAWN_Z_MAX).toBeGreaterThan(DRAWN_GEOMETRY_Z)
-    // the ceiling is where a tile pixel is finer than the data's own step: the
-    // median 50m segment is 7.6 km, and level 9 is 153 m per pixel
+    // THE RULE, stated once and applied to both rungs: the ceiling is the
+    // finest level at which the median facet of the data is still no longer
+    // than the median 50m facet was at the ceiling round 49 shipped (z9, 72 px).
+    // That is what "the polygonisation is already the limit" measures.
+    const limit = facetPx(medianSegment(world().land!), 9)
+    expect(limit).toBeGreaterThan(70)
+    expect(limit).toBeLessThan(75)
+    const fine = medianSegment(fineWorld().fineLand!)
+    expect(facetPx(fine, DRAWN_Z_MAX)).toBeLessThan(limit)
+    expect(facetPx(fine, DRAWN_Z_MAX + 1)).toBeGreaterThan(limit)
+    expect(DRAWN_Z_MAX).toBe(11)
+    // and the ceiling is now finer AT the ceiling than the one it replaces
+    expect(facetPx(fine, DRAWN_Z_MAX)).toBeLessThan(limit * 0.8)
+    // the same statement in ground units: a tile pixel at the ceiling is well
+    // inside the data's own step
     const pxPerDeg = (TILE_PX * 2 ** DRAWN_Z_MAX) / 360
     expect((1 / pxPerDeg) * 111_320).toBeLessThan(200)
     expect(DRAWN_PX_PER_DEG).toBe(pxPerDeg)
@@ -643,6 +709,328 @@ describe('the levels the drawn source serves', () => {
     // resolution, so its declared one is derived from the ceiling instead. The
     // two must agree or anything reasoning about sources in general is wrong.
     expect(maxLevel({ pxPerDeg: DRAWN_PX_PER_DEG })).toBe(DRAWN_Z_MAX)
+  })
+})
+
+/**
+ * ROUND 57 — the third rung.
+ *
+ * Natural Earth 10m, from `@cublya/world-atlas` (the only reachable package
+ * that publishes it; see scripts/vendor-map-data.mjs). Five things have to hold
+ * for it to be a rung rather than a bigger download: the level it engages at
+ * has to be derived, the file must not be fetched before that level is drawn,
+ * the cut into cells that makes it affordable must not change the drawing, the
+ * antimeridian machinery must survive data seven times denser, and a tile must
+ * still be 8 ms.
+ */
+describe('the 10m rung', () => {
+  const NORWAY = (z: number) => ({
+    z,
+    // 5.5–6.5° E, 61–62° N: the Sognefjord, which is where 50m facets and 10m
+    // does not — and which straddles the 5.625° chunk wall, deliberately.
+    x: Math.floor(((6.0 + 180) / 360) * 2 ** z),
+    y: Math.floor(((90 - 61.5) / 180) * 2 ** (z - 1)),
+  })
+  const AEGEAN = (z: number) => ({
+    z,
+    x: Math.floor(((23.5 + 180) / 360) * 2 ** z),
+    y: Math.floor(((90 - 38.0) / 180) * 2 ** (z - 1)),
+  })
+  /**
+   * Is this pixel the land's own tone?
+   *
+   * 40 of summed channel distance, which is one number doing two jobs: it is
+   * above the dark paper fleck (34 at its alpha, and the fleck is over
+   * everything by design) and far below the sea (107) and every step of the
+   * wash. So "the land moved" cannot be answered by the paper.
+   */
+  const isLand = (px: Uint8ClampedArray, i: number) => {
+    const [r, g, b] = [1, 3, 5].map((k) => parseInt(PAPER.land.slice(k, k + 2), 16))
+    return Math.abs(px[i] - r) + Math.abs(px[i + 1] - g) + Math.abs(px[i + 2] - b) < 40
+  }
+
+  /** Deep inland: no coast, no wall of the chunk grid may show here either. */
+  const SIBERIA = (z: number) => ({
+    z,
+    x: Math.floor(((100 + 180) / 360) * 2 ** z),
+    y: Math.floor(((90 - 62) / 180) * 2 ** (z - 1)),
+  })
+
+  it('picks the rung by level, and names it apart from the others', () => {
+    const w = fineWorld()
+    // below the rung, 50m — the finer file exists and is deliberately not used
+    expect(landAt(w, LOD_FINE_Z - 1)[0]).toBe(w.land)
+    expect(landAt(w, LOD_FINE_Z)[0]).toBe(w.fineLand)
+    expect(landAt(w, DRAWN_Z_MAX)[0]).toBe(w.fineLand)
+    // …and without it, the map is exactly the map it was
+    expect(landAt(world(), LOD_FINE_Z)[0]).toBe(world().land)
+    expect(landAt(world(), DRAWN_Z_MAX)[1]).toBe('land')
+    // THE CACHE-LABEL LESSON, round 49's, now with three answers: the path cache
+    // is keyed by this name, so two rungs sharing one would hand out a path
+    // built from 50m geometry for a 10m shape at the same index.
+    const names = [
+      landAt(w, 0)[1],
+      landAt(w, LOD_Z)[1],
+      landAt(w, LOD_FINE_Z)[1],
+    ]
+    expect(new Set(names).size).toBe(3)
+  })
+
+  it('asks for the file only when a plate is drawn that needs it', () => {
+    // THE PROGRESSIVE LOAD, and the whole of it. 851 kB gzipped is not fetched
+    // at load, on a timer, or on a guess about where the camera is going: it is
+    // fetched the first time something draws at a level 50m cannot answer.
+    let asked = 0
+    const w: DrawnWorld = { ...world(), requestFine: () => asked++ }
+    const s = surface()
+    const r = new DrawnRenderer(w)
+    for (const z of [4, 5, 6, LOD_FINE_Z - 1]) r.draw(s.ctx, EUROPE(z))
+    expect(asked).toBe(0)
+    r.draw(s.ctx, EUROPE(LOD_FINE_Z))
+    expect(asked).toBe(1)
+    // the world texture is a 4096-wide plate at z=0, and it is level 3 — so the
+    // build-time render never asks either, which is why it stays 50m-drawn
+    new DrawnRenderer(w).draw(s.ctx, { z: 0, x: 0, y: 0, px: 4096 })
+    expect(asked).toBe(1)
+  })
+
+  it('says more about a coast than 50m does, which is the point of it', () => {
+    // Not a shape test — a count. Over the Sognefjord's own degree square the
+    // 10m file carries an order of magnitude more coastline, and that is the
+    // difference between a fjord and a notch.
+    const box = { minLng: 5, maxLng: 7, minLat: 60.8, maxLat: 61.8 }
+    const points = (layer: Layer) =>
+      shapesNear(layer, box).reduce((n, i) => {
+        const s = layer.shapes[i]
+        let inside = 0
+        for (let p = 0; p < s.pts.length; p += 2)
+          if (
+            s.pts[p] >= box.minLng &&
+            s.pts[p] <= box.maxLng &&
+            s.pts[p + 1] >= box.minLat &&
+            s.pts[p + 1] <= box.maxLat
+          )
+            inside++
+        return n + inside
+      }, 0)
+    // measured: 38 vertices of coast at 50m, 497 at 10m
+    const coarse = points(world().land!)
+    const fine = points(fineWorld().fineLand!)
+    expect(coarse).toBeGreaterThan(20)
+    expect(fine / coarse).toBeGreaterThan(8)
+  })
+
+  it('cuts the giants into cells without changing the drawing', () => {
+    // The cut is what makes 10m affordable: six shapes hold 201 604 of the
+    // 441 523 points, and a tile that names one of them walks all of it. Cut to
+    // the chunk grid the same tile is 0.3 ms — but a cut that changed the
+    // picture would be a cheat, so this renders the same tiles from the WHOLE
+    // 10m layer and compares.
+    const whole = layerOf(read('land-10m.json'), 'land', true)
+    expect(whole.shapes.length).toBeLessThan(fineLand().shapes.length)
+    const wholeWorld = { ...world(), fineLand: whole }
+    const a = new DrawnRenderer(wholeWorld)
+    const b = new DrawnRenderer(fineWorld())
+    // The claim is about WHERE THE LAND IS, which is what a cut could break —
+    // not about every byte. What legitimately differs is the engraved tick's
+    // dash phase: it runs from each ring's own first vertex, so it restarts at
+    // a cell wall and the stipple in the shoreline wash lands a pixel or two
+    // along. That moves tones inside the wash's own three steps and moves no
+    // coastline.
+    for (const tile of [NORWAY(9), AEGEAN(9), SIBERIA(8)]) {
+      const sa = surface()
+      const sb = surface()
+      a.draw(sa.ctx, tile)
+      b.draw(sb.ctx, tile)
+      const pa = sa.pixels()
+      const pb = sb.pixels()
+      let moved = 0
+      let any = 0
+      for (let i = 0; i < pa.length; i += 4) {
+        if (isLand(pa, i) !== isLand(pb, i)) moved++
+        const d =
+          Math.abs(pa[i] - pb[i]) + Math.abs(pa[i + 1] - pb[i + 1]) + Math.abs(pa[i + 2] - pb[i + 2])
+        if (d > 8) any++
+      }
+      // The coastline is where it was, to within the half-pixel filter's own
+      // freedom: `MIN_SEG_PX` keeps a vertex when the last KEPT one is half a
+      // pixel away, so a ring that starts at a different vertex — which is what
+      // cutting a ring does — can keep a different subset of it and land half a
+      // pixel out. Measured: 40 pixels of 262 144 at the Sognefjord, none
+      // anywhere else, and every one of them on the coastline itself.
+      expect(moved).toBeLessThan(TILE_PX * TILE_PX * 0.0005)
+      // …and the stipple's own wander is under 4% of the plate
+      expect(any).toBeLessThan(TILE_PX * TILE_PX * 0.04)
+    }
+  })
+
+  it('fills the interior it cut, and draws no wall there', () => {
+    // The failure this defends against is specific and would be catastrophic:
+    // clipping Eurasia to a cell of the Gobi returns nothing, and nothing is a
+    // hole in Asia. A cell no ring reaches but whose centre is inside one
+    // becomes the cell itself — filled, and marked seam so the pen skips it.
+    // No rivers and no lakes in this world, deliberately: at level 8 the water
+    // layers are still half visible and the Lena would answer the question
+    // "is every pixel of interior Siberia the land's tone" for the wrong reason.
+    const dry: DrawnWorld = { coarseLand: world().coarseLand, land: world().land, fineLand: fineLand() }
+    const r = new DrawnRenderer(dry)
+    for (const tile of [SIBERIA(8), SIBERIA(11), { z: 9, x: 306, y: 128 }]) {
+      const s = surface()
+      r.draw(s.ctx, tile)
+      const px = s.pixels()
+      let off = 0
+      for (let i = 0; i < px.length; i += 4) if (!isLand(px, i)) off++
+      expect(`${tile.z}/${tile.x}/${tile.y}: ${off}`).toBe(`${tile.z}/${tile.x}/${tile.y}: 0`)
+    }
+  })
+
+  it('keeps the antimeridian and the poles it inherited', () => {
+    const fine = fineLand()
+    // 1. no segment spans the world that is not a marked closure
+    for (let s = 0; s < fine.shapes.length; s++) {
+      const shape = fine.shapes[s]
+      for (let r = 0; r + 1 < shape.rings.length; r++)
+        for (let i = shape.rings[r]; i + 1 < shape.rings[r + 1]; i++)
+          if (Math.abs(shape.pts[i * 2 + 2] - shape.pts[i * 2]) > 180)
+            expect(`fine#${s}:${i} seam=${shape.seam?.[i]}`).toContain('seam=1')
+    }
+    // 2. EVERY edge that runs along ±180 is the clip's and is marked, so the
+    //    pen never follows one. This is the round-51 rule and the round-57
+    //    addition to it: 10m carries the meridian in the DATA — Natural Earth's
+    //    own ring walks 68.98° N down to 65.07° N along −180 — and unmarked
+    //    that is four degrees of ink and wash down the Bering Sea.
+    let meridian = 0
+    for (const shape of fine.shapes) {
+      for (let r = 0; r + 1 < shape.rings.length; r++) {
+        const from = shape.rings[r]
+        const to = shape.rings[r + 1]
+        for (let i = from; i < to; i++) {
+          const j = i + 1 === to ? from : i + 1
+          const x = shape.pts[i * 2]
+          if (Math.abs(x) !== 180 || shape.pts[j * 2] !== x) continue
+          meridian++
+          expect(`${x} at ${shape.pts[i * 2 + 1].toFixed(2)}: ${shape.seam?.[i]}`).toBe(
+            `${x} at ${shape.pts[i * 2 + 1].toFixed(2)}: 1`,
+          )
+        }
+      }
+    }
+    expect(meridian).toBeGreaterThan(4)
+    // 3. Antarctica still reaches the pole rather than being sealed with a bar
+    //    across the Pacific. The chunk grid cuts it into cells; the southern
+    //    edge of the southernmost of them is 90° S.
+    const south = Math.min(...fine.shapes.map((s) => s.bbox[1]))
+    expect(south).toBe(-90)
+  })
+
+  it('gives the pen no cell wall to follow', () => {
+    // Same recording trick as round 51's: the fill wants the wall edges (they
+    // are what makes a piece a polygon), the pen must not draw them, or the map
+    // grows a 5.625° grid of coastline. Checked as "the stroke path has no long
+    // straight run the fill path does not have", at the level the rung starts.
+    class Rec {
+      ops: [string, number, number][] = []
+      moveTo(x: number, y: number) {
+        this.ops.push(['M', x, y])
+      }
+      lineTo(x: number, y: number) {
+        this.ops.push(['L', x, y])
+      }
+      closePath() {
+        this.ops.push(['Z', 0, 0])
+      }
+    }
+    const held = (globalThis as unknown as { Path2D: unknown }).Path2D
+    ;(globalThis as unknown as { Path2D: unknown }).Path2D = Rec
+    try {
+      const paths = new LevelPaths(LOD_FINE_Z)
+      const fine = fineLand()
+      const wallPx = (CHUNK_DEG * paths.worldPx) / 360
+      let walls = 0
+      let penWalls = 0
+      for (let i = 0; i < fine.shapes.length; i++) {
+        for (const which of ['fill', 'stroke'] as const) {
+          const ops = (paths.path(fine, 'fine', i)[which] as unknown as Rec).ops
+          let at: [number, number] | undefined
+          for (const [op, x, y] of ops) {
+            if (op !== 'L') {
+              at = op === 'M' ? [x, y] : undefined
+              continue
+            }
+            // a run along a wall: axis-aligned, and a fair fraction of a cell
+            const long =
+              at &&
+              ((Math.abs(x - at[0]) < 0.01 && Math.abs(y - at[1]) > wallPx * 0.5) ||
+                (Math.abs(y - at[1]) < 0.01 && Math.abs(x - at[0]) > wallPx * 0.5))
+            if (long) which === 'fill' ? walls++ : penWalls++
+            at = [x, y]
+          }
+        }
+      }
+      // the fill is made of them…
+      expect(walls).toBeGreaterThan(100)
+      // …and the pen never draws one
+      expect(penWalls).toBe(0)
+    } finally {
+      ;(globalThis as unknown as { Path2D: unknown }).Path2D = held
+    }
+  })
+
+  it('draws the same tile twice, and meets its neighbour, on the finer data', () => {
+    const r = new DrawnRenderer(fineWorld())
+    const a = surface()
+    const b = surface()
+    r.draw(a.ctx, NORWAY(10))
+    new DrawnRenderer(fineWorld()).draw(b.ctx, NORWAY(10))
+    expect(Buffer.from(b.pixels()).equals(Buffer.from(a.pixels()))).toBe(true)
+    // …and the join, at the level the rung is finest at
+    const left = surface()
+    const right = surface()
+    const t = NORWAY(DRAWN_Z_MAX)
+    r.draw(left.ctx, t)
+    r.draw(right.ctx, { ...t, x: t.x + 1 })
+    const pa = left.pixels()
+    const pb = right.pixels()
+    let seam = 0
+    let inside = 0
+    for (let y = 0; y < TILE_PX; y++) {
+      for (let c = 0; c < 3; c++) {
+        seam += Math.abs(pa[(y * TILE_PX + TILE_PX - 1) * 4 + c] - pb[(y * TILE_PX) * 4 + c])
+        inside += Math.abs(
+          pa[(y * TILE_PX + TILE_PX - 2) * 4 + c] - pa[(y * TILE_PX + TILE_PX - 1) * 4 + c],
+        )
+      }
+    }
+    expect(seam).toBeLessThanOrEqual(Math.max(inside * 2, TILE_PX * 3))
+  })
+
+  it('renders a tile of the finer data inside the same 8 ms budget', () => {
+    const s = surface()
+    const r = new DrawnRenderer(fineWorld())
+    const times: number[] = []
+    for (const t of [NORWAY, AEGEAN, SIBERIA]) {
+      for (let z = LOD_FINE_Z; z <= DRAWN_Z_MAX; z++) {
+        r.draw(s.ctx, t(z)) // warm the level's paths, which is once per level
+        const t0 = performance.now()
+        r.draw(s.ctx, t(z))
+        times.push(performance.now() - t0)
+      }
+    }
+    // Measured 0.21–0.85 ms mean and 2.9 ms worst over the whole level range
+    // AFTER the cut; before it the same tiles were 11–29 ms, which is the
+    // measurement the chunker exists for.
+    expect(Math.max(...times)).toBeLessThan(8)
+  })
+
+  it('vendors the file as a named, public-domain source', () => {
+    const credits = readFileSync('public/data/map/CREDITS.md', 'utf8')
+    expect(credits).toMatch(/land-10m\.json/)
+    expect(credits).toMatch(/@cublya\/world-atlas/)
+    expect(credits).toMatch(/public domain/i)
+    // and the vendor script takes it from a package, not from a URL somebody
+    // has to be online for
+    const vendor = readFileSync('scripts/vendor-map-data.mjs', 'utf8')
+    expect(vendor).toMatch(/node_modules\/@cublya\/world-atlas\/land-10m\.json/)
   })
 })
 

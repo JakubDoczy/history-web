@@ -6,7 +6,7 @@
   "end": 1800,
   "lat": -15.0,
   "lng": -51.0,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "exploration",
    "politics"
@@ -58,7 +58,7 @@
   "end": 1736,
   "lat": 32.68,
   "lng": 51.67,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "politics",
    "culture"
@@ -86,7 +86,7 @@
   "end": 1506,
   "lat": 43.77,
   "lng": 11.26,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "culture"
   ],
@@ -145,6 +145,27 @@
    }
   ],
   "parent": "age-of-discovery"
+ },
+ {
+  "id": "chaldiran",
+  "name": "Battle of Chaldiran",
+  "start": 1514.64247,
+  "lat": 39.0667,
+  "lng": 44.3833,
+  "parent": "safavid-empire",
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "summary": "An Ottoman army under Selim I defeated the Safavid shah Ismail I on 23 August 1514, largely through firearms and field artillery. The battle fixed the Ottoman and Persian frontier for centuries.",
+  "body": "Part of [Safavid Empire](event:safavid-empire). Selim I marched into north western Iran in 1514 against Ismail I, whose Shia state and its followers inside Anatolia the Ottoman government treated as a threat. The armies met on the plain of Chaldiran, north east of Lake Van, on 23 August.\n\nThe Safavid cavalry was of high quality but the army had neither field artillery nor handguns. The Ottomans fought behind a line of chained gun carriages with janissary arquebusiers, broke the charge and won the day. Ismail was wounded and escaped; Tabriz was occupied for a few weeks.\n\nThe Ottomans kept eastern Anatolia and northern Iraq. The frontier that resulted, confirmed at Amasya in 1555 and Zuhab in 1639, is close to the modern border between Turkey and Iran. Ismail did not lead an army again, and the Safavid state afterwards built its own firearm units.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Chaldiran).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Chaldiran"
+   }
+  ],
+  "priority": 56
  },
  {
   "id": "las-casas",
@@ -270,7 +291,7 @@
   "start": 1517,
   "lat": 51.8663,
   "lng": 12.6383,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "religion"
   ],
@@ -294,7 +315,7 @@
   "end": 1522.68082,
   "lat": -52.5,
   "lng": -70.0,
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "exploration"
   ],
@@ -735,7 +756,7 @@
   "end": 1566,
   "lat": 41.0,
   "lng": 28.98,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics",
    "culture"
@@ -759,7 +780,7 @@
   "start": 1521,
   "lat": 19.451,
   "lng": -99.137,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "war"
   ],
@@ -775,6 +796,551 @@
     "url": "https://en.wikipedia.org/wiki/Fall_of_Tenochtitlan"
    }
   ]
+ },
+ {
+  "id": "ottoman-wars-europe",
+  "name": "Ottoman wars in Europe",
+  "start": 1521.6589,
+  "end": 1699.06986,
+  "lat": 45.5,
+  "lng": 19.5,
+  "tags": [
+   "war",
+   "politics",
+   "religion"
+  ],
+  "summary": "The wars between the Ottoman Empire and the Christian powers of Europe from the fall of Belgrade in 1521 to the treaty of Karlowitz in 1699, fought mainly in Hungary, the Balkans and the Mediterranean.",
+  "strong": [
+   "ottoman-empire"
+  ],
+  "weak": [
+   "thirty-years-war"
+  ],
+  "body": "Between 1521 and 1699 the Ottoman Empire and its Christian neighbours fought for the middle Danube, the Balkans and the Mediterranean. The main opponents were the Habsburgs in Hungary and Austria, Venice at sea, and at intervals Poland, Russia, Spain and the papacy.\n\nThe Ottoman advance under [Suleiman the Magnificent](event:suleiman-magnificent) took Belgrade in 1521 and Rhodes in 1522, destroyed the Hungarian army at [Mohacs](event:mohacs) in 1526 and reached [Vienna](event:vienna-1529) in 1529. Hungary was then divided in three, and the frontier settled into a line of fortresses and raids that lasted a century and a half.\n\nAt sea the contest ran from the siege of Malta in 1565 to the conquest of Cyprus and the defeat of the Ottoman fleet at [Lepanto](event:lepanto) in 1571, and later to the long Venetian war for Crete, which the Ottomans won in 1669.\n\nThe last advance ended at [Vienna](event:vienna-1683) in 1683, where a relief army under John III Sobieski broke the siege. The Holy League that followed took Hungary, and the treaty of Karlowitz in 1699 was the first in which the Ottoman government ceded large territories by negotiation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ottoman%E2%80%93Habsburg_wars).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ottoman%E2%80%93Habsburg_wars"
+   }
+  ],
+  "steps": [
+   {
+    "id": "belgrade",
+    "name": "The fall of Belgrade",
+    "page": "Suleiman I came to the throne in 1520 and opened his reign with the fortress that had stopped Mehmed II in 1456. Belgrade stood at the junction of the Sava and the Danube and covered the road into Hungary.\n\nThe Ottoman army invested it in June 1521 and it surrendered on 29 August after the Hungarian crown failed to relieve it. With Belgrade and the river fleet the Ottomans could move an army and a siege train up the Danube, which is what made the campaign of 1526 possible.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        19.05,
+        47.5
+       ],
+       "text": "Hungary",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        20.45,
+        44.7
+       ],
+       "text": "Belgrade",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#eaf1fb",
+       "width": 0.2,
+       "label": "Ottoman advance from Edirne",
+       "path": [
+        [
+         26.56,
+         41.68
+        ],
+        [
+         23.32,
+         42.7
+        ],
+        [
+         21.9,
+         43.85
+        ],
+        [
+         20.45,
+         44.82
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        20.4489,
+        44.82
+       ],
+       "label": "Belgrade taken, 29 August 1521"
+      },
+      {
+       "type": "label",
+       "pos": [
+        21.6,
+        44.6
+       ],
+       "text": "Danube",
+       "size": "sm"
+      }
+     ]
+    },
+    "at": 1521.6589,
+    "camera": {
+     "lat": 44.3548,
+     "lng": 21.7764,
+     "altitude": 0.19
+    }
+   },
+   {
+    "id": "mohacs-step",
+    "name": "Battle of Mohacs",
+    "child": "mohacs",
+    "at": 1526.6589
+   },
+   {
+    "id": "vienna-1529-step",
+    "name": "Siege of Vienna 1529",
+    "child": "vienna-1529",
+    "at": 1529.73836
+   },
+   {
+    "id": "little-war",
+    "name": "The Little War and the partition of Hungary",
+    "page": "After 1529 the fighting in Hungary settled into raids, sieges of border forts and campaigns that did not reach a decision, a period Hungarian and Austrian historians call the Little War. In 1532 a garrison of a few hundred under Nikola Jurisic held Koszeg long enough for the campaigning season to end.\n\nBuda was occupied in 1541 and Hungary was left in three parts: Ottoman Hungary in the centre, Royal Hungary under the Habsburgs in the west and north, and the principality of Transylvania as an Ottoman tributary. The truce of Adrianople in 1547 had Ferdinand pay tribute for his portion.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        19.05,
+        47.5
+       ],
+       "text": "Hungary",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        20.45,
+        44.7
+       ],
+       "text": "Belgrade",
+       "size": "sm"
+      },
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "The Habsburg and Ottoman border, about 1550",
+       "paths": [
+        [
+         [
+          17.0,
+          46.1
+         ],
+         [
+          16.9,
+          46.9
+         ],
+         [
+          17.6,
+          47.6
+         ],
+         [
+          18.6,
+          48.2
+         ],
+         [
+          19.9,
+          48.6
+         ],
+         [
+          21.2,
+          48.5
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        16.5417,
+        47.3892
+       ],
+       "label": "Koszeg held, August 1532"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        19.04,
+        47.498
+       ],
+       "label": "Buda occupied, 1541"
+      },
+      {
+       "type": "label",
+       "pos": [
+        24.5,
+        46.6
+       ],
+       "text": "Transylvania",
+       "size": "sm"
+      }
+     ]
+    },
+    "start": 1532.59426,
+    "end": 1547.46438,
+    "camera": {
+     "lat": 47.2569,
+     "lng": 19.1637,
+     "altitude": 0.1604
+    }
+   },
+   {
+    "id": "malta",
+    "name": "The siege of Malta",
+    "page": "An Ottoman force of some 200 ships and about 30,000 men landed at Marsaxlokk on 18 May 1565 to take Malta from the Knights of St John, who had been given the island after being driven from Rhodes in 1522.\n\nThe attack fell first on Fort St Elmo at the mouth of the Grand Harbour, which held for a month and was taken with almost every defender dead. The assaults on Birgu and Senglea in July and August were held. A relief force from Sicily landed on 7 September and the Ottomans withdrew on the 11th. The new city of Valletta was begun on the peninsula the following year.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "thrust",
+       "color": "#eaf1fb",
+       "width": 0.012,
+       "label": "Ottoman landing at Marsaxlokk",
+       "path": [
+        [
+         14.61,
+         35.79
+        ],
+        [
+         14.57,
+         35.83
+        ],
+        [
+         14.5433,
+         35.8419
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#eaf1fb",
+       "width": 0.01,
+       "label": "Attack on Fort St Elmo",
+       "path": [
+        [
+         14.53,
+         35.875
+        ],
+        [
+         14.523,
+         35.893
+        ],
+        [
+         14.5186,
+         35.9008
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.01,
+       "color": "#f5a623",
+       "pos": [
+        14.5186,
+        35.9008
+       ],
+       "label": "Fort St Elmo falls, 23 June 1565"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.01,
+       "color": "#f5a623",
+       "pos": [
+        14.523,
+        35.888
+       ],
+       "label": "Birgu and Senglea held"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.012,
+       "label": "Relief from Sicily, 7 September",
+       "path": [
+        [
+         14.4,
+         36.05
+        ],
+        [
+         14.36,
+         35.96
+        ],
+        [
+         14.35,
+         35.93
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.44,
+        35.86
+       ],
+       "text": "Malta",
+       "size": "md"
+      }
+     ]
+    },
+    "start": 1565.37671,
+    "end": 1565.69452,
+    "camera": {
+     "lat": 35.8933,
+     "lng": 14.4906,
+     "altitude": 0.0076
+    }
+   },
+   {
+    "id": "szigetvar",
+    "name": "Szigetvar",
+    "page": "Suleiman took the field for the thirteenth time in 1566, at the age of about seventy-two, and turned aside to reduce the fortress of Szigetvar in southern Hungary, held by the Croatian ban Nikola Zrinski with some 2,300 men.\n\nThe siege lasted from 5 August to 8 September. Suleiman died in his tent on 6 September, two days before the end; his death was concealed from the army until the new sultan could be brought from Anatolia. The garrison made a final sortie and was destroyed. The campaign went no further, and the peace of Adrianople in 1568 confirmed the division of Hungary.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        19.05,
+        47.5
+       ],
+       "text": "Hungary",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        20.45,
+        44.7
+       ],
+       "text": "Belgrade",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#eaf1fb",
+       "width": 0.18,
+       "label": "Suleiman's last campaign",
+       "path": [
+        [
+         20.45,
+         44.82
+        ],
+        [
+         19.5,
+         45.4
+        ],
+        [
+         18.4,
+         45.9
+        ],
+        [
+         17.8,
+         46.05
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        17.8006,
+        46.0489
+       ],
+       "label": "Szigetvar, 5 August to 8 September 1566"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.14,
+       "color": "#f5a623",
+       "pos": [
+        17.81,
+        46.06
+       ],
+       "label": "Suleiman dies, 6 September 1566"
+      }
+     ]
+    },
+    "start": 1566.59315,
+    "end": 1566.6863,
+    "camera": {
+     "lat": 45.8148,
+     "lng": 18.9167,
+     "altitude": 0.0739
+    }
+   },
+   {
+    "id": "lepanto-step",
+    "name": "Battle of Lepanto",
+    "child": "lepanto",
+    "at": 1571.76575
+   },
+   {
+    "id": "vienna-1683-step",
+    "name": "Ottoman siege of Vienna",
+    "child": "vienna-1683",
+    "at": 1683.53288
+   },
+   {
+    "id": "karlowitz",
+    "name": "Zenta and the peace of Karlowitz",
+    "page": "The Holy League formed after the failure before Vienna in 1683 took Buda in 1686 and won at Mohacs in 1687 on ground near the battlefield of 1526. On 11 September 1697 Eugene of Savoy caught the Ottoman army crossing the Tisza at Zenta and destroyed it.\n\nThe treaty signed at Karlowitz on 26 January 1699 gave Hungary and Transylvania to the Habsburgs, the Morea to Venice and Podolia to Poland. It was the first treaty in which the Ottoman state conceded large territories by negotiation, and the frontier in Europe moved south from then on.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        19.05,
+        47.5
+       ],
+       "text": "Hungary",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        20.45,
+        44.7
+       ],
+       "text": "Belgrade",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.18,
+       "label": "Eugene of Savoy, 1697",
+       "path": [
+        [
+         19.04,
+         47.5
+        ],
+        [
+         19.6,
+         46.6
+        ],
+        [
+         20.08,
+         45.93
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.18,
+       "color": "#f5a623",
+       "pos": [
+        20.08,
+        45.93
+       ],
+       "label": "Zenta, 11 September 1697"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.18,
+       "color": "#f5a623",
+       "pos": [
+        19.9333,
+        45.2
+       ],
+       "label": "Treaty of Karlowitz, 26 January 1699"
+      },
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "The border after 1699",
+       "paths": [
+        [
+         [
+          16.6,
+          45.2
+         ],
+         [
+          18.3,
+          45.1
+         ],
+         [
+          20.0,
+          44.9
+         ],
+         [
+          21.4,
+          44.9
+         ],
+         [
+          22.7,
+          45.2
+         ]
+        ]
+       ]
+      }
+     ]
+    },
+    "start": 1697.69452,
+    "end": 1699.06986,
+    "camera": {
+     "lat": 45.7309,
+     "lng": 19.7753,
+     "altitude": 0.1
+    }
+   }
+  ],
+  "priority": 82
+ },
+ {
+  "id": "battle-of-pavia",
+  "name": "Battle of Pavia",
+  "start": 1525.14932,
+  "lat": 45.19,
+  "lng": 9.17,
+  "parent": "italian-wars",
+  "tags": [
+   "war"
+  ],
+  "summary": "An imperial army destroyed the French besieging Pavia on 24 February 1525 and captured Francis I. The battle is a standard example of firearms defeating heavy cavalry.",
+  "body": "Part of [Italian Wars](event:italian-wars). Francis I had retaken Milan in 1524 and was besieging Pavia, held for the Emperor Charles V, through the winter. An imperial relief army under Charles de Lannoy and the marquis of Pescara camped opposite him for weeks and then broke into the walled park of Mirabello before dawn on 24 February 1525.\n\nThe French guns were masked when Francis led the gendarmes forward, and the Spanish arquebusiers shot into the cavalry from cover in the park. The Swiss infantry in French service withdrew, the garrison sortied, and the army was destroyed in about four hours. Much of the French nobility was killed and Francis was taken prisoner.\n\nHe was held in Madrid and released in 1526 by a treaty he repudiated as soon as he was over the border. Habsburg control of Milan was confirmed, and the battle is regularly cited as the point at which handheld firearms displaced the armoured horseman.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Pavia).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Pavia"
+   }
+  ],
+  "priority": 56
  },
  {
   "id": "slave-trade",
@@ -821,7 +1387,7 @@
     -35
    ]
   ],
-  "priority": 90,
+  "priority": 91,
   "tags": [
    "economy",
    "politics",
@@ -1003,7 +1569,7 @@
   "end": 1857,
   "lat": 27.17,
   "lng": 78.04,
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "politics",
    "culture"
@@ -1019,6 +1585,68 @@
     "url": "https://en.wikipedia.org/wiki/Mughal_Empire"
    }
   ]
+ },
+ {
+  "id": "first-panipat",
+  "name": "First Battle of Panipat",
+  "start": 1526.30274,
+  "lat": 29.39,
+  "lng": 76.97,
+  "parent": "mughal-empire",
+  "tags": [
+   "war"
+  ],
+  "summary": "Babur defeated the Delhi sultan Ibrahim Lodi at Panipat on 21 April 1526 and took Delhi and Agra, founding the Mughal Empire in India.",
+  "body": "Part of [Mughal Empire](event:mughal-empire). Babur, a Timurid prince who had taken Kabul in 1504, invaded northern India for the fifth time in 1525. He met Ibrahim Lodi, sultan of Delhi, at Panipat north of Delhi on 21 April 1526 with perhaps 12,000 men against a much larger army with war elephants.\n\nBabur fortified his front with carts tied together, leaving gaps for his field guns and matchlock men, and sent cavalry round both flanks to attack the rear. The Lodi army was pressed into a space where it could not deploy. Ibrahim was killed on the field.\n\nBabur occupied Delhi and Agra within days and used the treasury there to hold what he had taken. He beat a Rajput confederacy under Rana Sanga at Khanwa the following year. His dynasty ruled in India, with one interruption, until the nineteenth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_Battle_of_Panipat).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/First_Battle_of_Panipat"
+   }
+  ],
+  "priority": 70
+ },
+ {
+  "id": "mohacs",
+  "name": "Battle of Mohacs",
+  "start": 1526.6589,
+  "lat": 45.993,
+  "lng": 18.641,
+  "parent": "ottoman-wars-europe",
+  "tags": [
+   "war"
+  ],
+  "summary": "The Hungarian army was destroyed by Suleiman I on 29 August 1526 and King Louis II was killed. Hungary was afterwards divided between the Ottomans and the Habsburgs.",
+  "body": "Part of [Ottoman wars in Europe](event:ottoman-wars-europe). Suleiman I marched up the Danube in 1526 with an army of about 50,000 men and a large artillery train. Louis II of Hungary met him south of Mohacs with roughly 25,000, without waiting for the Transylvanian and Croatian contingents on the march.\n\nThe battle lasted a few hours on the afternoon of 29 August. The Hungarian heavy cavalry broke the first line and was stopped by the janissaries and the guns chained together in front of the sultan's position. Most of the army was destroyed, along with much of the nobility and seven bishops. Louis drowned in a stream while fleeing.\n\nTwo kings were then elected, John Zapolya and Ferdinand of Habsburg, and the Ottomans supported the first. After Buda was occupied in 1541 the kingdom was divided into Ottoman Hungary, Royal Hungary and Transylvania, and stayed so for a century and a half.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Moh%C3%A1cs).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Moh%C3%A1cs"
+   }
+  ],
+  "priority": 64
+ },
+ {
+  "id": "sack-of-rome",
+  "name": "Sack of Rome",
+  "start": 1527.34384,
+  "end": 1527.42877,
+  "lat": 41.9028,
+  "lng": 12.4964,
+  "parent": "italian-wars",
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "summary": "Unpaid imperial troops stormed and plundered Rome from 6 May 1527 and held the city for months. Pope Clement VII was besieged in the Castel Sant'Angelo.",
+  "body": "Part of [Italian Wars](event:italian-wars). Pope Clement VII joined the League of Cognac against Charles V in 1526. The imperial army in northern Italy, about 20,000 men including German landsknechts, many of them Lutheran, had not been paid, and it marched on Rome on its own initiative under the duke of Bourbon.\n\nThe walls were stormed on the morning of 6 May 1527. Bourbon was killed in the assault, which left the army without a commander who could restrain it. The Swiss Guard was almost wiped out covering the pope's retreat along the covered passage to the Castel Sant'Angelo, where he was besieged until he surrendered in June.\n\nThe plunder lasted for days and the occupation for months, ending with an outbreak of plague. Estimates of the dead run to the thousands and the population of the city fell sharply. Artists and scholars scattered to other courts, and the episode is often used to date the end of the High [Renaissance](event:renaissance) in Rome. Clement crowned Charles V emperor at Bologna three years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sack_of_Rome_(1527)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Sack_of_Rome_(1527)"
+   }
+  ],
+  "priority": 59
  },
  {
   "id": "ethiopian-ottoman",
@@ -1044,6 +1672,27 @@
     "url": "https://en.wikipedia.org/wiki/Ethiopian%E2%80%93Adal_War"
    }
   ]
+ },
+ {
+  "id": "vienna-1529",
+  "name": "Siege of Vienna 1529",
+  "start": 1529.73836,
+  "end": 1529.78493,
+  "lat": 48.2082,
+  "lng": 16.3738,
+  "parent": "ottoman-wars-europe",
+  "tags": [
+   "war"
+  ],
+  "summary": "Suleiman I besieged Vienna from 27 September to 14 October 1529 and withdrew without taking it. It was the furthest west an Ottoman army reached until 1683.",
+  "body": "Part of [Ottoman wars in Europe](event:ottoman-wars-europe). After occupying Buda, Suleiman I marched on Vienna in the autumn of 1529 in support of John Zapolya's claim to Hungary against Ferdinand of Habsburg. The army arrived on 27 September.\n\nUnusually heavy rain had held up the march and the heavy siege guns had been left behind, so the attack depended on mining. The garrison of about 20,000 under Nicholas of Salm blocked the gates, countermined and held the breaches. Assaults on 12 and 14 October failed, and with the season ending and supplies short the Ottomans withdrew.\n\nOttoman losses are not reliably recorded; the retreat through rain and early snow cost more men and most of the remaining baggage, and the prisoners taken during the march on the city were killed outside the walls.\n\nSuleiman came back in 1532 and was delayed for three weeks by the small garrison of Koszeg, after which the campaign turned away from Vienna and the war in Hungary settled into border fighting. Ferdinand kept his hold on the western strip of the kingdom and paid tribute for it from 1547. The city was not attacked again until [1683](event:vienna-1683).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Vienna).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Siege_of_Vienna"
+   }
+  ],
+  "priority": 62
  },
  {
   "id": "inca-conquest",
@@ -1075,7 +1724,7 @@
   "start": 1534,
   "lat": 51.4995,
   "lng": -0.1248,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "religion",
    "politics"
@@ -1224,7 +1873,7 @@
   "end": 1800,
   "lat": -19.59,
   "lng": -65.75,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "economy",
    "politics"
@@ -1267,6 +1916,31 @@
   ]
  },
  {
+  "id": "ivan-the-terrible",
+  "name": "Reign of Ivan the Terrible",
+  "start": 1547.06,
+  "end": 1584.21,
+  "lat": 55.752,
+  "lng": 37.6175,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "Ivan IV was crowned the first tsar of Russia in 1547, conquered Kazan and Astrakhan, and ruled the later part of his reign through the oprichnina, a separate domain with its own police force.",
+  "weak": [
+   "peter-the-great",
+   "time-of-troubles"
+  ],
+  "body": "Ivan IV came to the throne of Moscow as a child in 1533 and was crowned tsar, a title previously used in Russia for the Byzantine emperor and the khans, in January 1547. The early years brought a new law code, a national assembly, a standing infantry corps armed with firearms and reform of local government.\n\nThe khanate of Kazan was taken in 1552 and Astrakhan in 1556, which gave Russia the whole Volga and opened the way east; merchants and Cossacks began crossing the Urals into Siberia in the 1580s. The Livonian War, begun in 1558 for access to the Baltic, ran for twenty-five years and ended in defeat.\n\nFrom 1565 Ivan divided the state, taking a portion as the oprichnina under his personal rule with a corps of servitors who confiscated estates and executed suspected traitors. Novgorod was sacked in 1570 on a charge of treason. In 1581 he struck and killed his own heir.\n\nHe died in 1584 leaving a childless successor, which led to the [Time of Troubles](event:time-of-troubles).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ivan_the_Terrible).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ivan_the_Terrible"
+   }
+  ],
+  "priority": 73
+ },
+ {
   "id": "peace-augsburg",
   "name": "Peace of Augsburg",
   "start": 1555,
@@ -1297,7 +1971,7 @@
   "end": 1605,
   "lat": 27.17,
   "lng": 78.04,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "politics",
    "culture"
@@ -1314,6 +1988,520 @@
     "url": "https://en.wikipedia.org/wiki/Akbar"
    }
   ]
+ },
+ {
+  "id": "witch-trials",
+  "name": "European witch trials",
+  "start": 1560,
+  "end": 1660,
+  "lat": 50.1109,
+  "lng": 8.6821,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "summary": "Prosecutions for witchcraft across Europe and its colonies, at their height between about 1560 and 1660. Around 90,000 people were tried and some 45,000 executed, most of them women.",
+  "weak": [
+   "reformation",
+   "scientific-revolution"
+  ],
+  "body": "Trials for witchcraft as a crime of diabolical pact became common in the late fifteenth century and reached their peak between about 1560 and 1660, in the period of confessional conflict following the [Reformation](event:reformation). Modern estimates, based on surviving court records, give roughly 90,000 prosecutions and between 40,000 and 50,000 executions across Europe.\n\nAbout three quarters of those executed were women, most of them poor and elderly. The trials were concentrated in the Holy Roman Empire, Switzerland, Scotland and parts of France, and were far rarer in Spain, Italy and Portugal, where the inquisitions treated most accusations as superstition. Confessions were commonly obtained under torture, and accusations spread in chains from one prisoner to the next.\n\nProsecutions declined from the later seventeenth century as courts raised their standards of evidence and jurists rejected the confessions obtained under torture. The Salem trials of 1692 in Massachusetts, with twenty executions, came near the end of the phenomenon. The last execution for witchcraft in Europe was in Switzerland in 1782.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Witch_trials_in_the_early_modern_period).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Witch_trials_in_the_early_modern_period"
+   }
+  ],
+  "priority": 65
+ },
+ {
+  "id": "sengoku-unification",
+  "name": "Unification of Japan",
+  "start": 1560.44672,
+  "end": 1615.42329,
+  "lat": 35.3,
+  "lng": 136.6,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "The reunification of Japan after a century of civil war, carried out by Oda Nobunaga, Toyotomi Hideyoshi and Tokugawa Ieyasu between 1560 and 1615.",
+  "weak": [
+   "edo-japan",
+   "imjin-war"
+  ],
+  "body": "From the [Onin War](event:onin-war) of 1467 Japan was divided among daimyo who governed their own domains and fought each other, with the Ashikaga shogunate and the imperial court left without revenue or authority. The reunification was the work of three men in succession.\n\nOda Nobunaga, lord of the small province of Owari, destroyed the Imagawa at Okehazama in 1560, entered Kyoto in 1568 and held about a third of the country when he was killed by one of his own generals in 1582. Toyotomi Hideyoshi, who had risen in his service, avenged him within two weeks and completed the conquest by 1590, then invaded [Korea](event:imjin-war) twice.\n\nAfter Hideyoshi's death in 1598 the contest was between his son's supporters and Tokugawa Ieyasu, who won at [Sekigahara](event:sekigahara) in 1600, took the title of shogun in 1603 and destroyed the Toyotomi at [Osaka](event:siege-of-osaka) in 1615.\n\nThe period brought firearms into general use, the great stone castles and the castle towns that became modern Japanese cities, the land survey that fixed village assessments in rice, and the separation of samurai from farmers. The settlement that followed is [Tokugawa Japan](event:edo-japan).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Sengoku_period).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Sengoku_period"
+   }
+  ],
+  "steps": [
+   {
+    "id": "okehazama",
+    "name": "Okehazama",
+    "page": "Imagawa Yoshimoto marched west from Suruga in the summer of 1560 with an army reported at 25,000, taking the border forts of Owari. Oda Nobunaga, who held Owari with a few thousand men, left Kiyosu castle and moved round the Imagawa line of march.\n\nOn 12 June his force came out of a thunderstorm into the gorge at Dengakuhazama where the Imagawa camp was resting, and killed Yoshimoto. The Imagawa domain broke up. Nobunaga made an alliance with Matsudaira Motoyasu, later Tokugawa Ieyasu, which held for twenty years.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        135.77,
+        35.15
+       ],
+       "text": "Kyoto",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        136.9,
+        35.18
+       ],
+       "text": "Owari",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.05,
+       "label": "Imagawa advance from Suruga",
+       "path": [
+        [
+         138.38,
+         34.97
+        ],
+        [
+         137.72,
+         34.97
+        ],
+        [
+         137.2,
+         35.02
+        ],
+        [
+         137.02,
+         35.06
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.04,
+       "label": "Nobunaga from Kiyosu",
+       "path": [
+        [
+         136.84,
+         35.2
+        ],
+        [
+         136.93,
+         35.1
+        ],
+        [
+         137.0,
+         35.06
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        137.0006,
+        35.0617
+       ],
+       "label": "Okehazama, 12 June 1560"
+      }
+     ]
+    },
+    "at": 1560.44672,
+    "camera": {
+     "lat": 35.0788,
+     "lng": 137.0765,
+     "altitude": 0.0471
+    }
+   },
+   {
+    "id": "kyoto",
+    "name": "Nobunaga in Kyoto",
+    "page": "Nobunaga entered Kyoto in November 1568 with Ashikaga Yoshiaki, whom he installed as shogun. He then fought the coalitions raised against him: the Asai and Asakura, the Takeda, and the militant Buddhist organisations.\n\nThe temple complex on Mount Hiei was burned in 1571 and the Ikko-ikki stronghold of Ishiyama Honganji held out until 1580. Yoshiaki was expelled in 1573, ending the Ashikaga shogunate. Nobunaga's methods included free markets in castle towns, land surveys, and a corps of matchlock infantry.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        135.77,
+        35.15
+       ],
+       "text": "Kyoto",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        136.9,
+        35.18
+       ],
+       "text": "Owari",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.05,
+       "label": "Nobunaga to Kyoto, 1568",
+       "path": [
+        [
+         136.76,
+         35.43
+        ],
+        [
+         136.14,
+         35.16
+        ],
+        [
+         135.77,
+         35.01
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        135.84,
+        35.07
+       ],
+       "label": "Mount Hiei burned, 1571"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        135.52,
+        34.69
+       ],
+       "label": "Ishiyama Honganji, held to 1580"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        136.14,
+        35.155
+       ],
+       "label": "Azuchi castle, from 1576"
+      }
+     ]
+    },
+    "start": 1568.85656,
+    "end": 1573.62055,
+    "camera": {
+     "lat": 35.1065,
+     "lng": 136.1042,
+     "altitude": 0.0288
+    }
+   },
+   {
+    "id": "nagashino",
+    "name": "Nagashino",
+    "page": "Takeda Katsuyori besieged Nagashino castle in Mikawa in 1575. Nobunaga and Tokugawa Ieyasu brought about 38,000 men to relieve it and took up a position behind the Rengogawa stream at Shitaragahara, protected by palisades.\n\nThe Takeda cavalry attacked across the open ground on 28 June and was shot down by matchlock infantry firing from behind the fences. Many of the senior Takeda retainers were killed. The traditional account of rotating volleys by three ranks is disputed, but the battle is a standard illustration of firearms in Japanese warfare.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        136.9,
+        35.18
+       ],
+       "text": "Owari",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.04,
+       "label": "Takeda attack",
+       "path": [
+        [
+         137.58,
+         34.94
+        ],
+        [
+         137.55,
+         34.92
+        ],
+        [
+         137.53,
+         34.91
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "color": "#e5484d",
+       "dash": "solid",
+       "width": 2.6,
+       "label": "Oda and Tokugawa palisades",
+       "paths": [
+        [
+         [
+          137.5,
+          34.895
+         ],
+         [
+          137.515,
+          34.91
+         ],
+         [
+          137.525,
+          34.925
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.04,
+       "color": "#f5a623",
+       "pos": [
+        137.5583,
+        34.9083
+       ],
+       "label": "Nagashino, 28 June 1575"
+      }
+     ]
+    },
+    "at": 1575.48904,
+    "camera": {
+     "lat": 34.9487,
+     "lng": 137.4575,
+     "altitude": 0.0225
+    }
+   },
+   {
+    "id": "honnoji",
+    "name": "Honnoji and Yamazaki",
+    "page": "On 21 June 1582 Akechi Mitsuhide turned his army on Nobunaga, who was staying with a small guard at the temple of Honnoji in Kyoto. Nobunaga died there, and his heir was killed the same morning at Nijo.\n\nToyotomi Hideyoshi, campaigning in the west, made peace with the Mori within days and marched about 200 kilometres back to the capital. He beat Mitsuhide at Yamazaki on 2 July, thirteen days after the killing. The Kiyosu conference then made Hideyoshi the leading figure among Nobunaga's generals.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        135.77,
+        35.15
+       ],
+       "text": "Kyoto",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        136.9,
+        35.18
+       ],
+       "text": "Owari",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.06,
+       "label": "Hideyoshi's march from Bitchu",
+       "path": [
+        [
+         133.7,
+         34.62
+        ],
+        [
+         134.7,
+         34.75
+        ],
+        [
+         135.3,
+         34.83
+        ],
+        [
+         135.69,
+         34.89
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        135.755,
+        35.01
+       ],
+       "label": "Honnoji, 21 June 1582"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        135.6889,
+        34.8944
+       ],
+       "label": "Yamazaki, 2 July 1582"
+      }
+     ]
+    },
+    "at": 1582.46986,
+    "camera": {
+     "lat": 34.9187,
+     "lng": 135.4363,
+     "altitude": 0.0639
+    }
+   },
+   {
+    "id": "odawara",
+    "name": "Odawara and the unification",
+    "page": "Hideyoshi brought the remaining domains under his authority between 1583 and 1590 by campaign and by negotiation: Shikoku in 1585, Kyushu in 1587, and finally the Hojo of the Kanto, whose castle at Odawara he invested with about 200,000 men from April 1590. It surrendered in August.\n\nHe ruled as imperial regent rather than as shogun, being of peasant birth. His land survey of 1582 onwards fixed the assessment of every village in rice, and the sword hunt of 1588 disarmed the peasantry, separating soldier from farmer as a legal status.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        135.77,
+        35.15
+       ],
+       "text": "Kyoto",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        136.9,
+        35.18
+       ],
+       "text": "Owari",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.07,
+       "label": "To Kyushu, 1587",
+       "path": [
+        [
+         135.5,
+         34.65
+        ],
+        [
+         133.0,
+         34.1
+        ],
+        [
+         131.0,
+         33.6
+        ],
+        [
+         130.4,
+         32.8
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.07,
+       "label": "To the Kanto, 1590",
+       "path": [
+        [
+         135.5,
+         34.9
+        ],
+        [
+         137.5,
+         35.1
+        ],
+        [
+         138.6,
+         35.2
+        ],
+        [
+         139.15,
+         35.25
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        139.1533,
+        35.2506
+       ],
+       "label": "Odawara surrenders, August 1590"
+      }
+     ]
+    },
+    "start": 1590.2589,
+    "end": 1590.59041,
+    "camera": {
+     "lat": 34.6881,
+     "lng": 135.6547,
+     "altitude": 0.2051
+    }
+   },
+   {
+    "id": "sekigahara-step",
+    "name": "Battle of Sekigahara",
+    "child": "sekigahara",
+    "at": 1600.80464
+   },
+   {
+    "id": "osaka-step",
+    "name": "Siege of Osaka",
+    "child": "siege-of-osaka",
+    "at": 1614.88356
+   }
+  ],
+  "priority": 80
+ },
+ {
+  "id": "french-wars-religion",
+  "name": "French Wars of Religion",
+  "start": 1562.16301,
+  "end": 1598.28082,
+  "lat": 48.8566,
+  "lng": 2.3522,
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "summary": "Eight civil wars fought in France between 1562 and 1598 between Catholics and Huguenots, ended by Henry IV's conversion and the Edict of Nantes.",
+  "weak": [
+   "reformation",
+   "edict-of-nantes"
+  ],
+  "body": "Calvinist churches spread rapidly in France in the 1550s, drawing in part of the nobility, and by 1562 the Huguenots were a well organised minority with their own assemblies and armed protectors. The crown, held by a series of young kings under the regency of Catherine de' Medici, alternated between concession and repression.\n\nThe killing of a Huguenot congregation at Vassy on 1 March 1562 began the first of eight wars, fought between the houses of Guise, Bourbon and Montmorency as much as between the confessions. The [massacre of St Bartholomew's Day](event:st-bartholomew) in 1572 killed several thousand Huguenots in Paris and the provinces.\n\nThe Catholic League, financed by Spain, fought the last phase against Henry of Navarre, the Huguenot heir who became Henry IV in 1589. He converted to Catholicism in 1593 and entered Paris the following year.\n\nThe [Edict of Nantes](event:edict-of-nantes) of 1598 gave the Huguenots freedom of conscience, limited rights of worship and about a hundred fortified towns. It held until Louis XIV revoked it in 1685.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/French_Wars_of_Religion).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/French_Wars_of_Religion"
+   }
+  ],
+  "priority": 71
  },
  {
   "id": "william-shakespeare",
@@ -1578,22 +2766,43 @@
  {
   "id": "lepanto",
   "name": "Battle of Lepanto",
-  "start": 1571,
+  "start": 1571.76575,
   "lat": 38.25,
   "lng": 21.3,
   "priority": 52,
   "tags": [
    "war"
   ],
-  "parent": "ottoman-empire",
+  "parent": "ottoman-wars-europe",
   "summary": "On 7 October 1571 the fleet of a Catholic Holy League destroyed an Ottoman fleet in the Gulf of Patras off western Greece. It was the largest naval battle of the century and one of the last fought mainly by oared galleys.",
-  "body": "Part of [Ottoman Empire](event:ottoman-empire). The league was assembled by Pope Pius V after the Ottoman invasion of Venetian Cyprus, and drew ships from Spain, Venice, Genoa, the Papal States, Savoy and the Knights of Malta. Don John of Austria, half-brother of Philip II, commanded some 210 galleys against about 250 under Ali Pasha.\n\nThe Venetians brought six *galleasses*, large converted merchantmen carrying heavy guns on every side, and stationed them ahead of the line; their fire broke the Ottoman formation before the fleets met. After that the fighting was hand to hand across lashed decks. Ali Pasha was killed, most of the Ottoman fleet was captured or sunk, and some 12,000 Christian galley slaves were freed. Miguel de Cervantes, then a soldier, was shot twice in the chest and lost the use of his left hand.\n\nCyprus was not recovered, and the Ottomans had a new fleet at sea by the next campaigning season; a grand vizier is said to have remarked that Venice had merely singed his beard. It was the last major engagement of the galley age.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Lepanto).",
+  "body": "Part of [Ottoman wars in Europe](event:ottoman-wars-europe). The league was assembled by Pope Pius V after the Ottoman invasion of Venetian Cyprus, and drew ships from Spain, Venice, Genoa, the Papal States, Savoy and the Knights of Malta. Don John of Austria, half-brother of Philip II, commanded some 210 galleys against about 250 under Ali Pasha.\n\nThe Venetians brought six *galleasses*, large converted merchantmen carrying heavy guns on every side, and stationed them ahead of the line; their fire broke the Ottoman formation before the fleets met. After that the fighting was hand to hand across lashed decks. Ali Pasha was killed, most of the Ottoman fleet was captured or sunk, and some 12,000 Christian galley slaves were freed. Miguel de Cervantes, then a soldier, was shot twice in the chest and lost the use of his left hand.\n\nCyprus was not recovered, and the Ottomans had a new fleet at sea by the next campaigning season; a grand vizier is said to have remarked that Venice had merely singed his beard. It was the last major engagement of the galley age.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Lepanto).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Lepanto"
    }
   ]
+ },
+ {
+  "id": "st-bartholomew",
+  "name": "St Bartholomew's Day massacre",
+  "start": 1572.64617,
+  "lat": 48.8566,
+  "lng": 2.3522,
+  "parent": "french-wars-religion",
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "summary": "The killing of Huguenot leaders and thousands of Protestants in Paris and the provinces, beginning on 24 August 1572.",
+  "body": "Part of [French Wars of Religion](event:french-wars-religion). The Huguenot nobility had gathered in Paris for the marriage of Henry of Navarre to Margaret of Valois, sister of Charles IX, arranged as a reconciliation. An attempt on the life of Admiral Coligny, the Huguenot leader, failed on 22 August.\n\nTwo days later the king's council ordered the killing of the leaders, and the Paris militia and crowds extended it to the Huguenot population of the city. The killing spread to Orleans, Lyon, Rouen, Bordeaux and other towns over the following weeks. Estimates of the dead range from about 5,000 to 30,000.\n\nNavarre saved himself by converting. The Huguenot movement lost most of its senior commanders, took a harder political line, and the wars continued for another twenty-six years. Pope Gregory XIII had a commemorative medal struck; Protestant Europe treated the massacre as evidence of what a Catholic settlement would mean.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/St._Bartholomew%27s_Day_massacre).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/St._Bartholomew%27s_Day_massacre"
+   }
+  ],
+  "priority": 58
  },
  {
   "id": "spanish-armada",
@@ -1617,6 +2826,32 @@
     "url": "https://en.wikipedia.org/wiki/Spanish_Armada"
    }
   ]
+ },
+ {
+  "id": "dutch-golden-age",
+  "name": "Dutch Golden Age",
+  "start": 1588,
+  "end": 1672.15,
+  "lat": 52.3676,
+  "lng": 4.9041,
+  "tags": [
+   "culture",
+   "economy",
+   "science"
+  ],
+  "summary": "The period of Dutch commercial, scientific and artistic predominance in the seventeenth century, resting on trade, shipping and the finance of the new republic.",
+  "weak": [
+   "netherlands-independence",
+   "dutch-east-india"
+  ],
+  "body": "The Dutch Republic emerged from the [revolt against Spain](event:netherlands-independence) as a federation of seven provinces with no monarch, an unusual degree of religious tolerance and the highest urbanisation rate in Europe. Antwerp's fall in 1585 sent much of its merchant community, and its capital, north to Amsterdam.\n\nTrade was the base: the Baltic grain trade, the herring fishery, the fluyt, a cheap bulk carrier with a small crew, and the chartered companies for [Asia](event:dutch-east-india) and the Atlantic. Amsterdam had a public exchange bank from 1609 and a stock exchange trading company shares, forwards and options.\n\nPainting was produced for an open market rather than for church or court, which is why so much of it is landscape, still life, genre and portraiture; Rembrandt, Vermeer, Hals and Ruisdael worked in these decades. Printing was comparatively free of censorship, so Descartes, Spinoza and Locke published there.\n\nThe invasion of 1672 by France and England, the rampjaar or disaster year, is the usual end point. The republic survived, but as a second-rank power carrying a heavy debt.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Dutch_Golden_Age).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Dutch_Golden_Age"
+   }
+  ],
+  "priority": 74
  },
  {
   "id": "shakespeare",
@@ -1645,12 +2880,627 @@
   ]
  },
  {
+  "id": "imjin-war",
+  "name": "Japanese invasions of Korea",
+  "start": 1592.39208,
+  "end": 1598.95753,
+  "lat": 36.3,
+  "lng": 127.9,
+  "tags": [
+   "war"
+  ],
+  "summary": "Two Japanese invasions of Korea under Toyotomi Hideyoshi, in 1592 and 1597, opposed by Korean forces and a Ming Chinese army. The Japanese withdrew after Hideyoshi's death in 1598.",
+  "weak": [
+   "ming-dynasty",
+   "edo-japan"
+  ],
+  "body": "Toyotomi Hideyoshi, having completed the [unification of Japan](event:sengoku-unification), demanded passage through Korea for an invasion of Ming China. Korea refused, and about 158,000 men landed at Busan in May 1592.\n\nThe invaders took the capital in under three weeks and Pyongyang by July, but could not hold the country. At sea Yi Sun-sin destroyed successive Japanese squadrons and cut the supply route round the peninsula; on land, local militias attacked the garrisons; and a Ming army entered the war and retook Pyongyang in February 1593. The front settled on a line of Japanese fortresses along the south coast.\n\nNegotiations broke down and a second invasion came in 1597. It was held in the south, and Yi Sun-sin, restored to command after being dismissed and imprisoned, destroyed a much larger fleet at [Myeongnyang](event:myeongnyang) with thirteen ships. Hideyoshi died in 1598 and the armies were withdrawn.\n\nThe war is known in Korea as the Imjin War, after the year of its outbreak in the sexagenary cycle. Korean losses in population, farmland and cultural property were severe; the Ming treasury was strained; and in Japan the Toyotomi house was weakened.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Imjin_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Imjin_War"
+   }
+  ],
+  "steps": [
+   {
+    "id": "busan",
+    "name": "The landing at Busan",
+    "page": "The first Japanese division under Konishi Yukinaga crossed from Tsushima and landed at Busan on 23 May 1592. The garrison fortresses of Busan and Dongnae were taken within two days. In all about 158,000 men were shipped over in the following weeks.\n\nThe Korean army had no experience of a war of this size and few firearms, while the Japanese commanders had been fighting continuously for thirty years and were equipped with matchlocks. Three divisions advanced north by separate roads towards the capital.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        127.0,
+        37.7
+       ],
+       "text": "Hanseong",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        129.05,
+        35.0
+       ],
+       "text": "Busan",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.1,
+       "label": "Konishi lands at Busan",
+       "path": [
+        [
+         129.3,
+         34.4
+        ],
+        [
+         129.15,
+         34.75
+        ],
+        [
+         129.04,
+         35.1
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.08,
+       "color": "#f5a623",
+       "pos": [
+        129.04,
+        35.1
+       ],
+       "label": "Busan taken, 23 to 25 May 1592"
+      },
+      {
+       "type": "label",
+       "pos": [
+        129.3,
+        34.3
+       ],
+       "text": "Tsushima",
+       "size": "sm"
+      }
+     ]
+    },
+    "at": 1592.39208,
+    "camera": {
+     "lat": 35.1951,
+     "lng": 128.8501,
+     "altitude": 0.1268
+    }
+   },
+   {
+    "id": "hanseong",
+    "name": "Chungju and the fall of the capital",
+    "page": "The Korean field army under Sin Rip met the Japanese at Chungju on 6 June and was destroyed on open ground where its cavalry was shot down. King Seonjo left the capital, which was entered on 10 June, and went north to Uiju on the Yalu to ask for Ming help.\n\nPyongyang fell on 20 July. Kato Kiyomasa's division reached the Tumen in the far north east. Behind the advance, local militias known as righteous armies attacked garrisons and supply columns, and the country people refused to supply the invaders.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        127.0,
+        37.7
+       ],
+       "text": "Hanseong",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        125.76,
+        39.15
+       ],
+       "text": "Pyongyang",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        129.05,
+        35.0
+       ],
+       "text": "Busan",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.1,
+       "label": "Konishi, the central road",
+       "path": [
+        [
+         129.04,
+         35.1
+        ],
+        [
+         128.16,
+         36.42
+        ],
+        [
+         127.93,
+         36.99
+        ],
+        [
+         126.98,
+         37.57
+        ],
+        [
+         125.76,
+         39.04
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.09,
+       "label": "Kato, the eastern road",
+       "path": [
+        [
+         129.2,
+         35.2
+        ],
+        [
+         129.3,
+         36.0
+        ],
+        [
+         128.9,
+         37.4
+        ],
+        [
+         129.3,
+         39.5
+        ],
+        [
+         129.75,
+         42.44
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.09,
+       "label": "Kuroda, the western road",
+       "path": [
+        [
+         128.9,
+         35.2
+        ],
+        [
+         127.5,
+         36.3
+        ],
+        [
+         126.9,
+         37.2
+        ],
+        [
+         126.55,
+         37.97
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        127.926,
+        36.991
+       ],
+       "label": "Chungju, 6 June 1592"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        126.978,
+        37.5665
+       ],
+       "label": "Hanseong entered, 10 June 1592"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        124.53,
+        40.19
+       ],
+       "label": "The court at Uiju"
+      }
+     ]
+    },
+    "at": 1592.44126,
+    "camera": {
+     "lat": 37.4543,
+     "lng": 127.7822,
+     "altitude": 0.2239
+    }
+   },
+   {
+    "id": "hansan",
+    "name": "Yi Sun-sin at sea",
+    "page": "Yi Sun-sin, commander of the left Jeolla naval district, took his squadron east in the summer of 1592 and destroyed Japanese shipping at Okpo, Sacheon and Danghangpo. His ships carried heavier cannon than the Japanese and did not close to be boarded.\n\nOn 14 August he drew the main Japanese fleet out of the narrow Gyeonnaeryang strait into open water near Hansan Island and enveloped it, sinking most of it. The Korean navy kept control of the south western sea route, so the armies in the north could not be supplied by sea round the peninsula.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        129.05,
+        35.0
+       ],
+       "text": "Busan",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.08,
+       "label": "Yi Sun-sin from Jeolla",
+       "path": [
+        [
+         126.4,
+         34.6
+        ],
+        [
+         127.4,
+         34.75
+        ],
+        [
+         128.2,
+         34.8
+        ],
+        [
+         128.48,
+         34.78
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.07,
+       "label": "Japanese fleet from Busan",
+       "path": [
+        [
+         129.0,
+         35.05
+        ],
+        [
+         128.75,
+         34.9
+        ],
+        [
+         128.55,
+         34.8
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.07,
+       "color": "#f5a623",
+       "pos": [
+        128.48,
+        34.78
+       ],
+       "label": "Hansan Island, 14 August 1592"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        128.69,
+        34.89
+       ],
+       "label": "Okpo, 7 July 1592"
+      }
+     ]
+    },
+    "at": 1592.61885,
+    "camera": {
+     "lat": 34.8374,
+     "lng": 128.299,
+     "altitude": 0.0692
+    }
+   },
+   {
+    "id": "ming",
+    "name": "The Ming intervention",
+    "page": "A Ming army of about 40,000 under Li Rusong crossed the Yalu at the end of 1592 and retook Pyongyang on 8 February 1593 with heavy artillery. The Japanese fell back on the capital.\n\nLi's advance guard was checked at Byeokjegwan north of Hanseong in late February. A Korean force under Gwon Yul then held the fortified hill of Haengju against a much larger attack on 14 March. With supplies short on both sides, the Japanese evacuated the capital in May and withdrew to a line of fortresses on the southern coast.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        127.0,
+        37.7
+       ],
+       "text": "Hanseong",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        125.76,
+        39.15
+       ],
+       "text": "Pyongyang",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        129.05,
+        35.0
+       ],
+       "text": "Busan",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.1,
+       "label": "Ming army under Li Rusong",
+       "path": [
+        [
+         124.5,
+         40.3
+        ],
+        [
+         125.2,
+         39.6
+        ],
+        [
+         125.76,
+         39.04
+        ],
+        [
+         126.55,
+         38.2
+        ],
+        [
+         126.98,
+         37.6
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        125.7625,
+        39.0392
+       ],
+       "label": "Pyongyang retaken, 8 February 1593"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.08,
+       "color": "#f5a623",
+       "pos": [
+        126.87,
+        37.65
+       ],
+       "label": "Byeokjegwan, 27 February 1593"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.08,
+       "color": "#f5a623",
+       "pos": [
+        126.83,
+        37.6
+       ],
+       "label": "Haengju held, 14 March 1593"
+      }
+     ]
+    },
+    "at": 1593.10548,
+    "camera": {
+     "lat": 38.2675,
+     "lng": 126.4085,
+     "altitude": 0.1686
+    }
+   },
+   {
+    "id": "truce",
+    "name": "The coastal fortresses and the truce",
+    "page": "From the summer of 1593 the Japanese held a chain of fortresses along the south coast from Ulsan to Suncheon while envoys negotiated. The second siege of Jinju in July 1593 was taken and its garrison and townspeople killed.\n\nThe talks failed because each side was told what its own negotiators thought it wished to hear: Hideyoshi believed he was being offered a Ming princess and the southern provinces, and the Ming court believed he was accepting investiture as king of Japan. When the misunderstanding became clear in 1596 the war resumed.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        129.05,
+        35.0
+       ],
+       "text": "Busan",
+       "size": "sm"
+      },
+      {
+       "type": "frontline",
+       "color": "#e5484d",
+       "dash": "solid",
+       "width": 3.0,
+       "label": "Japanese coastal fortresses, 1593 to 1597",
+       "paths": [
+        [
+         [
+          129.31,
+          35.54
+         ],
+         [
+          128.9,
+          35.15
+         ],
+         [
+          128.42,
+          34.88
+         ],
+         [
+          127.7,
+          34.9
+         ],
+         [
+          127.1,
+          34.8
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.08,
+       "color": "#f5a623",
+       "pos": [
+        128.0842,
+        35.1917
+       ],
+       "label": "Second siege of Jinju, July 1593"
+      }
+     ]
+    },
+    "start": 1593.56849,
+    "end": 1596.71995,
+    "camera": {
+     "lat": 35.0682,
+     "lng": 128.3648,
+     "altitude": 0.0471
+    }
+   },
+   {
+    "id": "myeongnyang-step",
+    "name": "Battle of Myeongnyang",
+    "child": "myeongnyang",
+    "at": 1597.81781
+   },
+   {
+    "id": "noryang",
+    "name": "Noryang and the withdrawal",
+    "page": "Hideyoshi died on 18 September 1598 and the council governing for his heir ordered the armies home. The Ming and Korean forces pressed the coastal fortresses through the autumn.\n\nOn the night of 16 December the allied fleet attacked the Japanese ships covering the evacuation in the Noryang strait. Most of the Japanese squadron was destroyed. Yi Sun-sin was killed by a musket shot during the pursuit. The last troops left Korea within weeks, and the peninsula was left with its farmland, records and population heavily reduced.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        129.05,
+        35.0
+       ],
+       "text": "Busan",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.07,
+       "label": "Allied fleet, 16 December 1598",
+       "path": [
+        [
+         127.6,
+         34.75
+        ],
+        [
+         127.75,
+         34.88
+        ],
+        [
+         127.87,
+         34.94
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.07,
+       "label": "Japanese withdrawal to Busan",
+       "path": [
+        [
+         127.5,
+         34.95
+        ],
+        [
+         128.3,
+         34.9
+        ],
+        [
+         129.04,
+         35.1
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.07,
+       "color": "#f5a623",
+       "pos": [
+        127.87,
+        34.94
+       ],
+       "label": "Noryang, 16 December 1598"
+      }
+     ]
+    },
+    "at": 1598.95753,
+    "camera": {
+     "lat": 34.9339,
+     "lng": 128.122,
+     "altitude": 0.0339
+    }
+   }
+  ],
+  "priority": 70
+ },
+ {
+  "id": "myeongnyang",
+  "name": "Battle of Myeongnyang",
+  "start": 1597.81781,
+  "lat": 34.57,
+  "lng": 126.3,
+  "parent": "imjin-war",
+  "tags": [
+   "war"
+  ],
+  "summary": "Yi Sun-sin defeated a much larger Japanese fleet in the Myeongnyang strait on 26 October 1597 with thirteen ships, stopping the Japanese advance by sea.",
+  "body": "Part of [Japanese invasions of Korea](event:imjin-war). Yi Sun-sin had been removed from command and imprisoned in 1597 after refusing an order he believed was based on false intelligence. His successor lost almost the whole Korean fleet at Chilcheollyang in August, and Yi was reinstated with thirteen ships.\n\nHe met the Japanese fleet on 26 October in the Myeongnyang strait between the mainland and Jindo, a channel about 300 metres wide where the tidal current runs very fast and reverses. The Japanese ships, reported at over 130, could enter only a few at a time and could not manoeuvre; the Korean ships fought at anchor across the channel and used the turn of the tide.\n\nThe Japanese lost about thirty ships and broke off. The advance up the west coast was stopped and the invasion did not recover the initiative at sea.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Myeongnyang).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Myeongnyang"
+   }
+  ],
+  "priority": 55
+ },
+ {
   "id": "edict-of-nantes",
   "name": "Edict of Nantes",
   "start": 1598,
   "lat": 47.22,
   "lng": -1.55,
-  "priority": 58,
+  "priority": 59,
   "tags": [
    "religion",
    "politics"
@@ -1669,12 +3519,36 @@
   ]
  },
  {
+  "id": "time-of-troubles",
+  "name": "Time of Troubles",
+  "start": 1598.05,
+  "end": 1613.54,
+  "lat": 55.752,
+  "lng": 37.6175,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "A period of dynastic crisis, famine, civil war and foreign occupation in Russia between 1598 and 1613. It ended with the election of Michael Romanov as tsar.",
+  "weak": [
+   "deluge"
+  ],
+  "body": "The Rurikid line ended with the death of Fyodor I in 1598 and the throne passed to Boris Godunov, who was elected by an assembly. A famine from 1601 to 1603, caused by crop failures that followed a volcanic eruption in Peru, is estimated to have killed about two million people, a third of the population.\n\nIn 1604 a man claiming to be Dmitry, the youngest son of Ivan IV who had died in 1591, invaded with Polish backing and was crowned in 1605. He was killed within a year, and a second and a third false Dmitry followed. Cossack and peasant risings, boyar factions, Swedish intervention in the north and a Polish army in Moscow from 1610 left the state without a working government.\n\nA volunteer army raised in Nizhny Novgorod by the merchant Kuzma Minin and Prince Dmitry Pozharsky retook Moscow in the autumn of 1612. An assembly elected the sixteen year old Michael Romanov as tsar in 1613, beginning a dynasty that ruled until 1917. Peace with Sweden followed in 1617 and with Poland in 1618.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Time_of_Troubles).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Time_of_Troubles"
+   }
+  ],
+  "priority": 65
+ },
+ {
   "id": "english-east-india",
   "name": "English East India Company founded",
   "start": 1600,
   "lat": 51.51,
   "lng": -0.09,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "economy",
    "politics"
@@ -1693,12 +3567,33 @@
   ]
  },
  {
+  "id": "sekigahara",
+  "name": "Battle of Sekigahara",
+  "start": 1600.80464,
+  "lat": 35.3708,
+  "lng": 136.4681,
+  "parent": "sengoku-unification",
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Tokugawa Ieyasu defeated the coalition led by Ishida Mitsunari on 21 October 1600, which led to his appointment as shogun and to 250 years of Tokugawa rule.",
+  "body": "Part of [Unification of Japan](event:sengoku-unification). After Toyotomi Hideyoshi died in 1598 leaving a five year old heir, the regents fell out. Tokugawa Ieyasu, the strongest of them, was opposed by a coalition assembled by Ishida Mitsunari in the name of the Toyotomi house.\n\nThe armies, each of about 80,000 men, met in fog in the valley at Sekigahara on the road between the capital and the east on 21 October 1600. The fighting was even until Kobayakawa Hideaki, posted on the hill of Matsuo with 15,000 men, changed sides and attacked the western flank. Other contingents followed and the coalition collapsed. Ishida was captured and executed.\n\nIeyasu redistributed the domains of the defeated, took the title of shogun in 1603 and moved the seat of government to Edo. The distinction between the fudai daimyo who had supported him and the tozama who had not was built into the structure of [Tokugawa Japan](event:edo-japan).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Sekigahara).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Sekigahara"
+   }
+  ],
+  "priority": 70
+ },
+ {
   "id": "dutch-east-india",
   "name": "Dutch East India Company founded",
   "start": 1602,
   "lat": 52.37,
   "lng": 4.9,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "economy",
    "politics"
@@ -1719,7 +3614,7 @@
   "end": 1868,
   "lat": 35.6852,
   "lng": 139.7528,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "politics"
   ],
@@ -1744,7 +3639,7 @@
   "start": 1607,
   "lat": 37.2076,
   "lng": -76.7772,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "exploration",
    "politics"
@@ -1771,7 +3666,7 @@
   "start": 1608,
   "lat": 46.81,
   "lng": -71.21,
-  "priority": 56,
+  "priority": 57,
   "tags": [
    "exploration",
    "politics"
@@ -1796,7 +3691,7 @@
   "end": 1619,
   "lat": 50.09,
   "lng": 14.42,
-  "priority": 58,
+  "priority": 59,
   "tags": [
    "science"
   ],
@@ -1819,7 +3714,7 @@
   "start": 1610,
   "lat": 45.41,
   "lng": 11.88,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "science"
   ],
@@ -1838,6 +3733,27 @@
     "url": "https://en.wikipedia.org/wiki/Galileo_Galilei"
    }
   ]
+ },
+ {
+  "id": "siege-of-osaka",
+  "name": "Siege of Osaka",
+  "start": 1614.88356,
+  "end": 1615.42329,
+  "lat": 34.6873,
+  "lng": 135.5259,
+  "parent": "sengoku-unification",
+  "tags": [
+   "war"
+  ],
+  "summary": "Two campaigns in 1614 and 1615 in which Tokugawa forces destroyed Osaka castle and the Toyotomi house, ending the wars of the Sengoku period.",
+  "body": "Part of [Unification of Japan](event:sengoku-unification). Toyotomi Hideyori held Osaka castle, the strongest fortress in Japan, with a garrison swollen by masterless samurai. Tokugawa Ieyasu used an inscription on a temple bell, which could be read as a pun against his name, as the occasion for war.\n\nThe winter campaign of 1614 failed against the walls and ended in a truce whose terms allowed the Tokugawa to fill in the outer moats. When fighting resumed in the summer of 1615 the castle had lost its outworks. The defenders were beaten in the open at Tennoji on 3 June and the castle was stormed the next day. Hideyori and his mother died in the ruins.\n\nWith the Toyotomi gone the Tokugawa issued the laws governing the military houses and the imperial court, and the country had no large-scale warfare for two centuries.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Siege_of_Osaka).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Siege_of_Osaka"
+   }
+  ],
+  "priority": 56
  },
  {
   "id": "thirty-years-war",
@@ -1884,7 +3800,7 @@
     42
    ]
   ],
-  "priority": 81,
+  "priority": 82,
   "tags": [
    "war",
    "religion"
@@ -1953,12 +3869,37 @@
   ]
  },
  {
+  "id": "plymouth-colony",
+  "name": "Plymouth Colony",
+  "start": 1620.97131,
+  "end": 1691.79,
+  "lat": 41.9584,
+  "lng": -70.6673,
+  "tags": [
+   "exploration",
+   "politics"
+  ],
+  "summary": "An English colony founded in 1620 in what is now Massachusetts by passengers of the Mayflower, about half of them Separatists from the Church of England.",
+  "weak": [
+   "jamestown",
+   "reformation"
+  ],
+  "body": "The Mayflower left Plymouth in September 1620 with 102 passengers, among them a congregation of Separatists who had been living in Leiden. Blown north of the land granted to them, they anchored off Cape Cod in November and, having no legal authority there, drew up the Mayflower Compact, an agreement to govern themselves by majority consent.\n\nThey landed at Plymouth in December. About half died during the first winter of scurvy, exposure and disease. The site had been the village of Patuxet, whose inhabitants had been killed by an epidemic between 1616 and 1619; Tisquantum, a survivor who had been taken to Europe as a captive and had returned, acted as interpreter. A treaty was made with the Wampanoag leader Massasoit in 1621 and held for over fifty years.\n\nThe harvest feast of 1621 is the usual origin given for the American Thanksgiving. The colony remained small and was absorbed into Massachusetts Bay in 1691. Relations with the Wampanoag ended in the war of 1675 to 1678.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Plymouth_Colony).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Plymouth_Colony"
+   }
+  ],
+  "priority": 61
+ },
+ {
   "id": "harvey-circulation",
   "name": "Harvey discovers blood circulation",
   "start": 1628,
   "lat": 51.5177,
   "lng": -0.1002,
-  "priority": 69,
+  "priority": 70,
   "tags": [
    "science"
   ],
@@ -1982,7 +3923,7 @@
   "end": 1653,
   "lat": 27.1751,
   "lng": 78.0421,
-  "priority": 56,
+  "priority": 57,
   "tags": [
    "culture"
   ],
@@ -1998,6 +3939,30 @@
     "url": "https://en.wikipedia.org/wiki/Taj_Mahal"
    }
   ]
+ },
+ {
+  "id": "tulip-mania",
+  "name": "Tulip mania",
+  "start": 1636.85,
+  "end": 1637.09726,
+  "lat": 52.3676,
+  "lng": 4.9041,
+  "tags": [
+   "economy"
+  ],
+  "summary": "A rise and collapse in the contract prices of tulip bulbs in the Dutch Republic in the winter of 1636 to 1637, often cited as the first recorded speculative bubble.",
+  "weak": [
+   "dutch-golden-age",
+   "south-sea-bubble"
+  ],
+  "body": "Tulips reached the Netherlands from the Ottoman Empire in the sixteenth century and became a luxury good, with the most valued varieties carrying flame patterns that are now known to be caused by a virus. Because bulbs can be lifted only in summer, trade in the winter was in contracts for future delivery, settled in taverns and not enforceable in the ordinary courts.\n\nPrices in these contracts rose sharply from the autumn of 1636 and collapsed at auctions in Haarlem in the first days of February 1637. Buyers refused to pay, and in 1638 a formula was adopted allowing contracts to be voided for a few per cent of their face value.\n\nThe episode was described as a general madness by contemporary moralising pamphlets and by Charles Mackay in 1841, which is how it entered popular usage. Modern research, in particular by Anne Goldgar, finds that the trade involved a fairly small group of merchants and craftsmen, that few fortunes were destroyed and that the effect on the Dutch economy was slight.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Tulip_mania).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Tulip_mania"
+   }
+  ],
+  "priority": 59
  },
  {
   "id": "english-civil-war",
@@ -2119,7 +4084,7 @@
   "end": 1912,
   "lat": 39.92,
   "lng": 116.39,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "politics"
   ],
@@ -2159,6 +4124,561 @@
   ]
  },
  {
+  "id": "khmelnytsky-uprising",
+  "name": "Khmelnytsky Uprising",
+  "start": 1648.06694,
+  "end": 1657.62,
+  "lat": 49.08,
+  "lng": 32.66,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A Cossack and peasant rising in Ukraine against Polish-Lithuanian rule, begun in 1648 by Bohdan Khmelnytsky. It led to the Cossack Hetmanate and, by the treaty of Pereiaslav in 1654, to Russian overlordship.",
+  "weak": [
+   "russian-revolution"
+  ],
+  "body": "The uprising began in the Zaporozhian Sich in January 1648 under Bohdan Khmelnytsky, a Cossack officer with a private grievance against a Polish neighbour, and grew into a general revolt against the magnates' estates, the Catholic and Uniate churches and the position of the registered Cossacks.\n\nAllied with the Crimean Tatars, Khmelnytsky destroyed Commonwealth armies at Zhovti Vody and Korsun in 1648 and won at Zboriv in 1649. The revolt was accompanied by massacres of Jewish communities in Ukraine, whose scale is debated but which are among the heaviest losses suffered by Jews in Europe before the twentieth century. Polish forces in turn destroyed rebel towns.\n\nAfter the defeat at Berestechko in 1651 Khmelnytsky sought an outside protector. At Pereiaslav in January 1654 the Cossack council swore allegiance to the tsar, which brought Russia into a thirteen year war with the Commonwealth and, with the Swedish invasion of 1655, opened the period known as [the Deluge](event:deluge).\n\nThe truce of Andrusovo in 1667 divided Ukraine along the Dnieper between Russia and the Commonwealth.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Khmelnytsky_Uprising).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Khmelnytsky_Uprising"
+   }
+  ],
+  "priority": 61
+ },
+ {
+  "id": "deluge",
+  "name": "The Deluge",
+  "start": 1655.55205,
+  "end": 1660.33743,
+  "lat": 52.2297,
+  "lng": 21.0122,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "The Swedish invasion of the Polish-Lithuanian Commonwealth between 1655 and 1660, fought alongside wars with Russia, Brandenburg and Transylvania. Population losses across the Commonwealth were very heavy.",
+  "weak": [
+   "great-northern-war",
+   "khmelnytsky-uprising"
+  ],
+  "body": "The Deluge is the Polish name for the wars of 1655 to 1660, in which Swedish armies occupied most of the Polish-Lithuanian Commonwealth. It followed the [Khmelnytsky uprising](event:khmelnytsky-uprising) of 1648 and the Russian invasion of 1654, which had already taken Smolensk and much of Lithuania.\n\nCharles X Gustav of Sweden invaded in July 1655 with two armies. Resistance collapsed at first: Greater Poland capitulated at Ujscie, Warsaw and Krakow were taken, and the Lithuanian hetman Janusz Radziwill placed the grand duchy under Swedish protection. John II Casimir left the country.\n\nThe occupation then failed. Requisitions and the treatment of churches turned the nobility and the peasantry against the Swedes, the defence of the monastery at Jasna Gora in the winter of 1655 became a rallying point, and a confederation formed at Tyszowce recalled the king. Denmark, Austria and the Dutch republic entered against Sweden and the war ended at Oliva in 1660 with the pre-war borders restored.\n\nEstimates of population loss in the Commonwealth in 1648 to 1660 run from 30 to 50 per cent, with the towns worst affected. The state recovered its territory and not its strength.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Deluge_(history)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Deluge_(history)"
+   }
+  ],
+  "steps": [
+   {
+    "id": "ujscie",
+    "name": "The Swedish invasion",
+    "page": "Two Swedish armies crossed into the Commonwealth in July 1655, one from Swedish Pomerania under Arvid Wittenberg and one from Livonia under Magnus de la Gardie. The Commonwealth was already at war with Russia and had lost Smolensk and much of Lithuania the year before.\n\nThe levy of Greater Poland met Wittenberg at Ujscie on 25 July and capitulated the same day; the provincial governors accepted Charles X Gustav as their ruler. Poznan was occupied on 31 July.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        21.01,
+        52.35
+       ],
+       "text": "Warsaw",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        19.94,
+        50.0
+       ],
+       "text": "Krakow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.22,
+       "label": "Wittenberg from Pomerania",
+       "path": [
+        [
+         14.55,
+         53.43
+        ],
+        [
+         15.6,
+         53.2
+        ],
+        [
+         16.73,
+         53.05
+        ],
+        [
+         16.93,
+         52.41
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.2,
+       "label": "De la Gardie from Livonia",
+       "path": [
+        [
+         24.11,
+         56.95
+        ],
+        [
+         23.5,
+         56.0
+        ],
+        [
+         24.3,
+         55.0
+        ],
+        [
+         25.28,
+         54.69
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        16.73,
+        53.05
+       ],
+       "label": "Capitulation at Ujscie, 25 July 1655"
+      }
+     ]
+    },
+    "at": 1655.56301,
+    "camera": {
+     "lat": 53.7064,
+     "lng": 19.7861,
+     "altitude": 0.176
+    }
+   },
+   {
+    "id": "warsaw-krakow",
+    "name": "Warsaw, Krakow and Kiejdany",
+    "page": "The Swedish armies advanced without much resistance. Warsaw was entered on 8 September 1655, the first time a foreign army had taken the Polish capital, and Krakow surrendered on 13 October after a siege. John II Casimir left for Silesia.\n\nIn Lithuania the hetman Janusz Radziwill signed the union of Kiejdany on 20 October, putting the grand duchy under Swedish protection. Much of the nobility and many towns changed allegiance, though the Swedish demands for money and quarter soon turned opinion.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        21.01,
+        52.35
+       ],
+       "text": "Warsaw",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        19.94,
+        50.0
+       ],
+       "text": "Krakow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.2,
+       "label": "Advance on Warsaw and Krakow",
+       "path": [
+        [
+         16.93,
+         52.41
+        ],
+        [
+         18.6,
+         52.3
+        ],
+        [
+         21.01,
+         52.23
+        ],
+        [
+         20.6,
+         51.2
+        ],
+        [
+         19.94,
+         50.06
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        21.0122,
+        52.2297
+       ],
+       "label": "Warsaw taken, 8 September 1655"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        19.945,
+        50.0647
+       ],
+       "label": "Krakow taken, 13 October 1655"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        23.975,
+        55.287
+       ],
+       "label": "Union of Kiejdany, 20 October 1655"
+      }
+     ]
+    },
+    "start": 1655.6863,
+    "end": 1655.80137,
+    "camera": {
+     "lat": 51.8251,
+     "lng": 20.2676,
+     "altitude": 0.1774
+    }
+   },
+   {
+    "id": "jasna-gora",
+    "name": "Jasna Gora",
+    "page": "A Swedish detachment invested the monastery of Jasna Gora at Czestochowa on 18 November 1655. The house held a much venerated icon and had modern bastioned defences; its prior, Augustyn Kordecki, refused to admit a garrison.\n\nThe siege was lifted on 27 December. It was small in military terms, a few thousand besiegers against a few hundred defenders, and large in effect: it was reported across the country as a sign and it coincided with the point at which the szlachta began to change sides.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        19.94,
+        50.0
+       ],
+       "text": "Krakow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.1,
+       "label": "Swedish detachment",
+       "path": [
+        [
+         19.6,
+         50.7
+        ],
+        [
+         19.3,
+         50.78
+        ],
+        [
+         19.12,
+         50.81
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.1,
+       "color": "#f5a623",
+       "pos": [
+        19.0966,
+        50.8118
+       ],
+       "label": "Jasna Gora held, 18 November to 27 December 1655"
+      }
+     ]
+    },
+    "start": 1655.88082,
+    "end": 1655.98767,
+    "camera": {
+     "lat": 50.6208,
+     "lng": 19.4132,
+     "altitude": 0.0311
+    }
+   },
+   {
+    "id": "tyszowce",
+    "name": "The confederation and the guerrilla war",
+    "page": "The confederation formed at Tyszowce on 29 December 1655 declared for John II Casimir, who re-entered the country in January 1656. Peasant bands and irregular cavalry attacked Swedish detachments and convoys, and the occupying army, spread across a large country, could not hold what it had taken.\n\nStefan Czarniecki's troops beat a Swedish force at Warka on 7 April 1656 and Warsaw was recovered in June. Charles X Gustav's response was to bring in Brandenburg as an ally by the treaty of Konigsberg in January and of Marienburg in June.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        21.01,
+        52.35
+       ],
+       "text": "Warsaw",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        19.94,
+        50.0
+       ],
+       "text": "Krakow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#eaf1fb",
+       "width": 0.16,
+       "label": "John II Casimir returns",
+       "path": [
+        [
+         18.6,
+         49.8
+        ],
+        [
+         19.94,
+         50.06
+        ],
+        [
+         20.9,
+         51.2
+        ],
+        [
+         21.01,
+         52.23
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        23.68,
+        50.62
+       ],
+       "label": "Confederation of Tyszowce, 29 December 1655"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        21.19,
+        51.78
+       ],
+       "label": "Warka, 7 April 1656"
+      }
+     ]
+    },
+    "start": 1655.99315,
+    "end": 1656.4959,
+    "camera": {
+     "lat": 51.013,
+     "lng": 20.7727,
+     "altitude": 0.0822
+    }
+   },
+   {
+    "id": "warsaw-1656",
+    "name": "The three day battle of Warsaw",
+    "page": "A Swedish and Brandenburg army of about 18,000 met a Commonwealth force of some 40,000, much of it cavalry and the general levy, north of Warsaw on 28, 29 and 30 July 1656.\n\nThe allies held their ground and retook the city, but could not follow the victory up. Russia had declared war on Sweden in July and invaded Livonia, and the Commonwealth's forces remained in the field. The war after 1656 became a matter of sieges, marches and shifting alliances rather than of decisive battles.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        21.01,
+        52.35
+       ],
+       "text": "Warsaw",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        19.94,
+        50.0
+       ],
+       "text": "Krakow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.12,
+       "label": "Swedish and Brandenburg army",
+       "path": [
+        [
+         20.6,
+         52.6
+        ],
+        [
+         20.9,
+         52.4
+        ],
+        [
+         21.05,
+         52.3
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#eaf1fb",
+       "width": 0.12,
+       "label": "Commonwealth army",
+       "path": [
+        [
+         21.4,
+         52.15
+        ],
+        [
+         21.2,
+         52.25
+        ],
+        [
+         21.08,
+         52.32
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.12,
+       "color": "#f5a623",
+       "pos": [
+        21.05,
+        52.31
+       ],
+       "label": "Warsaw, 28 to 30 July 1656"
+      }
+     ]
+    },
+    "start": 1656.5724,
+    "end": 1656.57787,
+    "camera": {
+     "lat": 52.0763,
+     "lng": 20.9094,
+     "altitude": 0.0945
+    }
+   },
+   {
+    "id": "oliva",
+    "name": "Oliva",
+    "page": "Brandenburg changed sides in 1657 in exchange for sovereignty in Ducal Prussia, and Denmark, Austria and the Dutch republic entered against Sweden. Charles X Gustav turned on Denmark, marched across the frozen Belts, and died in February 1660.\n\nThe treaty of Oliva, signed near Danzig on 3 May 1660, restored the pre-war borders in the Commonwealth and had John II Casimir renounce his claim to the Swedish throne. The war with Russia went on to the truce of Andrusovo in 1667, which gave Russia Smolensk and left bank Ukraine.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        21.01,
+        52.35
+       ],
+       "text": "Warsaw",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        19.94,
+        50.0
+       ],
+       "text": "Krakow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.16,
+       "label": "Charles X Gustav turns on Denmark",
+       "path": [
+        [
+         19.0,
+         53.6
+        ],
+        [
+         16.0,
+         54.2
+        ],
+        [
+         12.6,
+         55.1
+        ],
+        [
+         12.57,
+         55.68
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        18.56,
+        54.41
+       ],
+       "label": "Treaty of Oliva, 3 May 1660"
+      },
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.4,
+       "label": "Andrusovo line, 1667",
+       "paths": [
+        [
+         [
+          31.5,
+          50.0
+         ],
+         [
+          31.3,
+          51.5
+         ],
+         [
+          32.0,
+          53.0
+         ],
+         [
+          31.9,
+          54.8
+         ]
+        ]
+       ]
+      }
+     ]
+    },
+    "start": 1657.71644,
+    "end": 1660.33743,
+    "camera": {
+     "lat": 53.3805,
+     "lng": 22.5582,
+     "altitude": 0.2767
+    }
+   }
+  ],
+  "priority": 65
+ },
+ {
   "id": "aurangzeb-reign",
   "name": "Aurangzeb expands the Mughal Empire",
   "start": 1658,
@@ -2193,7 +4713,7 @@
   "end": 1722,
   "lat": 39.92,
   "lng": 116.39,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "politics",
    "culture"
@@ -2217,7 +4737,7 @@
   "start": 1662,
   "lat": 51.75,
   "lng": -1.26,
-  "priority": 54,
+  "priority": 53,
   "tags": [
    "science"
   ],
@@ -2240,7 +4760,7 @@
   "start": 1665,
   "lat": 51.5155,
   "lng": -0.0818,
-  "priority": 58,
+  "priority": 59,
   "tags": [
    "science"
   ],
@@ -2282,6 +4802,29 @@
   "priority": 90
  },
  {
+  "id": "great-fire-london",
+  "name": "Great Fire of London",
+  "start": 1666.66986,
+  "end": 1666.68082,
+  "lat": 51.51,
+  "lng": -0.092,
+  "tags": [
+   "disaster"
+  ],
+  "summary": "A fire that burned through the City of London from 2 to 6 September 1666, destroying about 13,200 houses, 87 churches and St Paul's Cathedral.",
+  "weak": [
+   "wren-cathedral"
+  ],
+  "body": "The fire began in a bakery in Pudding Lane in the early hours of Sunday 2 September 1666, after a dry summer and with a strong east wind. The medieval City was built of timber and pitch with jettied upper storeys, and warehouses along the Thames held oil, tallow, spirits and coal.\n\nThe lord mayor refused to order demolitions early on, and by the time firebreaks were made with gunpowder the fire had a front too wide to hold. It burned for four days, destroyed about 13,200 houses, 87 parish churches, the Royal Exchange, the Guildhall and old St Paul's Cathedral, and left an area of about 1.75 square kilometres inside the walls in ruins.\n\nRecorded deaths were very few, though the count only covered those whose deaths were registered. Around 70,000 of the City's 80,000 inhabitants lost their homes. Rebuilding was regulated by the Act of 1667, which required brick and stone and widened streets, and [Christopher Wren](event:wren-cathedral) rebuilt St Paul's and 51 parish churches.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Fire_of_London).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Great_Fire_of_London"
+   }
+  ],
+  "priority": 59
+ },
+ {
   "id": "leeuwenhoek-microscope",
   "name": "Leeuwenhoek's microscopes reveal microorganisms",
   "start": 1674,
@@ -2304,6 +4847,31 @@
     "url": "https://en.wikipedia.org/wiki/Antonie_van_Leeuwenhoek"
    }
   ]
+ },
+ {
+  "id": "maratha-empire",
+  "name": "Maratha Empire",
+  "start": 1674.42,
+  "end": 1818.16,
+  "lat": 18.234,
+  "lng": 73.44,
+  "tags": [
+   "politics",
+   "war"
+  ],
+  "summary": "An Indian state founded by Shivaji in 1674 that grew into the dominant power in eighteenth century India, before losing to the East India Company in three wars ending in 1818.",
+  "weak": [
+   "mughal-empire",
+   "english-east-india"
+  ],
+  "body": "The Maratha state was founded in the western Deccan by Shivaji, who was crowned at Raigad in 1674 after twenty years of war against the sultanate of Bijapur and the [Mughals](event:mughal-empire). Its base was the hill forts of the Sahyadri range and a light cavalry that lived off enemy territory.\n\n[Aurangzeb](event:aurangzeb-reign) spent the last twenty-five years of his reign in the Deccan trying to destroy it and did not succeed. In the eighteenth century, under the hereditary chief ministers known as the peshwas, the Marathas collected tribute across much of India, occupied Delhi's politics and reached the Indus.\n\nThe confederacy of ruling families, Bhonsle, Holkar, Scindia, Gaekwad and the peshwa, was checked at [Panipat](event:third-panipat) in 1761 by Ahmad Shah Durrani and recovered within a decade. Three wars with the [East India Company](event:english-east-india) between 1775 and 1818 ended with the peshwa's deposition and the annexation of most of the territory.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Maratha_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Maratha_Empire"
+   }
+  ],
+  "priority": 74
  },
  {
   "id": "wren-cathedral",
@@ -2358,25 +4926,26 @@
  {
   "id": "vienna-1683",
   "name": "Ottoman siege of Vienna",
-  "start": 1683,
+  "start": 1683.53288,
   "lat": 48.21,
   "lng": 16.37,
-  "priority": 56,
+  "priority": 57,
   "tags": [
    "war"
   ],
-  "parent": "ottoman-empire",
+  "parent": "ottoman-wars-europe",
   "strong": [
    "lepanto"
   ],
   "summary": "An Ottoman army besieged Vienna from July 1683. On 12 September a relief force led by John III Sobieski of Poland broke the siege in a battle outside the city. It was the last Ottoman attempt on Vienna and the beginning of a long retreat from central Europe.",
-  "body": "Part of [Ottoman Empire](event:ottoman-empire). The grand vizier Kara Mustafa Pasha brought perhaps 100,000 men up the Danube. The emperor Leopold I left the city, whose garrison of about 15,000 under Ernst Rüdiger von Starhemberg held walls that Ottoman sappers mined steadily from trenches driven up to the ditch. By early September the defences were breached in places, the food was gone and dysentery was spreading.\n\nA relief army assembled under a treaty between Leopold and Poland-Lithuania, brokered and part-funded by Pope Innocent XI: Polish, Saxon, Bavarian and imperial contingents, about 70,000 men, with Sobieski in overall command. They came down from the wooded Kahlenberg heights north-west of the city on 12 September and fought their way through the Ottoman flank. The action ended with what is usually described as the largest cavalry charge in history, some 18,000 horse including the Polish winged hussars, and the Ottoman camp was taken. Kara Mustafa was executed at Belgrade on the sultan's orders that December.\n\nA Holy League followed up the victory and took Hungary over the next fifteen years. The Treaty of Karlowitz in 1699 was the first in which the Ottomans ceded substantial territory, and Austria became the dominant power in central Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Vienna).",
+  "body": "Part of [Ottoman wars in Europe](event:ottoman-wars-europe). The grand vizier Kara Mustafa Pasha brought perhaps 100,000 men up the Danube. The emperor Leopold I left the city, whose garrison of about 15,000 under Ernst Rüdiger von Starhemberg held walls that Ottoman sappers mined steadily from trenches driven up to the ditch. By early September the defences were breached in places, the food was gone and dysentery was spreading.\n\nA relief army assembled under a treaty between Leopold and Poland-Lithuania, brokered and part-funded by Pope Innocent XI: Polish, Saxon, Bavarian and imperial contingents, about 70,000 men, with Sobieski in overall command. They came down from the wooded Kahlenberg heights north-west of the city on 12 September and fought their way through the Ottoman flank. The action ended with what is usually described as the largest cavalry charge in history, some 18,000 horse including the Polish winged hussars, and the Ottoman camp was taken. Kara Mustafa was executed at Belgrade on the sultan's orders that December.\n\nA Holy League followed up the victory and took Hungary over the next fifteen years. The Treaty of Karlowitz in 1699 was the first in which the Ottomans ceded substantial territory, and Austria became the dominant power in central Europe.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Vienna).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Vienna"
    }
-  ]
+  ],
+  "end": 1683.69726
  },
  {
   "id": "bach-baroque",
@@ -2408,7 +4977,7 @@
   "end": 1800,
   "lat": 48.86,
   "lng": 2.35,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "culture",
    "science",
@@ -2497,12 +5066,1076 @@
   ]
  },
  {
+  "id": "bank-of-england-founding",
+  "name": "Founding of the Bank of England",
+  "start": 1694.56849,
+  "lat": 51.5142,
+  "lng": -0.0885,
+  "tags": [
+   "economy",
+   "politics"
+  ],
+  "summary": "The Bank of England was chartered on 27 July 1694 to lend 1.2 million pounds to the government, establishing the funded national debt.",
+  "body": "The Bank was set up during the Nine Years' War, when the English government could not borrow enough on the terms available. Subscribers put up 1,200,000 pounds, lent the whole sum to the crown at 8 per cent, and received a charter allowing them to issue notes and take deposits.\n\nThe arrangement made the debt an obligation of parliament rather than of the monarch, which is why lenders accepted it after the [Glorious Revolution](event:glorious-revolution) had made parliament's control of taxation permanent. Interest rates on government borrowing fell over the following decades to about half those paid by France.\n\nThe Bank managed the debt, issued notes that circulated as money in London, and became the model for later central banks. Britain's capacity to borrow, rather than the size of its population or revenue, is the usual explanation for how it sustained the eighteenth century wars against larger states.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Bank_of_England).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Bank_of_England"
+   }
+  ],
+  "priority": 59
+ },
+ {
+  "id": "great-northern-war",
+  "name": "Great Northern War",
+  "start": 1700.14384,
+  "end": 1721.69178,
+  "lat": 57.0,
+  "lng": 25.0,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A war fought from 1700 to 1721 in which a coalition led by Russia, Denmark and Saxony-Poland ended Swedish supremacy in the Baltic. Russia gained Estonia, Livonia and Ingria.",
+  "strong": [
+   "peter-the-great"
+  ],
+  "weak": [
+   "war-spanish-succession"
+  ],
+  "body": "The Great Northern War was fought between 1700 and 1721 between Sweden and a coalition of Russia, Denmark-Norway and Saxony-Poland, later joined by Prussia and Hanover. It decided which state would dominate the Baltic.\n\nThe allies attacked in 1700, expecting an easy war against an eighteen year old king. Charles XII knocked Denmark out in weeks, destroyed a much larger Russian army at [Narva](event:narva) in November, and then spent six years in Poland forcing Augustus II off the throne. [Peter I](event:peter-the-great) used the time to rebuild his army on European lines, take Ingria and found St Petersburg.\n\nCharles invaded Russia in 1708, turned south into Ukraine, lost his supply train at Lesnaya and his army at [Poltava](event:poltava) in July 1709. He spent five years in Ottoman territory while Russia occupied the Baltic provinces and Finland.\n\nCharles was killed besieging Fredriksten in Norway in 1718. The treaty of Nystad in 1721 gave Russia Estonia, Livonia, Ingria and part of Karelia, and Peter took the title of emperor. Sweden's period as a great power was over.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Northern_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Great_Northern_War"
+   }
+  ],
+  "steps": [
+   {
+    "id": "opening",
+    "name": "Three allies against Sweden",
+    "page": "Saxony, Denmark and Russia agreed to partition the Swedish Baltic provinces while Charles XII was fifteen. Augustus II of Saxony and Poland attacked Riga in February 1700 and Denmark invaded Holstein-Gottorp.\n\nCharles answered Denmark first. With an Anglo-Dutch squadron covering the crossing, he landed at Humlebaek near Copenhagen in August, and Denmark left the war by the peace of Travendal on 18 August. He then shipped his army to Livonia.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        18.07,
+        59.5
+       ],
+       "text": "Stockholm",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        37.62,
+        55.9
+       ],
+       "text": "Moscow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.28,
+       "label": "Saxon attack on Riga",
+       "path": [
+        [
+         17.03,
+         51.1
+        ],
+        [
+         21.0,
+         53.5
+        ],
+        [
+         24.11,
+         56.95
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.28,
+       "label": "Swedish landing at Humlebaek",
+       "path": [
+        [
+         18.07,
+         59.33
+        ],
+        [
+         15.0,
+         57.5
+        ],
+        [
+         12.6,
+         56.4
+        ],
+        [
+         12.54,
+         55.96
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.28,
+       "color": "#f5a623",
+       "pos": [
+        10.63,
+        53.92
+       ],
+       "label": "Peace of Travendal, 18 August 1700"
+      }
+     ]
+    },
+    "start": 1700.14384,
+    "end": 1700.62877,
+    "camera": {
+     "lat": 56.2296,
+     "lng": 18.6107,
+     "altitude": 0.4401
+    }
+   },
+   {
+    "id": "narva-step",
+    "name": "Battle of Narva",
+    "child": "narva",
+    "at": 1700.9137
+   },
+   {
+    "id": "poland",
+    "name": "Six years in Poland",
+    "page": "Charles XII turned on Augustus II rather than on Russia. He crossed the Duna in 1701, took Warsaw and Krakow in 1702, beat the Saxon and Polish army at Kliszow on 19 July 1702 and at Pultusk in 1703, and had Stanislaw Leszczynski elected king in 1704.\n\nThe war was finished by an invasion of Saxony itself: at Altranstadt in September 1706 Augustus renounced the Polish crown and his alliance with Russia. The six years bought Peter I the time in which he rebuilt his army, took Ingria and founded [St Petersburg](event:st-petersburg-founded) in 1703.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        18.07,
+        59.5
+       ],
+       "text": "Stockholm",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        37.62,
+        55.9
+       ],
+       "text": "Moscow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.26,
+       "label": "Charles XII into Poland and Saxony",
+       "path": [
+        [
+         24.11,
+         56.95
+        ],
+        [
+         23.0,
+         54.5
+        ],
+        [
+         21.01,
+         52.23
+        ],
+        [
+         19.94,
+         50.06
+        ],
+        [
+         15.0,
+         51.2
+        ],
+        [
+         12.37,
+         51.34
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.26,
+       "color": "#f5a623",
+       "pos": [
+        20.6,
+        50.55
+       ],
+       "label": "Kliszow, 19 July 1702"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.26,
+       "color": "#f5a623",
+       "pos": [
+        12.2,
+        51.33
+       ],
+       "label": "Altranstadt, 24 September 1706"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.26,
+       "color": "#f5a623",
+       "pos": [
+        30.3141,
+        59.9386
+       ],
+       "label": "St Petersburg founded, 1703"
+      }
+     ]
+    },
+    "start": 1702.54658,
+    "end": 1706.73014,
+    "camera": {
+     "lat": 54.164,
+     "lng": 20.9491,
+     "altitude": 0.4051
+    }
+   },
+   {
+    "id": "russia",
+    "name": "The march into Russia",
+    "page": "Charles XII left Saxony at the end of 1707 with about 44,000 men, crossed the Vistula and the Berezina, and beat the Russians at Holowczyn on 14 July 1708. The Russian army fell back, burning the country and the stores in front of him.\n\nInstead of marching on Moscow he turned south into Ukraine, expecting supplies and the support of the hetman Ivan Mazepa. The supply column and reinforcement coming from Riga under Lewenhaupt was destroyed at Lesnaya on 9 October, and the winter of 1708 to 1709 was the coldest in living memory.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        18.07,
+        59.5
+       ],
+       "text": "Stockholm",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        37.62,
+        55.9
+       ],
+       "text": "Moscow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.26,
+       "label": "Charles XII, 1708",
+       "path": [
+        [
+         17.0,
+         52.6
+        ],
+        [
+         23.0,
+         53.2
+        ],
+        [
+         28.0,
+         54.2
+        ],
+        [
+         30.33,
+         53.9
+        ],
+        [
+         32.0,
+         52.5
+        ],
+        [
+         34.55,
+         49.8
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.22,
+       "label": "Lewenhaupt from Riga",
+       "path": [
+        [
+         24.11,
+         56.95
+        ],
+        [
+         27.5,
+         55.5
+        ],
+        [
+         31.1,
+         53.42
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.26,
+       "color": "#f5a623",
+       "pos": [
+        29.9,
+        54.26
+       ],
+       "label": "Holowczyn, 14 July 1708"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.26,
+       "color": "#f5a623",
+       "pos": [
+        31.1,
+        53.42
+       ],
+       "label": "Lesnaya, 9 October 1708"
+      }
+     ]
+    },
+    "start": 1708.53415,
+    "end": 1708.77186,
+    "camera": {
+     "lat": 54.3798,
+     "lng": 28.1517,
+     "altitude": 0.318
+    }
+   },
+   {
+    "id": "poltava-step",
+    "name": "Battle of Poltava",
+    "child": "poltava",
+    "at": 1709.51644
+   },
+   {
+    "id": "baltic",
+    "name": "Russia takes the Baltic",
+    "page": "With the Swedish field army gone, Peter I took Riga, Reval and Vyborg in 1710 and moved into Finland in 1713. On 7 August 1714 the Russian galley fleet beat a Swedish squadron off Hango in the first significant Russian naval victory.\n\nCharles XII, meanwhile, spent five years in Ottoman territory at Bender, where he pressed the sultan into a war with Russia; Peter was surrounded on the Prut in 1711 and bought his way out by returning Azov. Charles rode back to Swedish Pomerania in 1714.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        18.07,
+        59.5
+       ],
+       "text": "Stockholm",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        37.62,
+        55.9
+       ],
+       "text": "Moscow",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.26,
+       "label": "Russian advance in the Baltic",
+       "path": [
+        [
+         30.31,
+         59.94
+        ],
+        [
+         28.19,
+         59.38
+        ],
+        [
+         24.75,
+         59.44
+        ],
+        [
+         24.11,
+         56.95
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.24,
+       "label": "Into Finland, 1713 to 1714",
+       "path": [
+        [
+         30.31,
+         59.94
+        ],
+        [
+         27.0,
+         60.4
+        ],
+        [
+         24.0,
+         60.3
+        ],
+        [
+         22.97,
+         59.82
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.26,
+       "color": "#f5a623",
+       "pos": [
+        22.97,
+        59.82
+       ],
+       "label": "Gangut, 7 August 1714"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.26,
+       "color": "#f5a623",
+       "pos": [
+        29.48,
+        46.83
+       ],
+       "label": "Charles XII at Bender, 1709 to 1714"
+      }
+     ]
+    },
+    "start": 1710.53562,
+    "end": 1714.59863,
+    "camera": {
+     "lat": 58.2822,
+     "lng": 26.8043,
+     "altitude": 0.4777
+    }
+   },
+   {
+    "id": "nystad",
+    "name": "Fredriksten and Nystad",
+    "page": "Charles XII returned to a country stripped of men and money, and invaded Norway twice. He was shot dead in the trenches before Fredriksten on 30 November 1718; whether the shot came from the fortress has been argued over ever since.\n\nSweden made peace with Hanover, Prussia and Denmark in 1719 and 1720, and with Russia at Nystad on 10 September 1721, giving up Livonia, Estonia, Ingria and part of Karelia. Peter took the title of emperor the same year. Sweden's period as a great power ended; Russia's began.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        18.07,
+        59.5
+       ],
+       "text": "Stockholm",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        37.62,
+        55.9
+       ],
+       "text": "Moscow",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.3,
+       "color": "#f5a623",
+       "pos": [
+        11.39,
+        59.12
+       ],
+       "label": "Charles XII killed, 30 November 1718"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.3,
+       "color": "#f5a623",
+       "pos": [
+        21.41,
+        60.8
+       ],
+       "label": "Treaty of Nystad, 10 September 1721"
+      },
+      {
+       "type": "frontline",
+       "color": "#4c8dff",
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "Russian gains, 1721",
+       "paths": [
+        [
+         [
+          21.8,
+          57.6
+         ],
+         [
+          24.11,
+          56.95
+         ],
+         [
+          26.5,
+          57.8
+         ],
+         [
+          28.19,
+          59.38
+         ],
+         [
+          30.31,
+          59.94
+         ],
+         [
+          31.5,
+          61.0
+         ]
+        ]
+       ]
+      }
+     ]
+    },
+    "start": 1718.9137,
+    "end": 1721.69178,
+    "camera": {
+     "lat": 58.9943,
+     "lng": 25.1682,
+     "altitude": 0.3126
+    }
+   }
+  ],
+  "priority": 73
+ },
+ {
+  "id": "narva",
+  "name": "Battle of Narva",
+  "start": 1700.9137,
+  "lat": 59.3797,
+  "lng": 28.1917,
+  "parent": "great-northern-war",
+  "tags": [
+   "war"
+  ],
+  "summary": "A Swedish army of about 10,000 under Charles XII routed a Russian force several times its size besieging Narva on 30 November 1700.",
+  "body": "Part of [Great Northern War](event:great-northern-war). Peter I had invested Narva in Swedish Ingria with an army usually given as around 35,000 men, spread along nearly seven kilometres of siege lines. Charles XII landed in Pernau and marched to relieve the place with about 10,000.\n\nHe attacked on the afternoon of 30 November during a snowstorm that blew into the Russian faces and hid the approach. The Swedish columns broke through the lines in two places within a quarter of an hour and rolled them up. The Russian foreign officers surrendered; a bridge collapsed under the retreat; the guns were lost.\n\nCharles concluded that Russia was beaten and turned against Poland. Peter rebuilt his army, casting new guns from church bells, and took the coast of the Gulf of Finland within three years. Narva itself fell to him in 1704.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Narva_(1700)).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Narva_(1700)"
+   }
+  ],
+  "priority": 56
+ },
+ {
+  "id": "ashanti-empire",
+  "name": "Ashanti Empire",
+  "start": 1701,
+  "end": 1901.15,
+  "lat": 6.7,
+  "lng": -1.63,
+  "tags": [
+   "politics",
+   "economy",
+   "war"
+  ],
+  "summary": "An Akan state in what is now Ghana, founded about 1701 around Kumasi, which controlled the gold and kola trade of the forest zone and fought Britain in a series of wars.",
+  "weak": [
+   "slave-trade",
+   "scramble-africa"
+  ],
+  "body": "The Ashanti state was formed about 1701 when Osei Tutu united the Akan chiefdoms of the forest around Kumasi and defeated Denkyira, which had held the region tributary. Its symbol of unity was the Golden Stool, said to have been called down by the priest Okomfo Anokye, which no one sat on and which represented the nation rather than a king.\n\nThe empire lived on gold, kola nuts and the trade in captives to the coast, exchanged for firearms and manufactured goods. It ran a road network out of Kumasi, a standing bureaucracy with appointed rather than hereditary officials in key posts, and an army raised by levy on the provinces.\n\nBritain abolished its slave trade in 1807 and the two powers then competed over the coastal states. Four Anglo-Ashanti wars were fought between 1824 and 1900; Kumasi was occupied and burned in 1874, the asantehene was deported in 1896, and after the rising of 1900, in which Yaa Asantewaa led the defence of the Golden Stool, the territory was annexed in 1902.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Ashanti_Empire).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Ashanti_Empire"
+   }
+  ],
+  "priority": 56
+ },
+ {
+  "id": "war-spanish-succession",
+  "name": "War of the Spanish Succession",
+  "start": 1701.68356,
+  "end": 1714.17671,
+  "lat": 49.0,
+  "lng": 5.0,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A European war fought from 1701 to 1714 over the succession to the Spanish monarchy. Philip V kept Spain and its American empire; Britain and Austria took the territory and the trade concessions settled at Utrecht.",
+  "weak": [
+   "seven-years-war",
+   "glorious-revolution"
+  ],
+  "body": "Charles II of Spain died in 1700 without an heir, leaving the Spanish monarchy, which included the Netherlands, Milan, Naples, Sicily and the Americas, to Philip of Anjou, a grandson of Louis XIV. The other powers had spent a decade negotiating partition treaties to avoid exactly this, and the union of the French and Spanish crowns was not acceptable to them.\n\nEngland, the Dutch republic and the Emperor formed the Grand Alliance and fought in the Low Countries, on the Danube, in Italy and in Spain. The allied commanders, the duke of Marlborough and Prince Eugene of Savoy, won at [Blenheim](event:blenheim) in 1704, Ramillies in 1706, Oudenarde in 1708 and Malplaquet in 1709.\n\nIn Spain itself the Bourbon claimant held Castile and won at Almansa in 1707. When the Emperor Joseph I died in 1711 and his brother Charles, the allied candidate for Spain, inherited Austria, Britain lost interest in the original aim and opened separate talks.\n\nThe treaties of Utrecht in 1713 and Rastatt in 1714 confirmed Philip V in Spain on condition that the two crowns stayed separate, gave Britain Gibraltar, Minorca and the asiento, and transferred the Spanish possessions in Italy and the Netherlands to Austria.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/War_of_the_Spanish_Succession).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/War_of_the_Spanish_Succession"
+   }
+  ],
+  "steps": [
+   {
+    "id": "outbreak",
+    "name": "The alliance and the outbreak",
+    "page": "Charles II of Spain died childless in November 1700, leaving the whole monarchy by will to Philip of Anjou, grandson of Louis XIV. Louis accepted the will rather than the partition treaties he had signed, sent French troops into the Spanish Netherlands, and registered Philip's continuing rights to the French succession.\n\nEngland, the Dutch republic and the Emperor renewed the Grand Alliance in September 1701 and declared war in May 1702. The fighting ran in four theatres: the Low Countries, the upper Rhine and Danube, Italy, and Spain.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        4.35,
+        50.95
+       ],
+       "text": "The Low Countries",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        10.0,
+        48.6
+       ],
+       "text": "The Danube",
+       "size": "sm"
+      },
+      {
+       "type": "frontline",
+       "color": "#4c8dff",
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "The barrier fortresses, 1701",
+       "paths": [
+        [
+         [
+          2.3,
+          51.05
+         ],
+         [
+          3.22,
+          50.83
+         ],
+         [
+          4.35,
+          50.85
+         ],
+         [
+          5.55,
+          50.63
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        -3.7038,
+        40.4168
+       ],
+       "label": "Philip V in Madrid, 1701"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        16.3738,
+        48.2082
+       ],
+       "label": "The Emperor at Vienna"
+      }
+     ]
+    },
+    "start": 1701.68356,
+    "end": 1702.36849,
+    "camera": {
+     "lat": 49.0836,
+     "lng": 5.18,
+     "altitude": 0.4447
+    }
+   },
+   {
+    "id": "blenheim-step",
+    "name": "Battle of Blenheim",
+    "child": "blenheim",
+    "at": 1704.61612
+   },
+   {
+    "id": "ramillies-turin",
+    "name": "Ramillies and Turin",
+    "page": "An Anglo-Dutch force took Gibraltar in August 1704 and it was held against a siege the following year. In 1706 the allies won in two theatres in one summer.\n\nMarlborough broke the French army at Ramillies on 23 May and took Brussels, Antwerp, Ghent and Bruges within weeks, so that most of the Spanish Netherlands changed hands in a single campaign. On 7 September Prince Eugene and the duke of Savoy relieved Turin, and the French withdrew from northern Italy.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        4.35,
+        50.95
+       ],
+       "text": "The Low Countries",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        10.0,
+        48.6
+       ],
+       "text": "The Danube",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.18,
+       "label": "Marlborough in Brabant",
+       "path": [
+        [
+         5.55,
+         50.63
+        ],
+        [
+         5.1,
+         50.68
+        ],
+        [
+         4.91,
+         50.64
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.18,
+       "color": "#f5a623",
+       "pos": [
+        4.91,
+        50.635
+       ],
+       "label": "Ramillies, 23 May 1706"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.18,
+       "label": "Eugene into Piedmont",
+       "path": [
+        [
+         11.0,
+         45.6
+        ],
+        [
+         9.2,
+         45.3
+        ],
+        [
+         7.69,
+         45.07
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.18,
+       "color": "#f5a623",
+       "pos": [
+        7.6869,
+        45.0703
+       ],
+       "label": "Turin relieved, 7 September 1706"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.18,
+       "color": "#f5a623",
+       "pos": [
+        -5.3536,
+        36.1408
+       ],
+       "label": "Gibraltar taken, August 1704"
+      }
+     ]
+    },
+    "start": 1706.39041,
+    "end": 1706.68356,
+    "camera": {
+     "lat": 47.3016,
+     "lng": 5.7826,
+     "altitude": 0.5643
+    }
+   },
+   {
+    "id": "spain",
+    "name": "The war in Spain",
+    "page": "The allies backed the Habsburg claimant, Charles, and landed in Portugal and Catalonia. Barcelona was taken in 1705 and Madrid was occupied twice, in 1706 and 1710, and given up each time because Castile supported Philip V.\n\nA Bourbon army under the duke of Berwick destroyed the allied field army at Almansa on 25 April 1707, and the defeats at Brihuega and Villaviciosa in December 1710 ended the allied position outside Catalonia. When the Emperor Joseph died in 1711 and Charles inherited Austria, the war aim of putting him on the Spanish throne lost its point in London.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.2,
+       "label": "Allied advance from Portugal",
+       "path": [
+        [
+         -8.6,
+         38.7
+        ],
+        [
+         -6.3,
+         39.3
+        ],
+        [
+         -3.7,
+         40.42
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#eaf1fb",
+       "width": 0.2,
+       "label": "Bourbon counter-offensive",
+       "path": [
+        [
+         -3.7,
+         40.2
+        ],
+        [
+         -2.2,
+         39.3
+        ],
+        [
+         -1.1,
+         38.87
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        -1.098,
+        38.869
+       ],
+       "label": "Almansa, 25 April 1707"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        -3.02,
+        40.43
+       ],
+       "label": "Villaviciosa, 10 December 1710"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        2.1734,
+        41.3851
+       ],
+       "label": "Barcelona, held for Charles to 1714"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -3.7,
+        41.4
+       ],
+       "text": "Spain",
+       "size": "md"
+      }
+     ]
+    },
+    "start": 1707.3137,
+    "end": 1710.9411,
+    "camera": {
+     "lat": 39.921,
+     "lng": -3.1395,
+     "altitude": 0.1898
+    }
+   },
+   {
+    "id": "oudenarde",
+    "name": "Oudenarde, Lille and Malplaquet",
+    "page": "A French offensive in Flanders retook Ghent and Bruges in 1708 and was beaten at Oudenarde on 11 July in a meeting engagement fought as the armies arrived. The allies then besieged Lille, the strongest fortress of Vauban's belt, and took the town in October and the citadel in December.\n\nFrance was by then in a subsistence crisis after the winter of 1709 and offered terms which the allies raised beyond what Louis XIV would grant. The campaign of 1709 ended at Malplaquet on 11 September, an allied victory with about 20,000 casualties among the winners, the heaviest of the war.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        4.35,
+        50.95
+       ],
+       "text": "The Low Countries",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        10.0,
+        48.6
+       ],
+       "text": "The Danube",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.14,
+       "label": "Allied march to Oudenarde",
+       "path": [
+        [
+         4.35,
+         50.9
+        ],
+        [
+         4.0,
+         50.9
+        ],
+        [
+         3.6,
+         50.85
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.14,
+       "color": "#f5a623",
+       "pos": [
+        3.6,
+        50.85
+       ],
+       "label": "Oudenarde, 11 July 1708"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.14,
+       "color": "#f5a623",
+       "pos": [
+        3.0573,
+        50.6292
+       ],
+       "label": "Lille taken, December 1708"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.14,
+       "color": "#f5a623",
+       "pos": [
+        3.842,
+        50.305
+       ],
+       "label": "Malplaquet, 11 September 1709"
+      }
+     ]
+    },
+    "start": 1708.52596,
+    "end": 1709.69452,
+    "camera": {
+     "lat": 50.5172,
+     "lng": 4.6289,
+     "altitude": 0.172
+    }
+   },
+   {
+    "id": "utrecht",
+    "name": "Denain and Utrecht",
+    "page": "A change of ministry in London in 1710 turned British policy towards peace, and in 1712 the British contingent was withdrawn from the allied army in the field. Villars caught the Dutch and Austrian force at Denain on 24 July 1712 and beat it, then retook the fortresses lost since 1708.\n\nThe treaties signed at Utrecht on 11 April 1713 left Philip V king of Spain and the Indies on condition that the crowns of France and Spain were never united. Britain took Gibraltar, Minorca, Newfoundland, Acadia and the asiento contract for supplying slaves to Spanish America; Austria took the Spanish Netherlands, Milan, Naples and Sardinia. The Emperor made his own peace at Rastatt in 1714.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        4.35,
+        50.95
+       ],
+       "text": "The Low Countries",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        3.39,
+        50.33
+       ],
+       "label": "Denain, 24 July 1712"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        5.1214,
+        52.0907
+       ],
+       "label": "Treaties of Utrecht, 11 April 1713"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        8.205,
+        48.858
+       ],
+       "label": "Treaty of Rastatt, March 1714"
+      }
+     ]
+    },
+    "start": 1712.56148,
+    "end": 1714.17671,
+    "camera": {
+     "lat": 50.5715,
+     "lng": 5.2934,
+     "altitude": 0.111
+    }
+   }
+  ],
+  "priority": 70
+ },
+ {
   "id": "st-petersburg-founded",
   "name": "Founding of St. Petersburg",
   "start": 1703,
   "lat": 59.95,
   "lng": 30.3167,
-  "priority": 58,
+  "priority": 59,
   "tags": [
    "politics"
   ],
@@ -2515,6 +6148,26 @@
     "url": "https://en.wikipedia.org/wiki/Saint_Petersburg"
    }
   ]
+ },
+ {
+  "id": "blenheim",
+  "name": "Battle of Blenheim",
+  "start": 1704.61612,
+  "lat": 48.635,
+  "lng": 10.63,
+  "parent": "war-spanish-succession",
+  "tags": [
+   "war"
+  ],
+  "summary": "Marlborough and Eugene destroyed a Franco-Bavarian army on the Danube on 13 August 1704, ending the threat to Vienna and the run of French victories.",
+  "body": "Part of [War of the Spanish Succession](event:war-spanish-succession). A French and Bavarian army was within reach of Vienna in 1704 and the Emperor was also facing a rising in Hungary. Marlborough marched his army about 400 kilometres from the Low Countries to the Danube in five weeks, keeping the destination hidden from friend and enemy, and joined Prince Eugene.\n\nThe armies met near the village of Blindheim on 13 August. Marlborough pinned the French wings, one of them packed into the village itself, and broke through the weakened centre with cavalry in the late afternoon. The French commander Tallard was captured. Franco-Bavarian losses were about 30,000 killed, wounded and taken.\n\nBavaria left the war and Vienna was safe. The battle ended the reputation of invincibility the French army had held since the 1640s, and Queen Anne gave Marlborough the manor of Woodstock, where Blenheim Palace was built.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Blenheim).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Blenheim"
+   }
+  ],
+  "priority": 62
  },
  {
   "id": "act-of-union-1707",
@@ -2539,6 +6192,50 @@
   ]
  },
  {
+  "id": "poltava",
+  "name": "Battle of Poltava",
+  "start": 1709.51644,
+  "lat": 49.5883,
+  "lng": 34.5514,
+  "parent": "great-northern-war",
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Peter I destroyed the Swedish field army under Charles XII at Poltava in Ukraine on 8 July 1709. It is the usual marker for the end of Swedish and the beginning of Russian predominance in northern Europe.",
+  "body": "Part of [Great Northern War](event:great-northern-war). Charles XII had wintered in Ukraine with an army reduced by cold, hunger and the loss of the Lewenhaupt supply column at Lesnaya. In May 1709 he laid siege to Poltava on the Vorskla, and in June he was wounded in the foot and could not take the field in person.\n\nPeter I came up with about 45,000 men and built a line of redoubts across the approach. The Swedish attack on the morning of 8 July, with roughly 20,000 men and almost no artillery ammunition, broke up among the redoubts, and the second phase was fought against an army twice its size in the open. The survivors surrendered at Perevolochna three days later.\n\nCharles escaped with Mazepa into Ottoman territory and spent five years at Bender. Denmark and Saxony rejoined the war, Russia took the Baltic provinces, and the balance in northern Europe did not change back.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Poltava).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Poltava"
+   }
+  ],
+  "priority": 64
+ },
+ {
+  "id": "south-sea-bubble",
+  "name": "South Sea Bubble",
+  "start": 1720.05,
+  "end": 1720.75,
+  "lat": 51.5138,
+  "lng": -0.0876,
+  "tags": [
+   "economy"
+  ],
+  "summary": "A speculative rise and collapse in the shares of the South Sea Company in London in 1720, following a scheme to exchange the company's stock for government debt.",
+  "weak": [
+   "bank-of-england-founding"
+  ],
+  "body": "The South Sea Company was founded in 1711 to trade with Spanish America and, more importantly, to take over part of the British national debt in exchange for shares and an annuity from the government. Its trading rights, obtained at [Utrecht](event:war-spanish-succession) in 1713, amounted to one ship a year and the asiento contract for supplying slaves.\n\nIn 1720 the company agreed to convert most of the remaining national debt. The higher its share price, the less stock it had to give holders of debt, so the directors lent money to buyers of their own shares and spread favourable reports. The price rose from about 100 pounds in January to about 1,000 in August and fell back to roughly its starting level by December.\n\nA parliamentary inquiry found bribes paid to ministers and to members of the royal household. Robert Walpole managed the settlement and emerged as the leading minister. The Bubble Act of 1720, which restricted the formation of joint-stock companies without a charter, remained in force until 1825.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/South_Sea_Bubble).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/South_Sea_Company"
+   }
+  ],
+  "priority": 56
+ },
+ {
   "id": "yongzheng-reforms",
   "name": "Yongzheng Emperor's Qing reforms",
   "start": 1722,
@@ -2559,6 +6256,28 @@
     "url": "https://en.wikipedia.org/wiki/Yongzheng_Emperor"
    }
   ]
+ },
+ {
+  "id": "qianlong-emperor",
+  "name": "Qianlong Emperor",
+  "start": 1735.75,
+  "end": 1796.11,
+  "lat": 39.92,
+  "lng": 116.39,
+  "parent": "qing-dynasty",
+  "tags": [
+   "politics",
+   "culture"
+  ],
+  "summary": "The Qianlong Emperor reigned from 1735 to 1796 over the Qing at its greatest extent, conquered Dzungaria and Xinjiang, and commissioned the Siku Quanshu literary collection.",
+  "body": "Part of [Qing dynasty](event:qing-dynasty). Qianlong, grandson of the [Kangxi Emperor](event:kangxi-emperor), reigned from 1735 to 1796 and then abdicated in order not to rule longer than his grandfather, keeping power until his death in 1799.\n\nHis campaigns, presented later as the Ten Great Campaigns, doubled the territory of the empire. The Dzungar khanate in the north west was destroyed between 1755 and 1758; the region was renamed Xinjiang and settled. Modern historians describe the destruction of the Dzungars, in which a large part of the population died in the fighting and in the smallpox that followed, as a genocide.\n\nThe reign was also a peak of population growth, of trade through Canton, and of state-sponsored scholarship. The Siku Quanshu, compiled from 1772, collected some 3,500 works and in the process censored or destroyed many others. In 1793 the Macartney embassy from Britain was received and its requests for open trade refused.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Qianlong_Emperor).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Qianlong_Emperor"
+   }
+  ],
+  "priority": 77
  },
  {
   "id": "hume-philosophy",
@@ -2611,6 +6330,31 @@
     "url": "https://en.wikipedia.org/wiki/Enlightened_absolutism"
    }
   ]
+ },
+ {
+  "id": "war-austrian-succession",
+  "name": "War of the Austrian Succession",
+  "start": 1740.95765,
+  "end": 1748.79645,
+  "lat": 50.75,
+  "lng": 15.73,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A European war of 1740 to 1748 that began when Frederick II of Prussia invaded Silesia after Maria Theresa inherited the Habsburg lands. Prussia kept Silesia at the peace of Aix-la-Chapelle.",
+  "weak": [
+   "seven-years-war",
+   "enlightened-despotism"
+  ],
+  "body": "Charles VI spent his reign persuading the European powers to accept the Pragmatic Sanction, which allowed his daughter Maria Theresa to inherit the Habsburg lands. He died in October 1740, and in December Frederick II of Prussia invaded Silesia, the richest Habsburg province, without a declaration of war.\n\nFrance, Bavaria, Saxony and Spain joined against Austria, which was supported by Britain, Hanover and the Dutch republic. The elector of Bavaria was elected emperor in 1742, the first non-Habsburg in three centuries. Maria Theresa held the monarchy together by an appeal to the Hungarian diet and by keeping the army in the field.\n\nFighting spread to Italy, the Austrian Netherlands, where Marshal Saxe won at Fontenoy in 1745, and to North America and India, where it is known as King George's War and the First Carnatic War. A Jacobite rising in Britain in 1745 was part of the same conflict.\n\nThe peace of Aix-la-Chapelle in 1748 restored most conquests and left Prussia with Silesia. Austria's attempt to recover it produced the [Seven Years' War](event:seven-years-war) eight years later.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/War_of_the_Austrian_Succession).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/War_of_the_Austrian_Succession"
+   }
+  ],
+  "priority": 64
  },
  {
   "id": "montesquieu-spirit",
@@ -2736,7 +6480,7 @@
   "end": 1763.12466,
   "lat": 50.0,
   "lng": 14.0,
-  "priority": 69,
+  "priority": 70,
   "tags": [
    "war"
   ],
@@ -2757,7 +6501,80 @@
     "name": "Minorca and the invasion of Saxony",
     "start": 1756.38388,
     "end": 1756.78825,
-    "page": "France opened the European war by taking Minorca in May 1756; the British admiral who failed to relieve it, John Byng, was court-martialled and shot on his own quarterdeck.\n\nFrederick II struck first on land, marching into neutral Saxony in August, forcing the Saxon army to capitulate in October and pressing its soldiers into his own. The invasion gave his enemies a casus belli and gave him a base and a treasury."
+    "page": "France opened the European war by taking Minorca in May 1756; the British admiral who failed to relieve it, John Byng, was court-martialled and shot on his own quarterdeck.\n\nFrederick II struck first on land, marching into neutral Saxony in August, forcing the Saxon army to capitulate in October and pressing its soldiers into his own. The invasion gave his enemies a casus belli and gave him a base and a treasury.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.24,
+       "label": "Frederick II into Saxony, August 1756",
+       "path": [
+        [
+         13.4,
+         52.52
+        ],
+        [
+         13.6,
+         51.6
+        ],
+        [
+         13.74,
+         51.05
+        ],
+        [
+         14.0,
+         50.6
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        13.7373,
+        51.0504
+       ],
+       "label": "Dresden occupied, 9 September 1756"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        14.07,
+        50.83
+       ],
+       "label": "Lobositz, 1 October 1756"
+      },
+      {
+       "type": "label",
+       "pos": [
+        13.4,
+        52.7
+       ],
+       "text": "Prussia",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.44,
+        50.0
+       ],
+       "text": "Bohemia",
+       "size": "sm"
+      }
+     ]
+    },
+    "camera": {
+     "lat": 51.2943,
+     "lng": 13.8043,
+     "altitude": 0.0626
+    }
    },
    {
     "id": "plassey",
@@ -2770,7 +6587,111 @@
     "name": "Rossbach and Leuthen",
     "start": 1757.84521,
     "end": 1757.9274,
-    "page": "1757 nearly finished Prussia: Frederick was beaten at Kolín and invaded from three directions. Then in five weeks he destroyed a Franco-imperial army at Rossbach in November, marching his infantry across the enemy front, and an Austrian army twice his size at Leuthen in December.\n\nLeuthen was fought by an oblique advance against one flank on ground he had drilled on in peacetime. The two victories kept Prussia in the war and made his military reputation across Europe."
+    "page": "1757 nearly finished Prussia: Frederick was beaten at Kolín and invaded from three directions. Then in five weeks he destroyed a Franco-imperial army at Rossbach in November, marching his infantry across the enemy front, and an Austrian army twice his size at Leuthen in December.\n\nLeuthen was fought by an oblique advance against one flank on ground he had drilled on in peacetime. The two victories kept Prussia in the war and made his military reputation across Europe.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.2,
+       "label": "Frederick to Rossbach",
+       "path": [
+        [
+         13.74,
+         51.05
+        ],
+        [
+         12.6,
+         51.2
+        ],
+        [
+         11.88,
+         51.27
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#eaf1fb",
+       "width": 0.2,
+       "label": "Franco-imperial army",
+       "path": [
+        [
+         10.4,
+         51.3
+        ],
+        [
+         11.2,
+         51.28
+        ],
+        [
+         11.8,
+         51.27
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        11.88,
+        51.27
+       ],
+       "label": "Rossbach, 5 November 1757"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.2,
+       "label": "The march into Silesia",
+       "path": [
+        [
+         11.88,
+         51.27
+        ],
+        [
+         14.0,
+         51.2
+        ],
+        [
+         16.2,
+         51.15
+        ],
+        [
+         16.8,
+         51.13
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.2,
+       "color": "#f5a623",
+       "pos": [
+        16.8,
+        51.13
+       ],
+       "label": "Leuthen, 5 December 1757"
+      },
+      {
+       "type": "label",
+       "pos": [
+        16.5,
+        50.8
+       ],
+       "text": "Silesia",
+       "size": "sm"
+      }
+     ]
+    },
+    "camera": {
+     "lat": 51.1997,
+     "lng": 13.5183,
+     "altitude": 0.09
+    }
    },
    {
     "id": "annus-mirabilis",
@@ -2784,7 +6705,80 @@
     "name": "Prussia's crisis and the Russian withdrawal",
     "start": 1760,
     "end": 1762.3411,
-    "page": "By 1761 Frederick had lost Silesian fortresses, Russian and Austrian armies had burned Berlin, his best troops were dead and Britain had stopped his subsidy. He carried poison and expected the end.\n\nThe Empress Elizabeth died in January 1762 and was succeeded by Peter III, an admirer who at once made peace and returned every conquest, the reversal Prussian historians called the miracle of the House of Brandenburg."
+    "page": "By 1761 Frederick had lost Silesian fortresses, Russian and Austrian armies had burned Berlin, his best troops were dead and Britain had stopped his subsidy. He carried poison and expected the end.\n\nThe Empress Elizabeth died in January 1762 and was succeeded by Peter III, an admirer who at once made peace and returned every conquest, the reversal Prussian historians called the miracle of the House of Brandenburg.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "Austrian and Russian pressure, 1759 to 1761",
+       "paths": [
+        [
+         [
+          12.0,
+          50.6
+         ],
+         [
+          14.6,
+          50.9
+         ],
+         [
+          16.8,
+          51.2
+         ],
+         [
+          18.0,
+          52.2
+         ],
+         [
+          17.0,
+          53.4
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        14.65,
+        52.34
+       ],
+       "label": "Kunersdorf, 12 August 1759"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        13.0,
+        51.56
+       ],
+       "label": "Torgau, 3 November 1760"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        13.405,
+        52.52
+       ],
+       "label": "Berlin raided, October 1760"
+      }
+     ]
+    },
+    "camera": {
+     "lat": 51.857,
+     "lng": 14.9139,
+     "altitude": 0.0968
+    }
    },
    {
     "id": "havana-manila",
@@ -2798,7 +6792,65 @@
     "name": "The Peace of Paris and Hubertusburg",
     "start": 1763.11096,
     "end": 1763.12466,
-    "page": "By the Treaty of Paris on 10 February 1763 France ceded Canada and its territory east of the Mississippi to Britain, kept its sugar islands and its fishing rights, and abandoned political ambitions in India. Spain gave up Florida and received Louisiana from France.\n\nFive days later the Treaty of Hubertusburg restored the German boundaries exactly as they had been: Prussia kept Silesia and no territory changed hands, after eight years of war."
+    "page": "By the Treaty of Paris on 10 February 1763 France ceded Canada and its territory east of the Mississippi to Britain, kept its sugar islands and its fishing rights, and abandoned political ambitions in India. Spain gave up Florida and received Louisiana from France.\n\nFive days later the Treaty of Hubertusburg restored the German boundaries exactly as they had been: Prussia kept Silesia and no territory changed hands, after eight years of war.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        12.95,
+        51.32
+       ],
+       "label": "Treaty of Hubertusburg, 15 February 1763"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.22,
+       "color": "#f5a623",
+       "pos": [
+        2.3522,
+        48.8566
+       ],
+       "label": "Peace of Paris, 10 February 1763"
+      },
+      {
+       "type": "frontline",
+       "color": "#4c8dff",
+       "dash": "solid",
+       "width": 2.6,
+       "label": "The German borders, restored",
+       "paths": [
+        [
+         [
+          12.0,
+          50.6
+         ],
+         [
+          14.6,
+          50.9
+         ],
+         [
+          16.8,
+          51.2
+         ],
+         [
+          18.0,
+          52.2
+         ]
+        ]
+       ]
+      }
+     ]
+    },
+    "camera": {
+     "lat": 50.9598,
+     "lng": 12.6866,
+     "altitude": 0.2966
+    }
    }
   ]
  },
@@ -2808,13 +6860,13 @@
   "start": 1757,
   "lat": 23.8,
   "lng": 88.25,
-  "priority": 69,
+  "priority": 70,
   "tags": [
    "war",
    "politics"
   ],
   "summary": "On 23 June 1757 an East India Company force under Robert Clive defeated Siraj ud-Daulah, Nawab of Bengal, at Plassey north of Calcutta. The battle put Bengal under Company control and began British territorial rule in India.",
-  "body": "The quarrel began when the young nawab took Calcutta in 1756, an episode remembered in Britain for the deaths of prisoners held overnight in the so-called Black Hole. Clive retook the city with a force from Madras. What followed was less a battle than the execution of a conspiracy: Clive, the Bengali banking house of Jagat Seth and other merchants had already agreed with Mir Jafar, the nawab's own commander, that he would hold back and be made nawab in his place.\n\nClive had about 3,000 men, two-thirds of them Indian sepoys, against perhaps 50,000. An afternoon rainstorm soaked the nawab's powder while the Company's guns, covered with tarpaulins, went on firing; Mir Jafar's large contingent never engaged. The fighting lasted a few hours and cost the Company around twenty dead. Siraj ud-Daulah fled and was killed days later.\n\nMir Jafar paid for his throne with enormous sums to the Company and to its officers individually; Clive took a personal fortune and was questioned about it in Parliament years afterwards. Victory at Buxar in 1764 confirmed the position, and in 1765 the Company obtained the *diwani*, the right to collect Bengal's revenue. From then the [Company](event:english-east-india) governed as well as traded.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Plassey).",
+  "body": "Part of [Seven Years' War](event:seven-years-war). The quarrel began when the young nawab took Calcutta in 1756, an episode remembered in Britain for the deaths of prisoners held overnight in the so-called Black Hole. Clive retook the city with a force from Madras. What followed was less a battle than the execution of a conspiracy: Clive, the Bengali banking house of Jagat Seth and other merchants had already agreed with Mir Jafar, the nawab's own commander, that he would hold back and be made nawab in his place.\n\nClive had about 3,000 men, two-thirds of them Indian sepoys, against perhaps 50,000. An afternoon rainstorm soaked the nawab's powder while the Company's guns, covered with tarpaulins, went on firing; Mir Jafar's large contingent never engaged. The fighting lasted a few hours and cost the Company around twenty dead. Siraj ud-Daulah fled and was killed days later.\n\nMir Jafar paid for his throne with enormous sums to the Company and to its officers individually; Clive took a personal fortune and was questioned about it in Parliament years afterwards. Victory at Buxar in 1764 confirmed the position, and in 1765 the Company obtained the *diwani*, the right to collect Bengal's revenue. From then the [Company](event:english-east-india) governed as well as traded.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Plassey).",
   "links": [
    {
     "label": "Wikipedia",
@@ -2833,7 +6885,7 @@
   "end": 1840,
   "lat": 53.48,
   "lng": -2.24,
-  "priority": 96,
+  "priority": 97,
   "tags": [
    "technology",
    "economy"
@@ -2895,6 +6947,26 @@
   ]
  },
  {
+  "id": "third-panipat",
+  "name": "Third Battle of Panipat",
+  "start": 1761.03699,
+  "lat": 29.38,
+  "lng": 76.98,
+  "parent": "maratha-empire",
+  "tags": [
+   "war"
+  ],
+  "summary": "Ahmad Shah Durrani's Afghan army defeated the Marathas at Panipat on 14 January 1761 in one of the largest battles of the eighteenth century.",
+  "body": "Part of [Maratha Empire](event:maratha-empire). Maratha expansion into the Punjab brought them against Ahmad Shah Durrani, ruler of Afghanistan, who had raided northern India repeatedly since 1748 and was supported by Rohilla and Awadh allies. The armies faced each other near Panipat for two months while the Afghans cut the Maratha supply lines.\n\nThe Marathas attacked on 14 January 1761. The centre held into the afternoon; when Vishwasrao, the peshwa's son, was killed, the line broke, and the Afghan reserve of camel-mounted swivel guns and cavalry completed the defeat. Casualties were very large and are not reliably known; estimates of Maratha dead on the day range widely, and many prisoners and camp followers were killed afterwards.\n\nAhmad Shah returned to Afghanistan and did not hold northern India. The Marathas recovered Delhi in 1771, but the losses among their leadership and the ten years of division that followed left the field to the [East India Company](event:english-east-india).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Third_Battle_of_Panipat).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Third_Battle_of_Panipat"
+   }
+  ],
+  "priority": 62
+ },
+ {
   "id": "rousseau-social",
   "name": "Rousseau's The Social Contract",
   "start": 1762,
@@ -2945,6 +7017,532 @@
   ]
  },
  {
+  "id": "cook-voyages",
+  "name": "Voyages of James Cook",
+  "start": 1768.65164,
+  "end": 1780.7582,
+  "lat": -33.99,
+  "lng": 151.19,
+  "tags": [
+   "exploration",
+   "science"
+  ],
+  "parent": "age-of-discovery",
+  "paths": [
+   [
+    [
+     -4.14,
+     50.36
+    ],
+    [
+     -9.14,
+     38.71
+    ],
+    [
+     -16.92,
+     32.75
+    ],
+    [
+     -23.5,
+     20.0
+    ],
+    [
+     -30.0,
+     5.0
+    ],
+    [
+     -35.0,
+     -8.0
+    ],
+    [
+     -40.0,
+     -18.0
+    ],
+    [
+     -43.17,
+     -22.91
+    ],
+    [
+     -50.0,
+     -33.0
+    ],
+    [
+     -58.0,
+     -45.0
+    ],
+    [
+     -65.0,
+     -54.0
+    ],
+    [
+     -67.28,
+     -55.98
+    ],
+    [
+     -75.0,
+     -57.5
+    ],
+    [
+     -90.0,
+     -52.0
+    ],
+    [
+     -105.0,
+     -42.0
+    ],
+    [
+     -120.0,
+     -30.0
+    ],
+    [
+     -135.0,
+     -22.0
+    ],
+    [
+     -149.42,
+     -17.65
+    ],
+    [
+     -165.0,
+     -22.0
+    ],
+    [
+     -176.0,
+     -32.0
+    ],
+    [
+     178.0,
+     -37.68
+    ],
+    [
+     174.78,
+     -36.85
+    ],
+    [
+     172.0,
+     -41.0
+    ],
+    [
+     174.0,
+     -45.0
+    ],
+    [
+     170.5,
+     -46.0
+    ],
+    [
+     160.0,
+     -42.0
+    ],
+    [
+     150.0,
+     -38.5
+    ],
+    [
+     151.19,
+     -33.99
+    ],
+    [
+     153.2,
+     -27.5
+    ],
+    [
+     146.0,
+     -19.0
+    ],
+    [
+     143.0,
+     -14.5
+    ],
+    [
+     140.0,
+     -10.0
+    ],
+    [
+     132.0,
+     -9.0
+    ],
+    [
+     122.0,
+     -8.5
+    ],
+    [
+     113.5,
+     -7.0
+    ],
+    [
+     106.82,
+     -6.13
+    ],
+    [
+     100.0,
+     -3.0
+    ],
+    [
+     95.0,
+     2.0
+    ],
+    [
+     90.0,
+     -5.0
+    ],
+    [
+     80.0,
+     -18.0
+    ],
+    [
+     65.0,
+     -30.0
+    ],
+    [
+     45.0,
+     -35.0
+    ],
+    [
+     30.0,
+     -35.5
+    ],
+    [
+     18.42,
+     -33.92
+    ],
+    [
+     10.0,
+     -25.0
+    ],
+    [
+     -5.0,
+     -10.0
+    ],
+    [
+     -20.0,
+     8.0
+    ],
+    [
+     -25.0,
+     25.0
+    ],
+    [
+     -18.0,
+     38.0
+    ],
+    [
+     -9.14,
+     44.0
+    ],
+    [
+     -4.14,
+     50.36
+    ]
+   ],
+   [
+    [
+     -4.14,
+     50.36
+    ],
+    [
+     -12.0,
+     42.0
+    ],
+    [
+     -20.0,
+     25.0
+    ],
+    [
+     -22.0,
+     10.0
+    ],
+    [
+     -20.0,
+     -8.0
+    ],
+    [
+     -10.0,
+     -25.0
+    ],
+    [
+     5.0,
+     -33.0
+    ],
+    [
+     18.42,
+     -33.92
+    ],
+    [
+     25.0,
+     -45.0
+    ],
+    [
+     30.0,
+     -55.0
+    ],
+    [
+     35.0,
+     -62.0
+    ],
+    [
+     40.0,
+     -66.5
+    ],
+    [
+     60.0,
+     -62.0
+    ],
+    [
+     90.0,
+     -60.0
+    ],
+    [
+     120.0,
+     -60.0
+    ],
+    [
+     150.0,
+     -60.0
+    ],
+    [
+     170.0,
+     -55.0
+    ],
+    [
+     174.78,
+     -41.29
+    ],
+    [
+     -170.0,
+     -20.0
+    ],
+    [
+     -149.42,
+     -17.65
+    ],
+    [
+     -135.0,
+     -30.0
+    ],
+    [
+     -130.0,
+     -50.0
+    ],
+    [
+     -120.0,
+     -60.0
+    ],
+    [
+     -100.0,
+     -65.0
+    ],
+    [
+     -80.0,
+     -68.0
+    ],
+    [
+     -60.0,
+     -60.0
+    ],
+    [
+     -55.0,
+     -52.0
+    ],
+    [
+     -40.0,
+     -50.0
+    ],
+    [
+     -20.0,
+     -45.0
+    ],
+    [
+     0.0,
+     -40.0
+    ],
+    [
+     18.42,
+     -33.92
+    ],
+    [
+     5.0,
+     -20.0
+    ],
+    [
+     -15.0,
+     0.0
+    ],
+    [
+     -25.0,
+     20.0
+    ],
+    [
+     -20.0,
+     38.0
+    ],
+    [
+     -8.0,
+     48.0
+    ],
+    [
+     -4.14,
+     50.36
+    ]
+   ],
+   [
+    [
+     -4.14,
+     50.36
+    ],
+    [
+     -12.0,
+     42.0
+    ],
+    [
+     -20.0,
+     25.0
+    ],
+    [
+     -22.0,
+     8.0
+    ],
+    [
+     -15.0,
+     -12.0
+    ],
+    [
+     0.0,
+     -28.0
+    ],
+    [
+     18.42,
+     -33.92
+    ],
+    [
+     40.0,
+     -45.0
+    ],
+    [
+     70.0,
+     -48.0
+    ],
+    [
+     100.0,
+     -47.0
+    ],
+    [
+     130.0,
+     -46.0
+    ],
+    [
+     160.0,
+     -45.0
+    ],
+    [
+     174.78,
+     -41.29
+    ],
+    [
+     -175.0,
+     -20.0
+    ],
+    [
+     -160.0,
+     -17.0
+    ],
+    [
+     -149.42,
+     -17.65
+    ],
+    [
+     -157.0,
+     -8.0
+    ],
+    [
+     -159.0,
+     8.0
+    ],
+    [
+     -159.5,
+     21.9
+    ],
+    [
+     -150.0,
+     32.0
+    ],
+    [
+     -138.0,
+     40.0
+    ],
+    [
+     -128.0,
+     46.0
+    ],
+    [
+     -126.1,
+     49.6
+    ],
+    [
+     -135.0,
+     56.0
+    ],
+    [
+     -150.0,
+     59.0
+    ],
+    [
+     -160.0,
+     57.0
+    ],
+    [
+     -166.0,
+     60.0
+    ],
+    [
+     -168.5,
+     65.6
+    ],
+    [
+     -166.0,
+     70.3
+    ],
+    [
+     -175.0,
+     69.0
+    ],
+    [
+     -180.0,
+     64.0
+    ],
+    [
+     -172.0,
+     55.0
+    ],
+    [
+     -165.0,
+     40.0
+    ],
+    [
+     -158.5,
+     25.0
+    ],
+    [
+     -155.99,
+     19.47
+    ]
+   ]
+  ],
+  "direction": "oneway",
+  "summary": "Three Pacific voyages between 1768 and 1780 under James Cook, which charted New Zealand and the east coast of Australia, crossed the Antarctic Circle and mapped much of the Pacific.",
+  "weak": [
+   "magellan"
+  ],
+  "body": "Part of [Age of Discovery](event:age-of-discovery). James Cook, a Yorkshire farm labourer's son who had learned surveying in the navy, commanded three voyages to the Pacific for the Admiralty and the Royal Society.\n\nThe first, in the Endeavour from 1768 to 1771, carried astronomers to Tahiti to observe the transit of Venus, then opened sealed orders to search for the supposed southern continent. Cook charted the two islands of New Zealand and the east coast of Australia, where he landed at Botany Bay in April 1770 and claimed the coast for Britain, and ran the ship onto the Great Barrier Reef.\n\nThe second, from 1772 to 1775, crossed the Antarctic Circle three times and circled the southern ocean at high latitude, establishing that no habitable southern continent existed. Cook used citrus, sauerkraut and fresh provisions against scurvy and lost few men to it, and carried a copy of Harrison's marine chronometer, which fixed longitude at sea.\n\nThe third, from 1776, searched for a northwest passage from the Pacific side, reached the Bering Strait and was stopped by ice. Cook was killed at Kealakekua Bay in Hawaii on 14 February 1779 in a fight over a stolen boat. The charts he produced were in use for a century, and the voyages preceded British settlement in Australia and the whaling and trading traffic that followed across the Pacific.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Voyages_of_James_Cook).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Voyages_of_James_Cook"
+   }
+  ],
+  "priority": 74
+ },
+ {
   "id": "napoleon-bonaparte",
   "kind": "person",
   "name": "Napoleon Bonaparte",
@@ -2985,6 +7583,53 @@
   "priority": 88
  },
  {
+  "id": "first-partition-poland",
+  "name": "First Partition of Poland",
+  "start": 1772.59426,
+  "lat": 52.2297,
+  "lng": 21.0122,
+  "tags": [
+   "politics"
+  ],
+  "summary": "Russia, Prussia and Austria annexed about a third of the territory of the Polish-Lithuanian Commonwealth by a treaty signed on 5 August 1772.",
+  "weak": [
+   "pugachev-rebellion",
+   "enlightened-despotism"
+  ],
+  "body": "The Commonwealth had an elective monarchy, a parliament in which a single deputy could veto legislation, and no standing army of any size, and by the middle of the eighteenth century it was effectively a Russian protectorate. A confederation formed at Bar in 1768 against Russian influence was suppressed after four years of fighting.\n\nFrederick II of Prussia proposed a partition as a way of ending the crisis without a war between the three powers. The treaty was signed in St Petersburg on 5 August 1772: Russia took the lands east of the Dvina and the Dnieper, Prussia took Royal Prussia except Danzig and Thorn, and Austria took Galicia. Between them they took about 30 per cent of the territory and 4 million people.\n\nThe Polish parliament was assembled under military pressure and ratified it in 1773. It then founded the Commission of National Education, the first ministry of education in Europe, and the constitution of 3 May 1791 followed. Two further partitions, in 1793 and 1795, removed the state from the map until 1918.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/First_Partition_of_Poland).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/First_Partition_of_Poland"
+   }
+  ],
+  "priority": 62
+ },
+ {
+  "id": "pugachev-rebellion",
+  "name": "Pugachev's Rebellion",
+  "start": 1773.71096,
+  "end": 1775.05616,
+  "lat": 51.5333,
+  "lng": 46.0333,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A revolt of Cossacks, peasants and Volga peoples led by Yemelyan Pugachev, who claimed to be Peter III. It was the largest peasant rising in Russian history and was crushed in 1775.",
+  "weak": [
+   "french-revolution"
+  ],
+  "body": "Yemelyan Pugachev, a Don Cossack deserter, declared himself the emperor Peter III, who had been deposed and killed in 1762, and raised the Yaik Cossacks in September 1773. The rising spread through the Ural mining districts and the middle Volga, drawing in serfs, Old Believers, Bashkirs, Tatars and factory workers.\n\nPugachev issued manifestos abolishing serfdom, taxes and conscription and granting land and the old faith. He besieged Orenburg through the winter of 1773, took Kazan in July 1774 and burned it. Landowners and officials were killed across a wide area, and the reprisals that followed were on the same scale.\n\nCatherine II had to end the war with the Ottomans in 1774 to release troops. Pugachev was defeated near Tsaritsyn in August, handed over by his own officers, and executed in Moscow in January 1775. The government reorganised provincial administration in 1775 and tightened landlords' powers over serfs.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Pugachev%27s_Rebellion).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Pugachev%27s_Rebellion"
+   }
+  ],
+  "priority": 55
+ },
+ {
   "id": "goethe-literature",
   "name": "Goethe's literary influence",
   "start": 1774,
@@ -3011,7 +7656,7 @@
   "end": 1783.6726,
   "lat": 39.95,
   "lng": -75.16,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "politics",
    "war"
@@ -3099,7 +7744,7 @@
   "start": 1776,
   "lat": 52.48,
   "lng": -1.9,
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "technology"
   ],
@@ -3119,7 +7764,7 @@
   "start": 1776,
   "lat": 39.95,
   "lng": -75.15,
-  "priority": 83,
+  "priority": 84,
   "tags": [
    "politics"
   ],
@@ -3208,7 +7853,7 @@
   "start": 1787,
   "lat": 39.95,
   "lng": -75.15,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "politics"
   ],
@@ -3232,7 +7877,7 @@
   "end": 1799.8589,
   "lat": 48.86,
   "lng": 2.35,
-  "priority": 94,
+  "priority": 95,
   "tags": [
    "politics"
   ],
@@ -3306,7 +7951,7 @@
   "start": 1789,
   "lat": 48.85,
   "lng": 2.37,
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "politics"
   ],
@@ -3447,7 +8092,7 @@
   "start": 1796,
   "lat": 51.72,
   "lng": -2.37,
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "science"
   ],

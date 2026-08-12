@@ -11,6 +11,7 @@ export type ToggleKey =
   | 'autoRotate'
   | 'relief'
   | 'showMinorEvents'
+  | 'modernBorders'
 
 export type VisualStyle = 'enhanced' | 'realistic'
 
@@ -48,6 +49,18 @@ export const useSettingsStore = defineStore('settings', {
     scaleBar: true,
     autoRotate: false,
     relief: true,
+    /**
+     * THE MODERN STATES' FRONTIERS, in the years they are honest for.
+     *
+     * On by default, because without it the globe has no borders at all after
+     * the historical corpus thins out — at 2000 it draws three polities and
+     * leaves Europe blank. It is a *context* layer: border ink only, no fills,
+     * nothing to click, and it never enters the polities' ranking (see
+     * lib/modernBorders.ts). Off is for a reader who wants the era's own
+     * powers and nothing printed under them, which is the same argument the
+     * drawn map's paper makes for carrying no baked political boundaries.
+     */
+    modernBorders: true,
     /**
      * HOW THE APP DRAWS ITSELF — the photographic globe, or the drawn map.
      *

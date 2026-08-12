@@ -39,6 +39,7 @@ import { fileURLToPath } from 'node:url'
 import {
   classifyCoastal,
   clipToLand,
+  COAST_TOL_DEG,
   coastIndex,
   describeOverlap,
   encodeRuns,
@@ -54,6 +55,13 @@ import {
   robustOp,
   simplifyRing,
 } from './nations-clip-lib.mjs'
+import {
+  buildModernBorders,
+  decodeArcs,
+  MERGES,
+  MODERN_FROM,
+  MODERN_TO,
+} from './modern-borders-lib.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (p) => JSON.parse(readFileSync(join(root, p), 'utf8'))
@@ -98,7 +106,9 @@ if (checkOnly) {
   const found = validate(onDisk)
   const split = inkSplits(onDisk)
   report(found, onDisk, undefined, split)
-  process.exit(found.length || split.length ? 1 : 0)
+  const modernFaults = checkModern(read('src/data/borders.modern.json'))
+  reportModern(modernFaults)
+  process.exit(found.length || split.length || modernFaults.length ? 1 : 0)
 }
 
 /* --------------------------------------------------------------- the land */
@@ -398,3 +408,121 @@ const body =
   '\n]\n'
 writeFileSync(path, body)
 console.log(`wrote src/data/nations.clipped.json (${(body.length / 1024).toFixed(0)} kB)`)
+
+/* --------------------------------------------- and the modern states' ink */
+
+/**
+ * The other half of round 57, and it runs HERE rather than in a script of its
+ * own for one reason: it needs the decoded land and the coast index this file
+ * has already paid fifty seconds to build, and it answers the same question
+ * ("where does political ink go, and where does the map already draw the
+ * line?") with the same functions. `--check` validates both files; `npm run
+ * build` runs `--check`.
+ */
+const countries = read('node_modules/world-atlas/countries-50m.json')
+const modern = buildModernBorders(countries, coasts, { encode: encodeRing, tol: COAST_TOL_DEG })
+
+// THE CLIP-PIPELINE CLAIM, measured rather than assumed. `countries` and `land`
+// come off one arc table in one file, so a country cut against `land-50m.json`
+// should lose nothing at all — this is the modern set's version of round 52's
+// "the coast is the coast", and it is checked on the twelve countries whose
+// coastlines are the ones a reader would notice.
+const SAMPLE = [
+  'France', 'Italy', 'Norway', 'Greece', 'Egypt', 'India',
+  'Japan', 'Indonesia', 'Chile', 'United States of America', 'Australia', 'South Africa',
+]
+const countryArcs = decodeArcs(countries)
+const geometryOfCountry = (name) => {
+  const g = countries.objects.countries.geometries.find((x) => x.properties?.name === name)
+  const arcs = countryArcs
+  const ringOf = (list) => {
+    const pts = []
+    for (const idx of list) {
+      const arc = idx < 0 ? [...arcs[~idx]].reverse() : arcs[idx]
+      for (const p of pts.length ? arc.slice(1) : arc) pts.push([p[0], p[1]])
+    }
+    const [fx, fy] = pts[0]
+    const [lx, ly] = pts[pts.length - 1]
+    if (fx !== lx || fy !== ly) pts.push([fx, fy])
+    return pts
+  }
+  const polys = g.type === 'Polygon' ? [g.arcs] : g.arcs
+  return polys.map((rings) => rings.map(ringOf))
+}
+let worstKept = { name: '', kept: Infinity }
+for (const name of SAMPLE) {
+  const mp = geometryOfCountry(name)
+  const kept = multiPolygonArea(clipToLand(mp, land, 0)) / multiPolygonArea(mp)
+  if (kept < worstKept.kept) worstKept = { name, kept }
+}
+
+const modernPath = join(root, 'src/data/borders.modern.json')
+// One frontier per line, like the polity file: a generated payload `git diff`
+// can still say something about.
+const encLines = (ls) => ls.map((l) => JSON.stringify(l)).join(',\n  ')
+const modernBody =
+  `{"source":${JSON.stringify(modern.source)},\n` +
+  `"from":${modern.from},"to":${modern.to},\n` +
+  `"stats":${JSON.stringify(modern.stats)},\n` +
+  `"dated":[\n` +
+  modern.dated
+    .map(
+      (d) =>
+        `{"from":${d.from},"pair":${JSON.stringify(d.pair)},"why":${JSON.stringify(d.why)},"lines":[\n  ${encLines(d.lines)}\n]}`,
+    )
+    .join(',\n') +
+  `\n],\n"lines":[\n  ` +
+  encLines(modern.lines) +
+  `\n]}\n`
+writeFileSync(modernPath, modernBody)
+const modernFaults = checkModern(JSON.parse(modernBody))
+console.log(
+  `modern borders: ${modern.lines.length + modern.dated.reduce((n, d) => n + d.lines.length, 0)} polylines,` +
+    ` ${modern.stats.vertices} vertices over ${modern.stats.pairs} country pairs,` +
+    ` ${modern.dated.length} dated groups, ${modern.stats.droppedEdges} coastal edge(s) dropped`,
+)
+console.log(
+  `modern clip integrity: worst of ${SAMPLE.length} sampled countries is ${worstKept.name} at` +
+    ` ${(worstKept.kept * 100).toFixed(3)}% of its area on land-50m`,
+)
+reportModern(modernFaults)
+console.log(`wrote src/data/borders.modern.json (${(modernBody.length / 1024).toFixed(0)} kB)`)
+if (modernFaults.length || worstKept.kept < 0.999) process.exit(1)
+
+/**
+ * What the shipped modern payload has to satisfy, checkable without decoding
+ * 550 kB of Natural Earth — which is the whole point of `--check`.
+ */
+function checkModern(payload) {
+  const faults = []
+  if (payload.from !== MODERN_FROM || payload.to !== MODERN_TO)
+    faults.push(`window is ${payload.from}..${payload.to}, the library says ${MODERN_FROM}..${MODERN_TO}`)
+  const groups = [{ from: payload.from, pair: '', lines: payload.lines }, ...payload.dated]
+  let n = 0
+  for (const g of groups) {
+    if (g.from < payload.from) faults.push(`dated group ${g.pair} starts at ${g.from}, before the threshold`)
+    for (const enc of g.lines) {
+      const line = decodeRing(enc)
+      n += line.length
+      if (line.length < 2) faults.push(`a polyline in ${g.pair || 'the base set'} has ${line.length} point(s)`)
+      for (const [x, y] of line)
+        if (!(Math.abs(x) <= 180.001 && Math.abs(y) <= 90.001))
+          faults.push(`a point in ${g.pair || 'the base set'} is off the planet: ${x},${y}`)
+    }
+  }
+  if (n !== payload.stats?.vertices) faults.push(`stats say ${payload.stats?.vertices} vertices, the lines hold ${n}`)
+  const shipped = payload.dated.map((d) => `${d.pair}@${d.from}`).sort()
+  const table = MERGES.map((m) => `${[...m.pair].sort().join(' | ')}@${m.from}`).sort()
+  if (shipped.join(',') !== table.join(','))
+    faults.push(`dated groups ${shipped.join(', ')} do not match the merge table ${table.join(', ')}`)
+  return faults
+}
+
+function reportModern(faults) {
+  if (!faults.length) {
+    console.log(`modern borders: green — payload decodes, and its dated groups are the merge table`)
+    return
+  }
+  console.error(`modern borders: ${faults.length} fault(s)`)
+  for (const f of faults) console.error(`  ${f}`)
+}

@@ -12,8 +12,10 @@
  * before/after pair. `SHOT_TAG` is what keeps the two sets apart.
  *
  * Run:  node tests/e2e/nations.e2e.mjs
- * Env:  CHROME_PATH, SHOT_DIR (default /tmp/shots52/nations), SHOT_TAG
- *       (default 'after'), PLAYWRIGHT_MODULE
+ * Env:  CHROME_PATH, SHOT_DIR (default /tmp/shots57/nations), SHOT_TAG
+ *       (default 'after'), SHOT_ONLY (a regex over camera names — a frame is a
+ *       minute under SwiftShader, and a before/after pair usually wants one),
+ *       PLAYWRIGHT_MODULE
  */
 import { createServer } from 'vite'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -22,7 +24,7 @@ import { dirname, join } from 'node:path'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..', '..')
-const shots = process.env.SHOT_DIR ?? '/tmp/shots52/nations'
+const shots = process.env.SHOT_DIR ?? '/tmp/shots57/nations'
 const tag = process.env.SHOT_TAG ?? 'after'
 mkdirSync(shots, { recursive: true })
 
@@ -61,6 +63,15 @@ async function open(width, height) {
   await page.waitForTimeout(1500)
   return page
 }
+
+/**
+ * The app, ready. Called before every camera rather than once: a dev server
+ * reloads the page when anything in the tree changes under it, and a reloaded
+ * page has no `__globe` until the first frame is up — which used to surface a
+ * hundred frames later as "Cannot read properties of undefined".
+ */
+const ready = (page) =>
+  page.waitForFunction(() => window.__events?.all.length > 0 && window.__globe, null, { timeout: 90_000 })
 
 const look = async (page, lat, lng, altitude, ms = 6000) => {
   await page.evaluate(
@@ -120,11 +131,33 @@ const CAMERAS = [
   // islands off Chukotka; this is the frame where a ring that crossed 180 badly
   // would draw a chord across the world.
   { name: 'i-russia1900-seam-map', year: 1900, mode: 'schematic', view: [64, 178, 0.7] },
+
+  // ROUND 57. The hole: 1895-1910 left Korea claimed by nobody, because
+  // Shimonoseki took it out of the Qing and Japan does not annex it until 1910.
+  // Before: bare paper between Manchuria and the sea. After: Joseon, then the
+  // Korean Empire, with the Yalu and the Tumen inked and every other metre of
+  // its boundary left to the map's own coastline.
+  { name: 'j-korea1900-map', year: 1900, mode: 'schematic', view: [38.5, 127.5, 0.55] },
+  { name: 'k-korea1500-map', year: 1500, mode: 'schematic', view: [38.5, 127.5, 0.55] },
+  { name: 'l-korea1900-realistic', year: 1900, mode: 'realistic', view: [38.5, 127.5, 0.55] },
+  // …and the other hole: no layer draws a border at a modern year at all. The
+  // same camera at 2000 and at 1500 is the whole claim — the modern states are
+  // context in the years they are honest for, and nothing at all before them.
+  { name: 'm-europe2000-map', year: 2000, mode: 'schematic', view: [50, 14, 0.6] },
+  { name: 'n-europe1500-map', year: 1500, mode: 'schematic', view: [50, 14, 0.6] },
+  { name: 'o-world2020-map', year: 2020, mode: 'schematic', view: [20, 20, 2.1] },
+  { name: 'p-world2020-realistic', year: 2020, mode: 'realistic', view: [20, 20, 2.1] },
+  // Africa, where the 73-polity corpus has nothing to say after 1900 and the
+  // patch set is doing its work: Sudan is one country here and two in 2020.
+  { name: 'q-africa2000-map', year: 2000, mode: 'schematic', view: [8, 25, 1.2] },
 ]
 
+const only = process.env.SHOT_ONLY ? new RegExp(process.env.SHOT_ONLY) : undefined
 const results = []
 for (const cam of CAMERAS) {
+  if (only && !only.test(cam.name)) continue
   console.log(`\n${cam.name}`)
+  await ready(page)
   await setMode(page, cam.mode)
   await setYear(page, cam.year)
   await look(page, ...cam.view)
@@ -145,7 +178,7 @@ for (const cam of CAMERAS) {
 }
 
 writeFileSync(join(shots, `${tag}-summary.json`), JSON.stringify(results, null, 2))
-console.log(`\nwrote ${CAMERAS.length} frames to ${shots} as "${tag}-*"`)
+console.log(`\nwrote ${results.length} frames to ${shots} as "${tag}-*"`)
 
 await browser.close()
 await server.close()

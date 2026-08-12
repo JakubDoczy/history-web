@@ -17,13 +17,13 @@
    "file": "medieval.json",
    "from": 527,
    "to": 1922,
-   "count": 94
+   "count": 108
   },
   {
    "file": "early-modern.json",
    "from": 1500,
    "to": 1912,
-   "count": 92
+   "count": 130
   },
   {
    "file": "modern.json",

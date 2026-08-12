@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue'
 import { borderRings, visibleNations, type BorderRing, type Nation } from '../lib/nations'
+import { modernBorderEntries } from '../lib/modernBorders'
 import { useTimeStore } from './time'
+import { useSettingsStore } from './settings'
 import rawNations from '../data/nations.clipped.json'
 
 /** Overlays only appear when zoomed into human-history scale. */
@@ -42,6 +44,25 @@ export const useNationStore = defineStore('nations', {
       const { currentTime, span } = useTimeStore()
       if (span > OVERLAY_MAX_SPAN) return []
       return this.current.flatMap((nation) => borderRings(nation, currentTime))
+    },
+    /**
+     * The modern states' frontier ink: nought or one entry, never a polity.
+     *
+     * It sits in this store rather than beside the layer that draws it because
+     * it answers the same question `borders` does — what political ink belongs
+     * on the globe at this instant — and because the two have to be decided
+     * together: while this is non-empty the polities in those years yield their
+     * own frontier ink to it (see `inkPathsOf`), and a caller that read the two
+     * from different places could show both.
+     *
+     * Same span gate as the borders: a reader looking at ten thousand years at
+     * once is not being shown Belgium.
+     */
+    modernBorders(): BorderEntry[] {
+      const { currentTime, span } = useTimeStore()
+      if (span > OVERLAY_MAX_SPAN) return []
+      if (!useSettingsStore().modernBorders) return []
+      return modernBorderEntries(currentTime)
     },
   },
 })

@@ -41,6 +41,7 @@ import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { pinElement, clusterElement } from '../lib/eventPins'
 import {
   COASTAL_INK,
+  frontierInkPlan,
   NATION_FILL_ALPHA,
   onGround,
   pinStateKey,
@@ -151,6 +152,12 @@ type PolyEntry = BorderEntry | EventAreaEntry
 
 /** What the polygon layer was last given; see the watcher that fills it. */
 let lastPolys: PolyEntry[] = []
+/**
+ * …and what the ink layer was last given on top of them: the modern states,
+ * nought or one entry. Held apart from `lastPolys` because it is not a polygon
+ * — it never reaches the cap layer, has no fill and nothing to click.
+ */
+let lastModern: BorderEntry[] = []
 /** …and the mode its stroke colours were resolved for. */
 let lastInk: RenderMode | undefined
 
@@ -685,10 +692,15 @@ onMounted(() => {
         if (entry.kind !== 'full') continue
         pieces++
         for (const ring of entry.coordinates) capVertices += ring.length
-        for (const run of inkPathsOf(entry, COASTAL_INK[mode.value]))
+        for (const run of inkPathsOf(entry, frontierInkPlan(lastModern, { mode: mode.value }).inkOf(entry)))
           frontierSegments += run.length - 1
       }
-      return { pieces, capVertices, frontierSegments }
+      // The modern states, counted apart: they are the other half of the ink in
+      // a modern year and nothing at all in a historical one.
+      let modernSegments = 0
+      for (const entry of lastModern)
+        for (const run of entry.frontier) modernSegments += run.length - 1
+      return { pieces, capVertices, frontierSegments, modernSegments }
     }
   }
 
@@ -1243,23 +1255,31 @@ onMounted(() => {
       // store and must keep seeing them. Reading `events.focus` inside this
       // watcher is what makes leaving the mode put them straight back.
       const next = [...(events.focus ? [] : nations.borders), ...eventAreas()]
-      if (
-        ink === lastInk &&
-        next.length === lastPolys.length &&
-        next.every((p, i) => p === lastPolys[i])
-      )
-        return
+      // The modern states ride with them and are NOT polygons: no fill, no
+      // hover, no click, no place in the ranking — border ink only, and one
+      // entry for the whole world (see lib/modernBorders.ts). They go with the
+      // borders in focus mode for the same reason the borders do.
+      const modern = events.focus ? [] : nations.modernBorders
+      const same = (a: readonly object[], b: readonly object[]) =>
+        a.length === b.length && a.every((p, i) => p === b[i])
+      if (ink === lastInk && same(next, lastPolys) && same(modern, lastModern)) return
+      const capsMoved = !same(next, lastPolys) || ink !== lastInk
       lastInk = ink
       lastPolys = next
-      globe!.polygonsData(next)
-      // …and the political ink, which is the same list minus its coastlines.
-      // One layer, one draw call, rebuilt on exactly the changes the caps are
-      // rebuilt on — see lib/frontierLayer.ts for why it is not the polygon
-      // layer's stroke and not a DrawingLayer.
+      lastModern = modern
+      // Only when the caps actually moved: `polygonsData` is a full data join
+      // over every polygon, and crossing 2011 changes one line in Sudan.
+      if (capsMoved) globe!.polygonsData(next)
+      // …and the political ink, which is the same list minus its coastlines,
+      // plus the modern set. One layer, one draw call, rebuilt on exactly the
+      // changes the caps are rebuilt on — see lib/frontierLayer.ts for why it is
+      // not the polygon layer's stroke and not a DrawingLayer, and
+      // `frontierInkPlan` for which of the two layers inks a shared frontier.
+      const plan = frontierInkPlan(modern, { mode: ink })
       frontiers?.set(
-        next.filter((p): p is BorderEntry => p.kind === 'full'),
-        (e) => onGround(e.nation.color, { mode: ink }),
-        COASTAL_INK[ink],
+        [...next.filter((p): p is BorderEntry => p.kind === 'full'), ...modern],
+        plan.colorOf,
+        plan.inkOf,
       )
       wake()
     }),

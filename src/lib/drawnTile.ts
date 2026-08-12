@@ -158,6 +158,36 @@ export const PAPER = {
 export const LOD_Z = 3
 
 /**
+ * The level at which 10m geometry takes over from 50m — and, because the file
+ * is only fetched when it is wanted, the level that pays for it.
+ *
+ * Three measurements, and they agree (scripts/measure-drawn.mjs). Segments
+ * surviving the half-pixel filter, over the whole world:
+ *
+ *     level      110m       50m        10m
+ *         5      4 996    59 288    371 898
+ *         6      4 996    59 376    415 871   ← 50m saturates
+ *         7      4 999    59 404    431 400
+ *         8      4 999    59 408    434 672   ← 10m saturates
+ *
+ *  · **50m has nothing left to say from level 6.** Every vertex it owns already
+ *    survives; a finer level is the same polyline magnified.
+ *  · **At level 7 that polyline starts to read as one.** A tile pixel is 611 m
+ *    and the median 50m segment is 0.0985° — 18 tile pixels of straight line,
+ *    against 10m's 3.2. Below 7 the facets are shorter than the pen is wide and
+ *    there is nothing to fix; at 7 and above they are the picture.
+ *  · **7 is also the first level nobody reaches by accident.** A world view
+ *    streams level 4–5 and a continental view 6; level 7 is a reader who has
+ *    zoomed to a coast. That is who the 851 kB is spent on, and nobody else —
+ *    the fetch is triggered from here (`DrawnWorld.requestFine`), not at load.
+ *
+ * The rung is deliberately NOT lower even though 10m is finer everywhere: at
+ * level 5 the extra 300 000 segments are half a tile pixel apart, so they cost
+ * the download, the parse and the paths, and draw the same coastline.
+ */
+export const LOD_FINE_Z = 7
+
+/**
  * Where the water layers stop being honest.
  *
  * Rivers and lakes come quantised at 0.036° (~4 km) — the only reachable npm
@@ -434,7 +464,11 @@ function graticule(ctx: DrawCtx, level: number, originX: number, originY: number
  * unlikely.
  */
 export const landAt = (world: DrawnWorld, level: number): [Layer, string] =>
-  level >= LOD_Z && world.land ? [world.land, 'land'] : [world.coarseLand, 'coarse']
+  level >= LOD_FINE_Z && world.fineLand
+    ? [world.fineLand, 'fine']
+    : level >= LOD_Z && world.land
+      ? [world.land, 'land']
+      : [world.coarseLand, 'coarse']
 
 /** 0 below `from`, 1 at `from`, back to 0 at `to`: the water layers' visibility. */
 export const waterAlpha = (level: number): number =>
@@ -627,6 +661,13 @@ export class DrawnRenderer {
   }
 
   draw(ctx: DrawCtx, req: TileRequest) {
-    drawTile(ctx, this.world, req, this.paths(levelOf(req)))
+    const level = levelOf(req)
+    // The one line the progressive load is made of. Asking for a plate at a
+    // level 50m cannot answer is what buys the 10m file — the renderer knows
+    // the level, and only the renderer does. Idempotent, and a no-op on a world
+    // built from topologies already in hand (`buildWorld`, the tests, the
+    // build-time world texture).
+    if (level >= LOD_FINE_Z) this.world.requestFine?.()
+    drawTile(ctx, this.world, req, this.paths(level))
   }
 }

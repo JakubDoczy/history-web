@@ -6,6 +6,7 @@ import {
   sameSpan,
   tweenWindow,
   windowFitting,
+  windowLeastMoved,
   type Span,
 } from '../lib/selection'
 import {
@@ -52,14 +53,38 @@ const cancelFit = () => {
 const stillPreferred = (): boolean =>
   globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? true
 
-/** Opening view: the classical world through the present, framed on the eras
- *  most events live in. The selection is what the globe actually shows. */
-const HOME_WINDOW: Span = { start: -550, end: MAX_TIME }
-const HOME_SELECTION: Span = { start: 500, end: 1945 }
+/**
+ * THE OPENING VIEW — asked for, in these numbers: *"by default, show 1400 –
+ * 1789, with year selected being fall of Constantinople"*.
+ *
+ * Three things, and they are three different scales, which is the point of the
+ * decoupling in `scrubTo`:
+ *
+ *  · the WINDOW is 1400–1789 exactly — the early-modern rail, from the eve of
+ *    the printing press to the fall of the Bastille. Not a function of the
+ *    present, unlike the old home window, which ran to whatever year it was;
+ *  · the YEAR is 1453, the fall of Constantinople. The corpus has the event
+ *    (`fall-constantinople`), and this deliberately does NOT select or open it:
+ *    what opens is a year, and what the reader does with it is theirs;
+ *  · the BAND is what a locked click on 1453 would ask for — `lockedWindow` at
+ *    the shipped proportions, so the app opens in the state the lock maintains
+ *    rather than in one the first click would contradict. Today, with the
+ *    present at 2026: a span of 0.2 × 573 = 114.6 years, split one sixth
+ *    before the year, i.e. 1433.9 – 1548.5. Comfortably inside the window,
+ *    which is why the first locked click inside 1400–1789 moves nothing but
+ *    the band.
+ *
+ * This is the ONLY place the app's opening time is stated; the store's initial
+ * state is the app's initial state (nothing is persisted, nothing else assigns
+ * these on boot). See tests/time.test.ts, 'the opening view'.
+ */
+export const HOME_WINDOW: Span = { start: 1400, end: 1789 }
+export const HOME_YEAR: Year = 1453
+export const HOME_SELECTION: Span = lockedWindow(HOME_YEAR)
 
 export const useTimeStore = defineStore('time', {
   state: () => ({
-    currentTime: 1500 as Year,
+    currentTime: HOME_YEAR as Year,
     range: { ...HOME_WINDOW },
     /** Sub-range of `range` that filters what the globe shows (see stores/events). */
     selection: { ...HOME_SELECTION },
@@ -111,26 +136,44 @@ export const useTimeStore = defineStore('time', {
      * A PRESS ON THE RAIL. The one entry point the lock applies to.
      *
      * Unlocked it *is* `setTime`, to the byte: the cursor moves, the band grows
-     * only if it has to, the window is untouched. Locked, the click also says
-     * what to look at — the band becomes the window the depth deserves
-     * (`lockedWindow`) and the view flies to frame it, which is the same
-     * gesture, the same 5% of air and the same 320 ms as picking an era.
+     * only if it has to, the window is untouched. Locked, the click moves TWO
+     * of the three things on the rail — the year and the band — and the third,
+     * THE VISIBLE WINDOW, only if it has to.
+     *
+     * That last clause is round 57's correction, and it is worth stating what
+     * it replaces. Round 56 fitted the window to the band on every locked
+     * click: `windowFitting(band)`, the era pick's own +5% frame. Correct at
+     * one click and intolerable at ten — *"now the whole timeline shifts
+     * constantly when you click"* — because the fit is a recentre, so a reader
+     * clicking about inside a rail they had set up watched it jump under every
+     * press, and the frame of reference they were reading against was gone
+     * before they could compare two clicks in it.
+     *
+     * The two windows are therefore decoupled. The band is still a function of
+     * the clicked year alone (`lockedWindow` — the relative rule, unchanged),
+     * and the VIEW is now the least move that keeps that band on the rail
+     * (`windowLeastMoved`): nothing at all while the band fits, a slide when it
+     * pokes out of an end, a widening only when no slide could hold it. *"If
+     * possible (visible timeline is large enough), just shift selected range."*
      *
      * Everything else that moves the cursor is deliberately NOT this: a step of
      * a saga (`setCursor`), a search result or an event's date (`focusTime`,
      * `setTime`) are the app answering a question about a *thing*, and
-     * re-framing the rail around it is not part of that answer.
+     * re-framing the rail around it is not part of that answer. An era pick
+     * keeps its fit for the same reason it always had it — picking an era says
+     * "show me this era" (see `selectEra`).
      *
-     * Note what the locked branch does not do: it never asks where the window
-     * currently is. The span is a function of the clicked year alone, so
-     * clicking twice at the same depth lands on the same scale rather than
-     * ratcheting — the rule converges instead of zooming in forever.
+     * Note what the band does not do: it never asks where the window currently
+     * is. The span is a function of the clicked year alone, so clicking twice
+     * at the same depth lands on the same scale rather than ratcheting — the
+     * rule converges instead of zooming in forever. Only the *view* reads the
+     * current window, and only to keep as much of it as it can.
      */
     scrubTo(t: Year) {
       if (!this.rangeLock) return this.setTime(t)
       cancelFit() // a scrub outranks a fit still in flight
       const band = lockedWindow(clamp(t), this.lockScale, this.lockSplit)
-      const target = windowFitting(band)
+      const target = windowLeastMoved(band, this.range)
       // Selection first and directly, window second — the order `selectEra`
       // explains: a band written through `setSelection` would be clipped by the
       // window it is on its way out of.
@@ -138,6 +181,9 @@ export const useTimeStore = defineStore('time', {
       if (!sameSpan(selection, this.selection)) this.selection = selection
       const currentTime = clamp(t, selection.start, selection.end)
       if (currentTime !== this.currentTime) this.currentTime = currentTime
+      // The overwhelmingly common case is the one where `target` IS the current
+      // window: `fitWindow` then lands immediately and assigns nothing, so the
+      // rail's ticks do not move by a pixel. The tween is for the slide.
       this.fitWindow(target)
     },
     /** Turn the lock on or off. Nothing moves until the next press on the rail. */

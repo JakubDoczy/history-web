@@ -299,6 +299,9 @@ describe('show on map', () => {
     const events = useEventStore()
     const time = useTimeStore()
     events.adopt(seed())
+    // the app opens on 1400–1789 (round 57), and a band is clamped to its
+    // window: this test is about the band the jump makes, so it states both
+    time.setRange({ start: 1400, end: 2000 })
     time.setSelection(1700, 1800)
     events.showOnMap('voyage')
 

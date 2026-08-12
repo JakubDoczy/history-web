@@ -86,6 +86,19 @@ await page.goto(base, { waitUntil: 'domcontentloaded', timeout: PATIENCE })
 await page.waitForFunction(() => !!window.__events && window.__events.all.length > 100, null, {
   timeout: PATIENCE,
 })
+/**
+ * THE WINDOW AND THE BAND THIS FILE READS AGAINST, stated rather than inherited.
+ *
+ * Everything below is about Barbarossa and its children, and the selection is
+ * what culls the pins. This file used to get a band over 500–1945 free from
+ * the app's opening view; round 57 opens on 1400–1789 with a band of
+ * 1434–1549 (the reader's request), which has no 1941 in it at all. Nothing
+ * about focus navigation changed; this file's premise did.
+ */
+await page.evaluate(() => {
+  window.__time.setRange({ start: -550, end: 2026 })
+  window.__time.setSelection(500, 1945)
+})
 
 /** Everything about the panel and the mode that a picture cannot be diffed on. */
 const stateOf = () =>

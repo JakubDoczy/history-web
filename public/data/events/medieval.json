@@ -6,7 +6,7 @@
   "end": 565,
   "lat": 41.01,
   "lng": 28.98,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics"
   ],
@@ -117,7 +117,7 @@
     32
    ]
   ],
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "disease"
   ],
@@ -141,7 +141,7 @@
   "end": 907,
   "lat": 34.27,
   "lng": 108.95,
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "politics",
    "culture"
@@ -242,7 +242,7 @@
     29
    ]
   ],
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "war",
    "religion",
@@ -348,7 +348,7 @@
   "end": 1492,
   "lat": 37.18,
   "lng": -3.6,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "war",
    "religion"
@@ -463,7 +463,7 @@
   "end": 1258,
   "lat": 33.34,
   "lng": 44.4,
-  "priority": 83,
+  "priority": 84,
   "tags": [
    "science",
    "culture"
@@ -484,7 +484,7 @@
   "end": 1066,
   "lat": 60.0,
   "lng": 10.0,
-  "priority": 83,
+  "priority": 84,
   "tags": [
    "war",
    "exploration"
@@ -644,7 +644,7 @@
   "start": 820,
   "lat": 33.34,
   "lng": 44.4,
-  "priority": 61,
+  "priority": 62,
   "tags": [
    "science"
   ],
@@ -667,7 +667,7 @@
   "start": 850,
   "lat": 34.27,
   "lng": 108.95,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "technology",
    "war"
@@ -718,7 +718,7 @@
   "end": 1171,
   "lat": 30.05,
   "lng": 31.24,
-  "priority": 61,
+  "priority": 62,
   "tags": [
    "politics",
    "religion"
@@ -742,7 +742,7 @@
   "end": 1279,
   "lat": 34.8,
   "lng": 114.31,
-  "priority": 81,
+  "priority": 82,
   "tags": [
    "politics",
    "culture",
@@ -877,7 +877,7 @@
   "start": 1000,
   "lat": 51.6,
   "lng": -55.53,
-  "priority": 61,
+  "priority": 62,
   "tags": [
    "exploration"
   ],
@@ -904,7 +904,7 @@
   "end": 1194,
   "lat": 32.65,
   "lng": 51.67,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "politics",
    "war"
@@ -954,7 +954,7 @@
   "start": 1054,
   "lat": 41.01,
   "lng": 28.98,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "religion"
   ],
@@ -1007,7 +1007,7 @@
   "start": 1066,
   "lat": 50.91,
   "lng": 0.49,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "war",
    "politics"
@@ -1263,7 +1263,7 @@
   "end": 1150,
   "lat": 13.41,
   "lng": 103.87,
-  "priority": 61,
+  "priority": 62,
   "tags": [
    "culture",
    "religion"
@@ -1377,7 +1377,7 @@
   "end": 1193,
   "lat": 31.78,
   "lng": 35.22,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "war",
    "religion"
@@ -1648,7 +1648,7 @@
   "start": 1206,
   "lat": 47.92,
   "lng": 106.92,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "politics",
    "war"
@@ -1672,7 +1672,7 @@
   "start": 1215,
   "lat": 51.44,
   "lng": -0.56,
-  "priority": 83,
+  "priority": 84,
   "tags": [
    "politics"
   ],
@@ -1721,7 +1721,7 @@
   "end": 1600,
   "lat": 12.0,
   "lng": -8.0,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics",
    "economy",
@@ -1770,7 +1770,7 @@
   "start": 1258,
   "lat": 33.34,
   "lng": 44.4,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "war"
   ],
@@ -1818,7 +1818,7 @@
   "end": 1295,
   "lat": 39.9,
   "lng": 116.4,
-  "priority": 61,
+  "priority": 62,
   "tags": [
    "exploration"
   ],
@@ -1889,7 +1889,7 @@
   "end": 1922,
   "lat": 39.93,
   "lng": 32.86,
-  "priority": 83,
+  "priority": 84,
   "tags": [
    "politics",
    "war"
@@ -1913,7 +1913,7 @@
   "end": 1850,
   "lat": 50.0,
   "lng": 0.0,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "climate"
   ],
@@ -1987,7 +1987,7 @@
   "end": 1453,
   "lat": 48.0,
   "lng": 1.0,
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "war",
    "politics"
@@ -2155,7 +2155,7 @@
     36
    ]
   ],
-  "priority": 93,
+  "priority": 94,
   "tags": [
    "disease",
    "disaster"
@@ -2288,7 +2288,7 @@
   "end": 1644,
   "lat": 32.06,
   "lng": 118.8,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "politics",
    "culture"
@@ -2444,13 +2444,33 @@
   "priority": 0
  },
  {
+  "id": "battle-of-ankara",
+  "name": "Battle of Ankara",
+  "start": 1402.54932,
+  "lat": 39.98,
+  "lng": 32.63,
+  "tags": [
+   "war"
+  ],
+  "parent": "ottoman-empire",
+  "summary": "Timur defeated and captured the Ottoman sultan Bayezid I near Ankara on 20 July 1402, breaking up the Ottoman state for a decade.",
+  "body": "Part of [Ottoman Empire](event:ottoman-empire). Timur, ruler of an empire centred on Samarkand, invaded Anatolia in 1402 after a exchange of letters with the Ottoman sultan Bayezid I over refugee Turkmen princes and the borders of the two states.\n\nThe armies met on the Cubuk plain north east of Ankara on 20 July. Timur had reached the ground first and controlled the water. Anatolian contingents in the Ottoman army went over to their former princes during the battle. Bayezid was captured and died in captivity the following March.\n\nTimur restored the Anatolian beyliks and withdrew. The Ottoman state broke into competing principalities under Bayezid's sons for eleven years, a period known as the Interregnum, until Mehmed I reunited it in 1413. The defeat postponed the Ottoman advance in Europe and gave Constantinople another fifty years.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Ankara).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Ankara"
+   }
+  ],
+  "priority": 57
+ },
+ {
   "id": "zheng-he",
   "name": "Voyages of Zheng He",
   "start": 1405,
   "end": 1433,
   "lat": 32.06,
   "lng": 118.8,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "exploration"
   ],
@@ -2600,6 +2620,30 @@
   ]
  },
  {
+  "id": "council-of-constance",
+  "name": "Council of Constance",
+  "start": 1414.86,
+  "end": 1418.33,
+  "lat": 47.6633,
+  "lng": 9.1753,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "summary": "The council held at Constance from 1414 to 1418 ended the Western Schism by deposing or accepting the resignation of three rival popes and electing Martin V. It also condemned Jan Hus, who was burned in 1415.",
+  "weak": [
+   "reformation"
+  ],
+  "body": "The Council of Constance met from November 1414 to April 1418. It was called by the Pisan pope John XXIII under pressure from Sigismund, king of the Romans, to end the Western Schism, in which three men claimed the papacy at once.\n\nThe council deposed John XXIII and Benedict XIII, accepted the resignation of Gregory XII, and in November 1417 elected Martin V, who was accepted throughout Latin Christendom. In the decree Haec sancta it declared that a general council held its authority directly from Christ, a position later rejected by the papacy.\n\nIt also tried the Bohemian preacher [Jan Hus](event:jan-hus), who had come under a safe conduct from Sigismund. He was condemned and burned on 6 July 1415, and the remains of John Wycliffe were ordered exhumed and burned. The sentence on Hus was followed in Bohemia by the [Hussite Wars](event:hussite-wars).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Council_of_Constance).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Council_of_Constance"
+   }
+  ],
+  "priority": 58
+ },
+ {
   "id": "agincourt",
   "name": "Battle of Agincourt",
   "start": 1415,
@@ -2618,6 +2662,26 @@
     "url": "https://en.wikipedia.org/wiki/Battle_of_Agincourt"
    }
   ]
+ },
+ {
+  "id": "jan-hus",
+  "name": "Burning of Jan Hus",
+  "start": 1415.51096,
+  "lat": 47.6633,
+  "lng": 9.1753,
+  "parent": "council-of-constance",
+  "tags": [
+   "religion"
+  ],
+  "summary": "The Bohemian preacher Jan Hus was condemned by the Council of Constance and burned at the stake on 6 July 1415.",
+  "body": "Part of [Council of Constance](event:council-of-constance). Jan Hus was a priest and rector of the university of Prague who preached in Czech at the Bethlehem Chapel against clerical wealth and the sale of indulgences, drawing on the writings of John Wycliffe.\n\nHe travelled to the council under a safe conduct from Sigismund, king of the Romans, was arrested soon after arriving, and was tried on articles drawn from his works. He refused to abjure positions he said he had never held, was declared a heretic and was burned outside the walls of Constance on 6 July 1415. His ashes were thrown into the Rhine.\n\nThe execution was received in Bohemia as a breach of faith by the king. Within four years it had led to the [Hussite Wars](event:hussite-wars), and Hus became a national figure; 6 July is a public holiday in the Czech Republic.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Jan_Hus).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Jan_Hus"
+   }
+  ],
+  "priority": 58
  },
  {
   "id": "age-of-discovery",
@@ -2716,7 +2780,7 @@
   "end": 1460,
   "lat": 38.71,
   "lng": -9.14,
-  "priority": 61,
+  "priority": 62,
   "tags": [
    "exploration",
    "politics"
@@ -2735,13 +2799,1049 @@
   ]
  },
  {
+  "id": "hussite-wars",
+  "name": "Hussite Wars",
+  "start": 1419.57671,
+  "end": 1434.40959,
+  "lat": 50.0875,
+  "lng": 14.4213,
+  "tags": [
+   "war",
+   "religion",
+   "politics"
+  ],
+  "summary": "A series of wars fought in Bohemia from 1419 to 1434 between the followers of Jan Hus and crusading armies raised by the pope and Sigismund of Hungary. Five crusades were defeated.",
+  "strong": [
+   "council-of-constance"
+  ],
+  "weak": [
+   "reformation",
+   "printing-press"
+  ],
+  "body": "The Hussite Wars were fought in the Bohemian lands between 1419 and 1434. On one side were the Hussites, followers of the Prague preacher Jan Hus, who had been burned as a heretic at the [Council of Constance](event:council-of-constance) in 1415. On the other were Sigismund of Hungary, heir to the Bohemian crown, and five crusades proclaimed against Bohemia by the papacy.\n\nThe Hussites demanded communion in both kinds for the laity, free preaching, the punishment of public sins and the end of the clergy's worldly possessions, set out as the Four Articles of Prague in 1420. They divided into a moderate party centred on Prague and the radical Taborites based at the new town of Tabor.\n\nTheir armies were commanded first by Jan Zizka and after his death in 1424 by Prokop the Great. They fought as infantry with crossbows and light cannon behind a laager of war wagons, which could stop armoured cavalry in the open field, and they made war pay by raiding the neighbouring lands. Each crusade in turn was defeated or dispersed.\n\nThe war ended between the Hussites themselves. At [Lipany](event:lipany) in 1434 the moderates and the Catholic nobles destroyed the Taborite field army, which opened the way to the Compacts agreed at Basel and accepted at Jihlava in 1436, allowing the Bohemian church its own usage under Sigismund.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Hussite_Wars).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Hussite_Wars"
+   }
+  ],
+  "steps": [
+   {
+    "id": "defenestration",
+    "name": "The defenestration of Prague",
+    "page": "On 30 July 1419 a procession led by the priest Jan Zelivsky attacked the New Town hall in Prague and threw the councillors from the windows. King Wenceslaus IV died on 16 August, leaving his brother Sigismund, king of the Romans and of Hungary, as heir.\n\nSigismund had given Jan Hus a safe conduct to the [Council of Constance](event:council-of-constance) four years earlier and had not prevented his burning, and the Bohemian estates refused to accept him. The Four Articles of Prague, issued in 1420, set out the Hussite demands.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "Bohemia",
+       "paths": [
+        [
+         [
+          12.55,
+          50.3
+         ],
+         [
+          13.05,
+          50.55
+         ],
+         [
+          14.3,
+          50.9
+         ],
+         [
+          15.3,
+          50.8
+         ],
+         [
+          16.3,
+          50.5
+         ],
+         [
+          16.2,
+          49.8
+         ],
+         [
+          15.3,
+          49.1
+         ],
+         [
+          14.2,
+          48.75
+         ],
+         [
+          13.2,
+          49.2
+         ],
+         [
+          12.55,
+          50.3
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.42,
+        50.15
+       ],
+       "text": "Prague",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.66,
+        49.35
+       ],
+       "text": "Tabor",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        14.4213,
+        50.0875
+       ],
+       "label": "New Town hall, 30 July 1419"
+      }
+     ]
+    },
+    "at": 1419.57671,
+    "camera": {
+     "lat": 49.9898,
+     "lng": 14.3431,
+     "altitude": 0.0593
+    }
+   },
+   {
+    "id": "vitkov",
+    "name": "The first crusade and Vitkov Hill",
+    "page": "Pope Martin V proclaimed a crusade in March 1420 and Sigismund reached Prague on 30 June with an army drawn from the empire and Hungary. On 14 July a small Hussite force under Jan Zizka held the fortified hill of Vitkov east of the city against an attack by the crusader cavalry.\n\nThe crusaders withdrew at the end of July. Sigismund was crowned in Prague castle but could not hold the city, and was beaten again at Vysehrad on 1 November. The Taborites had already won the first pitched battle of the war at Sudomer on 25 March.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "Bohemia",
+       "paths": [
+        [
+         [
+          12.55,
+          50.3
+         ],
+         [
+          13.05,
+          50.55
+         ],
+         [
+          14.3,
+          50.9
+         ],
+         [
+          15.3,
+          50.8
+         ],
+         [
+          16.3,
+          50.5
+         ],
+         [
+          16.2,
+          49.8
+         ],
+         [
+          15.3,
+          49.1
+         ],
+         [
+          14.2,
+          48.75
+         ],
+         [
+          13.2,
+          49.2
+         ],
+         [
+          12.55,
+          50.3
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.42,
+        50.15
+       ],
+       "text": "Prague",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.66,
+        49.35
+       ],
+       "text": "Tabor",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.09,
+       "label": "Sigismund, from Silesia",
+       "path": [
+        [
+         16.9,
+         50.3
+        ],
+        [
+         15.8,
+         50.35
+        ],
+        [
+         14.9,
+         50.2
+        ],
+        [
+         14.55,
+         50.1
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.07,
+       "label": "Crusaders from Meissen and Saxony",
+       "path": [
+        [
+         13.47,
+         51.16
+        ],
+        [
+         13.8,
+         50.75
+        ],
+        [
+         14.25,
+         50.3
+        ],
+        [
+         14.45,
+         50.12
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        14.4494,
+        50.0872
+       ],
+       "label": "Vitkov Hill, 14 July 1420"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        14.4194,
+        50.0642
+       ],
+       "label": "Vysehrad, 1 November 1420"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        14.115,
+        49.3286
+       ],
+       "label": "Sudomer, 25 March 1420"
+      }
+     ]
+    },
+    "at": 1420.53415,
+    "camera": {
+     "lat": 50.1122,
+     "lng": 14.4846,
+     "altitude": 0.0682
+    }
+   },
+   {
+    "id": "nemecky-brod",
+    "name": "Kutna Hora and Nemecky Brod",
+    "page": "Sigismund invaded from Moravia in December 1421 and took Kutna Hora, the silver town that paid for the Bohemian crown. Zizka, encircled there, broke out at night on 22 December behind a screen of war wagons and guns.\n\nHe turned on the retreating royal army in the first days of January and destroyed it at Nemecky Brod on 6 January 1422. The Hussite field armies fought around a mobile laager of wagons carrying crossbows and light cannon, a method built for infantry raised from towns and villages.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "Bohemia",
+       "paths": [
+        [
+         [
+          12.55,
+          50.3
+         ],
+         [
+          13.05,
+          50.55
+         ],
+         [
+          14.3,
+          50.9
+         ],
+         [
+          15.3,
+          50.8
+         ],
+         [
+          16.3,
+          50.5
+         ],
+         [
+          16.2,
+          49.8
+         ],
+         [
+          15.3,
+          49.1
+         ],
+         [
+          14.2,
+          48.75
+         ],
+         [
+          13.2,
+          49.2
+         ],
+         [
+          12.55,
+          50.3
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.42,
+        50.15
+       ],
+       "text": "Prague",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.66,
+        49.35
+       ],
+       "text": "Tabor",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.09,
+       "label": "Sigismund, from Moravia",
+       "path": [
+        [
+         17.1,
+         49.2
+        ],
+        [
+         16.3,
+         49.4
+        ],
+        [
+         15.6,
+         49.7
+        ],
+        [
+         15.27,
+         49.95
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.07,
+       "label": "Zizka's breakout and pursuit",
+       "path": [
+        [
+         15.27,
+         49.95
+        ],
+        [
+         15.45,
+         49.8
+        ],
+        [
+         15.58,
+         49.61
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        15.581,
+        49.6079
+       ],
+       "label": "Nemecky Brod, 6 January 1422"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.05,
+       "color": "#f5a623",
+       "pos": [
+        15.2682,
+        49.9484
+       ],
+       "label": "Kutna Hora, December 1421"
+      }
+     ]
+    },
+    "at": 1422.01507,
+    "camera": {
+     "lat": 49.8572,
+     "lng": 14.9298,
+     "altitude": 0.0697
+    }
+   },
+   {
+    "id": "usti",
+    "name": "Usti nad Labem",
+    "page": "A Saxon and Meissen army came down the Elbe in June 1426 to relieve the town of Aussig, which the Hussites were besieging. On 16 June the Hussite army under Prokop the Great and Sigismund Korybut met it outside the town and destroyed it.\n\nZizka had died of plague in October 1424 and Prokop, a priest, had taken over the field armies. The victory opened the northern border and was followed by Hussite operations into Lusatia and Saxony.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "Bohemia",
+       "paths": [
+        [
+         [
+          12.55,
+          50.3
+         ],
+         [
+          13.05,
+          50.55
+         ],
+         [
+          14.3,
+          50.9
+         ],
+         [
+          15.3,
+          50.8
+         ],
+         [
+          16.3,
+          50.5
+         ],
+         [
+          16.2,
+          49.8
+         ],
+         [
+          15.3,
+          49.1
+         ],
+         [
+          14.2,
+          48.75
+         ],
+         [
+          13.2,
+          49.2
+         ],
+         [
+          12.55,
+          50.3
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.42,
+        50.15
+       ],
+       "text": "Prague",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.66,
+        49.35
+       ],
+       "text": "Tabor",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.08,
+       "label": "Saxon and Meissen army",
+       "path": [
+        [
+         13.74,
+         51.05
+        ],
+        [
+         13.9,
+         50.85
+        ],
+        [
+         14.03,
+         50.7
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.07,
+       "label": "Hussite field army",
+       "path": [
+        [
+         14.42,
+         50.09
+        ],
+        [
+         14.2,
+         50.45
+        ],
+        [
+         14.05,
+         50.63
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        14.0323,
+        50.6607
+       ],
+       "label": "Usti nad Labem, 16 June 1426"
+      }
+     ]
+    },
+    "at": 1426.45616,
+    "camera": {
+     "lat": 50.2218,
+     "lng": 14.2335,
+     "altitude": 0.0645
+    }
+   },
+   {
+    "id": "tachov",
+    "name": "Tachov",
+    "page": "The fourth crusade entered western Bohemia in July 1427 under Cardinal Henry Beaufort and Frederick of Brandenburg, coming from Bavaria and the Upper Palatinate. It besieged Stribro, and on the approach of the Hussite field armies it broke up on 4 August near Tachov.\n\nThe crusaders lost their guns and baggage. After 1427 no crusade held together long enough to bring the Hussites to battle on ground of its own choosing.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "Bohemia",
+       "paths": [
+        [
+         [
+          12.55,
+          50.3
+         ],
+         [
+          13.05,
+          50.55
+         ],
+         [
+          14.3,
+          50.9
+         ],
+         [
+          15.3,
+          50.8
+         ],
+         [
+          16.3,
+          50.5
+         ],
+         [
+          16.2,
+          49.8
+         ],
+         [
+          15.3,
+          49.1
+         ],
+         [
+          14.2,
+          48.75
+         ],
+         [
+          13.2,
+          49.2
+         ],
+         [
+          12.55,
+          50.3
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.42,
+        50.15
+       ],
+       "text": "Prague",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.66,
+        49.35
+       ],
+       "text": "Tabor",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.08,
+       "label": "Crusade from the Upper Palatinate",
+       "path": [
+        [
+         11.9,
+         49.45
+        ],
+        [
+         12.3,
+         49.6
+        ],
+        [
+         12.63,
+         49.79
+        ],
+        [
+         13.05,
+         49.75
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.07,
+       "label": "Hussite relief",
+       "path": [
+        [
+         14.42,
+         50.05
+        ],
+        [
+         13.6,
+         49.85
+        ],
+        [
+         12.9,
+         49.78
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        12.6317,
+        49.7961
+       ],
+       "label": "Tachov, 4 August 1427"
+      }
+     ]
+    },
+    "at": 1427.59041,
+    "camera": {
+     "lat": 49.8953,
+     "lng": 13.771,
+     "altitude": 0.0757
+    }
+   },
+   {
+    "id": "rides",
+    "name": "The rides abroad",
+    "page": "From 1428 the Hussite field armies carried the war outside Bohemia in expeditions the Czech sources call spanile jizdy, the fine rides. They went into Silesia, Lusatia, Saxony, Meissen, Franconia, Austria and Hungary, living off the country and taking contributions from towns.\n\nIn 1433 a force of about 7,000 men marched through the Neumark into Prussia, took Dirschau, and reached the Baltic near Danzig. The rides paid the armies and pressed the neighbouring princes, and they made the war a matter for the whole of central Europe.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "Bohemia",
+       "paths": [
+        [
+         [
+          12.55,
+          50.3
+         ],
+         [
+          13.05,
+          50.55
+         ],
+         [
+          14.3,
+          50.9
+         ],
+         [
+          15.3,
+          50.8
+         ],
+         [
+          16.3,
+          50.5
+         ],
+         [
+          16.2,
+          49.8
+         ],
+         [
+          15.3,
+          49.1
+         ],
+         [
+          14.2,
+          48.75
+         ],
+         [
+          13.2,
+          49.2
+         ],
+         [
+          12.55,
+          50.3
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.42,
+        50.15
+       ],
+       "text": "Prague",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.66,
+        49.35
+       ],
+       "text": "Tabor",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.1,
+       "label": "Into Saxony and Meissen",
+       "path": [
+        [
+         14.1,
+         50.6
+        ],
+        [
+         13.6,
+         51.0
+        ],
+        [
+         13.0,
+         51.3
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.1,
+       "label": "Into Silesia and Lusatia",
+       "path": [
+        [
+         15.9,
+         50.3
+        ],
+        [
+         16.6,
+         50.7
+        ],
+        [
+         17.3,
+         51.1
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.1,
+       "label": "Into Franconia",
+       "path": [
+        [
+         13.0,
+         49.6
+        ],
+        [
+         12.2,
+         49.55
+        ],
+        [
+         11.3,
+         49.5
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.1,
+       "label": "To the Baltic, 1433",
+       "path": [
+        [
+         15.6,
+         50.6
+        ],
+        [
+         15.6,
+         51.8
+        ],
+        [
+         16.8,
+         53.0
+        ],
+        [
+         18.65,
+         54.1
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        18.6466,
+        54.352
+       ],
+       "label": "The Baltic reached near Danzig, 1433"
+      }
+     ]
+    },
+    "start": 1428.03962,
+    "end": 1433.66712,
+    "camera": {
+     "lat": 50.6766,
+     "lng": 14.7447,
+     "altitude": 0.1889
+    }
+   },
+   {
+    "id": "domazlice",
+    "name": "Domazlice",
+    "page": "The fifth crusade crossed the border on 1 August 1431 under Frederick of Brandenburg and the papal legate Giuliano Cesarini. On 14 August, near Domazlice, the crusaders heard the Hussite wagons and the hymn of the approaching army and broke before contact.\n\nThe baggage, the guns and the legate's own bull were taken. On 15 October the Council of Basel invited the Hussites to negotiate, which is what the defeat had made unavoidable.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "color": "#eaf1fb",
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "Bohemia",
+       "paths": [
+        [
+         [
+          12.55,
+          50.3
+         ],
+         [
+          13.05,
+          50.55
+         ],
+         [
+          14.3,
+          50.9
+         ],
+         [
+          15.3,
+          50.8
+         ],
+         [
+          16.3,
+          50.5
+         ],
+         [
+          16.2,
+          49.8
+         ],
+         [
+          15.3,
+          49.1
+         ],
+         [
+          14.2,
+          48.75
+         ],
+         [
+          13.2,
+          49.2
+         ],
+         [
+          12.55,
+          50.3
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.42,
+        50.15
+       ],
+       "text": "Prague",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.66,
+        49.35
+       ],
+       "text": "Tabor",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.08,
+       "label": "Fifth crusade, from Bavaria",
+       "path": [
+        [
+         12.1,
+         49.3
+        ],
+        [
+         12.55,
+         49.38
+        ],
+        [
+         12.93,
+         49.44
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.08,
+       "label": "Prokop the Great",
+       "path": [
+        [
+         14.2,
+         49.7
+        ],
+        [
+         13.6,
+         49.55
+        ],
+        [
+         13.05,
+         49.46
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.06,
+       "color": "#f5a623",
+       "pos": [
+        12.9294,
+        49.4406
+       ],
+       "label": "Domazlice, 14 August 1431"
+      }
+     ]
+    },
+    "at": 1431.61781,
+    "camera": {
+     "lat": 49.7944,
+     "lng": 13.8593,
+     "altitude": 0.0751
+    }
+   },
+   {
+    "id": "lipany-step",
+    "name": "Battle of Lipany",
+    "child": "lipany",
+    "at": 1434.40959
+   }
+  ],
+  "priority": 70
+ },
+ {
   "id": "aztec-empire",
   "name": "Aztec Empire",
   "start": 1428,
   "end": 1521,
   "lat": 19.43,
   "lng": -99.13,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics"
   ],
@@ -2764,7 +3864,7 @@
   "end": 1431,
   "lat": 47.22,
   "lng": 2.42,
-  "priority": 61,
+  "priority": 62,
   "tags": [
    "war",
    "religion"
@@ -2780,13 +3880,33 @@
   ]
  },
  {
+  "id": "lipany",
+  "name": "Battle of Lipany",
+  "start": 1434.40959,
+  "lat": 50.035,
+  "lng": 14.877,
+  "parent": "hussite-wars",
+  "tags": [
+   "war"
+  ],
+  "summary": "The Taborite field army was destroyed by a coalition of moderate Hussites and Catholic nobles on 30 May 1434, ending the Hussite Wars.",
+  "body": "Part of [Hussite Wars](event:hussite-wars). The battle was fought on 30 May 1434 near the village of Lipany, east of Prague, between the radical Taborite and Orphan field armies and a coalition of moderate Utraquist Hussites and Catholic Bohemian nobles.\n\nThe coalition attacked the wagon laager, then fell back in what the radicals took for a rout. The Taborites left their wagons to pursue and were caught in the open by the cavalry. Prokop the Great and Prokop the Lesser were both killed and the field armies ceased to exist.\n\nThe battle settled which Hussite party would make terms. The Compacts of Basel, accepted at Jihlava in July 1436, allowed the Bohemian church communion in both kinds and Sigismund was recognised as king. Tabor kept its own organisation until 1452.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Lipany).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Lipany"
+   }
+  ],
+  "priority": 0
+ },
+ {
   "id": "inca-empire",
   "name": "Inca Empire",
   "start": 1438,
   "end": 1533,
   "lat": -13.52,
   "lng": -71.98,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics"
   ],
@@ -2808,7 +3928,7 @@
   "start": 1440,
   "lat": 50.0,
   "lng": 8.27,
-  "priority": 92,
+  "priority": 93,
   "tags": [
    "technology",
    "culture"
@@ -2821,6 +3941,27 @@
     "url": "https://en.wikipedia.org/wiki/Printing_press"
    }
   ]
+ },
+ {
+  "id": "battle-of-varna",
+  "name": "Battle of Varna",
+  "start": 1444.85929,
+  "lat": 43.214,
+  "lng": 27.9147,
+  "parent": "ottoman-empire",
+  "tags": [
+   "war",
+   "religion"
+  ],
+  "summary": "An Ottoman army under Murad II destroyed a Hungarian and Polish crusading force at Varna on the Black Sea on 10 November 1444. King Wladyslaw III was killed.",
+  "body": "Part of [Ottoman Empire](event:ottoman-empire). The crusade of Varna followed a successful Hungarian campaign in the Balkans in 1443 and the ten year truce of Szeged agreed in the summer of 1444. Under pressure from the papal legate Giuliano Cesarini and with promises of a Venetian fleet, Wladyslaw III of Poland and Hungary repudiated the truce and marched to the Black Sea coast.\n\nMurad II crossed the straits with an army several times larger, the promised blockade of the Bosphorus having failed. The armies met outside Varna on 10 November 1444. The Hungarian wings held, but a charge by the king against the janissaries around the sultan ended with his death, and the army broke.\n\nThe defeat ended organised crusading against the Ottomans in the Balkans. Janos Hunyadi was beaten again at Kosovo in 1448, and no relief came to Constantinople when it was besieged in [1453](event:fall-constantinople).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Varna).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Varna"
+   }
+  ],
+  "priority": 54
  },
  {
   "id": "nicholas-v",
@@ -2873,7 +4014,7 @@
     "url": "https://en.wikipedia.org/wiki/History_of_printing"
    }
   ],
-  "priority": 92
+  "priority": 93
  },
  {
   "id": "leonardo-da-vinci",
@@ -2915,10 +4056,10 @@
  {
   "id": "fall-constantinople",
   "name": "Fall of Constantinople",
-  "start": 1453,
+  "start": 1453.25068,
   "lat": 41.0161,
   "lng": 28.9258,
-  "priority": 90,
+  "priority": 91,
   "tags": [
    "war",
    "politics",
@@ -2928,11 +4069,1637 @@
   "strong": [
    "renaissance"
   ],
-  "body": "Constantinople fell to the Ottoman sultan Mehmed II on 29 May 1453, after a siege of fifty-three days. The last Roman emperor, Constantine XI, was killed in the fighting and his body was never identified. The empire that had governed from the city since 330 ended with him, 1,123 years after Constantine I founded it.\n\nThe city had never recovered from the [Fourth Crusade's](event:fourth-crusade) sack in 1204, its territory had shrunk to the walls and a few outposts, and perhaps 50,000 people lived among fields and ruins in a city built for many times that. The Theodosian walls, though, had turned back every attacker for a thousand years.\n\nMehmed brought about 80,000 men against some 7,000 defenders, and a siege train that included a bombard cast by the Hungarian engineer Orban which threw a stone ball of over half a tonne. He had part of his fleet dragged overland on greased rollers into the Golden Horn, past the chain across its mouth. The walls were breached repeatedly and repaired at night for seven weeks; the final assault came before dawn on 29 May and broke through near a gate that had been left open.\n\nMehmed entered the city that day, allowed the customary three days of plunder and then stopped it early, and made Constantinople his capital. Hagia Sophia became a mosque. He repopulated the city by resettlement and confirmed the Orthodox patriarch in office as head of his Christian subjects.\n\nEurope heard the news as a catastrophe. It helped push Greek scholars and manuscripts west into the [Renaissance](event:renaissance), and Ottoman control of the land routes east is part of the reason European states began looking for [a sea route to Asia](event:age-of-discovery).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Constantinople).",
+  "body": "Constantinople fell to the Ottoman sultan Mehmed II on 29 May 1453, after a siege of fifty-three days. The last Roman emperor, Constantine XI, was killed in the fighting and his body was never identified. The empire that had governed from the city since 330 ended with him, 1,123 years after Constantine I founded it.\n\nThe city had never recovered from the [Fourth Crusade's](event:fourth-crusade) sack in 1204, its territory had shrunk to the walls and a few outposts, and perhaps 50,000 people lived among fields and ruins in a city built for many times that. The Theodosian walls, though, had turned back every attacker for a thousand years.\n\nMehmed brought between 50,000 and 80,000 men against fewer than 8,000 defenders, and a siege train that included a bombard cast by the Hungarian engineer Orban which threw a stone ball of over half a tonne. The defence of the land walls was directed by the Genoese commander Giovanni Giustiniani. The siege ran in phases, from the first bombardment through the moving of a fleet overland into the Golden Horn to the assault of 29 May; the steps follow them in order.\n\nMehmed entered the city that day, allowed the customary three days of plunder and then stopped it early, and made Constantinople his capital. Hagia Sophia became a mosque. He repopulated the city by resettlement and confirmed the Orthodox patriarch in office as head of his Christian subjects.\n\nEurope received the news as a catastrophe. It helped push Greek scholars and manuscripts west into the [Renaissance](event:renaissance), and Ottoman control of the land routes east is part of the reason European states began looking for [a sea route to Asia](event:age-of-discovery).\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Fall_of_Constantinople).",
   "links": [
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fall_of_Constantinople"
+   }
+  ],
+  "end": 1453.40685,
+  "steps": [
+   {
+    "id": "encampment",
+    "name": "The army before the walls",
+    "at": 1453.25068,
+    "camera": {
+     "lat": 41.0212,
+     "lng": 28.9505,
+     "altitude": 0.0045
+    },
+    "page": "Ottoman troops appeared before the land walls on 2 April 1453 and Mehmed II arrived with the main body on 5 April. Estimates of his army run from 50,000 to 80,000 men, against rather under 8,000 defenders for a perimeter of some twenty kilometres.\n\nThe defenders drew the great chain across the mouth of the Golden Horn, closing the harbour to the Ottoman fleet. Mehmed placed his own tent opposite the Mesoteichion, the middle stretch of wall where the Lycus stream crosses the line and the ground is lowest. Karaca Pasha took the northern sector, Ishak Pasha the ground from the Lycus down to the Marmara.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.006,
+       "label": "Ottoman army, from Edirne",
+       "path": [
+        [
+         28.87,
+         41.035
+        ],
+        [
+         28.895,
+         41.026
+        ],
+        [
+         28.911,
+         41.02
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        28.916,
+        41.019
+       ],
+       "label": "Mehmed II's camp"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.912,
+        41.033
+       ],
+       "label": "Karaca Pasha, northern sector"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.908,
+        41.001
+       ],
+       "label": "Ishak Pasha, southern sector"
+      },
+      {
+       "type": "frontline",
+       "color": "#f5a623",
+       "dash": "dashed",
+       "width": 3.0,
+       "label": "The chain across the Golden Horn",
+       "paths": [
+        [
+         [
+          28.979,
+          41.018
+         ],
+         [
+          28.9755,
+          41.0225
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        29.006,
+        41.042
+       ],
+       "label": "Ottoman fleet at the Double Columns"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        29.0567,
+        41.085
+       ],
+       "label": "Rumelihisari, built 1452"
+      }
+     ]
+    }
+   },
+   {
+    "id": "bombardment",
+    "name": "The bombardment opens",
+    "start": 1453.26164,
+    "end": 1453.29452,
+    "camera": {
+     "lat": 41.0174,
+     "lng": 28.9479,
+     "altitude": 0.0034
+    },
+    "page": "The siege proper began on 6 April, when the guns opened on the land walls. The largest was cast at Edirne by the Hungarian founder Orban and threw a stone ball of over half a tonne; it could be fired only a few times a day.\n\nThe batteries concentrated on the Mesoteichion and on the Charisius gate. Sections of the outer wall were brought down and rebuilt at night with earth, rubble and barrels, and the defenders held the repaired stockade rather than the breach. A general assault on 18 April was thrown back after several hours.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        28.918,
+        41.017
+       ],
+       "label": "Orban's great bombard"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.929,
+        41.03
+       ],
+       "label": "Battery, Charisius gate"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.916,
+        41.008
+       ],
+       "label": "Battery, southern walls"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.004,
+       "label": "Assault of 18 April",
+       "path": [
+        [
+         28.913,
+         41.018
+        ],
+        [
+         28.92,
+         41.0168
+        ],
+        [
+         28.924,
+         41.016
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.921,
+        41.0125
+       ],
+       "text": "Mesoteichion",
+       "size": "sm"
+      },
+      {
+       "type": "frontline",
+       "color": "#f5a623",
+       "dash": "dashed",
+       "width": 3.0,
+       "label": "The chain",
+       "paths": [
+        [
+         [
+          28.979,
+          41.018
+         ],
+         [
+          28.9755,
+          41.0225
+         ]
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "four-ships",
+    "name": "Four ships reach the Horn",
+    "at": 1453.3,
+    "camera": {
+     "lat": 41.0159,
+     "lng": 28.965,
+     "altitude": 0.003
+    },
+    "page": "On 20 April three Genoese ships carrying men and supplies from the pope, and one imperial transport carrying grain, met the Ottoman fleet off the city. The Ottoman vessels were smaller and lower and could not board the tall Genoese carracks.\n\nThe fight was watched from both shores. The four ships worked through, the chain was opened to let them into the Golden Horn, and Mehmed removed the fleet commander Baltaoglu. The action showed that the harbour could not be forced while the chain held.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.005,
+       "label": "The four ships, 20 April",
+       "path": [
+        [
+         28.99,
+         40.98
+        ],
+        [
+         29.0,
+         41.0
+        ],
+        [
+         28.988,
+         41.013
+        ],
+        [
+         28.979,
+         41.02
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.005,
+       "label": "Ottoman fleet intercepts",
+       "path": [
+        [
+         29.006,
+         41.042
+        ],
+        [
+         29.0,
+         41.02
+        ],
+        [
+         28.995,
+         41.006
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#f5a623",
+       "pos": [
+        28.996,
+        41.005
+       ],
+       "label": "Naval action off the point"
+      },
+      {
+       "type": "frontline",
+       "color": "#f5a623",
+       "dash": "dashed",
+       "width": 3.0,
+       "label": "The chain, opened",
+       "paths": [
+        [
+         [
+          28.979,
+          41.018
+         ],
+         [
+          28.9755,
+          41.0225
+         ]
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "overland",
+    "name": "Ships hauled into the Golden Horn",
+    "at": 1453.30548,
+    "camera": {
+     "lat": 41.0217,
+     "lng": 28.9604,
+     "altitude": 0.003
+    },
+    "page": "On 22 April Mehmed had about seventy vessels dragged out of the Bosphorus and hauled on greased rollers over the ridge behind Galata, then launched into the Golden Horn above the chain. The Genoese of Pera, formally neutral, did not stop the work.\n\nA fleet inside the harbour put the low sea walls along the Horn under threat and forced the defenders to spread their small numbers further. An attempt to burn the ships with fire ships on 28 April failed, and the captured survivors were executed within sight of the walls.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.005,
+       "label": "Ships hauled overland",
+       "path": [
+        [
+         29.0,
+         41.0392
+        ],
+        [
+         28.988,
+         41.035
+        ],
+        [
+         28.977,
+         41.033
+        ],
+        [
+         28.968,
+         41.0335
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        28.964,
+        41.033
+       ],
+       "label": "Ottoman ships in the Horn"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.004,
+       "label": "Fire ships, 28 April",
+       "path": [
+        [
+         28.956,
+         41.025
+        ],
+        [
+         28.96,
+         41.03
+        ],
+        [
+         28.963,
+         41.0322
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "color": "#f5a623",
+       "dash": "dashed",
+       "width": 3.0,
+       "label": "The chain, bypassed",
+       "paths": [
+        [
+         [
+          28.979,
+          41.018
+         ],
+         [
+          28.9755,
+          41.0225
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.986,
+        41.04
+       ],
+       "text": "Portage over the ridge",
+       "size": "sm"
+      }
+     ]
+    }
+   },
+   {
+    "id": "mines",
+    "name": "Mines and the siege tower",
+    "start": 1453.37123,
+    "end": 1453.39589,
+    "camera": {
+     "lat": 41.0203,
+     "lng": 28.9517,
+     "altitude": 0.0032
+    },
+    "page": "Between 16 and 25 May Ottoman sappers, many of them Saxon silver miners from Serbia, drove tunnels under the walls in the Blachernae sector. The defenders located them by countermining under the direction of the engineer Johannes Grant, and flooded, burned or fought them out underground.\n\nA wheeled siege tower brought up against the Caligaria gate on 18 May was destroyed the following night. A partial lunar eclipse on 22 May and heavy rain in the days after were read in the city as omens.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#e5484d",
+       "pos": [
+        28.937,
+        41.032
+       ],
+       "label": "Mines under the Blachernae wall"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#e5484d",
+       "pos": [
+        28.933,
+        41.03
+       ],
+       "label": "Siege tower, 18 May"
+      },
+      {
+       "type": "frontline",
+       "color": "#e5484d",
+       "dash": "dashed",
+       "width": 2.4,
+       "label": "Pontoon bridge across the Horn",
+       "paths": [
+        [
+         [
+          28.956,
+          41.0385
+         ],
+         [
+          28.95,
+          41.033
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.933,
+        41.038
+       ],
+       "text": "Blachernae",
+       "size": "sm"
+      }
+     ]
+    }
+   },
+   {
+    "id": "last-council",
+    "name": "The last days",
+    "start": 1453.39863,
+    "end": 1453.40411,
+    "camera": {
+     "lat": 41.0174,
+     "lng": 28.9474,
+     "altitude": 0.0034
+    },
+    "page": "Mehmed offered terms which would have left Constantine XI a ruler in the Morea if the city were surrendered; the offer was refused. On 26 and 27 May the Ottoman camp prepared for a general assault, and fires were lit along the lines.\n\nThe defenders spent 28 May repairing the stockade at the Lycus and carrying icons in procession through the streets. A service was held in Hagia Sophia that evening, attended by both Orthodox and Latin clergy. The gates behind the outer wall were locked so that the garrison could not fall back.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.004,
+       "color": "#eaf1fb",
+       "pos": [
+        28.9802,
+        41.0086
+       ],
+       "label": "Service in Hagia Sophia, 28 May"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.003,
+       "color": "#eaf1fb",
+       "pos": [
+        28.925,
+        41.017
+       ],
+       "label": "The stockade at the Lycus"
+      },
+      {
+       "type": "frontline",
+       "color": "#e5484d",
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "Ottoman lines, 28 May",
+       "paths": [
+        [
+         [
+          28.91,
+          40.996
+         ],
+         [
+          28.908,
+          41.01
+         ],
+         [
+          28.911,
+          41.021
+         ],
+         [
+          28.92,
+          41.032
+         ],
+         [
+          28.93,
+          41.04
+         ]
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "final-assault",
+    "name": "The final assault",
+    "at": 1453.40685,
+    "camera": {
+     "lat": 41.0205,
+     "lng": 28.9472,
+     "altitude": 0.0034
+    },
+    "page": "The assault began shortly after midnight on 29 May and came in three waves: irregular azaps first, then Anatolian regiments, then the janissaries. The weight fell on the Mesoteichion, with attacks on the Blachernae walls and from the ships in the Horn.\n\nGiovanni Giustiniani, who commanded the defence of the land walls, was wounded and carried off through the inner wall, and the stockade gave way behind him. A small postern, the Kerkoporta, was found open near Blachernae and Ottoman troops came through it. Constantine XI was killed in the fighting and his body was not identified. Mehmed entered the city that day and made it his capital.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "label": "Theodosian land walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 3.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.92,
+          41.0022
+         ],
+         [
+          28.9224,
+          41.0083
+         ],
+         [
+          28.9247,
+          41.0158
+         ],
+         [
+          28.93,
+          41.023
+         ],
+         [
+          28.9358,
+          41.0294
+         ],
+         [
+          28.941,
+          41.0344
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "frontline",
+       "label": "Sea walls",
+       "color": "#eaf1fb",
+       "dash": "solid",
+       "width": 2.0,
+       "paths": [
+        [
+         [
+          28.9227,
+          40.9931
+         ],
+         [
+          28.935,
+          40.9925
+         ],
+         [
+          28.9585,
+          41.0
+         ],
+         [
+          28.972,
+          41.0025
+         ],
+         [
+          28.9838,
+          41.0135
+         ]
+        ],
+        [
+         [
+          28.9838,
+          41.0135
+         ],
+         [
+          28.972,
+          41.0175
+         ],
+         [
+          28.956,
+          41.027
+         ],
+         [
+          28.95,
+          41.033
+         ],
+         [
+          28.9452,
+          41.0402
+         ]
+        ]
+       ]
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.97,
+        41.006
+       ],
+       "text": "Constantinople",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.977,
+        41.03
+       ],
+       "text": "Pera (Genoese)",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.96,
+        41.03
+       ],
+       "text": "Golden Horn",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        28.98,
+        40.988
+       ],
+       "text": "Sea of Marmara",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        29.03,
+        41.064
+       ],
+       "text": "Bosphorus",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.006,
+       "label": "Main assault, the Mesoteichion",
+       "path": [
+        [
+         28.908,
+         41.017
+        ],
+        [
+         28.918,
+         41.0165
+        ],
+        [
+         28.925,
+         41.016
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.005,
+       "label": "Assault on the Blachernae walls",
+       "path": [
+        [
+         28.923,
+         41.04
+        ],
+        [
+         28.933,
+         41.037
+        ],
+        [
+         28.94,
+         41.0345
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.004,
+       "label": "Landings from the Horn",
+       "path": [
+        [
+         28.964,
+         41.034
+        ],
+        [
+         28.958,
+         41.03
+        ],
+        [
+         28.954,
+         41.0285
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#f5a623",
+       "pos": [
+        28.925,
+        41.017
+       ],
+       "label": "Giustiniani wounded, the stockade lost"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.004,
+       "color": "#f5a623",
+       "pos": [
+        28.94,
+        41.034
+       ],
+       "label": "The Kerkoporta found open"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.004,
+       "color": "#f5a623",
+       "pos": [
+        28.9265,
+        41.015
+       ],
+       "label": "Constantine XI killed"
+      }
+     ]
+    }
    }
   ]
  },
@@ -2961,13 +5728,461 @@
   ]
  },
  {
+  "id": "wars-of-the-roses",
+  "name": "Wars of the Roses",
+  "start": 1455.38767,
+  "end": 1487.45616,
+  "lat": 52.5,
+  "lng": -1.2,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A series of English civil wars between the houses of Lancaster and York, fought between 1455 and 1487. They ended with the victory of Henry Tudor at Bosworth and the Tudor dynasty.",
+  "weak": [
+   "hundred-years-war"
+  ],
+  "body": "The Wars of the Roses were fought in England between 1455 and 1487 between supporters of the houses of Lancaster and York, both descended from Edward III. The name comes from the badges later attached to the two sides, a red rose for Lancaster and a white for York.\n\nThe background was the reign of Henry VI, who came to the throne as an infant, suffered a breakdown in 1453, and presided over the loss of the English lands in France at the end of the [Hundred Years' War](event:hundred-years-war). Government fell to competing groups of magnates with private armies raised by indenture.\n\nThe fighting came in short bursts separated by years of peace. Richard of York was killed at Wakefield in 1460; his son took the throne as Edward IV after Towton in 1461; Henry VI was briefly restored in 1470 and Edward recovered the crown at Barnet and Tewkesbury in 1471. After Edward's death in 1483 his brother took the throne as Richard III and his two nephews disappeared in the Tower.\n\nHenry Tudor, a Lancastrian claimant through his mother, landed in Wales in 1485 and killed Richard at [Bosworth](event:bosworth). He married Elizabeth of York and put down the last Yorkist rising at Stoke Field in 1487.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Wars_of_the_Roses).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Wars_of_the_Roses"
+   }
+  ],
+  "steps": [
+   {
+    "id": "st-albans",
+    "name": "First St Albans",
+    "page": "Richard, duke of York, and the Nevilles met the royal party in the streets of St Albans on 22 May 1455. Fewer than 160 men were killed, among them the duke of Somerset, the earl of Northumberland and Lord Clifford.\n\nHenry VI was taken into York's keeping and York became protector for the second time. The quarrel was still about who advised the king rather than who should be king, and the deaths of three leading Lancastrians made it a blood feud between families.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        -0.13,
+        51.51
+       ],
+       "text": "London",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -1.08,
+        53.96
+       ],
+       "text": "York",
+       "size": "sm"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        -0.336,
+        51.752
+       ],
+       "label": "First St Albans, 22 May 1455"
+      }
+     ]
+    },
+    "at": 1455.38767,
+    "camera": {
+     "lat": 52.408,
+     "lng": -0.5052,
+     "altitude": 0.0697
+    }
+   },
+   {
+    "id": "wakefield",
+    "name": "Northampton and Wakefield",
+    "page": "The Yorkist earls returned from Calais in 1460, took Henry VI at Northampton on 10 July, and York claimed the throne itself in October. The Act of Accord left Henry king for life and made York his heir, disinheriting the prince of Wales.\n\nQueen Margaret raised the north. On 30 December 1460 York left Sandal castle near Wakefield and was killed with his son Edmund; the earl of Salisbury was executed the next day. Their heads were set on the gates of York.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        -0.13,
+        51.51
+       ],
+       "text": "London",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -1.08,
+        53.96
+       ],
+       "text": "York",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.1,
+       "label": "Yorkists from Calais",
+       "path": [
+        [
+         1.86,
+         50.95
+        ],
+        [
+         0.6,
+         51.2
+        ],
+        [
+         -0.13,
+         51.51
+        ],
+        [
+         -0.88,
+         52.23
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.08,
+       "color": "#f5a623",
+       "pos": [
+        -0.88,
+        52.23
+       ],
+       "label": "Northampton, 10 July 1460"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        -1.49,
+        53.66
+       ],
+       "label": "Wakefield, 30 December 1460"
+      }
+     ]
+    },
+    "at": 1460.9959,
+    "camera": {
+     "lat": 52.1606,
+     "lng": -0.2467,
+     "altitude": 0.0817
+    }
+   },
+   {
+    "id": "towton",
+    "name": "Towton",
+    "page": "York's heir Edward beat a Welsh Lancastrian force at Mortimer's Cross on 2 February 1461, while Margaret's northern army won the second battle of St Albans on 17 February and recovered the king. London shut its gates to her and admitted Edward, who was proclaimed king on 4 March.\n\nThe armies met in snow at Towton in Yorkshire on 29 March 1461, in what is usually called the largest battle fought on English soil. The Lancastrians were broken and Henry VI, Margaret and their son fled to Scotland.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        -0.13,
+        51.51
+       ],
+       "text": "London",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -1.08,
+        53.96
+       ],
+       "text": "York",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.12,
+       "label": "Lancastrian army south",
+       "path": [
+        [
+         -1.08,
+         53.96
+        ],
+        [
+         -0.7,
+         53.2
+        ],
+        [
+         -0.34,
+         51.76
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.12,
+       "label": "Edward marches north",
+       "path": [
+        [
+         -2.83,
+         52.26
+        ],
+        [
+         -0.13,
+         51.51
+        ],
+        [
+         -0.9,
+         53.3
+        ],
+        [
+         -1.267,
+         53.837
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.11,
+       "color": "#f5a623",
+       "pos": [
+        -1.267,
+        53.837
+       ],
+       "label": "Towton, 29 March 1461"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.07,
+       "color": "#f5a623",
+       "pos": [
+        -2.83,
+        52.26
+       ],
+       "label": "Mortimer's Cross, 2 February 1461"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.07,
+       "color": "#f5a623",
+       "pos": [
+        -0.336,
+        51.752
+       ],
+       "label": "Second St Albans, 17 February 1461"
+      }
+     ]
+    },
+    "at": 1461.23973,
+    "camera": {
+     "lat": 52.7655,
+     "lng": -1.0699,
+     "altitude": 0.0606
+    }
+   },
+   {
+    "id": "readeption",
+    "name": "Warwick, the readeption and Barnet",
+    "page": "Edward IV quarrelled with the earl of Warwick, who had made him king, over his marriage and over policy towards France. Warwick allied with Margaret, drove Edward abroad in 1470 and restored Henry VI to the throne.\n\nEdward landed at Ravenspur in Yorkshire in March 1471, gathered support as he marched south and entered London. On 14 April he beat and killed Warwick in fog at Barnet. Margaret had landed the same day; on 4 May he destroyed her army at Tewkesbury, where her son Edward of Westminster was killed. Henry VI died in the Tower a few weeks later.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        -0.13,
+        51.51
+       ],
+       "text": "London",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -1.08,
+        53.96
+       ],
+       "text": "York",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.11,
+       "label": "Edward IV from Ravenspur",
+       "path": [
+        [
+         0.11,
+         53.58
+        ],
+        [
+         -1.08,
+         53.96
+        ],
+        [
+         -1.3,
+         52.9
+        ],
+        [
+         -0.9,
+         52.2
+        ],
+        [
+         -0.2,
+         51.6
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        -0.199,
+        51.657
+       ],
+       "label": "Barnet, 14 April 1471"
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        -2.16,
+        51.993
+       ],
+       "label": "Tewkesbury, 4 May 1471"
+      },
+      {
+       "type": "marker",
+       "style": "dot",
+       "size": 0.07,
+       "color": "#f5a623",
+       "pos": [
+        0.11,
+        53.58
+       ],
+       "label": "Landing at Ravenspur, March 1471"
+      }
+     ]
+    },
+    "start": 1471.19863,
+    "end": 1471.33836,
+    "camera": {
+     "lat": 52.6961,
+     "lng": -0.6823,
+     "altitude": 0.0564
+    }
+   },
+   {
+    "id": "bosworth-step",
+    "name": "Battle of Bosworth Field",
+    "child": "bosworth",
+    "at": 1485.63973
+   },
+   {
+    "id": "stoke",
+    "name": "Stoke Field",
+    "page": "The last battle of the wars was fought at East Stoke near Newark on 16 June 1487. The Yorkist claimant was a boy, Lambert Simnel, presented as Edward, earl of Warwick, and crowned in Dublin. His backers landed in Lancashire with about 2,000 German mercenaries and an Irish contingent.\n\nHenry VII's army broke them in about three hours. The earl of Lincoln was killed, Simnel was pardoned and put to work in the royal kitchens. Henry married Elizabeth of York in 1486, joining the two claims in his heirs.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        -0.13,
+        51.51
+       ],
+       "text": "London",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -1.08,
+        53.96
+       ],
+       "text": "York",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.1,
+       "label": "Yorkist landing in Lancashire",
+       "path": [
+        [
+         -3.05,
+         54.07
+        ],
+        [
+         -2.6,
+         53.9
+        ],
+        [
+         -1.6,
+         53.35
+        ],
+        [
+         -0.88,
+         53.02
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.09,
+       "color": "#f5a623",
+       "pos": [
+        -0.883,
+        53.014
+       ],
+       "label": "Stoke Field, 16 June 1487"
+      }
+     ]
+    },
+    "at": 1487.45616,
+    "camera": {
+     "lat": 53.2644,
+     "lng": -1.4459,
+     "altitude": 0.0844
+    }
+   }
+  ],
+  "priority": 70
+ },
+ {
+  "id": "towton",
+  "name": "Battle of Towton",
+  "start": 1461.23973,
+  "lat": 53.837,
+  "lng": -1.267,
+  "parent": "wars-of-the-roses",
+  "tags": [
+   "war"
+  ],
+  "summary": "Fought in a snowstorm in Yorkshire on 29 March 1461, Towton is usually described as the largest battle ever fought on English soil. The Yorkist victory confirmed Edward IV as king.",
+  "body": "Part of [Wars of the Roses](event:wars-of-the-roses). The battle was fought on 29 March 1461, Palm Sunday, on a plateau between the villages of Towton and Saxton in Yorkshire. Edward IV had been proclaimed king in London three weeks earlier and marched north to make the claim good against the army of Henry VI and Margaret of Anjou.\n\nContemporary figures put both armies together at 50,000 or more, which modern historians reduce but still treat as exceptionally large for England. Snow blew into the Lancastrians' faces and shortened their arrows, and the Yorkist archers used the difference before closing.\n\nThe fighting lasted several hours and ended when the duke of Norfolk's men arrived on the Yorkist right. The Lancastrian line broke and many were killed in the flight across Cock Beck. A grave excavated at Towton Hall in 1996 held 38 men with severe head wounds, most of them healed veterans of earlier fighting.\n\nHenry VI, Margaret and their son fled to Scotland. Edward was crowned in June.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Towton).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Towton"
+   }
+  ],
+  "priority": 56
+ },
+ {
   "id": "songhai-empire",
   "name": "Songhai Empire",
   "start": 1464,
   "end": 1591,
   "lat": 16.27,
   "lng": -0.04,
-  "priority": 58,
+  "priority": 59,
   "tags": [
    "politics",
    "economy"
@@ -2983,6 +6198,126 @@
     "url": "https://en.wikipedia.org/wiki/Songhai_Empire"
    }
   ]
+ },
+ {
+  "id": "onin-war",
+  "name": "Onin War",
+  "start": 1467.4,
+  "end": 1477.9,
+  "lat": 35.0116,
+  "lng": 135.7681,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A civil war fought largely in and around Kyoto between 1467 and 1477 over the Ashikaga succession. It destroyed much of the capital and began the Sengoku period.",
+  "weak": [
+   "sengoku-unification"
+  ],
+  "body": "The Onin War was fought from 1467 to 1477, mainly in Kyoto, between two coalitions of provincial governors led by Hosokawa Katsumoto and Yamana Sozen. The immediate question was the succession to the Ashikaga shogun Yoshimasa, who had named his brother as heir and then had a son.\n\nThe armies fought street by street through the capital for a decade, using arson and hired irregulars. Two thirds of Kyoto was burned, including most of the aristocratic quarters, and the imperial and shogunal households lost their revenues. Both original commanders died in 1473 and the fighting continued without an aim until the armies drifted home in 1477.\n\nNo side won and the war settled nothing, but the shogunate never recovered authority outside the capital. Provincial governors were displaced by local commanders who held land by force, a pattern known as gekokujo, the low overturning the high. Historians conventionally date the [Sengoku period](event:sengoku-unification) of warring states from 1467.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/%C5%8Cnin_War).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/%C5%8Cnin_War"
+   }
+  ],
+  "priority": 57
+ },
+ {
+  "id": "spanish-inquisition",
+  "name": "Spanish Inquisition",
+  "start": 1478.86,
+  "end": 1834.55,
+  "lat": 40.4168,
+  "lng": -3.7038,
+  "tags": [
+   "religion",
+   "politics"
+  ],
+  "summary": "A tribunal established in 1478 by Ferdinand and Isabella and controlled by the crown, charged with policing the orthodoxy of converts from Judaism and Islam. It was abolished in 1834.",
+  "weak": [
+   "granada",
+   "reformation"
+  ],
+  "body": "The Tribunal of the Holy Office of the Inquisition was established in Castile in 1478 by a papal bull issued at the request of Ferdinand and Isabella, and unlike earlier inquisitions it was appointed and controlled by the crown.\n\nIts jurisdiction was over baptised Christians, so its first targets were conversos, Jews who had converted under the pressure of the pogroms of 1391 and after, who were suspected of practising Judaism in private. Jews who had not converted were expelled from Spain in 1492, the year [Granada](event:granada) fell; Muslims were required to convert or leave from 1502 in Castile, and the resulting moriscos were expelled between 1609 and 1614.\n\nProcedure ran through denunciation, secret testimony, imprisonment and, in a minority of cases, torture, and ended in a public sentencing, the auto-da-fe. Modern archival studies count roughly 150,000 trials between 1480 and 1700 with something in the order of 3,000 to 5,000 executions, figures well below those given by earlier polemical literature.\n\nThe institution was suppressed under Napoleonic rule, restored, and finally abolished in 1834.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Spanish_Inquisition).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Spanish_Inquisition"
+   }
+  ],
+  "priority": 70
+ },
+ {
+  "id": "ugra-1480",
+  "name": "Great Stand on the Ugra River",
+  "start": 1480.75,
+  "end": 1480.87,
+  "lat": 54.6167,
+  "lng": 35.9833,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Russian and Tatar armies faced each other across the Ugra river in the autumn of 1480 and withdrew without a battle. The episode is conventionally taken as the end of Moscow's tribute to the Horde.",
+  "weak": [
+   "mongol-conquests"
+  ],
+  "body": "In 1480 Akhmat, khan of the Great Horde, marched against Moscow to enforce the tribute that Ivan III had stopped paying, and in alliance with Casimir IV of Poland and Lithuania. Ivan sent his forces to the line of the Oka and then the Ugra, a tributary that formed the border.\n\nThe two armies stood on opposite banks from late September, exchanging fire across the river and waiting for the ice. The Lithuanian army did not come, a Russian detachment raided the Horde's territory on the lower Volga, and both sides withdrew in November. Akhmat was killed by rivals the following January.\n\nThere was no battle, and historians treat the traditional date of 1480 for the end of the Tatar yoke as a convention rather than a break. Moscow had been acting independently for some years and continued to pay for peace with the Crimean khanate long afterwards. Ivan III went on to absorb Novgorod, Tver and Ryazan into a single Russian state.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Great_Stand_on_the_Ugra_River).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Great_Stand_on_the_Ugra_River"
+   }
+  ],
+  "priority": 55
+ },
+ {
+  "id": "kingdom-of-kongo",
+  "name": "Kingdom of Kongo",
+  "start": 1483,
+  "end": 1665.79,
+  "lat": -6.2683,
+  "lng": 14.2472,
+  "tags": [
+   "politics",
+   "religion",
+   "economy"
+  ],
+  "summary": "A central African kingdom on the lower Congo river that entered into relations with Portugal in 1483, adopted Christianity, and was drawn into the Atlantic slave trade. Its central authority collapsed after the battle of Mbwila in 1665.",
+  "weak": [
+   "slave-trade",
+   "age-of-discovery"
+  ],
+  "body": "The Kingdom of Kongo lay on the lower Congo river, in what is now northern Angola and the western Democratic Republic of the Congo, with its capital at Mbanza Kongo. It was governed by a king elected from a group of noble lineages and by provincial governors he appointed.\n\nThe Portuguese navigator Diogo Cao reached the river mouth in 1483. Diplomatic exchange followed, the king Nzinga a Nkuwu was baptised in 1491, and his son Afonso I, who ruled from about 1509 to 1542, made Christianity the state religion, brought in Portuguese priests and craftsmen and corresponded with Lisbon and Rome. A Kongolese ambassador's son was consecrated bishop in 1518.\n\nThe same connection supplied captives to the Atlantic trade. Afonso wrote to the Portuguese king in 1526 asking that the traffic be limited to those lawfully enslaved and complaining that his own subjects were being taken. Kongo remained a major source of captives for Brazil for two centuries.\n\nPortuguese forces from Angola defeated and killed the king Antonio I at Mbwila in 1665. The kingdom broke into rival factions and its capital was abandoned for a generation.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Kingdom_of_Kongo).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Kingdom_of_Kongo"
+   }
+  ],
+  "priority": 61
+ },
+ {
+  "id": "bosworth",
+  "name": "Battle of Bosworth Field",
+  "start": 1485.63973,
+  "lat": 52.59,
+  "lng": -1.41,
+  "parent": "wars-of-the-roses",
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "Richard III was killed in Leicestershire on 22 August 1485 by the army of Henry Tudor, who became Henry VII. It was the last time an English king died in battle.",
+  "body": "Part of [Wars of the Roses](event:wars-of-the-roses). Henry Tudor landed at Mill Bay near Milford Haven on 7 August 1485 with about 2,000 men, most of them French, and marched through Wales and the west midlands gathering support. Richard III moved from Nottingham to Leicester and met him on 22 August near Ambion Hill in Leicestershire.\n\nThe Stanleys, with a substantial force, stood apart from both armies. When Richard led a mounted charge at Henry's standard and came close to reaching him, Sir William Stanley's men attacked Richard's flank. Richard was killed, the last English king to die in battle, and the crown was placed on Henry's head on the field.\n\nHenry VII married Elizabeth of York in January 1486 and put down the last Yorkist rising at Stoke Field in 1487. Richard's remains were found under a car park in Leicester in 2012, identified by DNA in 2013 and reburied in the cathedral.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Bosworth_Field).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Bosworth_Field"
+   }
+  ],
+  "priority": 62
  },
  {
   "id": "dias",
@@ -3110,7 +6445,7 @@
   "start": 1492,
   "lat": 24.2,
   "lng": -74.5,
-  "priority": 90,
+  "priority": 91,
   "tags": [
    "exploration"
   ],
@@ -3255,12 +6590,498 @@
   ]
  },
  {
+  "id": "italian-wars",
+  "name": "Italian Wars",
+  "start": 1494.6726,
+  "end": 1559.25342,
+  "lat": 43.5,
+  "lng": 11.5,
+  "tags": [
+   "war",
+   "politics"
+  ],
+  "summary": "A series of wars fought mainly in Italy between 1494 and 1559, in which France, Spain and the Habsburg emperors competed for the Italian states. They ended with Spanish predominance in Italy, confirmed at Cateau-Cambresis.",
+  "weak": [
+   "renaissance",
+   "reformation"
+  ],
+  "body": "The Italian Wars were fought between 1494 and 1559, mostly on Italian ground, between France on one side and Spain and the Habsburg emperors on the other, with the Italian states, the papacy, England, the Swiss and the Ottomans entering and leaving the alliances.\n\nThey began when Charles VIII of France invaded to claim Naples in 1494 and marched the length of the peninsula almost unopposed. Italy at the time was divided among Milan, Venice, Florence, the Papal States and Naples, wealthy and militarily weaker than the new national monarchies.\n\nThe wars are a standard marker in military history. Mobile siege artillery ended the medieval defensive advantage of high walls, which was answered by the low, angled bastion of the trace italienne; pike and arquebus formations displaced heavy cavalry as the decisive arm, as at [Pavia](event:battle-of-pavia) in 1525, where Francis I was captured.\n\nThe [sack of Rome](event:sack-of-rome) in 1527 by mutinous imperial troops is often taken as the end of the High [Renaissance](event:renaissance) in the city. The Peace of Cateau-Cambresis in 1559 left Spain holding Milan, Naples, Sicily and Sardinia, an arrangement that lasted until the eighteenth century.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Italian_Wars).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Italian_Wars"
+   }
+  ],
+  "steps": [
+   {
+    "id": "charles-viii",
+    "name": "Charles VIII marches on Naples",
+    "page": "Charles VIII of France crossed the Alps in September 1494 with about 25,000 men and a train of bronze field guns, claiming the throne of Naples through the Angevin line. He passed through Turin and Pavia, entered Pisa on 8 November, Florence on 17 November and Rome on 31 December.\n\nNaples was taken in February 1495 with almost no fighting; the fortress of Monte San Giovanni, which had once held out for seven years, fell in a few hours to the new artillery. The speed of the march is what alarmed the other Italian states and brought them into the League of Venice in March.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        12.5,
+        41.9
+       ],
+       "text": "Rome",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        9.19,
+        45.46
+       ],
+       "text": "Milan",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.27,
+        40.85
+       ],
+       "text": "Naples",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.16,
+       "label": "Charles VIII, 1494",
+       "path": [
+        [
+         4.84,
+         45.76
+        ],
+        [
+         6.72,
+         44.93
+        ],
+        [
+         7.69,
+         45.07
+        ],
+        [
+         9.16,
+         45.19
+        ],
+        [
+         10.4,
+         44.6
+        ],
+        [
+         11.26,
+         43.77
+        ],
+        [
+         12.5,
+         41.9
+        ],
+        [
+         14.27,
+         40.85
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.16,
+       "color": "#f5a623",
+       "pos": [
+        14.2681,
+        40.8518
+       ],
+       "label": "Naples entered, 22 February 1495"
+      }
+     ]
+    },
+    "start": 1494.6726,
+    "end": 1495.14384,
+    "camera": {
+     "lat": 43.4672,
+     "lng": 10.6769,
+     "altitude": 0.2044
+    }
+   },
+   {
+    "id": "fornovo",
+    "name": "Fornovo",
+    "page": "The League of Venice put an army under Francesco Gonzaga across the French line of retreat at Fornovo di Taro, on the northern side of the Apennines, on 6 July 1495. Charles had left half his force in Naples and had about 10,000 men.\n\nThe French pushed their way across the Taro and reached Asti, losing the baggage train with the loot of the campaign. Both sides claimed the victory. Naples was lost again within the year, and the French kept coming back to Italy for the next sixty years.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        12.5,
+        41.9
+       ],
+       "text": "Rome",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        9.19,
+        45.46
+       ],
+       "text": "Milan",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.27,
+        40.85
+       ],
+       "text": "Naples",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.1,
+       "label": "French retreat north",
+       "path": [
+        [
+         12.1,
+         43.4
+        ],
+        [
+         10.9,
+         44.2
+        ],
+        [
+         10.1,
+         44.69
+        ],
+        [
+         8.2,
+         44.9
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.1,
+       "label": "League of Venice",
+       "path": [
+        [
+         11.4,
+         45.3
+        ],
+        [
+         10.6,
+         44.9
+        ],
+        [
+         10.15,
+         44.72
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.12,
+       "color": "#f5a623",
+       "pos": [
+        10.1,
+        44.693
+       ],
+       "label": "Fornovo, 6 July 1495"
+      }
+     ]
+    },
+    "at": 1495.51096,
+    "camera": {
+     "lat": 44.1035,
+     "lng": 10.896,
+     "altitude": 0.1771
+    }
+   },
+   {
+    "id": "agnadello",
+    "name": "Agnadello and the League of Cambrai",
+    "page": "The League of Cambrai of 1508 joined France, the Empire, Spain and the papacy against Venice, which had taken territory in Romagna and the Po valley. On 14 May 1509 Louis XII destroyed the Venetian field army at Agnadello, east of Milan.\n\nVenice lost its mainland empire within weeks and then recovered most of it as the league broke up. The papacy changed sides against France, and by 1513 the alliances had reversed twice. The pattern of the wars was set: coalitions formed against whichever power was winning.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        12.5,
+        41.9
+       ],
+       "text": "Rome",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        9.19,
+        45.46
+       ],
+       "text": "Milan",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.27,
+        40.85
+       ],
+       "text": "Naples",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.1,
+       "label": "French army",
+       "path": [
+        [
+         8.9,
+         45.45
+        ],
+        [
+         9.19,
+         45.46
+        ],
+        [
+         9.55,
+         45.44
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#34d1bf",
+       "width": 0.1,
+       "label": "Venetian army",
+       "path": [
+        [
+         11.2,
+         45.4
+        ],
+        [
+         10.2,
+         45.44
+        ],
+        [
+         9.6,
+         45.43
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.12,
+       "color": "#f5a623",
+       "pos": [
+        9.549,
+        45.438
+       ],
+       "label": "Agnadello, 14 May 1509"
+      }
+     ]
+    },
+    "at": 1509.36575,
+    "camera": {
+     "lat": 44.6395,
+     "lng": 10.4569,
+     "altitude": 0.203
+    }
+   },
+   {
+    "id": "marignano",
+    "name": "Marignano",
+    "page": "Francis I came to the throne in 1515 and crossed the Alps by a track through the Col de l'Argentiere that the Swiss holding the passes had not covered. On 13 and 14 September he fought the Swiss confederate army at Marignano, south east of Milan.\n\nThe battle ran into the night and was decided the next morning when Venetian troops arrived. The Swiss withdrew in order, having lost heavily. France recovered Milan, and the confederation signed the perpetual peace of 1516 and stopped fighting as a power in its own right.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "label",
+       "pos": [
+        12.5,
+        41.9
+       ],
+       "text": "Rome",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        9.19,
+        45.46
+       ],
+       "text": "Milan",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        14.27,
+        40.85
+       ],
+       "text": "Naples",
+       "size": "sm"
+      },
+      {
+       "type": "thrust",
+       "color": "#4c8dff",
+       "width": 0.11,
+       "label": "Francis I over the Alps",
+       "path": [
+        [
+         6.6,
+         44.4
+        ],
+        [
+         7.6,
+         44.9
+        ],
+        [
+         8.6,
+         45.3
+        ],
+        [
+         9.32,
+         45.36
+        ]
+       ]
+      },
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.09,
+       "label": "Swiss confederate army",
+       "path": [
+        [
+         9.19,
+         45.6
+        ],
+        [
+         9.28,
+         45.45
+        ],
+        [
+         9.32,
+         45.36
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.12,
+       "color": "#f5a623",
+       "pos": [
+        9.3236,
+        45.3583
+       ],
+       "label": "Marignano, 13 to 14 September 1515"
+      }
+     ]
+    },
+    "at": 1515.7,
+    "camera": {
+     "lat": 44.5586,
+     "lng": 9.6048,
+     "altitude": 0.2172
+    }
+   },
+   {
+    "id": "pavia-step",
+    "name": "Battle of Pavia",
+    "child": "battle-of-pavia",
+    "at": 1525.14932
+   },
+   {
+    "id": "rome-step",
+    "name": "Sack of Rome",
+    "child": "sack-of-rome",
+    "at": 1527.34384
+   },
+   {
+    "id": "cateau-cambresis",
+    "name": "Saint-Quentin and the peace",
+    "page": "The last round of the wars was fought largely outside Italy. A Spanish army under Emmanuel Philibert of Savoy beat the French at Saint-Quentin in Picardy on 10 August 1557; France took Calais from England the following January.\n\nBoth crowns were bankrupt, Spain and France each having suspended payments in 1557, and they made peace at Cateau-Cambresis on 3 April 1559. France kept Calais and the three bishoprics of Metz, Toul and Verdun and gave up its claims in Italy, leaving Milan and Naples to Spain.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "thrust",
+       "color": "#e5484d",
+       "width": 0.11,
+       "label": "Spanish army from the Netherlands",
+       "path": [
+        [
+         4.35,
+         50.85
+        ],
+        [
+         3.8,
+         50.3
+        ],
+        [
+         3.29,
+         49.85
+        ]
+       ]
+      },
+      {
+       "type": "marker",
+       "style": "cross",
+       "size": 0.12,
+       "color": "#f5a623",
+       "pos": [
+        3.287,
+        49.848
+       ],
+       "label": "Saint-Quentin, 10 August 1557"
+      },
+      {
+       "type": "marker",
+       "style": "star",
+       "size": 0.12,
+       "color": "#f5a623",
+       "pos": [
+        3.55,
+        50.1
+       ],
+       "label": "Peace of Cateau-Cambresis, 3 April 1559"
+      },
+      {
+       "type": "label",
+       "pos": [
+        3.4,
+        49.95
+       ],
+       "text": "Picardy",
+       "size": "sm"
+      }
+     ]
+    },
+    "at": 1559.25342,
+    "camera": {
+     "lat": 50.1503,
+     "lng": 3.6101,
+     "altitude": 0.0371
+    }
+   }
+  ],
+  "priority": 82
+ },
+ {
   "id": "da-gama",
   "name": "Vasco da Gama reaches India",
   "start": 1498,
   "lat": 11.25,
   "lng": 75.78,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "exploration"
   ],

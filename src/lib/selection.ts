@@ -119,6 +119,77 @@ export function windowFitting(span: Span, margin = FIT_MARGIN): Span {
   }
 }
 
+/**
+ * Air kept between a span and the edge of the window it was about to poke
+ * through, as a fraction of the window's DISPLAYED width — so it is a constant
+ * number of pixels on the rail at any zoom, which is what "a little room beside
+ * the handle" means to a reader. See `windowLeastMoved`.
+ */
+export const SLIDE_MARGIN = 0.04
+
+/**
+ * The window nearest to `win` that has `span` on it: the LEAST MOVE.
+ *
+ * The third member of the family, and the one that moves the view as little as
+ * a view can be moved. `windowFitting` always reframes (an era pick means "show
+ * me this era"); `windowContaining` keeps a window that already contains the
+ * span but otherwise reframes with 18% of air, which is a reframe all the same.
+ * This one answers a different question — *"the visible timeline is large
+ * enough; just shift the selected range"* — and it answers it in three cases:
+ *
+ *  1. the span is already on the rail → the window is returned UNCHANGED, to
+ *     the byte, and nothing downstream so much as recomputes;
+ *  2. it pokes out of one end → the window SLIDES, keeping its width exactly,
+ *     until the span and a margin are inside. Never further, never recentred:
+ *     the reader's frame of reference survives the click;
+ *  3. it is wider than the window can hold even after sliding → and only then
+ *     does the window widen, to exactly the span plus its two margins, which
+ *     leaves the span centred because at that width there is nowhere else for
+ *     it to be.
+ *
+ * All of it in warp (display) space, where the margin is a number of pixels and
+ * a slide is a slide on screen. The ends of time clamp by sliding rather than
+ * by shrinking — the same rule the rest of the rail keeps — so a span hard
+ * against the beginning of time simply lands on the edge of the window with no
+ * air on that side, rather than the window losing width to make room for air
+ * there is nothing to put in.
+ */
+export function windowLeastMoved(span: Span, win: Span, margin = SLIDE_MARGIN): Span {
+  const s = orderSpan(span.start, span.end)
+  const v = orderSpan(win.start, win.end)
+  // Case 1, in years and exactly: no warp roundtrip gets to decide whether the
+  // view holds still, and a span touching an edge is on the rail, not off it.
+  if (s.start >= v.start && s.end <= v.end) return { ...win }
+
+  const lo = toWarp(MIN_TIME)
+  const hi = toWarp(MAX_TIME)
+  const v0 = toWarp(v.start)
+  const v1 = toWarp(v.end)
+  const b0 = toWarp(s.start)
+  const b1 = toWarp(s.end)
+  const m = Math.min(0.49, Math.max(0, margin)) // two margins must leave a window
+  // Keep the width if the span and its margins fit in it; otherwise take the
+  // one width that holds them, and no more.
+  let width = v1 - v0
+  if (b1 - b0 + 2 * m * width > width) width = (b1 - b0) / (1 - 2 * m)
+  const pad = m * width
+  // The near edge moves, the far one follows: whichever way the span poked out,
+  // it is brought just inside. (In the widened case both tests agree on the
+  // same answer — the span plus a margin either side is the whole window.)
+  let start = v0
+  if (b0 - pad < start) start = b0 - pad
+  else if (b1 + pad > start + width) start = b1 + pad - width
+  if (start + width > hi) start = hi - width
+  if (start < lo) start = lo
+  const end = Math.min(hi, start + width)
+  // The bounds are written as themselves, not as their warp roundtrip, which
+  // comes back 5 µyr short and makes a window compare unequal to itself.
+  return {
+    start: start <= lo ? MIN_TIME : clamp(fromWarp(start)),
+    end: end >= hi ? MAX_TIME : clamp(fromWarp(end)),
+  }
+}
+
 /** Eased progress for the fit tween: cubic in and out, so the view leaves and
  *  arrives at rest. Clamped, so a late frame cannot overshoot. */
 export const easeInOut = (t: number): number => {

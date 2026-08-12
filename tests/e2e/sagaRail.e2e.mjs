@@ -72,6 +72,32 @@ const shot = async (target, name, clip) => {
   writeFileSync(join(shots, `${tag}-${name}.png`), Buffer.from(data, 'base64'))
 }
 
+/**
+ * Wait for the CORPUS to stop growing.
+ *
+ * Round 57 moved the app's opening window to 1400–1789 (stores/time.ts), so a
+ * harness that jumps straight to 1941 asks for a chunk the boot did not load:
+ * the items land a beat later and the rail, the pins and the panel all re-render
+ * under whatever this file was pressing at the time. That is the app working as
+ * designed — chunks follow the window — and the harness's job is to let the
+ * jump finish arriving before it starts driving. (Before round 57 the opening
+ * window was the whole of history and everything was already in.)
+ */
+const corpusQuiet = async (page, still = 800, timeout = 20_000) => {
+  const t0 = Date.now()
+  let last = -1
+  let since = Date.now()
+  while (Date.now() - t0 < timeout) {
+    const n = await page.evaluate(() => window.__events.all.length)
+    if (n !== last) {
+      last = n
+      since = Date.now()
+    } else if (Date.now() - since >= still) return
+    await page.waitForTimeout(150)
+  }
+  console.log('  [warn] the corpus never stopped growing')
+}
+
 const settle = async (page, ms = 1500) => {
   await page.waitForTimeout(ms)
   await page
@@ -144,6 +170,7 @@ await page.addStyleTag({
 await page.waitForFunction(() => window.__events?.all.length > 0 && window.__globe)
 await page.waitForFunction(() => window.__events.byId('ww2')?.steps)
 await page.evaluate(() => window.__setTime(1941))
+await corpusQuiet(page) // the jump loads a chunk now; see above
 await settle(page, 2500)
 const beforeYear = await page.evaluate(() => window.__time.currentTime)
 
@@ -412,6 +439,7 @@ await phone.addStyleTag({
 await phone.waitForFunction(() => window.__events?.all.length > 0 && window.__globe)
 await phone.waitForFunction(() => window.__events.byId('ww2')?.steps)
 await phone.evaluate(() => window.__setTime(1941))
+await corpusQuiet(phone)
 await settle(phone, 2200)
 await phone.evaluate(() => window.__events.showOnMap('ww2'))
 await settle(phone, 2600)

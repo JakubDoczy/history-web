@@ -97,6 +97,31 @@ const stateOf = (page) =>
     pillStep: document.querySelector('[data-test="pill-step"]')?.textContent.replace(/\s+/g, ' ').trim() ?? null,
   }))
 
+/**
+ * Wait for the CORPUS to stop growing.
+ *
+ * Round 57 moved the app's opening window to 1400–1789 (stores/time.ts), so a
+ * harness that jumps straight to 1941 asks for a chunk the boot did not load:
+ * the items land a beat later and the pins re-cut under whatever this file was
+ * looking at. That is the app working as designed — chunks follow the window —
+ * and the harness's job is to let the jump finish arriving. (Before round 57
+ * the opening window was the whole of history and everything was already in.)
+ */
+const corpusQuiet = async (page, still = 800, timeout = 20_000) => {
+  const t0 = Date.now()
+  let last = -1
+  let since = Date.now()
+  while (Date.now() - t0 < timeout) {
+    const n = await page.evaluate(() => window.__events.all.length)
+    if (n !== last) {
+      last = n
+      since = Date.now()
+    } else if (Date.now() - since >= still) return
+    await page.waitForTimeout(150)
+  }
+  console.log('  [warn] the corpus never stopped growing')
+}
+
 const settle = async (page, ms = 1400) => {
   await page.waitForTimeout(ms)
   await page
@@ -142,7 +167,25 @@ const shot = async (target, name) => {
 }
 
 const page = await open(1280, 860)
+/**
+ * THE WINDOW AND THE BAND THIS FILE READS AGAINST, stated rather than inherited.
+ *
+ * Both used to come free from the app's opening view — a rail from 550 BCE to
+ * now, with a band over 500–1945 — and this file leant on the band without
+ * saying so: the selection is what culls the pins, so the minor children of a
+ * focused operation (Uman, Villers-Bocage — June 1944) were on the globe
+ * because the *default* band reached 1945. Round 57 opens on 1400–1789 with a
+ * band of 1434–1549 (the reader's request), and a jump to 1941 grows that band
+ * only as far as it must, to exactly 1941 — so anything later than the year
+ * jumped to was culled and three checks here failed on pins that were never
+ * asked for. Nothing about steps changed; this file's premise did.
+ */
+await page.evaluate(() => {
+  window.__time.setRange({ start: -550, end: 2026 })
+  window.__time.setSelection(500, 1945)
+})
 await page.evaluate(() => window.__setTime(1941))
+await corpusQuiet(page) // the window may still be loading a chunk; see above
 await settle(page)
 
 /* ------------------------------------------------- barbarossa, overview -- */
@@ -362,7 +405,12 @@ console.log('\n(i) on a phone')
 // each other badly enough that the second page's `load` never fires.
 await page.close()
 const phone = await open(390, 844)
+await phone.evaluate(() => {
+  window.__time.setRange({ start: -550, end: 2026 })
+  window.__time.setSelection(500, 1945)
+})
 await phone.evaluate(() => window.__setTime(1941))
+await corpusQuiet(phone)
 await settle(phone, 1200)
 await phone.evaluate(() => window.__events.showOnMap('barbarossa'))
 await settle(phone, 2800)

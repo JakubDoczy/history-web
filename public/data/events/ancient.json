@@ -85,7 +85,7 @@
   "end": -8000,
   "lat": 37.22,
   "lng": 38.92,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "religion",
    "culture"
@@ -200,7 +200,7 @@
   "start": -3500,
   "lat": 47.0,
   "lng": 32.0,
-  "priority": 80,
+  "priority": 81,
   "tags": [
    "technology"
   ],
@@ -223,7 +223,7 @@
   "end": -1200,
   "lat": 33.3,
   "lng": 44.4,
-  "priority": 82,
+  "priority": 83,
   "tags": [
    "technology"
   ],
@@ -246,7 +246,7 @@
   "start": -3200,
   "lat": 31.32,
   "lng": 45.64,
-  "priority": 95,
+  "priority": 96,
   "tags": [
    "culture",
    "technology"
@@ -270,7 +270,7 @@
   "start": -3099,
   "lat": 29.8494,
   "lng": 31.2506,
-  "priority": 87,
+  "priority": 88,
   "tags": [
    "politics"
   ],
@@ -293,7 +293,7 @@
   "end": -1450,
   "lat": 35.33,
   "lng": 25.13,
-  "priority": 74,
+  "priority": 75,
   "tags": [
    "culture",
    "politics"
@@ -320,7 +320,7 @@
   "end": -1900,
   "lat": 27.32,
   "lng": 68.14,
-  "priority": 77,
+  "priority": 78,
   "tags": [
    "culture",
    "politics"
@@ -347,7 +347,7 @@
   "end": -2400,
   "lat": 51.18,
   "lng": -1.83,
-  "priority": 59,
+  "priority": 60,
   "tags": [
    "culture",
    "religion"
@@ -371,7 +371,7 @@
   "end": -2539,
   "lat": 29.98,
   "lng": 31.13,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "culture",
    "technology"
@@ -396,7 +396,7 @@
   "end": -2153,
   "lat": 33.1,
   "lng": 44.1,
-  "priority": 71,
+  "priority": 72,
   "tags": [
    "politics",
    "war"
@@ -446,7 +446,7 @@
   "end": -1650,
   "lat": 26.0,
   "lng": 31.0,
-  "priority": 77,
+  "priority": 78,
   "tags": [
    "politics",
    "culture"
@@ -469,7 +469,7 @@
   "start": -1753,
   "lat": 32.54,
   "lng": 44.42,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "politics",
    "culture"
@@ -493,7 +493,7 @@
   "end": -1200,
   "lat": 40.02,
   "lng": 34.62,
-  "priority": 71,
+  "priority": 72,
   "tags": [
    "politics",
    "war"
@@ -537,7 +537,7 @@
   "end": -1100,
   "lat": 37.73,
   "lng": 22.76,
-  "priority": 71,
+  "priority": 72,
   "tags": [
    "culture",
    "politics"
@@ -562,7 +562,7 @@
   "end": -1045,
   "lat": 36.1,
   "lng": 114.35,
-  "priority": 71,
+  "priority": 72,
   "tags": [
    "politics",
    "culture"
@@ -632,7 +632,7 @@
   "end": -500,
   "lat": 39.0,
   "lng": 35.0,
-  "priority": 80,
+  "priority": 81,
   "tags": [
    "technology"
   ],
@@ -871,7 +871,7 @@
   "start": -1049,
   "lat": 34.12,
   "lng": 35.65,
-  "priority": 80,
+  "priority": 81,
   "tags": [
    "culture",
    "technology"
@@ -892,7 +892,7 @@
   "end": -255,
   "lat": 34.27,
   "lng": 107.15,
-  "priority": 80,
+  "priority": 81,
   "tags": [
    "politics",
    "culture"
@@ -1108,7 +1108,7 @@
   "start": -775,
   "lat": 37.64,
   "lng": 21.63,
-  "priority": 59,
+  "priority": 60,
   "tags": [
    "culture",
    "religion"
@@ -1131,7 +1131,7 @@
   "start": -752,
   "lat": 41.8892,
   "lng": 12.4869,
-  "priority": 82,
+  "priority": 83,
   "tags": [
    "politics"
   ],
@@ -1154,7 +1154,7 @@
   "end": -100,
   "lat": 42.53,
   "lng": 11.53,
-  "priority": 59,
+  "priority": 60,
   "tags": [
    "culture",
    "politics"
@@ -1178,7 +1178,7 @@
   "end": -400,
   "lat": 37.53,
   "lng": 27.28,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "culture",
    "science"
@@ -1202,7 +1202,7 @@
   "end": 650,
   "lat": 34.0,
   "lng": 52.0,
-  "priority": 71,
+  "priority": 72,
   "tags": [
    "religion",
    "culture"
@@ -1226,7 +1226,7 @@
   "end": -482,
   "lat": 27.47,
   "lng": 83.28,
-  "priority": 91,
+  "priority": 92,
   "tags": [
    "religion"
   ],
@@ -1252,7 +1252,7 @@
   "end": -478,
   "lat": 35.6,
   "lng": 116.99,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "culture",
    "religion"
@@ -1299,7 +1299,7 @@
   "start": -508,
   "lat": 41.893,
   "lng": 12.4847,
-  "priority": 77,
+  "priority": 78,
   "tags": [
    "politics",
    "culture"
@@ -1320,7 +1320,7 @@
   "end": -321,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "politics"
   ],
@@ -1341,7 +1341,7 @@
   "name": "Democracy",
   "kind": "concept",
   "anchorYear": -507,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "politics"
   ],
@@ -1371,7 +1371,7 @@
   "end": 500,
   "lat": 25.3,
   "lng": 83.0,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "religion",
    "culture"
@@ -1395,7 +1395,7 @@
   "end": 200,
   "lat": 31.78,
   "lng": 35.24,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "religion",
    "culture"
@@ -1416,7 +1416,7 @@
   "end": 500,
   "lat": 9.5,
   "lng": 8.0,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "technology",
    "economy"
@@ -1440,7 +1440,7 @@
   "end": -448,
   "lat": 38.5,
   "lng": 23.5,
-  "priority": 77,
+  "priority": 78,
   "tags": [
    "war"
   ],
@@ -1557,7 +1557,7 @@
   "start": -479,
   "lat": 37.94,
   "lng": 23.53,
-  "priority": 56,
+  "priority": 55,
   "tags": [
    "war"
   ],
@@ -1581,7 +1581,7 @@
   "end": 533,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "politics",
    "culture"
@@ -1605,7 +1605,7 @@
   "end": -431,
   "lat": 37.97,
   "lng": 23.73,
-  "priority": 59,
+  "priority": 60,
   "tags": [
    "culture",
    "religion"
@@ -1629,7 +1629,7 @@
   "start": -439,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "culture"
   ],
@@ -1652,7 +1652,7 @@
   "end": -403,
   "lat": 37.5,
   "lng": 22.5,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "war"
   ],
@@ -1719,7 +1719,7 @@
   "start": -400,
   "lat": 17.36,
   "lng": -92.2,
-  "priority": 56,
+  "priority": 55,
   "tags": [
    "science",
    "culture"
@@ -1742,7 +1742,7 @@
   "start": -398,
   "lat": 37.97,
   "lng": 23.72,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "culture"
   ],
@@ -1764,7 +1764,7 @@
   "start": -386,
   "lat": 37.9925,
   "lng": 23.7118,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "culture",
    "science"
@@ -1788,7 +1788,7 @@
   "end": -321,
   "lat": 40.3,
   "lng": 23.4,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "culture",
    "science"
@@ -1925,7 +1925,7 @@
   "start": -330,
   "lat": 31.2,
   "lng": 29.92,
-  "priority": 59,
+  "priority": 60,
   "tags": [
    "culture",
    "politics"
@@ -1968,7 +1968,7 @@
   "end": 400,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "technology",
    "economy"
@@ -2015,7 +2015,7 @@
   "start": -300,
   "lat": 16.95,
   "lng": 33.75,
-  "priority": 53,
+  "priority": 52,
   "tags": [
    "culture",
    "technology"
@@ -2063,7 +2063,7 @@
   "start": -300,
   "lat": 37.9765,
   "lng": 23.7231,
-  "priority": 59,
+  "priority": 60,
   "tags": [
    "culture",
    "science"
@@ -2289,7 +2289,7 @@
   "end": 1644,
   "lat": 40.43,
   "lng": 116.57,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "technology",
    "war"
@@ -2404,7 +2404,7 @@
   "end": -26,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 83,
+  "priority": 84,
   "tags": [
    "politics",
    "war"
@@ -2655,7 +2655,7 @@
    ]
   ],
   "direction": "twoway",
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "economy",
    "exploration"
@@ -2677,7 +2677,7 @@
   "name": "The Silk Roads",
   "kind": "concept",
   "anchorYear": -129,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "economy",
    "exploration"
@@ -2733,7 +2733,7 @@
   "end": 500,
   "lat": -14.72,
   "lng": -75.13,
-  "priority": 59,
+  "priority": 60,
   "tags": [
    "culture",
    "religion"
@@ -2766,7 +2766,7 @@
    "lng": 12.4747,
    "label": "Theatre of Pompey, Rome"
   },
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "politics",
    "war"
@@ -2873,7 +2873,7 @@
   "start": -43,
   "lat": 41.8955,
   "lng": 12.4767,
-  "priority": 73,
+  "priority": 74,
   "tags": [
    "politics"
   ],
@@ -2936,7 +2936,7 @@
   "start": -26,
   "lat": 41.8929,
   "lng": 12.4854,
-  "priority": 88,
+  "priority": 89,
   "tags": [
    "politics"
   ],
@@ -3076,7 +3076,7 @@
     40.63
    ]
   ],
-  "priority": 77,
+  "priority": 78,
   "tags": [
    "disaster",
    "geology"
@@ -3148,7 +3148,7 @@
   "start": 100,
   "lat": 41.9,
   "lng": 12.5,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "technology",
    "economy"
@@ -3170,7 +3170,7 @@
   "end": 300,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 83,
+  "priority": 84,
   "tags": [
    "religion",
    "politics"
@@ -3243,7 +3243,7 @@
   "start": 117,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "politics"
   ],
@@ -3266,7 +3266,7 @@
   "start": 126,
   "lat": 41.8986,
   "lng": 12.4769,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "culture",
    "technology"
@@ -3288,7 +3288,7 @@
   "end": 180,
   "lat": 41.9,
   "lng": 12.48,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "culture",
    "politics"
@@ -3371,7 +3371,7 @@
   "end": 900,
   "lat": 17.22,
   "lng": -89.62,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "culture"
   ],
@@ -3417,7 +3417,7 @@
   "start": 313,
   "lat": 45.8,
   "lng": 8.62,
-  "priority": 85,
+  "priority": 86,
   "tags": [
    "religion",
    "politics"
@@ -3439,7 +3439,7 @@
   "end": 550,
   "lat": 25.6,
   "lng": 85.1,
-  "priority": 67,
+  "priority": 68,
   "tags": [
    "politics",
    "culture",
@@ -3486,7 +3486,7 @@
   "start": 330,
   "lat": 41.01,
   "lng": 28.98,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "politics"
   ],
@@ -3510,7 +3510,7 @@
   "end": 568,
   "lat": 48.0,
   "lng": 20.0,
-  "priority": 70,
+  "priority": 71,
   "tags": [
    "politics",
    "war"
@@ -3585,7 +3585,7 @@
   "end": 405,
   "lat": 31.7,
   "lng": 35.2,
-  "priority": 64,
+  "priority": 65,
   "tags": [
    "religion",
    "culture"
@@ -3696,7 +3696,7 @@
     34
    ]
   ],
-  "priority": 93,
+  "priority": 94,
   "tags": [
    "politics"
   ],

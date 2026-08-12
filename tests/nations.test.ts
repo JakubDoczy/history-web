@@ -198,13 +198,20 @@ describe('nations.json (authoring)', () => {
    * The curation promise: a nation display "relates to a certain time", showing
    * a handful of that moment's powers. Too many and the globe turns to mush; too
    * few and an era looks empty.
+   *
+   * The ceiling went from eight to NINE in round 57, when Korea was added: from
+   * 1392 to 1909 the corpus draws a ninth polity across East Asia. It is a
+   * peninsula rather than a continent — the smallest extent on the globe in
+   * every year it appears — and the hard cap it is measured against is still
+   * `MAX_VISIBLE` = 10. A tenth would be the point to start trimming windows.
    */
   it.each([-2600, -2000, -1400, -1000, -700, -500, -320, -200, -100, 1, 100, 250, 400, 600, 700, 800, 1000, 1100, 1200, 1300, 1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 1930, 1950, 1980, 2000])(
     'shows a handful of polities at %i',
     (t) => {
       const vis = visibleNations(rawNations as unknown as Nation[], t)
       expect(vis.length).toBeGreaterThanOrEqual(3)
-      expect(vis.length).toBeLessThanOrEqual(8)
+      expect(vis.length).toBeLessThanOrEqual(9)
+      expect(vis.length).toBeLessThanOrEqual(MAX_VISIBLE)
     },
   )
 })
@@ -332,6 +339,27 @@ describe('borders at a date', () => {
     ['dutch', 1650, 'Java', 108, -7, true],
     ['dutch', 1610, 'the Cape', 20, -33, false], // 1652
     ['dutch', 1700, 'the Cape', 20, -33, true],
+
+    // KOREA, round 57's hole. Joseon holds the peninsula from 1392, the six
+    // garrisons put the frontier on the Tumen under Sejong (1434-1449), the
+    // Korean Empire is the same ground renamed in 1897, and Japan annexes it in
+    // 1910 — at which point the empire stops being drawn, because a succession
+    // is not a co-reign.
+    ['joseon', 1400, 'Seoul', 126.98, 37.57, true],
+    ['joseon', 1400, 'Pyongyang', 125.75, 39.03, true],
+    ['joseon', 1500, 'Busan', 129.05, 35.18, true],
+    ['joseon', 1500, 'Jeju', 126.55, 33.4, true], // the island is held whole
+    ['joseon', 1400, 'Hoeryong on the Tumen', 129.75, 42.44, false], // Sejong's, 1434-49
+    ['joseon', 1500, 'Hoeryong on the Tumen', 129.75, 42.44, true],
+    ['joseon', 1500, 'Shenyang', 123.43, 41.8, false], // the Yalu is the frontier
+    ['joseon', 1500, 'Vladivostok', 131.89, 43.12, false],
+    ['joseon', 1500, 'Tsushima', 129.3, 34.35, false], // Japanese, and not absorbed
+    ['koreanempire', 1900, 'Seoul', 126.98, 37.57, true],
+    ['koreanempire', 1900, 'Pyongyang', 125.75, 39.03, true],
+    ['japan', 1900, 'Seoul', 126.98, 37.57, false], // Shimonoseki left it independent
+    ['qing', 1700, 'Pyongyang', 125.75, 39.03, false], // tribute is not a border
+    ['qing', 1700, 'Dandong, north of the Yalu', 124.35, 40.15, true],
+    ['ming', 1500, 'Pyongyang', 125.75, 39.03, false],
   ]
 
   it.each(cases)('%s at %i: %s', (id, year, _place, lng, lat, inside) => {

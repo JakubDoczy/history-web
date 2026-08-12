@@ -23,6 +23,7 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@cublya/world-atlas": "^3.0.0-beta.2",
     "@napi-rs/canvas": "^1.0.3",
     "@types/three": "^0.185.1",
     "@vitejs/plugin-vue": "^5.2.1",

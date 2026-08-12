@@ -183,6 +183,18 @@ await page.addStyleTag({
 })
 await page.waitForFunction(() => window.__events?.all.length > 0 && window.__globe)
 await page.waitForFunction(() => window.__events.byId('ww2')?.steps)
+/**
+ * THE WINDOW AND THE BAND THIS FILE READS AGAINST, stated rather than inherited.
+ *
+ * The selection is what culls the pins, and the war's parts run to 1945. This
+ * file used to get that band free from the app's opening view (500–1945);
+ * round 57 opens on 1400–1789 with a band of 1434–1549 (the reader's request),
+ * and a jump to 1941 grows the band only as far as it must — to exactly 1941.
+ */
+await page.evaluate(() => {
+  window.__time.setRange({ start: -550, end: 2026 })
+  window.__time.setSelection(500, 1945)
+})
 await page.evaluate(() => window.__setTime(1941))
 await settle(page, 2500)
 

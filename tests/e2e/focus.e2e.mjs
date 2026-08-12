@@ -114,6 +114,20 @@ async function open(width, height) {
 
 /* ------------------------------------------------------------ desktop ---- */
 const page = await open(1280, 860)
+/**
+ * THE WINDOW AND THE BAND THIS FILE READS AGAINST, stated rather than inherited.
+ *
+ * The selection is what culls the pins, and this file leant on the app's
+ * opening band (500–1945) to have Barbarossa's children — which run to
+ * December 1941 and beyond — on the globe. Round 57 opens on 1400–1789 with a
+ * band of 1434–1549 (the reader's request), and a jump to 1941 grows that band
+ * only as far as it must: to exactly 1941. Nothing about focus mode changed;
+ * this file's premise did.
+ */
+await page.evaluate(() => {
+  window.__time.setRange({ start: -550, end: 2026 })
+  window.__time.setSelection(500, 1945)
+})
 await page.evaluate(() => window.__setTime(1941))
 await settle(page)
 
@@ -230,6 +244,10 @@ await page.close()
 /* ------------------------------------------------------------- mobile ---- */
 console.log('\nmobile')
 const m = await open(390, 780)
+await m.evaluate(() => {
+  window.__time.setRange({ start: -550, end: 2026 })
+  window.__time.setSelection(500, 1945)
+})
 await m.evaluate(() => window.__setTime(1941))
 await m.evaluate(() => window.__events.showOnMap('barbarossa'))
 await settle(m, 2600)

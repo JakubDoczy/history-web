@@ -302,7 +302,10 @@ describe('nations.clipped.json', () => {
   const nations = rawNations as unknown as Nation[]
 
   it('is the same polities as the authoring file', () => {
-    expect(nations.length).toBe(73)
+    // 73 through round 55; 75 from round 57, which added Joseon Korea and the
+    // Korean Empire — the hole the corpus left between Shimonoseki and the
+    // annexation, and the four centuries before it.
+    expect(nations.length).toBe(75)
     expect(new Set(nations.map((n) => n.id)).size).toBe(nations.length)
   })
 
@@ -473,5 +476,84 @@ describe('frontierRuns', () => {
     const runs = frontierRuns(ring, new Uint8Array([0, 1, 0, 0]))
     expect(runs).toHaveLength(1)
     expect(runs[0]).toEqual([[1, 1], [0, 1], [0, 0], [1, 0]])
+  })
+})
+
+/**
+ * KOREA — round 57's first job, and the only polity in the corpus whose whole
+ * land frontier is two rivers.
+ *
+ * Round 52 gave Shimonoseki its due (the Qing yields Taiwan and its claim to
+ * Korea to Japan from 1895) and Japan its annexation keyframe at 1910, and left
+ * the peninsula drawn by nobody in between — a hole in the map exactly where the
+ * reader would look for the reason the Russo-Japanese War happened. The polity
+ * that fills it is Joseon from 1392, because a state that lasted five centuries
+ * is a better answer to "who held this" than a fifteen-year placeholder.
+ */
+describe('the Korean peninsula', () => {
+  const nations = rawNations as unknown as Nation[]
+  const joseon = nations.find((n) => n.id === 'joseon')!
+  const empire = nations.find((n) => n.id === 'koreanempire')!
+  const japan = nations.find((n) => n.id === 'japan')!
+
+  const mainland = (n: Nation, t: number) => {
+    const k = clip.keyframeAt(n, t)
+    const pieces = decodeKeyframe(k).pieces
+    return [...pieces].sort((a, b) => Math.abs(signedRingArea(b[0])) - Math.abs(signedRingArea(a[0])))[0]
+  }
+
+  it('is held without a gap from 1392 to the annexation', () => {
+    // every year from Joseon's founding to the year Japan takes it is somebody's
+    for (let t = 1392; t <= 1945; t += 1) {
+      const held = nations.filter((n) => clip.isNotableAt(n, t)).map((n) => n.id)
+      const korean = held.includes('joseon') || held.includes('koreanempire') || (held.includes('japan') && t >= 1910)
+      expect([t, korean]).toEqual([t, true])
+    }
+  })
+
+  it('hands over in 1897 and again in 1910, without ever double-claiming', () => {
+    expect([clip.isNotableAt(joseon, 1896), clip.isNotableAt(empire, 1896)]).toEqual([true, false])
+    expect([clip.isNotableAt(joseon, 1897), clip.isNotableAt(empire, 1897)]).toEqual([false, true])
+    expect([clip.isNotableAt(empire, 1909), clip.isNotableAt(empire, 1910)]).toEqual([true, false])
+    expect(clip.isNotableAt(japan, 1910)).toBe(true)
+  })
+
+  /**
+   * The annexation is a change of colour, not of shape. Japan's 1910 keyframe
+   * carries the Korean Empire's own authored ring, so the piece that appears
+   * under the Japanese wash is the piece that disappeared from under the Korean
+   * one — vertex for vertex, after the same clip.
+   */
+  it('gives Japan in 1910 the same peninsula the Korean Empire had in 1909', () => {
+    const korea = mainland(empire, 1909)[0]
+    const japanese = decodeKeyframe(clip.keyframeAt(japan, 1910)).pieces.map((rings) => rings[0])
+    // Honshu is the bigger piece, so this is a search rather than a comparison:
+    // one of Japan's 1910 pieces IS Korea, to the last vertex.
+    expect(japanese.some((ring) => JSON.stringify(ring) === JSON.stringify(korea))).toBe(true)
+    // …and it is not there in 1895, which is the point of the year
+    const before = decodeKeyframe(clip.keyframeAt(japan, 1900)).pieces.map((rings) => rings[0])
+    expect(before.some((ring) => JSON.stringify(ring) === JSON.stringify(korea))).toBe(false)
+  })
+
+  it('inks the Yalu and the Tumen, and nothing else', () => {
+    const k = clip.keyframeAt(empire, 1900)
+    const { pieces, coastal } = decodeKeyframe(k)
+    const runs = pieces.flatMap((rings, p) => rings.flatMap((r, i) => frontierRuns(r, coastal[p][i])))
+    expect(runs.length).toBeGreaterThan(0)
+    const pts = runs.flat()
+    // the whole inland frontier sits in the north, between the two river mouths
+    expect(Math.min(...pts.map((p) => p[1]))).toBeGreaterThan(39)
+    expect(Math.max(...pts.map((p) => p[0]))).toBeLessThan(131)
+    // …and it is a small part of a boundary that is overwhelmingly coast
+    const flags = decodeKeyframe(k).coastal.flat()
+    const inland = flags.reduce((n, f) => n + f.reduce((m, b) => m + (b ? 0 : 1), 0), 0)
+    const coast = flags.reduce((n, f) => n + f.reduce((m, b) => m + (b ? 1 : 0), 0), 0)
+    expect(inland).toBeLessThan(coast / 10)
+  })
+
+  it('grows to the Tumen between its two keyframes, and not before', () => {
+    const north = (t: number) => Math.max(...mainland(joseon, t)[0].map((p) => p[1]))
+    expect(north(1392)).toBeLessThan(41.5) // the six garrisons are Sejong's
+    expect(north(1450)).toBeGreaterThan(42.5)
   })
 })

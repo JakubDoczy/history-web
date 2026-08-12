@@ -112,3 +112,92 @@ tolerance is not eating inland frontier; no shared frontier edge is classified
 COAST by one side and INLAND by the other (0 of 650, now gated); and the
 renderer's drawn set is a subset of the validator's notable set, so nothing is
 drawn in a year the validator considered it inactive.
+
+## Round 57: the hole in Korea, and the years after the corpus stops
+
+Two gaps, both of them places where the map answered a reader's question with
+blank paper.
+
+**Korea, 1895–1910.** Round 52 wrote down Shimonoseki correctly — the Qing
+yields Taiwan and its claim to Korea to Japan from 1895 — and gave Japan an
+annexation keyframe at 1910, and between those two years the peninsula belonged
+to nobody on the globe. The Korean Empire was not in the corpus at all, and
+neither was the five-hundred-year state it renamed. So the fix is not a
+placeholder for the fifteen years: it is **Joseon from 1392** (`joseon`, notable
+to 1896) and **the Korean Empire from 1897** (`koreanempire`, notable to 1909),
+same colour, same ground, the way `aksum`/`aksum2` already handle a state that
+changes its name and its century. 1910 is Japan's, because a succession is not a
+co-reign.
+
+The authored extent is one ring drawn *offshore* on three sides — the clip
+pipeline replaces a hand-drawn shore with Natural Earth's, so the honest way to
+author a coastline is not to author one — and the two rivers on the fourth. The
+frontier is the Yalu from its mouth at Uiju to Paektu and the Tumen from Paektu
+to its mouth: twelve inked edges against three hundred and thirty coastal ones.
+The 1392 keyframe stops short of the Tumen and the 1450 one does not, which is
+Sejong's six garrisons (1434–1449) and the only border movement the peninsula
+has in five centuries.
+
+Three frontier rules, in the round-52 pattern: `ming` and `qing` yield to
+Joseon, and `qing` to the Korean Empire — tribute is not a border, and the Qing
+extent's straight line across the northern peninsula yields to the rivers the
+1712 Mukedeng survey put on the ground. Two authored fixes came with them, both
+of which the validator would otherwise have convicted: Russia's 1900 ring reached
+the Tumen with a single point at (130, 42), a hundred kilometres inside Korea,
+and now carries the river mouth itself; and Japan's 1910 keyframe carried its own
+sketch of the peninsula, which is now the Korean Empire's ring, vertex for vertex
+— **the annexation is a change of colour, not of shape.**
+
+**The modern states.** After about 1900 the corpus thins to the polities that
+still exist: at 2000 the globe drew the United States, China and India, and
+Europe, Africa and the Middle East had no political line on them at all. The
+layer that fills that in is Natural Earth's 1:50m admin-0 countries — the same
+`countries-50m.json` topology `land-50m.json` is cut from, so coast agreement is
+identity rather than tolerance — and everything about how it ships is decided by
+what it must not become.
+
+*Ink, not polities.* 241 units against a globe that caps itself at ten. So
+nothing enters the corpus, the store's `all`, `visibleNations` or the polygon
+layer: what ships is the lines *between* countries, drawn through the existing
+`FrontierLayer` as ONE entry for the whole world — one draw call, no fills, no
+hover, nothing to click. A country's coastline is not in the payload at all,
+because the map already draws it.
+
+*A shared arc is one line.* A TopoJSON topology stores the boundary between two
+countries once, as an arc both reference, so the frontiers are exactly the 362
+arcs with two owners and they arrive deduped by construction — no difference
+operator, no overlap validator, no frontier rules. The build asserts that no arc
+has three owners, and a test asserts that no edge in the shipped payload appears
+twice.
+
+*The honesty threshold: 1992, with a patch set.* NE ships today's borders, so
+there is a year before which drawing them is a lie. The two clean answers were
+**2011+** (unpatched and fully correct — South Sudan is the last change a 1:50m
+map can see) and **1992+** (the first full year after the Soviet dissolution)
+with a handful of frontiers withheld until they existed. The patch set shipped,
+because when the payload is frontiers and not fills a *merge is a deletion*:
+Czechoslovakia's outline is Czechia's and Slovakia's minus the line between them,
+and withholding that line until 1993 is the whole of the patch. Seven dated
+lines, each with its date and its reason in the file: Czechia|Slovakia and
+Eritrea|Ethiopia (1993), Indonesia|Timor-Leste (2002), Montenegro|Serbia and
+Kosovo|Montenegro (2006), Kosovo|Serbia (2008), Sudan|S. Sudan (2011).
+
+*Who inks a shared border.* The three polities the corpus still draws after 1992
+have hand-authored frontiers hundreds of kilometres off the surveyed ones, and
+two pens on one border is the defect this rework exists to remove — so while the
+modern set is on, a polity keeps its wash, its label and (on the photograph,
+where nothing else draws a shore) its coastline, and gives up its frontier. That
+is `frontierInkPlan`, and it is why `inkPathsOf` now has four answers instead of
+two.
+
+**Honest limits, written down rather than shipped quietly.** Hong Kong and Macao
+are separate units in NE and their lines are drawn across the whole window,
+including the years they were a British and a Portuguese colony. Somaliland,
+Northern Cyprus and post-2008 Kosovo are drawn because NE draws them; Western
+Sahara's line with Morocco is the berm; Palestine's is the 1949 armistice line;
+Crimea is Ukraine's, which is a de-jure answer to a question with a de-facto
+one. Demarcations settled inside the window (Iraq/Kuwait 1993, Bakassi 2006, the
+India/Bangladesh enclave exchange 2015) move lines by less than the 400 m this
+data can express. And the modern layer says nothing about 1900–1991, which is
+the century of borders this globe still cannot draw: that wants a year-sliced
+political dataset, not a threshold.

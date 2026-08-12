@@ -236,6 +236,33 @@ const seamMeet = (ax: number, ay: number, bx: number, by: number): [number, numb
 /** True where the step from a to b is the seam rather than 359° of ground. */
 const jumpsSeam = (a: number, b: number) => Math.abs(b - a) > 180
 
+/**
+ * An edge that runs ALONG ±180 is the clip's, whoever made it.
+ *
+ * Round 51 marked the closures this file inserts. The 10m data brought the
+ * other half of the same fact: Natural Earth's own ring for Afro-Eurasia
+ * carries vertices exactly ON the meridian — its 10m edition walks 68.98° N
+ * down to 65.07° N along −180 before it comes back — because that is how a
+ * dataset clipped at the antimeridian describes the cut. Unmarked, that is
+ * 3.9° of coastline ink with 22 px of shoreline wash beside it, drawn down the
+ * middle of the Bering Sea: the round-51 defect, arriving as data instead of as
+ * a `closePath`.
+ *
+ * The rule is the one already in force here — a segment with both ends on the
+ * meridian is a fact about the projection, not about a coast — and it is safe
+ * in the only direction that matters: a real coastline that ran exactly along
+ * ±180 for any distance would lose a hairline in open ocean, and none does.
+ * (50m has fourteen such edges and every one of them is zero-length, which is
+ * why this never showed before.)
+ */
+function markMeridian(run: number[], flags: number[]): void {
+  const n = run.length / 2
+  for (let i = 0; i < n; i++) {
+    const x = run[i * 2]
+    if (Math.abs(x) === 180 && run[((i + 1) % n) * 2] === x) flags[i] = 1
+  }
+}
+
 /** One piece, sealed: down the meridian if it can be, around the pole if not. */
 function sealPiece(run: number[], flags: number[]): void {
   const x0 = run[0]
@@ -260,6 +287,12 @@ function sealPiece(run: number[], flags: number[]): void {
  * the per-point "the edge leaving this point is the seam's" flags.
  */
 export function splitAtSeam(run: number[], closed: boolean): { run: number[]; seam: number[] }[] {
+  const out = splitPieces(run, closed)
+  for (const piece of out) markMeridian(piece.run, piece.seam)
+  return out
+}
+
+function splitPieces(run: number[], closed: boolean): { run: number[]; seam: number[] }[] {
   const m = run.length / 2
   if (m < 2) return [{ run, seam: new Array(m).fill(0) }]
   if (!closed) {
@@ -318,10 +351,279 @@ export function splitAtSeam(run: number[], closed: boolean): { run: number[]; se
   return out
 }
 
-function shapeOf(arcs: Float64Array[], part: number[][], closed: boolean): Shape | undefined {
-  const runs = part
-    .flatMap((ids) => splitAtSeam(stitch(arcs, ids), closed))
-    .filter((r) => r.run.length >= 4)
+/* --------------------------------------------------------------- the chunker */
+
+/**
+ * SIX SHAPES HOLD HALF THE WORLD, and at 10m that is what a tile costs.
+ *
+ * The bucket index narrows a tile to the features near it, but a feature is
+ * indexed by its BOUNDING BOX and Afro-Eurasia's box is a hemisphere: every
+ * tile from Lisbon to Kamchatka names it, and drawing it means walking — and
+ * stroking, five times over — the whole of its 84 118 points. At 50m that ring
+ * is 11 033 points and the bill is 2 ms; at 10m it is 7.6× longer and the bill
+ * is 11–29 ms against a budget of 8. Measured with the six shapes over 5 000
+ * points removed, the same tiles cost 0.35 ms — so the cost is not the data, it
+ * is the six.
+ *
+ * So the 10m layer is CUT INTO CELLS at decode, and a cell of Siberia's coast is
+ * a shape of a few hundred points with a bounding box a few degrees across. The
+ * cut is a polygon clip, not a break: a piece is a closed ring that can be
+ * filled, and the edges the clip inserted along the cell wall are marked in
+ * `Shape.seam` — the same flag, meaning the same thing, as the antimeridian's.
+ * The fill needs them; the pen must not follow them, or the map grows a grid of
+ * coastline down every cell wall.
+ *
+ * Two details that are not decoration:
+ *
+ *  · **A cell in the middle of a continent contains no coastline at all.**
+ *    Clipping Eurasia to a cell of the Gobi gives nothing back, and nothing
+ *    back means an unfilled hole in Asia. So a cell that no ring reaches, but
+ *    whose centre is INSIDE the ring, becomes the cell rectangle itself — all
+ *    of it seam, none of it drawn, all of it filled.
+ *  · **The cells overlap by `CHUNK_PAD`.** Two fills that share an exact edge
+ *    each cover half of the pixels on it, and half plus half is 75% of a
+ *    colour, not 100% — a pale hairline of sea down every cell wall. A pad of
+ *    0.003° is over half a tile pixel at level 7 (the coarsest level this layer
+ *    is drawn at) and the seam closes. What the overlap costs is a sliver of
+ *    coast inked twice, which is invisible: the coast pen and the wash are
+ *    opaque, so drawing them twice is drawing them once.
+ */
+export const CHUNK_DEG = 360 / 64
+export const CHUNK_PAD = 0.003
+/**
+ * Shapes below this are left whole. The cut costs points (every crossing gains
+ * a vertex) and shapes (every cell gains an entry), and buys nothing on a
+ * feature the bucket index can already exclude: measured, 6 720 of the 10m
+ * layer's 6 753 shapes are under 1 000 points and together are cheaper to draw
+ * than one continent.
+ */
+export const CHUNK_MIN_PTS = 2000
+
+/** A ring as the clipper works on it: points, and the seam flag of each edge. */
+interface Run {
+  run: number[]
+  seam: number[]
+  /** Cached bounds; a ring that misses a cell is neither clipped nor tested. */
+  box?: [number, number, number, number]
+}
+
+function boundsOf(r: Run): [number, number, number, number] {
+  if (r.box) return r.box
+  let w = Infinity
+  let s = Infinity
+  let e = -Infinity
+  let n = -Infinity
+  for (let i = 0; i < r.run.length; i += 2) {
+    if (r.run[i] < w) w = r.run[i]
+    if (r.run[i] > e) e = r.run[i]
+    if (r.run[i + 1] < s) s = r.run[i + 1]
+    if (r.run[i + 1] > n) n = r.run[i + 1]
+  }
+  return (r.box = [w, s, e, n])
+}
+
+/**
+ * Sutherland–Hodgman against one edge of the cell, carrying the seam flags.
+ *
+ * The flag rule is the whole reason this is not a library call. A vertex is
+ * emitted with the flag of the edge LEAVING it, so:
+ *
+ *  · an edge with both ends inside keeps whatever it was (a coast stays a
+ *    coast, an antimeridian closure stays a closure);
+ *  · an edge leaving the cell contributes its real part, and the crossing
+ *    vertex then leads along the cell wall until the ring comes back — that
+ *    stretch is the clip's own and is marked 1;
+ *  · an edge coming back in contributes its real part, flag intact.
+ *
+ * Which is why a coastline that cuts a cell CORNER — in through one wall, out
+ * through the next, with no vertex between — keeps its ink: each wall clips it
+ * as a real edge, and only the connector between an exit and a re-entry is ever
+ * marked. A "both ends lie on the wall, so it must be the wall" test would have
+ * silently erased those segments.
+ */
+function clipHalf(r: Run, keep: (x: number, y: number) => boolean, meet: (ax: number, ay: number, bx: number, by: number) => [number, number]): Run {
+  const n = r.run.length / 2
+  const run: number[] = []
+  const seam: number[] = []
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n
+    const ax = r.run[i * 2]
+    const ay = r.run[i * 2 + 1]
+    const bx = r.run[j * 2]
+    const by = r.run[j * 2 + 1]
+    const f = r.seam[i]
+    const ain = keep(ax, ay)
+    const bin = keep(bx, by)
+    if (ain) {
+      run.push(ax, ay)
+      seam.push(bin ? f : 1)
+      if (!bin) {
+        const [x, y] = meet(ax, ay, bx, by)
+        run.push(x, y)
+        seam.push(1)
+      }
+    } else if (bin) {
+      const [x, y] = meet(ax, ay, bx, by)
+      run.push(x, y)
+      seam.push(f)
+    }
+  }
+  // …and the edge that was cut leaves the crossing vertex, so the flag written
+  // when it was emitted (1, "along the wall") is right for every case but one:
+  // a ring that never left has no crossing at all, and is returned untouched.
+  return { run, seam }
+}
+
+const between = (a: number, b: number, at: number) => (at - a) / (b - a || 1)
+
+/** The four walls, as (keep, meet) pairs. `side` is which of them a cut is. */
+export type Wall = 'w' | 'e' | 's' | 'n'
+const wallAt = (side: Wall, at: number) =>
+  ({
+    w: [(x: number) => x >= at, (ax: number, ay: number, bx: number, by: number): [number, number] => [at, ay + (by - ay) * between(ax, bx, at)]],
+    e: [(x: number) => x <= at, (ax: number, ay: number, bx: number, by: number): [number, number] => [at, ay + (by - ay) * between(ax, bx, at)]],
+    s: [(_: number, y: number) => y >= at, (ax: number, ay: number, bx: number, by: number): [number, number] => [ax + (bx - ax) * between(ay, by, at), at]],
+    n: [(_: number, y: number) => y <= at, (ax: number, ay: number, bx: number, by: number): [number, number] => [ax + (bx - ax) * between(ay, by, at), at]],
+  })[side] as [(x: number, y: number) => boolean, (ax: number, ay: number, bx: number, by: number) => [number, number]]
+
+/** One ring, clipped to `[w, s, e, n]`. Empty when the ring misses the box. */
+function clipToBox(r: Run, w: number, s: number, e: number, n: number): Run | undefined {
+  let out: Run = r
+  for (const [side, at] of [['w', w], ['e', e], ['s', s], ['n', n]] as [Wall, number][]) {
+    out = clipHalf(out, ...wallAt(side, at))
+    if (!out.run.length) return undefined
+  }
+  return out.run.length >= 6 ? out : undefined
+}
+
+/** Ray cast against a closed run. Used only to ask "is this cell interior land". */
+function contains(r: Run, x: number, y: number): boolean {
+  const n = r.run.length / 2
+  let inside = false
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const ax = r.run[i * 2]
+    const ay = r.run[i * 2 + 1]
+    const bx = r.run[j * 2]
+    const by = r.run[j * 2 + 1]
+    if (ay > y !== by > y && x < ((bx - ax) * (y - ay)) / (by - ay) + ax) inside = !inside
+  }
+  return inside
+}
+
+/** The cell itself, as a ring nobody draws. */
+const boxRun = (w: number, s: number, e: number, n: number): Run => ({
+  run: [w, s, e, s, e, n, w, n],
+  seam: [1, 1, 1, 1],
+})
+
+/**
+ * Every ring against one child box: clipped, or substituted, or dropped.
+ *
+ * `side` is the ONE wall this step introduced. The rings coming in were already
+ * clipped to the parent box, whose other three walls the child shares, so
+ * clipping against all four would be three no-ops out of four passes — and at
+ * eleven levels of recursion that is most of the decode. Only the root gets the
+ * whole box, and only because it is the one step where nothing is known yet.
+ */
+function clipRings(rings: Run[], w: number, s: number, e: number, n: number, side?: Wall): Run[] {
+  const out: Run[] = []
+  let real = 0
+  let filled = 0
+  const wall = side && wallAt(side, { w, e, s, n }[side])
+  for (const r of rings) {
+    const [rw, rs, re, rn] = boundsOf(r)
+    // A ring that misses the box cannot be clipped to it and cannot contain its
+    // centre either, so it is not this cell's business at all.
+    if (re < w || rw > e || rn < s || rs > n) continue
+    const one = wall && clipHalf(r, ...wall)
+    const cut = wall ? (one!.run.length >= 6 ? one : undefined) : clipToBox(r, w, s, e, n)
+    if (cut) {
+      out.push(cut)
+      real++
+    } else if (contains(r, (w + e) / 2, (s + n) / 2)) {
+      out.push(boxRun(w, s, e, n))
+      filled++
+    }
+  }
+  // Interior: the cell is inside an odd number of rings, so it is land, and one
+  // rectangle says so. Inside an even number it is a hole in the hole, and
+  // saying it twice with `evenodd` says nothing at all — drop the cell.
+  if (!real && filled) return filled % 2 ? [out[0]] : []
+  return out
+}
+
+const runsOf = (shape: Shape): Run[] => {
+  const out: Run[] = []
+  for (let r = 0; r + 1 < shape.rings.length; r++) {
+    const from = shape.rings[r]
+    const to = shape.rings[r + 1]
+    const run: number[] = []
+    const seam: number[] = []
+    for (let i = from; i < to; i++) {
+      run.push(shape.pts[i * 2], shape.pts[i * 2 + 1])
+      seam.push(shape.seam?.[i] ?? 0)
+    }
+    out.push({ run, seam })
+  }
+  return out
+}
+
+/**
+ * One shape, cut to the chunk grid — BY HALVES, not cell by cell.
+ *
+ * Clipping Eurasia against each of the ~1 300 cells its bounding box touches is
+ * 84 118 points × 1 300, and the obvious repair (rows, then columns within a
+ * row) is still points × rows + points × cells-in-row. Splitting the cell RANGE
+ * in half instead, and clipping the halves rather than the whole, costs
+ * points × log₂(cells) — 84 118 × 11 — and lands on exactly the same leaves,
+ * because every cut is on a grid line. Measured over the six chunked features:
+ * 1 570 ms cell-by-cell, 250 ms by halves.
+ *
+ * It also disposes of continental interiors for free. The Gobi is inside the
+ * ring but reaches none of it, so the rectangle substitution happens at some
+ * node high in the recursion, and everything below that node is subdividing a
+ * four-point rectangle.
+ */
+export function chunkShape(shape: Shape, cell = CHUNK_DEG, pad = CHUNK_PAD): Shape[] {
+  const [w, s, e, n] = shape.bbox
+  const x0 = Math.floor((w + 180) / cell)
+  const x1 = Math.floor((e + 180) / cell)
+  const y0 = Math.floor((s + 90) / cell)
+  const y1 = Math.floor((n + 90) / cell)
+  if (x0 === x1 && y0 === y1) return [shape]
+  const out: Shape[] = []
+  const box = (gx0: number, gx1: number, gy0: number, gy1: number) =>
+    [
+      gx0 * cell - 180 - pad,
+      gy0 * cell - 90 - pad,
+      (gx1 + 1) * cell - 180 + pad,
+      (gy1 + 1) * cell - 90 + pad,
+    ] as const
+  const cut = (rings: Run[], gx0: number, gx1: number, gy0: number, gy1: number) => {
+    if (!rings.length) return
+    if (gx0 === gx1 && gy0 === gy1) {
+      const built = shapeFromRuns(rings)
+      if (built) out.push(built)
+      return
+    }
+    if (gx1 - gx0 >= gy1 - gy0) {
+      const mid = (gx0 + gx1) >> 1
+      cut(clipRings(rings, ...box(gx0, mid, gy0, gy1), 'e'), gx0, mid, gy0, gy1)
+      cut(clipRings(rings, ...box(mid + 1, gx1, gy0, gy1), 'w'), mid + 1, gx1, gy0, gy1)
+    } else {
+      const mid = (gy0 + gy1) >> 1
+      cut(clipRings(rings, ...box(gx0, gx1, gy0, mid), 'n'), gx0, gx1, gy0, mid)
+      cut(clipRings(rings, ...box(gx0, gx1, mid + 1, gy1), 's'), gx0, gx1, mid + 1, gy1)
+    }
+  }
+  cut(clipRings(runsOf(shape), ...box(x0, x1, y0, y1)), x0, x1, y0, y1)
+  return out.length ? out : [shape]
+}
+
+/* ------------------------------------------------------------------- shapes */
+
+function shapeFromRuns(runs: { run: number[]; seam: number[] }[]): Shape | undefined {
+  runs = runs.filter((r) => r.run.length >= 4)
   if (!runs.length) return undefined
   const total = runs.reduce((n, r) => n + r.run.length, 0)
   const pts = new Float64Array(total)
@@ -351,6 +653,10 @@ function shapeOf(arcs: Float64Array[], part: number[][], closed: boolean): Shape
   })
   rings[runs.length] = at / 2
   return { pts, rings, bbox: [w, s, e, n], ...(seamed ? { seam } : {}) }
+}
+
+function shapeOf(arcs: Float64Array[], part: number[][], closed: boolean): Shape | undefined {
+  return shapeFromRuns(part.flatMap((ids) => splitAtSeam(stitch(arcs, ids), closed)))
 }
 
 /**
@@ -399,14 +705,30 @@ function chaikin(shape: Shape, closed: boolean): Shape {
   return { pts: Float64Array.from(out), rings, bbox: shape.bbox }
 }
 
+/** How a layer wants to be decoded. Both default off; both are measured choices. */
+export interface DecodeOptions {
+  /** One Chaikin pass, for data quantised more coarsely than it is dense. */
+  smooth?: boolean
+  /** Cut features bigger than `CHUNK_MIN_PTS` to the chunk grid. 10m land only. */
+  chunk?: boolean
+}
+
 /** Decode one named object of a topology into an indexed layer. */
-export function layerOf(topo: Topology, name: string, closed: boolean, smooth = false): Layer {
+export function layerOf(
+  topo: Topology,
+  name: string,
+  closed: boolean,
+  { smooth = false, chunk = false }: DecodeOptions = {},
+): Layer {
   const arcs = decodeArcs(topo)
   const object = topo.objects[name]
   const shapes: Shape[] = []
   for (const part of object ? partsOf(object) : []) {
     const shape = shapeOf(arcs, part, closed)
-    if (shape) shapes.push(smooth ? chaikin(shape, closed) : shape)
+    if (!shape) continue
+    if (smooth) shapes.push(chaikin(shape, closed))
+    else if (chunk && shape.pts.length / 2 > CHUNK_MIN_PTS) shapes.push(...chunkShape(shape))
+    else shapes.push(shape)
   }
   const lists: number[][] = []
   shapes.forEach((shape, i) => {
@@ -441,15 +763,43 @@ export interface DrawnWorld {
   land?: Layer
   rivers?: Layer
   lakes?: Layer
+  /**
+   * 10m land — the third rung, and the only one that is never fetched unless a
+   * reader asks for ground fine enough to need it (see `requestFine`).
+   */
+  fineLand?: Layer
+  /**
+   * "Somebody is drawing at a level 50m cannot answer."
+   *
+   * Called by the renderer, idempotent, and absent on a world built by
+   * `buildWorld` — a topology handed in is a topology already paid for, so the
+   * pure builder has nothing to go and get. This is the whole of the
+   * progressive load: 851 kB gzipped that a world view never asks for.
+   */
+  requestFine?: () => void
 }
 
-/** Build the world from already-parsed topologies. Pure; the tests use it. */
-export function buildWorld(coarse: Topology, fine?: Topology, water?: Topology): DrawnWorld {
+/** Which file has landed. The tile cache is keyed by it; see `DRAWN_LABELS`. */
+export type DrawnStage = '50m' | '10m'
+
+/**
+ * Build the world from already-parsed topologies. Pure; the tests use it.
+ *
+ * `finest` is 10m land and is chunked at decode (`chunkShape`); the other
+ * layers are not, because nothing in them is big enough to pay for it.
+ */
+export function buildWorld(
+  coarse: Topology,
+  fine?: Topology,
+  water?: Topology,
+  finest?: Topology,
+): DrawnWorld {
   return {
     coarseLand: layerOf(coarse, 'land', true),
     land: fine && layerOf(fine, 'land', true),
-    rivers: water && layerOf(water, 'rivers', false, true),
-    lakes: water && layerOf(water, 'lakes', true, true),
+    rivers: water && layerOf(water, 'rivers', false, { smooth: true }),
+    lakes: water && layerOf(water, 'lakes', true, { smooth: true }),
+    fineLand: finest && layerOf(finest, 'land', true, { chunk: true }),
   }
 }
 
@@ -467,25 +817,44 @@ export const MAP_DATA = {
   coarse: 'land-110m.json',
   fine: 'land-50m.json',
   water: 'water-50m.json',
+  finest: 'land-10m.json',
 } as const
 
 /**
- * Fetch and decode, coarse first.
+ * Fetch and decode, coarse first — and 10m never, until it is asked for.
  *
  * The promise resolves on 55 kB, so the drawn map can start rendering tiles
  * about 300 ms before the 841 kB of 50m geometry has been parsed into typed
- * arrays; `onFine` fires when it has, and the caller re-renders. Nothing waits
- * on the second stage and nothing breaks if it never arrives.
+ * arrays; `onStage('50m')` fires when it has, and the caller re-renders.
+ * Nothing waits on the second stage and nothing breaks if it never arrives.
+ *
+ * The third stage is 3.3 MB of JSON — 851 kB over the wire — and is fetched by
+ * `requestFine`, which the renderer calls the first time it draws a plate at a
+ * level 50m geometry has stopped being able to answer (`LOD_FINE_Z`, measured
+ * in lib/drawnTile.ts). A reader who looks at the world and leaves never asks
+ * for it; a reader who zooms to a coast asks for it once.
  */
-export async function loadWorld(base = '/', onFine?: (w: DrawnWorld) => void): Promise<DrawnWorld> {
+export async function loadWorld(
+  base = '/',
+  onStage?: (stage: DrawnStage, w: DrawnWorld) => void,
+): Promise<DrawnWorld> {
   const get = (f: string) => fetch(`${base}data/map/${f}`).then((r) => r.json() as Promise<Topology>)
   const rest = Promise.all([get(MAP_DATA.fine), get(MAP_DATA.water)])
   const world = buildWorld(await get(MAP_DATA.coarse))
+  let asked = false
+  world.requestFine = () => {
+    if (asked) return
+    asked = true
+    void get(MAP_DATA.finest).then((finest) => {
+      world.fineLand = layerOf(finest, 'land', true, { chunk: true })
+      onStage?.('10m', world)
+    })
+  }
   void rest.then(([fine, water]) => {
     world.land = layerOf(fine, 'land', true)
-    world.rivers = layerOf(water, 'rivers', false, true)
-    world.lakes = layerOf(water, 'lakes', true, true)
-    onFine?.(world)
+    world.rivers = layerOf(water, 'rivers', false, { smooth: true })
+    world.lakes = layerOf(water, 'lakes', true, { smooth: true })
+    onStage?.('50m', world)
   })
   return world
 }

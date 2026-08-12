@@ -263,6 +263,133 @@ together. Only drawn mode could be photographed here — the sandbox has no rout
 to the WMS services — so the satellite half is carried by the unit tests on the
 same arithmetic.
 
+## Round 57 — the third rung: Natural Earth 10m
+
+The contract said 10m "swaps in at the data layer with no pipeline change". It
+does, and the swap is four lines. What it cost was everything around it.
+
+**The source.** `@cublya/world-atlas@3.0.0-beta.2` — the only reachable package
+that publishes honest NE 10m land. `world-atlas@2` stops at 50m, so do
+`sane-topojson` and `visionscarto-world-atlas`; the `@geo-maps/*-10m` family is
+not Natural Earth 1:10m at all — its "10m" is *ten metres* of OSM-derived
+geometry under ODbL, a different dataset under a different licence, and
+substituting it would have been the quiet lie the round was told not to tell. The
+package is ISC, is Mike Bostock's build script re-run against Natural Earth
+5.1.2, records the source archives' SHA-256, and states the terms this repo
+relies on: *"Natural Earth declares all versions of its raster and vector map
+data to be in the public domain."* It was cross-checked rather than trusted — its
+own `land-50m` reproduces the shipped world-atlas 50m coastline to within 0.6% of
+vertices and 0.3% of median segment length, so the 10m file out of the same
+script is the same pipeline at the next scale.
+
+|          | file    | pruned  | gzip   | arcs  | points  | median segment |
+| -------- | ------- | ------- | ------ | ----- | ------- | -------------- |
+| land 110m| 54 kB   | 54 kB   | 20 kB  | 128   | 5 129   | 0.8196° / 91 km|
+| land 50m | 739 kB  | 538 kB  | 170 kB | 1 597 | 60 635  | 0.0985° / 7.6 km|
+| land 10m | 3 288 kB| 3 285 kB| 851 kB | 6 964 | 441 974 | 0.0176° / 1.5 km|
+
+**The rung, and who pays for it.** 10m is finer everywhere, and is used from
+level 7 only. Below that the extra 300 000 segments are half a tile pixel apart:
+they would cost the download, the parse and the paths, and draw the same
+coastline. 7 is where 50m has nothing left to say (it saturates at 6 — every
+vertex it owns already survives the half-pixel filter) and where its facets start
+to read as facets: 18 tile pixels of straight line against 10m's 3.
+
+That level is also the trigger. The file is not fetched at load, on a timer, or
+on a guess about where the camera is going: `DrawnRenderer.draw` calls
+`world.requestFine()` the first time it draws a plate at level ≥ 7, which is a
+reader who has zoomed to a coast. A world view, a continental view and the
+build-time world texture never ask — proved in the browser as network traffic
+(`drawnMap.e2e.mjs`, step c2), because the fetch happens inside the worker and
+"it should not be requested" is a claim about requests.
+
+**Z_MAX 9 → 11.** The rule is round 49's, restated so it applies to any rung: the
+ceiling is the finest level at which the median facet of the data is still no
+longer than 50m's was at the ceiling round 49 shipped (72 tile pixels at z9).
+
+| data | saturates | median facet at z9 | at z10 | at z11 | at z12 | Z_MAX |
+| ---- | --------- | ------------------ | ------ | ------ | ------ | ----- |
+| 50m  | 6         | 72 px              | 143    | 287    | 574    | 9     |
+| 10m  | 8         | 13 px              | 26     | 51     | 103    | 11    |
+
+Both halves of the old argument move by the same two levels — saturation 6 → 8,
+facet length 72 px at z9 → 51 px at z11 — and level 12 is refused by both. The
+ceiling now matches the camera rather than sitting two levels under it:
+`MIN_ALTITUDE_DETAIL` holds the closest view at a 100 km frame, which wants level
+11 on a desktop, so what used to be a level-9 drawing magnified 2.3× is now drawn.
+And the drawing AT the ceiling is finer than the old ceiling's was.
+
+**What it actually cost: six shapes.** The bucket index narrows a tile to the
+features near it, but it indexes a feature by its BOUNDING BOX, and
+Afro-Eurasia's box is a hemisphere. At 50m that ring is 11 033 points and every
+tile from Lisbon to Kamchatka strokes all of it five times for 2 ms. At 10m it is
+84 118 points — six shapes hold 201 604 of the file's 441 523 — and the same tiles
+measured **11–29 ms against a budget of 8**. With those six removed the tiles
+were 0.35 ms, so the cost was not the data, it was the six.
+
+So the 10m layer is **cut into cells at decode** (`chunkShape`, 5.625°, features
+over 2 000 points only). The cut is a polygon clip, not a break: a piece is a
+closed ring that fills, and the edges the clip inserted along a cell wall are
+marked in the same `Shape.seam` the antimeridian uses — the fill needs them, the
+pen must not follow them. Four things that are not decoration:
+
+1. **A cell in the middle of a continent has no coastline in it.** Clipping
+   Eurasia to a cell of the Gobi returns nothing, and nothing is a hole in Asia.
+   A cell no ring reaches but whose centre is inside one becomes the cell
+   rectangle: all seam, none drawn, all filled.
+2. **The cells overlap by 0.003°.** Two fills sharing an exact edge each cover
+   half the pixels on it, and half plus half is 75% of a colour — a pale hairline
+   of sea down every wall. The pad is over half a tile pixel at level 7 and the
+   seam closes; what it costs is a sliver of coast inked twice, which is
+   invisible because the coast pen and the wash are opaque.
+3. **The clip carries the seam flags through**, per edge rather than per vertex.
+   A "both ends lie on the wall, so it must be the wall" test would have silently
+   erased every coastline that cuts a cell corner.
+4. **It is cut by halves, not cell by cell** — points × log₂(cells) instead of
+   points × cells. Measured over the six: 1 570 ms cell-by-cell, 430 ms by
+   halves, same 963 pieces.
+
+Result: 7 701 shapes instead of 6 753, 1.5% more points, 7.5 MB of typed arrays,
+and a tile at the fjords back to **0.21–0.85 ms mean / 2.9 ms worst** — faster
+than the 50m rung it replaces, because the pieces have real bounding boxes.
+
+**One defect found, and it was in the data.** The 10m ring for Afro-Eurasia
+walks 68.98° N down to 65.07° N *along −180*, because that is how a dataset
+clipped at the antimeridian describes the cut. Unmarked, that is four degrees of
+coastline ink and 22 px of shoreline wash drawn down the middle of the Bering Sea
+— round 51's defect arriving as data instead of as a `closePath`. Any edge with
+both ends on ±180 is now marked seam at decode (`markMeridian`). 50m has fourteen
+such edges and every one of them is zero-length, which is why this never showed
+before.
+
+**What did not change.** The world texture is still 50m-rendered: it is one
+4096-wide plate at level 3, `landAt` picks 50m there, and rendering it with the
+10m layer resident is byte-for-byte identical (checked). The 110m→50m rung, the
+water fade, the palette, the seam machinery, the tile source and the shader are
+untouched. The vendored 50m and 110m files are byte-identical to what round 52
+shipped.
+
+**Honest limits.**
+
+- The 10m file is quantised on the same 1e5 grid as 50m — 0.0036° in longitude,
+  0.0017° in latitude — but its vertices are 3.8 quanta apart instead of 27. So a
+  10m vertex carries about 10% of its own segment length as quantisation jitter,
+  at every zoom (the ratio is scale-invariant), against 1.8% for 50m. On a drawn
+  map that reads as pen roughness rather than as error, and it is why the ceiling
+  is set by facet length rather than by the grid. A Chaikin pass would smooth it,
+  as it does for the rivers, at the price of doubling the points; it was not
+  taken.
+- The rung is 10m *land* only. No reachable package publishes 10m rivers or
+  lakes, so water is still `sane-topojson`'s 50m at 0.036°, and still fades out
+  across levels 7–9 — which now happens exactly where the coast gets sharper.
+- 10m land is Natural Earth 5.1.2 and the 50m/110m rungs are world-atlas@2's
+  older edition, so a coastline moves by a hair when the rung changes. The
+  measured difference between the two editions at 50m is 0.6% of vertices.
+- The decode is ~700 ms in node (JSON parse plus the cut), and it happens in the
+  worker while the 50m map is on screen. On a slow phone it will be seconds, and
+  a reader sees the 50m coastline until it finishes. That is the progressive
+  design working, not failing, but it is worth knowing.
+
 ## Round 52 — the sea, and the mark on it
 
 Two reports, and neither is about geometry.

@@ -133,7 +133,7 @@
   "start": 1805,
   "lat": 49.13,
   "lng": 16.76,
-  "priority": 55,
+  "priority": 54,
   "tags": [
    "war"
   ],
@@ -223,7 +223,7 @@
     "url": "https://en.wikipedia.org/wiki/Abraham_Lincoln"
    }
   ],
-  "priority": 86
+  "priority": 87
  },
  {
   "id": "latam-independence",
@@ -278,7 +278,7 @@
     15
    ]
   ],
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "politics",
    "war"
@@ -347,7 +347,7 @@
     45
    ]
   ],
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "war"
   ],
@@ -370,7 +370,7 @@
   "start": 1815,
   "lat": 50.68,
   "lng": 4.41,
-  "priority": 76,
+  "priority": 77,
   "tags": [
    "war"
   ],
@@ -390,7 +390,7 @@
   "start": 1815,
   "lat": -8.25,
   "lng": 118.0,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "disaster",
    "geology",
@@ -454,7 +454,7 @@
   "start": 1816,
   "lat": 44.0,
   "lng": -72.0,
-  "priority": 55,
+  "priority": 54,
   "tags": [
    "climate",
    "disaster"
@@ -478,7 +478,7 @@
   "start": 1830,
   "lat": 53.41,
   "lng": -2.98,
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "technology",
    "economy"
@@ -506,7 +506,7 @@
   "end": 1860.81284,
   "lat": 22.32,
   "lng": 114.17,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "war",
    "economy"
@@ -585,7 +585,7 @@
   "start": 1844,
   "lat": 38.89,
   "lng": -77.01,
-  "priority": 69,
+  "priority": 70,
   "tags": [
    "technology"
   ],
@@ -607,7 +607,7 @@
   "start": 1846,
   "lat": 42.3631,
   "lng": -71.069,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "science",
    "technology"
@@ -669,7 +669,7 @@
     42
    ]
   ],
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "politics"
   ],
@@ -691,7 +691,7 @@
   "start": 1848,
   "lat": 50.85,
   "lng": 4.35,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "politics",
    "culture"
@@ -740,7 +740,7 @@
   "end": 1856,
   "lat": 44.5,
   "lng": 33.5,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "war",
    "politics"
@@ -766,7 +766,7 @@
   "start": 1856,
   "lat": 53.4,
   "lng": -1.5,
-  "priority": 69,
+  "priority": 70,
   "tags": [
    "technology",
    "economy"
@@ -791,7 +791,7 @@
   "end": 1858,
   "lat": 26.5,
   "lng": 80.5,
-  "priority": 75,
+  "priority": 76,
   "tags": [
    "war",
    "politics"
@@ -815,7 +815,7 @@
   "start": 1858,
   "lat": 51.93,
   "lng": -10.35,
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "technology"
   ],
@@ -839,7 +839,7 @@
   "end": 1947,
   "lat": 28.61,
   "lng": 77.21,
-  "priority": 79,
+  "priority": 80,
   "tags": [
    "politics"
   ],
@@ -901,7 +901,7 @@
     "url": "https://en.wikipedia.org/wiki/Natural_selection"
    }
   ],
-  "priority": 91
+  "priority": 92
  },
  {
   "id": "germ-theory",
@@ -910,7 +910,7 @@
   "end": 1885,
   "lat": 48.84,
   "lng": 2.34,
-  "priority": 81,
+  "priority": 82,
   "tags": [
    "science"
   ],
@@ -951,7 +951,7 @@
     "url": "https://en.wikipedia.org/wiki/Germ_theory_of_disease"
    }
   ],
-  "priority": 81
+  "priority": 82
  },
  {
   "id": "us-civil-war",
@@ -960,7 +960,7 @@
   "end": 1865.39863,
   "lat": 37.5,
   "lng": -79.0,
-  "priority": 86,
+  "priority": 87,
   "tags": [
    "war",
    "politics"
@@ -1070,7 +1070,7 @@
   "start": 1863,
   "lat": 38.9,
   "lng": -77.04,
-  "priority": 69,
+  "priority": 70,
   "tags": [
    "politics"
   ],
@@ -1167,7 +1167,7 @@
     "url": "https://en.wikipedia.org/wiki/Marie_Curie"
    }
   ],
-  "priority": 72
+  "priority": 73
  },
  {
   "id": "meiji",
@@ -1175,7 +1175,7 @@
   "start": 1868,
   "lat": 35.68,
   "lng": 139.75,
-  "priority": 81,
+  "priority": 82,
   "tags": [
    "politics",
    "technology"
@@ -1244,7 +1244,7 @@
   "start": 1869,
   "lat": 59.94,
   "lng": 30.31,
-  "priority": 69,
+  "priority": 70,
   "tags": [
    "science"
   ],
@@ -1297,7 +1297,7 @@
     "url": "https://en.wikipedia.org/wiki/Mahatma_Gandhi"
    }
   ],
-  "priority": 86
+  "priority": 87
  },
  {
   "id": "metric-system-1875",
@@ -1305,7 +1305,7 @@
   "start": 1875,
   "lat": 48.8296,
   "lng": 2.2196,
-  "priority": 55,
+  "priority": 54,
   "tags": [
    "science",
    "technology"
@@ -1350,7 +1350,7 @@
   "start": 1877,
   "lat": 40.57,
   "lng": -74.33,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "technology"
   ],
@@ -1372,7 +1372,7 @@
   "start": 1879,
   "lat": 40.57,
   "lng": -74.33,
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "technology"
   ],
@@ -1426,7 +1426,7 @@
     "url": "https://en.wikipedia.org/wiki/Albert_Einstein"
    }
   ],
-  "priority": 89
+  "priority": 90
  },
  {
   "id": "global-warming",
@@ -1518,7 +1518,7 @@
     10
    ]
   ],
-  "priority": 81,
+  "priority": 82,
   "tags": [
    "politics",
    "war"
@@ -1635,7 +1635,7 @@
   "start": 1888,
   "lat": 43.2,
   "lng": -77.5,
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "technology"
   ],
@@ -1682,7 +1682,7 @@
   "start": 1895,
   "lat": 49.79,
   "lng": 9.93,
-  "priority": 75,
+  "priority": 76,
   "tags": [
    "science"
   ],
@@ -1728,7 +1728,7 @@
   "start": 1896,
   "lat": 48.8417,
   "lng": 2.3475,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "science"
   ],
@@ -1748,7 +1748,7 @@
   "end": 1901,
   "lat": 39.9,
   "lng": 116.4,
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "war",
    "politics"
@@ -1796,7 +1796,7 @@
   "start": 1903,
   "lat": 36.02,
   "lng": -75.67,
-  "priority": 81,
+  "priority": 82,
   "tags": [
    "technology"
   ],
@@ -1842,7 +1842,7 @@
   "end": 1905,
   "lat": 38.85,
   "lng": 121.25,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "war"
   ],
@@ -1865,7 +1865,7 @@
   "end": 1915,
   "lat": 46.95,
   "lng": 7.44,
-  "priority": 89,
+  "priority": 90,
   "tags": [
    "science"
   ],
@@ -1901,7 +1901,7 @@
     "url": "https://en.wikipedia.org/wiki/Theory_of_relativity"
    }
   ],
-  "priority": 89
+  "priority": 90
  },
  {
   "id": "finland-suffrage",
@@ -2021,7 +2021,7 @@
   "start": 1912,
   "lat": 41.73,
   "lng": -49.95,
-  "priority": 60,
+  "priority": 61,
   "tags": [
    "disaster"
   ],
@@ -2073,7 +2073,7 @@
     "url": "https://en.wikipedia.org/wiki/Alan_Turing"
    }
   ],
-  "priority": 82
+  "priority": 83
  },
  {
   "id": "ford-assembly-line",
@@ -2081,7 +2081,7 @@
   "start": 1913,
   "lat": 42.41,
   "lng": -83.1,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "technology",
    "economy"
@@ -2104,7 +2104,7 @@
   "start": 1914,
   "lat": 9.0,
   "lng": -79.5,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "technology",
    "economy"
@@ -2127,7 +2127,7 @@
   "start": 1914,
   "lat": 43.86,
   "lng": 18.43,
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "politics",
    "war"
@@ -2152,7 +2152,7 @@
   "end": 1918.86164,
   "lat": 49.7,
   "lng": 3.5,
-  "priority": 94,
+  "priority": 95,
   "tags": [
    "war"
   ],
@@ -2265,7 +2265,7 @@
   "start": 1916,
   "lat": 53.35,
   "lng": -6.26,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "war",
    "politics"
@@ -2338,7 +2338,7 @@
   "end": 1923,
   "lat": 59.94,
   "lng": 30.31,
-  "priority": 89,
+  "priority": 90,
   "tags": [
    "politics",
    "war"
@@ -2474,7 +2474,7 @@
     "url": "https://en.wikipedia.org/wiki/Nelson_Mandela"
    }
   ],
-  "priority": 75
+  "priority": 76
  },
  {
   "id": "spanish-flu",
@@ -2539,7 +2539,7 @@
   "start": 1919,
   "lat": 48.8,
   "lng": 2.12,
-  "priority": 75,
+  "priority": 76,
   "tags": [
    "politics"
   ],
@@ -2585,7 +2585,7 @@
   "start": 1921,
   "lat": 53.35,
   "lng": -6.26,
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "politics"
   ],
@@ -2607,7 +2607,7 @@
   "start": 1921,
   "lat": 43.66,
   "lng": -79.39,
-  "priority": 75,
+  "priority": 76,
   "tags": [
    "science",
    "disease"
@@ -2630,7 +2630,7 @@
   "start": 1922,
   "lat": 55.7601,
   "lng": 37.6186,
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "politics"
   ],
@@ -2650,7 +2650,7 @@
   "start": 1923,
   "lat": 35.5,
   "lng": 139.5,
-  "priority": 60,
+  "priority": 61,
   "tags": [
    "disaster"
   ],
@@ -2741,7 +2741,7 @@
   "start": 1927,
   "lat": 34.0983,
   "lng": -118.3145,
-  "priority": 63,
+  "priority": 64,
   "tags": [
    "culture",
    "technology"
@@ -2761,7 +2761,7 @@
   "start": 1927,
   "lat": 37.7997,
   "lng": -122.4045,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "technology"
   ],
@@ -2783,7 +2783,7 @@
   "start": 1928,
   "lat": 51.52,
   "lng": -0.17,
-  "priority": 83,
+  "priority": 84,
   "tags": [
    "science"
   ],
@@ -2803,7 +2803,7 @@
   "end": 1939,
   "lat": 40.71,
   "lng": -74.01,
-  "priority": 86,
+  "priority": 87,
   "tags": [
    "economy"
   ],
@@ -2963,7 +2963,7 @@
   "start": 1931,
   "lat": 41.8,
   "lng": 123.4,
-  "priority": 66,
+  "priority": 67,
   "tags": [
    "war"
   ],
@@ -2988,7 +2988,7 @@
   "start": 1933,
   "lat": 52.5117,
   "lng": 13.3806,
-  "priority": 81,
+  "priority": 82,
   "tags": [
    "politics"
   ],
@@ -3083,7 +3083,7 @@
   "end": 1945,
   "lat": 39.8483,
   "lng": 116.2133,
-  "priority": 75,
+  "priority": 76,
   "tags": [
    "war"
   ],
@@ -3253,7 +3253,7 @@
   "start": 1941,
   "lat": 21.36,
   "lng": -157.95,
-  "priority": 75,
+  "priority": 76,
   "tags": [
    "war"
   ],
@@ -3280,7 +3280,7 @@
   "end": 1945,
   "lat": 50.03,
   "lng": 19.2,
-  "priority": 86,
+  "priority": 87,
   "tags": [
    "war",
    "politics",
@@ -3346,7 +3346,7 @@
     48.5
    ]
   ],
-  "priority": 72,
+  "priority": 73,
   "tags": [
    "war"
   ],
@@ -4002,7 +4002,7 @@
   "start": 1942,
   "lat": 18.96,
   "lng": 72.83,
-  "priority": 60,
+  "priority": 61,
   "tags": [
    "politics"
   ],
@@ -4026,7 +4026,7 @@
   "end": 1943,
   "lat": 48.7,
   "lng": 44.5,
-  "priority": 75,
+  "priority": 76,
   "tags": [
    "war"
   ],
