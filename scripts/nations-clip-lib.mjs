@@ -405,16 +405,71 @@ export const isNotableAt = (n, t) =>
   t >= n.from && t <= n.to && t >= n.visibleFrom && t <= n.visibleTo
 
 /**
- * How much two concurrent polities may share before it is a bug.
+ * How much two concurrent polities may share before it is a bug — measured the
+ * way the READER measures it, which is round 55's correction.
  *
- * As a share of the SMALLER polygon, because the absolute area of a sliver
- * along a two-thousand-kilometre frontier and the absolute area of a province
- * are the same number when one of the polities is Phoenicia. Half a percent is
- * about a one-cell-wide seam down the longest frontier in the corpus; a genuine
- * double claim — a province, a peninsula, a whole successor state — is one to
- * two orders of magnitude above it.
+ * Round 52 forgave an overlap up to half a percent of the SMALLER polygon, on
+ * the reasoning that a hairline sliver and a province are the same *absolute*
+ * area when one of the polities is Phoenicia. The reasoning is right and the
+ * metric is wrong, because it scales the forgiveness with the polity: half a
+ * percent of France is Alsace-Lorraine. The validator was green, and the reader
+ * was still looking at 0.30 sq° of double-alpha wash on the Rhine (France ×
+ * Germany 1871), 0.92 sq° of it along the Ordos loop (Han × Xiongnu), and three
+ * more.
+ *
+ * What separates a sliver from a province is not area and not share, it is
+ * WIDTH. A sliver is the arithmetic failing to make two lines coincide, so it
+ * is bounded by the precision of the numbers — this corpus stores coordinates
+ * at `QUANTUM` = 1e-4°, so a digitisation sliver cannot be wider than that
+ * however long it runs. A double claim is a piece of ground, and a piece of
+ * ground is as wide as it is. Measured over the corpus the two populations do
+ * not overlap or even come close:
+ *
+ *   France × Germany 1871   0.191°  (21 km — Alsace-Lorraine)
+ *   Han × Xiongnu -100      0.180°  (20 km — the Ordos loop)
+ *   Byzantium × Fatimid     0.162°  (18 km — the lower Orontes)
+ *   Egypt × Hittites -1450  0.154°  (17 km — the Amuq)
+ *   Ottoman × Russia 1840   0.114°  (13 km — the Budjak)
+ *   ————— three and a half orders of magnitude of clear air —————
+ *   the other 27 pairs      ≤ 0.00005° (5.5 m, at or below the codec's quantum)
+ *
+ * The threshold sits an order of magnitude above the widest artefact and two
+ * below the narrowest real claim, which is as much daylight as a constant in
+ * this repo has ever had. Mean width is `2 × area / perimeter`: exact for a
+ * long strip, conservative (an under-estimate, so it convicts rather than
+ * acquits) for a blob.
+ */
+export const OVERLAP_WIDTH_DEG = 1e-3
+
+/**
+ * Kept because it is still worth PRINTING — a share of the smaller polygon is
+ * how a human sizes a conviction — but it no longer decides one. See
+ * OVERLAP_WIDTH_DEG.
  */
 export const OVERLAP_EPSILON = 0.005
+
+/** Total ring length of a MultiPolygon, in degrees. Holes count: they are edges too. */
+export function multiPolygonPerimeter(mp) {
+  let p = 0
+  for (const poly of mp)
+    for (const ring of poly)
+      for (let i = 0; i + 1 < ring.length; i++)
+        p += Math.hypot(ring[i + 1][0] - ring[i][0], ring[i + 1][1] - ring[i][1])
+  return p
+}
+
+/**
+ * The mean width of a shared region: `2A/P`. For a strip of length L and width
+ * w the perimeter is 2(L+w) and the area Lw, so this returns w exactly as
+ * L ≫ w. For a disc of radius r it returns r rather than 2r, i.e. it errs
+ * toward calling a blob narrow — and a narrow verdict is the harmless one,
+ * because the width is compared against a threshold three orders of magnitude
+ * below anything real.
+ */
+export const overlapWidth = (mp) => {
+  const p = multiPolygonPerimeter(mp)
+  return p > 0 ? (2 * multiPolygonArea(mp)) / p : 0
+}
 
 /**
  * Every year at which either polity's geometry or notability could change,
@@ -439,7 +494,7 @@ function breakpoints(a, b) {
  * rings, the clipped output, and a synthetic pair in a test — and none of them
  * should have to be written to disk first.
  */
-export function findOverlaps(nations, geometryOf, epsilon = OVERLAP_EPSILON) {
+export function findOverlaps(nations, geometryOf, minWidth = OVERLAP_WIDTH_DEG) {
   const areaCache = new Map()
   const areaOf = (n, k, g) => {
     const key = `${n.id}@${k.time}`
@@ -476,20 +531,71 @@ export function findOverlaps(nations, geometryOf, epsilon = OVERLAP_EPSILON) {
         const inter = robustOp('intersection', ga, gb, `${a.id} x ${b.id} @ ${t}`)
         if (!inter.length) continue
         const area = multiPolygonArea(inter)
+        const width = overlapWidth(inter)
+        if (width <= minWidth) continue
         const share = area / Math.min(areaOf(a, ka, ga), areaOf(b, kb, gb))
-        if (share <= epsilon) continue
         years += end - t + 1
-        if (!worst || share > worst.share)
-          worst = { from: t, to: end, share, area, bbox: bboxOfRings(inter.flat()) }
+        if (!worst || width > worst.width)
+          worst = { from: t, to: end, share, area, width, bbox: bboxOfRings(inter.flat()) }
       }
       if (worst) out.push({ a: a.id, b: b.id, years, ...worst })
     }
-  return out.sort((x, y) => y.share - x.share)
+  return out.sort((x, y) => y.width - x.width)
+}
+
+/**
+ * Every frontier edge two concurrent polities store IDENTICALLY, and whether
+ * they agree about what it is.
+ *
+ * The reader's second complaint was a border line that is there in one place
+ * and gone a little further along. One way to produce that is for the two
+ * halves of one shared frontier to disagree: `clip-nations.mjs` gives the
+ * yielding polity the keeper's own line, so both store the same edge, and if
+ * one classified it COAST (not inked) and the other INLAND (inked) the line
+ * would change weight — and colour — halfway along for no reason on the map.
+ *
+ * The test is cheap because it is exact: the shared edge is the *same numbers*,
+ * so a key at the codec's quantum finds it without any tolerance at all. It is
+ * green on the corpus today (0 of 650), and that is the point of gating it —
+ * this is the invariant the difference op is supposed to guarantee, and nothing
+ * else in the build notices if it stops holding.
+ */
+export function findInkDisagreements(nations, keyframesOf) {
+  const q = (v) => Math.round(v * 1e4)
+  const ekey = (p, r) => {
+    const A = `${q(p[0])},${q(p[1])}`
+    const B = `${q(r[0])},${q(r[1])}`
+    return A < B ? `${A}|${B}` : `${B}|${A}`
+  }
+  const years = new Set()
+  for (const n of nations) {
+    years.add(n.visibleFrom)
+    for (const k of n.keyframes) years.add(k.time)
+  }
+  const out = []
+  for (const t of [...years].sort((x, y) => x - y)) {
+    const seen = new Map()
+    for (const n of nations) {
+      if (!isNotableAt(n, t)) continue
+      const kf = keyframeAt(n, t)
+      if (!kf) continue
+      for (const { ring, coastal } of keyframesOf(n, kf))
+        for (let i = 0; i < ring.length; i++) {
+          const k = ekey(ring[i], ring[(i + 1) % ring.length])
+          const prev = seen.get(k)
+          if (!prev) seen.set(k, [n.id, coastal[i]])
+          else if (prev[0] !== n.id && prev[1] !== coastal[i])
+            out.push({ year: t, a: prev[0], b: n.id, at: ring[i] })
+        }
+    }
+  }
+  return out
 }
 
 /** One conviction as the build prints it. */
 export const describeOverlap = (o) =>
-  `${o.a} × ${o.b}: ${(o.share * 100).toFixed(1)}% of the smaller polygon ` +
-  `(${o.area.toFixed(2)} sq°) over ${o.years} year(s), worst ${o.from}..${o.to}`
+  `${o.a} × ${o.b}: ${(o.width * 111).toFixed(1)} km wide (${o.width.toFixed(4)}°), ` +
+  `${o.area.toFixed(2)} sq° = ${(o.share * 100).toFixed(1)}% of the smaller polygon, ` +
+  `over ${o.years} year(s), worst ${o.from}..${o.to}`
 
 export { polygonClipping }

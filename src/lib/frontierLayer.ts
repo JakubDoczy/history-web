@@ -44,6 +44,17 @@ const unit = (lng: number, lat: number): [number, number, number] => {
  * The same height the polygon layer's border stroke was at, and for the reason
  * written down there: below this the cap's own 2° chords sag under the sphere
  * between their ends and the planet eats the line.
+ *
+ * ROUND 55. An altitude only buys clearance against a chord whose sag it is
+ * bigger than, and `pushLine` draws one GL_LINE per stored vertex pair. 314
+ * stored frontier edges in the corpus are long enough that their chord sags
+ * *deeper than this* — Russia's 1700 line along 52°N is one edge across thirty
+ * degrees of arc, and its chord passes 217 km below the surface, 26 times the
+ * clearance. No altitude fixes that; only cutting the edge into arcs does, and
+ * `borderRings` now does it before the paths ever reach this layer (see
+ * BORDER_SEGMENT_DEG in lib/nations.ts). What is left for the altitude is the
+ * 2° residue, which sags 0.97 km against this 8.3 km — a margin of 8.5x, the
+ * same order the cap keeps.
  */
 export const FRONTIER_ALT = 0.0013
 

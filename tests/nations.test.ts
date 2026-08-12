@@ -13,12 +13,14 @@ import {
   ringArea,
   signedRingArea,
   visibleNations,
+  BORDER_SEGMENT_DEG,
   MAX_VISIBLE,
   QUANTUM,
   type Nation,
   type NationKeyframe,
   type Ring,
 } from '../src/lib/nations'
+import { FRONTIER_ALT } from '../src/lib/frontierLayer'
 
 const square = (size: number): Ring => [[0, 0], [size, 0], [size, size], [0, size]]
 
@@ -386,4 +388,113 @@ describe('borderRings', () => {
     expect(borderRings(rome, -900)).toEqual([])
     expect(borderRings(rome, 900)).toEqual([])
   })
+})
+
+/**
+ * THE CHORD AND THE ARC — round 55.
+ *
+ * A stored edge is two numbers however far apart they are, and the corpus is
+ * full of authored frontiers that run tens of degrees in one step. Drawn as a
+ * chord, such an edge passes under the sphere it is meant to lie on and the
+ * planet eats it; handed to the polygon layer, it makes the layer interpolate a
+ * great circle that leaves the planar ring its own triangle test is measured
+ * against. Both defects are the reader's, both are fixed by densifying first,
+ * and these are the assertions that keep it done.
+ */
+describe('borderRings densification', () => {
+  /** Great-circle separation in degrees, the measure the layer tessellates by. */
+  const sep = (a: Ring[number], b: Ring[number]) => {
+    const R = Math.PI / 180
+    const c =
+      Math.sin(a[1] * R) * Math.sin(b[1] * R) +
+      Math.cos(a[1] * R) * Math.cos(b[1] * R) * Math.cos((b[0] - a[0]) * R)
+    return (Math.acos(Math.min(1, Math.max(-1, c))) * 180) / Math.PI
+  }
+  /** How far below the unit sphere the middle of a chord at `alt` passes. */
+  const sag = (a: Ring[number], b: Ring[number], alt: number) => {
+    const R = Math.PI / 180
+    const v = (p: Ring[number]) => {
+      const c = Math.cos(p[1] * R)
+      return [c * Math.sin(p[0] * R), Math.sin(p[1] * R), c * Math.cos(p[0] * R)].map(
+        (k) => k * (1 + alt),
+      )
+    }
+    const [va, vb] = [v(a), v(b)]
+    const m = va.map((k, i) => (k + vb[i]) / 2)
+    return 1 - Math.hypot(m[0], m[1], m[2])
+  }
+
+  const wide: Nation = {
+    ...rome,
+    id: 'wide',
+    keyframes: [kf(-270, [[0, 0], [30, 0], [30, 10], [0, 10]] as Ring)],
+  }
+
+  it('cuts a long stored edge into arcs no longer than the cap resolution', () => {
+    const [entry] = borderRings(wide, 0)
+    const ring = entry.coordinates[0]
+    expect(ring.length).toBeGreaterThan(5)
+    for (let i = 0; i + 1 < ring.length; i++)
+      expect(sep(ring[i], ring[i + 1])).toBeLessThanOrEqual(BORDER_SEGMENT_DEG + 1e-9)
+  })
+
+  it('leaves the stored ring alone — the codec is not re-encoded', () => {
+    const [entry] = borderRings(wide, 0)
+    expect(entry.ring).toHaveLength(4)
+    expect(entry.ring[1]).toEqual([30, 0])
+  })
+
+  it('leaves a ring that is already fine enough untouched', () => {
+    const [entry] = borderRings(rome, -150) // 1 deg edges
+    expect(entry.coordinates[0]).toHaveLength(5)
+  })
+
+  it('keeps every stored vertex, in order', () => {
+    const [entry] = borderRings(wide, 0)
+    const ring = entry.coordinates[0]
+    let at = -1
+    for (const v of entry.ring) {
+      const found = ring.findIndex((p, i) => i > at && p[0] === v[0] && p[1] === v[1])
+      expect(found).toBeGreaterThan(at)
+      at = found
+    }
+  })
+
+  it('holds the ink above the planet where a raw chord would go under it', () => {
+    const [entry] = borderRings(wide, 0)
+    // The stored edge: 30 deg of arc, and its chord at FRONTIER_ALT is buried.
+    expect(sag([0, 0], [30, 0], FRONTIER_ALT)).toBeGreaterThan(FRONTIER_ALT)
+    // Every drawn segment of it is not.
+    const runs = entry.frontier
+    expect(runs.length).toBeGreaterThan(0)
+    for (const run of runs)
+      for (let i = 0; i + 1 < run.length; i++)
+        expect(sag(run[i], run[i + 1], FRONTIER_ALT)).toBeLessThan(0)
+  })
+
+  it('densifies the frontier and the cap with the same stepping', () => {
+    // The ink must be vertices OF the fill's contour, not a second curve
+    // through the same endpoints — see BORDER_SEGMENT_DEG.
+    const [entry] = borderRings(wide, 0)
+    const onCap = new Set(entry.coordinates[0].map((p) => `${p[0]},${p[1]}`))
+    for (const run of entry.frontier)
+      for (const p of run) expect(onCap.has(`${p[0]},${p[1]}`)).toBe(true)
+  })
+
+  it('leaves the shipped corpus with no edge the polygon layer must interpolate', () => {
+    let edges = 0
+    for (const n of rawNations as unknown as Nation[])
+      for (const t of n.keyframes.map((k) => k.time))
+        for (const entry of borderRings(n, t)) {
+          for (const ring of entry.coordinates)
+            for (let i = 0; i + 1 < ring.length; i++) {
+              edges++
+              expect(sep(ring[i], ring[i + 1])).toBeLessThanOrEqual(BORDER_SEGMENT_DEG + 1e-6)
+            }
+          for (const run of entry.frontier)
+            for (let i = 0; i + 1 < run.length; i++)
+              expect(sag(run[i], run[i + 1], FRONTIER_ALT)).toBeLessThan(0)
+        }
+    expect(edges).toBeGreaterThan(50_000)
+  }, 60_000)
 })

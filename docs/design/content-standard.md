@@ -77,6 +77,33 @@ acyclic, dated, inside the span).
 - Every child-bearing step: the child declares the matching `parent`
   relation, and the step's name equals the child's title verbatim.
 
+## Register rulings (round 55 — from the reader, verbatim intent)
+
+The round-53 pass left a residue of editorialising the reader named
+precisely: *"some events have very 'neo liberal' descriptions, for example
+Voyages of Christopher Columbus. Try to follow Wikipedia style more
+closely. Avoid using mdash and AI writing style. You can literally copy
+some text from Wikipedia. Your text should be extremely neutral, with
+maybe slight exceptions to genocides, but even there do not focus on
+morality (in these cases you can still mention how it's viewed today but
+do not dwell on it)."* Therefore:
+
+- **Extreme neutrality.** No moral framing, no "devastating legacy", no
+  "at terrible cost", no perspective-taking on behalf of victims or
+  perpetrators. State what happened, numbers where sourced, period.
+- **Genocides and atrocities**: the facts carry the weight. One sentence
+  of how it is viewed/classified today is permitted (e.g. "It is widely
+  regarded as a genocide"); no dwelling, no adjectives doing moral work.
+- **Wikipedia wording may be copied literally** where it serves — the app
+  links every article to its source and ships a CC BY-SA attribution
+  notice. Close-following beats creative paraphrase; never invent a
+  framing Wikipedia does not have.
+- **No em-dashes.** Use commas, parentheses, or separate sentences.
+- **No AI register**: no "marked a turning point", "reshaped the
+  landscape", "underscored", "highlighted the importance", rule-of-three
+  flourishes, or paragraph-final significance claims. If a sentence could
+  end a TED talk, delete it.
+
 ## What agents must not do
 
 No new items this round (fixing, not growing). No ranking changes. No

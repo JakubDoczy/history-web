@@ -42,12 +42,14 @@ import {
   coastIndex,
   describeOverlap,
   encodeRuns,
+  findInkDisagreements,
   findOverlaps,
   isNotableAt,
   keyframeAt,
   landPolygons,
   multiPolygonArea,
   multiPolygonOf,
+  OVERLAP_WIDTH_DEG,
   orient,
   robustOp,
   simplifyRing,
@@ -94,8 +96,9 @@ const key = (id, time) => `${id}@${time}`
 if (checkOnly) {
   const onDisk = read('src/data/nations.clipped.json')
   const found = validate(onDisk)
-  report(found, onDisk, undefined)
-  process.exit(found.length ? 1 : 0)
+  const split = inkSplits(onDisk)
+  report(found, onDisk, undefined, split)
+  process.exit(found.length || split.length ? 1 : 0)
 }
 
 /* --------------------------------------------------------------- the land */
@@ -258,7 +261,19 @@ function validate(nations) {
   return findOverlaps(nations, geometryOf)
 }
 
+/**
+ * The second half of "does the validator judge what the eye judges": one
+ * frontier, one verdict about whether it is inked. See `findInkDisagreements`.
+ */
+function inkSplits(nations) {
+  return findInkDisagreements(nations, (n, kf) => {
+    const { pieces, coastal } = decodeKeyframe(kf)
+    return pieces.flatMap((rings, p) => rings.map((ring, r) => ({ ring, coastal: coastal[p][r] })))
+  })
+}
+
 const convictions = validate(built)
+const splits = inkSplits(built)
 
 /* ----------------------------------------------------------- the numbers */
 
@@ -309,7 +324,7 @@ function budget(nations, countOf) {
   return worst
 }
 
-function report(convictions, builtNations, sourceNations) {
+function report(convictions, builtNations, sourceNations, splits = []) {
   if (sourceNations) {
     const before = budget(sourceNations, (kf) => ({
       verts: kf.rings.reduce((n, r) => n + r.length, 0),
@@ -338,19 +353,27 @@ function report(convictions, builtNations, sourceNations) {
         worstShrink.map((s) => `${s.id}@${s.time} ${(s.kept * 100).toFixed(0)}%`).join(', '),
     )
   }
+  if (splits.length) {
+    console.error(`shared-frontier ink: ${splits.length} edge(s) inked by one side and not the other`)
+    for (const s of splits.slice(0, 10))
+      console.error(`  ${s.a} × ${s.b} @ ${s.year} at ${s.at.map((v) => v.toFixed(3)).join(',')}`)
+  } else console.log(`shared-frontier ink: green — every shared edge has one verdict`)
   if (!convictions.length) {
-    console.log(`overlap validator: green over ${builtNations.length} polities`)
+    console.log(
+      `overlap validator: green over ${builtNations.length} polities` +
+        ` (nothing shared wider than ${(OVERLAP_WIDTH_DEG * 111 * 1000).toFixed(0)} m)`,
+    )
     return
   }
   console.error(`overlap validator: ${convictions.length} conviction(s)`)
   for (const o of convictions) console.error(`  ${describeOverlap(o)}  bbox ${o.bbox.map((v) => v.toFixed(1)).join(',')}`)
 }
 
-report(convictions, built, wantReport ? authored : undefined)
+report(convictions, built, wantReport ? authored : undefined, splits)
 
 /* ------------------------------------------------------------------ write */
 
-if (convictions.length) process.exit(1)
+if (convictions.length || splits.length) process.exit(1)
 
 const path = join(root, 'src/data/nations.clipped.json')
 // One polity per line, one keyframe per line inside it: a 900 kB generated file

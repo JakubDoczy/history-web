@@ -17,6 +17,9 @@ import {
 } from '../src/lib/nations'
 import rawNations from '../src/data/nations.clipped.json'
 
+/** The shipped corpus, typed once for every describe that walks it. */
+const nationsCorpus = rawNations as unknown as Nation[]
+
 /**
  * THE BUILD STEP, tested where it is cheap to test it.
  *
@@ -212,9 +215,58 @@ describe('the overlap validator', () => {
   })
 
   it('forgives a hairline down a shared frontier', () => {
+    // A hairline is what the ARITHMETIC leaves behind, so it is the size of the
+    // numbers: the corpus stores coordinates at 1e-4 deg and its widest
+    // surviving seam is 5.5 m. Round 52 wrote this test at 0.01 deg — 1.1 km,
+    // a hundred times the quantum and legible at any close zoom — because the
+    // share-of-the-smaller test it was written against could not tell the
+    // difference. The width test can, so the fixture is a real seam now.
     const a = polity('alpha', 100, 300, [square(0, 0, 10)])
-    const b = polity('beta', 100, 300, [square(9.99, 0, 10)])
+    const b = polity('beta', 100, 300, [square(9.9999, 0, 10)])
     expect(clip.findOverlaps([a, b], geometryOf)).toEqual([])
+  })
+
+  /**
+   * ROUND 55. The share-of-the-smaller test is what let Alsace-Lorraine ship:
+   * these two pairs share exactly the same AREA, and the eye calls one of them
+   * a province and the other nothing at all. Only width tells them apart.
+   */
+  it('separates a sliver from a province by width, not by area or share', () => {
+    // 0.01 sq degrees, one codec quantum wide and a hundred degrees long: the
+    // seam two hand-drawn frontiers leave when the arithmetic rounds.
+    const seamA = polity('alpha', 100, 300, [square(0, 0, 100, 10)])
+    const seamB = polity('beta', 100, 300, [square(0, 9.9999, 100, 10)])
+    // 0.01 sq degrees, 0.1 by 0.1: a piece of ground, small but a piece.
+    const blockA = polity('gamma', 100, 300, [square(0, 0, 10)])
+    const blockB = polity('delta', 100, 300, [square(9.9, 9.9, 10)])
+    const seam = clip.findOverlaps([seamA, seamB], geometryOf, 0)
+    const block = clip.findOverlaps([blockA, blockB], geometryOf, 0)
+    expect(seam[0].area).toBeCloseTo(block[0].area, 6)
+    expect(seam[0].width).toBeCloseTo(1e-4, 6)
+    expect(block[0].width).toBeCloseTo(0.05, 4)
+    // …and at the shipped threshold the seam is forgiven and the block is not.
+    expect(clip.findOverlaps([seamA, seamB], geometryOf)).toEqual([])
+    expect(clip.findOverlaps([blockA, blockB], geometryOf)).toHaveLength(1)
+  })
+
+  it('convicts a province-sized claim however large the polity holding it is', () => {
+    // The Alsace shape: a 0.2 deg band shared down the length of two polities
+    // 60 deg across. 12 sq deg of double claim, and still only 0.33% of either
+    // — under the old epsilon, which is exactly how Alsace-Lorraine shipped.
+    const big = polity('alpha', 100, 300, [square(0, 0, 60)])
+    const other = polity('beta', 100, 300, [square(59.8, 0, 60)])
+    const found = clip.findOverlaps([big, other], geometryOf)
+    expect(found).toHaveLength(1)
+    expect(found[0].share).toBeLessThan(clip.OVERLAP_EPSILON)
+    expect(found[0].width).toBeGreaterThan(clip.OVERLAP_WIDTH_DEG)
+    expect(clip.describeOverlap(found[0])).toContain('km wide')
+  })
+
+  it('measures the width of a strip as its width', () => {
+    // 2A/P for a 100 x 0.4 strip: 2*40/200.8 = 0.398, the width to within 0.5%.
+    expect(clip.overlapWidth([[square(0, 0, 100, 0.4)]])).toBeCloseTo(0.398, 3)
+    expect(clip.multiPolygonPerimeter([[square(0, 0, 3, 4)]])).toBeCloseTo(14, 6)
+    expect(clip.overlapWidth([])).toBe(0)
   })
 
   it('does not convict polities that are never on the globe together', () => {
@@ -330,6 +382,75 @@ describe('nations.clipped.json', () => {
     expect(frontier.length).toBeGreaterThan(0)
     expect(frontier.every((run) => run.length >= 2)).toBe(true)
   })
+})
+
+/**
+ * ONE FRONTIER, ONE VERDICT. The reader's second complaint was a border line
+ * that is inked here and gone a hand's width along, and a shared frontier
+ * classified two ways is one arithmetic that would produce it: the yielding
+ * polity gets the keeper's own line, so the two store the SAME numbers, and
+ * nothing else in the build notices if they disagree about what those numbers
+ * are.
+ */
+describe('findInkDisagreements', () => {
+  const shared: Ring = [
+    [0, 0],
+    [0, 5],
+    [5, 5],
+    [5, 0],
+  ]
+  const polity = (id: string) => ({
+    id,
+    from: 0,
+    to: 100,
+    visibleFrom: 0,
+    visibleTo: 100,
+    keyframes: [{ time: 0 }],
+  })
+  const rings = (coastal: number[]) => () => [{ ring: shared, coastal: Uint8Array.from(coastal) }]
+
+  it('is silent when both sides call the shared edge the same thing', () => {
+    const both = rings([1, 0, 0, 0])
+    expect(clip.findInkDisagreements([polity('a'), polity('b')], both)).toEqual([])
+  })
+
+  it('names the polities, the year and the place when they disagree', () => {
+    const verdicts = new Map([
+      ['a', rings([1, 0, 0, 0])],
+      ['b', rings([0, 0, 0, 0])],
+    ])
+    const found = clip.findInkDisagreements(
+      [polity('a'), polity('b')],
+      (n: { id: string }, k: unknown) => verdicts.get(n.id)!(n, k),
+    )
+    expect(found).toHaveLength(1)
+    expect(found[0]).toMatchObject({ a: 'a', b: 'b', year: 0 })
+    expect(found[0].at).toEqual([0, 0])
+  })
+
+  it('does not compare a polity with itself, whichever way the edge is stored', () => {
+    // The same edge walked backwards is the same edge: the key is direction-free.
+    const reversed = () => [{ ring: [...shared].reverse() as Ring, coastal: Uint8Array.from([0, 0, 1, 0]) }]
+    const verdicts = new Map([
+      ['a', rings([1, 0, 0, 0])],
+      ['b', reversed],
+    ])
+    const found = clip.findInkDisagreements(
+      [polity('a'), polity('b')],
+      (n: { id: string }, k: unknown) => verdicts.get(n.id)!(n, k),
+    )
+    // a's edge 0 is [0,0]->[0,5]; walked backwards that is b's edge 2, and it
+    // carries the same flag, so there is nothing to report.
+    expect(found).toEqual([])
+  })
+
+  it('ships a corpus in which no shared frontier is inked by only one side', () => {
+    const found = clip.findInkDisagreements(nationsCorpus, (_n: unknown, k: unknown) => {
+      const { pieces, coastal } = decodeKeyframe(k as never)
+      return pieces.flatMap((rs, p) => rs.map((ring, r) => ({ ring, coastal: coastal[p][r] })))
+    })
+    expect(found).toEqual([])
+  }, 30_000)
 })
 
 describe('frontierRuns', () => {

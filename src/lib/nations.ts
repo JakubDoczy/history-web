@@ -1,3 +1,4 @@
+import { AREA_CAP_RESOLUTION_DEG, densifyPath } from './paths'
 import { formatYear, type Year } from './time'
 
 /**
@@ -275,9 +276,12 @@ export interface BorderRing {
   /** Only one kind of border is drawn; the field keeps the globe's
    * polygon-entry union discriminated against event areas. */
   kind: 'full'
-  /** The piece's outer ring. What the frontier ink and the tests read. */
+  /** The piece's outer ring, exactly as stored — open, undensified. */
   ring: Ring
-  /** GeoJSON Polygon `coordinates`: outer then holes, each closed. Identity is the point. */
+  /**
+   * GeoJSON Polygon `coordinates`: outer then holes, each closed and densified
+   * onto great circles (BORDER_SEGMENT_DEG). Identity is the point.
+   */
   coordinates: Ring[]
   /** What the globe shows on hover: name plus the polity's span. */
   label: string
@@ -294,9 +298,52 @@ export interface BorderRing {
    *
    * Empty for an island: Java under the Dutch has no land frontier, and the
    * fill is what says who holds it.
+   *
+   * Densified onto great circles at BORDER_SEGMENT_DEG, like `coordinates` and
+   * with the same stepping, so a frontier vertex is a cap-contour vertex and
+   * the ink lies on the edge of the fill rather than on a chord under it.
    */
   frontier: Ring[]
 }
+
+/**
+ * A STORED EDGE IS A CHORD; THE GLOBE WANTS AN ARC. Round 55's whole fix.
+ *
+ * Clipping put ten thousand coastline vertices into a polity, and every one of
+ * them is a fraction of a degree from the next — which hid the fact that the
+ * *authored* part of the same ring did not change at all. Russia's 1700
+ * southern frontier is still ONE stored edge from 120°E to 70°E: thirty degrees
+ * of arc, two numbers. The reader reported the consequences as two separate
+ * defects and they are the same defect twice:
+ *
+ *  - **The ink vanishes.** The frontier is GL_LINES between the stored
+ *    vertices, and a straight line between two points thirty degrees apart
+ *    passes 217 km UNDER the sphere it is drawn on — against the 8.3 km
+ *    `FRONTIER_ALT` lifts it. The planet eats everything but a stub at each
+ *    end. 314 stored edges in the corpus sag deeper than their own altitude,
+ *    and in 1922 that is 28% of all the political ink on the globe.
+ *  - **The fill has bites out of its edge.** three-globe interpolates a cap's
+ *    contour along great circles at `polygonCapCurvatureResolution`, then keeps
+ *    a boundary triangle only if its centroid is inside the ring *it was
+ *    given*, tested planar in lng/lat. A great circle bulges away from the
+ *    straight lng/lat line, so on a long edge the interpolated contour leaves
+ *    the polygon the test is measured against: 1375 of 2871 interpolated points
+ *    on this corpus, 48%, and every boundary triangle hanging off one is
+ *    discarded. It is the notch that shows in the 49th parallel.
+ *
+ * Both go away by densifying onto the great circle FIRST, at the resolution the
+ * layer tessellates at — the same fix, for the same second reason, that
+ * `areaCapRing` already applies to an event's footprint (lib/paths.ts, where
+ * the triangle-rejection failure is written out in full). The layer then adds
+ * no points of its own, so cap contour and political ink are literally the same
+ * vertices rather than two curves through the same two endpoints, and the ink
+ * cannot leave the edge of the fill it is drawn on.
+ *
+ * It is not a real cost: these are exactly the points the polygon layer was
+ * generating anyway, and the ink gains ~1.3k segments in the worst year on a
+ * layer that is one draw call.
+ */
+export const BORDER_SEGMENT_DEG = AREA_CAP_RESOLUTION_DEG
 
 const ringCache = new Map<string, BorderRing[]>()
 
@@ -351,10 +398,13 @@ export function borderRings(n: Nation, t: Year): BorderRing[] {
       nation: n,
       kind: 'full' as const,
       ring: rings[0],
-      // the renderer wants closed rings; the data is stored open
-      coordinates: rings.map((r) => [...r, r[0]] as Ring),
+      // The renderer wants closed rings; the data is stored open. Densified
+      // onto great circles on the way out — see BORDER_SEGMENT_DEG.
+      coordinates: rings.map((r) => densifyPath([...r, r[0]], BORDER_SEGMENT_DEG) as Ring),
       label,
-      frontier: rings.flatMap((r, i) => frontierRuns(r, coastal[p][i])),
+      frontier: rings
+        .flatMap((r, i) => frontierRuns(r, coastal[p][i]))
+        .map((run) => densifyPath(run, BORDER_SEGMENT_DEG) as Ring),
     }))
     ringCache.set(key, entries)
   }

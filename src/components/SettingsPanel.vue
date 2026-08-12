@@ -429,6 +429,21 @@ const imageryLine = () => {
            foot of the panel where a version number has always lived. See
            lib/build.ts. -->
       <p class="build tnum" data-test="build-stamp">{{ buildLabel() }}</p>
+
+      <!-- WHOSE WORDS THESE ARE.
+           The article text follows Wikipedia closely and in places quotes it
+           literally (round-55 register rulings), so the licence has to ride
+           with the app, not only in the docs. Same quiet type as the build
+           stamp, directly under it. -->
+      <p class="build attribution" data-test="text-attribution">
+        Text adapted from Wikipedia,
+        <a
+          href="https://creativecommons.org/licenses/by-sa/4.0/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >CC BY-SA 4.0</a
+        >
+      </p>
     </div>
   </aside>
 </template>
@@ -789,7 +804,7 @@ input[type='range']::-moz-range-thumb {
    to be read out or copied into a message, which is the whole of its job. */
 .build {
   margin: 0;
-  padding: var(--s3) var(--s4) var(--s4);
+  padding: var(--s3) var(--s4) var(--s1);
   font-family: var(--cond);
   font-size: var(--t-micro);
   letter-spacing: 0.08em;
@@ -797,6 +812,16 @@ input[type='range']::-moz-range-thumb {
   opacity: 0.7;
   user-select: text;
   -webkit-user-select: text;
+}
+/* The attribution rides in the build stamp's own type, one line lower, and
+   carries the footer's bottom padding. */
+.attribution {
+  padding: 0 var(--s4) var(--s4);
+}
+.attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .link {
