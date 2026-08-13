@@ -140,15 +140,17 @@ tests/            unit tests, one file per lib module
   history does not support.
 - **Drawings** (`drawing`) are the battle-plan overlay: an operational map drawn from
   data rather than shipped as a picture, rendered by `src/lib/drawingLayer.ts` when the
-  item is *shown on the map*. Schema in `src/lib/drawing.ts`, validated at build time by
+  item is *selected*, or filtered to a step while it is *shown on the map*. Schema in
+  `src/lib/drawing.ts`, validated at build time by
   `validate_drawing` and over the corpus by `tests/eventsData.test.ts`. One field,
-  `layers`, holding any number of four kinds — every coordinate `[lng, lat]`, every
+  `layers`, holding any number of five kinds — every coordinate `[lng, lat]`, every
   colour optional and defaulting to the event's tag colour:
 
   | kind | shape | keys |
   | --- | --- | --- |
-  | `frontline` | a line held at a moment | `paths` (list of polylines), `dash: solid\|dashed`, `width` (screen px) |
-  | `thrust` | an axis of advance, with a real arrowhead on the end | `path` (the spine; its last point is the tip), `width` (degrees of arc), `taper` |
+  | `frontline` | a line held at a moment | `paths` (list of polylines), `dash: solid\|dashed`, `width` (screen px), `ticks: left\|right` (teeth on the held side, of travel) |
+  | `thrust` | an axis of advance, with a real arrowhead on the end | `path` (the spine, smoothed by `routePolyline`; its last point is the tip), `width` (degrees of arc), `taper` |
+  | `zone` | a pocket, siege perimeter, bridgehead or occupation area | `ring` (authored open, three points at least) — washed at 18% and edged in a dashed line |
   | `marker` | a point with a glyph | `pos`, `style: cross\|star\|dot\|arrow`, `size` (degrees), `bearing` (for `arrow`) |
   | `label` | words on the map | `pos`, `text`, `size: sm\|md` |
 
@@ -158,7 +160,10 @@ tests/            unit tests, one file per lib module
   an `at` is drawn on the overview and in the one step whose window it falls in (see
   **Steps** below).
   Two units on purpose: a frontline is a *symbol drawn on* a map and is sized in screen
-  pixels, a thrust is a *thing on the ground* and is sized in degrees of arc.
+  pixels, a thrust is a *thing on the ground* and is sized in degrees of arc. Every
+  stroke carries a casing beneath it in one constant tone (`STROKE_CASING`,
+  `src/lib/present/ink.ts`), which is what makes ink read over parchment, over ocean and
+  over the other ink of the same plan.
   The shipped exemplars are **Operation Barbarossa** (the 22 June border, the December
   high-water mark, the three army-group axes, the Minsk/Smolensk/Kiev pockets) and
   **D-Day** (the five beaches, the airborne drops, the beachhead on the night of the
@@ -202,7 +207,11 @@ tests/            unit tests, one file per lib module
 - **Paleogeography**: `scripts/gen_paleo_v4.py` downloads the PALEOMAP PaleoDEMs and
   renders the 38 deep-time frames (hypsometric tints, hillshade, shelf seas, ice).
 - **Nations** are hand-curated keyframed polygons in `src/data/nations.json`; rings
-  are clockwise, cut against real coastlines.
+  are clockwise, cut against real coastlines. The same file's `contested` list holds
+  ground with no single honest holder — Crimea, the occupied oblasts, Kashmir, Western
+  Sahara, Abyei. A zone is *subtracted* from its claimants at build time, so no fill
+  covers disputed ground; it draws as a ground-fixed diagonal hatch of its claimants'
+  colours with a dashed outline (`docs/design/contested-territory.md`).
 - **WASM**: `scripts/wasm/lanczos.c` is compiled by `npm run build:wasm` (clang,
   wasm32 + SIMD128) and committed base64-inlined, so normal builds need no toolchain.
 

@@ -8,7 +8,7 @@ import {
 import { keepsLayer, stepOwner, type Step } from '../steps'
 import { PAPER } from '../drawnTile'
 import type { RenderCtx } from './mode'
-import type { BorderRing, FrontierInk } from '../nations'
+import type { InkEntry, FrontierInk } from '../nations'
 
 /**
  * WHAT GOES ON THE GROUND — the two drawings the globe puts under an item, both
@@ -87,6 +87,30 @@ export const COASTAL_INK = { realistic: true, schematic: false } as const
 export const MODERN_BORDER = { color: '#9aa0a8', mix: 0.2 } as const
 
 /**
+ * A DISPUTED LINE'S PEN, and how heavy its hatch is (round 60).
+ *
+ * `ink` is chosen PER GROUND rather than derived from one colour by
+ * `onGround`, which every other line on this globe is, and the reason is that a
+ * DASHED line has a little over half the ink of a solid one along the same
+ * path. A polity's border can be a colour taken 45% toward the map's pen and
+ * still read, because it is continuous; the same treatment applied to the
+ * dashes measured 2.1:1 against parchment and the zone's outline was, on the
+ * photographs, simply not there. Chosen directly, the drawn map gets 3.8:1 —
+ * a drawn line on a drawn map — and the photograph gets a warm pale tone of
+ * the kind everything else on it wears.
+ *
+ * `fill` is over a polity's `NATION_FILL_ALPHA` and has to be: a wash's job is
+ * to be quiet under a border, and a hatch's job is to be READ. Below about 0.3
+ * on parchment the two bands of the pattern differ by fewer levels than the
+ * paper's own texture and the zone goes back to looking like a wash, which is
+ * the "somebody holds this" statement the hatch exists to avoid making.
+ */
+export const CONTESTED = {
+  ink: { realistic: '#f0d9b0', schematic: '#2e2114' },
+  fill: { realistic: 0.42, schematic: 0.34 },
+} as const
+
+/**
  * WHO INKS WHICH BORDER, when both layers are on the globe at once.
  *
  * From `MODERN_FROM` the globe draws Natural Earth's surveyed frontiers, and
@@ -103,26 +127,38 @@ export const MODERN_BORDER = { color: '#9aa0a8', mix: 0.2 } as const
  * layer takes.
  */
 export function frontierInkPlan(
-  modern: readonly BorderRing[],
+  modern: readonly InkEntry[],
   ctx: RenderCtx,
-): { colorOf: (e: BorderRing) => string; inkOf: (e: BorderRing) => FrontierInk } {
-  const isModern = (e: BorderRing) => modern.includes(e)
+): { colorOf: (e: InkEntry) => string; inkOf: (e: InkEntry) => FrontierInk } {
+  const isModern = (e: InkEntry) => modern.includes(e)
   const yielded = modern.length > 0
   return {
     colorOf: (e) =>
       isModern(e)
         ? onGround(MODERN_BORDER.color, ctx, MODERN_BORDER.mix)
-        : onGround(e.nation.color, ctx),
+        : e.kind === 'contested'
+          ? CONTESTED.ink[ctx.mode]
+          : onGround(e.nation.color, ctx),
     inkOf: (e) =>
       isModern(e)
         ? 'all'
-        : COASTAL_INK[ctx.mode]
-          ? yielded
-            ? 'coast'
-            : 'all'
-          : yielded
-            ? 'none'
-            : 'frontier',
+        : // A CONTESTED ZONE NEVER YIELDS ITS OUTLINE. The clause below exists
+          // because the modern set draws the same frontier better than a
+          // hand-authored polity does, and it does not draw this one at all —
+          // Natural Earth has no line round the occupied oblasts and puts
+          // Crimea inside Ukraine. The zone keeps its dashes; the coast stays
+          // the map's own line on paper, as it is for everyone.
+          e.kind === 'contested'
+          ? COASTAL_INK[ctx.mode]
+            ? 'all'
+            : 'frontier'
+          : COASTAL_INK[ctx.mode]
+            ? yielded
+              ? 'coast'
+              : 'all'
+            : yielded
+              ? 'none'
+              : 'frontier',
   }
 }
 
@@ -187,6 +223,42 @@ export const onGround = (hex: string, ctx: RenderCtx, mix?: number): string =>
  * a cross is twelve pixels across and cannot.
  */
 export const MARK_MIX = 0.55
+
+/**
+ * EVERY STROKE ON THIS MAP IS CASED, and this is the one casing.
+ *
+ * A route has had one since it was drawn — a solid near-black line 2.4 px wider
+ * than the stroke over it (`ROUTE_STYLE.haloStroke`), because a route crossing
+ * the Sahara or a snowfield disappears into the map without one. A frontline and
+ * a thrust ribbon had none, and they are drawn on exactly the same grounds and
+ * over each other: the June front over the Pripet marshes on the photograph, the
+ * same front over `#ece2c8` parchment on the drawn map, an army group's ribbon
+ * crossing both. This is that same casing, promoted to the constant it always
+ * was, and applied to every stroke the layer draws.
+ *
+ * WHY DARK ON BOTH GROUNDS, when the drawn map's ground is pale. A casing works
+ * by being the OPPOSITE tone to the ink it rims, and the ink here is the event's
+ * tag colour — a palette chosen against a night-blue photograph, so nine of the
+ * fourteen tags sit in the top half of the value range. A pale casing under a
+ * pale stroke on pale parchment is three tones of the same value and rims
+ * nothing; a near-black one separates the stroke from parchment *and* from
+ * ocean, which is why the routes' casing was never made per-ground either. It is
+ * the drawn map's own pen taken one step darker, so on paper it reads as an
+ * engraver's second pass rather than as a shadow.
+ *
+ * `widen` is in screen pixels, split either side of a fat line; `outset` is in
+ * units of a thrust's own half-width, because a ribbon is measured in degrees of
+ * arc and a rim that stayed 2.4 px would vanish under a wide shaft and swallow a
+ * narrow one. 0.18 was picked by photographing Barbarossa's army groups: 0.3 put
+ * four pixels of rim on a sixteen-pixel ribbon, which reads as a grey band down
+ * each side rather than as the pen an arrow is outlined with.
+ */
+export const STROKE_CASING = {
+  color: '#03070d',
+  opacity: 0.42,
+  widen: 2.4,
+  outset: 0.18,
+} as const
 
 /** The paper's own highlight: the reserved halo a symbol is set in. */
 export const MARK_CASING_PAPER = { color: '#fdf8ea', opacity: 0.92 } as const

@@ -1139,6 +1139,28 @@ describe('items — drawings', () => {
       expect(kinds, `no drawing uses a ${k}`).toContain(k)
   })
 
+  /**
+   * ZONE is the fifth authorable kind (round 60), and the corpus does not use it
+   * yet — the content pass is Part 3 of docs/design/drawings-v2.md. So this
+   * checks the two things that can be checked before it does: that any zone a
+   * later pass writes is a RING and not a line, and that its side-carrying
+   * neighbour, a ticked frontline, names a side the renderer knows. Both are
+   * mirrors of `check_drawing` in scripts/build_event_chunks.py and of
+   * `isDrawingSpec`, held here for the same reason the rest of this file is —
+   * the build script only runs when someone runs it.
+   */
+  it('keeps every zone a ring and every tick a side the renderer knows', () => {
+    const layers = drawn.flatMap((e) => e.drawing!.layers.map((l) => [e.id, l] as const))
+    for (const [id, l] of layers) {
+      if (l.type === 'zone') {
+        expect(Array.isArray(l.ring), `${id}: a zone's ring`).toBe(true)
+        expect(l.ring.length, `${id}: a zone of two points is a line`).toBeGreaterThanOrEqual(3)
+      }
+      if (l.type === 'frontline' && l.ticks !== undefined)
+        expect(['left', 'right'], `${id}: ticks`).toContain(l.ticks)
+    }
+  })
+
   it('can be framed by the camera, and the plan fills the frame rather than a corner', () => {
     for (const e of drawn) {
       const target = focusTargetFor(byId.get(e.id)!)!

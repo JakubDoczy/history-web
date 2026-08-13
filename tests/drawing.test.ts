@@ -16,12 +16,20 @@ const line: GeoPath = [
   [10, 0],
 ]
 
+/** A zone's ring, authored open — the minimum that encloses anything. */
+const triangle: GeoPath = [
+  [0, 0],
+  [2, 0],
+  [1, 2],
+]
+
 describe('isDrawingSpec', () => {
   it('accepts one of each kind, at its minimum', () => {
     const specs: DrawingSpec[] = [
       { type: 'route', paths: [line] },
       { type: 'frontline', paths: [line] },
       { type: 'thrust', path: line },
+      { type: 'zone', ring: triangle },
       { type: 'marker', pos: [5, 5] },
       { type: 'label', pos: [5, 5], text: 'Minsk' },
     ]
@@ -40,7 +48,16 @@ describe('isDrawingSpec', () => {
         label: 'Front, December',
       }),
     ).toBe(true)
+    expect(
+      isDrawingSpec({ type: 'frontline', paths: [line], ticks: 'left' }),
+    ).toBe(true)
+    expect(
+      isDrawingSpec({ type: 'frontline', paths: [line], ticks: 'right' }),
+    ).toBe(true)
     expect(isDrawingSpec({ type: 'thrust', path: line, width: 0.6, taper: false })).toBe(true)
+    expect(
+      isDrawingSpec({ type: 'zone', ring: triangle, label: 'Kiev pocket', color: '#e5484d', at: 1941 }),
+    ).toBe(true)
     expect(isDrawingSpec({ type: 'marker', pos: [1, 2], style: 'arrow', bearing: 91, size: 0.4 })).toBe(true)
     expect(isDrawingSpec({ type: 'label', pos: [1, 2], text: 'Caen', size: 'md' })).toBe(true)
   })
@@ -63,6 +80,12 @@ describe('isDrawingSpec', () => {
       { type: 'label', pos: [0, 0], text: 'x', size: 'xl' },
       { type: 'battleplan', paths: [line] },
       { type: 'frontline', paths: [line], at: 'later' },
+      { type: 'frontline', paths: [line], ticks: 'north' }, // left/right OF TRAVEL, nothing else
+      { type: 'frontline', paths: [line], ticks: true },
+      { type: 'zone' }, // no ring
+      { type: 'zone', ring: line }, // two points is a line, not an area
+      { type: 'zone', ring: [[0, 0], [1, 0], [200, 0]] }, // off the planet
+      { type: 'zone', ring: [[0, 0], [1, 0], [1, 1]], color: 0x123 },
     ]
     for (const b of bad) expect(isDrawingSpec(b), JSON.stringify(b)).toBe(false)
   })
@@ -91,12 +114,14 @@ describe('drawingPoints', () => {
       layers: [
         { type: 'frontline', paths: [[[1, 1], [2, 2]], [[3, 3], [4, 4]]] },
         { type: 'thrust', path: [[5, 5], [6, 6]] },
+        // a zone's whole ring, so the camera frames a pocket rather than its edge
+        { type: 'zone', ring: [[9, 9], [10, 9], [10, 10]] },
         { type: 'marker', pos: [7, 7] },
         { type: 'label', pos: [8, 8], text: 'x' },
       ],
     }
     expect(drawingPoints(d)).toEqual([
-      [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8],
+      [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [9, 9], [10, 9], [10, 10], [7, 7], [8, 8],
     ])
     expect(drawingPoints(undefined)).toEqual([])
   })

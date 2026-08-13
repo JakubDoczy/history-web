@@ -5,18 +5,28 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import {
   DrawingLayer,
+  FRONTLINE_TICKS,
   MARK_CASING_OUTSET,
   SURFACE_ALT,
+  ZONE_MAX_TRIANGLES,
+  capGeometry,
+  drawingExtentDeg,
   glyphShape,
   headOf,
   offsetPoint,
   ribbonGeometry,
   tangentFrame,
+  tickSegments,
   trimEnd,
 } from '../src/lib/drawingLayer'
-import type { Drawing } from '../src/lib/drawing'
-import { ROUTE_STYLE, flowPhase, type GeoPath } from '../src/lib/paths'
-import { MARK_CASING_DARK, MARK_CASING_PAPER, markInk } from '../src/lib/present/ink'
+import { ZONE_FILL_OPACITY, type Drawing } from '../src/lib/drawing'
+import { ROUTE_STYLE, densifyPath, flowPhase, routePolyline, type GeoPath } from '../src/lib/paths'
+import {
+  MARK_CASING_DARK,
+  MARK_CASING_PAPER,
+  STROKE_CASING,
+  markInk,
+} from '../src/lib/present/ink'
 import { PAPER } from '../src/lib/drawnTile'
 
 const R = 100
@@ -251,15 +261,17 @@ describe('DrawingLayer', () => {
     const layer = new DrawingLayer(scene, R)
     expect(scene.children).toContain(layer.object)
     expect(layer.set(drawing, { color: '#e5484d' })).toBe(true)
-    // two frontlines (fat lines), a thrust (shaft + head), a marker; the label
-    // needs a DOM and is skipped in a headless run
-    expect(layer.object.children.filter((c) => c instanceof Line2)).toHaveLength(2)
+    // two frontlines, each a casing and a stroke (round 60); a thrust (shaft +
+    // head, again twice); a marker; the label needs a DOM and is skipped in a
+    // headless run
+    expect(layer.object.children.filter((c) => c instanceof Line2)).toHaveLength(4)
     // Line2 IS a Mesh (LineSegments2 extends it), so the solid meshes are the
-    // ones that are not fat lines: a thrust shaft, its arrowhead, and the
-    // marker's TWO passes — its casing and the glyph over it (round 52).
+    // ones that are not fat lines: a thrust shaft and its arrowhead in TWO
+    // passes — casing then fill (round 60) — and the marker's own two, its
+    // casing and the glyph over it (round 52).
     expect(
       layer.object.children.filter((c) => c instanceof Mesh && !(c instanceof Line2)),
-    ).toHaveLength(4)
+    ).toHaveLength(6)
     layer.dispose()
   })
 
@@ -757,5 +769,373 @@ describe('a marker and its casing', () => {
     expect(layer.set(spec, { color: '#fff', ground: 'paper' })).toBe(true)
     expect(colorOf(meshes(layer)[1])).toBe(markInk('#ffd7a8', 'paper').fill)
     layer.dispose()
+  })
+})
+
+/**
+ * ROUND 60 — CASING ON EVERY STROKE.
+ *
+ * A route has been cased since it was drawn; a frontline and a thrust ribbon
+ * were not, and they land on the same grounds and on each other. These hold the
+ * two properties that make a casing a casing: it is UNDER the stroke in paint
+ * order, and it is WIDER than it — in screen pixels for a fat line, in degrees
+ * of arc for a ribbon, which is the same two-unit split the layer is built on.
+ */
+describe('a stroke and its casing', () => {
+  // `Line2` extends `LineSegments2`, so a continuous fat line is both and a comb
+  // of teeth is only the second — which is exactly the distinction being made.
+  const lines = (layer: DrawingLayer) =>
+    layer.object.children.filter((c): c is Line2 => c instanceof Line2)
+  const meshes = (layer: DrawingLayer) =>
+    layer.object.children.filter((c): c is Mesh => c instanceof Mesh && !(c instanceof LineSegments2))
+  const matOf = (o: Mesh) => o.material as LineMaterial & MeshBasicMaterial
+  const colorOf = (o: Mesh) => '#' + matOf(o).color.getHexString()
+
+  it('cases a frontline: one dark line under the stroke, wider than it', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      { layers: [{ type: 'frontline', paths: [[[20, 50], [30, 55]]], width: 3 }] },
+      { color: '#e5484d' },
+    )
+    const [casing, stroke] = lines(layer)
+    expect(lines(layer)).toHaveLength(2)
+    expect(colorOf(casing)).toBe(STROKE_CASING.color)
+    expect(colorOf(stroke)).toBe('#e5484d')
+    expect(casing.renderOrder).toBeLessThan(stroke.renderOrder)
+    expect(matOf(casing).linewidth).toBeCloseTo(3 + STROKE_CASING.widen, 6)
+    expect(matOf(stroke).linewidth).toBe(3)
+    layer.dispose()
+  })
+
+  it('is ONE constant, so both map modes get the same rim', () => {
+    const spec: Drawing = { layers: [{ type: 'frontline', paths: [[[20, 50], [30, 55]]] }] }
+    const on = (ground: 'dark' | 'paper') => {
+      const layer = new DrawingLayer(new Scene(), R)
+      layer.set(spec, { color: '#e5484d', ground })
+      const out = colorOf(lines(layer)[0])
+      layer.dispose()
+      return out
+    }
+    expect(on('dark')).toBe(STROKE_CASING.color)
+    expect(on('paper')).toBe(STROKE_CASING.color)
+  })
+
+  it("dashes the casing with the front, because a front's dash is the data", () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      { layers: [{ type: 'frontline', paths: [[[20, 50], [30, 55]]], dash: 'dashed' }] },
+      { color: '#e5484d' },
+    )
+    for (const l of lines(layer)) expect(matOf(l).dashed).toBe(true)
+    layer.dispose()
+  })
+
+  it('cases a thrust in degrees of arc: the rim stands outside the ribbon all round', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set({ layers: [{ type: 'thrust', path: [[21, 51], [28, 54]], width: 0.6 }] }, { color: '#e5484d' })
+    // shaft and head, twice: casing then fill
+    expect(meshes(layer)).toHaveLength(4)
+    const [casingShaft, casingHead, shaft, head] = meshes(layer)
+    expect(colorOf(casingShaft)).toBe(STROKE_CASING.color)
+    expect(colorOf(shaft)).toBe('#e5484d')
+    expect(casingShaft.renderOrder).toBeLessThan(shaft.renderOrder)
+    expect(casingHead.renderOrder).toBeLessThan(head.renderOrder)
+    // the casing ribbon is wider than the ribbon at every point along it
+    const widthOf = (m: Mesh) => {
+      const pos = (m.geometry as BufferGeometry).getAttribute('position')
+      let max = 0
+      for (let i = 0; i + 1 < pos.count; i += 2)
+        max = Math.max(
+          max,
+          new Vector3().fromBufferAttribute(pos, i).distanceTo(new Vector3().fromBufferAttribute(pos, i + 1)),
+        )
+      return max
+    }
+    expect(widthOf(casingShaft)).toBeGreaterThan(widthOf(shaft) * 1.05)
+    layer.dispose()
+  })
+
+  it('draws the casing in ONE pass too, like every other sheet on this layer', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      {
+        layers: [
+          { type: 'thrust', path: [[21, 51], [28, 54]] },
+          { type: 'zone', ring: [[20, 50], [24, 50], [24, 53]] },
+        ],
+      },
+      { color: '#e5484d' },
+    )
+    for (const m of meshes(layer)) {
+      expect(matOf(m).side).toBe(DoubleSide)
+      expect(matOf(m).forceSinglePass).toBe(true)
+      expect(matOf(m).transparent).toBe(true)
+    }
+    layer.dispose()
+  })
+})
+
+/**
+ * ROUND 60 — A THRUST IS A CURVE, and the curve has one owner.
+ *
+ * The spine went through `densifyPath` alone, which puts every authored waypoint
+ * on a great circle to the next and leaves the corners between them: an axis of
+ * advance drawn as a survey traverse. `routePolyline` is what a route's shape
+ * comes from, and this asserts the thrust now comes from the same place —
+ * including the consequence that matters, the arrowhead sitting on the SMOOTHED
+ * end tangent rather than on the last authored chord.
+ */
+describe('a smoothed thrust', () => {
+  const dogleg: GeoPath = [
+    [20, 50],
+    [26, 50],
+    [30, 54],
+  ]
+
+  it('bends where a plotter would have cornered', () => {
+    const smooth = routePolyline(dogleg)
+    const chords = densifyPath(dogleg, 1)
+    // the smoothed spine leaves the authored polyline: measured at the corner,
+    // which is exactly where a corner should stop being one
+    const near = (p: [number, number], path: GeoPath) =>
+      Math.min(...path.map((q) => Math.hypot(q[0] - p[0], q[1] - p[1])))
+    const worst = Math.max(...smooth.map((p) => near(p, chords)))
+    expect(worst).toBeGreaterThan(0.05)
+    // …and it still passes through every waypoint the author wrote
+    for (const w of dogleg)
+      expect(Math.min(...smooth.map((q) => Math.hypot(q[0] - w[0], q[1] - w[1])))).toBeLessThan(1e-9)
+  })
+
+  it('puts the arrowhead on the smoothed end tangent', () => {
+    const smooth = routePolyline(dogleg)
+    const head = headOf(smooth)
+    // the bearing off the last authored chord, for comparison
+    const chord = headOf([dogleg[dogleg.length - 2], dogleg[dogleg.length - 1]])
+    expect(head.lng).toBeCloseTo(dogleg[2][0], 6)
+    expect(head.lat).toBeCloseTo(dogleg[2][1], 6)
+    // 0.46° apart on this dogleg: small, because a centripetal spline with
+    // reflected end control points arrives smoothly, and it is the whole
+    // difference between an arrow aimed down the last authored chord and one
+    // aimed down the curve the reader can see.
+    expect(Math.abs(head.bearing - chord.bearing)).toBeGreaterThan(0.25)
+  })
+
+  it('draws the ribbon along the smoothed spine, not the authored chords', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set({ layers: [{ type: 'thrust', path: dogleg }] }, { color: '#fff' })
+    const shaft = layer.object.children.filter(
+      (c): c is Mesh => c instanceof Mesh && !(c instanceof LineSegments2),
+    )[0]
+    const pos = (shaft.geometry as BufferGeometry).getAttribute('position')
+    // one vertex pair per point of the smoothed, trimmed spine — far more than
+    // the four the authored dogleg densifies to at this size
+    expect(pos.count / 2).toBeGreaterThan(dogleg.length * 4)
+    layer.dispose()
+  })
+})
+
+/**
+ * ROUND 60 — TICKS: which side of a front was held.
+ *
+ * `tickSegments` is the whole of it, and it is pure geometry over an already
+ * densified polyline: count, spacing, side, length. The renderer's part is one
+ * `LineSegments2` per pass, which is what keeps eighteen teeth at one draw call.
+ */
+describe('frontline ticks', () => {
+  const straight: GeoPath = [
+    [0, 0],
+    [10, 0],
+  ]
+  const pts = densifyPath(straight, 1)
+
+  it('is absent by default, so every front authored before this is unchanged', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set({ layers: [{ type: 'frontline', paths: [straight] }] }, { color: '#fff' })
+    expect(
+      layer.object.children.filter((c) => c instanceof LineSegments2 && !(c instanceof Line2)),
+    ).toHaveLength(0)
+    layer.dispose()
+  })
+
+  it('combs the line at a constant spacing, in its own length', () => {
+    const teeth = tickSegments(pts, 'left')
+    expect(teeth.length).toBeGreaterThan(10)
+    expect(teeth.length).toBeLessThan(24)
+    const along = teeth.map(([a]) => a[0])
+    const gaps = along.slice(1).map((x, i) => x - along[i])
+    for (const g of gaps) expect(g).toBeCloseTo(10 * FRONTLINE_TICKS.every, 3)
+    // and stands off both ends rather than turning a corner on them
+    expect(along[0]).toBeGreaterThan(0)
+    expect(along[along.length - 1]).toBeLessThan(10)
+  })
+
+  it('puts them on the named side of TRAVEL, and mirrors when the side flips', () => {
+    // east along the equator: left of travel is north
+    const [[, to]] = tickSegments(pts, 'left').map(([a, b]) => [a, b])
+    expect(to[1]).toBeGreaterThan(0)
+    const [[, right]] = tickSegments(pts, 'right').map(([a, b]) => [a, b])
+    expect(right[1]).toBeLessThan(0)
+    // a front authored the other way round has its "left" on the other side,
+    // which is the whole content of the convention
+    const back = tickSegments(densifyPath([[10, 0], [0, 0]], 1), 'left')
+    expect(back[0][1][1]).toBeLessThan(0)
+  })
+
+  it('makes each tooth a fraction of the front, not a fixed distance', () => {
+    const long = tickSegments(densifyPath([[0, 0], [20, 0]], 1), 'left')
+    const short = tickSegments(densifyPath([[0, 0], [2, 0]], 1), 'left')
+    const len = (t: [[number, number], [number, number]][]) =>
+      Math.hypot(t[0][1][0] - t[0][0][0], t[0][1][1] - t[0][0][1])
+    expect(len(long) / len(short)).toBeCloseTo(10, 1)
+    expect(long.length).toBe(short.length)
+  })
+
+  it('draws every tooth in one object per pass, cased like the line', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      { layers: [{ type: 'frontline', paths: [straight], ticks: 'left' }] },
+      { color: '#e5484d' },
+    )
+    const combs = layer.object.children.filter(
+      (c): c is LineSegments2 => c instanceof LineSegments2 && !(c instanceof Line2),
+    )
+    expect(combs).toHaveLength(2)
+    const hexOf = (o: LineSegments2) => '#' + (o.material as LineMaterial).color.getHexString()
+    expect(hexOf(combs[0])).toBe(STROKE_CASING.color)
+    expect(hexOf(combs[1])).toBe('#e5484d')
+    expect(combs[0].renderOrder).toBeLessThan(combs[1].renderOrder)
+    layer.dispose()
+  })
+
+  it('has nothing to comb on a line with no length', () => {
+    expect(tickSegments([[5, 5], [5, 5]], 'left')).toEqual([])
+    expect(tickSegments([[5, 5]], 'left')).toEqual([])
+  })
+})
+
+/**
+ * ROUND 60 — THE ZONE: a pocket, washed and edged.
+ *
+ * The two things a filled area on a sphere has to get right are that it is
+ * INSIDE the ring and that it does not sink through the planet between its own
+ * vertices — a triangle spanning 5° sags 6 km below a surface it is lifted 3.8 km
+ * above. That is what the subdivision in `capGeometry` is for, and it is what
+ * these measure.
+ */
+describe('zone caps', () => {
+  const ring: GeoPath = [
+    [20, 50],
+    [26, 50],
+    [26, 54],
+    [20, 54],
+  ]
+
+  it('fills the ring and stays on the sphere between its own vertices', () => {
+    const g = capGeometry(ring, R, SURFACE_ALT)
+    const pos = g.getAttribute('position')
+    expect(pos.count).toBeGreaterThan(3)
+    expect(pos.count % 3).toBe(0)
+    for (let i = 0; i < pos.count; i++) {
+      const v = new Vector3().fromBufferAttribute(pos, i)
+      // every vertex on the sphere at the layer's own altitude…
+      // to Float32, which is what the attribute holds
+      expect(v.length()).toBeCloseTo(R * (1 + SURFACE_ALT), 3)
+      // …and inside the ring it was cut from, to the Float32 the attribute holds
+      const lat = (Math.asin(v.y / v.length()) * 180) / Math.PI
+      const lng = (Math.atan2(v.x, v.z) * 180) / Math.PI
+      // …and inside the ring it was cut from — with the poleward bulge a
+      // GREAT CIRCLE has against the parallel through its ends (0.03° across
+      // this ring's 6° top edge), because that is the curve `areaCapRing`
+      // densifies onto and the one an event footprint's cap already uses.
+      expect(lng).toBeGreaterThanOrEqual(20 - 1e-4)
+      expect(lng).toBeLessThanOrEqual(26 + 1e-4)
+      expect(lat).toBeGreaterThanOrEqual(50 - 1e-4)
+      expect(lat).toBeLessThanOrEqual(54.05)
+    }
+  })
+
+  it('cuts every triangle fine enough that its chord clears the ground', () => {
+    const pos = capGeometry(ring, R, SURFACE_ALT).getAttribute('position')
+    // the deepest a triangle's plane dips below the sphere, against the
+    // clearance the whole layer is lifted by
+    let deepest = 0
+    for (let i = 0; i < pos.count; i += 3) {
+      const [a, b, c] = [0, 1, 2].map((k) => new Vector3().fromBufferAttribute(pos, i + k))
+      const centroid = a.clone().add(b).add(c).divideScalar(3)
+      deepest = Math.max(deepest, R - centroid.length())
+    }
+    expect(deepest).toBeLessThan(R * SURFACE_ALT)
+  })
+
+  it('does not explode on a ring authored at continental scale', () => {
+    const huge: GeoPath = [
+      [-60, 10],
+      [10, 10],
+      [10, 50],
+      [-60, 50],
+    ]
+    const pos = capGeometry(huge, R, SURFACE_ALT).getAttribute('position')
+    expect(pos.count / 3).toBeLessThanOrEqual(ZONE_MAX_TRIANGLES)
+  })
+
+  it('is one shape across the antimeridian, not two continents apart', () => {
+    const seam: GeoPath = [
+      [178, 10],
+      [-178, 10],
+      [-178, 14],
+      [178, 14],
+    ]
+    const pos = capGeometry(seam, R, SURFACE_ALT).getAttribute('position')
+    for (let i = 0; i < pos.count; i++) {
+      const v = new Vector3().fromBufferAttribute(pos, i)
+      const lng = (Math.atan2(v.x, v.z) * 180) / Math.PI
+      expect(Math.abs(lng)).toBeGreaterThan(177.9)
+    }
+  })
+
+  it('draws nothing for a ring that is not a ring', () => {
+    expect(capGeometry([[0, 0], [1, 1]], R, SURFACE_ALT).getAttribute('position').count).toBe(0)
+  })
+
+  it('washes the ring and edges it with a dashed, cased line', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set({ layers: [{ type: 'zone', ring, label: 'Kiev pocket' }] }, { color: '#e5484d' })
+    const cap = layer.object.children.filter(
+      (c): c is Mesh => c instanceof Mesh && !(c instanceof LineSegments2),
+    )
+    const edge = layer.object.children.filter((c): c is Line2 => c instanceof Line2)
+    expect(cap).toHaveLength(1)
+    expect((cap[0].material as MeshBasicMaterial).opacity).toBe(ZONE_FILL_OPACITY)
+    // a wash, not a lid: lighter than the footprint cap it may sit inside
+    expect((cap[0].material as MeshBasicMaterial).opacity).toBeLessThan(0.22)
+    expect(edge).toHaveLength(2)
+    for (const l of edge) expect((l.material as LineMaterial).dashed).toBe(true)
+    expect(cap[0].renderOrder).toBeLessThanOrEqual(edge[0].renderOrder)
+    layer.dispose()
+  })
+
+  it('sits under every other kind, because a wash over a plan is a filter', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    layer.set(
+      {
+        layers: [
+          { type: 'marker', pos: [23, 52] },
+          { type: 'thrust', path: [[21, 51], [25, 53]] },
+          { type: 'zone', ring },
+          { type: 'frontline', paths: [[[20, 50], [26, 54]]] },
+        ],
+      },
+      { color: '#fff' },
+    )
+    const orders = layer.object.children.map((c) => c.renderOrder)
+    expect(orders).toEqual([...orders].sort((a, b) => a - b))
+    // the zone's cap is the first thing built and the lowest thing painted
+    expect(layer.object.children[0]).toBeInstanceOf(Mesh)
+    expect(layer.object.children[0]).not.toBeInstanceOf(Line2)
+    layer.dispose()
+  })
+
+  it('reaches the camera through drawingPoints, so a pocket is framed whole', () => {
+    expect(drawingExtentDeg({ layers: [{ type: 'zone', ring }] })).toBeGreaterThan(4)
   })
 })

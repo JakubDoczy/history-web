@@ -72,6 +72,7 @@ import {
   segmentIndex,
   SNAP_WARN_KM,
 } from './follows-lib.mjs'
+import { areaKm2, resolveClaimant, zoneFaults } from './contested-lib.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (p) => JSON.parse(readFileSync(join(root, p), 'utf8'))
@@ -104,10 +105,42 @@ const reverseEdgeFlags = (flags) => {
 
 const { encodeRing, decodeRing, decodeKeyframe, QUANTUM } = await import('../src/lib/nations.ts')
 
-const authored = read('src/data/nations.json')
+/**
+ * TWO KINDS OF DATED THING in one authoring file, which is what round 60 turned
+ * the top-level array into an object for.
+ *
+ *   nations    the polities: who held this ground, in this year.
+ *   contested  the ground no single polity honestly held — Crimea after 2014,
+ *              Kashmir since 1947 (docs/design/contested-territory.md). Carved
+ *              out of its claimants below, so the "exactly one holder" promise
+ *              the overlap validator enforces survives contact with a dispute.
+ */
+const authoredFile = read('src/data/nations.json')
+const authored = authoredFile.nations
+const zonesAuthored = authoredFile.contested ?? []
 const frontiers = read('src/data/frontiers.json')
 const byId = new Map(authored.map((n) => [n.id, n]))
 const key = (id, time) => `${id}@${time}`
+
+/** A zone's dates, with the open end the format allows: `to` defaults to now-ish. */
+const ZONE_TO = 2100
+const zoneSpan = (z) => [z.from, z.to ?? ZONE_TO]
+
+/**
+ * A zone as the overlap validator and the ink-disagreement validator see it:
+ * a polity with one keyframe that is notable for exactly its own dates.
+ *
+ * Both validators exist to police the promise that every point has one holder,
+ * and a contested zone IS a holder of that ground — the whole design is that it
+ * takes the ground away from its claimants rather than sitting on top of them —
+ * so it has to be judged by the same rules. What it must never become is a
+ * polity: nothing here reaches `nations.clipped.json`'s `nations`, and the
+ * runtime has its own layer (src/lib/contested.ts).
+ */
+const asPolity = (zone, keyframes) => {
+  const [from, to] = zoneSpan(zone)
+  return { id: `contested:${zone.id}`, name: zone.name, color: '#000000', from, to, visibleFrom: from, visibleTo: to, keyframes }
+}
 
 /* ------------------------------------------ what a frontier says it follows */
 
@@ -140,35 +173,82 @@ const features = {
 }
 
 const followed = new Map() // `id@time` -> { rings, segments, checks }
-for (const nation of authored)
-  for (const kf of nation.keyframes) {
-    if (!kf.follows?.length) continue
-    try {
-      const res = resolveKeyframe(kf.rings, kf.follows, features)
-      for (const c of res.checks)
-        if (!c.closed || !c.windingKept)
-          throw new Error(`splicing ring ${c.ring} left it ${c.closed ? 'wound the wrong way' : 'open'}`)
-      followed.set(key(nation.id, kf.time), res)
-    } catch (err) {
-      console.error(`follows: ${nation.id}@${kf.time}: ${err.message}`)
-      process.exit(1)
-    }
+const resolveFollows = (at, rings, decls) => {
+  try {
+    const res = resolveKeyframe(rings, decls, features)
+    for (const c of res.checks)
+      if (!c.closed || !c.windingKept)
+        throw new Error(`splicing ring ${c.ring} left it ${c.closed ? 'wound the wrong way' : 'open'}`)
+    followed.set(at, res)
+  } catch (err) {
+    console.error(`follows: ${at}: ${err.message}`)
+    process.exit(1)
   }
+}
+for (const nation of authored)
+  for (const kf of nation.keyframes)
+    if (kf.follows?.length) resolveFollows(key(nation.id, kf.time), kf.rings, kf.follows)
+// A ZONE DECLARES WHAT IT FOLLOWS TOO, and it goes through exactly this code:
+// an occupation line that follows the Dnipro follows the Dnipro, and the
+// boundary of Western Sahara is three arcs of Natural Earth's own topology.
+for (const zone of zonesAuthored)
+  if (zone.follows?.length) resolveFollows(key(zone.id, 'zone'), zone.rings, zone.follows)
 
 /** The rings the rest of the pipeline works on: derived where declared. */
 const ringsOf = (nation, kf) => followed.get(key(nation.id, kf.time))?.rings ?? kf.rings
+const zoneRingsOf = (zone) => followed.get(key(zone.id, 'zone'))?.rings ?? zone.rings
 
 /* --------------------------------------------------------- check-only mode */
 
 if (checkOnly) {
   const onDisk = read('src/data/nations.clipped.json')
-  const found = validate(onDisk)
-  const split = inkSplits(onDisk)
-  report(found, onDisk, undefined, split)
-  const { bad } = followsReport(onDisk)
+  const judgedOnDisk = withZones(onDisk.nations, onDisk.contested ?? [])
+  const found = validate(judgedOnDisk)
+  const split = inkSplits(judgedOnDisk)
+  report(found, onDisk.nations, undefined, split, (onDisk.contested ?? []).length)
+  const { bad } = followsReport(onDisk.nations)
+  // The shipped zones, judged without re-clipping anything: the geometric
+  // claims need Natural Earth and `--check` deliberately does not decode it, so
+  // what is checkable here is the shape of the payload and the snap numbers.
+  const shipFaults = checkContested(onDisk.contested ?? [])
   const modernFaults = checkModern(read('src/data/borders.modern.json'))
   reportModern(modernFaults)
-  process.exit(found.length || split.length || modernFaults.length || bad.length ? 1 : 0)
+  process.exit(found.length || split.length || modernFaults.length || bad.length || shipFaults.length ? 1 : 0)
+}
+
+/**
+ * What the shipped contested payload has to satisfy on its own — the same
+ * question `checkModern` asks of the modern lines, and for the same reason:
+ * `npm run build` runs `--check`, and a check that needed 550 kB of Natural
+ * Earth decoded first would not be run on every build.
+ */
+function checkContested(entries) {
+  const faults = []
+  const authoredById = new Map(zonesAuthored.map((z) => [z.id, z]))
+  if (entries.length !== zonesAuthored.length)
+    faults.push(`the file ships ${entries.length} zone(s) and nations.json authors ${zonesAuthored.length}`)
+  for (const e of entries) {
+    const at = `contested "${e.id}"`
+    const src = authoredById.get(e.id)
+    if (!src) faults.push(`${at}: shipped but not authored in nations.json`)
+    else if (src.from !== e.from) faults.push(`${at}: ships from ${e.from}, authored from ${src.from}`)
+    if (!(e.claimants?.length >= 2)) faults.push(`${at}: ${e.claimants?.length ?? 0} claimant(s) in the payload`)
+    if (!e.polys?.length) faults.push(`${at}: no geometry`)
+    for (const rings of e.polys ?? [])
+      for (const enc of rings) {
+        const ring = decodeRing(enc)
+        if (ring.length < 3) faults.push(`${at}: a ring has ${ring.length} vertex/vertices`)
+        // The carve is a difference operation and a difference can open a ring;
+        // the contract asks for this by name. Stored open, so "closes" is the
+        // ring having area at all after the codec has been through it.
+        if (Math.abs(shoelace(ring)) < QUANTUM * QUANTUM) faults.push(`${at}: a ring encloses nothing`)
+      }
+  }
+  if (faults.length) {
+    console.error(`contested territory: ${faults.length} fault(s) in the shipped payload`)
+    for (const f of faults) console.error(`  ${f}`)
+  } else console.log(`contested territory: green — ${entries.length} zone(s), every ring closed and claimed`)
+  return faults
 }
 
 /* --------------------------------------------------------------- the land */
@@ -249,6 +329,55 @@ for (const rule of frontiers) {
   }
 }
 
+/* ------------------------------------------------- and the contested ground */
+
+/**
+ * CARVE, DO NOT OVERLAP — the whole of round 60's structural idea.
+ *
+ * A contested zone is subtracted from every claimant whose keyframe is in force
+ * while the zone runs, exactly the way the sea is subtracted from everyone. By
+ * construction, then, no claimant fill covers contested ground, the overlap
+ * validator needs no exemption clause for a dispute, and the two layers cannot
+ * disagree about where the disputed edge is: the polity's remaining frontier
+ * IS the zone's boundary, the same vertices, so `findInkDisagreements` can
+ * judge them as it judges any shared frontier.
+ *
+ * Zones carve EACH OTHER first, in file order, for the same reason the frontier
+ * rules apply in file order: two zones may honestly overlap in the authoring
+ * file (the occupied-Ukraine ring is drawn across the Syvash and into northern
+ * Crimea rather than threading a lagoon Natural Earth draws as solid land), and
+ * the earlier entry — here also the earlier date — keeps the ground.
+ */
+const zones = []
+for (const zone of zonesAuthored) {
+  const [from, to] = zoneSpan(zone)
+  const mp = clipToLand(multiPolygonOf(zoneRingsOf(zone)), land)
+  let carved = mp
+  for (const prior of zones)
+    if (prior.to >= from && prior.from <= to && carved.length && prior.carved.length)
+      carved = robustOp('difference', carved, prior.carved, `${zone.id} yields to ${prior.zone.id}`)
+  zones.push({ zone, from, to, mp, carved })
+}
+
+for (const z of zones) {
+  z.carvedFrom = []
+  if (!z.carved.length) continue
+  for (const claimant of z.zone.claimants ?? []) {
+    const a = byId.get(claimant)
+    if (!a) continue // a present-day claimant has no fill here to take anything from
+    for (const [i, kf] of a.keyframes.entries()) {
+      const [holdFrom, holdTo] = holdSpan(a, i)
+      if (holdTo < z.from || holdFrom > z.to) continue
+      const k = key(a.id, kf.time)
+      const before = clipped.get(k)
+      const after = robustOp('difference', before, z.carved, `${a.id} yields to ${z.zone.id}`)
+      clipped.set(k, after)
+      const km2 = areaKm2(before) - areaKm2(after)
+      if (km2 > 1) z.carvedFrom.push({ id: `${a.id}@${kf.time}`, km2 })
+    }
+  }
+}
+
 /* ----------------------------------------------- classify, thin, and orient */
 
 let vertsIn = 0
@@ -260,14 +389,17 @@ let coastalEdges = 0
 let inlandEdges = 0
 const shrunk = []
 
-const built = authored.map((nation) => ({
-  ...nation,
-  keyframes: nation.keyframes.map((kf) => {
-    const mp = clipped.get(key(nation.id, kf.time))
-    const authoredArea = multiPolygonArea(multiPolygonOf(ringsOf(nation, kf)))
-    shrunk.push({ id: nation.id, time: kf.time, kept: multiPolygonArea(mp) / authoredArea })
-    vertsIn += ringsOf(nation, kf).reduce((n, r) => n + r.length, 0)
-    vertsClipped += mp.reduce((n, p) => n + p.reduce((m, r) => m + r.length - 1, 0), 0)
+/**
+ * ONE CLIPPED MULTIPOLYGON, made shippable: classified, thinned, oriented and
+ * encoded, with a `coast` field only where there is coast to record.
+ *
+ * A function rather than the loop body it used to be because a contested zone
+ * needs precisely this and nothing else — it is a cap with a boundary of two
+ * kinds like any polity's, and it must be classified by the SAME call so that a
+ * carved frontier and the zone edge it now coincides with cannot get different
+ * verdicts (see `findInkDisagreements`).
+ */
+function shippable(mp) {
     const polys = []
     const coast = []
     for (const poly of mp) {
@@ -310,15 +442,68 @@ const built = authored.map((nation) => ({
       holesOut += rings.length - 1
       piecesOut++
     }
-    const entry = { time: kf.time, polys }
-    // A keyframe with no coastal edge at all — a landlocked polity — carries no
-    // `coast` field rather than a nest of empty arrays.
+    const entry = { polys }
+    // Nothing with no coastal edge at all — a landlocked polity, a zone in
+    // Ladakh — carries a `coast` field rather than a nest of empty arrays.
     if (coast.some((p) => p.some((r) => r.length))) entry.coast = coast
     return entry
+}
+
+const built = authored.map((nation) => ({
+  ...nation,
+  keyframes: nation.keyframes.map((kf) => {
+    const mp = clipped.get(key(nation.id, kf.time))
+    const authoredArea = multiPolygonArea(multiPolygonOf(ringsOf(nation, kf)))
+    shrunk.push({ id: nation.id, time: kf.time, kept: multiPolygonArea(mp) / authoredArea })
+    vertsIn += ringsOf(nation, kf).reduce((n, r) => n + r.length, 0)
+    vertsClipped += mp.reduce((n, p) => n + p.reduce((m, r) => m + r.length - 1, 0), 0)
+    return { time: kf.time, ...shippable(mp) }
   }),
 }))
 
+/**
+ * …and the zones, in the same shape, with `claimants` resolved on the way out.
+ *
+ * The runtime is given names and colours rather than keys because it cannot
+ * look a present-day state up: `ukraine` is not a polity in `nations.clipped`'s
+ * `nations` and never will be (round 57). A `color` is therefore present only
+ * for a claimant the map can actually draw, and its absence is what makes that
+ * stripe of the hatch neutral — see lib/contested.ts.
+ */
+for (const z of zones) {
+  vertsIn += zoneRingsOf(z.zone).reduce((n, r) => n + r.length, 0)
+  vertsClipped += z.carved.reduce((n, p) => n + p.reduce((m, r) => m + r.length - 1, 0), 0)
+}
+const builtZones = zones.map((z) => ({
+  id: z.zone.id,
+  name: z.zone.name,
+  from: z.from,
+  to: z.to,
+  claimants: (z.zone.claimants ?? []).map((k) => {
+    const who = resolveClaimant(k, byId)
+    const out = { id: k, name: who?.name ?? k }
+    if (who?.color) out.color = who.color
+    return out
+  }),
+  ...shippable(z.carved),
+}))
+
 /* --------------------------------------------------------------- validate */
+
+/**
+ * The polities and the zones, as one list, for the two validators that police
+ * "every point has exactly one holder". See `asPolity`.
+ */
+function withZones(nations, zoneEntries) {
+  return [
+    ...nations,
+    ...zoneEntries.map((z) => {
+      const kf = { time: z.from, polys: z.polys }
+      if (z.coast) kf.coast = z.coast
+      return asPolity(z, [kf])
+    }),
+  ]
+}
 
 function validate(nations) {
   const cache = new Map()
@@ -414,9 +599,111 @@ function followsReport(nations) {
   return { table, bad }
 }
 
-const convictions = validate(built)
-const splits = inkSplits(built)
+/**
+ * THE CONTESTED SECTION of the error report, which the contract asks for by
+ * name: zone count, the ground each takes, what it took it from, and the snap
+ * error of any edge a zone declares it follows.
+ *
+ * km² rather than square degrees because this is the half of the report a
+ * HUMAN checks against an almanac — Crimea is 27 000 km², the Abyei Area is
+ * 10 460 — and a square degree is 12 300 km² at the equator and 6 200 in
+ * Ladakh. `zoneFaults` is what fails the build; this is what makes a zone
+ * whose numbers are quietly wrong visible before it ships.
+ */
+function contestedReport(entries) {
+  const pad = (s, n) => String(s).padStart(n)
+  console.log('')
+  console.log('contested territory — ground carved out of its claimants, and what claims it')
+  console.log(`  ${'zone'.padEnd(14)} ${pad('km²', 9)} ${pad('carved', 8)} ${pad('from', 6)} ${'claimants'}`)
+  let totalKm2 = 0
+  let totalCarved = 0
+  const bad = []
+  for (const e of entries) {
+    const km2 = areaKm2(e.polys.map((rings) => rings.map((r) => decodeRing(r))))
+    const src = e.carvedFrom ?? []
+    const carved = src.reduce((n, s) => n + s.km2, 0)
+    totalKm2 += km2
+    totalCarved += carved
+    console.log(
+      `  ${e.id.padEnd(14)} ${pad(km2.toFixed(0), 9)} ${pad(carved.toFixed(0), 8)} ${pad(e.from, 6)}` +
+        `  ${e.claimants.map((c) => `${c.id}${c.color ? '' : ' (no fill)'}`).join(', ')}` +
+        `${src.length ? ` — out of ${src.map((s) => `${s.id} ${s.km2.toFixed(0)} km²`).join(', ')}` : ''}`,
+    )
+    for (const s of e.segments ?? []) {
+      const km = Math.max(s.snapFromKm, s.snapToKm)
+      console.log(
+        `  ${''.padEnd(14)} ${pad('follows', 9)} ${s.name}: ${s.path.length} pts, ${s.km.toFixed(0)} km,` +
+          ` snap ${s.snapFromKm.toFixed(2)}/${s.snapToKm.toFixed(2)} km, ${s.dropped.length} branch(es) not taken`,
+      )
+      if (km > SNAP_WARN_KM) bad.push({ at: e.id, name: s.name, km })
+    }
+  }
+  console.log(
+    `  ${'— ZONES —'.padEnd(14)} ${pad(totalKm2.toFixed(0), 9)} ${pad(totalCarved.toFixed(0), 8)}` +
+      `  ${entries.length} zone(s); ${totalCarved.toFixed(0)} km² taken out of claimant fills`,
+  )
+  if (bad.length) {
+    console.error(`  SNAP OVER ${SNAP_WARN_KM} km on a zone edge:`)
+    for (const w of bad) console.error(`    ${w.at} ${w.name}: ${w.km.toFixed(1)} km`)
+  }
+  return bad
+}
+
+/** Filled by `countryGeometry` on first use; declared here to outlive the TDZ. */
+let countryCache
+const judged = withZones(built, builtZones)
+const convictions = validate(judged)
+const splits = inkSplits(judged)
 const errors = followsReport(built)
+for (const z of zones) {
+  const e = builtZones.find((b) => b.id === z.zone.id)
+  e.carvedFrom = z.carvedFrom
+  e.segments = followed.get(key(z.zone.id, 'zone'))?.segments ?? []
+}
+const zoneSnaps = contestedReport(builtZones)
+const faults = zoneFaults(zones, byId, claimGeometry, countryGeometry)
+if (faults.length) {
+  console.error(`contested territory: ${faults.length} fault(s)`)
+  for (const f of faults) console.error(`  ${f}`)
+} else console.log(`  contested validator: green — every zone has ≥2 checkable claimants and survives its carve`)
+
+/** A claimant polity's pre-carve extent over a span: the union of its keyframes. */
+function claimGeometry(id, from, to) {
+  const n = byId.get(id)
+  if (!n) return []
+  const out = []
+  for (const [i, kf] of n.keyframes.entries()) {
+    const [holdFrom, holdTo] = holdSpan(n, i)
+    if (holdTo < from || holdFrom > to) continue
+    out.push(...clipToLand(multiPolygonOf(ringsOf(n, kf)), land))
+  }
+  return out
+}
+
+/** …and a present-day claimant's, out of the same topology the modern ink is built from. */
+function countryGeometry(name) {
+  if (!countryCache) {
+    countryCache = new Map()
+    const topo = read('node_modules/world-atlas/countries-50m.json')
+    const arcs = decodeArcs(topo)
+    const ringOf = (list) => {
+      const pts = []
+      for (const idx of list) {
+        const arc = idx < 0 ? [...arcs[~idx]].reverse() : arcs[idx]
+        for (const p of pts.length ? arc.slice(1) : arc) pts.push([p[0], p[1]])
+      }
+      const [fx, fy] = pts[0]
+      const [lx, ly] = pts[pts.length - 1]
+      if (fx !== lx || fy !== ly) pts.push([fx, fy])
+      return pts
+    }
+    for (const g of topo.objects.countries.geometries) {
+      const polys = g.type === 'Polygon' ? [g.arcs] : g.arcs
+      countryCache.set(g.properties?.name, polys.map((rings) => rings.map(ringOf)))
+    }
+  }
+  return countryCache.get(name)
+}
 
 /* ----------------------------------------------------------- the numbers */
 
@@ -467,7 +754,7 @@ function budget(nations, countOf) {
   return worst
 }
 
-function report(convictions, builtNations, sourceNations, splits = []) {
+function report(convictions, builtNations, sourceNations, splits = [], zoneCount = 0) {
   if (sourceNations) {
     const before = budget(sourceNations, (kf) => ({
       verts: kf.rings.reduce((n, r) => n + r.length, 0),
@@ -503,8 +790,8 @@ function report(convictions, builtNations, sourceNations, splits = []) {
   } else console.log(`shared-frontier ink: green — every shared edge has one verdict`)
   if (!convictions.length) {
     console.log(
-      `overlap validator: green over ${builtNations.length} polities` +
-        ` (nothing shared wider than ${(OVERLAP_WIDTH_DEG * 111 * 1000).toFixed(0)} m)`,
+      `overlap validator: green over ${builtNations.length} polities and ${zoneCount} contested` +
+        ` zone(s) (nothing shared wider than ${(OVERLAP_WIDTH_DEG * 111 * 1000).toFixed(0)} m)`,
     )
     return
   }
@@ -512,17 +799,19 @@ function report(convictions, builtNations, sourceNations, splits = []) {
   for (const o of convictions) console.error(`  ${describeOverlap(o)}  bbox ${o.bbox.map((v) => v.toFixed(1)).join(',')}`)
 }
 
-report(convictions, built, wantReport ? authored : undefined, splits)
+report(convictions, built, wantReport ? authored : undefined, splits, builtZones.length)
 
 /* ------------------------------------------------------------------ write */
 
-if (convictions.length || splits.length || errors.bad.length) process.exit(1)
+if (convictions.length || splits.length || errors.bad.length || faults.length || zoneSnaps.length)
+  process.exit(1)
 
 const path = join(root, 'src/data/nations.clipped.json')
 // One polity per line, one keyframe per line inside it: a 900 kB generated file
-// that `git diff` can still say something useful about.
+// that `git diff` can still say something useful about. The zones come after,
+// in the same shape as the authoring file's two keys.
 const body =
-  '[\n' +
+  '{"nations":[\n' +
   built
     .map((n) => {
       const head = JSON.stringify({
@@ -538,7 +827,15 @@ const body =
       return `{${head},"keyframes":[\n  ${kfs}\n]}`
     })
     .join(',\n') +
-  '\n]\n'
+  '\n],\n"contested":[\n' +
+  builtZones
+    .map((z) => {
+      const head = JSON.stringify({ id: z.id, name: z.name, from: z.from, to: z.to, claimants: z.claimants }).slice(1, -1)
+      const geom = JSON.stringify(z.coast ? { polys: z.polys, coast: z.coast } : { polys: z.polys }).slice(1, -1)
+      return `{${head},\n  ${geom}}`
+    })
+    .join(',\n') +
+  '\n]}\n'
 writeFileSync(path, body)
 console.log(`wrote src/data/nations.clipped.json (${(body.length / 1024).toFixed(0)} kB)`)
 

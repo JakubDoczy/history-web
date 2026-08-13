@@ -22,6 +22,10 @@ import { directionOf, isGeoPath, type GeoPath, type PathDirection } from './path
  *                  line this globe draws over its map.
  *  · `frontline` — polylines. A line at a moment: where the front was.
  *  · `thrust`    — one polyline read as an arrow. An axis of advance.
+ *  · `zone`      — a closed ring, washed and edged in a dashed line. A pocket, a
+ *                  siege perimeter, a bridgehead, an occupation area: extent
+ *                  that belongs to the operation rather than to the event's
+ *                  whole footprint.
  *  · `marker`    — a point with a glyph: a battle cross, a star, a dot, a
  *                  chevron. Where something happened.
  *  · `label`     — words on the map. Small caps, haloed, no leader line.
@@ -77,6 +81,18 @@ export interface RouteSpec extends DrawingCommon {
   direction?: PathDirection
 }
 
+/**
+ * WHICH SIDE OF A FRONT IS HELD — the teeth on a line, and nothing else.
+ *
+ * Read as "left" and "right" OF TRAVEL along the polyline as it is authored,
+ * which is the only frame a bare list of coordinates has: north/south and
+ * east/west are useless on a front that turns through ninety degrees, and any
+ * other convention would need a second field saying which way to read the first.
+ * The renderer's own perpendicular (`ribbonGeometry`) uses the same frame, so
+ * one rule covers every crosswise mark this layer draws.
+ */
+export type FrontlineTicks = 'left' | 'right'
+
 /** A battle line at a moment. One or more polylines. */
 export interface FrontlineSpec extends DrawingCommon {
   type: 'frontline'
@@ -86,6 +102,12 @@ export interface FrontlineSpec extends DrawingCommon {
   dash?: 'solid' | 'dashed'
   /** Screen pixels. A front is a line on a map, so it keeps its weight at any zoom. */
   width?: number
+  /**
+   * Short perpendicular teeth on one side — the standard mark for "the ground
+   * behind this line is held". Absent by default, which is what every front
+   * authored before this existed relies on.
+   */
+  ticks?: FrontlineTicks
 }
 
 /**
@@ -105,6 +127,28 @@ export interface ThrustSpec extends DrawingCommon {
   width?: number
   /** Narrow at the tail, full width at the head. Default true. */
   taper?: boolean
+}
+
+/**
+ * A closed area the operation is ABOUT: the pocket at Kiev, the ring round
+ * Leningrad, the bridgehead over the Rhine, the zone an army occupied.
+ *
+ * The one thing operations kept needing that no other kind could say. A
+ * frontline can trace the same ring, but a line says "the front ran here" and a
+ * washed area says "this was inside" — which is the whole content of a pocket.
+ * An event's `area` footprint cannot say it either: that is the theatre the
+ * event is filed under, one per event, drawn whenever the event is selected,
+ * where a zone is one layer of a plan among several, dateable with `at` like
+ * every other layer, and there may be four of them.
+ *
+ * `ring` is authored OPEN — the same convention an event's footprint uses — and
+ * closed by the renderer. Three points minimum: two is a line, and a line is a
+ * frontline.
+ */
+export interface ZoneSpec extends DrawingCommon {
+  type: 'zone'
+  /** The boundary, `[lng, lat]`, authored open. At least three points. */
+  ring: GeoPath
 }
 
 export type MarkerStyle = 'cross' | 'star' | 'dot' | 'arrow'
@@ -130,7 +174,13 @@ export interface LabelSpec extends DrawingCommon {
   size?: 'sm' | 'md'
 }
 
-export type DrawingSpec = RouteSpec | FrontlineSpec | ThrustSpec | MarkerSpec | LabelSpec
+export type DrawingSpec =
+  | RouteSpec
+  | FrontlineSpec
+  | ThrustSpec
+  | ZoneSpec
+  | MarkerSpec
+  | LabelSpec
 
 export interface Drawing {
   layers: DrawingSpec[]
@@ -150,6 +200,18 @@ export const MARKER_SIZE_DEG = 0.8
  * shaft's width across) without eating a short axis whole.
  */
 export const THRUST_HEAD_SCALE = 2.4
+/**
+ * How much of the ground a zone's wash takes.
+ *
+ * 0.18 is a wash and not a lid: it is under the 0.22 an event's own footprint
+ * cap gets, because a zone is drawn INSIDE a plan — over thrust ribbons, over
+ * frontlines, over a hatched sea — and anything heavier turns the ink beneath it
+ * into ink seen through a filter, which is the same defect the cap-supersession
+ * rule at GlobeView exists to remove.
+ */
+export const ZONE_FILL_OPACITY = 0.18
+/** A zone's dashed edge, in screen pixels. Lighter than a front: it is a limit, not a line held. */
+export const ZONE_OUTLINE_WIDTH = 1.8
 
 /* ------------------------------------------------------------ validation */
 
@@ -185,10 +247,15 @@ export function isDrawingSpec(l: unknown): l is DrawingSpec {
         s.paths.length > 0 &&
         s.paths.every(isGeoPath) &&
         (s.dash === undefined || s.dash === 'solid' || s.dash === 'dashed') &&
+        (s.ticks === undefined || s.ticks === 'left' || s.ticks === 'right') &&
         isSize(s.width)
       )
     case 'thrust':
       return isGeoPath(s.path) && isSize(s.width) && (s.taper === undefined || typeof s.taper === 'boolean')
+    case 'zone':
+      // A ring, not a line: `isGeoPath` checks the coordinates, and three points
+      // is what makes the thing enclose anything at all.
+      return isGeoPath(s.ring) && (s.ring as GeoPath).length >= 3
     case 'marker':
       return (
         isPos(s.pos) &&
@@ -231,6 +298,7 @@ export function drawingPoints(d: Drawing | undefined): GeoPath {
   for (const l of d.layers) {
     if (l.type === 'frontline' || l.type === 'route') for (const p of l.paths) out.push(...p)
     else if (l.type === 'thrust') out.push(...l.path)
+    else if (l.type === 'zone') out.push(...l.ring)
     else out.push(l.pos)
   }
   return out

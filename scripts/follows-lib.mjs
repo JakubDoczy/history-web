@@ -219,14 +219,25 @@ export const JOIN_TOL_KM = 1
  * code, which is a two-line fix here rather than a silent wrong border.
  */
 export const ISO_A3 = {
-  AND: 'Andorra', AUT: 'Austria', BEL: 'Belgium', BGR: 'Bulgaria', BIH: 'Bosnia and Herz.',
-  BLR: 'Belarus', CAN: 'Canada', CHE: 'Switzerland', CHN: 'China', CZE: 'Czechia',
-  DEU: 'Germany', DNK: 'Denmark', ESP: 'Spain', FIN: 'Finland', FRA: 'France',
-  GBR: 'United Kingdom', GRC: 'Greece', HRV: 'Croatia', HUN: 'Hungary', IRL: 'Ireland',
-  ITA: 'Italy', KOR: 'South Korea', LUX: 'Luxembourg', MEX: 'Mexico', MDA: 'Moldova',
-  NLD: 'Netherlands', NOR: 'Norway', POL: 'Poland', PRK: 'North Korea', PRT: 'Portugal',
-  ROU: 'Romania', RUS: 'Russia', SRB: 'Serbia', SVK: 'Slovakia', SVN: 'Slovenia',
-  SWE: 'Sweden', TUR: 'Turkey', UKR: 'Ukraine', USA: 'United States of America',
+  AFG: 'Afghanistan', AND: 'Andorra', AUT: 'Austria', BEL: 'Belgium', BGR: 'Bulgaria',
+  BIH: 'Bosnia and Herz.', BLR: 'Belarus', CAN: 'Canada', CHE: 'Switzerland', CHN: 'China',
+  CZE: 'Czechia', DEU: 'Germany', DNK: 'Denmark', DZA: 'Algeria', ESP: 'Spain',
+  FIN: 'Finland', FRA: 'France', GBR: 'United Kingdom', GRC: 'Greece', HRV: 'Croatia',
+  HUN: 'Hungary', IND: 'India', IRL: 'Ireland', ITA: 'Italy', KOR: 'South Korea',
+  LUX: 'Luxembourg', MAR: 'Morocco', MEX: 'Mexico', MDA: 'Moldova', MRT: 'Mauritania',
+  NLD: 'Netherlands', NOR: 'Norway', PAK: 'Pakistan', POL: 'Poland', PRK: 'North Korea',
+  PRT: 'Portugal', ROU: 'Romania', RUS: 'Russia', SDN: 'Sudan', SRB: 'Serbia',
+  SSD: 'S. Sudan', SVK: 'Slovakia', SVN: 'Slovenia', SWE: 'Sweden', TUR: 'Turkey',
+  UKR: 'Ukraine', USA: 'United States of America',
+  // NOT COUNTRIES, and in the table for the same reason the countries are: a
+  // declaration has to be able to NAME them. Natural Earth's admin-0 layer
+  // carries three disputed territories as their own units, so the boundary
+  // between (say) China and Pakistan-administered Kashmir is stored as three
+  // arcs rather than one, and a frontier that runs along all of them is written
+  // `CHN-PAK + CHN-SIA + CHN-IND` — the `FRA-ESP + AND-ESP` pattern, for the
+  // same reason. The codes are placeholders: ISO does not assign one to a
+  // glacier.
+  ESH: 'W. Sahara', SIA: 'Siachen Glacier',
 }
 
 /** "FRA-ESP" -> the two NE country names, sorted the way `arcOwners` sorts. */

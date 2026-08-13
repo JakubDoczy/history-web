@@ -121,8 +121,8 @@ describe('nationLabel', () => {
   })
 })
 
-import rawAuthored from '../src/data/nations.json'
-import rawNations from '../src/data/nations.clipped.json'
+import authoredFile from '../src/data/nations.json'
+import clippedFile from '../src/data/nations.clipped.json'
 
 /** The authoring file's shape: hand-drawn open CW rings, one list per keyframe. */
 interface Authored {
@@ -144,7 +144,7 @@ interface Authored {
  * polygon layer appends its alpha.
  */
 describe('nations.json (authoring)', () => {
-  const nations = rawAuthored as unknown as Authored[]
+  const nations = authoredFile.nations as unknown as Authored[]
 
   it('ships a curated world', () => {
     expect(nations.length).toBeGreaterThanOrEqual(40)
@@ -216,7 +216,7 @@ describe('nations.json (authoring)', () => {
   it.each([-2600, -2000, -1400, -1000, -700, -500, -320, -200, -100, 1, 100, 250, 400, 600, 700, 800, 1000, 1100, 1200, 1300, 1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 1930, 1950, 1980, 2000])(
     'shows a handful of polities at %i',
     (t) => {
-      const vis = visibleNations(rawNations as unknown as Nation[], t)
+      const vis = visibleNations(clippedFile.nations as unknown as Nation[], t)
       expect(vis.length).toBeGreaterThanOrEqual(3)
       expect(vis.length).toBeLessThanOrEqual(9)
       expect(vis.length).toBeLessThanOrEqual(MAX_VISIBLE)
@@ -238,7 +238,7 @@ describe('nations.json (authoring)', () => {
  * inside this polity in this year". A missing keyframe fails one of them.
  */
 describe('borders at a date', () => {
-  const nations = rawNations as unknown as Nation[]
+  const nations = clippedFile.nations as unknown as Nation[]
 
   /** Ray cast in the plane; the rings are small enough that this is exact enough. */
   const inRing = (ring: Ring, lng: number, lat: number): boolean => {
@@ -519,7 +519,7 @@ describe('borderRings densification', () => {
 
   it('leaves the shipped corpus with no edge the polygon layer must interpolate', () => {
     let edges = 0
-    for (const n of rawNations as unknown as Nation[])
+    for (const n of clippedFile.nations as unknown as Nation[])
       for (const t of n.keyframes.map((k) => k.time))
         for (const entry of borderRings(n, t)) {
           for (const ring of entry.coordinates)

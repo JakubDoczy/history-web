@@ -1,5 +1,5 @@
 import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, type Scene } from 'three'
-import type { BorderRing, FrontierInk, Ring } from './nations'
+import type { FrontierInk, InkEntry, Ring } from './nations'
 
 /**
  * POLITICAL INK — the part of a polity's boundary that is a frontier.
@@ -81,6 +81,71 @@ function pushLine(
   }
 }
 
+/**
+ * A LINE IN DISPUTE IS DASHED — the outline of a contested zone, round 60.
+ *
+ * The dashes are cut in the GEOMETRY rather than drawn by a dashed material,
+ * and the reason is the one this layer exists for in the first place: one
+ * object for every frontier on the globe. `LineDashedMaterial` would need its
+ * own material, its own `computeLineDistances` pass and therefore its own
+ * `LineSegments`, which is a second draw call and a second thing to keep in
+ * step with the first. Cutting a polyline into on and off runs produces exactly
+ * the primitive this buffer already holds, so a dashed border costs nothing but
+ * fewer vertices than a solid one.
+ *
+ * It also makes the dash GROUND-FIXED for free, which a screen-space dash is
+ * not: the period is measured along the path in degrees of arc, so a dash is a
+ * distance on the map and it neither stretches nor marches when the camera
+ * moves. That is the same choice the hatch inside the zone makes (lib/hatch.ts)
+ * and for the same reason.
+ */
+export const DASH_DEG = 0.34
+export const GAP_DEG = 0.26
+
+function pushDashed(
+  path: Ring,
+  color: [number, number, number],
+  radius: number,
+  positions: number[],
+  colors: number[],
+  phase = 0,
+) {
+  const period = DASH_DEG + GAP_DEG
+  // Where along the current period the walk is; carried across segments so a
+  // dash spans a vertex rather than restarting at every one.
+  let at = phase % period
+  const point = (lng: number, lat: number) => {
+    const u = unit(lng, lat)
+    positions.push(u[0] * radius, u[1] * radius, u[2] * radius)
+    colors.push(color[0], color[1], color[2])
+  }
+  for (let i = 0; i + 1 < path.length; i++) {
+    const [x0, y0] = path[i]
+    const [x1, y1] = path[i + 1]
+    // Length in degrees of ground, longitude compressed by its parallel — the
+    // same measure the hatch uses, so a dash is the same size in Sudan and in
+    // Ukraine.
+    const mid = ((y0 + y1) / 2) * RAD
+    const dx = (x1 - x0) * Math.cos(mid)
+    const dy = y1 - y0
+    const len = Math.hypot(dx, dy)
+    if (!len) continue
+    let t = 0
+    while (t < len) {
+      const remaining = at < DASH_DEG ? DASH_DEG - at : period - at
+      const step = Math.min(remaining, len - t)
+      if (at < DASH_DEG) {
+        const a = t / len
+        const b = (t + step) / len
+        point(x0 + (x1 - x0) * a, y0 + (y1 - y0) * a)
+        point(x0 + (x1 - x0) * b, y0 + (y1 - y0) * b)
+      }
+      t += step
+      at = (at + step) % period
+    }
+  }
+}
+
 const NO_PATHS: Ring[] = []
 
 /**
@@ -96,7 +161,7 @@ const NO_PATHS: Ring[] = []
  *    inks its own coast and the frontier is being drawn, better, by somebody
  *    else. Its wash and its label stay; only the duplicate line goes.
  */
-export const inkPathsOf = (entry: BorderRing, ink: FrontierInk): Ring[] =>
+export const inkPathsOf = (entry: InkEntry, ink: FrontierInk): Ring[] =>
   ink === 'all'
     ? entry.coordinates
     : ink === 'frontier'
@@ -153,7 +218,7 @@ export class FrontierLayer {
    * boundary is worth drawing depends on what ELSE is on the map that year (see
    * `inkPathsOf`), which this layer cannot know and its caller already does.
    */
-  set(entries: BorderRing[], colorOf: (e: BorderRing) => string, inkOf: (e: BorderRing) => FrontierInk): boolean {
+  set(entries: InkEntry[], colorOf: (e: InkEntry) => string, inkOf: (e: InkEntry) => FrontierInk): boolean {
     const key = entries.map((e) => `${e.nation.id}:${colorOf(e)}:${inkOf(e)}`).join('|')
     if (key === this.currentKey) return false
     this.currentKey = key
@@ -162,7 +227,10 @@ export class FrontierLayer {
     const r = this.radius * (1 + FRONTIER_ALT)
     for (const entry of entries) {
       const color = rgb(colorOf(entry))
-      for (const path of inkPathsOf(entry, inkOf(entry))) pushLine(path, color, r, positions, colors)
+      // A contested zone's outline is the one dashed line on the globe; every
+      // other entry here is a frontier somebody agrees about. See `pushDashed`.
+      const push = entry.kind === 'contested' ? pushDashed : pushLine
+      for (const path of inkPathsOf(entry, inkOf(entry))) push(path, color, r, positions, colors)
     }
     this.geometry.dispose()
     this.geometry = new BufferGeometry()

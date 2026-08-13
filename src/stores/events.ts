@@ -655,11 +655,35 @@ export const useEventStore = defineStore('events', {
      * the one thing that changes and it changes back the moment the reader steps
      * off. A child with no drawing of its own falls through to the parent's
      * resolution rather than clearing the map: absence of ink is not a statement.
+     *
+     * WITH NO FOCUS AT ALL, THE SELECTION'S DRAWING SHOWS (round 60,
+     * docs/design/drawings-v2.md). Ink used to reach the map only through focus
+     * mode, which made an ordinary event's `drawing` unreachable ground: the
+     * panel opened, the globe drew the generic area cap, and the plan the author
+     * checked against the event's own text never appeared anywhere. One
+     * sentence — *a selected event with a drawing shows it* — and it is spelt
+     * here rather than in a second getter, because "what ink is on the map" has
+     * to have exactly one answer for the renderer's key comparison to mean
+     * anything.
+     *
+     * FOCUS STILL WINS. Not "the drawing that exists", but "the focus's, and the
+     * selection's only when there is no focus": while a saga is open, a child
+     * battle selected inside it must not replace the campaign's plan with its
+     * own (that is the rule this getter's first paragraph exists for), and a
+     * focused event with no drawing must leave the ground clear rather than fall
+     * through to whatever is selected. The condition is therefore on `focus` —
+     * the stack — and not on whether the focused item resolved to ink.
      */
     focusDrawing(state): Drawing | undefined {
+      const ctx = { mode: useSettingsStore().mode }
+      if (!this.focus) {
+        const sel = this.selected
+        return sel?.kind === 'event' && sel.drawing
+          ? resolveFocusInk(sel, undefined, ctx)
+          : undefined
+      }
       const item = this.focused
       if (item?.kind !== 'event') return undefined
-      const ctx = { mode: useSettingsStore().mode }
       const child = this.entranceStep?.child
       if (child?.kind === 'event' && child.drawing) return resolveFocusInk(child, undefined, ctx)
       return resolveFocusInk(item, state.stepId, ctx)

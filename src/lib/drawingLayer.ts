@@ -8,6 +8,7 @@ import {
   InterleavedBufferAttribute,
   Mesh,
   MeshBasicMaterial,
+  ShapeUtils,
   Vector2,
   type Object3D,
   type Scene,
@@ -21,6 +22,7 @@ import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 import {
   ROUTE_SEGMENT_DEG,
   ROUTE_STYLE,
+  areaCapRing,
   densifyPath,
   directionOf,
   flowPhase,
@@ -36,11 +38,14 @@ import {
   MARKER_SIZE_DEG,
   THRUST_HEAD_SCALE,
   THRUST_WIDTH_DEG,
+  ZONE_FILL_OPACITY,
+  ZONE_OUTLINE_WIDTH,
   type Drawing,
   type DrawingSpec,
+  type FrontlineTicks,
   type MarkerStyle,
 } from './drawing'
-import { markInk } from './present/ink'
+import { markInk, STROKE_CASING } from './present/ink'
 
 /**
  * The renderer for a `Drawing` (lib/drawing.ts): a three.js group built from the
@@ -492,6 +497,200 @@ export function ribbonGeometry(
   return g
 }
 
+/* -------------------------------------------------------------- teeth */
+
+/**
+ * How a front's teeth are spaced and how long they are, as fractions of the
+ * front's OWN length.
+ *
+ * Not in pixels and not in degrees of arc, and both alternatives were the
+ * obvious ones. Pixels would need a screen-space perpendicular, which a fat line
+ * has and a piece of geometry does not; degrees of arc would put the same tooth
+ * on a 20° front across Russia and on a 1° front across a bridgehead, so one
+ * would be a comb and the other a bristle. A fraction of the line's own length
+ * makes the mark scale-free *within a drawing*: the June front and the December
+ * front are combed the same way whatever size they are, which is the only
+ * comparison a reader ever makes.
+ *
+ * 0.055 puts about eighteen teeth on a front — a comb, not a zip — and 0.022
+ * makes each a little over a third of the gap between them, which is the
+ * proportion a hachured line is drawn at.
+ */
+export const FRONTLINE_TICKS = { every: 0.055, length: 0.022 } as const
+
+/**
+ * The teeth on a front, as disjoint segments: `[from, to]` pairs walking the
+ * line at a constant spacing, each standing perpendicular on the named side.
+ *
+ * "Left" is left OF TRAVEL along the polyline — the same frame `ribbonGeometry`
+ * offsets a thrust's edges in, so the two crosswise constructions on this layer
+ * cannot come to disagree about which side is which.
+ *
+ * Pure geometry over an already densified path, so it is a test's whole subject:
+ * count, spacing, side, length.
+ */
+export function tickSegments(pts: GeoPath, side: FrontlineTicks): [GeoPath[number], GeoPath[number]][] {
+  if (pts.length < 2) return []
+  const seg: number[] = []
+  let total = 0
+  for (let i = 1; i < pts.length; i++) {
+    const d = separationDeg(pts[i - 1][1], pts[i - 1][0], pts[i][1], pts[i][0])
+    seg.push(d)
+    total += d
+  }
+  if (!(total > 0)) return []
+  const step = total * FRONTLINE_TICKS.every
+  const len = total * FRONTLINE_TICKS.length
+  const sign = side === 'left' ? 1 : -1
+  const out: [GeoPath[number], GeoPath[number]][] = []
+  // Half a step in from each end: a tooth standing exactly on the end of a front
+  // reads as the front turning a corner.
+  let next = step / 2
+  let walked = 0
+  for (let i = 1; i < pts.length && out.length < 400; i++) {
+    const d = seg[i - 1]
+    while (next <= walked + d && next < total) {
+      const t = d > 0 ? (next - walked) / d : 0
+      const a = pts[i - 1]
+      const b = pts[i]
+      const lng = a[0] + (((b[0] - a[0] + 540) % 360) - 180) * t
+      const lat = a[1] + (b[1] - a[1]) * t
+      // the heading here, as an east/north pair, and the perpendicular of it
+      const dLng = ((b[0] - a[0] + 540) % 360) - 180
+      const east = dLng * Math.cos(lat * RAD)
+      const norm2 = Math.hypot(east, b[1] - a[1]) || 1
+      const px = (-(b[1] - a[1]) / norm2) * sign
+      const py = (east / norm2) * sign
+      out.push([
+        [lng, lat],
+        [lng + (px * len) / Math.max(Math.cos(lat * RAD), 1e-6), lat + py * len],
+      ])
+      next += step
+    }
+    walked += d
+  }
+  return out
+}
+
+/* --------------------------------------------------------------- zone cap */
+
+/**
+ * A ZONE'S CAP — a closed ring, filled, lying on the sphere.
+ *
+ * Three steps, and each is one of this app's existing decisions rather than a
+ * new one:
+ *
+ *  1. `areaCapRing` closes the authored ring and densifies its EDGES onto great
+ *     circles, exactly as an event footprint's cap is prepared (lib/paths.ts).
+ *  2. `ShapeUtils.triangulateShape` — three's own earcut — triangulates it in
+ *     lng/lat. The same library and the same planar assumption three-globe's
+ *     polygon layer makes about a cap; the reason the ring is densified first is
+ *     written out at `areaCapRing`.
+ *  3. …and then every triangle is subdivided to a common order and each vertex
+ *     lifted onto the sphere. That step is the one earcut cannot do for us: a
+ *     triangle spanning 5° drawn as a flat sheet sags R(1-cos 2.5°) = 6 km below
+ *     the sphere it is meant to lie on, which is deeper than `SURFACE_ALT` lifts
+ *     it, so the middle of a pocket would be swallowed by its own planet. At the
+ *     resolution a route is densified to (`ROUTE_SEGMENT_DEG`, 1°) the sag is
+ *     240 m — the same margin every other grounded thing here is built with.
+ *
+ * The subdivision order is GLOBAL rather than per triangle, because that is what
+ * makes the mesh crack-free: two triangles sharing an edge cut it at the same
+ * fractions and meet exactly, where a per-triangle order leaves a T-junction and
+ * a hairline of ground showing through a wash.
+ *
+ * Longitudes are unwrapped against the first point before triangulating, so a
+ * ring straddling the antimeridian is one shape rather than two continents
+ * apart; `unit` is periodic in longitude, so nothing has to be wrapped back.
+ */
+export const ZONE_MAX_TRIANGLES = 4000
+
+export function capGeometry(
+  ring: GeoPath,
+  radius: number,
+  alt: number,
+  maxEdgeDeg = ROUTE_SEGMENT_DEG,
+): BufferGeometry {
+  const g = new BufferGeometry()
+  if (ring.length < 3) {
+    g.setAttribute('position', new Float32BufferAttribute([], 3))
+    return g
+  }
+  const closed = areaCapRing(ring)
+  // unwrapped, so the planar triangulation sees one shape across the seam.
+  // `Vector2` and not a bare pair: `triangulateShape` drops a duplicated end
+  // point with `.equals`, so the contour has to be three's own type.
+  const flat: Vector2[] = []
+  for (const [lng, lat] of closed) {
+    const prev = flat.length ? flat[flat.length - 1].x : lng
+    flat.push(new Vector2(prev + (((lng - prev + 540) % 360) - 180), lat))
+  }
+  const faces = ShapeUtils.triangulateShape(flat, [])
+  if (!faces.length) {
+    g.setAttribute('position', new Float32BufferAttribute([], 3))
+    return g
+  }
+  // the order every triangle is cut to: enough for the worst edge, capped so a
+  // ring authored at continental scale cannot ask for a million triangles
+  let worst = 0
+  for (const [a, b, c] of faces)
+    for (const [p, q] of [
+      [a, b],
+      [b, c],
+      [c, a],
+    ])
+      worst = Math.max(worst, separationDeg(flat[p].y, flat[p].x, flat[q].y, flat[q].x))
+  const wanted = Math.max(1, Math.ceil(worst / maxEdgeDeg))
+  const n = Math.max(1, Math.min(wanted, Math.floor(Math.sqrt(ZONE_MAX_TRIANGLES / faces.length))))
+  const pos: number[] = []
+  const at = (a: Vector2, b: Vector2, c: Vector2, i: number, j: number) => {
+    const u = i / n
+    const v = j / n
+    return scale(
+      unit(a.x + (b.x - a.x) * u + (c.x - a.x) * v, a.y + (b.y - a.y) * u + (c.y - a.y) * v),
+      radius * (1 + alt),
+    )
+  }
+  for (const [ia, ib, ic] of faces) {
+    const a = flat[ia]
+    const b = flat[ib]
+    const c = flat[ic]
+    for (let i = 0; i < n; i++)
+      for (let j = 0; i + j < n; j++) {
+        pos.push(...at(a, b, c, i, j), ...at(a, b, c, i + 1, j), ...at(a, b, c, i, j + 1))
+        if (i + j + 2 <= n)
+          pos.push(
+            ...at(a, b, c, i + 1, j),
+            ...at(a, b, c, i + 1, j + 1),
+            ...at(a, b, c, i, j + 1),
+          )
+      }
+  }
+  g.setAttribute('position', new Float32BufferAttribute(pos, 3))
+  return g
+}
+
+/**
+ * Where a zone's own label goes: the mean of its ring, with longitudes unwrapped
+ * so a ring across the seam does not label itself on the far side of the planet.
+ *
+ * A centroid would be more correct for a crescent and is not worth the code: a
+ * zone is a pocket or a perimeter, its label is a word inside it, and the reader
+ * cannot tell a centroid from a mean of a ring they can see.
+ */
+export function ringCentre(ring: GeoPath): [number, number] {
+  let lng = ring[0][0]
+  let sumLng = 0
+  let sumLat = 0
+  for (const [x, y] of ring) {
+    lng += ((x - lng + 540) % 360) - 180
+    sumLng += lng
+    sumLat += y
+  }
+  const mean = sumLng / ring.length
+  return [((mean + 540) % 360) - 180, sumLat / ring.length]
+}
+
 /**
  * Where a thrust's arrowhead sits and which way it points.
  *
@@ -575,20 +774,26 @@ export function drawingExtentDeg(drawing: Drawing | undefined): number {
 }
 
 /**
- * Routes sit lowest, then frontlines, then thrusts, then markers, then labels.
+ * Zones sit lowest, then routes, then frontlines, then thrusts, then markers,
+ * then labels.
  *
  * This is a *paint* order, not a height order: every overlay is at exactly
  * `SURFACE_ALT` and writes no depth, so which one wins where they cross is
  * decided here and nowhere else. That is deliberate — the previous arrangement
  * separated the kinds by a thousandth of a radius each to keep them from
  * z-fighting, and those thousandths were 6 km of parallax apiece.
+ *
+ * A zone is under everything because it is a WASH: it says what was inside a
+ * ring, and a wash laid over the arrows that closed the ring would be exactly
+ * the "battle plan read through a filter" the area cap steps aside to avoid.
  */
 const KIND_ORDER: Record<DrawingSpec['type'], number> = {
-  route: 0,
-  frontline: 1,
-  thrust: 2,
-  marker: 3,
-  label: 4,
+  zone: 0,
+  route: 1,
+  frontline: 2,
+  thrust: 3,
+  marker: 4,
+  label: 5,
 }
 
 export class DrawingLayer {
@@ -714,6 +919,9 @@ export class DrawingLayer {
         break
       case 'thrust':
         this.addThrust(spec, color, alt, order)
+        break
+      case 'zone':
+        this.addZone(spec, color, alt, order)
         break
       case 'marker':
         this.addMarker(spec, hex, alt, order)
@@ -870,6 +1078,22 @@ export class DrawingLayer {
     }
   }
 
+  /**
+   * ONE FRONTLINE: a casing, its teeth, then the stroke and its teeth over them.
+   *
+   * The two passes are the whole of what round 60 added here. A front is drawn
+   * over whatever the map has — a hatched sea, a snowfield, a thrust ribbon, and
+   * on the drawn map a parchment whose value is not far off half the palette —
+   * and a bare 2.4 px line reads on some of that and dissolves into the rest.
+   * `STROKE_CASING` (lib/present/ink.ts) is the same rim a route has always
+   * carried, and this is it promoted to every stroke.
+   *
+   * The casing DASHES WITH THE STROKE, where a route's is solid under a dashed
+   * line. The two dashes mean opposite things: a route's is decoration and its
+   * casing's job is to say the pieces are one route, while a front's dash is the
+   * data — approximate, projected, or in dispute — and a solid rim under it
+   * would put the line back that the author deliberately broke.
+   */
   private addLine(
     path: GeoPath,
     color: Color,
@@ -885,51 +1109,99 @@ export class DrawingLayer {
     // disappears into the planet between its own vertices.
     const pts = densifyPath(path, ROUTE_SEGMENT_DEG)
     const { positions } = this.place(pts, alt)
-    const geom = new LineGeometry()
-    geom.setPositions(positions)
     const dashed = spec.dash === 'dashed'
     const width = spec.width ?? FRONTLINE_WIDTH
-    // Dash sizes are in world units for LineMaterial, so they are scaled off the
-    // globe's own radius: the same numbers then give the same-looking dash
-    // whatever the globe is sized at.
-    const mat = new LineMaterial({
-      color: color.getHex(),
-      linewidth: width,
-      dashed,
-      dashScale: 1,
-      dashSize: this.radius * 0.008,
-      gapSize: this.radius * 0.006,
-      transparent: true,
-      opacity: 0.95,
-      depthWrite: false,
-      ...groundBias,
-    })
-    mat.resolution.copy(this.resolution)
-    const line = new Line2(geom, mat)
-    if (dashed) line.computeLineDistances()
-    line.renderOrder = 12 + order
-    this.group.add(line)
-    this.geometries.push(geom)
-    this.materials.push(mat)
+    // The teeth, if this front names a side. Built from the same densified
+    // polyline the stroke is, so they stand on the line rather than near it.
+    const teeth = spec.ticks
+      ? tickSegments(pts, spec.ticks).flatMap(([a, b]) => [
+          ...this.place([a], alt).positions,
+          ...this.place([b], alt).positions,
+        ])
+      : []
+    // Casings first and half a step below, then the strokes: two transparent
+    // sheets at exactly the same depth have nothing to sort by, so paint order
+    // decides it here (the same half-step `addMarker` uses).
+    for (const [hex, opacity, extra, bump] of [
+      // the casing…
+      [new Color(STROKE_CASING.color).getHex(), STROKE_CASING.opacity, STROKE_CASING.widen, 0],
+      // …and the stroke over it
+      [color.getHex(), 0.95, 0, 0.5],
+    ] as const) {
+      // Dash sizes are in world units for LineMaterial, so they are scaled off
+      // the globe's own radius: the same numbers then give the same-looking dash
+      // whatever the globe is sized at.
+      const mat = new LineMaterial({
+        color: hex,
+        linewidth: width + extra,
+        dashed,
+        dashScale: 1,
+        dashSize: this.radius * 0.008,
+        gapSize: this.radius * 0.006,
+        transparent: true,
+        opacity,
+        depthWrite: false,
+        ...groundBias,
+      })
+      mat.resolution.copy(this.resolution)
+      const geom = new LineGeometry()
+      geom.setPositions(positions)
+      const line = new Line2(geom, mat)
+      if (dashed) line.computeLineDistances()
+      line.renderOrder = 12 + order + bump
+      this.group.add(line)
+      this.geometries.push(geom)
+      this.materials.push(mat)
+      if (!teeth.length) continue
+      // Every tooth in ONE object: `LineSegmentsGeometry` holds disjoint
+      // segments, so eighteen teeth are eighteen marks for one draw call. Solid
+      // whatever the front does — a tooth is shorter than one dash.
+      const tg = new LineSegmentsGeometry()
+      tg.setPositions(teeth)
+      const tm = new LineMaterial({
+        color: hex,
+        // a hair thinner than the line they hang off, which is how a hachure is
+        // drawn and what keeps eighteen of them from out-weighing the front
+        linewidth: width * 0.8 + extra,
+        transparent: true,
+        opacity,
+        depthWrite: false,
+        ...groundBias,
+      })
+      tm.resolution.copy(this.resolution)
+      const marks = new LineSegments2(tg, tm)
+      marks.renderOrder = 12 + order + bump
+      this.group.add(marks)
+      this.geometries.push(tg)
+      this.materials.push(tm)
+    }
   }
 
-  private addThrust(
-    spec: Extract<DrawingSpec, { type: 'thrust' }>,
+  /**
+   * ONE ZONE: a wash inside the ring, and a dashed edge round it.
+   *
+   * The fill is `capGeometry` — the same preparation an event footprint's cap
+   * gets, triangulated and dropped onto the sphere (see there). The edge is an
+   * ordinary dashed FRONTLINE through the closed ring, which is not a shortcut:
+   * a zone's boundary is a line on this map like any other, so it gets the same
+   * densification, the same casing and the same screen-pixel weight, and there
+   * is one piece of code that knows how to put a line on a sphere.
+   *
+   * Dashed on purpose. A pocket's edge is where a ring closed, not a surveyed
+   * frontier, and every zone this vocabulary is for — a siege perimeter, a
+   * bridgehead, an occupation area — is an approximation of the same kind.
+   */
+  private addZone(
+    spec: Extract<DrawingSpec, { type: 'zone' }>,
     color: Color,
     alt: number,
     order: number,
   ) {
-    const w = spec.width ?? THRUST_WIDTH_DEG
-    const headLen = w * THRUST_HEAD_SCALE
-    const spine = densifyPath(spec.path, ROUTE_SEGMENT_DEG)
-    const head = headOf(spine)
-    const shaft = trimEnd(spine, headLen)
-    const taper = spec.taper !== false
-    const geom = ribbonGeometry(shaft, (t) => w * (taper ? 0.42 + 0.58 * t : 1), this.radius, alt)
+    const geom = capGeometry(spec.ring, this.radius, alt)
     const mat = new MeshBasicMaterial({
       color,
       transparent: true,
-      opacity: 0.82,
+      opacity: ZONE_FILL_OPACITY,
       ...flatSheet,
       depthWrite: false,
       ...groundBias,
@@ -939,38 +1211,113 @@ export class DrawingLayer {
     this.group.add(mesh)
     this.geometries.push(geom)
     this.materials.push(mat)
+    const [first] = spec.ring
+    const last = spec.ring[spec.ring.length - 1]
+    const closed =
+      first[0] === last[0] && first[1] === last[1] ? spec.ring : [...spec.ring, first]
+    this.addLine(
+      closed,
+      color,
+      { type: 'frontline', paths: [], dash: 'dashed', width: ZONE_OUTLINE_WIDTH },
+      alt,
+      order,
+    )
+    if (spec.label) this.addLabel({ type: 'label', pos: ringCentre(spec.ring), text: spec.label }, alt)
+  }
 
-    // …and the head, as real geometry oriented on the spine's end tangent.
-    //
-    // Anchored at the SHAFT'S tip, not at the spine's, and shaped so its base
-    // sits at y=0: the shaft was trimmed back by exactly `headLen` to make room,
-    // so a head centred on the spine's end floats clear of the line it belongs
-    // to (it did, visibly, on every arrow). Built this way the two meet, and the
-    // head's point lands on the spine's real end — where the advance stopped.
+  /**
+   * ONE THRUST: a cased ribbon on a SMOOTHED spine, with the head on the curve.
+   *
+   * The spine goes through `routePolyline` — centripetal Catmull-Rom through the
+   * authored waypoints, then great-circle densification — which is the same
+   * machinery a route's curve comes from, and deliberately so: there is one
+   * owner of curvature on this globe (lib/paths.ts) and an axis of advance is a
+   * curve for the same reason a voyage is. Authored as five points and drawn as
+   * five chords, Army Group Centre read as a survey traverse; through the
+   * spline it reads as an arm swung round Minsk. Everything downstream follows
+   * for free — `headOf` takes its bearing off the last *smoothed* segment, so
+   * the arrowhead points where the advance was actually going at the end rather
+   * than along the last authored chord.
+   *
+   * Casing, then fill, in two passes over the same construction at two widths:
+   * `STROKE_CASING.outset` is in units of the shaft's own half-width, since a
+   * ribbon is measured in degrees of arc and a rim fixed in pixels would swamp a
+   * narrow axis and vanish under a wide one.
+   */
+  private addThrust(
+    spec: Extract<DrawingSpec, { type: 'thrust' }>,
+    color: Color,
+    alt: number,
+    order: number,
+  ) {
+    const w = spec.width ?? THRUST_WIDTH_DEG
+    const headLen = w * THRUST_HEAD_SCALE
+    const spine = routePolyline(spec.path)
+    const head = headOf(spine)
+    const shaft = trimEnd(spine, headLen)
+    const taper = spec.taper !== false
     const tip = shaft[shaft.length - 1]
     // Half-width of the head, in units of its length: wider than the shaft by
     // enough to read as an arrowhead rather than as the line getting pointy.
     const k = (w * 2.0) / headLen
-    const headGeom = fanGeometry(
-      [
+    for (const [hex, opacity, out, bump] of [
+      [new Color(STROKE_CASING.color), STROKE_CASING.opacity, w * STROKE_CASING.outset, 0],
+      [color, 0.82, 0, 0.5],
+    ] as const) {
+      const mat = new MeshBasicMaterial({
+        color: hex,
+        transparent: true,
+        opacity,
+        ...flatSheet,
+        depthWrite: false,
+        ...groundBias,
+      })
+      const geom = ribbonGeometry(
+        shaft,
+        (t) => w * (taper ? 0.42 + 0.58 * t : 1) + out,
+        this.radius,
+        alt,
+      )
+      const mesh = new Mesh(geom, mat)
+      mesh.renderOrder = 12 + order + bump
+      this.group.add(mesh)
+      this.geometries.push(geom)
+      this.materials.push(mat)
+
+      // …and the head, as real geometry oriented on the spine's end tangent.
+      //
+      // Anchored at the SHAFT'S tip, not at the spine's, and shaped so its base
+      // sits at y=0: the shaft was trimmed back by exactly `headLen` to make
+      // room, so a head centred on the spine's end floats clear of the line it
+      // belongs to (it did, visibly, on every arrow). Built this way the two
+      // meet, and the head's point lands on the spine's real end — where the
+      // advance stopped. The casing pass scales the whole glyph about that base
+      // by the same rim the shaft grew by, so the outline stands a constant
+      // distance outside the arrow all the way round.
+      const s = 1 + out / headLen
+      const headGeom = fanGeometry(
         [
-          [0, 1],
-          [-k, 0],
-          [0, 0.18],
-          [k, 0],
+          (
+            [
+              [0, 1],
+              [-k, 0],
+              [0, 0.18],
+              [k, 0],
+            ] as [number, number][]
+          ).map(([x, y]) => [x * s, y * s] as [number, number]),
         ],
-      ],
-      tip[0],
-      tip[1],
-      headLen,
-      head.bearing,
-      this.radius,
-      alt,
-    )
-    const headMesh = new Mesh(headGeom, mat)
-    headMesh.renderOrder = 12 + order
-    this.group.add(headMesh)
-    this.geometries.push(headGeom)
+        tip[0],
+        tip[1],
+        headLen,
+        head.bearing,
+        this.radius,
+        alt,
+      )
+      const headMesh = new Mesh(headGeom, mat)
+      headMesh.renderOrder = 12 + order + bump
+      this.group.add(headMesh)
+      this.geometries.push(headGeom)
+    }
   }
 
   /**

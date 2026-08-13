@@ -271,11 +271,8 @@ export function visibleNations(nations: Nation[], t: Year, limit = MAX_VISIBLE):
  * in force, and which ring of it. The cache is bounded by the dataset (a couple
  * of keyframes per polity) and the data is static, so nothing is ever evicted.
  */
-export interface BorderRing {
+export interface RingEntry {
   nation: Nation
-  /** Only one kind of border is drawn; the field keeps the globe's
-   * polygon-entry union discriminated against event areas. */
-  kind: 'full'
   /** The piece's outer ring, exactly as stored — open, undensified. */
   ring: Ring
   /**
@@ -319,6 +316,26 @@ export interface BorderRing {
    */
   coast: Ring[]
 }
+
+/**
+ * One polity's ring. `kind` is what keeps the globe's polygon-entry union
+ * discriminated against an event's footprint and against a contested zone.
+ */
+export interface BorderRing extends RingEntry {
+  kind: 'full'
+}
+
+/**
+ * ANYTHING THE INK LAYER CAN STROKE: a polity's ring, or a contested zone's.
+ *
+ * The two are the same shape on purpose — the same `frontier`, `coast` and
+ * `coordinates` split, produced by the same functions in the same build — so
+ * `FrontierLayer` has one code path and the zone's outline cannot drift out of
+ * agreement with the frontier it shares. What differs is decided per entry from
+ * `kind`: a contested outline is dashed and drawn in the disputed pen (see
+ * `pushDashed` and `frontierInkPlan`).
+ */
+export type InkEntry = RingEntry & { kind: 'full' | 'contested' }
 
 /** Which part of a polity's boundary the ink layer draws. See `inkPathsOf`. */
 export type FrontierInk = 'all' | 'frontier' | 'coast' | 'none'

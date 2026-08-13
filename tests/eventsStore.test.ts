@@ -1711,7 +1711,18 @@ describe('stepped focus', () => {
     events.select('op')
     events.selectStep('kiev')
     expect(events.stepId).toBeUndefined()
-    expect(events.focusDrawing).toBeUndefined()
+    // …and the ink on the map is the WHOLE plan, not the step's cut of it.
+    // Round 60 gave a selected event's drawing to the map (Part 2 of
+    // docs/design/drawings-v2.md), so "the step did nothing" can no longer be
+    // spelt as "there is no ink"; it is spelt as "the ink is unstepped", which
+    // is the stronger claim and the one that would catch a step leaking out of
+    // focus mode.
+    expect(texts(events)).toEqual([
+      'June front',
+      'Army Group Centre',
+      'Kiev pocket',
+      'December front',
+    ])
   })
 
   /* --- the step belongs to the context, and never outlives it ------------ */
@@ -2179,5 +2190,137 @@ describe('focus pins the minor children', () => {
     ])
     events.showOnMap('barbarossa')
     expect(events.focusChildren).toHaveLength(FOCUS_CHILD_CAP)
+  })
+})
+
+/**
+ * ROUND 60, PART 2 — A SELECTED EVENT WITH A DRAWING SHOWS IT.
+ *
+ * Ink used to reach the map only through focus mode, so an ordinary event's
+ * `drawing` was unreachable ground: the panel opened, the globe drew the generic
+ * area cap, and the plan the author checked against the event's own text never
+ * appeared anywhere (docs/design/drawings-v2.md, Part 2).
+ *
+ * Three claims, and the middle one is the one the saga rules turn on: FOCUS
+ * WINS. While a campaign is open, a child battle selected inside it must not
+ * replace the campaign's plan with its own (sagas.md, and the paragraph on
+ * `focusDrawing`), and an entrance still previews with its child's ink (rule
+ * 15). The fallback is on "there is no focus", not on "the focus resolved to
+ * nothing".
+ */
+describe('selection ink', () => {
+  const drawn = (id: string, extra: Partial<RawEvent> = {}): RawEvent => ({
+    id,
+    name: id,
+    start: 1941,
+    lat: 53.9,
+    lng: 27.6,
+    priority: 70,
+    tags: ['war'],
+    summary: '',
+    drawing: { layers: [{ type: 'label', pos: [30, 54], text: `${id} plan` }] },
+    ...extra,
+  })
+  const plain = (id: string, extra: Partial<RawEvent> = {}): RawEvent => ({
+    id, name: id, start: 1941, lat: 54, lng: 28, priority: 70, tags: ['war'], summary: '',
+    ...extra,
+  })
+  const texts = (e: ReturnType<typeof useEventStore>) =>
+    (e.focusDrawing?.layers ?? []).map((l) => (l as { text: string }).text)
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useTimeStore().focusTime(1941)
+  })
+
+  it('draws a plain selected event"s plan, with no focus anywhere', () => {
+    const events = useEventStore()
+    events.adopt([drawn('battle')])
+    events.select('battle')
+    expect(events.focus).toBeUndefined()
+    expect(texts(events)).toEqual(['battle plan'])
+  })
+
+  it('draws nothing for a selected event that has no plan', () => {
+    const events = useEventStore()
+    events.adopt([plain('treaty')])
+    events.select('treaty')
+    expect(events.focusDrawing).toBeUndefined()
+  })
+
+  it('draws nothing for a selected person, who is an article and not a map', () => {
+    const events = useEventStore()
+    events.adopt([
+      { id: 'nelson', kind: 'person', name: 'Nelson', start: 1758, end: 1805, priority: 70, tags: ['war'], summary: '' } as unknown as RawEvent,
+    ])
+    events.select('nelson')
+    expect(events.focusDrawing).toBeUndefined()
+  })
+
+  it('clears on deselect, exactly as the panel closes', () => {
+    const events = useEventStore()
+    events.adopt([drawn('battle')])
+    events.select('battle')
+    expect(events.focusDrawing).toBeDefined()
+    events.select(undefined)
+    expect(events.focusDrawing).toBeUndefined()
+  })
+
+  it('lets the FOCUS win when both exist: a saga keeps its own plan', () => {
+    const events = useEventStore()
+    events.adopt([drawn('op'), drawn('battle', { parent: 'op', lat: 54, lng: 28 })])
+    events.showOnMap('op')
+    events.select('battle') // a child opened inside the campaign
+    expect(events.focus).toEqual({ itemId: 'op' })
+    expect(texts(events)).toEqual(['op plan'])
+  })
+
+  it('leaves the ground clear when the focus has no plan of its own', () => {
+    // …rather than falling through to whatever happens to be selected. A focused
+    // item with nothing drawn is a statement about the map, and the selection
+    // must not answer it.
+    const events = useEventStore()
+    events.adopt([plain('op'), drawn('battle', { parent: 'op', lat: 54, lng: 28 })])
+    events.showOnMap('op')
+    events.select('battle')
+    expect(events.focusDrawing).toBeUndefined()
+  })
+
+  it('gives the map back to the selection when the focus is left', () => {
+    const events = useEventStore()
+    events.adopt([drawn('op'), drawn('battle', { parent: 'op', lat: 54, lng: 28 })])
+    events.showOnMap('battle')
+    expect(texts(events)).toEqual(['battle plan'])
+    events.dismiss() // out of focus mode altogether: a clean map
+    expect(events.focus).toBeUndefined()
+    expect(events.focusDrawing).toBeUndefined()
+    // …and a plain click on the same pin puts the plan back, through the
+    // selection this time rather than through the mode
+    events.select('battle')
+    expect(texts(events)).toEqual(['battle plan'])
+  })
+
+  it('resolves the selection through the SAME resolver, with no step', () => {
+    // an event that is itself stepped, selected but not focused: every layer,
+    // including the ones a step would have filtered out
+    const events = useEventStore()
+    events.adopt([
+      drawn('op', {
+        drawing: {
+          layers: [
+            { type: 'label', pos: [24, 53], text: 'June', at: 0 },
+            { type: 'label', pos: [30, 54], text: 'timeless' },
+            { type: 'label', pos: [37, 55], text: 'December', at: 0.95 },
+          ],
+        },
+        end: 1945,
+        steps: [
+          { id: 'june', name: 'June', at: 0 },
+          { id: 'december', name: 'December', at: 0.95 },
+        ],
+      } as Partial<RawEvent>),
+    ])
+    events.select('op')
+    expect(texts(events)).toEqual(['June', 'timeless', 'December'])
   })
 })

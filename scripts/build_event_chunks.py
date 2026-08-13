@@ -310,7 +310,11 @@ MARKER_STYLES = ('cross', 'star', 'dot', 'arrow')
 
 
 def check_drawing(e: dict, what: str, d) -> None:
-    """One drawing: `layers`, five kinds, all [lng, lat].
+    """One drawing: `layers`, five authorable kinds, all [lng, lat].
+
+    frontline, thrust, zone, marker, label. (`route` is the sixth kind the
+    renderer knows and the one kind nobody writes: it is generated from an
+    event's own `paths` by `routeDrawingFor`.)
 
     Mirrors `isDrawingSpec` in src/lib/drawing.ts. Checked here so a mistyped
     layer kind or a swapped coordinate pair is a build failure rather than a
@@ -339,6 +343,17 @@ def check_drawing(e: dict, what: str, d) -> None:
                 check_line(e, f'{where} path {j}', p)
             if layer.get('dash') not in (None, 'solid', 'dashed'):
                 sys.exit(f'{e["id"]}: {where} dash must be "solid" or "dashed"')
+            if layer.get('ticks') not in (None, 'left', 'right'):
+                sys.exit(f'{e["id"]}: {where} ticks must be "left" or "right" (of travel)')
+        elif t == 'zone':
+            # A ring, authored OPEN like an event's `area`, and closed by the
+            # renderer. Three points is what makes it enclose anything: two is a
+            # line, and a line is a frontline.
+            ring = layer.get('ring')
+            if not isinstance(ring, list) or len(ring) < 3:
+                sys.exit(f'{e["id"]}: {where} (zone) needs a "ring" of at least three points')
+            for j, pt in enumerate(ring):
+                check_point(e, f'{where} ring point {j}', pt)
         elif t == 'thrust':
             check_line(e, f'{where} (thrust)', layer.get('path'))
             if 'taper' in layer and not isinstance(layer['taper'], bool):

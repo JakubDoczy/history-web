@@ -439,7 +439,7 @@ describe('the vendored rivers', () => {
 })
 
 describe('the corpus', () => {
-  const nations = authored as unknown as {
+  const nations = authored.nations as unknown as {
     id: string
     keyframes: { time: number; rings: [number, number][][]; follows?: Record<string, unknown>[] }[]
   }[]
@@ -479,7 +479,7 @@ describe('the corpus', () => {
 
   it('ships the derived geometry: a declared frontier is in the built file', () => {
     const rivers = follows.decodeRivers(riverFile)
-    const built = clipped as unknown as Nation[]
+    const built = clipped.nations as unknown as Nation[]
     // Joseon is the cleanest case in the corpus — a peninsula whose only inland
     // frontier is two declared rivers, so nearly all of its ink should be
     // recognised as derived.

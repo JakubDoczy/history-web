@@ -15,10 +15,10 @@ import {
   type Nation,
   type Ring,
 } from '../src/lib/nations'
-import rawNations from '../src/data/nations.clipped.json'
+import clippedFile from '../src/data/nations.clipped.json'
 
 /** The shipped corpus, typed once for every describe that walks it. */
-const nationsCorpus = rawNations as unknown as Nation[]
+const nationsCorpus = clippedFile.nations as unknown as Nation[]
 
 /**
  * THE BUILD STEP, tested where it is cheap to test it.
@@ -299,7 +299,7 @@ describe('the overlap validator', () => {
  * run longer than its ring would ink edges that do not exist.
  */
 describe('nations.clipped.json', () => {
-  const nations = rawNations as unknown as Nation[]
+  const nations = clippedFile.nations as unknown as Nation[]
 
   it('is the same polities as the authoring file', () => {
     // 73 through round 55; 75 from round 57, which added Joseon Korea and the
@@ -491,7 +491,7 @@ describe('frontierRuns', () => {
  * is a better answer to "who held this" than a fifteen-year placeholder.
  */
 describe('the Korean peninsula', () => {
-  const nations = rawNations as unknown as Nation[]
+  const nations = clippedFile.nations as unknown as Nation[]
   const joseon = nations.find((n) => n.id === 'joseon')!
   const empire = nations.find((n) => n.id === 'koreanempire')!
   const japan = nations.find((n) => n.id === 'japan')!

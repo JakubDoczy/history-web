@@ -20,6 +20,8 @@ import type { Drawing } from '../lib/drawing'
 import { DrawingLayer, SURFACE_ALT } from '../lib/drawingLayer'
 import { FrontierLayer, inkPathsOf } from '../lib/frontierLayer'
 import type { Ring } from '../lib/nations'
+import { hatchMaterial, hatchTone } from '../lib/hatch'
+import type { ContestedRing } from '../lib/contested'
 import { GlobeSurface } from '../lib/globeSurface'
 import { RenderPump } from '../lib/renderPump'
 import { firstFrame } from '../lib/firstFrame'
@@ -42,6 +44,7 @@ import { pinElement, clusterElement } from '../lib/eventPins'
 import {
   clusterHolds,
   COASTAL_INK,
+  CONTESTED,
   frontierInkPlan,
   NATION_FILL_ALPHA,
   onGround,
@@ -149,7 +152,7 @@ type EventAreaEntry = {
   /** GeoJSON Polygon `coordinates`, closed — held, like the entry itself. */
   coordinates: Ring[]
 }
-type PolyEntry = BorderEntry | EventAreaEntry
+type PolyEntry = BorderEntry | EventAreaEntry | ContestedRing
 
 /** What the polygon layer was last given; see the watcher that fills it. */
 let lastPolys: PolyEntry[] = []
@@ -239,6 +242,20 @@ const capMaterial = (color: string, opacity: number): MeshBasicMaterial => {
     })
     capMaterials.set(key, m)
   }
+  return m
+}
+
+/**
+ * …and the hatched one, for a contested zone. Held on exactly the same terms
+ * and in the same map, so `dispose` frees them together: one material per pair
+ * of stripe colours per mode, of which there are two on the whole globe today.
+ * See lib/hatch.ts for why this is a patched `MeshBasicMaterial` and not a
+ * `ShaderMaterial` of its own.
+ */
+const hatchCapMaterial = (a: string, b: string, opacity: number): MeshBasicMaterial => {
+  const key = `hatch|${a}|${b}|${opacity}`
+  let m = capMaterials.get(key)
+  if (!m) capMaterials.set(key, (m = hatchMaterial(a, b, opacity)))
   return m
 }
 
@@ -360,7 +377,12 @@ const eventAreas = (): EventAreaEntry[] => {
   // battle plan read through a filter — the frontlines lose contrast against
   // exactly the ground they are about. While the plan is up, the footprint
   // steps aside; leaving the mode brings it back.
-  if (e.drawing && events.focus?.itemId === e.id) return []
+  //
+  // The condition is exactly "the ink on the ground is THIS event's" — see
+  // `focusDrawing` (stores/events.ts), which since round 60 resolves to the
+  // selection's drawing when nothing is focused. Two readings of one rule would
+  // be a cap that hides under no plan, or a plan read through a cap.
+  if (e.drawing && (!events.focus || events.focus.itemId === e.id)) return []
   const held = areaEntries.get(e.id)
   if (held) return [held]
   const ring = area.ring
@@ -537,6 +559,17 @@ onMounted(() => {
       // they meet. They cannot overlap any more — the build refuses to ship an
       // overlap — so the alpha never compounds.
       if (p.kind === 'area') return capMaterial(tagColor(primaryTag(p.event)), 0.22)
+      // …and a contested zone is the one fill on this globe that is not a wash
+      // in one colour, because there is no one colour it could honestly be. It
+      // is hatched in its claimants' — the ground-fixed shader stripe in
+      // lib/hatch.ts — and a claimant with no fill anywhere on the map lends a
+      // neutral tone instead of a colour nothing else on the globe wears.
+      if (p.kind === 'contested')
+        return hatchCapMaterial(
+          onGround(hatchTone(p.hatch[0], 0), { mode: mode.value }),
+          onGround(hatchTone(p.hatch[1], 1), { mode: mode.value }),
+          CONTESTED.fill[mode.value],
+        )
       return capMaterial(onGround(p.nation.color, { mode: mode.value }), NATION_FILL_ALPHA[mode.value])
     })
     // No side colour at all, rather than a transparent one: three-globe reads
@@ -609,7 +642,19 @@ onMounted(() => {
     // the ocean" defect, and it is worst on the largest polygons, which is what
     // an empire is.
     .polygonCapCurvatureResolution(() => AREA_CAP_RESOLUTION_DEG)
-    .polygonAltitude((d) => (asPoly(d).kind === 'area' ? 0.0014 : 0.0012))
+    // A CONTESTED CAP SITS LOWER THAN EVERY OTHER FILL, and it has to: it is
+    // the one cap on this globe whose own outline is drawn ON TOP of it rather
+    // than beside it. Every cap here carries `polygonOffset` (-2, -4) so that
+    // it is not eaten by the planet, and there is no polygon offset for LINE
+    // primitives in WebGL — so a line lying exactly on a cap's edge, which the
+    // zone's dashes and the modern border along the same boundary both do, is
+    // pushed behind it by that bias and disappears. Photographed at Abyei: the
+    // three authored edges dashed and the fourth, which is the Sudan/South
+    // Sudan line, completely gone. 0.0010 R is 6.4 km, six times the 0.97 km a
+    // 2° cap chord sags, so the planet still does not eat it.
+    .polygonAltitude((d) =>
+      asPoly(d).kind === 'area' ? 0.0014 : asPoly(d).kind === 'contested' ? 0.001 : 0.0012,
+    )
     .polygonLabel((d) => {
       const p = asPoly(d)
       return p.kind === 'area' ? p.event.name : p.label
@@ -1291,7 +1336,12 @@ onMounted(() => {
       // battle plan — and because the era band and the timeline read the same
       // store and must keep seeing them. Reading `events.focus` inside this
       // watcher is what makes leaving the mode put them straight back.
-      const next = [...(events.focus ? [] : nations.borders), ...eventAreas()]
+      // The contested zones ride with the borders and are gated with them: a
+      // zone is a cap and an outline like a polity's, differing only in that
+      // the cap is hatched and the outline dashed. They come FIRST so that a
+      // hatch is never the thing a neighbouring wash is drawn over.
+      const zones = events.focus ? [] : nations.contested
+      const next = [...zones, ...(events.focus ? [] : nations.borders), ...eventAreas()]
       // The modern states ride with them and are NOT polygons: no fill, no
       // hover, no click, no place in the ranking — border ink only, and one
       // entry for the whole world (see lib/modernBorders.ts). They go with the
@@ -1313,8 +1363,16 @@ onMounted(() => {
       // not the polygon layer's stroke and not a DrawingLayer, and
       // `frontierInkPlan` for which of the two layers inks a shared frontier.
       const plan = frontierInkPlan(modern, { mode: ink })
+      // A DISPUTED LINE IS THE LAST WORD, so the zones go at the END of this
+      // list even though their caps go at the start of the other one. The whole
+      // layer is one buffer of GL_LINES drawn in array order, so a later entry
+      // paints over an earlier one where they coincide — and a contested zone's
+      // boundary coincides with a modern frontier by construction wherever it
+      // was derived from one. Photographed at Abyei with the zones first: the
+      // three authored edges dashed and the fourth, which is the Sudan/South
+      // Sudan line, painted back over in the modern set's pale grey.
       frontiers?.set(
-        [...next.filter((p): p is BorderEntry => p.kind === 'full'), ...modern],
+        [...next.filter((p): p is BorderEntry => p.kind === 'full'), ...modern, ...zones],
         plan.colorOf,
         plan.inkOf,
       )
