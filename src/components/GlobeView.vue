@@ -191,6 +191,28 @@ const capMaterial = (color: string, opacity: number): MeshBasicMaterial => {
       // Atlantic). The rest of the material is what three-globe would have built
       // anyway — it is unlit Basic there too.
       side: DoubleSide,
+      // …but ONE PASS of both faces, not three's two.
+      //
+      // A transparent DoubleSide material is rendered twice by three: back faces
+      // first, then front faces, so that the two layers of a hollow shell blend
+      // in the right order (WebGLRenderer.renderObject). Each of those passes
+      // sets `material.needsUpdate = true` to flip `side`, and that invalidation
+      // makes `setProgram` re-derive the material's parameters and rebuild a
+      // fifty-field program cache key — to find the program it already had.
+      //
+      // A cap is not a shell. It is a single sheet lying on the sphere, so every
+      // triangle of it faces the camera or faces away, never both: the back pass
+      // and the front pass draw disjoint sets of triangles that together are
+      // exactly what one DoubleSide pass draws, in the same place, blended the
+      // same number of times. The ordering the two passes buy is ordering
+      // between faces that cannot overlap.
+      //
+      // Measured on a scripted world-view pan (tests/e2e/framePerf.e2e.mjs),
+      // 121 polities in 1941: 247 draw calls a frame → 129, and 242 material
+      // invalidations a frame → 0. The picture is the same picture — the same
+      // page photographed with the flag off differs by 53 596 pixels of 750 000,
+      // against 55 542 for the same page photographed twice with it on.
+      forceSinglePass: true,
       // …and the same depth bias every other overlay carries (`groundBias` in
       // lib/drawingLayer.ts). This is the rest of the area-smudge fix, and the
       // half that survived `polygonsTransitionDuration(0)`.

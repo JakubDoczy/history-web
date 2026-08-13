@@ -201,3 +201,122 @@ India/Bangladesh enclave exchange 2015) move lines by less than the 400 m this
 data can express. And the modern layer says nothing about 1900–1991, which is
 the century of borders this globe still cannot draw: that wants a year-sliced
 political dataset, not a threshold.
+
+## Round 59: a frontier declares what it follows
+
+The contract is `docs/design/borders-v3.md`, and its insight is that a
+hand-authored frontier is a dozen points guessed over a mental map, which no
+pipeline can add truth to — while most real frontiers FOLLOW A NAMED FEATURE we
+already have vectors for. So `nations.json` stops storing the geometry of the
+Rhine limes and starts storing the claim that it *is* the Rhine, between two
+places, and the build derives the rest:
+
+    { "river": "Rhine", "from": [4.9854,51.8237], "to": [7.59,47.59],
+      "note": "The Rhine limes, from the mouth in the Batavian delta to Basel." }
+    { "modern": "FRA-ESP + AND-ESP", "from": [...], "to": [...] }
+
+`scripts/follows-lib.mjs` extracts the feature, chooses a mainline, snaps each
+declared endpoint to it, orients the run to the ring's winding and splices it
+over the authored vertices between the two endpoints. It runs at the TOP of
+`clip-nations.mjs`, before anything else touches a ring, so the clip, the
+coastal classification, the frontier rules, the codec and round 55's
+densification all see a declaration as geometry and none of them has to know.
+
+**The names were never in the water file, and the water file is too coarse.**
+The first thing to check was whether `vendor-map-data.mjs`'s pruning had
+stripped the river names. It had not: `sane-topojson` strips `properties` from
+every geometry at its own build (0 of 461 river features in `world_50m` carry
+any), so they were never there to lose. The file is also quantised at 1e4 —
+0.036°, about 4 km — which is ten times coarser than the coastline the same
+frontier's polygon is clipped against, so it could not have defined a border
+even with names on it. `scripts/vendor-rivers.mjs` therefore vendors named
+rivers separately, off Natural Earth's own repository at the `v5.1.2` tag the
+10m land came from, into `src/data/rivers-named.json` (306 kB, committed,
+build-time only). **1:10m rather than 1:50m** because NE 50m does not contain
+the Yalu, the Tumen or the Ussuri — three of the frontiers this round exists to
+derive — and an allowlist of 54 rivers rather than all 1 367 named features
+because the whole 10m set is 2.0 MB of deltas to serve a 240 kB corpus.
+
+**One river is several names.** NE names each reach in the language of the
+country it runs through: the Danube above Bratislava is `Donau`, the Euphrates
+above Deir ez-Zor is `Al Furat` and above the Syrian border `Firat`, the upper
+Amur is `Heilong Jiang`, the Rhine between Lake Constance and Karlsruhe is
+`Rhin`. Matching `name === 'Danube'` silently returns the river from Bratislava
+down and loses eight hundred kilometres of it, which is exactly the quiet wrong
+answer this round exists to make impossible. `name_alt` and `name_en` catch most
+of it; `also` in the allowlist is the handful a human had to check on a map.
+
+**A river is not one polyline, and the choice is recorded.** NE splits a river
+at confluences and lake crossings — the Indus is thirteen features, the Amur
+five — so "the Danube" is the LONGEST CONTINUOUS CHAIN of them, found by an
+exhaustive walk (thirteen edges at worst; a greedy walk can take a long
+tributary at the first fork and lose a longer trunk behind it), and every piece
+the chain did not take comes back in `dropped` for the build to print. Four
+branches are dropped over the whole data pass, the largest being the Alaska
+panhandle arc of the USA/Canada border.
+
+Endpoints that *should* meet sometimes miss: the Ussuri's two halves are 129 m
+apart, the Euphrates' worst seam is 361 m. Read with an exact key those are two
+rivers and "the Ussuri" resolves to its lower half. `JOIN_TOL_KM` is 1 km — a
+little over half the 1.8 km median segment of the vendored file, so a hole this
+small is a pair of points Natural Earth could not have distinguished — and the
+29 seams it bridges are counted in the report rather than papered over.
+
+**The error report is the round's product.** Per polity, what share of the
+INLAND frontier (a coastal edge is the map's own line, not political ink) lies
+on a declared feature, and how far the declarations' endpoints had to travel to
+reach the feature they name. It is measured against the SHIPPED rings, not the
+authored ones, so a declaration clipped away at the coast or subtracted by a
+frontier rule honestly stops counting; provenance is recovered geometrically at
+`DECLARED_TOL_DEG` = 5e-4° (55 m, five quanta of the codec), because the clipper
+renumbers everything and cannot be asked where a vertex came from.
+
+    — CORPUS —   1 433 797 inland km   51 779 declared   3.6%   0.25 km mean snap
+
+47 declarations over 14 polities; 61 polities are still wholly freehand, and
+that list is the work queue. A snap over `SNAP_WARN_KM` = 40 km now FAILS the
+build: an endpoint that far from the river it claims is a declaration naming the
+wrong reach, and the whole point of the number is that it is checkable.
+
+**What the data pass bought, and what it cost.** Worst year on the globe: cap
+vertices 13 168 → 16 257 (+23%), inked frontier segments 2 368 → 5 467 at 1900,
+draw calls unchanged (22 → 22, 77 → 80, 33 → 33 on the three 1900 cameras),
+triangles +12–14%. The shipped corpus is 103 k → 120 k vertices, 1 018 kB →
+1 160 kB. That is the price of the Rhine being the Rhine, and it is paid in
+vertices the layer was already generating for the coast.
+
+**Honest limits, written down rather than shipped quietly.**
+
+ · **The Oder-Neisse is not declarable and the Neisse is not in the data.** NE
+   10m has no feature named Neisse or Nysa at any scale we ship, and — more to
+   the point — no polity in this corpus has that frontier: Poland leaves the
+   corpus in 1795 and Germany's window is 1871–1918.
+ · **Neither does the Indus.** It is in the vendored set and it chains cleanly
+   from Ladakh to the sea, but there is no polity here whose frontier it is: the
+   Indus Valley Civilisation is drawn *around* the basin, Alexander's limit is
+   the Hyphasis, and the Maurya-Seleucid line of 303 is the Hindu Kush.
+ · **The Danube is not the Ottoman frontier in 1683**, which is where the
+   contract expected to find it. In 1683 the Ottomans hold all of Hungary and
+   the river is an interior road; after Karlowitz the corpus draws Wallachia and
+   Moldavia as Ottoman, so the northern line is the Carpathians. The Danube is
+   declared where it really is a frontier: Rome at −30/117/300, Byzantium at
+   476/565/632/1025/1090, and the Ottomans at 1450, before Mohacs.
+ · **Rome 117 still has no Agri Decumates.** The corpus draws the limes as the
+   Rhine to Basel and a chord to the Danube; the real 117 frontier leaves the
+   river at Rheinbrohl and cuts overland to Eining. Declaring the river between
+   the authored endpoints does not re-adjudicate the extent, and re-adjudicating
+   it is a data decision for a later round.
+ · **Russia at 1858 gets Aigun but not Peking.** The keyframe holds 1858–1899
+   and now carries the Amur's left bank; the Ussuri region only becomes Russian
+   on the map at the 1900 keyframe, so Primorye is drawn Qing for 1860–1899.
+   Fixing that wants a keyframe at 1860, not a declaration.
+ · **A declaration needs an authored vertex to attach to.** Four rings gained
+   anchors (Russia 1900, the USSR, the PRC, the Mamluks) and the authoring cap
+   in `nations.test.ts` went from 80 vertices to 84. That is the format's one
+   real awkwardness: the endpoints are where the frontier starts and stops
+   following the feature, and the ring has to have a vertex near each.
+ · **Andorra is a judgement, not a tolerance.** France and Spain share two arcs
+   because Andorra sits between them, so the Pyrenees declaration reads
+   `FRA-ESP + AND-ESP` and puts Andorra on the French side — the co-principality
+   descends from the Counts of Foix. Writing it as a wider join tolerance would
+   have hidden the choice.

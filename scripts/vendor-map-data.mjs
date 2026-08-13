@@ -140,6 +140,11 @@ write('land-50m.json', LAND_50M, prune(read(LAND_50M), ['land']))
 // drop — and pruning still takes 128 of the 7 092 arcs out, which are the ones
 // no geometry in the file references at all.
 write('land-10m.json', LAND_10M, prune(read(LAND_10M), ['land']))
+// Rivers and lakes for the PAPER. Their names are not here and never were:
+// sane-topojson strips `properties` from every geometry at its own build (0 of
+// 461 river features in world_50m carry any), so `prune()` dropping them is not
+// what lost them. The borders-v3 resolver needs named rivers at a scale a
+// frontier can be defined on, and vendors its own — scripts/vendor-rivers.mjs.
 write('water-50m.json', WATER_50M, prune(read(WATER_50M), ['rivers', 'lakes']))
 
 writeFileSync(

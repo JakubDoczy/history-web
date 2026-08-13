@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { BufferGeometry, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three'
+import { BufferGeometry, DoubleSide, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three'
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
@@ -260,6 +260,34 @@ describe('DrawingLayer', () => {
     expect(
       layer.object.children.filter((c) => c instanceof Mesh && !(c instanceof Line2)),
     ).toHaveLength(4)
+    layer.dispose()
+  })
+
+  /**
+   * A SHEET IS DRAWN ONCE, and this is the guard on it.
+   *
+   * three renders a transparent DoubleSide material twice — back faces, then
+   * front — and invalidates the material between the passes, which makes
+   * `setProgram` rebuild its program cache key each time. Every filled mark here
+   * is a flat sheet on the sphere, so the second pass draws triangles the first
+   * one culled and nothing else: `forceSinglePass` is what says so, and its
+   * absence is silent (twice the draw calls, the same picture), which is exactly
+   * the kind of regression a test has to hold.
+   */
+  it('draws every filled mark in one pass', () => {
+    const scene = new Scene()
+    const layer = new DrawingLayer(scene, R)
+    layer.set(drawing, { color: '#e5484d' })
+    const solids = layer.object.children.filter(
+      (c): c is Mesh => c instanceof Mesh && !(c instanceof Line2),
+    )
+    expect(solids.length).toBeGreaterThan(0)
+    for (const m of solids) {
+      const mat = m.material as MeshBasicMaterial
+      expect(mat.transparent).toBe(true)
+      expect(mat.side).toBe(DoubleSide)
+      expect(mat.forceSinglePass).toBe(true)
+    }
     layer.dispose()
   })
 

@@ -8,6 +8,7 @@
     "build": "npm run nations:check && vue-tsc -b && vite build",
     "build:wasm": "node scripts/build-lanczos-wasm.mjs",
     "map:data": "node scripts/vendor-map-data.mjs",
+    "map:rivers": "node scripts/vendor-rivers.mjs",
     "nations:build": "tsx scripts/clip-nations.mjs --report",
     "nations:check": "tsx scripts/clip-nations.mjs --check",
     "map:world": "tsx scripts/render-drawn-world.mjs",

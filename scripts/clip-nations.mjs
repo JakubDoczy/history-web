@@ -58,10 +58,20 @@ import {
 import {
   buildModernBorders,
   decodeArcs,
+  frontierArcs,
   MERGES,
   MODERN_FROM,
   MODERN_TO,
 } from './modern-borders-lib.mjs'
+import {
+  DECLARED_TOL_DEG,
+  declaredShare,
+  decodeRivers,
+  errorTable,
+  resolveKeyframe,
+  segmentIndex,
+  SNAP_WARN_KM,
+} from './follows-lib.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (p) => JSON.parse(readFileSync(join(root, p), 'utf8'))
@@ -99,6 +109,55 @@ const frontiers = read('src/data/frontiers.json')
 const byId = new Map(authored.map((n) => [n.id, n]))
 const key = (id, time) => `${id}@${time}`
 
+/* ------------------------------------------ what a frontier says it follows */
+
+/**
+ * BORDERS V3, at the top of the pipeline: a keyframe that DECLARES what its
+ * frontier follows gets the feature's own geometry spliced into its rings
+ * before anything else happens to them (docs/design/borders-v3.md,
+ * scripts/follows-lib.mjs).
+ *
+ * It runs HERE, first, because nothing downstream should have to know. The clip
+ * cuts a spliced ring against the coast exactly as it cut a freehand one,
+ * `classifyCoastal` classifies its edges, the frontier rules subtract it, the
+ * codec stores it and round 55's densification draws it. A declaration is an
+ * authoring convenience that has already become geometry by the time the rest
+ * of this file sees a ring.
+ *
+ * Both modes need it: the build needs the rings, and `--check` needs the
+ * resolved polylines to measure what share of the SHIPPED frontier lies on
+ * them. It is cheap either way — 306 kB of rivers, plus (only if a `modern`
+ * declaration exists) the country topology the modern-border layer reads
+ * anyway.
+ */
+const rivers = decodeRivers(read('src/data/rivers-named.json'))
+let arcCache
+const features = {
+  rivers,
+  get modernArcs() {
+    return (arcCache ??= frontierArcs(read('node_modules/world-atlas/countries-50m.json')))
+  },
+}
+
+const followed = new Map() // `id@time` -> { rings, segments, checks }
+for (const nation of authored)
+  for (const kf of nation.keyframes) {
+    if (!kf.follows?.length) continue
+    try {
+      const res = resolveKeyframe(kf.rings, kf.follows, features)
+      for (const c of res.checks)
+        if (!c.closed || !c.windingKept)
+          throw new Error(`splicing ring ${c.ring} left it ${c.closed ? 'wound the wrong way' : 'open'}`)
+      followed.set(key(nation.id, kf.time), res)
+    } catch (err) {
+      console.error(`follows: ${nation.id}@${kf.time}: ${err.message}`)
+      process.exit(1)
+    }
+  }
+
+/** The rings the rest of the pipeline works on: derived where declared. */
+const ringsOf = (nation, kf) => followed.get(key(nation.id, kf.time))?.rings ?? kf.rings
+
 /* --------------------------------------------------------- check-only mode */
 
 if (checkOnly) {
@@ -106,9 +165,10 @@ if (checkOnly) {
   const found = validate(onDisk)
   const split = inkSplits(onDisk)
   report(found, onDisk, undefined, split)
+  const { bad } = followsReport(onDisk)
   const modernFaults = checkModern(read('src/data/borders.modern.json'))
   reportModern(modernFaults)
-  process.exit(found.length || split.length || modernFaults.length ? 1 : 0)
+  process.exit(found.length || split.length || modernFaults.length || bad.length ? 1 : 0)
 }
 
 /* --------------------------------------------------------------- the land */
@@ -128,7 +188,7 @@ const t0 = performance.now()
 const clipped = new Map()
 for (const nation of authored)
   for (const kf of nation.keyframes)
-    clipped.set(key(nation.id, kf.time), clipToLand(multiPolygonOf(kf.rings), land))
+    clipped.set(key(nation.id, kf.time), clipToLand(multiPolygonOf(ringsOf(nation, kf)), land))
 const clipMs = performance.now() - t0
 
 const empty = []
@@ -204,9 +264,9 @@ const built = authored.map((nation) => ({
   ...nation,
   keyframes: nation.keyframes.map((kf) => {
     const mp = clipped.get(key(nation.id, kf.time))
-    const authoredArea = multiPolygonArea(multiPolygonOf(kf.rings))
+    const authoredArea = multiPolygonArea(multiPolygonOf(ringsOf(nation, kf)))
     shrunk.push({ id: nation.id, time: kf.time, kept: multiPolygonArea(mp) / authoredArea })
-    vertsIn += kf.rings.reduce((n, r) => n + r.length, 0)
+    vertsIn += ringsOf(nation, kf).reduce((n, r) => n + r.length, 0)
     vertsClipped += mp.reduce((n, p) => n + p.reduce((m, r) => m + r.length - 1, 0), 0)
     const polys = []
     const coast = []
@@ -282,8 +342,81 @@ function inkSplits(nations) {
   })
 }
 
+/**
+ * THE ERROR REPORT — the number the user's "error rate" becomes.
+ *
+ * Per polity: what share of its INLAND frontier lies on a declared feature, and
+ * how far the declarations' endpoints had to move to reach the feature they
+ * claim. Coastal edges are the map's own line and are not political ink, so
+ * they are not this metric's business; freehand is the remainder, and the
+ * remainder is the work list.
+ *
+ * It is measured against the SHIPPED rings rather than the authored ones, which
+ * is why it can also run in `--check` on a file it did not build — and it is
+ * the honest place to measure, because a declaration clipped away at the coast
+ * or subtracted by a frontier rule stops counting. Provenance is recovered
+ * geometrically rather than tracked through the clipper: see DECLARED_TOL_DEG.
+ */
+function followsReport(nations) {
+  const rows = []
+  let declarations = 0
+  let branches = 0
+  let joins = 0
+  const worstSnap = []
+  for (const n of nations) {
+    const src = byId.get(n.id)
+    let inlandKm = 0
+    let declaredKm = 0
+    const snaps = []
+    for (const kf of n.keyframes) {
+      const res = src ? followed.get(key(n.id, kf.time)) : undefined
+      const { pieces, coastal } = decodeKeyframe(kf)
+      const rings = pieces.flatMap((rs, p) => rs.map((ring, r) => ({ ring, coastal: coastal[p][r] })))
+      const share = declaredShare(rings, segmentIndex(res ? res.segments.map((s) => s.path) : []), DECLARED_TOL_DEG)
+      inlandKm += share.inlandKm
+      if (res) declaredKm += share.declaredKm
+      for (const s of res?.segments ?? []) {
+        declarations++
+        branches += s.dropped.length
+        joins += s.joins?.length ?? 0
+        snaps.push(s.snapFromKm, s.snapToKm)
+        worstSnap.push({ at: `${n.id}@${kf.time}`, name: s.name, km: Math.max(s.snapFromKm, s.snapToKm) })
+      }
+    }
+    rows.push({ id: n.id, inlandKm, declaredKm, snaps })
+  }
+  const table = errorTable(rows)
+  const pad = (s, n) => String(s).padStart(n)
+  console.log('')
+  console.log('borders v3 — inland frontier: derived from a named feature, or still freehand')
+  console.log(`  ${'polity'.padEnd(14)} ${pad('inland km', 10)} ${pad('declared', 9)} ${pad('share', 7)} ${pad('mean snap', 11)}`)
+  for (const r of table.rows) {
+    if (!r.declaredKm) continue
+    console.log(
+      `  ${r.id.padEnd(14)} ${pad(r.inlandKm.toFixed(0), 10)} ${pad(r.declaredKm.toFixed(0), 9)}` +
+        ` ${pad((r.share * 100).toFixed(1) + '%', 7)} ${pad(r.meanSnapKm.toFixed(2) + ' km', 11)}`,
+    )
+  }
+  const freehand = table.rows.filter((r) => !r.declaredKm).length
+  console.log(
+    `  ${'— CORPUS —'.padEnd(14)} ${pad(table.total.inlandKm.toFixed(0), 10)} ${pad(table.total.declaredKm.toFixed(0), 9)}` +
+      ` ${pad((table.total.share * 100).toFixed(1) + '%', 7)} ${pad(table.total.meanSnapKm.toFixed(2) + ' km', 11)}`,
+  )
+  console.log(
+    `  ${declarations} declaration(s) over ${table.rows.length - freehand} polities; ${freehand} still wholly` +
+      ` freehand; ${branches} river branch(es) the mainline did not take; ${joins} seam(s) bridged`,
+  )
+  const bad = worstSnap.filter((w) => w.km > SNAP_WARN_KM).sort((a, b) => b.km - a.km)
+  if (bad.length) {
+    console.error(`  SNAP OVER ${SNAP_WARN_KM} km — a declared endpoint that is not on the feature it names:`)
+    for (const w of bad.slice(0, 12)) console.error(`    ${w.at} ${w.name}: ${w.km.toFixed(1)} km`)
+  }
+  return { table, bad }
+}
+
 const convictions = validate(built)
 const splits = inkSplits(built)
+const errors = followsReport(built)
 
 /* ----------------------------------------------------------- the numbers */
 
@@ -383,7 +516,7 @@ report(convictions, built, wantReport ? authored : undefined, splits)
 
 /* ------------------------------------------------------------------ write */
 
-if (convictions.length || splits.length) process.exit(1)
+if (convictions.length || splits.length || errors.bad.length) process.exit(1)
 
 const path = join(root, 'src/data/nations.clipped.json')
 // One polity per line, one keyframe per line inside it: a 900 kB generated file

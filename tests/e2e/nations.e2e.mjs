@@ -150,6 +150,16 @@ const CAMERAS = [
   // Africa, where the 73-polity corpus has nothing to say after 1900 and the
   // patch set is doing its work: Sudan is one country here and two in 2020.
   { name: 'q-africa2000-map', year: 2000, mode: 'schematic', view: [8, 25, 1.2] },
+  // ROUND 59, borders v3. Each of these is a frontier that used to be a handful
+  // of guessed points and is now the feature it declares it follows, so the
+  // before/after pair is the whole claim: same camera, same year, one line
+  // straightened by a river instead of by a ruler.
+  { name: 'r-rome117-rhine-map', year: 117, mode: 'schematic', view: [50, 7.5, 0.22] },
+  { name: 's-byz1025-danube-map', year: 1025, mode: 'schematic', view: [44.5, 24, 0.4] },
+  { name: 't-amur1900-map', year: 1900, mode: 'schematic', view: [50, 129, 0.4] },
+  { name: 'u-pyrenees1700-map', year: 1700, mode: 'schematic', view: [42.7, 0.5, 0.22] },
+  { name: 'v-usa1900-49th-map', year: 1900, mode: 'schematic', view: [47, -95, 0.6] },
+  { name: 'w-korea1900-yalu-map', year: 1900, mode: 'schematic', view: [41, 126.5, 0.3] },
 ]
 
 const only = process.env.SHOT_ONLY ? new RegExp(process.env.SHOT_ONLY) : undefined

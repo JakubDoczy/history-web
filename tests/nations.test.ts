@@ -172,9 +172,17 @@ describe('nations.json (authoring)', () => {
     for (const k of n.keyframes) {
       expect(k.rings.length).toBeGreaterThan(0)
       for (const ring of k.rings) {
-        // enough vertices to look drawn rather than sketched, few enough to ship
+        // Enough vertices to look drawn rather than sketched, few enough to
+        // stay a thing a human edits. The ceiling moved from 80 to 84 in round
+        // 59 for a reason worth writing down: a `follows` declaration attaches
+        // to AUTHORED vertices — the run between them is what the derived river
+        // replaces — so a frontier with no vertex where a river starts needs one
+        // written down before it can be declared at all. Russia's 1900 ring
+        // gained two (the Sungacha junction and Khabarovsk), the USSR's three
+        // net, the PRC's one, the Mamluks' one. Four anchors do not stop this
+        // file being hand-editable, which is what the cap is for.
         expect(ring.length).toBeGreaterThanOrEqual(12)
-        expect(ring.length).toBeLessThanOrEqual(80)
+        expect(ring.length).toBeLessThanOrEqual(84)
         for (const [lng, lat] of ring) {
           expect(Math.abs(lng)).toBeLessThanOrEqual(180)
           expect(Math.abs(lat)).toBeLessThanOrEqual(90)

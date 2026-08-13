@@ -535,6 +535,19 @@ describe('the Korean peninsula', () => {
     expect(before.some((ring) => JSON.stringify(ring) === JSON.stringify(korea))).toBe(false)
   })
 
+  /**
+   * Round 59 rewrote the second half of this test, and the rewrite is the round.
+   *
+   * It used to count EDGES: twelve inked against three hundred and thirty
+   * coastal — "a small part of a boundary that is overwhelmingly coast". The
+   * Yalu and the Tumen are declarations now rather than twelve guessed points,
+   * so the frontier is five hundred edges of real river and the count comes out
+   * inverted, while the boundary is exactly as coastal as it always was. An
+   * edge count was never what "overwhelmingly coast" meant: it means LENGTH,
+   * and in length nothing has moved — two rivers against three sides of a
+   * peninsula. Counting edges also flattered the sea, whose runs `simplifyRing`
+   * thins at 400 m and whose frontier is never thinned at all.
+   */
   it('inks the Yalu and the Tumen, and nothing else', () => {
     const k = clip.keyframeAt(empire, 1900)
     const { pieces, coastal } = decodeKeyframe(k)
@@ -545,15 +558,37 @@ describe('the Korean peninsula', () => {
     expect(Math.min(...pts.map((p) => p[1]))).toBeGreaterThan(39)
     expect(Math.max(...pts.map((p) => p[0]))).toBeLessThan(131)
     // …and it is a small part of a boundary that is overwhelmingly coast
-    const flags = decodeKeyframe(k).coastal.flat()
-    const inland = flags.reduce((n, f) => n + f.reduce((m, b) => m + (b ? 0 : 1), 0), 0)
-    const coast = flags.reduce((n, f) => n + f.reduce((m, b) => m + (b ? 1 : 0), 0), 0)
-    expect(inland).toBeLessThan(coast / 10)
+    let inlandLen = 0
+    let coastLen = 0
+    pieces.forEach((rings, p) =>
+      rings.forEach((ring, r) => {
+        const flags = coastal[p][r]
+        for (let i = 0; i < ring.length; i++) {
+          const j = (i + 1) % ring.length
+          // planar degrees, cosine-corrected: this is a ratio at one latitude
+          const d = Math.hypot(
+            (ring[j][0] - ring[i][0]) * Math.cos((ring[i][1] * Math.PI) / 180),
+            ring[j][1] - ring[i][1],
+          )
+          if (flags[i]) coastLen += d
+          else inlandLen += d
+        }
+      }),
+    )
+    // Measured: the two rivers are 0.30 of the peninsula's sea sides. The guard
+    // sits at a half rather than at the measurement because the coast is thinned
+    // at 400 m by `simplifyRing` and the frontier is never thinned at all, so
+    // the honest direction of drift is upward.
+    expect(inlandLen).toBeLessThan(coastLen / 2)
   })
 
   it('grows to the Tumen between its two keyframes, and not before', () => {
     const north = (t: number) => Math.max(...mainland(joseon, t)[0].map((p) => p[1]))
-    expect(north(1392)).toBeLessThan(41.5) // the six garrisons are Sejong's
+    // 42, not 41.5: the 1392 frontier stops on the Yalu below Kanggye, and
+    // the river's own bend above Manpo reaches 41.8°N. That is the Yalu, not a
+    // claim to the northeast — the six garrisons are Sejong's, and they are the
+    // 1450 keyframe, which goes past the Tumen at 42.9.
+    expect(north(1392)).toBeLessThan(42) // the six garrisons are Sejong's
     expect(north(1450)).toBeGreaterThan(42.5)
   })
 })

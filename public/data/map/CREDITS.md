@@ -13,6 +13,13 @@ Physical geography only. Political boundaries are not vendored and are not drawn
 on the paper: on this globe they belong to the time-aware nations layer, which
 answers a year rather than a download.
 
+Named rivers are vendored SEPARATELY, by `scripts/vendor-rivers.mjs` into
+`src/data/rivers-named.json`, and nothing at runtime reads them. `water-50m.json`
+here has no names at all — `sane-topojson` strips every geometry's properties at
+its own build — and it is quantised at 4 km, which is fine for a river drawn as
+decoration and useless as the definition of a frontier. See
+`docs/design/borders-v3.md`.
+
 Natural Earth is public domain — "Natural Earth declares all versions of its
 raster and vector map data to be in the public domain", quoted from
 `@cublya/world-atlas`'s own DATA_LICENSE.md and from

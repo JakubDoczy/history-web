@@ -127,6 +127,28 @@ export const SURFACE_ALT = 0.0006
 const groundBias = { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 } as const
 
 /**
+ * A MARK IS A SHEET, and a sheet is drawn in one pass.
+ *
+ * Every filled mark on this map — a thrust ribbon, an arrow head, a marker glyph
+ * — is flat geometry lying on the sphere, and it is double-sided because it is
+ * built in lat/lng and some of its triangles come out wound the other way (the
+ * same reason the polygon caps are, see `capMaterial` in GlobeView).
+ *
+ * three renders a TRANSPARENT DoubleSide material twice — back faces, then front
+ * faces — so that the two skins of a hollow shell blend in the right order, and
+ * it flips `material.side` between them with `needsUpdate = true`, which makes
+ * `setProgram` re-derive the material's parameters and rebuild its program cache
+ * key on every one of those passes. A sheet has no second skin: each triangle
+ * faces the camera or faces away, so the two passes draw disjoint halves of one
+ * mark, blended once each, exactly as a single pass draws them. Turning the
+ * second pass off halves the draw calls of a battle plan and takes its
+ * per-frame material invalidations to nought (measured in
+ * tests/e2e/framePerf.e2e.mjs: a plan open, 42 draws and 36 invalidations a
+ * frame → 24 and 0).
+ */
+const flatSheet = { side: DoubleSide, forceSinglePass: true } as const
+
+/**
  * Per-vertex opacity for a fat line, in one extra instanced attribute.
  *
  * `LineMaterial` carries a single opacity for a whole line, which is why the
@@ -908,7 +930,7 @@ export class DrawingLayer {
       color,
       transparent: true,
       opacity: 0.82,
-      side: DoubleSide,
+      ...flatSheet,
       depthWrite: false,
       ...groundBias,
     })
@@ -1004,7 +1026,7 @@ export class DrawingLayer {
         color: new Color(color),
         transparent: true,
         opacity,
-        side: DoubleSide,
+        ...flatSheet,
         depthWrite: false,
         ...groundBias,
       })
