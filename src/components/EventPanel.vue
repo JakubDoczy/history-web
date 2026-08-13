@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useEventStore } from '../stores/events'
+import { SIDE_BY_SIDE_MIN_PX, useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
+import { useUiStore } from '../stores/ui'
+import { opensInReader } from '../lib/wikiArticle'
 import { formatOn, formatTime } from '../lib/time'
 import { renderRichText } from '../lib/richtext'
 import { anchorYearOf, assertNever, timeOf, type Item, type Place } from '../lib/events'
 import { resolvePillKind, sagaOf } from '../lib/present/saga'
-import { fetchWikiImage, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
+import { stationAt, stations } from '../lib/present/sagaTimeline'
+import { fetchWikiImage, parseWikiUrl, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
 
 const events = useEventStore()
 const time = useTimeStore()
+const ui = useUiStore()
 
 /* The panel renders an ITEM, not only an event: an event, a life or an idea,
    with the same typography and the same link behaviour. What differs is the
@@ -111,6 +115,38 @@ const pillStep = computed(() => {
   return { name: step.name, ordinal: events.focusSteps.findIndex((s) => s.id === step.id) + 1 }
 })
 
+/**
+ * WHAT THE PILL'S EXPAND CONTROL IS CALLED — decided by what the press does,
+ * which is the only rule that survives contact with a state machine this size.
+ *
+ * It said "Restore" through round 57, and "restore" is a claim about HISTORY:
+ * put back the window I put down. That is true of exactly one of the states it
+ * appears in. Land on a saga on a phone and the article was never up; step into
+ * a page and the thing that would open is a page the reader has not seen; land
+ * on an entrance and it is a preview that did not exist a moment ago. In every
+ * one of those the word describes a window the reader never minimised.
+ *
+ * So the word is what the press yields, and there are two of those:
+ *
+ *  · "Open" — the ordinary case, and the one the pill is in almost always. The
+ *    press brings up the reading of the thing the pill already names: the
+ *    context's own article, or its open step's page, or the step PREVIEW of an
+ *    entrance. Nothing changes about where the reader is; a panel that was down
+ *    comes up. One word, and it is true of all three.
+ *  · "Open event" — when the pill is naming a PART of the context rather than
+ *    the context itself (`focusReturnTo`, i.e. a child event opened inside the
+ *    saga and then minimised). The press opens that child event's own article,
+ *    which is a different item from the one the map is about, and the pill's
+ *    own back-arrow beside it is the proof: the reader is being offered a
+ *    second thing, not the restoration of a first.
+ *
+ * The wording deliberately RHYMES with the preview's brass "Open event" button
+ * (`stepPreview`), because the two are the same promise made about the same
+ * kind of thing — a full child event, opened. What they differ in is depth, and
+ * that is the one thing a label on a bar cannot usefully say.
+ */
+const expandLabel = computed(() => (events.focusReturnTo ? 'Open event' : 'Open'))
+
 /* --- the four relation sections, in precedence order ----------------------
    `parent` / `strong` / `weak` in the data, materialised both ways by the
    index (see `buildRelations` in lib/events.ts). The store has already made
@@ -137,8 +173,51 @@ const seeAlso = computed(() => events.seeAlsoOf(e.value.id))
  */
 const stepPage = computed(() => {
   const step = events.activeStep
-  if (!step?.page) return null
+  if (!step?.page || step.child) return null
   return events.selectedId === events.focus?.itemId ? step : null
+})
+
+/**
+ * THE STEP PREVIEW — what an ENTRANCE looks like before it is opened
+ * (round 58; docs/design/sagas.md rule 15).
+ *
+ * An entrance used to descend on sight: pressing the station replaced the saga
+ * with the child, threw the parent's rail off the screen and re-anchored
+ * everything to a span the reader had not asked for. The reader could not find
+ * out what a step WAS without changing what the whole map was about — *"they
+ * should be displayed as a step … but you should display a button to open step
+ * as a detailed event"*.
+ *
+ * So an entrance now lands like any other step, and this is the reading it
+ * lands on: the step's own name and date at the top (the same two facts its
+ * station on the rail carries, resolved through the rail's own function so they
+ * cannot disagree), the CHILD's summary under them — the reduced description the
+ * corpus already carries for every one of them — and a brass "Open event" that
+ * performs the descent.
+ *
+ * A child that is ITSELF a saga previews as a step all the same, and says so
+ * with the step count: its own steps are behind the button, not in this panel.
+ * A child this build has not merged yet previews with no summary and no button,
+ * which is the honest shape of "I do not have it yet".
+ *
+ * Same gate as `stepPage`: only on the focused event's own article. A battle
+ * opened inside the saga is about the battle, and must not be overwritten by a
+ * preview of one of its parent's steps.
+ */
+const stepPreview = computed(() => {
+  const entrance = events.entranceStep
+  if (!entrance || events.selectedId !== events.focus?.itemId) return null
+  const item = events.focused
+  const span = item?.kind === 'event' ? item.time : undefined
+  // The station's own date, at the resolution the saga's span supports — asked
+  // of the rail's own resolver so the panel and the mark under it agree.
+  let at = ''
+  if (span) {
+    const sts = stations(events.focusSteps, span)
+    const s = sts.find((x) => x.step.id === entrance.step.id)
+    if (s) at = stationAt(s, span, sts.length)
+  }
+  return { step: entrance.step, child: entrance.child, at, steps: sagaOf(entrance.child) }
 })
 
 /** Persons and concepts are chipped; an event is the unmarked case (as in search). */
@@ -161,9 +240,41 @@ function goTo(id: string) {
   const year = events.focusYear(id)
   if (year !== undefined) time.setTime(year)
 }
+/**
+ * A WIKIPEDIA LINK IN THE PANEL OPENS THE READER — on a desktop, on a plain
+ * click, and never otherwise.
+ *
+ * There are two of them and they are the same link twice: the closer sentence
+ * every body ends with (*More at [Wikipedia](…)*, rendered into the body's HTML)
+ * and the "Read more" strip's Wikipedia entry. Both stay real `<a href>`s at the
+ * live article, so a middle-click or a modifier-click still gets the tab the
+ * reader asked their browser for, and "copy link address" still copies
+ * Wikipedia's URL rather than something of ours. What changes is only the plain
+ * click, and only where there is room for the reader to be better than a new tab
+ * (`opensInReader`, lib/wikiArticle.ts).
+ *
+ * The width is read at the moment of the click rather than watched: this is a
+ * decision about one gesture, and a `matchMedia` subscription on a component
+ * that mounts and unmounts with every selection would be a lifecycle to maintain
+ * for a number that is free to ask for.
+ */
+function openReader(ev: MouseEvent, url: string | undefined): boolean {
+  const ref = parseWikiUrl(url)
+  if (!ref) return false
+  const desktop = (globalThis.innerWidth || 0) >= SIDE_BY_SIDE_MIN_PX
+  if (!opensInReader(ev, desktop)) return false
+  ev.preventDefault()
+  ui.openReader(ref)
+  return true
+}
+
 function onBodyClick(ev: MouseEvent) {
   const id = (ev.target as HTMLElement).dataset?.event
-  if (id) goTo(id)
+  if (id) return goTo(id)
+  // The body is rendered HTML (lib/richtext.ts), so the target of a click on a
+  // link may be something inside the anchor — `closest` rather than the target.
+  const a = (ev.target as HTMLElement | null)?.closest?.('a[href]') as HTMLAnchorElement | null
+  if (a) openReader(ev, a.getAttribute('href') ?? undefined)
 }
 /**
  * A birth or death place chip: put the globe over it and the timeline on the
@@ -292,7 +403,7 @@ onBeforeUnmount(() => inflight?.abort())
         <button
           class="pill-main"
           data-test="pill-expand"
-          title="Restore this window"
+          :title="expandLabel"
           @click="events.toggleFocusExpanded()"
         >
           <span class="pill-name">{{ e.name }}</span>
@@ -306,14 +417,15 @@ onBeforeUnmount(() => inflight?.abort())
         </button>
         <!-- Not a bare chevron. A chevron on a bar over a map is ambiguous —
              it could as easily mean "more of the map" — and the word is the
-             one thing that says outright what this row of chrome IS: a window
-             put down, waiting to be picked up. It steps aside on a phone,
-             where the pill spans the screen and the thumb targets need the
-             room (see the query below). -->
+             one thing that says outright what a press of this row of chrome
+             DOES (see `expandLabel`: "Open", or "Open event" where what comes
+             up is a child event's own article rather than this one's reading).
+             It steps aside on a phone, where the pill spans the screen and the
+             thumb targets need the room (see the query below). -->
         <button
           class="pill-btn icon-c pill-restore"
           data-test="pill-restore"
-          aria-label="Restore this window"
+          :aria-label="expandLabel"
           @click="events.toggleFocusExpanded()"
         >
           <!-- The chevron the phone twice called off-centre. It is pure
@@ -336,7 +448,7 @@ onBeforeUnmount(() => inflight?.abort())
           >
             <path d="M-6 3L0 -3L6 3" />
           </svg>
-          <span class="pill-restore-label">Restore</span>
+          <span class="pill-restore-label">{{ expandLabel }}</span>
         </button>
         <button
           class="pill-btn icon-c"
@@ -476,6 +588,51 @@ onBeforeUnmount(() => inflight?.abort())
       <div class="body" @click="onBodyClick" v-html="renderRichText(stepPage.page!)" />
     </section>
 
+    <!-- AN ENTRANCE, PREVIEWED (see `stepPreview`; sagas.md rule 15).
+         The same shape as a step page, because it is the same kind of thing —
+         the reading of one moment of this saga, with the overview one press
+         above it. What it says is the child's summary rather than an authored
+         page, and what it carries that a page does not is the way IN: one brass
+         button, which is the only control in the app that changes what the map
+         is about without the reader having said so twice. -->
+    <section v-else-if="stepPreview" class="step-page step-preview" data-test="step-preview">
+      <button class="back" data-test="step-back" @click="events.selectStep()">
+        <svg class="glyph" width="12" height="12" viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 0H-7M-2 -5L-7 0L-2 5" /></svg>
+        <span class="back-name">Overview</span>
+      </button>
+      <h3>{{ stepPreview.step.name }}</h3>
+      <!-- Its date, and — where the child is itself a saga — the fact that
+           there is a whole rail of steps behind the button. Said here rather
+           than discovered by pressing: descending into an event that turns out
+           to have eleven steps of its own is the surprise this preview exists
+           to remove. -->
+      <p class="when tnum preview-when">
+        <span v-if="stepPreview.at">{{ stepPreview.at }}</span>
+        <span v-if="stepPreview.steps" class="kind" data-test="preview-saga">
+          Saga · {{ stepPreview.steps.length }} steps
+        </span>
+      </p>
+      <p v-if="stepPreview.child?.summary" class="body" data-test="preview-summary">
+        {{ stepPreview.child.summary }}
+      </p>
+      <!-- Absent when the child has not been merged yet: a button that cannot
+           go anywhere is worse than no button, and the step is still a step. -->
+      <button
+        v-if="stepPreview.child"
+        class="saga-cta open-event"
+        data-test="open-event"
+        :title="`Open ${stepPreview.child.name} as an event of its own`"
+        @click="events.openEntrance()"
+      >
+        <!-- a pin with a frame opening around it: this thing, given the map -->
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3" />
+          <circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" />
+        </svg>
+        <span class="saga-cta-label">Open event</span>
+      </button>
+    </section>
+
     <template v-else>
     <figure v-if="e.image">
       <img
@@ -559,7 +716,18 @@ onBeforeUnmount(() => inflight?.abort())
     <div v-if="e.links?.length" class="block">
       <span class="eyebrow">Read more</span>
       <p class="links">
-        <a v-for="l in e.links" :key="l.label" :href="l.url" target="_blank" rel="noopener">
+        <!-- A Wikipedia entry opens the reader on a desktop and is an ordinary
+             external link everywhere else — including on this very click, if it
+             carried a modifier (see `openReader`). -->
+        <a
+          v-for="l in e.links"
+          :key="l.label"
+          :href="l.url"
+          target="_blank"
+          rel="noopener"
+          data-test="read-more-link"
+          @click="openReader($event, l.url)"
+        >
           {{ l.label }}
         </a>
       </p>
@@ -1152,6 +1320,33 @@ figcaption {
 }
 .step-page .body {
   margin-top: var(--s2);
+}
+
+/* --- the entrance preview (round 58, sagas.md rule 15) -------------------
+   Deliberately the STEP PAGE's shape and not a card of its own: a preview is a
+   reading of one moment of this saga, exactly as a page is, and the reader who
+   walks prev/next through a mixed saga should not feel the panel change genre
+   under them every time a step happens to be an event. What it adds is the date
+   line under the heading and the one control that leads out of the saga. */
+.preview-when {
+  margin: 4px 0 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+.preview-when .kind {
+  /* the saga chip: what is behind the button, said before it is pressed */
+  border-color: var(--brass-line);
+  color: var(--brass);
+}
+/* THE WAY IN. Brass and filled, like the saga's own call to action, because it
+   is the same kind of promise — this thing, on the map, whole — and because it
+   is the only control in a preview, so there is nothing for it to compete with.
+   It sits at the FOOT of the reading rather than above it: the summary is what
+   the reader is deciding on, and a button offered before the sentence it is
+   about is a button pressed without it. */
+.open-event {
+  margin: var(--s3) 0 0;
 }
 
 .body {

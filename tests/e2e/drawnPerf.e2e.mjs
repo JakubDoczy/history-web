@@ -150,10 +150,43 @@ await ctx.addInitScript(() => {
   // ------------------------------------------------------------ worker hooks
   // The drawn source's messages, both ways. Nothing here changes a message; it
   // is a tap on the wire between the scheduler and the rasterizer.
-  const W = { reqs: 0, resps: 0, bitmaps: 0, depth: 0, maxDepth: 0, ms: 0, byZ: {}, keys: [] }
+  //
+  // ROUND 58 adds the clock to this tap, and it is the only wall-clock number
+  // this file trusts. Every OTHER measurement here is a count, because
+  // SwiftShader inflates GL time — but the wire between the scheduler and the
+  // rasterizer has no GL on it. What a request spends there is
+  //
+  //     latency  =  the render the worker reports  +  WAIT
+  //
+  // and `wait` is time the request sat in the worker's message queue behind
+  // something else. That is the number that convicts a stall: a worker that is
+  // parsing 3.3 MB of TopoJSON cannot answer a tile, and the tiles it cannot
+  // answer are the ones the reader is zooming through.
+  const W = {
+    reqs: 0,
+    resps: 0,
+    bitmaps: 0,
+    depth: 0,
+    maxDepth: 0,
+    ms: 0,
+    byZ: {},
+    keys: [],
+    /** Render ms and queue-wait ms, per level, as samples. */
+    msByZ: {},
+    waitByZ: {},
+    queueByZ: {},
+    /** Gaps between consecutive answers while the queue was NOT empty. */
+    gaps: [],
+    /** `{t, stage}` for each upgrade announcement — 50m, then 10m. */
+    upgrades: [],
+    /** Requests posted while the worker owed an answer it had not sent. */
+    lastResp: 0,
+    t0: 0,
+  }
   window.__worker = W
   const OrigWorker = window.Worker
   const zOf = new Map()
+  const sentAt = new Map()
   window.Worker = function (...args) {
     const w = new OrigWorker(...args)
     const post = w.postMessage.bind(w)
@@ -163,20 +196,58 @@ await ctx.addInitScript(() => {
         W.depth++
         W.maxDepth = Math.max(W.maxDepth, W.depth)
         zOf.set(msg.id, msg)
+        // Epoch, not `performance.now`: it is compared against the worker's own
+        // stamp (`DrawnTileResponse.at`) and the two contexts have different
+        // time origins. `Date.now` is virtualised in this file and cannot be
+        // used for a wall-clock question at all.
+        sentAt.set(msg.id, performance.timeOrigin + performance.now())
       }
       return post(msg, transfer)
     }
     w.addEventListener('message', (e) => {
       const d = e.data
-      if (!d || d.upgraded) return
+      const now = performance.now()
+      if (!d) return
+      if (d.upgraded) {
+        W.upgrades.push({ t: +(now - W.t0).toFixed(1), stage: d.upgraded, ms: d.ms || 0 })
+        return
+      }
+      // A gap is only a gap if somebody was waiting: the interval between two
+      // answers with an empty queue in between is the reader looking at a
+      // finished picture, which is not a stall.
+      if (W.depth > 0 && W.lastResp) {
+        W.gaps.push({
+          ms: +(now - W.lastResp).toFixed(1),
+          t: +(now - W.t0).toFixed(1),
+          queued: W.depth,
+        })
+      }
+      W.lastResp = now
       W.resps++
       W.depth = Math.max(0, W.depth - 1)
       if (d.bitmap) W.bitmaps++
       W.ms += d.ms || 0
       const req = zOf.get(d.id)
+      const sent = sentAt.get(d.id)
       zOf.delete(d.id)
+      sentAt.delete(d.id)
       if (!req) return
       W.byZ[req.z] = (W.byZ[req.z] || 0) + 1
+      ;(W.msByZ[req.z] ??= []).push(+(d.ms || 0).toFixed(2))
+      // TWO WAITS, and the difference between them is the point.
+      //
+      //   queue — from the post to the moment the WORKER picked the message up
+      //           (`d.at`). Nothing but the worker's own event loop is in it,
+      //           so a number here is the rasterizer being unable to answer.
+      //   wait  — the same interval plus delivery back to a main thread that,
+      //           under SwiftShader, is often inside a multi-second GL call.
+      //           Kept because it is what round 57's harness could see, and
+      //           discarded as evidence for exactly that reason.
+      if (sent) {
+        const epoch = performance.timeOrigin + now
+        ;(W.waitByZ[req.z] ??= []).push(+(epoch - sent - (d.ms || 0)).toFixed(1))
+        if (d.at) (W.queueByZ[req.z] ??= []).push(+Math.max(0, d.at - sent).toFixed(1))
+      }
       W.keys.push(`${req.z}/${req.x}/${req.y}`)
     })
     return w
@@ -211,6 +282,9 @@ await ctx.addInitScript(() => {
       gl.frame.reqs = W.reqs
       gl.frame.resps = W.resps
       gl.frame.depth = W.depth
+      // Wall time since the run began, so a stall in the answer stream can be
+      // put beside the frame the camera was on when it happened.
+      gl.frame.t = +(t - W.t0).toFixed(1)
       window.__sample?.(gl.frame)
       gl.frames.push(gl.frame)
       gl.frame = fresh()
@@ -294,6 +368,13 @@ await page.evaluate(() => {
     W.reqs = W.resps = W.bitmaps = W.ms = W.maxDepth = 0
     W.byZ = {}
     W.keys = []
+    W.msByZ = {}
+    W.waitByZ = {}
+    W.queueByZ = {}
+    W.gaps = []
+    W.upgrades = []
+    W.lastResp = 0
+    W.t0 = performance.now()
     const L = window.__longtasks
     L.count = L.total = L.max = 0
   }
@@ -406,12 +487,46 @@ const scripted = (fn, arg) =>
     [fn, arg],
   )
 
+/** p-th of a sample, sorted here so the caller may hand it in any order. */
+const pct = (xs, p) => {
+  const s = [...xs].sort((a, b) => a - b)
+  return s.length ? +s[Math.min(s.length - 1, Math.floor(s.length * p))].toFixed(2) : 0
+}
+
+/**
+ * What each pyramid level cost, and how much of that cost was WAITING.
+ *
+ * The median render is the tile; the median wait is the queue in front of it.
+ * They are reported side by side because the round is about the second one:
+ * a tile that draws in 0.4 ms and lands 900 ms after it was asked for did not
+ * get slower, it got stuck behind something.
+ */
+const perLevel = (worker) =>
+  Object.fromEntries(
+    Object.keys(worker.byZ)
+      .sort((a, b) => a - b)
+      .map((z) => [
+        z,
+        {
+          n: worker.byZ[z],
+          renderMed: pct(worker.msByZ[z] ?? [], 0.5),
+          renderP95: pct(worker.msByZ[z] ?? [], 0.95),
+          waitMed: pct(worker.waitByZ[z] ?? [], 0.5),
+          waitMax: Math.max(0, ...(worker.waitByZ[z] ?? [])),
+          queueMed: pct(worker.queueByZ[z] ?? [], 0.5),
+          queueMax: Math.max(0, ...(worker.queueByZ[z] ?? [])),
+        },
+      ]),
+  )
+
 const summarise = (label, out, extra) => {
   const f = out.frames.filter((x) => x.ms > 0)
   const ms = f.map((x) => x.ms).sort((a, b) => a - b)
   const at = (p) => ms[Math.min(ms.length - 1, Math.floor(ms.length * p))] ?? 0
   const sum = (k) => f.reduce((s, x) => s + (x[k] || 0), 0)
   const zs = f.map((x) => x.z).filter(Boolean)
+  const gaps = extra.worker.gaps
+  const worst = gaps.reduce((a, b) => (b.ms > (a?.ms ?? 0) ? b : a), null)
   return {
     label,
     frames: f.length,
@@ -423,6 +538,20 @@ const summarise = (label, out, extra) => {
     workerMaxQueue: extra.worker.maxDepth,
     workerRenderMs: +extra.worker.ms.toFixed(1),
     renderedByZ: extra.worker.byZ,
+    /** Per level: how long a tile took to draw, and how long it waited first. */
+    byLevel: perLevel(extra.worker),
+    /**
+     * THE STALL. Longest interval between two answers with the queue not empty,
+     * how deep the queue was when it broke, and how much of the run's whole
+     * answer stream those gaps account for.
+     */
+    worstGapMs: worst?.ms ?? 0,
+    worstGapAtMs: worst?.t ?? 0,
+    worstGapQueued: worst?.queued ?? 0,
+    gapsOver100ms: gaps.filter((g) => g.ms > 100).length,
+    gapMsOver100: +gaps.filter((g) => g.ms > 100).reduce((s, g) => s + g.ms, 0).toFixed(1),
+    /** When each finer file announced itself, relative to the run's start. */
+    upgrades: extra.worker.upgrades,
     atlasCalls: sum('atlasCalls'),
     lowCalls: sum('lowCalls'),
     atlasMB: +(sum('atlasBytes') / 1048576).toFixed(2),
@@ -466,6 +595,11 @@ const measure = async (label, body) => {
         maxDepth: window.__worker.maxDepth,
         ms: window.__worker.ms,
         byZ: window.__worker.byZ,
+        msByZ: window.__worker.msByZ,
+        waitByZ: window.__worker.waitByZ,
+        queueByZ: window.__worker.queueByZ,
+        gaps: window.__worker.gaps,
+        upgrades: window.__worker.upgrades,
       },
       snap: {
         slotWrites: window.__snap.slotWrites,
@@ -509,6 +643,72 @@ const measure = async (label, body) => {
 
 const report = { tag: TAG, runs: [] }
 const HOME = { lat: 46.2, lng: 8.0 }
+/** A coast far from HOME, so the cold run leaves the pan's tiles uncached. */
+const COAST = { lat: 61.3, lng: 6.0 }
+
+/**
+ * THE ZOOM FLOOR, measured rather than assumed.
+ *
+ * Round 57 took `DRAWN_Z_MAX` from 9 to 11, so the old script's 0.025 (level 8
+ * here) no longer reaches the bottom of the pyramid and a zoom that stops there
+ * stops measuring exactly the levels the round added. The camera's own floor is
+ * `MIN_ALTITUDE_DETAIL` — a 100 km view — and this harness runs a 1000×750
+ * window at DPR 1, where that floor wants LEVEL 10. A 2× desktop wants 11 out
+ * of the same altitude; the levels crossed are reported, not assumed, so the
+ * table says which ones this machine actually saw.
+ */
+const FLOOR_ALT = 0.0035
+
+/**
+ * PROBE_ONLY — the mechanism without the gesture. See `probe` at the foot.
+ *
+ * The four scripted runs below cost half an hour of wall time under
+ * SwiftShader; the probe costs a minute and answers the one question this round
+ * turned on. Both are kept: the runs say what a gesture costs in counts, the
+ * probe says what a tile waits for in milliseconds.
+ */
+const GESTURES = !process.env.PROBE_ONLY
+
+if (GESTURES) {
+/**
+ * RUN 0 — THE COLD ZOOM, which is the run the field report is about.
+ *
+ * "Map mode is slow again, especially when zooming in." The three runs below it
+ * are round 54's and they all start from a world whose geometry is fully
+ * parsed. That is not the state a reader is in the first time they zoom to a
+ * coast: crossing level 7 is what asks for the 3.3 MB 10m file (`requestFine`),
+ * and whatever that costs is paid in the middle of the gesture that triggered
+ * it. So the first thing measured is a zoom from the world to the floor at a
+ * coast nobody has looked at yet, and the numbers to read out of it are
+ * `worstGapMs` (the longest the rasterizer went without answering while tiles
+ * were queued) and `byLevel[…].waitMed`.
+ *
+ * It is measured at COAST rather than at HOME so that the pan below still
+ * starts from a cache that has never held its own tiles.
+ */
+const ZOOM_COLD = `
+  if (i >= 90) return false
+  g.pointOfView({ lat: arg.lat, lng: arg.lng, altitude: 2.4 * Math.pow(arg.to / 2.4, i / 89) })
+  return true
+`
+await pov({ ...COAST, altitude: 2.4 })
+await quiesce()
+report.runs.push(
+  await measure('cold zoom world->floor (first 10m rung)', () =>
+    scripted(ZOOM_COLD, { ...COAST, to: FLOOR_ALT }),
+  ),
+)
+// …and then let the rung finish arriving, so everything below is measured
+// against a fully parsed world — which is what round 54's table assumed.
+await page
+  .waitForFunction(() => /10m/.test(window.__detail.sourceLabel), null, { timeout: 240_000 })
+  .catch(() => console.log('      NOTE: the 10m label never arrived'))
+await quiesce()
+report.afterCold = await page.evaluate(() => ({
+  label: window.__detail.sourceLabel,
+  z: window.__detail.index?.z ?? null,
+  resident: window.__detail.index?.resident ?? null,
+}))
 
 /**
  * THE PAN FIRST, and that ordering is a measurement rather than a preference.
@@ -541,12 +741,14 @@ report.runs.push(await measure('pan z9', () => scripted(PAN, HOME)))
 // per-event zoom floor so every frame's request lands.
 const ZOOM = `
   if (i >= 90) return false
-  g.pointOfView({ lat: arg.lat, lng: arg.lng, altitude: 2.4 * Math.pow(0.025 / 2.4, i / 89) })
+  g.pointOfView({ lat: arg.lat, lng: arg.lng, altitude: 2.4 * Math.pow(arg.to / 2.4, i / 89) })
   return true
 `
 await pov({ ...HOME, altitude: 2.4 })
 await quiesce()
-report.runs.push(await measure('zoom world->z9', () => scripted(ZOOM, HOME)))
+report.runs.push(
+  await measure('warm zoom world->floor', () => scripted(ZOOM, { ...HOME, to: FLOOR_ALT })),
+)
 await quiesce()
 report.zoomed = await page.evaluate(() => ({
   altitude: window.__globe.pointOfView().altitude,
@@ -561,12 +763,14 @@ report.zoomed = await page.evaluate(() => ({
 //     would show ------------------------------------------------------------
 const OUT = `
   if (i >= 90) return false
-  g.pointOfView({ lat: arg.lat, lng: arg.lng, altitude: 0.025 * Math.pow(2.4 / 0.025, i / 89) })
+  g.pointOfView({ lat: arg.lat, lng: arg.lng, altitude: arg.from * Math.pow(2.4 / arg.from, i / 89) })
   return true
 `
-await pov({ ...HOME, altitude: 0.025 })
+await pov({ ...HOME, altitude: FLOOR_ALT })
 await quiesce()
-report.runs.push(await measure('zoom out z9->world', () => scripted(OUT, HOME)))
+report.runs.push(
+  await measure('zoom out floor->world', () => scripted(OUT, { ...HOME, from: FLOOR_ALT })),
+)
 
 // --- rest: nothing should be happening at all -------------------------------
 await pov({ ...HOME, altitude: 0.3 })
@@ -581,9 +785,108 @@ report.rested = await page.evaluate(() => ({
   resident: window.__detail.index?.resident ?? null,
   wanted: (window.__detail.want?.plan?.level?.length ?? 0) + (window.__detail.want?.plan?.fallback?.length ?? 0),
 }))
+}
+
+/* ------------------------------------------------ the probe, and why it exists
+ *
+ * THE GESTURE RUNS ABOVE CANNOT SEE A ONE-SECOND STALL, and that is a fact
+ * about this harness rather than about the build. Under SwiftShader an animated
+ * frame of this surface takes on the order of a second, so a scripted 90-frame
+ * zoom lasts a minute and a half of wall time while asking for a hundred tiles
+ * — one every second. A decode that blocks the rasterizer for a second
+ * therefore delays about one tile, and the queue-wait column stays flat. In a
+ * browser with a GPU the same gesture is 1.5 seconds and asks for the same
+ * hundred tiles, so the same decode blocks the WHOLE gesture. Scaling frames
+ * and leaving the decode at its true cost is precisely the distortion the
+ * round-54 note warns about, and it is why that harness counts events.
+ *
+ * So the mechanism is measured directly instead, on a freshly loaded page that
+ * has never asked for the rung: request tiles at the fine level at a steady
+ * cadence, trigger the rung with the first of them, and record what each tile
+ * WAITED in the worker's queue (`DrawnTileResponse.at`, which is stamped when
+ * the worker picks the message up). Nothing here draws a frame, so nothing here
+ * is inflated by the software rasteriser — and the question "can this worker
+ * answer a tile while the 10m file is being parsed" is answered by the worker
+ * itself.
+ */
+/** When the 3.3 MB file was asked for and when it finished, off the wire. */
+const fineNet = { asked: 0, done: 0 }
+page.on('request', (r) => {
+  if (r.url().includes('land-10m.json')) fineNet.asked = Date.now()
+})
+page.on('requestfinished', (r) => {
+  if (r.url().includes('land-10m.json')) fineNet.done = Date.now()
+})
+await page.reload({ timeout: 120_000 })
+await page.waitForFunction(() => !!window.__globe && !!window.__detail, null, { timeout: 60_000 })
+await page.evaluate(() => window.__settings.setMode('schematic'))
+await page.evaluate(() => window.__setTime(1941))
+// Level 6: streaming, so the source exists and the 50m stage lands — and
+// coarser than the rung, so nothing has asked for it.
+await page.evaluate(() => window.__globe.pointOfView({ lat: 61.3, lng: 6.0, altitude: 0.3 }))
+await page.waitForFunction(() => window.__drawn?.source?.label?.includes('50m'), null, {
+  timeout: 180_000,
+})
+report.probe = await page.evaluate(async () => {
+  const d = window.__drawn
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+  const y0 = Math.floor(((90 - 61.5) / 180) * 2 ** 6)
+  const x0 = Math.floor(((6 + 180) / 360) * 2 ** 7)
+  const from = d.waits.length
+  const t0 = performance.now()
+  let landed = 0
+  // One tile every 100 ms — a tenth of what a real zoom asks for — until the
+  // rung has landed, or twenty seconds have passed and it never will.
+  for (let i = 0; i < 200; i++) {
+    void d.source.render({ z: 7, x: x0 + (i % 8), y: y0 + ((i >> 3) % 4) }).catch(() => {})
+    await sleep(100)
+    if (!landed && /10m/.test(d.source.label)) {
+      landed = performance.now() - t0
+      // …and a second of cadence past the swap, because a rung that lands and
+      // then blocks the worker while it is installed is the same defect.
+      if (i < 190) i = 190
+    }
+  }
+  await sleep(500)
+  const waits = d.waits.slice(from)
+  const s = [...waits].sort((a, b) => a - b)
+  const at = (p) => +(s[Math.min(s.length - 1, Math.floor(s.length * p))] ?? 0).toFixed(1)
+  return {
+    tiles: waits.length,
+    label: d.source.label,
+    rungLandedMs: +landed.toFixed(0),
+    waitMed: at(0.5),
+    waitP95: at(0.95),
+    waitMax: +Math.max(0, ...waits).toFixed(1),
+    over200ms: waits.filter((w) => w > 200).length,
+    lostMs: +waits.filter((w) => w > 200).reduce((a, b) => a + b, 0).toFixed(0),
+    renderMed: (() => {
+      const r = [...d.times].sort((a, b) => a - b)
+      return +(r[r.length >> 1] ?? 0).toFixed(2)
+    })(),
+    /** Absent on a build that decodes the rung on the render thread. */
+    decodeMs: d.fineDecodeMs ? +d.fineDecodeMs.toFixed(0) : null,
+  }
+})
+report.probe.fetchMs = fineNet.done && fineNet.asked ? fineNet.done - fineNet.asked : null
 
 console.log(JSON.stringify(report, null, 1))
 writeFileSync(`/tmp/drawnperf-${TAG}.json`, JSON.stringify(report, null, 1))
+
+/** The one-screen reading of it, in the order the round argues from. */
+console.log(`\n=== ${TAG} ===`)
+for (const r of report.runs) {
+  console.log(
+    `\n${r.label}\n  levels ${r.levelsCrossed.join(',')}  renders ${r.workerReqs}` +
+      ` (never slotted ${r.renderedNeverSlotted})  uploads ${r.atlasCalls}+${r.lowCalls}` +
+      `  ${r.atlasMB} MB  maxQueue ${r.workerMaxQueue}\n` +
+      `  worst answer gap ${r.worstGapMs} ms at t=${r.worstGapAtMs} with ${r.worstGapQueued} queued;` +
+      ` ${r.gapsOver100ms} gaps > 100 ms totalling ${r.gapMsOver100} ms\n` +
+      `  upgrades ${JSON.stringify(r.upgrades)}\n` +
+      `  per level ${JSON.stringify(r.byLevel)}`,
+  )
+}
+console.log(`\nthe probe — what a tile waited for while the rung arrived\n  ${JSON.stringify(report.probe)}`)
 
 await browser.close()
 await server.close()

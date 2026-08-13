@@ -28,6 +28,10 @@ boolean checks.
   already handles nested focus, back-navigation, and dismissal. No new
   navigation state. A step without `child` behaves exactly as today
   (page + drawing + camera within the current focus).
+  *Round 58 put a press between the two:* selecting the step previews the
+  child, and the focus is pushed by the preview's "Open event". The
+  machinery is unchanged — it is still `showOnMap` on the child and still
+  no new navigation state — only which press fires it. See rule 15.
 - Validation (build_event_chunks.py): every `child` id exists; the
   step-child graph is acyclic (it should follow the already-acyclic
   `parent` relation, but validate independently); a step with `child`
@@ -81,7 +85,9 @@ item 4) all read "operation" nowhere visible; where copy is needed it says
 saga/steps. Item 5 (the step timeline that replaces the main timeline while
 a saga is on the map) builds directly on this model: a station on that
 timeline that carries `child` is an entrance — it advertises descent and
-pushes focus, with the timeline re-anchoring to the child's span.
+pushes focus, with the timeline re-anchoring to the child's span. (Round 58:
+it advertises the descent and *previews* it; the push is one press further
+on. Rule 15.)
 
 ## The rail's contract, as corrected (round 44)
 
@@ -99,9 +105,20 @@ lib/present/sagaTimeline.ts.
    without dates"*. The answer to a saga with no dates is dates (see 4).
 2. **The rail is one half of a pair.** The other half is the plain way
    through — prev, next, and a list of every step by name and date —
-   mounted with the rail. The keyboard drives the same pair. A step that is
-   an entrance is moved to, never entered, by prev/next: descending is a
-   change of context and has to be asked for (Enter, or a press).
+   mounted with the rail. The keyboard drives the same pair. Descending is a
+   change of context and has to be asked for.
+
+   *Amended, round 58.* The second half of that rule used to read: "a step
+   that is an entrance is moved to, never entered, by prev/next". It was
+   written when landing on an entrance WAS descending, and it bought
+   protection from that at a price nobody costed — the walk had to keep a
+   position of its own for the steps it refused to open, so there were two
+   answers to "where is the walk" and they parted company at the first
+   entrance (rule 16). Landing on an entrance is safe now: it previews
+   (rule 15). So **prev/next open every step, entrances included**, and
+   what still has to be asked for is the descent itself — Enter on the
+   rail, or the preview's own "Open event". The clause the rule was
+   protecting survives; only the thing it was protecting against went.
 3. **A saga is entered by its own action.** "Show steps on map" on the
    article, in brass, with the step count on it, ahead of the generic Show
    on map; and on a phone, opening a step shows the step's ink with the
@@ -318,3 +335,128 @@ lib/present/sagaTimeline.ts.
       keeps their positions truthful — but a bar from a mark 15 000 px
       away is not a fact about what is on screen.
     - Positions are untouched: crowding costs lanes, never positions.
+
+## The rail's contract, round 58
+
+15. **An entrance is a step you can stand on, and a door you have to
+    open.** Until this round a step that named a `child` descended the
+    instant it was selected: the saga left the screen, the rail
+    re-anchored to the child's span, and the focus stack grew — all from
+    a press on a control whose only visible promise was a name and a
+    date. A reader who wanted to know *what a step was* had to change
+    what the whole map was about to find out, and then climb back. In
+    the reader's own words, entrances *"should be displayed as a step
+    (with reduced description and if they are an operation themselves,
+    you should still preview them as a step) but you should display a
+    button to open step as a detailed event"*.
+
+    Selecting an entrance now shows a **step preview**, and every part
+    of that is a decision:
+
+    - The **saga keeps the focus**. `focusStack` does not move, the
+      rail stays mounted, and the entrance is the station drawn as the
+      open step. The preview is a reading of one moment of THIS saga —
+      which is what a step is — not a visit to another item.
+    - The panel shows the step's **name and date** (the same two facts
+      its station carries, resolved through the rail's own
+      `stationAt`, so the two cannot disagree) over the **child's
+      `summary`** — the reduced description the corpus already carries
+      for every one of them. Nothing new is authored for this.
+    - The map shows **the child**: the frame `showOnMap` would fit for
+      it, the child's own ink where it has any, and its pin forced on
+      and accented (`highlightedIds`). A preview promises what is
+      behind the step, and on a map that promise is ink. The focus has
+      not moved, so all of it reverts the moment the reader steps off.
+    - A child that is **itself a saga previews as a step**, and says
+      so with its step count. Its own steps are behind the button, not
+      in this panel: arriving inside an eleven-step campaign is exactly
+      the surprise the preview exists to remove.
+    - One **brass "Open event"** performs the old behaviour —
+      `showOnMap` on the child, which is the push a click on a child
+      pin already made, so the descent adds no navigation state and the
+      way back out is the ladder every other part uses (`openEntrance`).
+    - A child this build **has not merged yet** previews with no
+      summary and no button. It is still a step of this saga with a
+      name and a date, and the walk must not stall on a chunk that is
+      still in flight.
+
+16. **There is one answer to "where is the walk", and it is the store's.**
+    *"Next step arrow button sometimes doesn't work — I think it works
+    the first time and then stops working for another step."*
+
+    The rail kept a `cursor` of its own beside the store's `stepId`, and
+    prev/next counted from `stepId ?? cursor`. Two values agree only
+    while every press writes both, and rule 2 as it stood guaranteed one
+    press that did not: a press onto an entrance moved the cursor and
+    left `stepId` behind. Every press after that counted from the stale
+    `stepId`, recomputed the same entrance, and wrote the cursor a value
+    it already held — a silent no-op, forever. Measured on the Great War
+    (`p p p E E p p p p`, tests/e2e/repro58.e2e.mjs):
+
+        press 3   cursor=gallipoli  step=gallipoli
+        press 4   cursor=verdun     step=gallipoli   ← the split
+        press 5   cursor=verdun     step=gallipoli   ← dead, and after
+
+    The window never moved during any of it, so the eased pan
+    (`revealIn`) was not in it, and the store was doing exactly what it
+    was asked. The fix is not a third rule about which value to write
+    when. **`stepId` IS the walk's position**; the rail's cursor, its
+    `aria-activedescendant`, the list's highlight and the mark drawn on
+    top are all readings of it, and every press goes through
+    `selectStep`. That is only safe because of rule 15 — there is no
+    step on this rail it costs the reader anything to be moved onto.
+
+17. **A control is labelled with what pressing it does, not with what it
+    once did to get here.** The pill's expand control said "Restore"
+    through round 57, and "restore" is a claim about history: put back
+    the window I put down. It was true of one of the states the pill
+    appears in. Land on a saga on a phone and the article was never up;
+    step into a page and what would come up is a page nobody has seen;
+    land on an entrance and it is a preview that did not exist a moment
+    ago. So the word is what the press yields, and there are two:
+
+    - **"Open"** — the ordinary case. The press brings up the reading
+      of the thing the pill already names: the context's article, its
+      open step's page, or an entrance's preview. Where the reader is
+      does not change; a panel that was down comes up.
+    - **"Open event"** — when the pill names a PART of the context
+      rather than the context itself (`focusReturnTo`, i.e. a child
+      event opened inside the saga and then folded away). The press
+      opens that child's own article — a different item from the one
+      the map is about — and the back-arrow beside it on the same pill
+      is the proof.
+
+    The second wording deliberately rhymes with the preview's brass
+    button, because the two are the same promise about the same kind of
+    thing: a full child event, opened. What they differ in is depth, and
+    depth is the one thing a label on a bar cannot usefully say.
+
+18. **The desktop rail is sized for a desktop.** *"Timeline should be
+    larger and buttons there should be larger too — especially for steps
+    navigation. Also center them."* The saga rail's geometry was
+    inherited whole from the era rail's 92px box, on screens with 700px
+    of empty map above it: prev and next were 20px tall, which is under
+    half of any pointing guideline's floor, and the walk — the one
+    control a reader uses on every single step — was pinned to the far
+    right of the head row, against a zoom cluster it has nothing to do
+    with, as far from the middle of a 1280px screen as it is possible to
+    put it. It was there because it had been written into a flex row
+    that already had a breadcrumb in it.
+
+    - `--rail` is **118px under a saga** and 100 for the era rail, on a
+      desktop; the phone's 116 is unchanged. Stated in tokens.css as
+      the one token every clearance derives from (rule 9's reasoning,
+      unchanged): the pill, the mobile sheet and the scale bar all
+      follow without being told.
+    - The head row takes 40 of them, the walk's buttons are **34px**
+      and the zoom column's are 34 in a 40px gutter.
+    - The walk is **centred on the rail**, out of the flex flow
+      entirely (`left: 50%` against the head's padding box). In the
+      flow its position was a function of how long the saga's name and
+      span readout happened to be, which is not something a reader
+      should have to track between two presses of next. The index it
+      opens follows it to the middle.
+    - The gutter grew 6px and **that is measured, not assumed**: round
+      51 recorded the tightest case in the corpus as Barbarossa's last
+      station at 1440px, with 58px of label room against a floor of 56.
+      It still names all five (tests/e2e/repro58.e2e.mjs).

@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { parseItem, type HistoricalEvent, type MapPin, type RawEvent } from '../src/lib/events'
-import { clusterSvg as emitClusterSvg, pinShiftPercent, pinSvg as emitPinSvg } from '../src/lib/eventPins'
+import {
+  clusterSvg as emitClusterSvg,
+  pinAnchor,
+  pinBox,
+  pinShiftPercent,
+  pinSvg as emitPinSvg,
+} from '../src/lib/eventPins'
 import {
   clusterSize,
   pinHeight,
@@ -9,6 +15,7 @@ import {
   resolveClusterSpec,
   resolvePinSpec,
   GLYPH_R,
+  SELECT_COLOR,
   glyphReach,
   pinTitle,
   TAG_GLYPHS,
@@ -108,9 +115,154 @@ describe('pinSvg', () => {
     expect(Number(attr(svg, 'height'))).toBe(Number(attr(pinSvg(ev({ area: [[0, 0]] }), false), 'height')))
   })
 
-  it('marks the selection with a halo and a white outline', () => {
+  it('marks the selection with a white outline', () => {
     expect(pinSvg(ev(), true)).toContain('#ffe27a')
     expect(pinSvg(ev(), false)).not.toContain('#ffe27a')
+    expect(resolvePinSpec(ev(), { mode: 'realistic', selected: true, tier: 1 }).stroke).toBe('#fff')
+  })
+})
+
+/* ------------------------------------------------------------ the selection */
+
+/**
+ * THE SELECTED PIN — round 58.
+ *
+ * The reported defect was geometric: the selection was a circle of radius 10.5
+ * centred on the head, the head is a disc of radius 9, and the body carries on
+ * downward for another twenty units — so the ring cleared the head and came
+ * back down ACROSS THE TAIL. Every assertion here is a restatement of "no mark
+ * the selection adds may be drawn over the artwork".
+ */
+describe('the selection mark', () => {
+  const sel = (o: Partial<RawEvent> = {}, tier: Tier = 1, mode: RenderMode = 'realistic') =>
+    pinSvg(ev(o), true, tier, mode)
+
+  /** Everything drawn after the teardrop is drawn ON the pin. */
+  const overArt = (svg: string) => svg.slice(svg.indexOf('stroke-width="1.5"'))
+
+  it('lays no ring over the pin, at any size or in either mode', () => {
+    for (const mode of ['realistic', 'schematic'] as const)
+      for (const tier of [1, 2, 3] as Tier[])
+        for (const shape of [{}, { tags: ['politics' as const] }, { area: [[0, 0], [1, 1], [2, 0]] }]) {
+          const over = overArt(sel(shape, tier, mode))
+          // the head's coloured disc is radius 9 inside a 1.5 outline; anything
+          // drawn on the pin and wider than that leaves the head, and anything
+          // that leaves the head comes back down across the tail
+          for (const [, r] of over.matchAll(/<circle cx="12" cy="11" r="([\d.]+)"/g))
+            expect(Number(r), `${mode}/${tier}`).toBeLessThanOrEqual(8.25)
+          for (const [, rx] of over.matchAll(/<ellipse[^/]*rx="([\d.]+)"/g))
+            expect(Number(rx), `${mode}/${tier}`).toBeLessThanOrEqual(8.25)
+        }
+  })
+
+  /** …and the glow and the accent are behind it, which is why they may be wide. */
+  it('keeps the tier glow and the step accent behind the body too', () => {
+    const spec = resolvePinSpec(ev(), { mode: 'realistic', selected: false, tier: 1, highlighted: true })
+    const svg = emitPinSvg(spec)
+    const body = svg.indexOf('stroke-width="1.5"')
+    expect(svg.indexOf('r="11"')).toBeLessThan(body) // the glow
+    expect(svg.indexOf('r="11.2"')).toBeLessThan(body) // the accent
+  })
+
+  it('is a rim on the pin’s own outline and a ring on the ground under the tip', () => {
+    const svg = sel()
+    expect(svg).toContain('class="pin-rim"')
+    expect(svg).toContain('class="pin-base"')
+    // the rim is the TEARDROP, scaled — not a new shape to learn
+    expect(svg.match(/<path d="M12 31C/g)).toHaveLength(2)
+    // …and the ground ring is centred on the tip, which is what "this spot" means
+    expect(svg).toMatch(/<ellipse cx="12" cy="31"/)
+  })
+
+  it('draws both BEHIND the body, which is what keeps them off the artwork', () => {
+    const svg = sel({ tags: ['politics'] })
+    const body = svg.indexOf('stroke-width="1.5"') // the teardrop's own outline
+    expect(svg.indexOf('pin-base')).toBeLessThan(body)
+    expect(svg.indexOf('pin-rim')).toBeLessThan(body)
+    // …and the head's own dot is drawn after it, so nothing is laid over that
+    expect(body).toBeLessThan(svg.indexOf('r="3.6"'))
+  })
+
+  it('lets an area pin’s own footprint be its ground ring, in the selection’s tone', () => {
+    const svg = pinSvg(ev({ area: [[0, 0], [1, 1], [2, 0]] }), true)
+    expect(svg).toContain('pin-footprint')
+    expect(svg).not.toContain('pin-base') // no second ellipse stacked on it
+    expect(svg).toMatch(/stroke="#ffe27a" stroke-width="2.2" stroke-dasharray/)
+    // …and an unselected one keeps the white dashes it always had
+    expect(pinSvg(ev({ area: [[0, 0], [1, 1], [2, 0]] }), false)).toMatch(
+      /stroke="#fff" stroke-width="2.2" stroke-dasharray/,
+    )
+  })
+
+  it('gives the box the room the marks need, and only when they are drawn', () => {
+    // the rim's crown goes above the teardrop and the ground ring below the tip
+    expect(attr(pinSvg(ev(), false), 'viewBox')).toBe('0 0 24 32')
+    expect(attr(pinSvg(ev(), true), 'viewBox')).toBe('0 -2 24 38')
+    expect(attr(pinSvg(ev({ area: [[0, 0]] }), true), 'viewBox')).toBe('0 -2 24 42')
+    // …and everything the selection draws is INSIDE it
+    const box = pinBox(resolvePinSpec(ev(), { mode: 'realistic', selected: true, tier: 1 }))
+    expect(box.y).toBeLessThanOrEqual(-0.9) // the rim's crown, scaled about (12,20)
+    expect(box.y + box.h).toBeGreaterThanOrEqual(35.3) // the ground ring's lower edge
+  })
+
+  it('still stands the pin’s tip on the coordinate, whatever box it drew in', () => {
+    /*
+     * CSS2DRenderer centres the element on the coordinate and `--pin-shift`
+     * moves it up by a percentage of its own height. The claim is that after
+     * that move the TIP is on the coordinate — for every box this file can
+     * emit, including the two the selection introduced. Measured the way the
+     * browser does it: in element pixels.
+     */
+    const offset = (e: MapPin, selected: boolean) => {
+      const spec = resolvePinSpec(e, { mode: 'realistic', selected, tier: 1 })
+      const box = pinBox(spec)
+      const px = (spec.height * box.h) / 32 // the element's own height
+      const tipFromTop = (pinAnchor(box) / box.h) * px
+      return tipFromTop - px / 2 + (pinShiftPercent(box.h, pinAnchor(box)) / 100) * px
+    }
+    for (const e of [ev(), ev({ area: [[0, 0], [1, 1], [2, 0]] })])
+      for (const selected of [false, true]) expect(offset(e, selected)).toBeCloseTo(0, 9)
+  })
+
+  it('is the same treatment on paper, in the map’s own ink', () => {
+    const svg = sel({}, 1, 'schematic')
+    expect(svg).toContain('class="pin-rim"')
+    expect(svg).toContain('class="pin-base"')
+    expect(svg).toContain(SELECT_COLOR.schematic)
+    expect(svg).not.toContain(SELECT_COLOR.realistic)
+  })
+
+  it('leaves the saga ring alone: one is inside the head, the other outside it', () => {
+    const svg = pinSvg(ev({ steps: [{ id: 'one', name: 'One', at: 0 }] }), true)
+    expect(svg).toMatch(/r="7.1" fill="none"/)
+    expect(svg).toContain('class="pin-rim"')
+  })
+
+  it('rings a badge that holds the open event, clear of every ring it already has', () => {
+    const members = [ev({ id: 'a' }), ev({ id: 'b' })]
+    const on = emitClusterSvg(resolveClusterSpec(members, { mode: 'realistic', tier: 1, selected: true }))
+    const off = emitClusterSvg(resolveClusterSpec(members, { mode: 'realistic', tier: 1 }))
+    expect(on).toMatch(/r="21"[^/]*stroke="#ffe27a"/)
+    expect(off).not.toContain('#ffe27a')
+    // the box grew rather than the ring moving in on the tier ring at 19
+    expect(attr(off, 'viewBox')).toBe('0 0 40 40')
+    expect(attr(on, 'viewBox')).toBe('-3 -3 46 46')
+    expect(Number(attr(on, 'width'))).toBeGreaterThan(Number(attr(off, 'width')))
+  })
+
+  /**
+   * A pin can be selected and step-highlighted at once, and both are outside
+   * the silhouette now — so the accent is behind the body too, and the order
+   * between them is what stops the rim swallowing it.
+   */
+  it('keeps a step accent readable outside the selection’s rim', () => {
+    const spec = resolvePinSpec(ev(), { mode: 'realistic', selected: true, tier: 1, highlighted: true })
+    const svg = emitPinSvg(spec)
+    expect(svg).toContain(spec.accent!)
+    expect(svg.indexOf(spec.accent!)).toBeLessThan(svg.indexOf('pin-rim'))
+    // the accent's radius clears the rim: the head is 9 and the rim scales it
+    // by SELECT_RIM_SCALE about (12,20), which puts its edge at ~10.4
+    expect(11.2).toBeGreaterThan(9 * 1.16)
   })
 })
 

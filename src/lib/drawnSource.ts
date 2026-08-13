@@ -1,9 +1,10 @@
 import type { Tile } from './tilePyramid'
 import { TILE_PX } from './tilePyramid'
 import type { TileSource } from './detailImagery'
-import { DrawnRenderer, type DrawCtx } from './drawnTile'
-import { loadWorld, type DrawnStage } from './drawnGeometry'
+import { DrawnRenderer, LOD_FINE_Z, type DrawCtx } from './drawnTile'
+import { loadWorld, packedBuffers, unpackLayer, type DrawnStage } from './drawnGeometry'
 import type { DrawnTileRequest, DrawnTileResponse } from './drawnTile.worker'
+import type { DrawnDecodeResponse } from './drawnDecode.worker'
 
 /**
  * The drawn map as a TILE SOURCE — the whole of the pipeline integration.
@@ -157,14 +158,35 @@ export class DrawnTiles {
   readonly source: TileSource
   private worker?: Worker
   private pending = new Map<number, (r: DrawnTileResponse) => void>()
+  /** When each request was posted, on the same epoch clock the worker stamps. */
+  private sentAt = new Map<number, number>()
   private next = 1
   /** Main-thread path: the renderer, the scratch canvas, and its context. */
   private local?: Promise<DrawnRenderer>
   private canvas?: HTMLCanvasElement
   /** Render times, newest last — the budget is asserted from outside. */
   readonly times: number[] = []
+  /**
+   * How long each tile waited in the worker's queue before it was picked up.
+   *
+   * The companion to `times`, and the one round 58 exists for: `times` is what
+   * a tile costs and this is what it cost to be behind something. Kept for the
+   * same reason — a claim about a queue is assertable from outside or it is a
+   * story (tests/e2e/drawnPerf.e2e.mjs).
+   */
+  readonly waits: number[] = []
   /** Fires when a finer file lands and the label changes under the caller. */
   onUpgrade?: () => void
+  /** The 10m rung: one decode, in its own worker, at most once a session. */
+  private decoder?: Worker
+  private askedFine = false
+  /**
+   * What that decode cost, as the worker that did it measured it.
+   *
+   * Quoted rather than inferred because it is the number this round moved: the
+   * same milliseconds used to be spent on the thread that draws tiles.
+   */
+  fineDecodeMs?: number
 
   constructor(private base = '/') {
     this.source = {
@@ -185,6 +207,10 @@ export class DrawnTiles {
         const done = this.pending.get(e.data.id)
         this.pending.delete(e.data.id)
         if (e.data.ms) this.times.push(e.data.ms)
+        const sent = this.sentAt.get(e.data.id)
+        this.sentAt.delete(e.data.id)
+        if (sent !== undefined && e.data.at !== undefined)
+          this.waits.push(Math.max(0, e.data.at - sent))
         done?.(e.data)
       }
       // A worker that dies takes the drawn map with it, which is worse than a
@@ -193,6 +219,7 @@ export class DrawnTiles {
         this.worker = undefined
         for (const [, done] of this.pending) done({ id: 0, ms: 0 })
         this.pending.clear()
+        this.sentAt.clear()
       }
       return w
     } catch {
@@ -221,7 +248,63 @@ export class DrawnTiles {
     this.onUpgrade?.()
   }
 
+  /**
+   * THE 10m RUNG IS ASKED FOR HERE, one step earlier in the same causal chain.
+   *
+   * Round 57 asked for it from inside the rasterizer — `DrawnRenderer.draw`
+   * calls `world.requestFine()` on the first plate at level ≥ 7 — which is the
+   * right trigger and the wrong place to run it from: the fetch's `then` is
+   * ~700 ms of parse and cut on the thread that draws tiles, and the reader who
+   * triggers it is by definition mid-zoom. So the trigger moves to the only
+   * other place that knows the same fact one moment sooner — a TILE REQUEST at
+   * level 7, which is what causes the plate to be drawn — and the work goes to
+   * a worker with no canvas in it.
+   *
+   * The network claim round 57 made is unchanged and still checked as network
+   * traffic (drawnMap.e2e.mjs, c2): the file is fetched when a reader reaches a
+   * coast, never at load, never for a world or continental view, and once.
+   */
+  private requestFine() {
+    // No workers at all: the rasterizer keeps round 57's behaviour and fetches
+    // the file itself from inside `draw` (`loadWorld(…, { fine: true })` in
+    // `renderHere`), because a page with no worker has nowhere better to put
+    // the work — and it is already drawing tiles on the main thread.
+    if (this.askedFine || typeof Worker === 'undefined') return
+    this.askedFine = true
+    try {
+      this.decoder = new Worker(new URL('./drawnDecode.worker.ts', import.meta.url), {
+        type: 'module',
+      })
+    } catch {
+      return
+    }
+    this.decoder.onmessage = (e: MessageEvent<DrawnDecodeResponse>) => {
+      const fine = e.data.fine
+      this.fineDecodeMs = e.data.ms
+      // One decode, then nothing: the layer is 7.5 MB of typed arrays and the
+      // JSON it came from is larger still, and neither is wanted again.
+      this.decoder?.terminate()
+      this.decoder = undefined
+      if (!fine) return
+      // Straight through to the renderer, buffers transferred, so this thread
+      // touches none of the geometry it is carrying. Where there is no tile
+      // worker, the local renderer takes it in place — the same unpack.
+      if (this.worker) this.worker.postMessage({ fine }, packedBuffers(fine))
+      else
+        void this.local?.then((drawn) => {
+          drawn.world.fineLand = unpackLayer(fine)
+          this.upgrade('10m')
+        })
+    }
+    this.decoder.onerror = () => {
+      this.decoder?.terminate()
+      this.decoder = undefined
+    }
+    this.decoder.postMessage({ base: this.base })
+  }
+
   private render(t: Tile): Promise<CanvasImageSource> {
+    if (t.z >= LOD_FINE_Z) this.requestFine()
     return this.worker ? this.renderInWorker(t) : this.renderHere(t)
   }
 
@@ -230,6 +313,9 @@ export class DrawnTiles {
     const req: DrawnTileRequest = { id, base: this.base, z: t.z, x: t.x, y: t.y }
     return new Promise((resolve, reject) => {
       this.pending.set(id, (r) => (r.bitmap ? resolve(r.bitmap) : reject(new Error('drawn'))))
+      // NOT `Date.now`: it is what the pipeline's own clock is, which a test
+      // harness is entitled to virtualise, and a queue wait has to be real.
+      this.sentAt.set(id, performance.timeOrigin + performance.now())
       this.worker!.postMessage(req)
     })
   }
@@ -243,9 +329,12 @@ export class DrawnTiles {
    */
   private async renderHere(t: Tile): Promise<CanvasImageSource> {
     if (typeof document === 'undefined') throw new Error('no canvas')
-    this.local ??= loadWorld(this.base, (stage) => this.upgrade(stage)).then(
-      (w) => new DrawnRenderer(w),
-    )
+    // The rasterizer only fetches the 10m rung itself where there is no worker
+    // to fetch it in; otherwise `requestFine` above owns it and asking twice
+    // would download 3.3 MB twice.
+    this.local ??= loadWorld(this.base, (stage) => this.upgrade(stage), {
+      fine: typeof Worker === 'undefined',
+    }).then((w) => new DrawnRenderer(w))
     const drawn = await this.local
     const canvas = (this.canvas ??= Object.assign(document.createElement('canvas'), {
       width: TILE_PX,
@@ -266,6 +355,9 @@ export class DrawnTiles {
   dispose() {
     this.worker?.terminate()
     this.worker = undefined
+    this.decoder?.terminate()
+    this.decoder = undefined
     this.pending.clear()
+    this.sentAt.clear()
   }
 }

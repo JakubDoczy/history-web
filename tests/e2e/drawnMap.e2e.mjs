@@ -284,10 +284,36 @@ const streamed = await page.evaluate(() => ({
 }))
 const ms = streamed.ms
 const mean = ms.length ? ms.reduce((a, b) => a + b, 0) / ms.length : 0
+/**
+ * THE MEDIAN, not the mean, and the reason is what this number is for.
+ *
+ * The budget is a claim about the RASTERIZER: a 512² drawn tile costs about a
+ * millisecond, which is what makes a local vector source usable as a tile
+ * source at all. `__drawn.times` is wall time around `drawn.draw` inside a
+ * worker, so on a loaded machine — this harness runs SwiftShader on two cores,
+ * and round 58 put a second worker beside it for the 10m decode — any sample
+ * can carry an OS preemption that has nothing to do with the drawing. Measured
+ * here: a single 404 ms sample in a run whose median tile was 0.4 ms, and
+ * 404/40 is 10 ms of "mean" all by itself. That is how this check came to
+ * report "10.57 ms mean / 322 ms worst" and fail on a build whose tiles were
+ * unchanged.
+ *
+ * A median over forty warm renders cannot be moved by a preempted sample, and
+ * it still fails for the thing the budget exists to catch — geometry that makes
+ * EVERY tile expensive, which is exactly what the 10m rung did before it was
+ * cut into cells (11–29 ms, every tile, round 57). The mean and the worst are
+ * still printed, because they are the machine's own weather report.
+ */
+const median = (xs) => {
+  const s = [...xs].sort((a, b) => a - b)
+  return s.length ? s[s.length >> 1] : 0
+}
+const med = median(ms)
 console.log(`      pump still awake after the settle: ${streamed.rendering}`)
 console.log(
   `      ${streamed.source} @ z${streamed.z}, ${streamed.resident} tiles resident; ` +
-    `render ${mean.toFixed(2)} ms mean / ${Math.max(0, ...ms).toFixed(2)} ms worst (n=${ms.length})`,
+    `render ${med.toFixed(2)} ms median / ${mean.toFixed(2)} ms mean / ` +
+    `${Math.max(0, ...ms).toFixed(2)} ms worst (n=${ms.length})`,
 )
 await check('drawn tiles stream through the imagery pipeline', () => {
   ok(streamed.status === 'ready', `status ${streamed.status}`)
@@ -296,7 +322,7 @@ await check('drawn tiles stream through the imagery pipeline', () => {
 })
 await check('a tile renders inside the 8 ms budget in the worker', () => {
   ok(ms.length > 0, 'no render times were recorded')
-  ok(mean < 8, `mean render ${mean.toFixed(2)} ms`)
+  ok(med < 8, `median render ${med.toFixed(2)} ms`)
 })
 
 /** What had been fetched before the camera ever reached a regional view. */
@@ -353,18 +379,42 @@ const fjord = await page.evaluate(() => ({
   z: window.__detail.index?.z,
   resident: window.__detail.index?.resident,
   ms: window.__drawn?.times.slice(-60) ?? [],
+  /**
+   * How long each of those tiles waited in the worker's queue before it was
+   * picked up — round 58's number, and the one this step is really about.
+   *
+   * The rung used to be fetched, parsed and cut INSIDE this worker (~940 ms in
+   * node, more on a phone), triggered by the first plate at level 7, which is a
+   * reader in the middle of a zoom. Every tile of that gesture queued behind
+   * it. The decode is now a second worker's job, so the queue in front of a
+   * tile is other tiles and nothing else.
+   */
+  waits: window.__drawn?.waits.slice(-60) ?? [],
 }))
 await shot(page, 'c2-drawn-fjords-10m')
-const fjordMean = fjord.ms.reduce((a, b) => a + b, 0) / Math.max(1, fjord.ms.length)
+const fjordMed = median(fjord.ms)
 console.log(
   `      ${fjord.source} @ z${fjord.z}, ${fjord.resident} tiles resident; ` +
-    `render ${fjordMean.toFixed(2)} ms mean / ${Math.max(0, ...fjord.ms).toFixed(2)} ms worst ` +
-    `(n=${fjord.ms.length})`,
+    `render ${fjordMed.toFixed(2)} ms median / ${Math.max(0, ...fjord.ms).toFixed(2)} ms worst ` +
+    `(n=${fjord.ms.length}); queue wait ${median(fjord.waits).toFixed(0)} ms median / ` +
+    `${Math.max(0, ...fjord.waits).toFixed(0)} ms worst`,
 )
 await check('the finer rung takes over, and stays inside the budget', () => {
   ok(/10m/.test(fjord.source), `source is ${fjord.source}`)
   ok(fjord.z >= 7, `streaming level ${fjord.z}`)
-  ok(fjordMean < 8, `mean render ${fjordMean.toFixed(2)} ms`)
+  ok(fjordMed < 8, `median render ${fjordMed.toFixed(2)} ms`)
+})
+await check('the rung is decoded off the thread that draws', () => {
+  // 940 ms of decode on the render thread cannot hide from this: it is the
+  // queue wait of every tile asked for while it runs. The bound is generous on
+  // purpose — this harness is SwiftShader on two cores, where a tile's honest
+  // wait is tens of milliseconds — and still an order of magnitude under what
+  // one decode costs.
+  ok(fjord.waits.length > 0, 'no queue waits were recorded')
+  ok(
+    median(fjord.waits) < 300,
+    `median queue wait ${median(fjord.waits).toFixed(0)} ms — something is drawing behind a parse`,
+  )
 })
 
 /* ================================================ (d) a battle plan on paper */

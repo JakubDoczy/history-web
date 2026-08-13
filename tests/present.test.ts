@@ -8,7 +8,9 @@ import {
   REALISTIC_BACKGROUND,
   SCHEMATIC_BACKGROUND,
   SCHEMATIC_PALETTE,
+  SELECT_COLOR,
   SITE_MARKER_DEG,
+  clusterHolds,
   pinGlyphFor,
   pinStateKey,
   resolveClusterSpec,
@@ -131,20 +133,37 @@ describe('resolvePinSpec — the glyph is a statement about the model', () => {
     expect(resolvePinSpec(ev({ tags: ['technology', 'war'] }), ctx()).body).toBe(TAG_COLORS.technology)
   })
 
-  it('grows and haloes a selected pin, and rings a highlighted one', () => {
+  it('grows a selected pin and gives it a tone, and rings a highlighted one', () => {
     const plain = resolvePinSpec(ev(), ctx())
     const chosen = resolvePinSpec(ev(), ctx({ selected: true }))
     expect(chosen.height).toBeGreaterThan(plain.height)
-    expect(chosen.halo).not.toBeNull()
-    expect(plain.halo).toBeNull()
+    expect(chosen.select).toBe(SELECT_COLOR.realistic)
+    expect(plain.select).toBeNull()
     expect(plain.accent).toBeNull()
     // both at once, because they mean different things: "you opened this" and
     // "this step is about this"
     const both = resolvePinSpec(ev(), ctx({ selected: true, highlighted: true }))
-    expect(both.halo).not.toBeNull()
+    expect(both.select).not.toBeNull()
     expect(both.accent).not.toBeNull()
-    expect(both.accent).not.toBe(both.halo)
+    expect(both.accent).not.toBe(both.select)
     expect(both.classes).toContain('event-pin--accent')
+    expect(both.classes).toContain('event-pin--selected')
+  })
+
+  /**
+   * The two tones are re-aimed for the ground and NOT for each other: on paper
+   * they are both taken toward the map's pen, and if that ever collapsed them
+   * into one colour the map would say "you opened this" and "this step means
+   * this one" in the same ink.
+   */
+  it('keeps the selection and the step accent apart in both modes', () => {
+    for (const mode of MODES) {
+      const both = resolvePinSpec(ev(), ctx({ mode, selected: true, highlighted: true }))
+      expect(both.select, mode).toBe(SELECT_COLOR[mode])
+      expect(both.select, mode).not.toBe(both.accent)
+    }
+    // and the paper tone is a real re-aim rather than the same hex twice
+    expect(SELECT_COLOR.schematic).not.toBe(SELECT_COLOR.realistic)
   })
 
   it('glows for tier 1 alone', () => {
@@ -225,6 +244,41 @@ describe('map mode diverges — and only in the presentation', () => {
     // …and it is drawn, so it has to rebuild
     expect(pinStateKey({ kind: 'cluster', id: 'k', lat: 0, lng: 0, members }, undefined, 3, 'realistic', true))
       .not.toBe(pinStateKey({ kind: 'cluster', id: 'k', lat: 0, lng: 0, members }, undefined, 3, 'realistic', false))
+  })
+
+  /**
+   * A BADGE THAT SWALLOWED THE OPEN EVENT SAYS SO — the fallback half of round
+   * 58's answer to "the selected pin must be visible".
+   *
+   * The layout's own answer comes first and is stronger: `layoutPins`
+   * (lib/eventClusters.ts) lifts the open event out of its badge and draws it
+   * on its own coordinates, so on a live globe this state does not arise. It is
+   * resolved anyway, and wired anyway (GlobeView passes `clusterHolds`), because
+   * the badge is the only mark left on the spot if that lift ever stops
+   * happening — and a badge standing on the reader's open event while saying
+   * nothing is the exact defect this round was opened for, one level up.
+   */
+  it('marks a badge that holds the open event, and only then', () => {
+    const members = [ev({ id: 'a' }), ev({ id: 'b' })]
+    const at = (o: object) => resolveClusterSpec(members, { mode: 'realistic', tier: 1, ...o })
+    expect(at({}).select).toBeNull()
+    expect(at({ selected: true }).select).toBe(SELECT_COLOR.realistic)
+    expect(at({ selected: true }).classes).toContain('event-pin--selected')
+    expect(at({}).classes).not.toContain('event-pin--selected')
+    expect(resolveClusterSpec(members, { mode: 'schematic', tier: 1, selected: true }).select)
+      .toBe(SELECT_COLOR.schematic)
+  })
+
+  it('asks one question about which stack holds the selection', () => {
+    const members = [ev({ id: 'a' }), ev({ id: 'b' })]
+    expect(clusterHolds(members, 'b')).toBe(true)
+    expect(clusterHolds(members, 'c')).toBe(false)
+    expect(clusterHolds(members, undefined)).toBe(false)
+    // …and the artwork and the identity read it the same way, so a stack that
+    // gains or loses the selection is rebuilt at its new artwork
+    const badge: PinDatum = { kind: 'cluster', id: 'k', lat: 0, lng: 0, members }
+    expect(pinStateKey(badge, 'b')).not.toBe(pinStateKey(badge, undefined))
+    expect(pinStateKey(badge, 'c')).toBe(pinStateKey(badge, undefined))
   })
 
   it('quietens a cluster badge the same way', () => {

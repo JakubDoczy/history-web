@@ -20,6 +20,16 @@
       .land {
         background: #2b2a24;
       }
+      /* …and the third: the drawn map's parchment, which is where a schematic
+         pin actually stands (lib/drawnTile.ts, PAPER). Judging map-mode artwork
+         on dark land was judging it on a ground it is never seen on. */
+      .paper {
+        background: #ece2c8;
+        color: #221c12;
+      }
+      .paper .cap {
+        text-shadow: none;
+      }
       .row {
         display: flex;
         align-items: flex-end;

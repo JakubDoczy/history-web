@@ -301,3 +301,147 @@ from it would be meaningless. Every figure above is a count of something that
 happened, on a virtual 60 Hz clock, over a camera path driven from inside the
 page; the millisecond columns are medians and p95s over hundreds of calls of
 main-thread JS, which is the one thing the software rasteriser does not inflate.
+
+## Round 58 — the rung that stopped the pen
+
+The field report after round 57 shipped the 10m coastline: *"map mode is slow
+again — struggles especially when zooming in."* Round 54 had made the gesture
+cheap in counts and this was not a regression in any of them. It was one
+thread doing two jobs.
+
+**What round 57 did, and the one word it got wrong.** The 10m file is fetched
+the first time a plate is drawn at level 7 — which is the right *trigger*: it
+is a reader who has zoomed to a coast, and nobody else pays. The fetch's
+continuation ran in the **tile worker**, and there is only one of those. What
+it costs, measured in node on the vendored files:
+
+| work                                     | ms |
+| ---------------------------------------- | --------: |
+| `JSON.parse` of `land-10m.json` (3.3 MB) | 139 – 264 |
+| `layerOf` + `chunkShape` over it          | 508 – 674 |
+| **the rung, total**                       | **712 – 938** |
+| the same for `land-50m.json`              | 17 |
+| one 512² tile at z7 – z11 (warm)          | 0.27 – 0.62 |
+
+So a reader crossing level 7 hands the rasterizer between fifteen hundred and
+three thousand tiles' worth of work that cannot yield, in the middle of the
+gesture that asked for it. The atlas absorbs two slots a frame and had nothing
+to absorb for the length of the zoom. Nothing was slow: the rasterizer was
+idle, waiting behind a JSON parse.
+
+**Why the round-54 harness could not see it.** `drawnPerf.e2e.mjs` counts
+events over a scripted 90-frame zoom, and under SwiftShader a frame of this
+surface is about a second — so that zoom lasts a minute and a half and asks for
+a tile a second. A one-second block delays *one tile*, and the queue column
+stays flat. In a browser with a GPU the same gesture is a second and a half and
+asks for the same hundred tiles, so the same block covers the whole of it.
+Scaling the frames and leaving the decode at its true cost is the exact
+distortion round 54 warned about, pointing the other way.
+
+The instrument therefore gained two things. First, a **queue wait**: the worker
+stamps each response with the moment it picked the message up
+(`DrawnTileResponse.at`, epoch-based because the two contexts have different
+time origins), so `latency = render + wait` splits, and `wait` is time the
+rasterizer could not answer. Second, a **probe** — no frames, no camera: on a
+freshly loaded page that has never asked for the rung, request tiles at level 7
+at ten a second, let the first of them trigger the file, and record what each
+one waited. Two runs of each build:
+
+| probe, level 7, 10 tiles/s      | round 57 |      | round 58 |     |
+| ------------------------------- | -------: | ---: | -------: | --: |
+| worst queue wait                | 1 479 ms | 436 ms | 54 ms | 283 ms |
+| tiles waiting over 200 ms       | 15 of 42 | 3 of 34 | 0 of 38 | 1 of 41 |
+| queue time lost to those        | 12 245 ms | 1 012 ms | 0 ms | 283 ms |
+| median queue wait               | 34 ms | 32 ms | 7 ms | 9 ms |
+| median render                   | 1.1 ms | 0.8 ms | 0.8 ms | 0.8 ms |
+| the rung on screen after        | 2 070 ms | 820 ms | 18 915 ms* | 807 ms |
+
+\* one outlier on a two-core box with a software rasteriser already using both.
+The same build's other runs landed the rung in 807 ms and 14 668 ms — and in
+every one of them the *decode* was 548–555 ms and the *fetch* 137–198 ms, both
+reported by the worker that did them. So what varies by fourteen seconds is
+neither: it is time the second worker spends waiting to start (in dev its module
+graph comes over HTTP) and waiting to be scheduled. It is reported rather than
+dropped, because a second worker on a busy two-core machine really can be
+starved — see the limits.
+
+**The fix: the decode has its own worker.** `lib/drawnDecode.worker.ts` fetches,
+parses, cuts and packs; it has no canvas and no renderer, and it is terminated
+the moment it answers. The trigger moves one step up the same causal chain —
+from "the rasterizer drew a plate at level 7" to "the scheduler asked for a
+tile at level 7", which is the request that causes that plate — so the network
+claim round 57 made is unchanged, and `drawnMap.e2e.mjs` still checks it as
+network traffic: not at load, not at world or continental zoom, once.
+
+The part that needed thought is the handover. A decoded layer is 7 701 shapes
+holding three or four typed arrays each; sent as itself, structured clone walks
+~30 000 objects and copies every buffer — twice, since the message is relayed
+through the main thread — which would move the stall rather than remove it. So
+a layer is flattened into **nine typed arrays** (`packLayer`), every one of them
+transferred, and rebuilt on the other side as `subarray` VIEWS onto exactly
+those buffers (`unpackLayer`). Serialising is O(1), the relay touches no
+geometry, and the tile drawn from the layer that came over the wire is
+byte-identical to the tile drawn from the layer that never left — asserted, not
+assumed.
+
+**What did not change, and why.** The 50m stage still parses in the tile
+worker: 17 ms against 10m's ~940, so moving it would buy a frame and cost a
+worker at load. The trigger level stays 7 — starting earlier was a candidate
+lever and the numbers refuse it: with the decode off the render path the start
+time no longer matters, and level 6 is a continental view, which round 57
+promised would not pay for the file. The chunked-cell render cost was the other
+suspect and it is exonerated: per level, median tile at the fine rung is 0.2 –
+0.4 ms at z8 – z11 against 0.3 – 0.6 ms at the coarse rungs, and node's own
+sweep says 0.27 – 0.62 ms mean with a 0.22 ms cold first tile at z11. `CHUNK_DEG`
+was not touched.
+
+**Round 54's levers, re-verified at `Z_MAX` 11.** The scripted zoom now runs
+world → the camera's own floor (`MIN_ALTITUDE_DETAIL`, a 100 km view — level 10
+on this 1000×750 DPR-1 harness, 11 on a 2× desktop) instead of stopping at the
+old ceiling. `heldLevel` still snaps about every two octaves: a 9.5-octave zoom
+crossed three or four levels, not nine. `LOCAL_RENDER_AHEAD` and
+`TILE_INFLIGHT` still bind — the worker queue never went past six — and 78 of
+105 renders on the cold zoom reached a slot. Neither constant needed retuning;
+the two extra levels did not break their assumptions, because both are written
+against the atlas's budget rather than against a level count.
+
+**The 8 ms budget check stopped flapping, and the instrument was wrong.** It
+took the MEAN of forty renders in a worker on a machine that also runs
+SwiftShader on two cores. A single preempted sample — one of 404 ms was
+measured, in a run whose median tile was 0.4 ms — is ten milliseconds of "mean"
+by itself, which is how a build whose tiles were unchanged came to report
+"10.57 ms mean / 322 ms worst" and fail. It now asserts the **median**, which
+cannot be moved by a preemption and still fails for the thing the budget exists
+to catch: geometry that makes every tile expensive, which is exactly what the
+uncut 10m layer did (11–29 ms, every tile). The mean and the worst are still
+printed as the machine's weather report, and a new check asserts the median
+queue wait at the fjords, which is the round in one line.
+
+**Honest limits.**
+
+- The probe is a cadence of tile requests, not a gesture. It isolates the
+  mechanism — a worker that cannot answer while it parses — and says nothing
+  about frame pacing, which no measurement on a software rasteriser can.
+- Two workers on a two-core machine compete, and the outlier above is what that
+  looks like: the rung took 19 s to land in one run where the render worker and
+  the page were both busy, and `drawnMap.e2e.mjs` recorded a single 2 214 ms
+  queue wait at the fjords against a 7 ms median in the same run. That is the
+  OS preempting a worker, not a worker unable to yield — the distinction the
+  median is there to keep — but on a phone it is real. What it delays is only
+  the *sharpening*: the 50m coastline is on screen throughout, which is the
+  progressive design working, where before it delayed every tile of the zoom.
+- **Rest-state pixels are unchanged, and the noise floor was measured rather
+  than assumed.** `restShots.mjs` gained a fourth view (the Sognefjord at level
+  8 — the three it had never reach level 7, so they could not have seen this
+  round at all). Regional (z7) and coastal (z8) are byte-identical across the
+  change; world and continental differ by 267 and 9 pixels of 750 000 — and the
+  same build photographed twice differs by 286 and 10, which is what those
+  numbers are.
+- The label swap still retires the 50m tiles the moment the rung lands, which
+  can fall mid-gesture. Measured, it costs the ten to twenty tiles in view at
+  0.4 ms each; holding the swap for stillness would be a policy in defence of a
+  cost the numbers do not show.
+- The gesture counts either side of this round are the same within noise
+  (105 renders / 78 uploads against 104 / 77 on the cold zoom). That is the
+  correct result and worth stating: this round moved WHEN work happens, not how
+  much of it there is.

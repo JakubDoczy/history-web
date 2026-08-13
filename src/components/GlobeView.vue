@@ -40,6 +40,7 @@ import { eraPlan, modernShare } from '../lib/paleo'
 import { subsolarLongitude, cityLightsFactor } from '../lib/sun'
 import { pinElement, clusterElement } from '../lib/eventPins'
 import {
+  clusterHolds,
   COASTAL_INK,
   frontierInkPlan,
   NATION_FILL_ALPHA,
@@ -422,10 +423,24 @@ onMounted(() => {
       if (held) return held
       const el =
         p.kind === 'cluster'
-          ? clusterElement(p.members, { mode: mode.value, tier, highlighted }, () =>
+          ? clusterElement(
+              p.members,
+              // A STACK THAT HOLDS THE OPEN EVENT IS DRAWN SELECTED — which
+              // today is never, because `layoutPins` lifts the open event out of
+              // its badge and draws it on its own coordinates (lib/
+              // eventClusters.ts). The question is asked here anyway, through
+              // the same helper `pinStateKey` uses so the two cannot disagree,
+              // because the badge is the only mark left standing on the reader's
+              // open event if that lift ever stops happening.
+              {
+                mode: mode.value,
+                tier,
+                highlighted,
+                selected: clusterHolds(p.members, events.selectedId),
+              },
               // the live span, not the quantised one: it is compared against
               // the live span on the next zoom
-              events.expandCluster(p.id, visibleSpanDeg(view.altitude)),
+              () => events.expandCluster(p.id, visibleSpanDeg(view.altitude)),
             )
           : pinElement(
               p.event,
@@ -1528,6 +1543,24 @@ onBeforeUnmount(() => {
 /* the globe's HTML pin layer, pinned below every panel — see tokens.css */
 .globe-css2d {
   z-index: var(--z-globe-overlay);
+  /*
+   * THE ONE VALUE INSIDE THIS CONTAINER THAT IS NOT CSS2DRenderer'S TO GIVE.
+   *
+   * Everything in here is depth-sorted by three.js every frame: it stamps an
+   * INLINE `z-index` of 0..N (N being the number of CSS2D objects in the scene —
+   * every pin, every badge, every drawing label) onto each element, nearest
+   * camera highest. That is what a map wants, with one exception: the pin the
+   * reader has open must be on top of all of it, at every camera angle and
+   * inside every stack, or the answer to "where is the thing I just opened" is
+   * "behind that other pin". A fixed rank cannot beat a bound that grows with
+   * the scene, so the selection is given the top of the range outright.
+   *
+   * It is a number and not a token because it is not on the app's z-scale: it
+   * lives *inside* this container's stacking context (that is the whole job of
+   * --z-globe-overlay, see tokens.css), so however large it is it cannot reach
+   * a panel.
+   */
+  --z-pin-selected: 2147483000;
 }
 
 /* Drawing labels (lib/drawingLayer.ts). CSS2D, so they live in the same
@@ -1581,9 +1614,19 @@ onBeforeUnmount(() => {
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
   transition: opacity var(--fast);
 }
+/* THE SELECTED PIN IS ON TOP OF EVERY OTHER PIN AND EVERY LABEL, and
+   `!important` is the mechanism rather than a shout: CSS2DRenderer writes the
+   depth-sorted z-index INLINE, on every element, on every frame, and an
+   important author rule is the one thing in the cascade that outranks an inline
+   declaration. The old `z-index: 2` here never applied at all — it lost to the
+   inline value silently, which is why a selected pin could sit behind its
+   neighbour. A selected BADGE carries the same class for the same reason. */
 .event-pin--selected {
-  z-index: 2;
+  z-index: var(--z-pin-selected) !important;
 }
+/* Hover is a BRIGHTENING and nothing else, deliberately: the pin under the
+   cursor gains no rim and no ground ring, so "the one I am pointing at" and
+   "the one I have open" are never the same statement. */
 .event-pin:hover svg {
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)) brightness(1.15);
 }
@@ -1609,11 +1652,11 @@ onBeforeUnmount(() => {
 }
 /* Significance tiers (lib/eventTiers.ts). Size is drawn into the SVG; what is
    left here is depth — how far forward each tier sits — which is opacity and
-   stacking, not another shape. Tier 1 also carries a glow ring in its artwork,
-   so its drop shadow is warmed slightly to match rather than doubled. */
-.event-pin--tier1 {
-  z-index: 1;
-}
+   light, not another shape. Tier 1 also carries a glow ring in its artwork, so
+   its drop shadow is warmed slightly to match rather than doubled.
+   Not stacking: a plain `z-index` here is dead, because CSS2DRenderer's inline
+   depth sort outranks it (see `--z-pin-selected`), and the depth sort is the
+   right answer for everything except the pin the reader has open. */
 .event-pin--tier1 svg {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 6px rgba(255, 240, 200, 0.35));
 }
@@ -1636,16 +1679,13 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 /* A child the open step named (see Step.highlights). The accent ring is drawn
-   into the artwork; what is left here is the same thing the selection gets —
-   full opacity and a place at the front, because a highlighted pin must not be
-   dimmed by the tier it happened to land in. */
+   into the artwork; what is left here is full opacity, because a highlighted
+   pin must not be dimmed by the tier it happened to land in. Its place in the
+   stack is the camera's to decide, like every pin's but the selected one. */
 .event-pin--accent svg,
 .event-pin--accent.event-pin--minor svg,
 .event-pin--accent.event-pin--tier3 svg {
   opacity: 1;
-}
-.event-pin--accent {
-  z-index: 2;
 }
 /* MAP MODE (lib/present/mode.ts). A drawn map has no light in it, so the pins
    lose the things that model light — the drop shadow, the tier glow's warm

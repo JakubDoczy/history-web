@@ -173,14 +173,24 @@ export const opensExpanded = (item: Subject | undefined, viewportWidthPx: number
  * opens anything — it is a filter of the plan, and a panel over the plan it just
  * filtered is the same mistake in miniature — but it does not fold an article
  * the reader had up either, unless the panel was on some other part.
+ *
+ * AN ENTRANCE IS A READING TOO (round 58, sagas.md rule 15). A step that names a
+ * `child` no longer descends on sight: it shows the child's summary as a step
+ * PREVIEW, with an "Open event" button under it. That preview is a page in every
+ * respect this function cares about — it is text about the moment the reader has
+ * just landed on, and it is the only thing that says what pressing Open would
+ * buy — so it opens the article beside the map exactly as a page does, and waits
+ * on the pill where the map has to win.
  */
+const stepReads = (step: Step): boolean => !!step.page || !!step.child
+
 export const stepOpensExpanded = (
   step: Step,
   ctx: { fromPart: boolean; expanded: boolean; viewportWidthPx: number },
 ): boolean =>
   ctx.viewportWidthPx < SIDE_BY_SIDE_MIN_PX
     ? false
-    : step.page
+    : stepReads(step)
       ? true
       : ctx.fromPart
         ? false
@@ -587,11 +597,43 @@ export const useEventStore = defineStore('events', {
       return state.stepId ? this.focusSteps.find((s) => s.id === state.stepId) : undefined
     },
     /**
+     * The open step, WHEN IT IS AN ENTRANCE — the step preview's whole subject
+     * (sagas.md rule 15, and `stepPreview` in EventPanel.vue).
+     *
+     * Resolved here rather than in the panel because the child is an item and
+     * items live behind the index: the panel would otherwise be holding an
+     * opinion about how an id becomes a summary. `child` is deliberately
+     * OPTIONAL in the result — a step naming an item this build has not merged
+     * yet is still a step of this saga, with a name and a date, and the walk must
+     * not stall on it; what it loses is the summary and the button, which is
+     * exactly what is missing.
+     *
+     * An `Item` and not a `Subject`: a step's `child` is an authored id in the
+     * corpus (the build script validates that every one of them exists), never a
+     * life marker, which is a pin derived from a person and carries no summary
+     * to preview. The narrower type is the claim.
+     */
+    entranceStep(state): { step: Step; child?: Item } | undefined {
+      void state.revision
+      const step = this.activeStep
+      if (!step?.child) return undefined
+      return { step, child: index.byId.get(step.child) }
+    },
+    /**
      * The children the open step has asked to be lifted (see `Step.highlights`).
      * Empty on the overview, which is the ground state and says nothing.
+     *
+     * AN ENTRANCE LIFTS ITS OWN CHILD (round 58). The preview says "this step is
+     * that event", and the map has to say the same thing: the child's pin is
+     * forced onto the globe (`visible` reads this list) and accented, so the
+     * thing the panel is describing is the thing lit up on the ground. Without
+     * it a child ranked out of the focus child cap was previewed against a map
+     * with no mark on it anywhere.
      */
     highlightedIds(): string[] {
-      return this.activeStep?.highlights ?? []
+      const step = this.activeStep
+      const own = step?.highlights ?? []
+      return step?.child ? [...own, step.child] : own
     },
     /**
      * The plan on the globe: the focused item's ink, resolved for the open step.
@@ -603,11 +645,24 @@ export const useEventStore = defineStore('events', {
      * here, so the one rule that decides what is on the map is a pure function a
      * test can reach. On the overview it hands back the drawing itself, the same
      * object, so stepping back out is a no-op for the renderer's key comparison.
+     *
+     * ON AN ENTRANCE THE INK IS THE CHILD'S (round 58, sagas.md rule 15). A
+     * preview promises the reader what is behind the step, and on a map that
+     * promise is ink: Normandy previewed under Normandy's own plan is an answer
+     * to "what is this step", where the parent's layers dated into the
+     * entrance's window are an answer to "where in the war are we" — which the
+     * station on the rail has already given. The focus does not move, so this is
+     * the one thing that changes and it changes back the moment the reader steps
+     * off. A child with no drawing of its own falls through to the parent's
+     * resolution rather than clearing the map: absence of ink is not a statement.
      */
     focusDrawing(state): Drawing | undefined {
       const item = this.focused
       if (item?.kind !== 'event') return undefined
-      return resolveFocusInk(item, state.stepId, { mode: useSettingsStore().mode })
+      const ctx = { mode: useSettingsStore().mode }
+      const child = this.entranceStep?.child
+      if (child?.kind === 'event' && child.drawing) return resolveFocusInk(child, undefined, ctx)
+      return resolveFocusInk(item, state.stepId, ctx)
     },
   },
   actions: {
@@ -854,10 +909,20 @@ export const useEventStore = defineStore('events', {
      * Step into one of the focused event's steps — or, with no id, back out to
      * the overview. The step strip's only action (see components/StepStrip.vue).
      *
-     * A step that names a `child` is an ENTRANCE and short-circuits all of the
-     * below: it descends into that item instead (see `Step.child`), which is
-     * `showOnMap` and therefore the existing stack. Everything else here is
-     * about a step that is a reading of THIS event, and five things follow:
+     * ONE ACTION, ONE PLACE. This is where "which step is the reader on" is
+     * decided and it is the ONLY place: `stepId` is the whole of the walk's
+     * position, and prev/next, the list, the rail's cursor and the keyboard all
+     * read it back rather than keeping a second copy (round 58 — the rail kept
+     * one, and the two disagreed the moment the walk touched an entrance; see
+     * `go` in components/SagaTimeline.vue).
+     *
+     * A step that names a `child` is an ENTRANCE, and since round 58 it is a
+     * step like any other rather than a trapdoor (sagas.md rule 15). Landing on
+     * one shows a PREVIEW — the child's own summary, under the step's name and
+     * date, with an "Open event" button on it — while the saga keeps the focus,
+     * keeps its rail, and marks the entrance as the step it is standing on. The
+     * descent is `openEntrance` below, and it happens when it is asked for.
+     * Everything else here is common to both, and five things follow:
      *
      *  · the **drawing** filters to the timeless layers plus that step's, and the
      *    step's own ink merges over the top (`focusDrawing`), so the June front
@@ -915,13 +980,6 @@ export const useEventStore = defineStore('events', {
       }
       const step = this.focusSteps.find((s) => s.id === id)
       if (!step) return
-      // AN ENTRANCE, not a page: the step *is* another item, so stepping in
-      // descends into it (see `Step.child`). Everything that follows — the push
-      // onto the focus stack, the child's own ink and steps, the way back out —
-      // is the machinery a "Show on map" from a child pin already uses. That is
-      // the whole of the recursion: no second navigation state, and no way for
-      // the two to disagree about where the reader is.
-      if (step.child) return this.showOnMap(step.child)
       this.selectedId = item.id
       this.stepId = step.id
       this.focusExpanded = stepOpensExpanded(step, {
@@ -933,7 +991,43 @@ export const useEventStore = defineStore('events', {
       // START, which for a point is the whole of it and for a stretch is where
       // the reader is being put.
       useTimeStore().setCursor(timeStart(stepTimeYears(step, item.time)))
+      // THE CAMERA. An authored `camera` is an explicit statement and wins
+      // wherever it appears. Failing that, an ENTRANCE puts the child in front
+      // of the reader — the same frame `showOnMap` would fit for it, which is
+      // what "preview it" has to mean on a map — and an ordinary step leaves the
+      // view exactly where the reader put it.
       if (step.camera) this.lookAt(step.camera.lat, step.camera.lng, step.camera.altitude)
+      else if (step.child) {
+        const target = this.mapTarget(step.child)
+        if (target) this.lookAt(target.lat, target.lng, target.altitude)
+      }
+    },
+    /**
+     * THE PREVIEW'S BRASS BUTTON — "Open event", and the whole of the descent.
+     *
+     * Until round 58 this was what merely *landing* on an entrance did, and that
+     * was the defect the reader found from both ends. Walking prev/next into one
+     * threw the rail off the screen and replaced the saga with a child that
+     * might have nothing to walk at all, so the walk had to refuse to open
+     * entrances (sagas.md rule 2, as it stood) — which is what left the rail's
+     * cursor parked on a station the store had never heard of and made the next
+     * press a no-op. And a reader who only wanted to know what the step WAS had
+     * no way to find out that did not change what the whole map was about.
+     *
+     * So the two are separated: landing is a preview (`selectStep`), and this is
+     * the descent, asked for. It is `showOnMap` on the child and nothing else —
+     * the push onto the focus stack, the child's own ink, steps and rail, and
+     * the ordinary way back out are all machinery a "Show on map" from a child
+     * pin already uses, which is what keeps the recursion free of a second
+     * navigation state.
+     *
+     * A child that has not loaded is a no-op, for the reason the unknown step id
+     * above is: chunks stream, and the panel hides the button when there is
+     * nothing behind it.
+     */
+    openEntrance() {
+      const child = this.activeStep?.child
+      if (child && index.byId.get(child)) this.showOnMap(child)
     },
     /**
      * Ask the globe to look at a coordinate (a person's birth or death place),

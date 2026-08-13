@@ -153,6 +153,11 @@ const railOf = (page) =>
       })),
       prevOn: !document.querySelector('[data-test="saga-prev"]')?.disabled,
       nextOn: !document.querySelector('[data-test="saga-next"]')?.disabled,
+      // ROUND 58: landing on an entrance previews it instead of descending, so
+      // "what did that press do" is now answered by the panel as well as by the
+      // stack (sagas.md rule 15).
+      preview: !!document.querySelector('[data-test="step-preview"]'),
+      openEvent: !!document.querySelector('[data-test="open-event"]'),
       stations,
       stack: [...window.__events.focusStack],
       step: window.__events.stepId ?? null,
@@ -262,8 +267,13 @@ await check('a row of the list reaches a station the rail packs into ten pixels'
   await page.click('[data-test="saga-list-item"][data-step="trinity"]')
   await settle(page, 2400)
   const at = await railOf(page)
-  eq(at.stack, ['ww2', 'trinity'], 'focus stack') // every step of the war is an entrance
-  await page.evaluate(() => window.__events.focusBack())
+  // ROUND 58: every step of the war is an entrance, and an entrance now opens
+  // as a step of THIS saga with a preview of the child in the panel — the
+  // focus, and therefore this rail, stay exactly where they were.
+  eq(at.stack, ['ww2'], 'focus stack')
+  ok(at.step === 'trinity', `the list opened ${at.step}`)
+  ok(at.preview && at.openEvent, 'the row opened no preview')
+  await page.evaluate(() => window.__events.selectStep())
   await settle(page, 1800)
 })
 await page.evaluate(() => document.querySelector('[data-test="saga-timeline"]').focus())
@@ -272,12 +282,34 @@ await page.click('[data-test="saga-next"]')
 await settle(page, 900)
 const walked = await railOf(page)
 await shot(page, 'a2-next-twice', { x: 0, y: walked.rail.y - 4, width: 1280, height: walked.rail.h + 8 })
-await check('next walks the stations without descending through the entrances', () => {
+await check('next walks THROUGH the entrances, opening each as a preview', () => {
+  // Round 58, defect 2. This used to assert that next moved a cursor and left
+  // the store alone, which is precisely what made the press after it a silent
+  // no-op: the rail's cursor and the store's step were two values and they
+  // disagreed from the first entrance onward (tests/e2e/repro58.e2e.mjs).
+  // There is one value now, and every press of next writes it.
   const on = walked.stations.filter((s) => s.cursor)
   ok(on.length === 1 && on[0].step === 'barbarossa', `cursor on ${on.map((s) => s.step)}`)
+  ok(walked.step === 'barbarossa', `the store is on ${walked.step}, the rail on barbarossa`)
   eq(walked.stack, ['ww2'], 'a press of next descended')
+  ok(walked.preview, 'walking onto an entrance opened no preview')
   ok(!walked.prevOn === false, 'prev is dead two steps in')
 })
+/* AND THE PRESS AFTER THAT MOVES — the defect itself, at the end of the walk
+   it was reported on. Two more presses from the second station have to land on
+   the fourth, not on the second for a third time. */
+await page.click('[data-test="saga-next"]')
+await page.click('[data-test="saga-next"]')
+await settle(page, 900)
+const walkedOn = await railOf(page)
+await check('the presses after an entrance keep moving, one distinct step each', () => {
+  const ids = walkedOn.stations.map((s) => s.step)
+  ok(walkedOn.step === ids[3], `four presses of next reached ${walkedOn.step}, not ${ids[3]}`)
+  eq(walkedOn.stack, ['ww2'], 'a press of next descended')
+})
+await page.click('[data-test="saga-prev"]')
+await page.click('[data-test="saga-prev"]')
+await settle(page, 900)
 await page.click('[data-test="saga-prev"]')
 await page.click('[data-test="saga-prev"]')
 await settle(page, 900)
@@ -288,20 +320,46 @@ await check('and prev comes back off the first step onto the overview, then stop
   ok(!home.prevOn, 'prev is live at the beginning of the saga — it wrapped')
 })
 
-console.log('\n(b) a step of the war highlighted, then the descent')
+console.log('\n(b) a step of the war previewed, then opened for real')
 await page.click('[data-step="stalingrad"] >> nth=0')
+await settle(page, 2600)
+const previewed = await railOf(page)
+await shot(page, 'b-preview-stalingrad')
+const previewText = await page.textContent('[data-test="step-preview"]')
+console.log(`    preview: ${previewText?.replace(/\s+/g, ' ').trim().slice(0, 120)}`)
+await check('pressing an entrance station PREVIEWS the child, keeping the saga', () => {
+  // ROUND 58. This press used to descend on sight: the war left the screen, the
+  // rail re-anchored to Stalingrad's own span, and a reader who only wanted to
+  // know what the step was had changed what the whole map was about to find out.
+  eq(previewed.stack, ['ww2'], 'focus stack')
+  ok(previewed.selected === 'ww2', `panel on ${previewed.selected}`)
+  ok(previewed.step === 'stalingrad', `the rail is on ${previewed.step}`)
+  ok(previewed.stations.length === 11, 'the parent’s rail went')
+  ok(previewed.preview && previewed.openEvent, 'no preview, or no way in from it')
+  // the child's own summary is what the preview reads, under the step's date
+  ok(/1942/.test(previewText ?? ''), `the preview says no date: "${previewText}"`)
+})
+await page.click('[data-test="open-event"]')
 await settle(page, 2600)
 const dived = await railOf(page)
 await shot(page, 'b-descended-stalingrad')
-await check('pressing an entrance station descends into the child', () => {
+await check('"Open event" performs the descent the press used to perform on sight', () => {
   eq(dived.stack, ['ww2', 'stalingrad'], 'focus stack')
   ok(dived.selected === 'stalingrad', `panel on ${dived.selected}`)
+  // …and Stalingrad carries no steps of its own, so the saga rail stands down
+  // and the era rail comes back — which is the same thing it always did, and
+  // the reason this descent is worth asking to be made rather than performing
+  // on a press that only meant "what is this step".
+  ok(!dived.rail && dived.era, 'the saga rail stayed up over an event with no steps')
 })
 
 console.log('\n(c) the deep case the report asks for: D-Day')
 await page.evaluate(() => window.__events.focusBack())
 await settle(page, 1800)
+// Two presses since round 58: the station previews, the button descends.
 await page.click('[data-step="d-day"] >> nth=0')
+await settle(page, 1600)
+await page.click('[data-test="open-event"]')
 await settle(page, 2600)
 const dday = await railOf(page)
 await shot(page, 'c-d-day-rail')
@@ -371,18 +429,23 @@ await check('the ancestor crumb pops the focus back to it', () => {
   eq(back.crumbs, ['World War II'], 'crumbs')
 })
 
-console.log('\n(e) the keyboard walks the rail; Enter is what descends')
+console.log('\n(e) the keyboard walks the rail; Enter is still what descends')
 await page.evaluate(() => document.querySelector('[data-test="saga-timeline"]').focus())
 await page.keyboard.press('ArrowRight')
 await page.keyboard.press('ArrowRight')
 await settle(page, 900)
 const keyed = await railOf(page)
 await shot(page, 'e-keyboard-two-rights', { x: 0, y: keyed.rail.y - 4, width: 1280, height: keyed.rail.h + 8 })
-await check('two ArrowRights move the cursor and nothing else', () => {
+await check('two ArrowRights open the second step, and change no context', () => {
+  // ROUND 58: the arrows are prev/next, so they OPEN what they land on — which
+  // for a step of the war is a preview of the child. What they still never do
+  // is descend; that is Enter's, and rule 2's surviving half.
   const on = keyed.stations.filter((s) => s.cursor)
   ok(on.length === 1 && on[0].step === 'barbarossa', `cursor on ${on.map((s) => s.step)}`)
+  ok(keyed.step === 'barbarossa', `the store is on ${keyed.step}`)
   ok(on[0].named || on[0].label, 'the cursor station does not say its name')
   eq(keyed.stack, ['ww2'], 'an arrow key descended')
+  ok(keyed.preview, 'the arrow keys opened no preview on an entrance')
 })
 await page.keyboard.press('Enter')
 await settle(page, 2600)
@@ -662,11 +725,45 @@ await check('the pill still clears the rail (the mobile sheet’s --bar-clear is
   })
   ok(gap === null || gap >= 0, `the pill overlaps the rail by ${-gap}px`)
 })
+/* A TAP ON AN ENTRANCE, ON A PHONE (round 58). The tap previews, exactly as a
+   press does on a desktop — and the phone is where the preview earns its keep
+   twice over, because on a phone a descent replaces the whole screen. What is
+   different here is only where the preview WAITS: the map wins on a phone
+   (`stepOpensExpanded`), so the pill carries it and its own control opens it. */
 await phone.tap('[data-step="d-day"] >> nth=0')
+await settle(phone, 2200)
+const tappedPreview = await phone.evaluate(() => ({
+  stack: [...window.__events.focusStack],
+  step: window.__events.stepId ?? null,
+  pill: !!document.querySelector('[data-test="panel-pill"]'),
+  preview: !!document.querySelector('[data-test="step-preview"]'),
+  expand: document.querySelector('[data-test="pill-restore"]')?.textContent.trim() ?? null,
+}))
+await shot(phone, 'g-phone-preview-pill')
+await check('a tap previews the entrance, with the map still in front on a phone', () => {
+  eq(tappedPreview.stack, ['ww2'], 'focus stack')
+  ok(tappedPreview.step === 'd-day', `the rail is on ${tappedPreview.step}`)
+  ok(tappedPreview.pill, 'a phone opened the article over the map it was asked to show')
+  ok(!tappedPreview.preview, 'the preview is up over the map rather than waiting on the pill')
+})
+await phone.tap('[data-test="pill-expand"]')
+await settle(phone, 1400)
+await shot(phone, 'g-phone-preview-open')
+await check('the pill’s expand opens the PREVIEW, and its label says so', async () => {
+  const up = await phone.evaluate(() => ({
+    preview: !!document.querySelector('[data-test="step-preview"]'),
+    open: !!document.querySelector('[data-test="open-event"]'),
+  }))
+  ok(up.preview && up.open, 'the pill opened something that was not the preview')
+  // "Restore" was retired in round 58: it claimed to put back a window the
+  // reader never put down. See `expandLabel` in EventPanel.vue.
+  ok(/^open$/i.test(tappedPreview.expand ?? ''), `the pill's control reads "${tappedPreview.expand}"`)
+})
+await phone.tap('[data-test="open-event"]')
 await settle(phone, 2600)
 const tapped = await railOf(phone)
 await shot(phone, 'g-phone-descended')
-await check('a tap descends, and the breadcrumb truncates rather than pushing the rail', () => {
+await check('and Open event descends, with the breadcrumb truncating rather than pushing the rail', () => {
   eq(tapped.stack, ['ww2', 'd-day'], 'focus stack')
   eq(tapped.crumbs, ['World War II', 'D-Day landings'], 'crumbs')
   ok(tapped.rail.w <= 390, `the rail is ${tapped.rail.w}px wide on a 390px phone`)

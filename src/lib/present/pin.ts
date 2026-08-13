@@ -4,7 +4,7 @@ import type { Tier } from '../eventTiers'
 import { primaryTag, tagColor, type Tag } from '../tags'
 import type { RenderCtx, RenderMode } from './mode'
 import { sagaOf } from './saga'
-import { inkOnPaper } from './ink'
+import { inkOnPaper, MARK_MIX } from './ink'
 
 /**
  * WHAT A PIN LOOKS LIKE — resolved from the domain, emitted by lib/eventPins.ts.
@@ -193,8 +193,20 @@ export interface PinSpec {
   ink: string
   /** The soft tier-1 ring behind the body. */
   glow: boolean
-  /** The selected pin's hard ring, or `null`. */
-  halo: string | null
+  /**
+   * THE SELECTION'S TONE, or `null` — everything the selected pin is drawn in.
+   *
+   * A tone rather than a ring, which is round 58's correction. It used to be
+   * called `halo` and it was one: a circle of radius 10.5 round the head. A
+   * circle centred on the head cannot be drawn outside a teardrop — the head is
+   * 9 across and the body goes on *downward* for another 20, so any circle wide
+   * enough to clear the head re-enters the silhouette at the tail and is drawn
+   * across it. That is the reported fault, in one sentence: *"the circle is
+   * crossing the pin in a weird way"*. What the tone draws now is stated in
+   * lib/eventPins.ts, where the geometry lives: a rim on the pin's own outline
+   * and a ring on the ground under its tip.
+   */
+  select: string | null
   /**
    * The accent a step's `highlights` puts on a child pin, or `null`.
    *
@@ -227,10 +239,45 @@ export interface ClusterSpec {
    * ring the reader cannot see is a ring that is not there.
    */
   saga: boolean
+  /**
+   * THE SELECTION'S TONE, when the badge has swallowed the selected pin.
+   *
+   * The same argument the accent below is here on, and the same argument the
+   * saga ring is: a badge is a pin that swallowed several, so it has to say
+   * everything its members would have said.
+   *
+   * It is a FALLBACK, and honestly so. `layoutPins` (lib/eventClusters.ts) lifts
+   * the open event out of its badge and draws it on its own coordinates, so on a
+   * live globe this is never true — which is the better answer of the two,
+   * because a lifted pin can carry the whole treatment and a badge could carry
+   * only a hint of it. What this covers is the day that lift is not there: a
+   * badge standing on the reader's open event and saying nothing is the defect
+   * round 58 was opened for, one level up.
+   */
+  select: string | null
   /** The step accent, when the badge HIDES a child the step named. */
   accent: string | null
   classes: string[]
 }
+
+/**
+ * What a badge needs to know. `selected` is optional because a badge's
+ * selection is a question about its MEMBERS rather than about itself — the
+ * caller answers it by looking for the open event in the stack (see
+ * `stablePins` in GlobeView) — and most callers have nothing selected at all.
+ */
+export interface ClusterCtx extends Omit<PinCtx, 'selected'> {
+  /** Is the reader's open event one of the pins this badge swallowed? */
+  selected?: boolean
+}
+
+/**
+ * Does this stack hold the open event? The one place that question is answered,
+ * so the badge's artwork (`ClusterSpec.select`) and its identity
+ * (`pinStateKey`) can never disagree about it.
+ */
+export const clusterHolds = (members: readonly MapPin[], selectedId?: string): boolean =>
+  !!selectedId && members.some((m) => m.id === selectedId)
 
 /** What the resolver needs to know beyond the pin itself. */
 export interface PinCtx extends RenderCtx {
@@ -260,16 +307,26 @@ export const pinHeight = (e: MapPin, selected: boolean, tier: Tier = 1) =>
   Math.round((18 + (e.priority / 100) * 12) * TIER_SCALE[tier] * (selected ? 1.35 : 1))
 
 /**
- * The selected pin's halo, and the highlighted child's accent — per mode,
+ * The selected pin's tone, and the highlighted child's accent — per mode,
  * because the ground under them is not the same ground.
  *
- * Both were chosen against a night-blue ocean: a 1.6 px ring of `#ffe27a` at
- * 0.9 opacity round the pin head, which on Blue Marble is unmistakable and on
- * the drawn map's parchment measures 1.11:1 against the land tone. `inkOnPaper`
- * is the whole of the fix — the hue is what says "selected" and "the step means
- * this one", and it survives being taken toward the map's own pen.
+ * Both were chosen against a night-blue ocean: `#ffe27a`, which on Blue Marble
+ * is unmistakable and on the drawn map's parchment measures 1.11:1 against the
+ * land tone. `inkOnPaper` is the whole of that fix — the hue is what says
+ * "selected" and "the step means this one", and it survives being taken toward
+ * the map's own pen. Round 52 chose the hue; round 58 changed what is *drawn*
+ * in it (see `PinSpec.select`) — and, with it, the weight of the mix.
+ *
+ * `MARK_MIX` rather than round 52's 0.5, and for that constant's own reason: a
+ * hairline ring could afford to be quiet, and the rim and the ground ring are a
+ * SYMBOL — a few square millimetres of ink that either reads at 18 px or is not
+ * there. 0.55 lands the tone at 3.3:1 against the parchment's land, against
+ * 2.9:1 before, which is the difference between a drawn mark and a stain.
  */
-export const HALO_COLOR = { realistic: '#ffe27a', schematic: inkOnPaper('#ffe27a', 0.5) } as const
+export const SELECT_COLOR = {
+  realistic: '#ffe27a',
+  schematic: inkOnPaper('#ffe27a', MARK_MIX),
+} as const
 export const ACCENT_COLOR = { realistic: '#7ad1ff', schematic: inkOnPaper('#7ad1ff', 0.42) } as const
 
 /** The white every glyph is drawn in. Flatter in map mode — see `resolvePinSpec`. */
@@ -333,7 +390,7 @@ export function resolvePinSpec(e: MapPin, ctx: PinCtx): PinSpec {
     // The glow says "this one leads the set" in light coming off the pin. Map
     // mode has no light to come off anything, so it says nothing instead.
     glow: ctx.tier === 1 && !flat,
-    halo: ctx.selected ? HALO_COLOR[ctx.mode] : null,
+    select: ctx.selected ? SELECT_COLOR[ctx.mode] : null,
     accent: ctx.highlighted ? ACCENT_COLOR[ctx.mode] : null,
     classes: [
       'event-pin',
@@ -380,10 +437,7 @@ export const clusterSize = (count: number, tier: Tier = 1) =>
  * would read as more important than the tier-1 pin next to it merely for being a
  * badge.
  */
-export function resolveClusterSpec(
-  members: MapPin[],
-  ctx: Omit<PinCtx, 'selected'>,
-): ClusterSpec {
+export function resolveClusterSpec(members: MapPin[], ctx: ClusterCtx): ClusterSpec {
   return {
     count: members.length,
     label: members.length > 99 ? '99+' : String(members.length),
@@ -392,6 +446,7 @@ export function resolveClusterSpec(
     ink: INK[ctx.mode],
     ring: ctx.tier === 1 && ctx.mode !== 'schematic',
     saga: members.some((m) => !!sagaOf(m)),
+    select: ctx.selected ? SELECT_COLOR[ctx.mode] : null,
     // A badge is a pin that swallowed several, so it has to say everything its
     // members would have said. Without this, a step that highlights a child
     // sitting inside a cluster highlights nothing the reader can see — which is
@@ -401,6 +456,9 @@ export function resolveClusterSpec(
       'event-pin',
       'event-pin--cluster',
       `event-pin--tier${ctx.tier}`,
+      // the same class a selected pin carries, because it buys the same thing:
+      // full opacity and the top of the stack (GlobeView's stylesheet)
+      ...(ctx.selected ? ['event-pin--selected'] : []),
       ...(members.some((m) => sagaOf(m)) ? ['event-pin--saga'] : []),
       ...(ctx.highlighted ? ['event-pin--accent'] : []),
       ...(ctx.mode === 'schematic' ? ['event-pin--flat'] : []),
@@ -446,6 +504,10 @@ export const pinTier = (p: PinDatum, tiers: ReadonlyMap<string, Tier>): Tier =>
  * the same event arrives in the spine and again in its era chunk, and a merge
  * replaces the object. Without this a pin that grew steps under a reader's
  * cursor would keep the artwork it was built with.
+ *
+ * A BADGE now reads the selection too (round 58): a stack holding the open event
+ * is drawn selected, so a stack that gains or loses it has to be rebuilt — which
+ * is exactly what the reader does by zooming out until their pin collapses.
  */
 export const pinStateKey = (
   p: PinDatum,
@@ -457,8 +519,8 @@ export const pinStateKey = (
   const m = mode === 'schematic' ? 's' : 'r'
   const saga = (e: MapPin) => (sagaOf(e) ? 1 : 0)
   return p.kind === 'cluster'
-    ? `c:${p.id}:${tier}:${m}:${highlighted ? 1 : 0}:${p.members
-        .map((e) => `${e.id}${saga(e)}`)
-        .join('|')}`
+    ? `c:${p.id}:${clusterHolds(p.members, selectedId) ? 1 : 0}:${tier}:${m}:${
+        highlighted ? 1 : 0
+      }:${p.members.map((e) => `${e.id}${saga(e)}`).join('|')}`
     : `e:${p.id}:${selectedId === p.id ? 1 : 0}:${tier}:${m}:${highlighted ? 1 : 0}:${saga(p.event)}`
 }

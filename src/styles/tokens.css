@@ -64,12 +64,32 @@
   --z-search: 7;
   --z-settings: 8;
   --z-topbar: 9;
+  /* The article reader (components/WikiReader.vue), over the whole app: it is a
+     MODAL — its scrim is what makes the globe, the panel and the bars inert
+     while an article is being read, and a bar left clickable above the scrim
+     would be a control that acts on a map the reader cannot see. */
+  --z-reader: 10;
   /* The update notice, over everything: it is the only thing on screen that is
      about the page itself rather than about the world on it, and a reader who
      cannot see it goes on running a build from two rounds ago. */
-  --z-toast: 10;
+  --z-toast: 11;
 
-  --rail: 92px; /* timeline height */
+  /*
+   * THE RAIL'S HEIGHT — the one number every clearance below is derived from.
+   *
+   * ROUND 58 grew both, on a DESKTOP only. 92px was a figure inherited from the
+   * era rail alone: two strips and a ruler, which is all it has to say. The
+   * saga rail says a great deal more in the same box — a breadcrumb, a walk, a
+   * rule, three lanes of dated marks — and it was drawing all of it at phone
+   * densities on a 1280px screen with 700px of empty map above it. *"The
+   * timeline should be larger and buttons there should be larger too."*
+   *  · 100 for the era rail: the extra 8px go to the ruler, which is the part
+   *    with slack (`.ruler` in TimelineBar.vue is top-and-bottom anchored), and
+   *    it is a modest growth on purpose — the era rail was not what was cramped.
+   *  · 118 under a saga: 40 of them are the head row, which is what a 34px
+   *    control cluster needs, and the rest is the track the lanes hang in.
+   */
+  --rail: 100px; /* timeline height */
   /*
    * Height of the top bar's content row (TopBar.vue): its --s3 padding twice,
    * around the tallest thing in it, which is an --icon-btn. A token for the
@@ -116,6 +136,21 @@
   --rail-clear: calc(var(--rail) + var(--safe-b));
   /* …and at the top: the bar plus whatever the notch takes */
   --bar-clear: calc(var(--bar) + var(--safe-t));
+}
+
+/*
+ * A SAGA'S RAIL IS THE TALLER ONE ON EVERY SCREEN, not only on a phone.
+ *
+ * Round 46 wrote this rule for a phone and left the desktop at the era rail's
+ * height, which was the right call at the time and stopped being one the moment
+ * the walk's controls were asked to grow (round 58, item 1). Stated here, as the
+ * ONE token everything else follows, for the reason the phone's copy of it is:
+ * a rail that knew it was 118px tall while --rail-clear said 100 would be a rail
+ * with the pill sitting inside it, which is the exact bug --rail exists to
+ * prevent. The phone's own figure is in the query below and overrides this.
+ */
+:root:has(.rail.saga) {
+  --rail: 118px;
 }
 
 @media (max-width: 640px) {

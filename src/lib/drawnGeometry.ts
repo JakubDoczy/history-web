@@ -740,6 +740,142 @@ export function layerOf(
   return { shapes, closed, buckets: lists.map((l) => (l ? Uint32Array.from(l) : l)) }
 }
 
+/* ------------------------------------------------------- a layer, on the wire */
+
+/**
+ * A decoded layer FLATTENED INTO NINE TYPED ARRAYS, so it can be handed between
+ * workers for the cost of nine pointers.
+ *
+ * This exists because of where the decode now happens. The 10m rung is 3.3 MB
+ * of JSON and ~700 ms of parse-and-cut (measured in node; a phone is several
+ * times that), and it used to run inside the ONE worker that also draws every
+ * tile — so the moment a reader crossed level 7, every tile of the zoom they
+ * were in the middle of queued behind it and the atlas starved for the whole
+ * gesture. The decode is therefore done in its own worker (lib/drawnDecode.
+ * worker.ts) and the result is sent to the renderer; what follows is the only
+ * part of that which needed thought.
+ *
+ * A `Layer` is 7 701 shapes, each holding three or four typed arrays. Sent as
+ * itself, structured clone walks ~30 000 objects and copies every buffer, twice
+ * over if the message is relayed through the main thread — which would move the
+ * stall rather than remove it. Packed, the whole layer is nine buffers, and
+ * every one of them is TRANSFERRED: serialising is O(1), and the receiving side
+ * rebuilds the shapes as `subarray` VIEWS onto the arrays it was given, so no
+ * point is ever copied on either thread.
+ *
+ * The one thing to be careful about is `Shape.rings`, which indexes points
+ * relative to the shape's own `pts`. Packing keeps each shape's ring array
+ * verbatim and hands back a view of exactly its points, so the indices mean the
+ * same thing on the other side and the drawing is identical byte for byte —
+ * which the round-trip test asserts rather than assumes.
+ */
+export interface PackedLayer {
+  closed: boolean
+  /** How many shapes. Everything below is indexed by it. */
+  n: number
+  /** Every shape's points, end to end. */
+  pts: Float64Array
+  /** Where each shape's points start, in POINTS, with a terminator. */
+  ptsAt: Uint32Array
+  /** Every shape's ring table, end to end, each still relative to its shape. */
+  rings: Uint32Array
+  /** Where each shape's ring table starts, with a terminator. */
+  ringsAt: Uint32Array
+  /** Seam flags per point over the whole layer; zero where a shape has none. */
+  seam: Uint8Array
+  /** 1 where the shape carries seam flags at all — `Shape.seam` is optional. */
+  hasSeam: Uint8Array
+  /** minLng, minLat, maxLng, maxLat per shape. */
+  bbox: Float64Array
+  /** Bucket lists end to end… */
+  buckets: Uint32Array
+  /** …and where each cell's starts, with a terminator. */
+  bucketsAt: Uint32Array
+}
+
+export function packLayer(layer: Layer): PackedLayer {
+  const n = layer.shapes.length
+  let totalPts = 0
+  let totalRings = 0
+  for (const s of layer.shapes) {
+    totalPts += s.pts.length / 2
+    totalRings += s.rings.length
+  }
+  const pts = new Float64Array(totalPts * 2)
+  const ptsAt = new Uint32Array(n + 1)
+  const rings = new Uint32Array(totalRings)
+  const ringsAt = new Uint32Array(n + 1)
+  const seam = new Uint8Array(totalPts)
+  const hasSeam = new Uint8Array(n)
+  const bbox = new Float64Array(n * 4)
+  let p = 0
+  let r = 0
+  layer.shapes.forEach((s, i) => {
+    ptsAt[i] = p
+    ringsAt[i] = r
+    pts.set(s.pts, p * 2)
+    rings.set(s.rings, r)
+    if (s.seam) {
+      seam.set(s.seam, p)
+      hasSeam[i] = 1
+    }
+    bbox.set(s.bbox, i * 4)
+    p += s.pts.length / 2
+    r += s.rings.length
+  })
+  ptsAt[n] = p
+  ringsAt[n] = r
+  // The bucket grid is a SPARSE array — `layerOf` only creates a cell a shape
+  // lands in — and an empty cell must stay empty on the other side, so the
+  // offsets are what carry the emptiness rather than a sentinel.
+  const cells = layer.buckets.length
+  const bucketsAt = new Uint32Array(cells + 1)
+  let b = 0
+  for (let c = 0; c < cells; c++) {
+    bucketsAt[c] = b
+    b += layer.buckets[c]?.length ?? 0
+  }
+  bucketsAt[cells] = b
+  const buckets = new Uint32Array(b)
+  let at = 0
+  for (let c = 0; c < cells; c++) {
+    const list = layer.buckets[c]
+    if (!list) continue
+    buckets.set(list, at)
+    at += list.length
+  }
+  return { closed: layer.closed, n, pts, ptsAt, rings, ringsAt, seam, hasSeam, bbox, buckets, bucketsAt }
+}
+
+/** The layer again, as views onto the arrays that arrived. Nothing is copied. */
+export function unpackLayer(p: PackedLayer): Layer {
+  const shapes: Shape[] = new Array(p.n)
+  for (let i = 0; i < p.n; i++) {
+    const from = p.ptsAt[i]
+    const to = p.ptsAt[i + 1]
+    const shape: Shape = {
+      pts: p.pts.subarray(from * 2, to * 2),
+      rings: p.rings.subarray(p.ringsAt[i], p.ringsAt[i + 1]),
+      bbox: [p.bbox[i * 4], p.bbox[i * 4 + 1], p.bbox[i * 4 + 2], p.bbox[i * 4 + 3]],
+    }
+    if (p.hasSeam[i]) shape.seam = p.seam.subarray(from, to)
+    shapes[i] = shape
+  }
+  const buckets: Uint32Array[] = new Array(p.bucketsAt.length - 1)
+  for (let c = 0; c + 1 < p.bucketsAt.length; c++) {
+    const from = p.bucketsAt[c]
+    const to = p.bucketsAt[c + 1]
+    if (to > from) buckets[c] = p.buckets.subarray(from, to)
+  }
+  return { shapes, closed: p.closed, buckets }
+}
+
+/** The buffers to hand to `postMessage`'s transfer list: all of them. */
+export const packedBuffers = (p: PackedLayer): ArrayBuffer[] =>
+  [p.pts, p.ptsAt, p.rings, p.ringsAt, p.seam, p.hasSeam, p.bbox, p.buckets, p.bucketsAt].map(
+    (a) => a.buffer as ArrayBuffer,
+  )
+
 /**
  * The whole vector world, in two stages.
  *
@@ -833,23 +969,36 @@ export const MAP_DATA = {
  * level 50m geometry has stopped being able to answer (`LOD_FINE_Z`, measured
  * in lib/drawnTile.ts). A reader who looks at the world and leaves never asks
  * for it; a reader who zooms to a coast asks for it once.
+ *
+ * `fine: false` REFUSES that third stage here, and it is what the tile worker
+ * passes. The trigger is unchanged — a tile at level 7 is still what buys the
+ * file — but the work is done in lib/drawnDecode.worker.ts and installed from
+ * outside, because ~700 ms of parse and cut inside the thread that draws tiles
+ * is 700 ms in which no tile can be drawn, and the thing that asks for it is a
+ * reader in the middle of a zoom. See `DrawnTiles.requestFine`.
+ *
+ * The 50m stage stays here, and that is measured rather than assumed: it parses
+ * and decodes in 17 ms against 10m's ~940, so moving it would buy a frame and
+ * cost a second worker at load.
  */
 export async function loadWorld(
   base = '/',
   onStage?: (stage: DrawnStage, w: DrawnWorld) => void,
+  { fine = true }: { fine?: boolean } = {},
 ): Promise<DrawnWorld> {
   const get = (f: string) => fetch(`${base}data/map/${f}`).then((r) => r.json() as Promise<Topology>)
   const rest = Promise.all([get(MAP_DATA.fine), get(MAP_DATA.water)])
   const world = buildWorld(await get(MAP_DATA.coarse))
   let asked = false
-  world.requestFine = () => {
-    if (asked) return
-    asked = true
-    void get(MAP_DATA.finest).then((finest) => {
-      world.fineLand = layerOf(finest, 'land', true, { chunk: true })
-      onStage?.('10m', world)
-    })
-  }
+  if (fine)
+    world.requestFine = () => {
+      if (asked) return
+      asked = true
+      void get(MAP_DATA.finest).then((finest) => {
+        world.fineLand = layerOf(finest, 'land', true, { chunk: true })
+        onStage?.('10m', world)
+      })
+    }
   void rest.then(([fine, water]) => {
     world.land = layerOf(fine, 'land', true)
     world.rivers = layerOf(water, 'rivers', false, { smooth: true })

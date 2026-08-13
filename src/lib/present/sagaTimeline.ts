@@ -913,6 +913,14 @@ export const stationAt = (s: Station, span: Time, count: number): string => {
  *
  * `{ to: undefined }` is the overview, which is exactly the value `selectStep`
  * takes for it.
+ *
+ * ONE CURRENT, AND IT IS THE STORE'S (round 58, sagas.md rule 16). `current` is
+ * `events.stepId` and nothing else. The rail used to pass `stepId ?? cursor`,
+ * carrying a walk position of its own for the entrances rule 2 would not let it
+ * open — and the two parted company the first time the walk touched one, after
+ * which every press recomputed the same answer from the same stale value and
+ * did nothing at all. Entrances open now (they preview: rule 15), so there is
+ * one value, and this function counts from it.
  */
 export function stepBy(
   ids: readonly string[],

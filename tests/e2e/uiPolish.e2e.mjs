@@ -186,14 +186,50 @@ await check('the pill is bottom-centre, above the timeline', () => {
   ok(off < 2, `pill centre is ${off}px off the screen's axis`)
   ok(pill.bottom < 900 && pill.bottom > 700, `pill bottom at ${pill.bottom}`)
 })
-await check('it says what it is, in a word', async () => {
+await check('it says what a press of it DOES, in a word', async () => {
+  // ROUND 58 retired "Restore". The word was a claim about history — put back
+  // the window I put down — and it was true of exactly one of the states the
+  // pill appears in: land on a saga on a phone and the article was never up,
+  // step into a page and what comes up is a page nobody has seen, land on an
+  // entrance and it is a preview that did not exist a moment ago. The label is
+  // now what the press yields: "Open" for the context's own reading, and
+  // "Open event" where the pill is naming a child event rather than the context
+  // (see `expandLabel` in EventPanel.vue, and (2b) below).
   const label = await pc.textContent('[data-test="pill-restore"]')
-  ok(/restore/i.test(label ?? ''), `restore control reads "${label}"`)
+  ok(/^open$/i.test((label ?? '').trim()), `the expand control reads "${label}"`)
 })
 await check('and it is still compact — a bar, not a second panel', () => {
   ok(pill.h <= 44, `pill is ${pill.h}px tall`)
   ok(pill.w <= 500, `pill is ${pill.w}px wide`)
 })
+
+/* --- (2b) the label's OTHER meaning, round 58 ---------------------------
+   The pill can be naming the context, or one of its PARTS — a battle opened
+   inside the saga and then folded away. In the second case the press does not
+   restore this event's reading, it opens a different event's article, and the
+   pill's own back-arrow beside it is the proof. So the word changes with what
+   the press does, and this is the state where it does something else. */
+await pc.evaluate(() => window.__events.showOnMap('barbarossa'))
+await settle(pc, 1600)
+await pc.evaluate(() => window.__events.select('kiev-pocket'))
+await settle(pc, 1000)
+await pc.waitForSelector('[data-test="panel-minimise"]', { timeout: 20_000 })
+await pc.click('[data-test="panel-minimise"]')
+await pc.waitForSelector('[data-test="panel-pill"]', { timeout: 20_000 })
+await settle(pc, 600)
+const onPart = await pc.evaluate(() => ({
+  label: document.querySelector('[data-test="pill-restore"]')?.textContent.trim() ?? null,
+  back: !!document.querySelector('[data-test="panel-pill"] [data-test="focus-back"]'),
+  names: document.querySelector('[data-test="pill-expand"]')?.textContent.replace(/\s+/g, ' ').trim(),
+}))
+await shot(pc, 'c2-pc-pill-on-a-part')
+console.log(`    on a part: "${onPart.names}" — the control reads "${onPart.label}"`)
+await check('on a part of the context it says "Open event", because that is what opens', () => {
+  ok(onPart.back, 'the pill is not on a part — no way back to the context on it')
+  ok(/^open event$/i.test(onPart.label ?? ''), `the expand control reads "${onPart.label}"`)
+})
+await pc.evaluate(() => window.__events.dismiss())
+await settle(pc, 800)
 
 /* ================================================= 3. the expanded stack -- */
 console.log('\n(3) an expanded stack — straight leader lines')

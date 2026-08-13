@@ -222,8 +222,36 @@ await shot(page, '06-entrance-chips', {
   height: Math.round(stripBox.height) + 12,
 })
 
-console.log('\n(c) descending — WWII → D-Day landings')
+console.log('\n(c) previewing, then descending — WWII → D-Day landings')
+/* ROUND 58 PUT A STEP BETWEEN THESE TWO. A press on an entrance station opens
+   it as a step of the WAR, with a preview of the child in the panel (its
+   summary, its date, and a brass "Open event"); the descent is that button.
+   The reason is the one the reader gave — an entrance "should be displayed as a
+   step … but you should display a button to open step as a detailed event" —
+   and the reason it matters here is that the old press was a context change
+   nobody had asked for, taken on a control whose only visible promise was a
+   name and a date. See docs/design/sagas.md rule 15. */
 await page.click('[data-step="d-day"]')
+await settle(page, 1800)
+const previewed = await page.evaluate(() => ({
+  stack: [...window.__events.focusStack],
+  step: window.__events.stepId ?? null,
+  preview: !!document.querySelector('[data-test="step-preview"]'),
+  open: !!document.querySelector('[data-test="open-event"]'),
+  saga: !!document.querySelector('[data-test="preview-saga"]'),
+  stations: document.querySelectorAll('[data-test="saga-station"]').length,
+}))
+await shot(page, '07a-preview-d-day')
+await check('the press previews the child and leaves the war on the screen', () => {
+  eq(previewed.stack, ['ww2'], 'focus stack')
+  ok(previewed.step === 'd-day', `the rail is on ${previewed.step}`)
+  ok(previewed.stations === 11, `the war's rail became ${previewed.stations} stations`)
+  ok(previewed.preview && previewed.open, 'no preview, or no way in from it')
+  // D-Day is itself a saga, and the preview says so rather than letting the
+  // reader find out by arriving in it: its steps are behind the button.
+  ok(previewed.saga, 'a child that is a saga previewed without saying so')
+})
+await page.click('[data-test="open-event"]')
 await settle(page, 2800)
 const dday = await stateOf(page)
 await shot(page, '07-descended-d-day')

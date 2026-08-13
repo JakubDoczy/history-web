@@ -11,6 +11,7 @@ import {
 import { useSettingsStore } from '../src/stores/settings'
 import { useTimeStore } from '../src/stores/time'
 import { useViewStore } from '../src/stores/view'
+import { stepBy } from '../src/lib/present/sagaTimeline'
 import type { RawEvent } from '../src/lib/events'
 
 const ev = (id: string, priority: number): RawEvent => ({
@@ -1195,6 +1196,12 @@ describe('every reachable state has a way out', () => {
       (id) => [`selectStep ${id}`, (e: ReturnType<typeof useEventStore>) => e.selectStep(id)] as const,
     ),
     ['selectStep()', (e) => e.selectStep()],
+    // ROUND 58: the descent is its own action now. `selectStep into` previews
+    // the entrance and leaves the stack alone; this is the press that pushes.
+    // It has to be in the alphabet or the walk would no longer reach the nested
+    // contexts by the route the rail actually offers — and reaching them is the
+    // whole reason `op` carries an entrance in this corpus.
+    ['openEntrance', (e) => e.openEntrance()],
     ['close', (e) => e.close()],
     ['select()', (e) => e.select()],
     ['focusBack', (e) => e.focusBack()],
@@ -1261,31 +1268,57 @@ describe('every reachable state has a way out', () => {
     // open, and the ENTRANCE has been taken (a two-deep stack reached by a
     // chip, which is the transition the recursion added)
     expect([...seen.keys()].some((k) => k.endsWith('|first'))).toBe(true)
-    // …and the ENTRANCE really descends, from EVERY state the saga can be in:
-    // the chip pushes the child and hands it the panel. That is the transition
-    // recursion added, and the one thing here no other action does.
+    // ROUND 58 SPLIT THE ENTRANCE IN TWO, and both halves are checked from
+    // EVERY state the saga can be in — which is the point of having the graph.
+    //
+    //   · `selectStep('into')` PREVIEWS: the stack does not move, the panel
+    //     comes back to the saga, and `into` is the step the reader is on. It is
+    //     a step like any other now, and that is exactly what made prev/next
+    //     safe to walk through it (defect 2);
+    //   · `openEntrance()` DESCENDS: the push the chip used to make on sight.
+    //
+    // The preview state is reachable and the nested context is still reachable,
+    // so nothing below has gone vacuous.
     setActivePinia(createPinia())
     useTimeStore().focusTime(1941)
     const events = useEventStore()
     events.adopt(corpus)
+    let previews = 0
     let descents = 0
     for (const k of seen.keys()) {
       const [stack, sel, expanded, step] = k.split('|')
       const focusStack = stack ? stack.split('>') : []
       if (focusStack[focusStack.length - 1] !== 'op') continue
-      restore(events, {
+      const at = {
         focusStack,
         selectedId: sel === '-' ? undefined : sel,
         focusExpanded: expanded === 'true',
         stepId: step === '-' ? undefined : step,
-      })
+      }
+
+      restore(events, at)
       events.selectStep('into')
+      previews++
+      expect(events.focusStack, `preview from ${k}`).toEqual(focusStack)
+      expect(events.selectedId, `preview from ${k}`).toBe('op')
+      expect(events.stepId, `preview from ${k}`).toBe('into')
+      expect(events.entranceStep?.child?.id, `preview from ${k}`).toBe('battle')
+
+      // …and from the preview, the descent, which is where the old behaviour
+      // went: one press further along than it used to be, and identical.
+      events.openEntrance()
       descents++
-      expect(events.focusStack.slice(-2), `from ${k}`).toEqual(['op', 'battle'])
-      expect(events.selectedId, `from ${k}`).toBe('battle')
-      expect(events.stepId, `from ${k}`).toBeUndefined()
+      expect(events.focusStack.slice(-2), `descent from ${k}`).toEqual(['op', 'battle'])
+      expect(events.selectedId, `descent from ${k}`).toBe('battle')
+      expect(events.stepId, `descent from ${k}`).toBeUndefined()
     }
-    expect(descents, 'the entrance chip was never pressed inside the saga').toBeGreaterThan(0)
+    expect(previews, 'the entrance was never selected inside the saga').toBeGreaterThan(0)
+    expect(descents, 'the descent was never taken inside the saga').toBeGreaterThan(0)
+    // the preview is a node of the graph in its own right, not merely a thing
+    // that can be done to one: `openEntrance` is in ACTIONS, so the walk has
+    // both stood on an entrance and gone through it
+    expect([...seen.keys()].some((k) => k.endsWith('|into'))).toBe(true)
+    expect([...seen.keys()].some((k) => k.split('|')[0] === 'op>battle')).toBe(true)
   })
 
   it('never leaves the globe filtered with nothing on screen to unfilter it', () => {
@@ -1770,11 +1803,18 @@ describe('stepped focus', () => {
   })
 
   /* --- ENTRANCES: a step that is another item (docs/design/sagas.md) ------
-     The whole of the recursion is that the step hands the reader to the
-     existing focus machinery. So what these check is not new state — there is
-     none — but that the descent is exactly the push "Show on map" already
-     makes, and that the way back is the way back out of any other part. */
-  describe('a step that descends into a child', () => {
+     ROUND 58 SPLIT THIS IN TWO. An entrance used to descend the instant it was
+     selected, which made "what is this step" unanswerable without changing what
+     the whole map was about, and forced prev/next to refuse to open one — the
+     refusal that left the rail's cursor and the store's `stepId` disagreeing
+     (see the walk test below, and tests/e2e/repro58.e2e.mjs).
+
+     Now: selecting an entrance PREVIEWS it — the saga keeps the focus, keeps
+     its rail, and marks the entrance as the step it is standing on, while the
+     map moves to the child and shows the child's ink. `openEntrance` is the
+     descent, and it is exactly the push "Show on map" already makes, so the way
+     back is still the way back out of any other part. */
+  describe('a step that is an entrance to a child', () => {
     /** `op`, with one of its steps turned into an entrance to `battle`. */
     const saga = (): RawEvent[] => [
       op({
@@ -1784,18 +1824,111 @@ describe('stepped focus', () => {
           steps[2],
         ],
       }),
-      { ...part('battle', 'op'), steps: [{ id: 'own', name: 'Own', at: 0 }] },
+      {
+        ...part('battle', 'op'),
+        summary: 'Three weeks in the mud.',
+        steps: [{ id: 'own', name: 'Own', at: 0 }],
+        drawing: { layers: [{ type: 'label', pos: [31, 51], text: 'The battle’s own ink' }] },
+      },
       part('village', 'battle'),
     ]
-    const descend = () => {
+    /** Standing ON the entrance: the preview, which is where a press now lands. */
+    const preview = () => {
       const events = useEventStore()
       events.adopt(saga())
       events.showOnMap('op')
       events.selectStep('into')
       return events
     }
+    /** …and through the button on it. */
+    const descend = () => {
+      const events = preview()
+      events.openEntrance()
+      return events
+    }
 
-    it('pushes the child onto the focus stack rather than opening a step', () => {
+    /* ------------------------------------------------ the preview ---------- */
+    it('opens as a STEP of the saga, leaving the focus and the rail where they are', () => {
+      const events = preview()
+      expect(events.focusStack, 'the entrance descended on sight').toEqual(['op'])
+      expect(events.focus?.itemId).toBe('op')
+      expect(events.selectedId).toBe('op')
+      // the walk's position, which is the whole of "where the reader is"
+      expect(events.stepId).toBe('into')
+      // …and the saga's own steps are still what the rail is drawing
+      expect(events.focusSteps.map((s) => s.id)).toEqual(['june', 'into', 'december'])
+    })
+
+    it('resolves the child for the preview to read its summary off', () => {
+      const events = preview()
+      expect(events.entranceStep?.step.id).toBe('into')
+      expect(events.entranceStep?.child?.id).toBe('battle')
+      expect(events.entranceStep?.child?.summary).toBe('Three weeks in the mud.')
+    })
+
+    it('offers no entrance on an ordinary step, or on the overview', () => {
+      const events = preview()
+      events.selectStep('june')
+      expect(events.entranceStep).toBeUndefined()
+      events.selectStep()
+      expect(events.entranceStep).toBeUndefined()
+    })
+
+    it('puts the CHILD in front of the reader: its camera, its ink, its pin', () => {
+      const events = preview()
+      // the frame `showOnMap` would fit for the child — without being in it
+      expect(events.flyTo).toMatchObject(events.mapTarget('battle')!)
+      // the child's own drawing, not the parent's layers filtered to the window
+      expect(texts(events)).toEqual(['The battle’s own ink'])
+      // and its pin is forced on, so the thing described is the thing lit up
+      expect(events.highlightedIds).toContain('battle')
+      expect(events.visible.map((e) => e.id)).toContain('battle')
+    })
+
+    it('leaves the map alone on the way back out to the overview', () => {
+      const events = preview()
+      events.selectStep()
+      expect(events.stepId).toBeUndefined()
+      expect(texts(events), 'the whole plan again').toHaveLength(4)
+      expect(events.highlightedIds).toEqual([])
+    })
+
+    it('previews a child that is itself a saga without entering its steps', () => {
+      const events = preview()
+      // `battle` carries a step of its own; the preview says so and stops there
+      expect(events.entranceStep?.child?.kind).toBe('event')
+      expect(events.focusSteps.map((s) => s.id)).not.toContain('own')
+    })
+
+    it('opens the article beside the map, and waits on the pill where it cannot', () => {
+      const events = preview()
+      expect(events.panelMinimised, 'a desktop hid the preview behind the pill').toBe(false)
+      // a phone: the map wins, and the pill's expand is what opens the preview
+      useViewStore().viewportWidthPx = 390
+      events.selectStep()
+      events.selectStep('into')
+      expect(events.panelMinimised).toBe(true)
+      expect(events.stepId, 'the step is open either way').toBe('into')
+    })
+
+    it('previews a step whose child has not loaded, rather than stalling the walk', () => {
+      // chunks stream: a step may name an item this build has not merged. The
+      // build script rejects a dangling id, so this can only be a timing gap —
+      // and a walk that refuses to move past it is the round-58 defect again.
+      const events = useEventStore()
+      events.adopt([op({ steps: [{ id: 'into', name: 'Battle', at: 0.45, child: 'nowhere' }] })])
+      events.showOnMap('op')
+      events.selectStep('into')
+      expect(events.focusStack).toEqual(['op'])
+      expect(events.stepId, 'the walk stalled on a chunk that has not landed').toBe('into')
+      // what is missing is the summary and the button, and only those
+      expect(events.entranceStep?.child).toBeUndefined()
+      events.openEntrance()
+      expect(events.focusStack, 'descended into an item that is not there').toEqual(['op'])
+    })
+
+    /* ------------------------------------------- and the descent ----------- */
+    it('descends on "Open event", exactly as Show on map on the child does', () => {
       const events = descend()
       expect(events.focusStack).toEqual(['op', 'battle'])
       expect(events.selectedId).toBe('battle')
@@ -1804,11 +1937,21 @@ describe('stepped focus', () => {
       expect(events.focus?.itemId).toBe('battle')
     })
 
-    it('hands the strip over to the child’s own steps', () => {
+    it('hands the rail over to the child’s own steps', () => {
       const events = descend()
       expect(events.focusSteps.map((s) => s.id)).toEqual(['own'])
       // …and the child's parts are the pins, so the descent can continue
       expect(events.focusChildren.map((e) => e.id)).toEqual(['village'])
+    })
+
+    it('does nothing when there is no entrance under the reader', () => {
+      const events = preview()
+      events.selectStep('june')
+      events.openEntrance()
+      expect(events.focusStack).toEqual(['op'])
+      events.selectStep()
+      events.openEntrance()
+      expect(events.focusStack).toEqual(['op'])
     })
 
     it('comes back out to the parent’s OVERVIEW, by the ordinary way back', () => {
@@ -1842,17 +1985,117 @@ describe('stepped focus', () => {
       events.focusBack()
       expect(events.focusStack).toEqual(['op'])
     })
+  })
 
-    it('does nothing when the child has not loaded yet', () => {
-      // chunks stream: a step may name an item this build has not merged. The
-      // build script rejects a dangling id, so this can only be a timing gap,
-      // and answering it by changing what is on the globe would be worse.
+  /**
+   * THE WALK, END TO END, THROUGH AN ENTRANCE-BEARING SAGA — round 58, defect 2.
+   *
+   * The reader: *"Next step arrow button sometimes doesn't work (I think it
+   * works the first time and then stops working for another step)."*
+   *
+   * The rail's prev/next is `stepBy` (lib/present/sagaTimeline.ts) over the
+   * store's `stepId`, and the defect was that those were two values rather than
+   * one: the rail kept its own cursor, `stepBy` counted from
+   * `stepId ?? cursor`, and a press that landed on an ENTRANCE moved the cursor
+   * while leaving `stepId` behind — after which every press recomputed from the
+   * stale `stepId` and landed on the same entrance again, silently, forever.
+   *
+   * So the walk is tested where the walk lives: over the ONE value, on a saga
+   * shaped like the one it was reported on (`p p E E p` — the entrance in the
+   * middle is what makes it a walk THROUGH rather than a walk up to). N presses,
+   * N distinct steps, no descent, both ends hard.
+   */
+  describe('walking prev/next through a saga with entrances in it', () => {
+    const mixed = (): RawEvent[] => [
+      op({
+        steps: [
+          { id: 's1', name: 'One', at: 0, page: 'first' },
+          { id: 's2', name: 'Two', at: 0.2, page: 'second' },
+          { id: 'e1', name: 'Three', at: 0.4, child: 'battle' },
+          { id: 'e2', name: 'Four', at: 0.6, child: 'siege' },
+          { id: 's5', name: 'Five', at: 0.8, page: 'fifth' },
+        ],
+      }),
+      part('battle', 'op'),
+      part('siege', 'op'),
+    ]
+    const walk = () => {
       const events = useEventStore()
-      events.adopt([op({ steps: [{ id: 'into', name: 'Battle', at: 0.45, child: 'nowhere' }] })])
+      events.adopt(mixed())
       events.showOnMap('op')
-      events.selectStep('into')
-      expect(events.focusStack).toEqual(['op'])
+      return events
+    }
+    /** One press of the rail's next / prev, spelt exactly as the component does. */
+    const press = (events: ReturnType<typeof useEventStore>, dir: 1 | -1) => {
+      const ids = events.focusSteps.map((s) => s.id)
+      const at = stepBy(ids, events.stepId, dir)
+      if (at) events.selectStep(at.to)
+      return !!at
+    }
+
+    it('opens a distinct step on every press, all the way to the end', () => {
+      const events = walk()
+      const seen: (string | undefined)[] = []
+      for (let i = 0; i < 5; i++) {
+        expect(press(events, 1), `press ${i + 1} refused to move`).toBe(true)
+        seen.push(events.stepId)
+      }
+      expect(seen).toEqual(['s1', 's2', 'e1', 'e2', 's5'])
+      expect(new Set(seen).size, 'a press landed where the one before it did').toBe(5)
+    })
+
+    it('never descends on the way through: the saga keeps the focus and the rail', () => {
+      const events = walk()
+      for (let i = 0; i < 5; i++) {
+        press(events, 1)
+        expect(events.focusStack, `press ${i + 1} descended`).toEqual(['op'])
+        expect(events.focusSteps).toHaveLength(5)
+      }
+    })
+
+    it('stops hard at the far end rather than wrapping back to the beginning', () => {
+      const events = walk()
+      for (let i = 0; i < 5; i++) press(events, 1)
+      expect(events.stepId).toBe('s5')
+      expect(press(events, 1), 'next wrapped off the end of the saga').toBe(false)
+      expect(events.stepId).toBe('s5')
+    })
+
+    it('walks back down the same steps and out onto the overview', () => {
+      const events = walk()
+      for (let i = 0; i < 5; i++) press(events, 1)
+      const back: (string | undefined)[] = []
+      for (let i = 0; i < 5; i++) {
+        expect(press(events, -1), `prev ${i + 1} refused to move`).toBe(true)
+        back.push(events.stepId)
+      }
+      expect(back).toEqual(['e2', 'e1', 's2', 's1', undefined])
+      expect(press(events, -1), 'prev wrapped off the beginning').toBe(false)
+    })
+
+    it('the second press off an entrance moves — the defect, as a unit test', () => {
+      // The exact shape of the report: walk onto an entrance, then press again.
+      // Before round 58 the cursor sat on `e1` while `stepId` was still `s2`,
+      // so this press recomputed from `s2` and landed on `e1` for a second time.
+      const events = walk()
+      press(events, 1)
+      press(events, 1)
+      press(events, 1)
+      expect(events.stepId).toBe('e1')
+      press(events, 1)
+      expect(events.stepId, 'the press after an entrance was a no-op').toBe('e2')
+    })
+
+    it('carries the walk on from wherever a descent came back to', () => {
+      const events = walk()
+      for (let i = 0; i < 3; i++) press(events, 1) // onto the first entrance
+      events.openEntrance()
+      expect(events.focusStack).toEqual(['op', 'battle'])
+      events.focusBack()
+      // back on the saga's overview, which is where the ladder lands (rule 1)
       expect(events.stepId).toBeUndefined()
+      press(events, 1)
+      expect(events.stepId, 'the walk did not restart cleanly').toBe('s1')
     })
   })
 })

@@ -6,7 +6,11 @@ import {
   buildWorld,
   bucketsCovering,
   layerOf,
+  loadWorld,
+  packLayer,
+  packedBuffers,
   shapesNear,
+  unpackLayer,
   type DrawnWorld,
   type Layer,
 } from '../src/lib/drawnGeometry'
@@ -32,6 +36,7 @@ import {
   DRAWN_LABELS,
   DRAWN_PX_PER_DEG,
   DRAWN_Z_MAX,
+  DrawnTiles,
 } from '../src/lib/drawnSource'
 import { BASE_LEVEL, TILE_PX, maxLevel, tileBbox } from '../src/lib/tilePyramid'
 import {
@@ -1031,6 +1036,160 @@ describe('the 10m rung', () => {
     // has to be online for
     const vendor = readFileSync('scripts/vendor-map-data.mjs', 'utf8')
     expect(vendor).toMatch(/node_modules\/@cublya\/world-atlas\/land-10m\.json/)
+  })
+})
+
+/**
+ * ROUND 58 — WHERE THE RUNG IS DECODED, which turned out to be the whole of the
+ * "map mode is slow when zooming in" report.
+ *
+ * Round 57 got the trigger right (a plate at level 7 is a reader at a coast)
+ * and the thread wrong: the fetch's continuation — 140–260 ms of `JSON.parse`
+ * and 510–670 ms of `layerOf` + `chunkShape`, measured — ran inside the ONE
+ * worker that also draws every tile. A tile is 0.27–0.62 ms, so the decode is
+ * upwards of fifteen hundred tiles' worth of work that cannot yield, started by
+ * a reader in the middle of the zoom that triggered it. The atlas takes two
+ * slots a frame and had nothing to take for the length of the gesture.
+ *
+ * So the decode moved to a second worker and the layer is handed over packed.
+ * Three claims, and all three are things that could quietly stop being true.
+ */
+describe('the rung arrives without stopping the pen', () => {
+  /** The Sognefjord again: the worst case the 10m rung has. */
+  const NORWAY_TILE = (z: number) => ({
+    z,
+    x: Math.floor(((6.0 + 180) / 360) * 2 ** z),
+    y: Math.floor(((90 - 61.5) / 180) * 2 ** (z - 1)),
+  })
+
+  it('is the same layer on the other side of the wire', () => {
+    const layer = fineLand()
+    const packed = packLayer(layer)
+    const back = unpackLayer(packed)
+    expect(back.shapes.length).toBe(layer.shapes.length)
+    expect(back.closed).toBe(layer.closed)
+    for (let i = 0; i < layer.shapes.length; i++) {
+      const a = layer.shapes[i]
+      const b = back.shapes[i]
+      expect(Array.from(b.pts)).toEqual(Array.from(a.pts))
+      // `rings` indexes points RELATIVE to the shape, which is the one thing a
+      // flattened layer could plausibly get wrong.
+      expect(Array.from(b.rings)).toEqual(Array.from(a.rings))
+      expect(b.bbox).toEqual(a.bbox)
+      expect(b.seam ? Array.from(b.seam) : undefined).toEqual(
+        a.seam ? Array.from(a.seam) : undefined,
+      )
+    }
+    // The bucket grid is sparse — a cell no shape reaches has no list at all —
+    // and `shapesNear` reads that emptiness, so it has to survive the trip.
+    expect(back.buckets.length).toBe(layer.buckets.length)
+    for (let c = 0; c < layer.buckets.length; c++)
+      expect(back.buckets[c] ? Array.from(back.buckets[c]) : undefined).toEqual(
+        layer.buckets[c] ? Array.from(layer.buckets[c]) : undefined,
+      )
+  })
+
+  it('draws the same tile from the layer that came over the wire', () => {
+    // The claim the round has to keep: nothing about the PICTURE changed, only
+    // which thread decoded it. Same tile, same bytes.
+    const a = surface()
+    const b = surface()
+    new DrawnRenderer(fineWorld()).draw(a.ctx, NORWAY_TILE(10))
+    new DrawnRenderer({ ...world(), fineLand: unpackLayer(packLayer(fineLand())) }).draw(
+      b.ctx,
+      NORWAY_TILE(10),
+    )
+    expect(Array.from(b.pixels())).toEqual(Array.from(a.pixels()))
+  })
+
+  it('hands over views, not copies', () => {
+    // Nine buffers, all transferable, and every shape a `subarray` of them —
+    // which is what makes installing 7.5 MB of geometry cost nothing on the
+    // thread that receives it. A copy here would be a stall on the render
+    // worker, i.e. the defect this round removed, in a new place.
+    const packed = packLayer(fineLand())
+    const buffers = packedBuffers(packed)
+    expect(buffers.length).toBe(9)
+    expect(new Set(buffers).size).toBe(9)
+    const back = unpackLayer(packed)
+    expect(back.shapes[0].pts.buffer).toBe(packed.pts.buffer)
+    expect(back.shapes[back.shapes.length - 1].rings.buffer).toBe(packed.rings.buffer)
+  })
+
+  it('will not fetch the rung on the thread that draws', async () => {
+    // The tile worker passes `fine: false`, and this is what that buys: there
+    // is no `requestFine` on its world at all, so `DrawnRenderer.draw` cannot
+    // start a 3.3 MB parse behind the tile it is drawing.
+    const asked: string[] = []
+    const files: Record<string, unknown> = {
+      'land-110m.json': read('land-110m.json'),
+      'land-50m.json': read('land-50m.json'),
+      'water-50m.json': read('water-50m.json'),
+      'land-10m.json': read('land-10m.json'),
+    }
+    const stub = ((url: string) => {
+      const name = url.split('/').pop() as string
+      asked.push(name)
+      return Promise.resolve({ json: () => Promise.resolve(files[name]) })
+    }) as unknown as typeof fetch
+    const real = globalThis.fetch
+    globalThis.fetch = stub
+    try {
+      const held = await loadWorld('/', undefined, { fine: false })
+      expect(held.requestFine).toBeUndefined()
+      new DrawnRenderer(held).draw(surface().ctx, NORWAY_TILE(LOD_FINE_Z))
+      await Promise.resolve()
+      expect(asked).not.toContain('land-10m.json')
+      // …and the default is unchanged, because the main-thread fallback (no
+      // worker anywhere) still has nowhere better to run it.
+      const own = await loadWorld('/')
+      expect(own.requestFine).toBeDefined()
+    } finally {
+      globalThis.fetch = real
+    }
+  })
+
+  it('asks for the rung on the first tile request that needs it, and not before', () => {
+    // The trigger moved one step up the same causal chain: it used to fire when
+    // the rasterizer DREW a plate at level 7, and now fires when the scheduler
+    // ASKS for a tile at level 7 — the request that causes that plate. Same
+    // reader, same moment, and now the work lands on a thread with no canvas.
+    const spawned: { url: string; posts: unknown[] }[] = []
+    class FakeWorker {
+      posts: unknown[] = []
+      onmessage: unknown
+      onerror: unknown
+      constructor(url: URL) {
+        spawned.push(this as unknown as { url: string; posts: unknown[] })
+        ;(this as unknown as { url: string }).url = String(url)
+      }
+      postMessage(m: unknown) {
+        this.posts.push(m)
+      }
+      terminate() {}
+    }
+    const g = globalThis as unknown as { Worker?: unknown }
+    const real = g.Worker
+    g.Worker = FakeWorker
+    try {
+      const tiles = new DrawnTiles('/base/')
+      // No OffscreenCanvas in node, so the render worker is not spawned and
+      // every tile below takes the local path — which throws, and is not what
+      // is being measured. What is measured is who asks for the rung.
+      for (const z of [4, 6, LOD_FINE_Z - 1])
+        void tiles.source.render?.({ z, x: 1, y: 1 }).catch(() => {})
+      expect(spawned.length).toBe(0)
+      void tiles.source.render?.({ z: LOD_FINE_Z, x: 1, y: 1 }).catch(() => {})
+      expect(spawned.length).toBe(1)
+      expect(spawned[0].url).toMatch(/drawnDecode\.worker/)
+      expect(spawned[0].posts).toEqual([{ base: '/base/' }])
+      // …and once. The file is 851 kB gzipped and the answer does not change.
+      void tiles.source.render?.({ z: LOD_FINE_Z + 1, x: 2, y: 1 }).catch(() => {})
+      expect(spawned.length).toBe(1)
+      tiles.dispose()
+    } finally {
+      g.Worker = real
+    }
   })
 })
 

@@ -87,6 +87,16 @@ const views = [
   ['world', { lat: 20, lng: 10, altitude: 2.4 }],
   ['continental', { lat: 48, lng: 8, altitude: 0.6 }],
   ['regional', { lat: 43.5, lng: 7.2, altitude: 0.12 }],
+  /**
+   * …and a fourth, because the three above never reach the 10m rung.
+   *
+   * Level 7 is what asks for the fine file, and 0.12 on this window is level 6:
+   * a comparison over those three says nothing about the layer round 58 moved
+   * to another worker. The Sognefjord at 0.05 streams level 8 and is the worst
+   * case the rung has — it is also where a layer rebuilt from transferred
+   * buffers would show first, since every shape there is a clipped cell.
+   */
+  ['coastal', { lat: 61.3, lng: 6.0, altitude: 0.05 }],
 ]
 
 for (const [name, pov] of views) {

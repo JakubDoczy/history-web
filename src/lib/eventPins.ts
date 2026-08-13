@@ -3,6 +3,7 @@ import {
   pinTitle,
   resolveClusterSpec,
   resolvePinSpec,
+  type ClusterCtx,
   type ClusterSpec,
   type GlyphArt,
   type PinCtx,
@@ -48,12 +49,40 @@ const TIP_Y = 31
 const TEARDROP = 'M12 31C7.2 24.6 3 18.3 3 11.6 3 6 7 2 12 2s9 4 9 9.6c0 6.7-4.2 13-9 19.4z'
 
 /**
+ * The box a pin is drawn in, as a viewBox — `x`/`y` are the box's own origin.
+ *
+ * A SELECTED pin draws OUTSIDE the teardrop (see `SELECT_RIM_SCALE` and
+ * `baseRing`), above the head and below the tip, so it needs the room stated:
+ * the rim's crown reaches y ≈ -0.9 and the ground ring's lower edge y ≈ 35.3.
+ * Giving the box a negative origin rather than translating the artwork is what
+ * keeps every coordinate in this file — the head at (12, 11), the tip at
+ * (12, 31) — meaning the same thing in every state a pin can be in.
+ */
+export interface PinBox {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+export const pinBox = (spec: PinSpec): PinBox =>
+  spec.select
+    ? { x: 0, y: -2, w: BOX_W, h: spec.footprint ? 42 : 38 }
+    : { x: 0, y: 0, w: BOX_W, h: spec.footprint ? AREA_BOX_H : BOX_H }
+
+/**
  * How far up to shift the artwork so the tip — not the box centre — sits on the
  * coordinate. CSS2DRenderer centres the wrapper, so the shift is measured from
  * the box's mid-line and expressed as a percentage of the box height.
+ *
+ * `anchorY` is measured from the TOP OF THE BOX, which is not the same as the
+ * tip's y once a box has an origin of its own — see `pinAnchor`.
  */
 export const pinShiftPercent = (boxH: number, anchorY: number) =>
   -((anchorY - boxH / 2) / boxH) * 100
+
+/** The pin's tip, in its box's own frame. */
+export const pinAnchor = (box: PinBox) => TIP_Y - box.y
 
 /** Corner brackets framing the pin head: the "this is a region" mark. */
 const brackets = (cx: number, cy: number, ink: string) => {
@@ -118,6 +147,66 @@ const GLOW =
 const SAGA_RING = (ink: string) =>
   `<circle cx="12" cy="11" r="7.1" fill="none" stroke="${ink}" stroke-width="1" opacity="0.75"/>`
 
+/* ------------------------------------------------------------- the selection */
+
+/**
+ * HOW A SELECTED PIN IS DRAWN — round 58, and the reported defect is the whole
+ * of the argument.
+ *
+ * *"Selected event pin should be always displayed on top and it should be
+ * visible it's selected … right now the circle is crossing the pin in a weird
+ * way — it should either circle the bottom/base of the pin or somehow else be
+ * visible."*
+ *
+ * The old mark was `<circle cx=12 cy=11 r=10.5>`: a ring round the HEAD. The
+ * head is a disc of radius 9 and the body carries on downward for another
+ * twenty units, so a circle wide enough to clear the head comes back down
+ * *inside the silhouette* and is painted across the tail at y ≈ 21. There is no
+ * radius that fixes that — the shape is not a circle — so the ring is gone and
+ * two marks that follow the pin's own geometry take its place:
+ *
+ *  · THE RIM — the teardrop's own outline, grown about the middle of the body
+ *    and laid behind it, so the pin reads as *lit* rather than as struck
+ *    through. It is the mark that carries at a glance across a globe of pins,
+ *    and it cannot cross the artwork because it IS the artwork, one size up.
+ *  · THE BASE RING — an ellipse on the ground where the tip lands: the classic
+ *    map idiom, "this spot", and the reader's own suggestion. It is what tells
+ *    a reader *where* the selection is when three pins overlap, which the rim
+ *    alone cannot: a rim says which pin, a ground ring says which point.
+ *
+ * Both were drawn against the alternatives at real size on all three grounds
+ * (/tmp/shots58/pins/r2-*.png): the rim alone loses the spot, the base ring
+ * alone is four pixels of ellipse on a minor pin and does not survive a busy
+ * satellite ground, and the pair reads at 18 px and at 41 px, on ocean, on dark
+ * land and on parchment.
+ *
+ * The saga ring is untouched by all of it, which is the point of it being
+ * INSIDE the head (lib/present/pin.ts, `PinSpec.saga`): the selection is now
+ * entirely outside the silhouette, and the two marks cannot meet.
+ */
+const SELECT_RIM_SCALE = 1.16
+const BASE_RX = 8.6
+const BASE_RY = 3.4
+
+/** The rim: the pin's own outline, one size up, behind the body. */
+const selectRim = (tone: string) =>
+  `<g class="pin-rim" transform="translate(12 20) scale(${SELECT_RIM_SCALE}) translate(-12 -20)">` +
+  `<path d="${TEARDROP}" fill="${tone}" opacity="0.85"/></g>`
+
+/**
+ * The base ring: the ground under the tip.
+ *
+ * A wash inside a hard edge, in the ratio the footprint uses, because the same
+ * two grounds are underneath: on the photograph the wash is what separates the
+ * ellipse from open ocean, and on parchment the edge is what makes it a drawn
+ * mark rather than a stain.
+ */
+const baseRing = (tone: string) =>
+  `<g class="pin-base">` +
+  `<ellipse cx="12" cy="${TIP_Y}" rx="${BASE_RX}" ry="${BASE_RY}" fill="${tone}" opacity="0.2"/>` +
+  `<ellipse cx="12" cy="${TIP_Y}" rx="${BASE_RX}" ry="${BASE_RY}" fill="none" stroke="${tone}"` +
+  ` stroke-width="1.8" opacity="0.95"/></g>`
+
 /**
  * A category mark from the registry, in the pin's ink (lib/present/pin.ts).
  *
@@ -169,37 +258,49 @@ const glyphSvg = (spec: PinSpec): string => {
 /** One teardrop, from a resolved spec. */
 export function pinSvg(spec: PinSpec): string {
   const h = spec.height
-  const boxH = spec.footprint ? AREA_BOX_H : BOX_H
-  const w = Math.round(h * (BOX_W / BOX_H))
-  const svgH = Math.round(h * (boxH / BOX_H))
+  const box = pinBox(spec)
+  // The unit is still the *pin*: a box that grew to hold the selection's marks
+  // must not scale the teardrop inside it, so both dimensions are measured
+  // against BOX_H, which is the height a pin has always been drawn at.
+  const w = Math.round(h * (box.w / BOX_H))
+  const svgH = Math.round(h * (box.h / BOX_H))
 
+  // AN AREA PIN'S FOOTPRINT IS ITS OWN BASE RING, so when it is selected the
+  // footprint is what takes the selection's tone rather than a second ellipse
+  // being stacked on the first. Two ellipses at the tip, half a unit apart, was
+  // drawn and looked at (/tmp/shots58/pins/r2-land-4x.png, "rim + base · area"):
+  // it reads as a smudge at the size a minor pin is.
+  const footInk = spec.select && spec.footprint ? spec.select : spec.ink
   // the footprint goes behind the pin body so the tip appears to stand in it
   const footprint = spec.footprint
     ? `<g class="pin-footprint">` +
       `<ellipse cx="12" cy="33.6" rx="10.2" ry="4.2" fill="${spec.body}" opacity="0.5"/>` +
-      // the dashes go white, not tag-coloured: at 18px the ring is four pixels
-      // tall and a coloured dash on a coloured fill on dark ground is mud
-      `<ellipse cx="12" cy="33.6" rx="10.2" ry="4.2" fill="none" stroke="${spec.ink}"` +
+      // the dashes go white rather than tag-coloured (or, when the pin is open,
+      // the selection's tone): at 18px the ring is four pixels tall, and a
+      // coloured dash on a coloured fill on dark ground is mud
+      `<ellipse cx="12" cy="33.6" rx="10.2" ry="4.2" fill="none" stroke="${footInk}"` +
       ` stroke-width="2.2" stroke-dasharray="3.6 2.8" stroke-linecap="round" opacity="0.95"/>` +
       `</g>`
     : ''
-  const halo = spec.halo
-    ? `<circle cx="12" cy="11" r="10.5" fill="none" stroke="${spec.halo}" stroke-width="1.6" opacity="0.9"/>`
-    : ''
-  // Outside the halo, so a pin can be both selected and highlighted and still
-  // say both. Sized to stay inside the 24-wide box, like the glow.
+  // BEHIND THE BODY, for the reason the selection's own ring no longer exists:
+  // a circle round the head is drawn across the tail (see `selectRim`). Behind,
+  // the silhouette hides the part that would have crossed it and what is left
+  // is a corona — outside the selection's rim, so a pin can be both selected
+  // and highlighted and still say both.
   const accent = spec.accent
     ? `<circle cx="12" cy="11" r="11.2" fill="none" stroke="${spec.accent}" stroke-width="1.5" opacity="0.95"/>`
     : ''
   return (
-    `<svg width="${w}" height="${svgH}" viewBox="0 0 ${BOX_W} ${boxH}" xmlns="http://www.w3.org/2000/svg">` +
+    `<svg width="${w}" height="${svgH}" viewBox="${box.x} ${box.y} ${box.w} ${box.h}"` +
+    ` xmlns="http://www.w3.org/2000/svg">` +
+    (spec.select && !spec.footprint ? baseRing(spec.select) : '') +
     footprint +
     (spec.glow ? GLOW : '') +
+    accent +
+    (spec.select ? selectRim(spec.select) : '') +
     `<path d="${TEARDROP}" fill="${spec.body}" stroke="${spec.stroke}" stroke-width="1.5"/>` +
     (spec.saga ? SAGA_RING(spec.ink) : '') +
     glyphSvg(spec) +
-    halo +
-    accent +
     `</svg>`
   )
 }
@@ -211,10 +312,21 @@ export function pinSvg(spec: PinSpec): string {
  * an approximation, and a teardrop would overstate its precision.
  */
 export function clusterSvg(spec: ClusterSpec): string {
-  const d = spec.diameter
   const fontSize = spec.label.length > 2 ? 13 : 15.5
+  // A BADGE'S SILHOUETTE IS A CIRCLE, so the pin's rim idiom is a ring here and
+  // there is no base ellipse: a badge is CENTRED on its spot rather than tipped
+  // at it (see the comment above), and a ring on the ground under a mark that
+  // does not point at the ground would be saying something untrue. The box grows
+  // instead of the ring moving inward, because everything from r=18 out is
+  // already spoken for — the tier ring at 19, the step accent at 19.2.
+  const box = spec.select ? 46 : 40
+  const d = Math.round((spec.diameter * box) / 40)
   return (
-    `<svg width="${d}" height="${d}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">` +
+    `<svg width="${d}" height="${d}" viewBox="${(40 - box) / 2} ${(40 - box) / 2} ${box} ${box}"` +
+    ` xmlns="http://www.w3.org/2000/svg">` +
+    (spec.select
+      ? `<circle cx="20" cy="20" r="21" fill="none" stroke="${spec.select}" stroke-width="2.2" opacity="0.95"/>`
+      : '') +
     (spec.ring
       ? `<circle cx="20" cy="20" r="19" fill="none" stroke="${spec.ink}" stroke-width="2" opacity="0.22"/>`
       : '') +
@@ -255,17 +367,15 @@ export function pinElement(e: MapPin, ctx: PinCtx, onClick: () => void): HTMLEle
   el.className = spec.classes.join(' ')
   el.innerHTML = pinSvg(spec)
   el.title = pinTitle(e)
-  el.style.setProperty(
-    '--pin-shift',
-    `${pinShiftPercent(spec.footprint ? AREA_BOX_H : BOX_H, TIP_Y).toFixed(2)}%`,
-  )
+  const box = pinBox(spec)
+  el.style.setProperty('--pin-shift', `${pinShiftPercent(box.h, pinAnchor(box)).toFixed(2)}%`)
   return interactive(el, onClick)
 }
 
 /** DOM wrapper for a cluster badge, centred on the coordinate. */
 export function clusterElement(
   members: MapPin[],
-  ctx: Omit<PinCtx, 'selected'>,
+  ctx: ClusterCtx,
   onClick: () => void,
 ): HTMLElement {
   const spec = resolveClusterSpec(members, ctx)

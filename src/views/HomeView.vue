@@ -8,6 +8,7 @@ import SearchBox from '../components/SearchBox.vue'
 import ScaleBar from '../components/ScaleBar.vue'
 import ModeToggle from '../components/ModeToggle.vue'
 import UpdateToast from '../components/UpdateToast.vue'
+import WikiReader from '../components/WikiReader.vue'
 import { useSettingsStore } from '../stores/settings'
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useUiStore } from '../stores/ui'
@@ -25,6 +26,12 @@ const events = useEventStore()
  * clearing the selection — one key press should undo one thing, and losing the
  * article you were reading because you wanted the map back is not what was
  * asked for.
+ *
+ * ABOVE THIS LADDER SITS THE ARTICLE READER (components/WikiReader.vue). It is
+ * a modal, so while it is open Escape means "close the modal" and nothing else;
+ * it takes the press in the CAPTURE phase on `window` and stops it, so nothing
+ * here runs. Stated rather than duplicated: this file has no test for the
+ * reader's state, and the layering is a property of when the two listeners run.
  */
 const onKey = (e: KeyboardEvent) => {
   if (e.key !== 'Escape') return
@@ -56,6 +63,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   <ModeToggle />
   <EventPanel />
   <BottomRail />
+  <!-- The Wikipedia article, read inside the app, on a desktop. Mounted here
+       rather than inside the panel that opens it: it is a modal over the whole
+       window (scrim included), and the panel is one of the things it covers.
+       See components/WikiReader.vue. -->
+  <WikiReader />
   <!-- Not about the world on the map: about the page itself. See
        components/UpdateToast.vue and lib/build.ts. -->
   <UpdateToast />

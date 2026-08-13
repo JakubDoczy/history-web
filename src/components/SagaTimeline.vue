@@ -2,7 +2,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useEventStore } from '../stores/events'
 import { formatTime, timeExtent } from '../lib/time'
-import { NO_ACTIVE } from '../lib/listbox'
 import type { SagaView } from '../lib/present/saga'
 import {
   FULL_WINDOW,
@@ -291,51 +290,77 @@ function fit() {
   glide(FULL_WINDOW)
 }
 
-/* --- the cursor: what a press of Enter would take ---------------------------
-   The cursor is not the selection. Arrows MOVE it and Enter takes it when the
-   station is an ENTRANCE, rather than arrows selecting as they go, because
-   walking past an entrance with the arrow keys would descend into it — often
-   into an event with no steps at all, which takes this rail off the screen —
-   and the reader would never reach the far end. A station that is a page of
-   THIS saga has no such cost, so prev/next opens it as it passes: that is the
-   click-through, and it is the common case for a saga of pages. */
-const cursor = ref(NO_ACTIVE)
+/* --- where the walk is: ONE value, and it is the store's ---------------------
+ *
+ * ROUND 58, DEFECT 2. There used to be a `cursor` ref here as well, holding
+ * "which station the arrows are on", and prev/next counted from
+ * `events.stepId ?? cursor` — the store's answer first, the rail's second.
+ *
+ * Those two can only agree while every press writes both, and rule 2 as it
+ * stood guaranteed one press that did not: an entrance was *moved to, never
+ * entered*, so a press that landed on one moved the cursor and left `stepId`
+ * behind. The next press then counted from the stale `stepId`, computed the
+ * same entrance again, and wrote the cursor the value it already had — a
+ * perfectly silent no-op, forever. Measured on the Great War, whose steps run
+ * `p p p E E p p p p` (tests/e2e/repro58.e2e.mjs):
+ *
+ *     press 3   cursor=gallipoli  step=gallipoli     ← still fine
+ *     press 4   cursor=verdun     step=gallipoli     ← the split
+ *     press 5   cursor=verdun     step=gallipoli     ← dead, and every press after
+ *
+ * — which is the report, exactly: *"it works the first time and then stops
+ * working for another step"*. The window never moved during any of it, so the
+ * eased glide (`revealIn`) was not in it; nor was the store, which was doing
+ * precisely what it was asked.
+ *
+ * The fix is not a third rule about when to write which. It is that there is
+ * only one value: `events.stepId` IS the walk's position, the cursor is a
+ * reading of it, and every press goes through `selectStep`. That is safe now
+ * for exactly the reason it was not before — landing on an entrance previews it
+ * rather than descending (sagas.md rule 15), so there is no step on this rail
+ * it costs the reader anything to be moved onto.
+ *
+ * ENTER still means descend, and that is rule 2's surviving half: a change of
+ * context has to be asked for. On an entrance it is the preview's "Open event",
+ * from the keyboard.
+ */
 const stationId = (id: string) => `saga-station-${id}`
+const cursorIdx = computed(() => rail.value.stations.findIndex((s) => s.step.id === events.stepId))
 const cursorId = computed(() => {
-  const s = rail.value.stations[cursor.value]
+  const s = rail.value.stations[cursorIdx.value]
   return s ? stationId(s.step.id) : undefined
 })
 
-/** Whichever station the reader is asking about: the cursor, or the open step. */
-const asked = (id: string) => id === events.stepId || cursorId.value === stationId(id)
+/** Whichever station the reader is asking about — which is the one they are on. */
+const asked = (id: string) => id === events.stepId
 
-/** Where prev/next counts from: the open step, else wherever the cursor is. */
-const place = computed(() => events.stepId ?? rail.value.stations[cursor.value]?.step.id)
+/** Where prev/next counts from: the open step, and nothing else. */
+const place = computed(() => events.stepId)
 const canGo = (dir: 1 | -1) => !!stepBy(ids.value, place.value, dir)
 
 /**
  * One press of prev/next — and of an arrow key, which is the same action.
  *
- * It always moves; whether it also OPENS is the entrance rule above. The
- * overview is the stop before the first step, so pressing prev from step one
- * lands on the whole of it rather than on nothing.
+ * It opens what it lands on, every time, including an entrance (which opens as
+ * a preview). The overview is the stop before the first step, so pressing prev
+ * from step one lands on the whole of it rather than on nothing.
  */
 function go(dir: 1 | -1) {
   const at = stepBy(ids.value, place.value, dir)
   if (!at) return
-  cursor.value = at.to ? ids.value.indexOf(at.to) : NO_ACTIVE
-  if (at.to === undefined) return void events.selectStep()
-  const s = rail.value.stations.find((x) => x.step.id === at.to)!
-  if (s.kind === 'page') events.selectStep(s.step.id)
-  else reveal(s.step.id)
+  events.selectStep(at.to)
 }
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter' || e.key === ' ') {
-    const s = rail.value.stations[cursor.value]
+    const s = rail.value.stations[cursorIdx.value]
     if (!s) return
     e.preventDefault()
-    return void events.selectStep(s.step.id)
+    // On an entrance, Enter is the descent — the keyboard's "Open event", and
+    // the half of rule 2 that survives round 58. Anywhere else it is a no-op
+    // that re-states where the reader already is, which is harmless and keeps
+    // the key from meaning two different things on two kinds of station.
+    return void (s.kind === 'entrance' ? events.openEntrance() : events.selectStep(s.step.id))
   }
   // The zoom cluster's keys. `+` arrives as '+' on a shifted row and as '=' on
   // the unshifted one, and as 'Add'/'Subtract' from a numeric keypad; all of
@@ -380,15 +405,11 @@ const press = (id: string) => !panned && events.selectStep(id)
 
 // The rail follows the store, not only the reader: a step opened from anywhere
 // (the list, a page's own link, a descent that landed here) is panned into
-// view, and the cursor lands on it so prev/next carries on from where they are.
+// view. The cursor needs no line here any more — it IS `events.stepId`, read
+// back through `cursorIdx`, which is the whole of the round-58 fix.
 watch(
   () => events.stepId,
-  (id) => {
-    // Back on the overview the cursor CLEARS: it is where the reader is, and
-    // "the whole of it" is not one of the stations.
-    cursor.value = rail.value.stations.findIndex((s) => s.step.id === id)
-    reveal(id)
-  },
+  (id) => reveal(id),
 )
 
 /* --- the list: every step by name and date, one press away ------------------
@@ -625,7 +646,7 @@ function goToCrumb(id: string, current: boolean) {
           role="tab"
           :aria-selected="events.stepId === s.step.id"
           :tabindex="offWindow(s) ? -1 : 0"
-          :title="`${s.step.name} · ${dateOf(s)}${s.kind === 'entrance' ? ' — go into it' : ''}`"
+          :title="`${s.step.name} · ${dateOf(s)}${s.kind === 'entrance' ? ' — an event of its own; press to preview it' : ''}`"
           :style="{
             left: s.x + 'px',
             top: `calc(var(--lane-1) + ${s.lane} * var(--lane-h))`,
@@ -715,9 +736,13 @@ function goToCrumb(id: string, current: boolean) {
   --lane-1: 26px;
   --lane-h: 16px;
   --mark: 16px;
+  /* The head row: the breadcrumb, the walk and the span readout. Its own token
+     because the track is what is left of --rail after it, and round 58 grew
+     both (see the desktop query at the foot of this file). */
+  --head-h: 24px;
   /* The zoom cluster and the strip it stands in. A column of three plus its
-     gaps has to fit inside --rail (92px desktop, 116 under a saga on a phone),
-     which is the whole reason 28 rather than 32. */
+     gaps has to fit inside --rail (118px under a saga on a desktop, 116 on a
+     phone), which is what bounds --zoom-btn: three of them plus two 2px gaps. */
   --zoom-btn: 28px;
   --zoom-gutter: 34px;
   position: absolute;
@@ -774,10 +799,13 @@ function goToCrumb(id: string, current: boolean) {
 /* --- the breadcrumb row --- */
 .head {
   flex: none;
+  /* the containing block the centred walk is positioned against (see the
+     desktop query at the foot of this file) */
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--s2);
-  height: 24px;
+  height: var(--head-h);
   padding: 0 var(--s3);
   border-bottom: 1px solid var(--line-soft);
 }
@@ -1361,6 +1389,114 @@ function goToCrumb(id: string, current: boolean) {
 .station.on .label,
 .station.cursor .label {
   opacity: 1;
+}
+
+/* ==========================================================================
+   ROUND 58, ITEM 1 — THE DESKTOP RAIL: bigger, and the walk in the middle.
+
+   *"The timeline should be larger and buttons there should be larger too —
+   especially for steps navigation. Also center them."*
+
+   Two separate faults, and the second is the one that had gone unexamined for
+   four rounds. The rail's whole geometry was inherited from the era rail's
+   92px box on a screen that had 700px of empty map above it, so every control
+   on it was drawn at the size a phone needs to fit and a desktop has no reason
+   to accept: prev and next were 20px tall, which is under half of any pointing
+   guideline's minimum and a third of the room around them. And the walk — the
+   one control on the rail a reader uses on every single step — was pinned to
+   the FAR RIGHT of the head row, against the zoom cluster it has nothing to do
+   with, as far from the middle of a 1280px screen as it is possible to put it.
+   It was there because it was written into a flex row that already had a
+   breadcrumb in it, not because anyone had decided it belonged there.
+
+   So: the head row grows to 40px (tokens.css: --rail 118 under a saga), the
+   controls grow into it, and the walk is taken OUT OF FLOW and centred on the
+   rail — `left: 50%` against the head's padding box, which is the rail's own
+   width, so it is centred on the screen and not on whatever the breadcrumb and
+   the span readout left over. The list it opens follows it there. The phone is
+   untouched: its query is below this one and it was already the taller rail.
+   ========================================================================== */
+@media (min-width: 641px) {
+  .rail {
+    --head-h: 40px;
+    /* The track is --rail less the head. At 118/40 that is 78px, and three
+       lanes at these figures reach 76 — measured, because a lane that does not
+       fit is a mark clipped by `overflow: hidden` rather than a mark in a lane
+       (`MAX_LANES` in lib/present/sagaTimeline.ts is 3). */
+    --lane-1: 28px;
+    --lane-h: 18px;
+    --mark: 18px;
+    /* 34px targets, in a 40px strip. The gutter is what the track gives up and
+       every pixel of it is a pixel of label room the last station on the rail
+       does not have (see `.track` above), so it is the button plus its 3px
+       edge inset and no more. */
+    --zoom-btn: 34px;
+    --zoom-gutter: 40px;
+  }
+  /* THE WALK, CENTRED ON THE RAIL. Out of the flex flow entirely: in it, the
+     cluster's position was a function of how long the saga's name and span
+     readout happened to be, which is not a thing a reader should have to track
+     between two presses of next. Both selectors, because the base sheet gives
+     `.meta + .nav` a margin this has to unset at equal specificity. */
+  .nav,
+  .meta + .nav {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    margin: 0;
+    gap: 4px;
+  }
+  /* …and the two things it is now standing between are kept out of its way.
+     130px is half the widest the cluster gets (prev + Steps + next at these
+     sizes) plus a gap. */
+  .crumbs {
+    max-width: calc(50% - 130px);
+  }
+  .meta {
+    max-width: calc(50% - 130px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* A THUMB'S TARGET IS 44 AND A POINTER'S IS 34 — and 20 is neither. The
+     height is the whole of the fix; the min-width is what keeps prev and next
+     from being tall slivers beside a wide Steps. */
+  .nav-btn {
+    height: 34px;
+    min-width: 40px;
+    padding: 0 8px;
+    gap: 5px;
+    border-radius: var(--r-md);
+  }
+  /* The glyph grows with its button rather than sitting in the middle of one
+     three sizes too big for it. Set here rather than on the SVG's own
+     width/height attributes so the phone keeps the sizes it was measured at
+     (round 47, rule 10 — geometry, not type: the viewBox is symmetric about
+     its own centre, so scaling it cannot move the shape off centre). */
+  .nav-btn > .glyph {
+    width: 16px;
+    height: 16px;
+  }
+  .list-btn > .glyph {
+    width: 13px;
+    height: 13px;
+  }
+  .list-label {
+    font-size: var(--t-xs);
+  }
+  /* The index opens over the control that opens it, not over the far corner. */
+  .list {
+    left: 50%;
+    right: auto;
+    translate: -50%;
+  }
+  /* The zoom column is a press target too, and it was the same 28px the walk
+     was 20: three of them at 34 plus two 2px gaps is 106, inside the 114 the
+     rail has between its own 2px insets. */
+  .zoom-btn > .glyph {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 @media (max-width: 640px) {
