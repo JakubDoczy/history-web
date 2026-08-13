@@ -5840,7 +5840,42 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Atomic_bombings_of_Hiroshima_and_Nagasaki"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "color": "#ffd7a8",
+     "pos": [
+      132.4553,
+      34.3853
+     ],
+     "label": "Hiroshima, 6 August",
+     "size": 0.0258
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "color": "#ffd7a8",
+     "pos": [
+      129.8737,
+      32.7503
+     ],
+     "label": "Nagasaki, 9 August",
+     "size": 0.0258
+    },
+    {
+     "type": "label",
+     "pos": [
+      131.2,
+      33.4
+     ],
+     "text": "Three days apart",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "decolonisation",

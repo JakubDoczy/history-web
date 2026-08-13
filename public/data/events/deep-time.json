@@ -1790,7 +1790,61 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Youngest_Toba_eruption"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "label": "The caldera, now Lake Toba",
+     "ring": [
+      [
+       98.55,
+       2.35
+      ],
+      [
+       98.75,
+       2.9
+      ],
+      [
+       99.1,
+       2.8
+      ],
+      [
+       99.05,
+       2.3
+      ],
+      [
+       98.8,
+       2.05
+      ],
+      [
+       98.6,
+       2.15
+      ]
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "color": "#ffd7a8",
+     "pos": [
+      98.9,
+      2.6
+     ],
+     "label": "3,800 cubic kilometres ejected",
+     "size": 0.0126
+    },
+    {
+     "type": "label",
+     "pos": [
+      98.6,
+      1.85
+     ],
+     "text": "Sumatra",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "out-of-africa",

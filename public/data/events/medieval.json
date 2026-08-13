@@ -1203,7 +1203,98 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/First_Crusade"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "label": "The armies assembled at Constantinople and crossed Anatolia",
+     "path": [
+      [
+       28.98,
+       41.01
+      ],
+      [
+       31.5,
+       40.0
+      ],
+      [
+       34.5,
+       38.5
+      ],
+      [
+       36.2,
+       36.9
+      ],
+      [
+       36.17,
+       36.26
+      ]
+     ],
+     "width": 0.1384
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#ffd7a8",
+     "pos": [
+      36.16,
+      36.2
+     ],
+     "label": "Antioch, after eight months",
+     "size": 0.1108
+    },
+    {
+     "type": "thrust",
+     "label": "and went on to Jerusalem",
+     "path": [
+      [
+       36.1,
+       36.0
+      ],
+      [
+       35.6,
+       34.6
+      ],
+      [
+       35.2,
+       33.2
+      ],
+      [
+       34.9,
+       32.2
+      ],
+      [
+       35.2,
+       31.8
+      ]
+     ],
+     "width": 0.1384
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "color": "#ffd7a8",
+     "pos": [
+      35.22,
+      31.78
+     ],
+     "label": "Jerusalem, 15 July 1099",
+     "size": 0.1108
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "color": "#f2f6fc",
+     "pos": [
+      38.79,
+      37.15
+     ],
+     "label": "Edessa",
+     "size": 0.1108
+    }
+   ]
+  }
  },
  {
   "id": "great-zimbabwe",
@@ -1785,7 +1876,56 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Siege_of_Baghdad_(1258)"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "label": "Hulagu came west, destroying the Nizari strongholds in the Alborz in 1256",
+     "path": [
+      [
+       52.0,
+       36.3
+      ],
+      [
+       49.5,
+       35.3
+      ],
+      [
+       46.5,
+       34.2
+      ],
+      [
+       44.55,
+       33.36
+      ]
+     ],
+     "width": 0.2066
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#ffd7a8",
+     "pos": [
+      44.4,
+      33.34
+     ],
+     "label": "The eastern wall breached",
+     "size": 0.1653
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "color": "#f2f6fc",
+     "pos": [
+      35.35,
+      32.55
+     ],
+     "label": "Ain Jalut, 1260",
+     "size": 0.1653
+    }
+   ]
+  }
  },
  {
   "id": "yuan-dynasty",
@@ -1856,7 +1996,125 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Siege_of_Acre_(1291)"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "color": "#eaf1fb",
+     "label": "Reduced to a coastal strip",
+     "ring": [
+      [
+       36.2,
+       36.22
+      ],
+      [
+       36.32,
+       35.85
+      ],
+      [
+       35.98,
+       35.0
+      ],
+      [
+       35.6,
+       34.4
+      ],
+      [
+       35.22,
+       33.3
+      ],
+      [
+       35.0,
+       32.6
+      ],
+      [
+       34.83,
+       32.12
+      ],
+      [
+       34.68,
+       32.18
+      ],
+      [
+       34.86,
+       32.72
+      ],
+      [
+       35.05,
+       33.6
+      ],
+      [
+       35.32,
+       34.5
+      ],
+      [
+       35.72,
+       35.2
+      ],
+      [
+       35.92,
+       36.05
+      ]
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#f2f6fc",
+     "pos": [
+      36.16,
+      36.2
+     ],
+     "label": "Antioch, 1268",
+     "size": 0.0492
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#f2f6fc",
+     "pos": [
+      36.295,
+      34.757
+     ],
+     "label": "Krak des Chevaliers, 1271",
+     "size": 0.0492
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#f2f6fc",
+     "pos": [
+      35.845,
+      34.436
+     ],
+     "label": "Tripoli, 1289",
+     "size": 0.0492
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#f2f6fc",
+     "pos": [
+      34.892,
+      32.5
+     ],
+     "label": "Caesarea and Arsuf, 1265",
+     "size": 0.0492
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "color": "#ffd7a8",
+     "pos": [
+      35.07,
+      32.928
+     ],
+     "label": "Acre falls, 18 May 1291",
+     "size": 0.0492
+    }
+   ]
+  }
  },
  {
   "id": "majapahit",
@@ -6437,7 +6695,73 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Granada_War"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "label": "The Nasrid emirate",
+     "ring": [
+      [
+       -5.4,
+       36.8
+      ],
+      [
+       -4.6,
+       37.2
+      ],
+      [
+       -3.6,
+       37.42
+      ],
+      [
+       -2.6,
+       37.32
+      ],
+      [
+       -1.85,
+       37.2
+      ],
+      [
+       -2.1,
+       36.75
+      ],
+      [
+       -3.2,
+       36.7
+      ],
+      [
+       -4.4,
+       36.55
+      ],
+      [
+       -5.3,
+       36.35
+      ]
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#ffd7a8",
+     "pos": [
+      -3.6,
+      37.18
+     ],
+     "label": "Starved out, winter 1491",
+     "size": 0.0341
+    },
+    {
+     "type": "label",
+     "pos": [
+      -3.9,
+      36.6
+     ],
+     "text": "Ten years of sieges",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "columbus",

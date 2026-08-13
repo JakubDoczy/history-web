@@ -795,7 +795,116 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fall_of_Tenochtitlan"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "color": "#eaf1fb",
+     "label": "The island city",
+     "ring": [
+      [
+       -99.146,
+       19.456
+      ],
+      [
+       -99.119,
+       19.455
+      ],
+      [
+       -99.114,
+       19.424
+      ],
+      [
+       -99.141,
+       19.42
+      ]
+     ]
+    },
+    {
+     "type": "frontline",
+     "dash": "solid",
+     "width": 2.4,
+     "label": "Three causeways, fought over yard by yard",
+     "paths": [
+      [
+       [
+        -99.13,
+        19.455
+       ],
+       [
+        -99.122,
+        19.472
+       ],
+       [
+        -99.118,
+        19.487
+       ]
+      ],
+      [
+       [
+        -99.145,
+        19.443
+       ],
+       [
+        -99.165,
+        19.446
+       ],
+       [
+        -99.187,
+        19.452
+       ]
+      ],
+      [
+       [
+        -99.132,
+        19.424
+       ],
+       [
+        -99.12,
+        19.395
+       ],
+       [
+        -99.105,
+        19.365
+       ]
+      ]
+     ]
+    },
+    {
+     "type": "thrust",
+     "label": "Cortés returned from Tlaxcala with tens of thousands of allied troops",
+     "path": [
+      [
+       -98.23,
+       19.318
+      ],
+      [
+       -98.6,
+       19.36
+      ],
+      [
+       -99.0,
+       19.42
+      ],
+      [
+       -99.12,
+       19.442
+      ]
+     ],
+     "width": 0.0141
+    },
+    {
+     "type": "label",
+     "pos": [
+      -98.19,
+      19.3
+     ],
+     "text": "Tlaxcala",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "ottoman-wars-europe",
@@ -1692,7 +1801,65 @@
     "url": "https://en.wikipedia.org/wiki/Siege_of_Vienna"
    }
   ],
-  "priority": 62
+  "priority": 62,
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "label": "Suleiman marched on Vienna from Buda, up the Danube",
+     "path": [
+      [
+       19.05,
+       47.5
+      ],
+      [
+       18.2,
+       47.75
+      ],
+      [
+       17.3,
+       48.05
+      ],
+      [
+       16.5,
+       48.19
+      ]
+     ],
+     "width": 0.0275
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#ffd7a8",
+     "pos": [
+      16.374,
+      48.208
+     ],
+     "label": "Gates blocked, breaches held",
+     "size": 0.022
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "color": "#f2f6fc",
+     "pos": [
+      16.545,
+      47.39
+     ],
+     "label": "Kőszeg delayed him, 1532",
+     "size": 0.022
+    },
+    {
+     "type": "label",
+     "pos": [
+      19.1,
+      47.44
+     ],
+     "text": "Buda, occupied",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "inca-conquest",
@@ -2825,7 +2992,100 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Spanish_Armada"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "label": "Up the Channel in July, in a crescent the English could not break",
+     "path": [
+      [
+       -5.5,
+       49.8
+      ],
+      [
+       -3.0,
+       50.1
+      ],
+      [
+       -0.5,
+       50.4
+      ],
+      [
+       1.2,
+       50.85
+      ]
+     ],
+     "width": 0.1455
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#ffd7a8",
+     "pos": [
+      1.98,
+      50.99
+     ],
+     "label": "Calais, and Gravelines",
+     "size": 0.1164
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "color": "#f2f6fc",
+     "pos": [
+      3.2,
+      51.35
+     ],
+     "size": 0.1164
+    },
+    {
+     "type": "label",
+     "pos": [
+      4.4,
+      52.05
+     ],
+     "text": "Parma's army, blockaded",
+     "size": "sm"
+    },
+    {
+     "type": "thrust",
+     "color": "#eaf1fb",
+     "label": "The survivors ran north around Scotland and Ireland",
+     "path": [
+      [
+       2.0,
+       51.3
+      ],
+      [
+       1.0,
+       53.0
+      ],
+      [
+       -1.0,
+       56.5
+      ],
+      [
+       -3.0,
+       59.5
+      ],
+      [
+       -8.0,
+       58.5
+      ],
+      [
+       -10.5,
+       54.5
+      ],
+      [
+       -9.8,
+       51.5
+      ]
+     ],
+     "width": 0.1455
+    }
+   ]
+  }
  },
  {
   "id": "dutch-golden-age",
@@ -4945,7 +5205,78 @@
     "url": "https://en.wikipedia.org/wiki/Battle_of_Vienna"
    }
   ],
-  "end": 1683.69726
+  "end": 1683.69726,
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "label": "Kara Mustafa brought perhaps 100,000 men up the Danube",
+     "path": [
+      [
+       17.55,
+       47.95
+      ],
+      [
+       17.1,
+       48.1
+      ],
+      [
+       16.7,
+       48.16
+      ],
+      [
+       16.44,
+       48.19
+      ]
+     ],
+     "width": 0.0145
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#ffd7a8",
+     "pos": [
+      16.372,
+      48.208
+     ],
+     "label": "Starhemberg's 15,000 held",
+     "size": 0.0116
+    },
+    {
+     "type": "thrust",
+     "color": "#4c8dff",
+     "label": "The relief army came down from the Kahlenberg, 12 September",
+     "path": [
+      [
+       16.12,
+       48.345
+      ],
+      [
+       16.25,
+       48.31
+      ],
+      [
+       16.335,
+       48.276
+      ],
+      [
+       16.368,
+       48.222
+      ]
+     ],
+     "width": 0.0145
+    },
+    {
+     "type": "label",
+     "pos": [
+      16.1,
+      48.365
+     ],
+     "text": "Kahlenberg",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "bach-baroque",
@@ -7603,7 +7934,143 @@
     "url": "https://en.wikipedia.org/wiki/First_Partition_of_Poland"
    }
   ],
-  "priority": 62
+  "priority": 62,
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "label": "To Russia: east of the Dvina",
+     "ring": [
+      [
+       26.6,
+       55.9
+      ],
+      [
+       28.2,
+       56.5
+      ],
+      [
+       30.6,
+       56.3
+      ],
+      [
+       31.6,
+       54.6
+      ],
+      [
+       31.5,
+       52.8
+      ],
+      [
+       30.3,
+       52.0
+      ],
+      [
+       29.2,
+       52.8
+      ],
+      [
+       27.7,
+       54.3
+      ]
+     ]
+    },
+    {
+     "type": "zone",
+     "label": "To Prussia: Royal Prussia",
+     "ring": [
+      [
+       16.9,
+       53.7
+      ],
+      [
+       18.9,
+       54.45
+      ],
+      [
+       19.7,
+       54.4
+      ],
+      [
+       20.6,
+       54.4
+      ],
+      [
+       20.9,
+       53.6
+      ],
+      [
+       19.4,
+       53.0
+      ],
+      [
+       17.8,
+       53.1
+      ]
+     ]
+    },
+    {
+     "type": "zone",
+     "label": "To Austria: Galicia",
+     "ring": [
+      [
+       19.0,
+       49.4
+      ],
+      [
+       21.0,
+       49.45
+      ],
+      [
+       23.0,
+       49.6
+      ],
+      [
+       25.5,
+       49.05
+      ],
+      [
+       26.2,
+       48.6
+      ],
+      [
+       24.0,
+       48.3
+      ],
+      [
+       22.0,
+       48.9
+      ],
+      [
+       20.5,
+       49.05
+      ]
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "color": "#f2f6fc",
+     "pos": [
+      18.65,
+      54.35
+     ],
+     "label": "Danzig, excepted",
+     "size": 0.1075
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "color": "#f2f6fc",
+     "pos": [
+      18.6,
+      53.01
+     ],
+     "label": "Thorn, excepted",
+     "size": 0.1075
+    }
+   ]
+  }
  },
  {
   "id": "pugachev-rebellion",
@@ -7826,7 +8293,82 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Siege_of_Yorktown"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "color": "#eaf1fb",
+     "ring": [
+      [
+       -76.522,
+       37.246
+      ],
+      [
+       -76.512,
+       37.231
+      ],
+      [
+       -76.494,
+       37.228
+      ],
+      [
+       -76.486,
+       37.243
+      ]
+     ]
+    },
+    {
+     "type": "frontline",
+     "dash": "solid",
+     "ticks": "right",
+     "width": 2.6,
+     "label": "The French and American parallels, from 28 September",
+     "paths": [
+      [
+       [
+        -76.54,
+        37.245
+       ],
+       [
+        -76.528,
+        37.228
+       ],
+       [
+        -76.508,
+        37.219
+       ],
+       [
+        -76.486,
+        37.224
+       ]
+      ]
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "color": "#ffd7a8",
+     "pos": [
+      -76.4985,
+      37.2285
+     ],
+     "label": "Redoubts 9 and 10, 14 October",
+     "size": 0.005
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "color": "#4c8dff",
+     "pos": [
+      -76.02,
+      37.0
+     ],
+     "label": "The Chesapeake, 5 September",
+     "size": 0.005
+    }
+   ]
+  }
  },
  {
   "id": "chakri-dynasty",
