@@ -1191,6 +1191,71 @@ describe('the rung arrives without stopping the pen', () => {
       g.Worker = real
     }
   })
+
+  /**
+   * ROUND 61 — the geometry load, started before the first tile is asked for.
+   *
+   * The worker loads the vector world lazily, on its first tile request, which
+   * puts a fetch and a parse inside the click that switched the mode. `prime`
+   * is the same load asked for on INTENT (a pointer arriving at the toggle),
+   * and it must be idempotent and must answer nothing.
+   */
+  it('primes the rasterizer without asking it for a tile', () => {
+    const spawned: { url: string; posts: unknown[] }[] = []
+    class FakeWorker {
+      posts: unknown[] = []
+      onmessage: unknown
+      onerror: unknown
+      constructor(url: URL) {
+        spawned.push(this as unknown as { url: string; posts: unknown[] })
+        ;(this as unknown as { url: string }).url = String(url)
+      }
+      postMessage(m: unknown) {
+        this.posts.push(m)
+      }
+      terminate() {}
+    }
+    const g = globalThis as unknown as { Worker?: unknown; OffscreenCanvas?: unknown }
+    const real = g.Worker
+    const realCanvas = g.OffscreenCanvas
+    g.Worker = FakeWorker
+    // The render worker is only spawned where OffscreenCanvas exists; node has
+    // none, and without one there is nothing to prime (see `prime`).
+    g.OffscreenCanvas = class {}
+    try {
+      const tiles = new DrawnTiles('/base/')
+      expect(spawned.length).toBe(1)
+      expect(spawned[0].url).toMatch(/drawnTile\.worker/)
+      tiles.prime()
+      expect(spawned[0].posts).toEqual([{ prime: true, base: '/base/' }])
+      // …once. A second pointer is not a second world to parse.
+      tiles.prime()
+      expect(spawned[0].posts).toHaveLength(1)
+      // and it spawns nothing of its own: the decode worker is still the 10m
+      // rung's, and no tile has asked for that.
+      expect(spawned.length).toBe(1)
+      tiles.dispose()
+    } finally {
+      g.Worker = real
+      g.OffscreenCanvas = realCanvas
+    }
+  })
+
+  it('has nothing to prime where there is no worker to prime', () => {
+    // Without OffscreenCanvas the rasterizer runs on the main thread and loads
+    // the world on its own first tile. Starting that early would move a parse
+    // INTO a frame rather than out of one, which is the opposite of the point.
+    const g = globalThis as unknown as { Worker?: unknown }
+    const real = g.Worker
+    g.Worker = undefined
+    try {
+      const tiles = new DrawnTiles('/base/')
+      expect(() => tiles.prime()).not.toThrow()
+      tiles.dispose()
+    } finally {
+      g.Worker = real
+    }
+  })
 })
 
 describe('the era the drawn map is honest in', () => {

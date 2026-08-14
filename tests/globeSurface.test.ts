@@ -239,6 +239,69 @@ describe('GlobeSurface', () => {
       expect(surface.texture(URLS.day).image).toBeTruthy()
     })
 
+    /**
+     * ROUND 61 — the other mode's base map is not an era frame.
+     *
+     * `DRAWN_TEXTURE` is the modern anchor of map mode's timeline exactly as
+     * `MODERN_TEXTURE` is of the globe's, and it was evictable only because it
+     * is not one of the five URLs the surface was constructed with. Leaving map
+     * mode moved the era window off it, the sweep disposed it, and coming back
+     * re-fetched and re-uploaded 32 MB with a full mip chain — measured on
+     * every switch in tests/e2e/modeSwitch.e2e.mjs before this.
+     */
+    it('never frees a pinned map, however far the cursor moves', () => {
+      const surface = new GlobeSurface(URLS, renderer)
+      ready(surface)
+      surface.pin('/drawn.webp')
+      surface.setEra(eraPlan([...frames, { time: -10_000, url: '/drawn.webp' }], 2026))
+      imageFor('/drawn.webp').arrive(4096, 2048)
+      let disposed = false
+      surface.texture('/drawn.webp').addEventListener('dispose', () => (disposed = true))
+      // …and now the OTHER mode's timeline, which does not contain it at all
+      let prev: number | undefined = 2026
+      for (const t of [-100e6, -200e6, -300e6, -400e6]) {
+        surface.setEra(at(t, prev))
+        prev = t
+      }
+      expect(disposed).toBe(false)
+      expect(surface.texture('/drawn.webp').image).toBeTruthy()
+    })
+
+    it('warms a map onto the GPU before anything binds it', () => {
+      // The prewarm: `initTexture` is the upload, done from the arrival rather
+      // than from the frame that first samples it. Pinning comes with it, so a
+      // warmed map cannot then be swept.
+      const uploaded: unknown[] = []
+      const warmRenderer = {
+        capabilities: { getMaxAnisotropy: () => 4, maxTextureSize: 8192 },
+        initTexture: (t: unknown) => uploaded.push(t),
+      } as unknown as WebGLRenderer
+      const surface = new GlobeSurface(URLS, warmRenderer)
+      imageFor(URLS.day).arrive(4096, 2048)
+      expect(surface.isWarm('/drawn.webp')).toBe(false)
+      surface.warm('/drawn.webp')
+      expect(uploaded).toHaveLength(0) // nothing to upload until it decodes
+      imageFor('/drawn.webp').arrive(4096, 2048)
+      expect(uploaded).toEqual([surface.texture('/drawn.webp')])
+      expect(surface.isWarm('/drawn.webp')).toBe(true)
+      // asking again neither refetches nor re-uploads
+      surface.warm('/drawn.webp')
+      expect(uploaded).toHaveLength(1)
+    })
+
+    it('warms without a renderer that can, and leaves the map loaded anyway', () => {
+      // `initTexture` is an optimisation and every way it can fail has to leave
+      // the texture exactly where the old path put it: loaded, and uploaded by
+      // the first frame that binds it.
+      const surface = new GlobeSurface(URLS, renderer) // no initTexture on it
+      imageFor(URLS.day).arrive(4096, 2048)
+      expect(() => {
+        surface.warm('/drawn.webp')
+        imageFor('/drawn.webp').arrive(4096, 2048)
+      }).not.toThrow()
+      expect(surface.texture('/drawn.webp').image).toBeTruthy()
+    })
+
     it('never frees what the samplers are bound to', () => {
       const surface = new GlobeSurface(URLS, renderer)
       ready(surface)
@@ -494,6 +557,61 @@ describe('deferred maps', () => {
     expect(StubImage.made.map((i) => i.src).sort()).toEqual(
       [URLS.clouds, URLS.cloudNrm, URLS.day, URLS.night, URLS.relief].sort(),
     )
+  })
+
+  /**
+   * ROUND 61 — the sharpened cloud mask is not built for a mode with no clouds.
+   *
+   * `loadRest` runs at first paint and the upscale waits for a lull, which a
+   * reader who reaches straight for the map toggle reaches first: the switch
+   * instrument photographed an 8192x4096 upload landing inside map mode, where
+   * `uCloudAlpha` is 0 and no fragment samples it. It is deferred rather than
+   * dropped — turning the deck back on, or coming back out of map mode, is
+   * still owed the sharp mask.
+   */
+  it('holds the cloud upscale back while no deck is drawn, and releases it', () => {
+    const spawned: unknown[] = []
+    const g = globalThis as unknown as {
+      Worker?: unknown
+      createImageBitmap?: unknown
+      requestIdleCallback?: unknown
+      navigator?: unknown
+    }
+    const real = { w: g.Worker, c: g.createImageBitmap, i: g.requestIdleCallback }
+    g.Worker = class {
+      constructor(url: URL) {
+        spawned.push(String(url))
+      }
+      postMessage() {}
+      terminate() {}
+      set onmessage(_v: unknown) {}
+      set onerror(_v: unknown) {}
+    }
+    g.createImageBitmap = () => new Promise(() => {})
+    // whenIdle without requestIdleCallback falls back to a timer; run it now
+    const timers: (() => void)[] = []
+    vi.stubGlobal('setTimeout', (fn: () => void) => (timers.push(fn), 0))
+    vi.stubGlobal('window', {})
+    try {
+      const surface = new GlobeSurface(URLS, renderer)
+      surface.setClouds(false) // map mode: no deck
+      surface.loadRest()
+      imageFor(URLS.clouds).arrive(4096, 2048)
+      timers.splice(0).forEach((fn) => fn())
+      expect(spawned).toHaveLength(0)
+      // …and the deck comes back
+      surface.setClouds(true, 1, true)
+      timers.splice(0).forEach((fn) => fn())
+      expect(spawned).toHaveLength(1)
+      expect(String(spawned[0])).toMatch(/cloudUpscale\.worker/)
+      // released once, not once per call
+      surface.setClouds(true, 1, true)
+      timers.splice(0).forEach((fn) => fn())
+      expect(spawned).toHaveLength(1)
+    } finally {
+      g.Worker = real.w
+      g.createImageBitmap = real.c
+    }
   })
 
   it('fades each map in rather than switching it on', () => {

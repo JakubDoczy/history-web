@@ -772,6 +772,26 @@ void main() {
     vec2 fP = fract(up);
     vec3 hiT = atlasTap(uDetail, cell.r, fT, ${f(0.5 / TILE_PX)});
     vec3 hiP = atlasTap(uDetail, cellP.r, fP, ${f(0.5 / TILE_PX)});
+    // THE RATIO IS MULTIPLIED OUT IN PAINT MODE RATHER THAN BRANCHED AROUND,
+    // and that is a measurement rather than an oversight.
+    //
+    // uDetailPaint is 1 in map mode and every line below is then dead: the tap
+    // of the reduced atlas (a texture map mode does not even fill — see
+    // SourcePlan.paint), two divisions and two clamps, per fragment of a
+    // full-screen sphere. Round 61 gated it exactly as the relief, the clouds
+    // and the city lights above are gated, and the frame got FOUR TIMES SLOWER:
+    // map mode at world view went 750 ms to 3 500 ms on the software
+    // rasteriser, against 433 ms for the same build with this one branch taken
+    // back out (tests/e2e/surfaceCost.e2e.mjs, three runs each). The other two
+    // gate of that round was pure arithmetic; this one puts a TEXTURE FETCH
+    // inside nested dynamic control flow, which is the one thing a shader
+    // compiler cannot hoist the sampler setup out of.
+    //
+    // A real GPU would very likely take a uniform branch for free. This is the
+    // renderer that can be measured here, and one fetch of five is not worth
+    // shipping a change whose only evidence says it costs eight times what it
+    // saves. If a GPU-capable harness ever exists, re-measure and revisit.
+    //
     // One blurred tap, not two. The reduced copies of a tile and of its parent
     // describe the same ground at the same (base-map) density, so whichever of
     // the two is present answers for both — and one tap here is the difference
@@ -806,8 +826,6 @@ void main() {
     // parent over base map, target over parent — so a tile arriving dissolves
     // into the coarse level it is replacing, never through the bare base map
     float stack = mix(mix(1.0, kP, onP), k, onT);
-    // …and in paint mode the ratio says nothing: the tile is the ground. See
-    // DETAIL_MODE for why a drawing cannot go through the ratio at all.
     detailGain = mix(1.0, mix(stack, 1.0, uDetailPaint), uDetailMix);
     paintCover = mix(onP, 1.0, onT) * uDetailMix * uDetailPaint;
     paintColor = mix(hiP, hiT, onT);
@@ -826,6 +844,18 @@ void main() {
   // patch had to add. Multiplying afterwards instead leaves the mean exactly
   // where the base map put it, and the patch's own contrast reaches the screen
   // as the sensor recorded it rather than as the curve reshaped it.
+  //
+  // NOT gated on uBoost, and that is round 61's answer rather than its
+  // oversight. uBoost is 0 in map mode and in the realistic visual style, so
+  // this whole block — three pow, an exp, two divisions, a smoothstep — is
+  // computed and then discarded by the mix at its end, and gating it looks like
+  // free money. Measured on the software rasteriser with the camera pinned and
+  // frames that uploaded thrown out (tests/e2e/surfaceCost.e2e.mjs, three runs
+  // of 24 frames each): map mode at world view 200 ms against 217, at
+  // continental 417 against 400 — the same two vsync ticks either side of the
+  // noise, in both directions. The arithmetic is not what a frame of this
+  // surface is made of; the taps are. A branch with no number behind it is not
+  // a fix, so it was taken back out.
   float lumA = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
   float p = pow(max(lumA, 0.0), ${f(1 / G.gamma)});   // into perceptual space
   float below = (p / ${f(G.lo)}) * ${f(G.outLo)};
@@ -860,7 +890,11 @@ void main() {
   // Outside the uBoost mix on purpose, so the controls behave identically in
   // both visual styles: the style decides what the map looks like, this decides
   // what is then done to it. Neutral values (1, 0, 1) are an exact identity,
-  // which is why this can sit in the hot path unconditionally.
+  // which is why this can sit in the hot path unconditionally — and round 61
+  // measured the alternative rather than assuming it: skipping the two
+  // pow(vec3) when the triple is neutral (which is exactly what map mode asks
+  // for) moved the frame by less than one vsync tick. See the note on the
+  // enhanced grade above.
   {
     float pl = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
     vec3 sat = mix(vec3(pl), albedo, uPalette.x);
@@ -1122,6 +1156,8 @@ export class GlobeSurface {
   private cache = new Map<string, Texture>()
   private maxAniso: number
   private maxTexture: number
+  /** Held for `initTexture` alone — see `warm`. Nothing here ever renders. */
+  private renderer: WebGLRenderer
   private urls!: GlobeSurfaceUrls
   /** Fires when the day map is decoded, which is when a globe can be shown. */
   onDayReady?: () => void
@@ -1142,6 +1178,25 @@ export class GlobeSurface {
   onDirty?: () => void
   /** URLs the era layer has asked for; the only ones eviction may consider. */
   private eraUrls = new Set<string>()
+  /**
+   * …and the ones eviction may never consider, however far the cursor moves.
+   *
+   * `evictEras` exists because 39 paleo frames at 32 MB with mips is 1.2 GB, and
+   * it is right about every one of them: a reconstruction of the Devonian is a
+   * frame the reader is passing through. A MODE'S OWN BASE MAP is not that. It
+   * is the anchor at the modern end of a timeline, it is what the other mode is
+   * one keystroke away from wanting back, and the rule that keeps `urls.day`
+   * resident — it is the map the globe is made of — is exactly as true of the
+   * drawn world in map mode. Left evictable it was disposed on the way out of
+   * map mode and re-fetched, re-decoded and re-uploaded on the way back in:
+   * measured at 32 MB and a full 4096x2048 mip chain on EVERY switch
+   * (tests/e2e/modeSwitch.e2e.mjs, `bigTexUploads`).
+   *
+   * The memory this costs is one more 4096x2048 colour map — the same 32 MB the
+   * night map has held permanently since the first round, and against a budget
+   * that was sized for 39 of them.
+   */
+  private held = new Set<string>()
   /** URLs whose image has actually decoded — the rest would render black. */
   private decoded = new Set<string>()
   /** The last era plan, re-applied whenever one of its frames lands. */
@@ -1152,6 +1207,7 @@ export class GlobeSurface {
   constructor(urls: GlobeSurfaceUrls, renderer: WebGLRenderer) {
     this.maxAniso = renderer.capabilities.getMaxAnisotropy()
     this.maxTexture = renderer.capabilities.maxTextureSize
+    this.renderer = renderer
     this.urls = urls
     // The one map the first frame cannot do without. The other three are
     // requested by `loadRest`, once there is a globe on screen to add them to —
@@ -1350,7 +1406,34 @@ export class GlobeSurface {
     // fades out entirely as the camera closes in — so it may have whatever the
     // browser has left over and nothing more. `whenIdle` also declines while the
     // camera is moving, which is the other time the main thread has a queue.
-    this.whenIdle(() => this.runCloudUpscale(url, t, img))
+    this.whenIdle(() => {
+      // …AND ONLY IF THE DECK IS BEING DRAWN AT ALL.
+      //
+      // The mask is loaded by `loadRest` at first paint, and the upscale waits
+      // for a lull — which a reader who reaches straight for the map toggle
+      // reaches first. Map mode has no cloud deck (`GlobeStyle.clouds` is
+      // false, `uCloudAlpha` is 0), so the whole 32 MB upload and the worker's
+      // 33 megapixels of Lanczos were being spent on a texture no fragment
+      // samples: photographed in the switch instrument as an 8192x4096 upload
+      // landing inside a mode that cannot show it. The SETTING rather than the
+      // faded alpha, because the fade is still ramping when this first runs.
+      if (!this.cloudSetting.visible) return this.cloudUpscaleWanted = { url, t, img }
+      this.runCloudUpscale(url, t, img)
+    })
+  }
+
+  /**
+   * The upscale deferred above, and the switch that lets it back in.
+   *
+   * Held rather than dropped: a reader who turns the clouds back on — or comes
+   * back out of map mode — should get the sharp mask, and re-deriving it would
+   * mean re-reading the source texture from a `Texture` the era sweep may have
+   * moved on from. `setClouds` is the one call that can change the answer.
+   */
+  private cloudUpscaleWanted?: {
+    url: string
+    t: Texture
+    img: CanvasImageSource & { width?: number; height?: number }
   }
 
   /**
@@ -1541,7 +1624,7 @@ export class GlobeSurface {
   private evictEras(keep: string[]) {
     const u = this.material.uniforms
     const live = new Set(keep)
-    const pinned = new Set<string>(Object.values(this.urls))
+    const pinned = new Set<string>([...Object.values(this.urls), ...this.held])
     for (const url of this.eraUrls) {
       if (live.has(url) || pinned.has(url)) continue
       const t = this.cache.get(url)
@@ -1556,6 +1639,49 @@ export class GlobeSurface {
   /** Era frames currently on the GPU — the window this class promises to hold. */
   get residentEras(): string[] {
     return [...this.eraUrls]
+  }
+
+  /**
+   * Never evict this map. See `held`.
+   *
+   * Pinning is not loading: a URL nothing has asked for costs nothing to
+   * promise, and the promise is what makes the second visit to a mode free.
+   */
+  pin(url: string) {
+    this.held.add(url)
+  }
+
+  /**
+   * …and put it on the GPU now, while nothing is waiting for a frame.
+   *
+   * `texture()` starts a download and three uploads the result inside whichever
+   * frame first BINDS it — which, for a mode's base map, is the first frame of
+   * that mode. That is 391 kB of WebP decoded to 8.4 megapixels, a 32 MB
+   * upload and a 4096x2048 mip chain, all inside the toggle. `initTexture` is
+   * three's own name for "do that part now", and doing it from an arrival
+   * callback puts it in a frame nobody is looking at.
+   *
+   * Called on INTENT rather than on load (see `warmMap` in stores/settings.ts):
+   * the drawn map's contract is that a reader who never opens it pays for
+   * nothing, and a pointer arriving at the toggle is not that reader.
+   */
+  warm(url: string, kind: TextureKind = 'color') {
+    this.pin(url)
+    if (this.decoded.has(url)) return
+    this.texture(url, kind, (t) => {
+      // A context that refuses (or a three without it) simply uploads on first
+      // use, exactly as before: this can make the switch cheaper, never worse.
+      try {
+        this.renderer.initTexture(t)
+      } catch {
+        /* upload stays where it was */
+      }
+    })
+  }
+
+  /** Whether a map is decoded and on the GPU — the prewarm's own assertion. */
+  isWarm(url: string): boolean {
+    return this.decoded.has(url)
   }
 
   setSun(dir: Vector3) {
@@ -1622,6 +1748,14 @@ export class GlobeSurface {
   setClouds(visible: boolean, opacity = 1, shadows = true) {
     this.cloudSetting = { visible, opacity, shadows }
     this.applyClouds()
+    // A deck that has just been switched on may be owed the sharp mask; see
+    // `cloudUpscaleWanted`. Still through `whenIdle`, because the reason it is
+    // deferred at all has not changed.
+    const owed = this.cloudUpscaleWanted
+    if (visible && owed) {
+      this.cloudUpscaleWanted = undefined
+      this.whenIdle(() => this.runCloudUpscale(owed.url, owed.t, owed.img))
+    }
   }
 
   /** The cloud settings, scaled by however far the mask has faded in. */

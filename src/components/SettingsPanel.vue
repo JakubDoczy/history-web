@@ -312,11 +312,17 @@ const imageryLine = () => {
               <span class="eyebrow">Mode</span>
               <span class="tag-experimental">Experimental</span>
             </div>
+            <!-- The same prewarm the side toggle does, and for the same reason:
+                 a pointer on this control is the first news that the drawn map
+                 is wanted. See `warmMap` in stores/settings.ts. -->
             <div
               class="seg"
               :class="`mode-${settings.mode}`"
               role="radiogroup"
               aria-label="Render mode"
+              @pointerenter="settings.warmMap()"
+              @pointerdown="settings.warmMap()"
+              @focusin="settings.warmMap()"
             >
               <span class="thumb" aria-hidden="true" />
               <button

@@ -38,7 +38,22 @@ export interface DrawnFineMessage {
   fine: PackedLayer
 }
 
-type DrawnMessage = DrawnTileRequest | DrawnFineMessage
+/**
+ * …and the third: START, with nothing to draw yet.
+ *
+ * The geometry is loaded on the first tile request, which is the right rule for
+ * a worker nobody has asked anything of — but it means the first tile of map
+ * mode waits for a fetch and a parse that could have happened while the reader
+ * was still moving a pointer toward the toggle. This message is that pointer:
+ * it does the load and answers nothing, so the first real request finds the
+ * world already there. Asking twice is free — `world()` memoises on `renderer`.
+ */
+export interface DrawnPrimeMessage {
+  prime: true
+  base: string
+}
+
+type DrawnMessage = DrawnTileRequest | DrawnFineMessage | DrawnPrimeMessage
 
 export interface DrawnTileResponse {
   id: number
@@ -112,6 +127,12 @@ ctx.onmessage = async (e: MessageEvent<DrawnMessage>) => {
     const held = renderer
     if (held) void held.then((drawn) => install(drawn, fine))
     else parked = fine
+    return
+  }
+  // The prewarm: load the world and say nothing. The scratch canvas is left
+  // alone — it is one allocation and it is not what the first tile waits for.
+  if ((e.data as DrawnPrimeMessage).prime) {
+    void world((e.data as DrawnPrimeMessage).base)
     return
   }
   const { id, base, z, x, y } = e.data as DrawnTileRequest

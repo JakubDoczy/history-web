@@ -32,6 +32,23 @@ const OPTIONS: { mode: RenderMode; label: string; hint: string }[] = [
   { mode: 'schematic', label: 'Map', hint: 'Map — a drawn atlas of the world' },
 ]
 
+/**
+ * A POINTER ON THE CONTROL IS THE FIRST NEWS THAT MAP MODE IS COMING.
+ *
+ * The drawn map builds itself on demand — a worker, 1.1 MB of vector data and a
+ * 4096x2048 parchment world — and the click is where all of it used to land.
+ * Hovering, touching or focusing this control is a few hundred milliseconds of
+ * warning, and it is the only signal available that does not make the reader
+ * who never opens map mode pay for it. See `warmMap` in stores/settings.ts.
+ *
+ * `pointerenter` covers a mouse, `pointerdown` a touch (which has no hover),
+ * and `focusin` a keyboard. All three land on the group rather than on the map
+ * button alone: a reader on the globe button is one arrow key from the other,
+ * and warming from the wrong half of a two-state control is not a mistake worth
+ * a branch.
+ */
+const warm = () => settings.warmMap()
+
 /** Arrow keys walk the pair; Home/End land on an end. One key, one move. */
 const onKey = (e: KeyboardEvent) => {
   const back = e.key === 'ArrowUp' || e.key === 'ArrowLeft'
@@ -53,6 +70,9 @@ const onKey = (e: KeyboardEvent) => {
     aria-label="Map mode"
     data-test="mode-toggle"
     @keydown="onKey"
+    @pointerenter="warm"
+    @pointerdown="warm"
+    @focusin="warm"
   >
     <span class="thumb" :class="`at-${settings.mode}`" aria-hidden="true" />
     <button

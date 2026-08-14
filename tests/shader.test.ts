@@ -99,6 +99,14 @@ describe('detail patch shading', () => {
     expect(glsl).toMatch(/paintCover = mix\(onP, 1\.0, onT\) \* uDetailMix \* uDetailPaint/)
     // the gain is forced to 1 while painting, so the two paths never both act
     expect(glsl).toMatch(/mix\(stack, 1\.0, uDetailPaint\)/)
+    // ROUND 61 — and it is forced rather than BRANCHED around, which is the
+    // opposite of what this round did to the enhanced grade and the palette
+    // beside it. Gating the ratio behind `if (uDetailPaint < 0.5)` puts a
+    // texture fetch inside nested dynamic control flow and measured four times
+    // slower on the software rasteriser (750 ms to 3 500 ms a frame at world
+    // view, against 433 ms without it). The comment in the shader carries the
+    // numbers; this assertion is what stops the "obvious" version coming back.
+    expect(glsl).not.toContain('if (uDetailPaint')
     // and the paint lands AFTER the grade and the palette, like the gain does
     expect(glsl.indexOf('albedo = mix(albedo, paintColor, paintCover)')).toBeGreaterThan(
       glsl.indexOf('uPalette.z'),
@@ -242,6 +250,30 @@ describe('uniform-gated taps', () => {
     // and nothing inside the block reads either of them back
     const body = blockAfter(glsl, 'if (uLights > 0.0) {')
     expect(body).not.toMatch(/uPalette|uBoost|albedo/)
+  })
+
+  /**
+   * ROUND 61 — the two blocks map mode pays for and does not use, and why they
+   * are still unconditional.
+   *
+   * The enhanced grade ends in `mix(albedo, target, uBoost)` and the palette in
+   * an identity triple, and map mode pins both at the no-op. Gating them looks
+   * like free money and measured like nothing: with the camera pinned and every
+   * frame that uploaded thrown out, map mode's frame moved by less than one
+   * vsync tick in either direction (tests/e2e/surfaceCost.e2e.mjs). A frame of
+   * this surface is made of taps, not of transcendentals, and the gates that
+   * DID pay — the relief, the clouds, the city lights — are all taps.
+   *
+   * This test is the record of that, so the next round measures instead of
+   * reasoning: if it ever fails because a gate was added, the gate needs a
+   * number beside it.
+   */
+  it('leaves the pure-arithmetic blocks ungated, on measurement', () => {
+    expect(glsl).toContain('albedo = mix(albedo, target, uBoost);')
+    expect(glsl).not.toContain('if (uBoost >')
+    expect(glsl).not.toContain('if (uPalette')
+    // …and the reason is written where someone changing it will read it
+    expect(glsl).toContain('measurement rather than an oversight')
   })
 
   it('never computes dirToUv of the surface normal', () => {

@@ -71,8 +71,30 @@ export const useSettingsStore = defineStore('settings', {
      * exactly what the reader had.
      */
     mode: DEFAULT_MODE as RenderMode,
+    /**
+     * SOMEBODY IS ABOUT TO ASK FOR MAP MODE — not a setting, an intent.
+     *
+     * The drawn map is lazy by contract: a reader who never opens it pays for
+     * neither the rasterizer worker nor the 1.1 MB of vector data nor the
+     * 4096x2048 drawn world texture (see lib/drawnSource.ts). The price of that
+     * is that the FIRST switch pays for all three at once, inside the click —
+     * measured as the whole of a cold switch's cost in
+     * tests/e2e/modeSwitch.e2e.mjs.
+     *
+     * A pointer arriving at the toggle, or the toggle taking focus, is the
+     * earliest honest evidence that the reader is about to ask; it is typically
+     * a few hundred milliseconds before the click, and it is emphatically NOT
+     * the reader who never opens map mode. So the warm-up hangs off this
+     * latch, and everything stays as lazy as it was for everyone else.
+     */
+    mapWarmed: false,
   }),
   actions: {
+    /** The intent above. Idempotent: the warm-up runs at most once. */
+    warmMap() {
+      this.mapWarmed = true
+    },
+
     toggle(key: ToggleKey) {
       this[key] = !this[key]
     },

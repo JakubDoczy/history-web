@@ -180,6 +180,8 @@ export class DrawnTiles {
   /** The 10m rung: one decode, in its own worker, at most once a session. */
   private decoder?: Worker
   private askedFine = false
+  /** Whether `prime` has already been sent; see it. */
+  private primed = false
   /**
    * What that decode cost, as the worker that did it measured it.
    *
@@ -301,6 +303,28 @@ export class DrawnTiles {
       this.decoder = undefined
     }
     this.decoder.postMessage({ base: this.base })
+  }
+
+  /**
+   * Start the geometry load without asking for a tile.
+   *
+   * The worker fetches and parses the vector world on the first tile request,
+   * so the first tile of map mode has always waited for it — and that wait is
+   * inside the toggle, which is where round 61's field report put it ("switching
+   * to it is slow / staggers"). This is called on INTENT (a pointer arriving at
+   * the mode control), so the fetch and the parse overlap the reader's own
+   * movement instead of the switch.
+   *
+   * Idempotent, and it answers nothing: the worker memoises the loaded world,
+   * and the first real request finds it there. Without a worker there is
+   * nothing to prime — `renderHere` loads the world on its own first tile, on
+   * the same thread, and starting that early would move a main-thread parse
+   * into a frame rather than out of one.
+   */
+  prime() {
+    if (this.primed || !this.worker) return
+    this.primed = true
+    this.worker.postMessage({ prime: true, base: this.base })
   }
 
   private render(t: Tile): Promise<CanvasImageSource> {

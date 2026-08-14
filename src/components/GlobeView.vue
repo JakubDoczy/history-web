@@ -8,6 +8,9 @@ import {
   MeshBasicMaterial,
   PerspectiveCamera,
   Vector3,
+  type Mesh,
+  type Object3D,
+  type SphereGeometry,
 } from 'three'
 import { useEventStore } from '../stores/events'
 import { useNationStore, type BorderEntry } from '../stores/nations'
@@ -70,6 +73,7 @@ import { stableByKey } from '../lib/stableIdentity'
 import type { Tier } from '../lib/eventTiers'
 import { primaryTag, tagColor } from '../lib/tags'
 import {
+  DRAWN_TEXTURE,
   MODERN_TEXTURE,
   NIGHT_TEXTURE,
   RELIEF_TEXTURE,
@@ -126,6 +130,19 @@ let detail: DetailImagery | undefined
 let drawnTiles: DrawnTiles | undefined
 /** …and its plan, held rather than rebuilt: `setPlan` compares by identity. */
 let drawnPlan: ReturnType<typeof singleSourcePlan> | undefined
+/**
+ * The starfield sphere three-render-objects owns, and what we want of it.
+ *
+ * See the background watcher: the library's only handle on a background is a
+ * URL, and passing it again reloads the texture, so map mode used to buy the
+ * whole 4096x2048 starfield again every time the reader came back. The sphere
+ * itself is a direct child of the render root and is identified by what it is —
+ * a mesh whose sphere is orders of magnitude wider than the planet — rather
+ * than by a name the library does not give it.
+ */
+let skyMesh: Object3D | undefined
+let skyLoaded = false
+let starsWanted = true
 /** The authored battle plan of the item in focus mode; nothing otherwise. */
 let drawing: DrawingLayer | undefined
 /** Nation frontiers — the inland edges only; see lib/frontierLayer.ts. */
@@ -722,6 +739,18 @@ onMounted(() => {
     globe.renderer(),
   )
   globe.globeMaterial(surface.material)
+  /**
+   * THE OTHER MODE'S BASE MAP IS NOT AN ERA FRAME, and eviction may not treat
+   * it as one.
+   *
+   * `MODERN_TEXTURE` is safe because it is `urls.day` — the map the globe is
+   * made of. `DRAWN_TEXTURE` is exactly as permanent in map mode and was
+   * exactly as evictable: leaving map mode moved the era window off it, the
+   * sweep disposed it, and coming back re-fetched, re-decoded and re-uploaded
+   * 32 MB with a full 4096x2048 mip chain. Pinning is not loading — this costs
+   * nothing until something asks for the drawn world.
+   */
+  surface.pin(DRAWN_TEXTURE)
   // No whole-globe network upgrade: the bundled basemap is already 4096×2048,
   // the same layer and size GIBS would return. Sharper close-up detail comes
   // from the streamed Sentinel-2 patch instead.
@@ -1104,6 +1133,91 @@ onMounted(() => {
     stats.wakes++
     pump.wake(ms)
   }
+
+  /**
+   * The starfield sphere, found by shape rather than by name.
+   *
+   * `three-render-objects` adds it as a direct child of the render root and
+   * gives it a `SphereGeometry` of `skyRadius`, which is two orders of
+   * magnitude wider than the planet — so "a mesh whose sphere dwarfs the globe"
+   * identifies it without depending on the library's internal field names.
+   * Found once and remembered; `undefined` is a supported answer (see the
+   * background watcher).
+   */
+  const skySphere = (): Object3D | undefined => {
+    if (skyMesh) return skyMesh
+    let root: Object3D | null | undefined = globe?.scene()
+    while (root?.parent) root = root.parent
+    skyMesh = root?.children.find((o) => {
+      const g = (o as Mesh).geometry as SphereGeometry | undefined
+      return (
+        (o as Mesh).isMesh === true &&
+        g?.type === 'SphereGeometry' &&
+        (g.parameters?.radius ?? 0) > radius * 10
+      )
+    })
+    return skyMesh
+  }
+  /**
+   * BUILD THE DRAWN MAP'S HALF OF THE PIPELINE, once.
+   *
+   * Called from two places, and the second one is the round-61 change: the
+   * tiles watcher, which is the switch itself, and `warmDrawn` below, which is
+   * a pointer arriving at the toggle. Everything in here is idempotent because
+   * the first caller may be either of them.
+   */
+  const ensureDrawn = () => {
+    if (drawnPlan) return
+    drawnTiles = new DrawnTiles(import.meta.env.BASE_URL)
+    // …and `paint`, which is the upload path's half of `DETAIL_MODE`: a drawn
+    // tile IS the ground, so the reduced copy the sharp/blurred ratio divides
+    // by is never sampled and is never made.
+    drawnPlan = singleSourcePlan(drawnTiles.source, DRAWN_Z_MAX, true)
+    // The 50m geometry landing renames the source, which retires every tile
+    // drawn from the 110m stand-in. Nothing else would ask for the new ones:
+    // the camera has not moved, so the tick's own guard would skip the sync —
+    // forgetting where it last synced is what makes the upgrade reach the
+    // screen.
+    drawnTiles.onUpgrade = () => {
+      lastSync = undefined
+      wake()
+    }
+    if (import.meta.env.DEV) {
+      ;(window as unknown as { __drawn?: DrawnTiles }).__drawn = drawnTiles
+    }
+  }
+
+  /**
+   * …and start it BEFORE the click, on the evidence that a click is coming.
+   *
+   * Three things a cold switch used to do inside the toggle, in the order they
+   * block on each other:
+   *
+   *  1. spawn the rasterizer worker — a module graph, and in dev an HTTP fetch
+   *     of every module in it;
+   *  2. fetch and parse the vector world (110m, then 50m) in that worker,
+   *     which is where the first tile of the new mode is waiting;
+   *  3. fetch, decode and upload the 4096x2048 drawn world — 32 MB and a full
+   *     mip chain, in the frame that first binds it.
+   *
+   * None of them needs the mode to have changed, and all three are latency the
+   * reader watches. `prime` is the message that makes (2) start without a tile
+   * request, because the worker's geometry load is lazy on its first tile.
+   */
+  const warmDrawn = () => {
+    ensureDrawn()
+    drawnTiles?.prime()
+    surface!.warm(DRAWN_TEXTURE)
+  }
+
+  /** Apply the wanted starfield state, whatever the library last decided. */
+  const syncSky = () => {
+    const sky = skySphere()
+    if (sky && sky.visible !== starsWanted) {
+      sky.visible = starsWanted
+      wake()
+    }
+  }
   // dev-only handles: a screenshot script has to be able to tell "nothing is
   // being drawn" from "something is being drawn that looks identical"
   if (import.meta.env.DEV) {
@@ -1269,6 +1383,9 @@ onMounted(() => {
         syncDetail(pov)
       } else if (detail!.animating) syncDetail(pov)
     }
+    // The starfield's own state, re-asserted because the library sets it from
+    // an asynchronous texture load. One boolean comparison; see `syncSky`.
+    if (starsReady.value) syncSky()
     // deferred work waits for a still camera as well as an idle browser
     const still2 = now - movedAt >= STILL_MS
     surface!.setBusy(!still2)
@@ -1484,26 +1601,8 @@ onMounted(() => {
     watchEffect(() => {
       const kind = style.value.tiles
       if (kind === 'drawn') {
-        if (!drawnPlan) {
-          drawnTiles = new DrawnTiles(import.meta.env.BASE_URL)
-          // …and `paint`, which is the upload path's half of `DETAIL_MODE`
-          // below: a drawn tile IS the ground, so the reduced copy the
-          // sharp/blurred ratio divides by is never sampled and is never made.
-          drawnPlan = singleSourcePlan(drawnTiles.source, DRAWN_Z_MAX, true)
-          // The 50m geometry landing renames the source, which retires every
-          // tile drawn from the 110m stand-in. Nothing else would ask for the
-          // new ones: the camera has not moved, so the tick's own guard would
-          // skip the sync — forgetting where it last synced is what makes the
-          // upgrade reach the screen.
-          drawnTiles.onUpgrade = () => {
-            lastSync = undefined
-            wake()
-          }
-          if (import.meta.env.DEV) {
-            ;(window as unknown as { __drawn?: DrawnTiles }).__drawn = drawnTiles
-          }
-        }
-        detail!.setPlan(drawnPlan)
+        ensureDrawn()
+        detail!.setPlan(drawnPlan!)
       } else {
         detail!.setPlan(IMAGERY_PLAN)
       }
@@ -1518,6 +1617,18 @@ onMounted(() => {
         style.value.encode ? 1 : 0,
       )
       wake()
+    }),
+    /**
+     * The prewarm, hung off the intent latch rather than off the mode.
+     *
+     * It fires at most once — `mapWarmed` never goes back to false — and it
+     * fires for nobody who has not put a pointer, a finger or the keyboard
+     * focus on a mode control. A reader who never does still pays for neither
+     * the worker, the vector data nor the drawn world, which is the contract
+     * the laziness was written for (see lib/drawnSource.ts).
+     */
+    watchEffect(() => {
+      if (settings.mapWarmed) warmDrawn()
     }),
     // The plan carries more than the crossfade: which frames stay resident and
     // which one to warm next, both of which depend on the *direction* the cursor
@@ -1546,7 +1657,39 @@ onMounted(() => {
     watchEffect(() => {
       globe!.backgroundColor(style.value.background)
       if (!starsReady.value) return
-      globe!.backgroundImageUrl(style.value.stars ? SKY_TEXTURE : null)
+      /**
+       * THE STARFIELD IS HIDDEN, NOT UNLOADED.
+       *
+       * `backgroundImageUrl(null)` is how three-render-objects is told to drop
+       * a background, and what it does is `skysphere.material.map = null`. The
+       * cost is on the way BACK: passing the URL again runs
+       * `new TextureLoader().load(...)` unconditionally, so returning to globe
+       * mode built a fresh `Texture` and a fresh `MeshBasicMaterial` and left
+       * the old pair to the collector — measured as a 4096x2048 upload of
+       * `night-sky.webp` and a full mip chain on every switch back
+       * (tests/e2e/modeSwitch.e2e.mjs). The reader is toggling to compare two
+       * looks; that is the one gesture this must not charge for.
+       *
+       * So the URL is set exactly once and the sphere's own `visible` carries
+       * the decision. Nothing in the library writes that flag except the
+       * `backgroundImageUrl` branch, which now runs once. If the sphere cannot
+       * be found — a future version that keeps it somewhere else — the old
+       * behaviour is the fallback, and it is correct, only slower.
+       */
+      starsWanted = style.value.stars
+      const sky = skySphere()
+      if (!sky) {
+        // No sphere to hide: keep the old behaviour, which is correct and only
+        // costs the reload this exists to avoid.
+        globe!.backgroundImageUrl(starsWanted ? SKY_TEXTURE : null)
+      } else if (!skyLoaded && starsWanted) {
+        skyLoaded = true
+        globe!.backgroundImageUrl(SKY_TEXTURE)
+      }
+      // The library switches the sphere on ITSELF when the texture lands, which
+      // can be after this watcher has said to hide it, so the flag is what
+      // decides and `syncSky` in the tick is what keeps applying it.
+      syncSky()
       wake()
     }),
     // clouds are anachronistic detail in deep time, and would hide the plate drift
