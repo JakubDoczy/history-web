@@ -1550,3 +1550,54 @@ describe('a local source renders no further ahead than the atlas can take', () =
     d.dispose()
   })
 })
+
+/**
+ * ROUND 62 — the mode switch publishes, it does not merely forget.
+ *
+ * `setPlan` drops the index and the wanted set, which makes `DetailImagery`
+ * correct about itself. It said nothing to the SURFACE, which holds the atlas,
+ * the two grids and the index texture it was last handed — and the slots behind
+ * them still hold the other source's tiles, because the decoded cache and the
+ * atlas are deliberately shared across the switch. The other half of the mode
+ * (`uDetailPaint`) flips in the same tick, so any gap between the two is a
+ * frame of map mode PAINTING satellite tiles as if they were the ground, or of
+ * imagery mode dividing a drawing by a reduced tap map mode never uploads.
+ *
+ * Today GlobeView's settings watcher re-syncs inside the same flush and the gap
+ * is empty. That is an ordering between two `watchEffect`s and nothing states
+ * it; this does.
+ */
+describe('changing the plan tells the surface', () => {
+  const localPlan = (label: string) => ({
+    zMax: 9,
+    remote: false,
+    paint: true,
+    at: () => ({ label, pxPerDeg: 1, render: async () => ({}) as CanvasImageSource }),
+  })
+
+  it('fires onReady, with nothing left to show, the moment the source changes', () => {
+    const d = new DetailImagery()
+    const seen: { index: unknown; mix: number; status: string }[] = []
+    d.onReady = () => seen.push({ index: d.index, mix: d.mix, status: d.status })
+    d.setPlan(localPlan('drawn'))
+    expect(seen).toHaveLength(1)
+    // what the surface would be handed: no index, no mix — i.e. the base map,
+    // which is the only thing that is true about the new mode until a tile of
+    // it lands
+    expect(seen[0].index).toBeUndefined()
+    expect(seen[0].mix).toBe(0)
+    expect(seen[0].status).toBe('idle')
+    d.dispose()
+  })
+
+  it('says nothing when the plan is the one it already had', () => {
+    // The watcher runs on every settings change, not only on a mode change.
+    const plan = localPlan('drawn')
+    const d = new DetailImagery({ plan })
+    let calls = 0
+    d.onReady = () => calls++
+    d.setPlan(plan)
+    expect(calls).toBe(0)
+    d.dispose()
+  })
+})

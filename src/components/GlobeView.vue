@@ -1609,12 +1609,19 @@ onMounted(() => {
       // The shader's half of the same decision: whether a streamed tile
       // modulates the ground or IS the ground, whether the planet has an
       // atmospheric limb, how much of the paper grade a deep-time frame takes,
-      // and whether the output is encoded.
+      // whether this mode prints at all, and whether the output is encoded.
+      //
+      // The last two used to be one number, and the collapse is what let a
+      // photograph reach the screen inside map mode: a modern year asks for no
+      // paper, which is also what realistic mode asks for at every year, and
+      // the surface could not tell "this mode does not print" from "this frame
+      // needs no printing". See `applyPaper` in lib/globeSurface.ts.
       surface!.setSurfaceMode(
         style.value.detail,
         style.value.rim,
         style.value.paper ? 1 - modernShare(frames.value, time.currentTime) : 0,
         style.value.encode ? 1 : 0,
+        style.value.paper,
       )
       wake()
     }),
@@ -1635,6 +1642,11 @@ onMounted(() => {
     // is moving, so the previous time is part of the input.
     watchEffect(() => {
       const t = time.currentTime
+      // Which timeline this is, before which frame of it: a frame the surface
+      // is holding over from the OTHER mode's list is the one case `applyEra`
+      // cannot recognise on its own, and it is what put a photograph under map
+      // mode. See `baseHeld` in lib/globeSurface.ts.
+      surface!.setBaseFrames(frames.value)
       surface!.setEra(eraPlan(frames.value, t, prevEraTime))
       prevEraTime = t
       wake()

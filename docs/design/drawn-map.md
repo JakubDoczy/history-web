@@ -481,3 +481,22 @@ thrusts were checked against the same glance test and left alone — they are
 screen-pixel lines and degree-wide ribbons in saturated colours, and they read on
 both grounds. At world view a marker is under a pixel and stays that way; it is a
 thing on the ground, and the pin above it is what says where the event is.
+
+## As built, round 62: the ground never shows the other mode's photograph
+
+Two field reports — satellite blocks at the screen edges in map mode, and a
+map/satellite hybrid when switching with a path event focused — were one
+defect. `applyEra` holds the last decoded frame over an undecoded one, which
+is right within a timeline and wrong across a change of mode: the held frame
+was `earth-blue-marble.webp`, and the paper share was computed from the YEAR
+(exact for every frame the timeline plans, blind to the one it does not), so
+wherever drawn tiles had not yet painted — the screen edges, which the
+streamed grid finishes last, or the whole frame at the instant of the
+toggle — the photograph showed through untreated. The fix is a paper floor:
+the surface knows which timeline it is on (`setBaseFrames`), and a bound
+frame that is off the current timeline prints at full paper regardless of the
+year's share. A plan change in the detail layer also publishes immediately
+(`setPlan` → `onReady`), closing a watcher-order window that was empty only
+by accident. The first switch of a session is now one tonal step (printed
+photograph → drawn world) rather than a medium hybrid; settled frames in
+both modes are byte-identical to before the fix.

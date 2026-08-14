@@ -822,6 +822,19 @@ export class DetailImagery {
    * cached under its own label (harmless) and indexed into a grid built for the
    * other source (not harmless). The decoded cache itself is NOT cleared: it is
    * keyed by source label already, so switching back finds the tiles it left.
+   *
+   * AND IT IS PUBLISHED, which is the half that was missing. Dropping `index`
+   * here says nothing to the shader: it holds the atlas, the two grids and the
+   * index texture it was last handed, and the slots behind them still hold the
+   * other source's tiles. The mode's other half (`uDetailPaint`) flips in the
+   * same tick, so for as long as nothing republishes, map mode is painting
+   * Sentinel tiles onto the drawn world as if they were the ground — and the
+   * ratio path, the other way round, divides a drawing by a reduced tap map
+   * mode never uploaded. Today the component's own settings watcher re-syncs
+   * within the same flush and the window is empty; that is an ORDER between two
+   * watchers, and this is the invariant that does not depend on it: a plan
+   * change is an arrival like any other, and `onReady` is how an arrival
+   * reaches the surface.
    */
   setPlan(plan: SourcePlan) {
     if (plan === this.plan) return
@@ -837,6 +850,7 @@ export class DetailImagery {
     this.index = undefined
     this.status = 'idle'
     this.sourceLabel = '—'
+    this.onReady?.()
   }
 
   /** The source that serves a level under the current plan. */

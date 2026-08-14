@@ -302,6 +302,129 @@ describe('GlobeSurface', () => {
       expect(surface.texture('/drawn.webp').image).toBeTruthy()
     })
 
+    /**
+     * ROUND 62 — the medium belongs to the mode, not to the year.
+     *
+     * The field: *"I can sometimes see a block of satellite map on the edges of
+     * screen"* in map mode, and *"switching … produces a weird map / satellite
+     * hybrid"*. Map mode's base map is fetched at the switch (the drawn map is
+     * lazy by contract) while its tiles need only the 54 kB coarse geometry, so
+     * over any real connection the tiles win the race: the drawn tiles paint
+     * the middle of the frame and the frame held over from the other mode — a
+     * photograph — shows at the edges, where the streamed grid finishes last.
+     * Photographed in tests/e2e/repro62.e2e.mjs.
+     *
+     * Map mode already prints every frame that is not its own on paper; the
+     * share was just computed from the YEAR, which cannot see this one.
+     */
+    describe('a frame held over from the other mode is printed, not photographed', () => {
+      const paperOf = (s: GlobeSurface) => s.material.uniforms.uPaperMix.value
+      /** Map mode's timeline: the same deep-time frames, its own modern end. */
+      const drawnFrames: TextureKeyframe[] = [...frames, { time: -10_000, url: '/drawn.webp' }]
+      /** Map mode at a modern year: prints, but the era asks for none of it. */
+      const mapMode = (s: GlobeSurface) => {
+        s.setBaseFrames(drawnFrames)
+        s.setSurfaceMode(1, 0, 0, 1, true)
+      }
+      /** …and the globe, which never prints, at any year. */
+      const globeMode = (s: GlobeSurface) => {
+        s.setBaseFrames(withModern)
+        s.setSurfaceMode(0, 1, 0, 0, false)
+      }
+
+      it('prints a session that OPENS in map mode, where nothing was held at all', () => {
+        // The same photograph by a different route: the surface binds the day
+        // map in its constructor, and a reader whose saved mode is the map asks
+        // for the drawn world one tick later.
+        const surface = new GlobeSurface(URLS, renderer)
+        ready(surface)
+        mapMode(surface)
+        surface.setEra(eraPlan(drawnFrames, 2026))
+        expect(surface.material.uniforms.uEraA.value).toBe(surface.texture(URLS.day))
+        expect(paperOf(surface)).toBe(1)
+        imageFor('/drawn.webp').arrive(4096, 2048)
+        expect(paperOf(surface)).toBe(0)
+      })
+
+      it('prints while the mode\'s own base map is still decoding', () => {
+        const surface = new GlobeSurface(URLS, renderer)
+        ready(surface)
+        globeMode(surface)
+        surface.setEra(at(2026)) // the photographed globe, resident
+        expect(paperOf(surface)).toBe(0)
+        // the toggle: map mode, and its base map is a download away
+        mapMode(surface)
+        surface.setEra(eraPlan(drawnFrames, 2026, 2026))
+        expect(surface.material.uniforms.uEraA.value).toBe(surface.texture(URLS.day))
+        expect(paperOf(surface)).toBe(1)
+        // …and it stops printing the moment the drawing itself is on screen
+        imageFor('/drawn.webp').arrive(4096, 2048)
+        expect(surface.material.uniforms.uEraA.value).toBe(surface.texture('/drawn.webp'))
+        expect(paperOf(surface)).toBe(0)
+      })
+
+      it('does not print in a mode that has no paper, however stale the frame', () => {
+        // A scrub through deep time holds the previous keyframe for the length
+        // of a decode in BOTH modes, and on the photographed globe that is the
+        // designed behaviour and must stay a photograph.
+        const surface = new GlobeSurface(URLS, renderer)
+        ready(surface)
+        globeMode(surface)
+        surface.setEra(at(2026))
+        surface.setEra(at(-350e6, 2026)) // nothing at the destination decoded
+        expect(surface.material.uniforms.uEraA.value).toBe(surface.texture(URLS.day))
+        expect(paperOf(surface)).toBe(0)
+      })
+
+      it('keeps the era\'s own share where it is the larger of the two', () => {
+        // Deep time in map mode: the reconstruction is printed because nobody
+        // has vector coastlines for it, and that share is a fact about the year
+        // which this round does not touch.
+        const surface = new GlobeSurface(URLS, renderer)
+        ready(surface)
+        surface.setBaseFrames(withModern)
+        surface.setEra(at(2026))
+        surface.setSurfaceMode(1, 0, 0.4, 1, true)
+        expect(paperOf(surface)).toBe(0.4)
+        surface.setSurfaceMode(1, 0, 1, 1, true)
+        expect(paperOf(surface)).toBe(1)
+      })
+
+      it('leaves a scrub INSIDE map mode alone, however stale the frame it holds', () => {
+        // The floor is about a frame from the OTHER timeline, not about a frame
+        // that has not decoded: a deep-time scrub holds one of map mode's own
+        // frames at every keyframe boundary, and printing the drawn world on
+        // paper would be a tint flash on every one of them.
+        const surface = new GlobeSurface(URLS, renderer)
+        ready(surface)
+        mapMode(surface)
+        surface.setEra(eraPlan(drawnFrames, 2026))
+        imageFor('/drawn.webp').arrive(4096, 2048)
+        expect(paperOf(surface)).toBe(0)
+        // …now jump into deep time, where nothing has decoded and the drawn
+        // world is what stays on screen
+        surface.setSurfaceMode(1, 0, 0, 1, true) // the year's own share, at 0
+        surface.setEra(eraPlan(drawnFrames, -350e6, 2026))
+        expect(surface.material.uniforms.uEraA.value).toBe(surface.texture('/drawn.webp'))
+        expect(paperOf(surface)).toBe(0)
+      })
+
+      it('stops printing as soon as a frame this timeline asked for is bound', () => {
+        // Half a crossfade is a frame of the era; the other half would be
+        // black, so `applyEra` binds the one that decoded — and that one IS a
+        // frame this timeline planned, so the floor comes off even though the
+        // pair is incomplete. Only the fallback to a frame nobody planned is
+        // the case this round is about.
+        const surface = new GlobeSurface(URLS, renderer)
+        ready(surface)
+        mapMode(surface)
+        surface.setEra(eraPlan(drawnFrames, -275e6))
+        expect(paperOf(surface)).toBe(1)
+        imageFor('/era2.jpg').arrive(4096, 2048)
+        expect(paperOf(surface)).toBe(0)
+      })
+    })
+
     it('never frees what the samplers are bound to', () => {
       const surface = new GlobeSurface(URLS, renderer)
       ready(surface)

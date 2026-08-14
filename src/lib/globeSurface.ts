@@ -1203,6 +1203,41 @@ export class GlobeSurface {
   private eraState?: EraPlan
   /** The most recent *decoded* era texture, held over undecoded ones. */
   private lastGood?: Texture
+  /**
+   * IS THE BOUND BASE MAP ON THIS MODE'S TIMELINE AT ALL?
+   *
+   * `applyEra` holds the last decoded frame over an undecoded one, and that is
+   * right for a scrub through deep time: one keyframe stale for a few hundred
+   * milliseconds beats blacking the planet out. It is NOT right across a change
+   * of MODE, because the two modes' timelines are different pictures of the
+   * same world — map mode's modern frame is the drawn world and realistic
+   * mode's is the photograph (data/paleoTextures.ts) — so the frame held over
+   * into map mode is a satellite photograph, which is the one thing a drawn map
+   * is not. See `paper` for what is done about it.
+   *
+   * "Not on the timeline", rather than "not the frame the plan asked for": a
+   * scrub inside one mode holds a frame of that same mode all the time, and
+   * treating that as foreign would flash the paper grade over the drawn world
+   * at every keyframe boundary. `baseFrames` is what makes the distinction, and
+   * while nothing has set it — every caller that does not know about modes —
+   * the answer is always no and this whole rule is inert.
+   */
+  private baseHeld = false
+  private baseFrames = new Set<string>()
+  /** The URL behind `lastGood`, which is what `baseFrames` is asked about. */
+  private lastGoodUrl?: string
+  /**
+   * The paper grade, as two numbers instead of one.
+   *
+   * `mix` is what the era asks for — the share of the bound frame that is a
+   * deep-time reconstruction rather than the mode's own map — and `prints` is
+   * whether this mode prints at all. They were one argument, and collapsing
+   * them lost exactly the case this round is about: at a modern year in map
+   * mode the era's share is 0, which is indistinguishable from realistic mode's
+   * "never print" — so a photograph held over into map mode reached the screen
+   * as a photograph.
+   */
+  private paper = { mix: 0, prints: false }
 
   constructor(urls: GlobeSurfaceUrls, renderer: WebGLRenderer) {
     this.maxAniso = renderer.capabilities.getMaxAnisotropy()
@@ -1216,6 +1251,11 @@ export class GlobeSurface {
     // lights, a flat height field, and no cloud cover.
     const day = this.texture(urls.day, 'color', () => this.dayLoaded())
     this.lastGood = day
+    // …and the URL with it, because "what is bound" has to have an answer from
+    // the first frame: a session that OPENS in map mode binds the photographed
+    // day map here and asks for the drawn world a tick later, which is the same
+    // held-over photograph the toggle produces. See `baseHeld`.
+    this.lastGoodUrl = urls.day
 
     this.material = new ShaderMaterial({
       glslVersion: GLSL3,
@@ -1597,19 +1637,79 @@ export class GlobeSurface {
       u.uEraA.value = a
       u.uEraB.value = b
       u.uEraMix.value = plan.f
-      this.lastGood = plan.f < 0.5 ? a : b
+      const near = plan.f < 0.5
+      this.lastGood = near ? a : b
+      this.lastGoodUrl = near ? plan.from : plan.to
+      this.setBaseHeld(false) // both halves are this timeline's own
       return
     }
+    const url = hasFrom ? plan.from : hasTo ? plan.to : this.lastGoodUrl
     const held = hasFrom
       ? this.cache.get(plan.from)!
       : hasTo
         ? this.cache.get(plan.to)!
         : this.lastGood
+    this.setBaseHeld(url !== undefined && this.baseFrames.size > 0 && !this.baseFrames.has(url))
     if (!held) return
     u.uEraA.value = held
     u.uEraB.value = held
     u.uEraMix.value = 0
     this.lastGood = held
+    this.lastGoodUrl = url
+  }
+
+  /**
+   * The timeline this mode reads, so a held-over frame can be recognised as
+   * belonging to the OTHER one. See `baseHeld`.
+   *
+   * Told rather than inferred: the surface holds a texture cache and an era
+   * window, and neither of them knows that two different lists of keyframes
+   * exist — that is `framesFor` in data/paleoTextures.ts, and it belongs to the
+   * mode.
+   */
+  setBaseFrames(frames: readonly { url: string }[]) {
+    this.baseFrames = new Set(frames.map((f) => f.url))
+    this.applyEra()
+  }
+
+  /** See `baseHeld`; the paper grade is the only thing that reads it. */
+  private setBaseHeld(held: boolean) {
+    if (this.baseHeld === held) return
+    this.baseHeld = held
+    this.applyPaper()
+  }
+
+  /**
+   * THE MEDIUM IS A PROPERTY OF THE MODE, NOT OF THE YEAR.
+   *
+   * Map mode already prints every frame that is not its own on paper: nobody
+   * has vector coastlines for the Cretaceous, so the deep-time reconstructions
+   * are kept and duotoned into the drawn map's own ink and paper rather than
+   * redrawn (`uPaperMix`, and `paper` in lib/present/globe.ts). The share was
+   * computed from the YEAR — `1 - modernShare` — which is exact for every frame
+   * the timeline plans and silently wrong for the one frame it does not: the
+   * map held over from the OTHER mode while this mode's own base map is still
+   * decoding.
+   *
+   * That is what the field reported after round 61 — *"I can sometimes see a
+   * block of satellite map on the edges of screen"* and *"switching … produces
+   * a weird map / satellite hybrid"*. Map mode's base texture is fetched at the
+   * switch (the drawn map is lazy by contract) while its tiles need only the
+   * 54 kB coarse geometry, so over any real connection the TILES WIN THE RACE:
+   * drawn tiles paint the middle of the frame and the photograph they are
+   * painted onto shows at the edges, which is where the streamed grid finishes
+   * last. Photographed in tests/e2e/repro62.e2e.mjs with the one file put
+   * behind a network: 39.9% of the frame photographic, 16.3% of it uncovered
+   * and all of that in the outer eighth.
+   *
+   * The floor costs nothing and waits for nothing: the picture stays the
+   * reader's own geography, printed in the medium the mode is in, until the
+   * drawn world lands and the era's own share takes over again.
+   */
+  private applyPaper() {
+    this.material.uniforms.uPaperMix.value = this.paper.prints
+      ? Math.max(this.paper.mix, this.baseHeld ? 1 : 0)
+      : 0
   }
 
   /**
@@ -1777,13 +1877,22 @@ export class GlobeSurface {
 
   /**
    * How far the streamed layer may push the ground, and whether the planet has
-   * an atmosphere and a sheet of paper. Three uniforms, one call, because they
+   * an atmosphere and a sheet of paper. Four uniforms, one call, because they
    * are one decision — see `GlobeStyle`.
+   *
+   * `prints` is the mode's own answer to "does this surface print at all", and
+   * it is separate from `paper` because `paper` is a share of a YEAR: at a
+   * modern year map mode asks for 0, exactly as realistic mode does at every
+   * year, and the two zeros mean opposite things the moment a frame from the
+   * other mode's timeline is what is bound. See `applyPaper`. It defaults to
+   * the old meaning, so a caller that does not know about modes still gets
+   * exactly the behaviour it had.
    */
-  setSurfaceMode(detail: number, rim: number, paper: number, encode: number) {
+  setSurfaceMode(detail: number, rim: number, paper: number, encode: number, prints = paper > 0) {
     this.material.uniforms.uDetailPaint.value = detail
     this.material.uniforms.uRim.value = rim
-    this.material.uniforms.uPaperMix.value = paper
+    this.paper = { mix: paper, prints }
+    this.applyPaper()
     this.material.uniforms.uEncode.value = encode
   }
 
