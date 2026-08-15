@@ -179,6 +179,18 @@ function pushLine(
 export const DASH_DEG = 0.34
 export const GAP_DEG = 0.26
 
+/**
+ * A SKETCHED FRONTIER IS DASHED TOO — round 64, and the other thing a broken
+ * line means on a map. A contested zone's short dash says "two claimants"; a
+ * sketch's longer dash says "an estimate" — the frontier of a polity whose
+ * line no survey, river or treaty stands behind (`RingEntry.sketch`, cut per
+ * edge by the build). The pattern is longer and the gap tighter than the
+ * dispute dash so the two read as different pens at a glance: an estimate is
+ * most of a line, a dispute is barely half of one.
+ */
+export const SKETCH_DASH_DEG = 0.62
+export const SKETCH_GAP_DEG = 0.24
+
 function pushDashed(
   path: Ring,
   color: [number, number, number],
@@ -186,8 +198,10 @@ function pushDashed(
   positions: number[],
   colors: number[],
   phase = 0,
+  dashDeg = DASH_DEG,
+  gapDeg = GAP_DEG,
 ) {
-  const period = DASH_DEG + GAP_DEG
+  const period = dashDeg + gapDeg
   // Where along the current period the walk is; carried across segments so a
   // dash spans a vertex rather than restarting at every one.
   let at = phase % period
@@ -208,9 +222,9 @@ function pushDashed(
     if (!len) continue
     let t = 0
     while (t < len) {
-      const remaining = at < DASH_DEG ? DASH_DEG - at : period - at
+      const remaining = at < dashDeg ? dashDeg - at : period - at
       const step = Math.min(remaining, len - t)
-      if (at < DASH_DEG) {
+      if (at < dashDeg) {
         const a = t / len
         const b = (t + step) / len
         point(x0 + (x1 - x0) * a, y0 + (y1 - y0) * a)
@@ -245,6 +259,26 @@ export const inkPathsOf = (entry: InkEntry, ink: FrontierInk): Ring[] =>
       : ink === 'coast'
         ? entry.coast
         : NO_PATHS
+
+/**
+ * The entry's SKETCHED frontier, drawn dashed — whenever the plan draws its
+ * frontier at all ('frontier' on the drawn map, 'all' on the photograph). A
+ * contested zone never has sketch runs (its whole outline is the dispute
+ * dash), and an entry that yielded its ink ('coast', 'none') dashes nothing.
+ */
+export const sketchPathsOf = (entry: InkEntry, ink: FrontierInk): Ring[] =>
+  (ink === 'frontier' || ink === 'all') && entry.kind !== 'contested' ? entry.sketch : NO_PATHS
+
+/**
+ * …and the solid remainder. One subtlety keeps `all` honest: `coordinates` is
+ * the whole closed boundary, sketch edges included, so an entry with sketch
+ * runs cannot draw its outline as the closed loop without inking the estimate
+ * solid underneath its own dashes. It draws the coast and the solid frontier
+ * as runs instead — the same edges, minus the sketch — which tile the boundary
+ * exactly because the three kinds are one per-edge classification.
+ */
+export const solidPathsOf = (entry: InkEntry, ink: FrontierInk): Ring[] =>
+  ink === 'all' && entry.sketch.length ? [...entry.coast, ...entry.frontier] : inkPathsOf(entry, ink)
 
 export class FrontierLayer {
   private geometry = new BufferGeometry()
@@ -362,10 +396,11 @@ export class FrontierLayer {
     const colors: number[] = []
     for (const entry of entries) {
       const color = rgb(colorOf(entry))
-      // A contested zone's outline is the one dashed line on the globe; every
-      // other entry here is a frontier somebody agrees about. See `pushDashed`.
+      const ink = inkOf(entry)
+      // A contested zone's outline is dashed in the dispute pattern; every
+      // other entry's solid paths are solid lines. See `pushDashed`.
       const push = entry.kind === 'contested' ? pushDashed : pushLine
-      for (const path of inkPathsOf(entry, inkOf(entry)))
+      for (const path of solidPathsOf(entry, ink))
         // CUT AT THE PLANET'S OWN FOLDS FIRST — the reason a grounded border
         // needs a lift of metres rather than kilometres. See `splitAtFacets`.
         // The dashed walk runs over the cut path too, and has to: it emits a
@@ -375,6 +410,10 @@ export class FrontierLayer {
         // ground along the same polyline, and inserting a point on a segment
         // does not move any point of it.
         push(splitAtFacets(path), color, this.radius, positions, colors)
+      // …and the estimated frontier, dashed in the sketch pattern (round 64):
+      // the same pen, a broken line, so a guess stops posing as a survey.
+      for (const path of sketchPathsOf(entry, ink))
+        pushDashed(splitAtFacets(path), color, this.radius, positions, colors, 0, SKETCH_DASH_DEG, SKETCH_GAP_DEG)
     }
     this.geometry.dispose()
     this.geometry = new BufferGeometry()

@@ -181,10 +181,20 @@ export const ISLAND_ABSORB = 0.8
  */
 export function clipToLand(mp, land, absorb = ISLAND_ABSORB) {
   const bb = bboxOfRings(mp.flat())
+  // Per-POLYGON boxes as well as the whole extent's: a `countries` empire
+  // (round 64) is hundreds of polygons whose joint bbox spans the planet, and
+  // intersecting all of them with every land piece is quadratic in the wrong
+  // place — Britain at 1900 took three minutes against the sweep line. Each
+  // land piece only ever meets the polygons whose boxes touch it, and handing
+  // the clipper that subset is the same arithmetic on a fraction of the input
+  // (measured: 195 s → under 4 s, identical output).
+  const polyBoxes = mp.map((poly) => bboxOfPolygon(poly))
   const out = []
   for (const piece of land) {
     if (boxesMiss(piece.bbox, bb)) continue
-    const part = robustOp('intersection', mp, [piece.poly], 'clip to land')
+    const subset = mp.filter((_, i) => !boxesMiss(piece.bbox, polyBoxes[i]))
+    if (!subset.length) continue
+    const part = robustOp('intersection', subset, [piece.poly], 'clip to land')
     if (!part.length) continue
     if (absorb > 0 && multiPolygonArea(part) >= absorb * piece.area) out.push(piece.poly)
     else out.push(...part)

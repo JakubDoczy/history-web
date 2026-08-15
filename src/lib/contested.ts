@@ -154,6 +154,9 @@ export function contestedRings(z: ContestedZone, hatch: [string, string]): Conte
       frontier: rings
         .flatMap((r, i) => frontierRuns(r, coastal[p][i]))
         .map((run) => densifyPath(run, BORDER_SEGMENT_DEG) as Ring),
+      // A zone's outline is ALREADY the dashed pen — dispute, not estimate —
+      // so it has no separate sketch runs to hand the layer.
+      sketch: [],
       coast: rings
         .flatMap((r, i) => coastRuns(r, coastal[p][i]))
         .map((run) => densifyPath(run, BORDER_SEGMENT_DEG) as Ring),

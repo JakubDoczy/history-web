@@ -136,6 +136,17 @@ export const RIVERS = [
   { name: 'Neman' },
   { name: 'Daugava' },
   { name: 'Tisza', also: ['Tisa'] },
+  // ---- round 64: the frontiers of the historical data pass
+  // The Orenburg Line: Russia's 1730s-1860s southern frontier runs down this
+  // river from Orsk to the Caspian at Guryev.
+  { name: 'Ural' },
+  // The Siberian (Irtysh) Line of forts, Omsk to Ust-Kamenogorsk, 1750s on.
+  // NE names the Kazakh/upper reaches `Ertis` (name_en Ertis, so the alias is
+  // needed) and the Chinese headwater `Ertix` (name_alt Irtysh, which matches).
+  { name: 'Irtysh', also: ['Ertis'] },
+  // The Caucasus Line's western half: Russia's 1783+ frontier is the Kuban.
+  // (Its eastern half, the Terek, is not in NE 10m at any spelling.)
+  { name: 'Kuban' },
 ]
 
 /** Same integer codec, same quantum, as the polity corpus. See lib/nations.ts. */

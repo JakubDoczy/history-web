@@ -62,6 +62,16 @@ describe('isDrawingSpec', () => {
     expect(isDrawingSpec({ type: 'label', pos: [1, 2], text: 'Caen', size: 'md' })).toBe(true)
   })
 
+  it('accepts at: "overview" — the saga summary literal (round 64) — and only that string', () => {
+    // structurally valid on any kind; WHERE it may appear (an event with steps,
+    // never a step's own drawing) is the build script's check, mirrored over
+    // the corpus by tests/eventsData.test.ts
+    expect(isDrawingSpec({ type: 'marker', pos: [1, 2], at: 'overview' })).toBe(true)
+    expect(isDrawingSpec({ type: 'label', pos: [1, 2], text: 'Caen', at: 'overview' })).toBe(true)
+    expect(isDrawingSpec({ type: 'marker', pos: [1, 2], at: 'Overview' })).toBe(false)
+    expect(isDrawingSpec({ type: 'marker', pos: [1, 2], at: 'summary' })).toBe(false)
+  })
+
   it('rejects what a typo produces', () => {
     const bad: unknown[] = [
       null,

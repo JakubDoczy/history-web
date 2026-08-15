@@ -235,6 +235,22 @@ export const ISO_A3 = {
   ARM: 'Armenia', AZE: 'Azerbaijan', EST: 'Estonia', GEO: 'Georgia', KAZ: 'Kazakhstan',
   KGZ: 'Kyrgyzstan', LTU: 'Lithuania', LVA: 'Latvia', TJK: 'Tajikistan',
   TKM: 'Turkmenistan', UZB: 'Uzbekistan',
+  // ROUND 64: the colonial empires' extents at 1885-1947, and the Qing's from
+  // 1800, are unions of present states AT A GIVEN DATE — the partition lines of
+  // Africa and the Raj's provincial outline are the borders those states kept.
+  // (`countries` is still not a way to draw an empire across its whole life:
+  // each keyframe names the union true in ITS years, and the keyframes change.)
+  AUS: 'Australia', BEN: 'Benin', BFA: 'Burkina Faso', BGD: 'Bangladesh',
+  BWA: 'Botswana', CAF: 'Central African Rep.', CIV: "Côte d'Ivoire",
+  COG: 'Congo', CYP: 'Cyprus', DJI: 'Djibouti', EGY: 'Egypt', GAB: 'Gabon',
+  GHA: 'Ghana', GIN: 'Guinea', GMB: 'Gambia', IRQ: 'Iraq', ISR: 'Israel',
+  JOR: 'Jordan', KEN: 'Kenya', KHM: 'Cambodia', LAO: 'Laos', LKA: 'Sri Lanka',
+  LSO: 'Lesotho', MDG: 'Madagascar', MLI: 'Mali', MMR: 'Myanmar',
+  MNG: 'Mongolia', MWI: 'Malawi', NER: 'Niger', NGA: 'Nigeria',
+  NZL: 'New Zealand', PSE: 'Palestine', SEN: 'Senegal', SLE: 'Sierra Leone',
+  SWZ: 'eSwatini', TCD: 'Chad', TUN: 'Tunisia', TWN: 'Taiwan',
+  TZA: 'Tanzania', UGA: 'Uganda', VNM: 'Vietnam', ZAF: 'South Africa',
+  ZMB: 'Zambia', ZWE: 'Zimbabwe',
   // NOT COUNTRIES, and in the table for the same reason the countries are: a
   // declaration has to be able to NAME them. Natural Earth's admin-0 layer
   // carries three disputed territories as their own units, so the boundary
@@ -244,6 +260,10 @@ export const ISO_A3 = {
   // same reason. The codes are placeholders: ISO does not assign one to a
   // glacier.
   ESH: 'W. Sahara', SIA: 'Siachen Glacier',
+  // Somaliland is an NE unit of its own (round 57's honest-limits list) and the
+  // ground of the British protectorate, so the 1900-1947 empire extents can
+  // name it. ISO assigns it no code; SOL is the placeholder NE itself uses.
+  SOL: 'Somaliland',
 }
 
 /** "FRA-ESP" -> the two NE country names, sorted the way `arcOwners` sorts. */
@@ -728,6 +748,43 @@ export function nearSegment(index, x, y, tol = DECLARED_TOL_DEG) {
       for (const s of list) if (distSqToSegment(x, y, s[0], s[1], s[2], s[3]) <= tol2) return true
     }
   return false
+}
+
+/* ------------------------------------------------- the sketch classification */
+
+/**
+ * ROUND 64: WHICH EDGES OF A RING ARE A SKETCH — political ink that is a
+ * historian's estimate rather than a surveyed or derived line.
+ *
+ * The user's verdict this round answers: "modern borders are really great
+ * whereas old borders are really bad." What made modern great is that its lines
+ * come from data; what makes old bad is that a freehand chord PRETENDS to the
+ * same authority. The honesty device is per-edge: an edge of an `approx`
+ * keyframe is a SKETCH unless the pipeline can point at where it came from —
+ *
+ *   · the COAST is Natural Earth's line (already classified, already uninked);
+ *   · an edge on a resolved `follows` declaration is the named feature;
+ *   · an edge on a `countries` extent's boundary is a present-day border.
+ *
+ * Everything else is drawn DASHED by the frontier layer: the eye forgives a
+ * dashed approximation and convicts a confident wrong line. The test is the
+ * edge's midpoint against the same `DECLARED_TOL_DEG` grid the error report
+ * uses, so "solid" on the map and "declared" in the report are one judgement.
+ *
+ * The flags use the coast convention: flag `i` is the edge LEAVING vertex `i`,
+ * and the ring arrives closed (last vertex repeats the first).
+ */
+export function classifySketch(ring, coastalFlags, solidIndex, tol = DECLARED_TOL_DEG) {
+  const n = ring.length - 1
+  const flags = new Array(n).fill(0)
+  for (let i = 0; i < n; i++) {
+    if (coastalFlags[i]) continue
+    const j = i + 1
+    const mx = (ring[i][0] + ring[j][0]) / 2
+    const my = (ring[i][1] + ring[j][1]) / 2
+    if (!nearSegment(solidIndex, mx, my, tol)) flags[i] = 1
+  }
+  return flags
 }
 
 /**

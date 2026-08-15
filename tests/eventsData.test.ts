@@ -1161,6 +1161,29 @@ describe('items — drawings', () => {
     }
   })
 
+  /**
+   * `at` in one of its three forms, in the places each is allowed — the
+   * corpus-wide mirror of `check_drawing`'s round-64 rule (and of
+   * `isDrawingSpec`, which is structural and cannot see the context). The
+   * literal `'overview'` marks a layer of the saga's own summary map: it is
+   * only meaningful on an event that HAS steps to hide it in, and never on a
+   * STEP's drawing, whose ink exists only inside its step.
+   */
+  it('keeps every layer `at` a number, or "overview" only where steps exist', () => {
+    for (const e of drawn) {
+      for (const l of e.drawing!.layers) {
+        if (l.at === undefined) continue
+        if (l.at === 'overview')
+          expect(!!e.steps?.length, `${e.id}: at:"overview" on a stepless event`).toBe(true)
+        else expect(Number.isFinite(l.at), `${e.id}: at ${String(l.at)}`).toBe(true)
+      }
+      for (const s of e.steps ?? [])
+        for (const l of s.drawing?.layers ?? [])
+          expect(l.at, `${e.id}/${s.id}: a step's own ink cannot be overview-only`)
+            .not.toBe('overview')
+    }
+  })
+
   it('can be framed by the camera, and the plan fills the frame rather than a corner', () => {
     for (const e of drawn) {
       const target = focusTargetFor(byId.get(e.id)!)!
@@ -1375,12 +1398,24 @@ describe('items — stepped focus', () => {
   })
 
   it('partitions the dated layers: each lands in exactly one step, none is lost', () => {
+    // dated = a NUMERIC at. An at:'overview' layer (round 64) is deliberately
+    // in no step at all — the saga's summary map — so it is outside this count.
     for (const e of planned) {
-      const dated = e.drawing!.layers.filter((l) => l.at !== undefined)
+      const dated = e.drawing!.layers.filter((l) => typeof l.at === 'number')
       const placed = order(e).flatMap(
-        (s) => ink(e, s.id)!.layers.filter((l) => l.at !== undefined),
+        (s) => ink(e, s.id)!.layers.filter((l) => typeof l.at === 'number'),
       )
       expect(placed.length, `${e.id} loses or duplicates a dated layer`).toBe(dated.length)
+    }
+  })
+
+  /** …and the round-64 half of the same partition: an overview-only layer is in NO step. */
+  it('keeps overview-only layers out of every step, and on the overview whole', () => {
+    for (const e of planned) {
+      expect(ink(e), `${e.id}: the overview is not the drawing whole`).toBe(parsed(e).drawing)
+      for (const s of order(e))
+        for (const l of ink(e, s.id)!.layers)
+          expect(l.at, `${e.id}/${s.id} shows an overview-only layer`).not.toBe('overview')
     }
   })
 
@@ -1404,13 +1439,13 @@ describe('items — stepped focus', () => {
       const steps = order(e)
       const span = timeFrom(e.start, e.end)
       const dated = e.drawing!.layers.filter(
-        (l) => l.at !== undefined && (l.type === 'label' || l.type === 'marker'),
+        (l) => typeof l.at === 'number' && (l.type === 'label' || l.type === 'marker'),
       )
       expect(dated.length, `${e.id} has no step annotations`).toBeGreaterThanOrEqual(4)
       // …and each is in exactly one step's window, which is what "only in their
       // step" means when the reader steps through the chips
       for (const l of dated) {
-        const owner = stepAt(steps, l.at!, span)
+        const owner = stepAt(steps, l.at as number, span)
         expect(owner, `${e.id}: an annotation belongs to no step`).toBeDefined()
         const shown = steps.filter((s) => ink(e, s.id)!.layers.includes(l))
         expect(shown.map((s) => s.id), `${e.id}: annotation in ${shown.length} steps`).toEqual([
@@ -1445,8 +1480,8 @@ describe('items — stepped focus', () => {
       b.drawing!.layers.find((l) => (l as { label?: string }).label?.includes(label))!
     // the June border opens the campaign and the December line closes it — the
     // two layers the product named, at the two ends of the strip
-    expect(stepAt(steps, front('22 June').at!, span)!.id).toBe('border-battles')
-    expect(stepAt(steps, front('5 December').at!, span)!.id).toBe('counteroffensive')
+    expect(stepAt(steps, front('22 June').at as number, span)!.id).toBe('border-battles')
+    expect(stepAt(steps, front('5 December').at as number, span)!.id).toBe('counteroffensive')
     // and the three army-group axes belong to no single step
     for (const l of b.drawing!.layers.filter((l) => l.type === 'thrust'))
       expect(l.at, 'an axis of advance is tied to one step').toBeUndefined()

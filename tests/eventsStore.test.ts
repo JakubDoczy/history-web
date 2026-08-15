@@ -1311,6 +1311,9 @@ describe('every reachable state has a way out', () => {
       expect(events.focusStack.slice(-2), `descent from ${k}`).toEqual(['op', 'battle'])
       expect(events.selectedId, `descent from ${k}`).toBe('battle')
       expect(events.stepId, `descent from ${k}`).toBeUndefined()
+      // ROUND 64: the press asked to READ, so from every state the saga can be
+      // in, the opened child arrives with its article up — never as the pill.
+      expect(events.panelMinimised, `descent arrived minimised from ${k}`).toBe(false)
     }
     expect(previews, 'the entrance was never selected inside the saga').toBeGreaterThan(0)
     expect(descents, 'the descent was never taken inside the saga').toBeGreaterThan(0)
@@ -1946,6 +1949,57 @@ describe('stepped focus', () => {
       // it is a context now, not a step of the one above it
       expect(events.stepId).toBeUndefined()
       expect(events.focus?.itemId).toBe('battle')
+    })
+
+    /* ROUND 64 — "when you open an event from an operation step, you should
+       not show it minimised." The button says "Open event" and the press is a
+       request to READ: the article arrives up, over the map if it must, on
+       every screen and for every kind of child. `showOnMap` alone still folds
+       to the pill (`opensExpanded`) — the two presses mean different things. */
+    it('arrives with the article UP: the reader asked to read, not to look', () => {
+      const events = descend()
+      expect(events.panelMinimised, 'the opened child arrived as a pill').toBe(false)
+      expect(events.focusExpanded).toBe(true)
+    })
+
+    it('arrives up for a child that is NOT a saga, where showOnMap would fold', () => {
+      const events = useEventStore()
+      events.adopt([
+        op({ steps: [{ id: 'into', name: 'Battle', at: 0.45, child: 'plain' }] }),
+        part('plain', 'op'), // no steps: `opensExpanded` says pill for this one
+      ])
+      events.showOnMap('op')
+      events.selectStep('into')
+      events.openEntrance()
+      expect(events.focusStack).toEqual(['op', 'plain'])
+      expect(events.panelMinimised, 'a plain child opened from a step was minimised').toBe(false)
+      // …and the same child by "Show on map" still folds: the camera statement
+      events.focusBack()
+      events.showOnMap('plain')
+      expect(events.panelMinimised, 'Show on map stopped minimising').toBe(true)
+    })
+
+    it('arrives up on a phone too — the press covered the map on purpose', () => {
+      const events = useEventStore()
+      events.adopt(saga())
+      useViewStore().viewportWidthPx = 390
+      events.showOnMap('op')
+      events.selectStep('into')
+      expect(events.panelMinimised, 'a phone landing still waits on the pill').toBe(true)
+      events.openEntrance()
+      expect(events.focusStack).toEqual(['op', 'battle'])
+      expect(events.panelMinimised, 'the opened child arrived as a pill on a phone').toBe(false)
+    })
+
+    it('does not expand anything when the descent itself refuses', () => {
+      const events = useEventStore()
+      events.adopt([op({ steps: [{ id: 'into', name: 'Battle', at: 0.45, child: 'nowhere' }] })])
+      useViewStore().viewportWidthPx = 390
+      events.showOnMap('op')
+      events.selectStep('into')
+      events.openEntrance() // the child has not loaded: a no-op, wholly
+      expect(events.focusStack).toEqual(['op'])
+      expect(events.panelMinimised, 'a refused descent expanded the saga instead').toBe(true)
     })
 
     it('hands the rail over to the child’s own steps', () => {

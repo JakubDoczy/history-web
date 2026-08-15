@@ -344,7 +344,9 @@ export function resolveSelectionInk(
  *     reader steps back out. Rule 1 in lib/steps.ts.
  *  2. A STEP filters the parent's layers to the timeless ones plus the ones its
  *     window owns (`keepsLayer`), which is how the June front and the December
- *     front stop being on the map at the same time.
+ *     front stop being on the map at the same time. An `at: 'overview'` layer
+ *     (round 64) is dropped by the same predicate in every step — it is the
+ *     saga's summary map, and it exists only in case 1.
  *  3. …and then MERGES the step's own drawing over the top, if it has one. Order
  *     is the merge: the step's ink is appended, so it is drawn last and reads as
  *     an overlay on the filtered plan rather than as more of it. This is the

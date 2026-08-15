@@ -63,3 +63,55 @@ against the event's own text — no invented arrows.
 No animation of drawings (motion stays the routes' flow only). No freehand
 SVG import — a drawing stays data. No per-drawing style overrides beyond
 colour; the app's hand stays one hand.
+
+## Round 64 — overview-only layers: `at: 'overview'`
+
+The user wants saga OVERVIEWS: before the first step, a drawing that shows
+the operation whole — dated battle markers, sparse arrows — the summary map
+a chapter opens with. The schema could not say it. As built, a layer's `at`
+had two forms and both are wrong for this ink:
+
+- **no `at`** (timeless) is drawn on the overview AND in every step — an
+  overview marker crowd would clutter all eleven of them;
+- **`at: year|fraction`** (dated) is drawn on the overview and in the single
+  step whose window contains it — read from `resolveFocusInk`: the overview
+  branch returns the drawing WHOLE (rule 1, same object), so dated layers do
+  NOT vanish from the overview; what is impossible is ink that appears
+  *only* there.
+
+The smallest honest extension is a third value of the field that already
+answers "when is this layer true": **`at: 'overview'`** — drawn whenever no
+step is open (the saga overview, before the first step and after stepping
+back out), hidden inside every step.
+
+**Resolution stays in ONE place.** `keepsLayer` (lib/steps.ts) gains one
+clause — `'overview'` belongs to no step — and the overview side needs no
+rule at all, because rule 1 already returns the drawing whole. The full
+semantics, as pinned by tests/steps.test.ts:
+
+| layer \ view      | overview (no step open) | step S open                |
+| ----------------- | ----------------------- | -------------------------- |
+| timeless (no at)  | drawn                   | drawn                      |
+| dated (number)    | drawn                   | drawn iff S's window owns it |
+| `'overview'`      | drawn                   | hidden                     |
+
+Consequences that fall out rather than being built: selection ink outside
+focus mode (Part 2 above) resolves with no step, so a selected saga shows
+its summary map too; an entrance previews its child's OVERVIEW (sagas.md
+rule 15), so the child's summary map is exactly what the preview shows —
+unchanged, and now nameable. Label rendering is untouched: the filter runs
+before the renderer ever sees a layer.
+
+**Validated in the three places all drawing fields are.** Structurally
+(`isDrawingSpec`: a finite number or the one literal); contextually
+(`check_drawing` in build_event_chunks.py: `'overview'` only on an event
+that HAS steps — on a stepless event it could only mean "always", which is
+spelt by omitting `at` — and never on a STEP's own drawing, whose ink exists
+only inside its step); and over the shipped corpus (eventsData.test.ts,
+which also keeps the dated-partition test honest: "dated" now means a
+numeric `at`).
+
+Content is Part 3's agent's to write; this round shipped the schema, the
+resolver rule and the checks. Known limit, stated in a test: on a stepless
+event the runtime degenerates `'overview'` to timeless (the resolver never
+filters), and the build script is what keeps the corpus from relying on it.

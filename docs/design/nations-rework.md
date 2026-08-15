@@ -572,3 +572,130 @@ at most 5 m. The floor binds only below a 4.8 km frame and costs a pixel there.
    4° facet's texture is interpolated barycentrically. Correcting it would
    register the ink with the photograph and de-register it from the pins and the
    caps. It is a constant offset that neither slides nor swings.
+
+## Round 64: the old borders confess what they are
+
+The reader, after round 63: *"Modern borders are really great whereas old
+borders are really bad. Fix it."* They were right about why, too, without
+saying it: modern became great when its lines started coming from data
+(`follows`, `countries`, and validators that make error a number), and old is
+bad because a hand-guessed 1560 frontier wears the same confident solid pen as
+a surveyed 2024 one. An audit tour over the corpus's most-viewed historical
+eras (39 cameras, Rome 117 to Asia 1900 — /tmp/shots64/borders/audit/) put the
+defects in severity order: the Qing as an eighty-point blob whose western
+frontier cut a ruled diagonal through the Himalaya; the 1858 Raj covering
+Nepal and a degree of Tibet; the Scramble-for-Africa era drawn as five angular
+splotches; Safavid Persia as a hexagon; Kievan Rus as a pentagon adrift in
+Russia; every steppe empire a polygon pretending to be a boundary commission.
+
+**Three machines extended, one honesty device added.**
+
+**1. The sketch classification — the honesty device, and the single biggest
+fix.** An `approx` polity's inland frontier edge now ships as a SKETCH unless
+the pipeline can point at where the line came from: a resolved `follows`
+declaration (anyone's — a frontier rule hands the yielding side the keeper's
+line, so the index is corpus-wide), a `countries` extent boundary, or the
+coast (already its own class). Sketch edges are drawn DASHED in the polity's
+own pen (`SKETCH_DASH_DEG` = 0.62°/0.24°, longer than the contested dash so
+dispute and estimate read as different pens), cut in geometry like the round-60
+dashes, ground-fixed and fold-cut like everything else. The eye forgives a
+dashed approximation and convicts a confident wrong line; Safavid Persia is
+still a hexagon, but it now says so. 69 of 75 polities declare `approx: true`;
+the six that do not (usa, germany, japan — surveyed hand lines — and prc,
+india, ussr — wholly derived) are pinned by a test that forces the decision
+for every new polity. The classification is reconciled across shared edges
+(`reconcileSketch`: an edge ANY polity ships solid is solid for everyone who
+stores it — France's Alsace-Lorraine edge is Germany's surveyed line), gated
+by the same one-verdict machinery as the coastal split, and measured: **75.1%
+of the corpus's inland frontier ink is now marked as an estimate**, which is
+the honest number the audit's "old borders are bad" becomes. The error report
+prints the sketch share per polity beside the declared share.
+
+**2. Partial extents, and empires as dated unions.** A keyframe may now
+declare `countries` AND `rings`, unioned — the hand ring drawn overlapping
+into the declared union so the seam dissolves like the line between two
+republics. Converted, because at these dates the extents honestly ARE unions
+of present states whose borders the empires themselves drew:
+
+ · **qing@1800** — `CHN+MNG+TWN` plus a hand ring for Outer Manchuria up to
+   the Stanovoy line (Nerchinsk), which is Russian since 1858-60 and in no
+   Chinese unit. The Stanovoy run dashes; the rest is Natural Earth.
+ · **qing@1858** — the same union plus a Primorye ring whose edges are the
+   **Ussuri and the lower Amur, declared** (Aigun: the left bank goes, the
+   trans-Ussuri coast stays to 1899 — the round-59 limit, now with the real
+   rivers on it). **qing@1895** — `CHN+MNG` (Shimonoseki takes Taiwan).
+ · **britain@1900/1920/1947** — the empire as 27/31/20 NE units (the Raj is
+   IND+PAK+BGD+MMR+LKA+SIA — Nepal and Bhutan were never British and are no
+   longer painted; Africa is EGY+SDN+SSD, ZAF+LSO+SWZ+BWA, the Rhodesias,
+   KEN+UGA(+TZA at 1920), NGA+GHA+SLE+GMB, SOL; 1920 adds IRQ+JOR+ISR+PSE).
+ · **france@1900** — FRA+DZA+TUN, the eight FWA units, TCD+GAB+COG+CAF,
+   MDG, DJI, VNM+LAO+KHM. The Scramble is drawn with the partition lines the
+   colonies kept, which were France's own lines.
+
+One new frontier rule (britain yields to qing from 1858 — the hand Raj ring
+ran into NE's Tibet, and the survey wins) and one extension (ottoman yields to
+britain to 1922, for the mandates). `ISO_A3` grew 45 entries. `clipToLand`
+gained a per-polygon bbox prefilter — a 275-polygon empire against every land
+piece was 195 s and is now under 4 (identical output).
+
+**3. More rivers, more declarations.** Vendored: **Ural, Irtysh (+`Ertis`),
+Kuban** (Terek and Saale are not in NE 10m at any spelling — checked). The
+file is 55 → 58 rivers, 313 → 331 kB, build-time only. New declarations, each
+replacing ruled chords on a frontier a reader actually looks at:
+
+ · **achaemenid@-500** — the **Jaxartes** (Syr Darya) from the Aral to
+   Cyropolis: Cyrus's frontier, 11.5% of the empire's inland ink declared.
+ · **sassanid@350** — the **Oxus** (Amu Darya), the Iran/Turan line.
+ · **franks@800** — the **Elbe** from the mouth to the Saale confluence
+   (the limes Sorabicus continues up the Saale, which stays freehand-dashed).
+ · **mughal@1560** — the **Indus** from Sukkur to Attock, Akbar's western
+   limit before Sindh and Kandahar.
+ · **russia@1800** — the **Irtysh Line** (Ust-Kamenogorsk to Omsk) and the
+   **Orenburg Line** (the Ural river from Orsk to the Caspian): the actual
+   fortress lines that were the border with the steppe.
+ · **qing@1858** — the Ussuri and the Amur, above.
+
+The Yellow River was considered for Han/Ming and deliberately NOT declared:
+the wall ran north of the Ordos loop, so "the river is the frontier" would
+have traded one guess for a more confident one. Those frontiers dash instead.
+
+**What it cost.** Authoring file 258 → 232 kB (three empires became lists of
+codes). Shipped corpus 1 287 → 1 756 kB, 130 628 → 180 223 vertices — the
+price of Canada's real archipelago and Africa's real partition. Worst year on
+the globe moves from 1950 (23 864 cap vertices) to 1922: 38 507 cap vertices,
+8 407 frontier segments, 555 pieces (486 at 1900) — and the polygon layer
+draws one call per piece, so the 1900-1947 cameras sit near 490 draw calls
+against round 63's ~310. SwiftShader renders it without complaint; if a real device
+objects, the lever is pruning sub-pixel islets from `countries` extents, not
+un-deriving the borders. 2024 is unchanged (154 pieces, 162 calls).
+
+**Honest limits, written down rather than shipped quietly.**
+
+ · **The sketch dash is invisible at world view** — 0.62° of ground is two
+   pixels there, and the dashes read as a slightly lighter solid line. They
+   resolve exactly where a reader starts judging a border: about the 500 km
+   frame and below.
+ · **Two approx neighbours dash independently**, and where a shared frontier
+   survives between two estimates the two patterns overlap out of phase, a
+   denser broken line in two inks. Rare after the data pass (most shared
+   frontiers are declared or reconciled solid); accepted.
+ · **Nepal and Bhutan are holes in the Raj, not polities** — right ground,
+   but nothing names them, as nothing names Ethiopia or Siam. The corpus
+   still draws head-line powers only.
+ · **France at 1885 keeps its hand rings**: converting it to units would
+   have claimed the deep Sahara fifteen years early. The 1900 union claims
+   Chad and Niger in the year of Kousséri, which is claim rather than
+   control — the same standard the hand blob asserted, with better lines.
+ · **russia@1900 stays freehand** (and dashes): the Russian Empire is the
+   fifteen republics plus Finland plus Congress Poland minus Kaliningrad,
+   and the pluses and minuses are partial units the format cannot yet say.
+   The next `countries` grammar extension (minus-lists, or admin-1 arcs for
+   partial units) should start there.
+ · **Admin-1 arcs were not built this round.** The audit's convictions were
+   answerable with rivers, unions and honesty; province-line frontiers
+   (French departments, Chinese provinces) stay a lever for the round that
+   needs one, with NE admin-1 name stability still to be verified.
+ · **Qing 1895-1899 loses Primorye** to the round-59 limit the other way:
+   the 1895 keyframe carries no Primorye ring, so the coast north of Korea
+   is nobody's for five years. A 1900 boundary keyframe would fix it; a
+   declaration cannot.

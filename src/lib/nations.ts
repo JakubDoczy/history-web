@@ -97,6 +97,17 @@ export interface NationKeyframe {
   polys: EncodedRing[][]
   /** Per piece, per ring, the coastal runs. Absent means nothing here is coast. */
   coast?: CoastRuns[][]
+  /**
+   * Per piece, per ring, the SKETCH runs — inland edges that are a historian's
+   * estimate rather than a derived or surveyed line (round 64). Same run-length
+   * coding as `coast`, starting with a non-sketch run. A sketch edge is inked
+   * DASHED: the eye forgives a dashed approximation and convicts a confident
+   * wrong line, which is the difference the reader reported between the modern
+   * map and the historical one. Built by `classifySketch` in
+   * scripts/follows-lib.mjs — an `approx` keyframe's inland edge is a sketch
+   * unless it lies on a `follows` declaration or a `countries` extent boundary.
+   */
+  approx?: CoastRuns[][]
 }
 
 export interface Nation {
@@ -166,6 +177,8 @@ export interface DecodedKeyframe {
   pieces: Piece[]
   /** Per piece, per ring: one flag per EDGE. See CoastRuns. */
   coastal: Uint8Array[][]
+  /** Per piece, per ring: one flag per EDGE — the sketch runs. See `approx`. */
+  sketch: Uint8Array[][]
 }
 
 const decodeCache = new WeakMap<NationKeyframe, DecodedKeyframe>()
@@ -177,7 +190,10 @@ export function decodeKeyframe(k: NationKeyframe): DecodedKeyframe {
     const coastal = pieces.map((rings, p) =>
       rings.map((ring, r) => decodeRuns(k.coast?.[p]?.[r] ?? [], ring.length)),
     )
-    decodeCache.set(k, (d = { pieces, coastal }))
+    const sketch = pieces.map((rings, p) =>
+      rings.map((ring, r) => decodeRuns(k.approx?.[p]?.[r] ?? [], ring.length)),
+    )
+    decodeCache.set(k, (d = { pieces, coastal, sketch }))
   }
   return d
 }
@@ -302,6 +318,15 @@ export interface RingEntry {
    */
   frontier: Ring[]
   /**
+   * The inland polylines that are a SKETCH — a historian's estimate with no
+   * feature or survey behind it (round 64; see `NationKeyframe.approx`). Drawn
+   * by the frontier layer as a DASHED line in the polity's own pen, so a
+   * guessed frontier stops pretending to be a surveyed one. Disjoint from
+   * `frontier`, which is now only the solid ink: the derived rivers, the
+   * modern-line treaties and the borders of non-`approx` polities.
+   */
+  sketch: Ring[]
+  /**
    * …and the other half of the same boundary: the polylines that ARE the coast.
    *
    * Drawn only where there is no drawn coastline to double (the photograph), and
@@ -396,12 +421,12 @@ const ringCache = new Map<string, BorderRing[]>()
  * that "the ink layer draws the coast instead of the frontier" cannot quietly
  * become "the ink layer draws a slightly different set of edges".
  */
-export function edgeRuns(ring: Ring, coastal: Uint8Array, want: 0 | 1): Ring[] {
+export function edgeRuns(ring: Ring, kinds: Uint8Array, want: number): Ring[] {
   const n = ring.length
   if (!n) return []
   let first = -1
   for (let i = 0; i < n; i++)
-    if ((coastal[i] ? 1 : 0) !== want) {
+    if ((kinds[i] ?? 0) !== want) {
       first = i
       break
     }
@@ -410,7 +435,7 @@ export function edgeRuns(ring: Ring, coastal: Uint8Array, want: 0 | 1): Ring[] {
   let cur: Ring = []
   for (let s = 1; s <= n; s++) {
     const i = (first + s) % n
-    if ((coastal[i] ? 1 : 0) !== want) {
+    if ((kinds[i] ?? 0) !== want) {
       // The run already ends at ring[i]: the previous kept edge pushed its own
       // far end, which is this edge's near end. Pushing it again duplicates the
       // last vertex and draws a zero-length segment.
@@ -427,7 +452,19 @@ export function edgeRuns(ring: Ring, coastal: Uint8Array, want: 0 | 1): Ring[] {
   return out.filter((r) => r.length > 1)
 }
 
-/** The inland runs of one ring — the political ink. */
+/**
+ * A ring's edges, sorted into the three kinds of line a boundary can be:
+ * 0 the SOLID frontier (derived or surveyed political ink), 1 the COAST (the
+ * map's own line), 2 the SKETCH (an estimate, inked dashed). One array, so the
+ * three run extractions cannot disagree about an edge.
+ */
+export const edgeKinds = (coastal: Uint8Array, sketch: Uint8Array): Uint8Array => {
+  const out = new Uint8Array(coastal.length)
+  for (let i = 0; i < coastal.length; i++) out[i] = coastal[i] ? 1 : sketch[i] ? 2 : 0
+  return out
+}
+
+/** The inland runs of one ring — the political ink (solid and sketch alike). */
 export const frontierRuns = (ring: Ring, coastal: Uint8Array): Ring[] => edgeRuns(ring, coastal, 0)
 
 /** …and its complement, the shore. Drawn only where nothing else draws it. */
@@ -441,7 +478,14 @@ export function borderRings(n: Nation, t: Year): BorderRing[] {
   let entries = ringCache.get(key)
   if (!entries) {
     const label = nationLabel(n)
-    const { pieces, coastal } = decodeKeyframe(k)
+    const { pieces, coastal, sketch } = decodeKeyframe(k)
+    // One kinds array per ring, so frontier, sketch and coast are one
+    // judgement of each edge and cannot overlap or leave a gap.
+    const kinds = pieces.map((rings, p) => rings.map((_, i) => edgeKinds(coastal[p][i], sketch[p][i])))
+    const runsOf = (p: number, rings: Ring[], want: number) =>
+      rings
+        .flatMap((r, i) => edgeRuns(r, kinds[p][i], want))
+        .map((run) => densifyPath(run, BORDER_SEGMENT_DEG) as Ring)
     entries = pieces.map((rings, p) => ({
       nation: n,
       kind: 'full' as const,
@@ -450,12 +494,9 @@ export function borderRings(n: Nation, t: Year): BorderRing[] {
       // onto great circles on the way out — see BORDER_SEGMENT_DEG.
       coordinates: rings.map((r) => densifyPath([...r, r[0]], BORDER_SEGMENT_DEG) as Ring),
       label,
-      frontier: rings
-        .flatMap((r, i) => frontierRuns(r, coastal[p][i]))
-        .map((run) => densifyPath(run, BORDER_SEGMENT_DEG) as Ring),
-      coast: rings
-        .flatMap((r, i) => coastRuns(r, coastal[p][i]))
-        .map((run) => densifyPath(run, BORDER_SEGMENT_DEG) as Ring),
+      frontier: runsOf(p, rings, 0),
+      sketch: runsOf(p, rings, 2),
+      coast: runsOf(p, rings, 1),
     }))
     ringCache.set(key, entries)
   }

@@ -309,7 +309,7 @@ def validate_paths(e: dict) -> None:
 MARKER_STYLES = ('cross', 'star', 'dot', 'arrow')
 
 
-def check_drawing(e: dict, what: str, d) -> None:
+def check_drawing(e: dict, what: str, d, overview_ok: bool = False) -> None:
     """One drawing: `layers`, five authorable kinds, all [lng, lat].
 
     frontline, thrust, zone, marker, label. (`route` is the sixth kind the
@@ -323,6 +323,13 @@ def check_drawing(e: dict, what: str, d) -> None:
     `what` names where the drawing came from, because there are now two places
     one can be written: an event's own `drawing`, and a STEP's (see
     validate_steps and src/lib/steps.ts, rule 4).
+
+    `overview_ok` says whether a layer here may carry `at: 'overview'` — the
+    round-64 literal meaning "drawn only while no step is open" (see
+    `DrawingCommon.at` in src/lib/drawing.ts). Only an event that HAS steps may
+    say it: on a stepless event it could only mean "always", which is spelt by
+    omitting `at`, and on a step's own drawing it is a contradiction — that ink
+    exists only inside its step.
     """
     if not isinstance(d, dict) or not isinstance(d.get('layers'), list) or not d['layers']:
         sys.exit(f'{e["id"]}: {what} must be an object with a non-empty "layers" list')
@@ -333,8 +340,18 @@ def check_drawing(e: dict, what: str, d) -> None:
         t = layer.get('type')
         if 'color' in layer and not (isinstance(layer['color'], str) and layer['color']):
             sys.exit(f'{e["id"]}: {where} has a non-string color')
-        if 'at' in layer and not isinstance(layer['at'], (int, float)):
-            sys.exit(f'{e["id"]}: {where} has a non-numeric "at"')
+        if 'at' in layer:
+            at = layer['at']
+            if at == 'overview':
+                if not overview_ok:
+                    sys.exit(
+                        f'{e["id"]}: {where} says at:"overview", which only an event '
+                        f'with steps may say of its own drawing — a stepless event '
+                        f'spells "always" by omitting "at", and a step\'s own ink '
+                        f'is never on an overview'
+                    )
+            elif not isinstance(at, (int, float)) or isinstance(at, bool):
+                sys.exit(f'{e["id"]}: {where} has a non-numeric "at" (or the literal "overview")')
         if t == 'frontline':
             paths = layer.get('paths')
             if not isinstance(paths, list) or not paths:
@@ -387,7 +404,8 @@ def validate_drawing(e: dict) -> None:
     if d is None:
         return
     event_only(e, 'a drawing')
-    check_drawing(e, 'drawing', d)
+    # at:'overview' is only meaningful where there are steps to hide it in
+    check_drawing(e, 'drawing', d, overview_ok='steps' in e)
 
 
 def validate_points(e: dict) -> None:

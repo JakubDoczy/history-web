@@ -179,9 +179,16 @@ describe('nations.json (authoring)', () => {
    * do not — `modernInkAgreement`, which fails the build if the fill's edge is
    * not a line the map draws.
    */
-  it.each(nations.map((n) => [n.id, n] as const))('%s declares each keyframe exactly one way', (_id, n) => {
+  /**
+   * ROUND 64 loosened this from "exactly one way" to "at least one way": a
+   * PARTIAL EXTENT declares `countries` AND `rings`, and the build unions the
+   * two — the Qing at 1800 are China, Mongolia and Taiwan plus a hand ring for
+   * Outer Manchuria, which no present state keeps. The hand ring obeys every
+   * authoring rule below, exactly as if it were the whole extent.
+   */
+  it.each(nations.map((n) => [n.id, n] as const))('%s declares each keyframe at least one way', (_id, n) => {
     for (const k of n.keyframes) {
-      expect(Boolean(k.rings) !== Boolean(k.countries), `${n.id}@${k.time}`).toBe(true)
+      expect(Boolean(k.rings) || Boolean(k.countries), `${n.id}@${k.time}`).toBe(true)
       if (k.countries) expect(k.countries.length).toBeGreaterThan(0)
     }
   })
@@ -219,6 +226,23 @@ describe('nations.json (authoring)', () => {
   it.each(nations.map((n) => [n.id, n] as const))('%s has a six-digit colour', (_id, n) => {
     // the polygon layer builds fills as `color + '22'`, which only parses from six
     expect(n.color).toMatch(/^#[0-9a-f]{6}$/i)
+  })
+
+  /**
+   * ROUND 64: the `approx` flag is the authoring half of the sketch pipeline —
+   * a polity (or keyframe) whose freehand inland frontier is a historian's
+   * estimate says so, and the build dashes what it cannot back with a feature.
+   * The polities that do NOT declare it are exactly the ones whose hand lines
+   * are surveyed (usa, germany, japan) or wholly derived (prc, india, ussr):
+   * a new polity added without a decision here should fail this test and force
+   * the decision to be made.
+   */
+  it('declares approx on every polity whose freehand frontier is an estimate', () => {
+    const surveyed = new Set(['usa', 'germany', 'japan', 'prc', 'india', 'ussr'])
+    for (const n of nations as unknown as (Authored & { approx?: boolean })[]) {
+      if ('approx' in n) expect(typeof n.approx, n.id).toBe('boolean')
+      expect(Boolean(n.approx), n.id).toBe(!surveyed.has(n.id))
+    }
   })
 
   /**
@@ -428,6 +452,36 @@ describe('borders at a date', () => {
     ['ussr', 1980, 'Warsaw', 21.01, 52.23, false], // a satellite is not a republic
     ['ussr', 1980, 'Kabul', 69.2, 34.53, false],
     ['ussr', 1980, 'Helsinki', 24.94, 60.17, false],
+
+    // ROUND 64, the historical extents that are honestly unions of present
+    // states at a dated peak: the Qing from 1800 (plus a hand ring for Outer
+    // Manchuria, which is Russian today), the British Empire at 1900/1920/1947,
+    // the French at 1900. The Raj no longer covers Nepal, the Qing's western
+    // frontier is Xinjiang's real line, and the Scramble for Africa is drawn
+    // with the partition lines the colonies kept.
+    ['qing', 1850, 'Lhasa', 91.1, 29.65, true],
+    ['qing', 1850, 'Kashgar', 75.99, 39.47, true],
+    ['qing', 1850, 'Urga', 106.9, 47.9, true],
+    ['qing', 1850, 'Blagoveshchensk, north of the Amur', 127.5, 50.6, true], // Qing until Aigun, 1858
+    ['russia', 1850, 'Blagoveshchensk, north of the Amur', 127.5, 50.6, false],
+    ['russia', 1870, 'Blagoveshchensk, north of the Amur', 127.5, 50.6, true],
+    ['qing', 1890, 'Taipei', 121.52, 25.04, true], // Shimonoseki, 1895
+    ['qing', 1900, 'Taipei', 121.52, 25.04, false],
+    ['qing', 1850, 'Tashkent', 69.24, 41.3, false], // the steppe was never a province
+    ['britain', 1905, 'Nairobi', 36.82, -1.29, true],
+    ['britain', 1905, 'Kano', 8.52, 12.0, true],
+    ['britain', 1905, 'Khartoum', 32.53, 15.6, true],
+    ['britain', 1905, 'Kathmandu', 85.32, 27.71, false], // Nepal was never the Raj
+    ['britain', 1905, 'Thimphu', 89.64, 27.47, false],
+    ['britain', 1905, 'Colombo', 79.86, 6.93, true],
+    ['britain', 1905, 'Addis Ababa', 38.74, 9.03, false], // Adwa held
+    ['britain', 1905, 'Kinshasa', 15.3, -4.32, false],
+    ['france', 1905, 'Timbuktu', -3.0, 16.77, true],
+    ['france', 1905, 'Dakar', -17.45, 14.7, true],
+    ['france', 1905, 'Hanoi', 105.85, 21.03, true],
+    ['france', 1905, 'Antananarivo', 47.51, -18.88, true],
+    ['france', 1905, 'Casablanca', -7.6, 33.57, false], // Morocco is 1912, and never drawn
+    ['france', 1905, 'Monrovia', -10.8, 6.3, false],
   ]
 
   it.each(cases)('%s at %i: %s', (id, year, _place, lng, lat, inside) => {
@@ -483,6 +537,42 @@ describe('borderRings', () => {
   it('draws nothing outside the polity existence', () => {
     expect(borderRings(rome, -900)).toEqual([])
     expect(borderRings(rome, 900)).toEqual([])
+  })
+
+  /**
+   * ROUND 64: the SKETCH runs. An `approx` keyframe's estimated inland edges
+   * ship as `approx` run-length flags beside the coastal ones, and the entry
+   * splits its boundary three ways — solid frontier, sketch (drawn dashed),
+   * coast — from ONE per-edge classification, so the three cannot overlap or
+   * leave an edge unaccounted for.
+   */
+  it('splits the boundary into solid frontier, sketch and coast without overlap', () => {
+    const ring = square(4)
+    const n: Nation = {
+      id: 'sketchy',
+      name: 'Sketchy',
+      color: '#4f8a86',
+      from: 0,
+      to: 100,
+      visibleFrom: 0,
+      visibleTo: 100,
+      keyframes: [
+        {
+          time: 0,
+          polys: [[encodeRing(ring)]],
+          coast: [[[2, 1]]], // edge 2 is coast
+          approx: [[[1, 1]]], // edge 1 is sketch
+        },
+      ],
+    }
+    const [entry] = borderRings(n, 50)
+    expect(entry.frontier).toHaveLength(1) // edges 3+0 wrap into one run
+    expect(entry.sketch).toHaveLength(1)
+    expect(entry.coast).toHaveLength(1)
+    // Every stored edge is in exactly one of the three sets. The runs are
+    // densified, so compare by which stored corner each run starts near.
+    expect(entry.sketch[0][0]).toEqual([4, 0]) // edge 1 leaves vertex 1
+    expect(entry.coast[0][0]).toEqual([4, 4]) // edge 2 leaves vertex 2
   })
 })
 

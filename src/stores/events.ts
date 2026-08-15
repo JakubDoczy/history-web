@@ -247,8 +247,10 @@ export const useEventStore = defineStore('events', {
      * they are the whole feature:
      *
      *  · the panel minimises to a pill (EventPanel.vue), so the map is not
-     *    behind an article — with one exception, a saga on a desktop,
-     *    which lands on its overview instead (see `opensExpanded`);
+     *    behind an article — with two exceptions: a saga on a desktop,
+     *    which lands on its overview instead (see `opensExpanded`), and a
+     *    child opened from an entrance's "Open event", which the reader asked
+     *    to READ (see `openEntrance`, round 64);
      *  · the item's `drawing` renders (GlobeView.vue) — the one place it does;
      *  · its child events get their pins (see `visible`), so a saga shows
      *    its battles;
@@ -1048,10 +1050,30 @@ export const useEventStore = defineStore('events', {
      * A child that has not loaded is a no-op, for the reason the unknown step id
      * above is: chunks stream, and the panel hides the button when there is
      * nothing behind it.
+     *
+     * AND THE ARTICLE ARRIVES UP — round 64, the reader's words: *"when you open
+     * an event from an operation step, you should not show it minimised."*
+     * `showOnMap` folds the panel to the pill for everything that is not itself
+     * a saga beside a desktop map (`opensExpanded` in `enterFocus`), which is
+     * right for the action it is: "Show on map" is a statement about the CAMERA.
+     * This press is the other statement. Its label is "Open event", the preview
+     * under it was a summary offered so the reader could decide whether to READ
+     * the whole thing, and answering yes with a two-word bar over the map made
+     * the reader ask twice for what they had already asked for once. So the one
+     * line `enterFocus` decided is overridden here, in the action whose meaning
+     * differs — on a phone too: the sheet covers the map, but covering the map
+     * with the article is precisely what "Open event" requests, and the
+     * minimise chevron is on it. Everything else about the descent (the stack,
+     * the way back, "Show on map" elsewhere) is untouched.
      */
     openEntrance() {
       const child = this.activeStep?.child
-      if (child && index.byId.get(child)) this.showOnMap(child)
+      if (!child || !index.byId.get(child)) return
+      this.showOnMap(child)
+      // Only if the descent actually happened: `showOnMap` still refuses an
+      // item with nowhere to go, and expanding the saga's own panel on a press
+      // that promised its child would be answering with the wrong article.
+      if (topFocus(this.focusStack) === child) this.focusExpanded = true
     },
     /**
      * Ask the globe to look at a coordinate (a person's birth or death place),

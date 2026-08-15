@@ -252,6 +252,51 @@ describe('resolving a drawing to one step', () => {
     expect(layerInStep(label('x'), 'june', steps, y1941)).toBe(true)
   })
 
+  /* --- at: 'overview' — the saga's own summary map (round 64) ------------- */
+
+  const over = (text: string): DrawingSpec => ({
+    type: 'label',
+    pos: [30, 50],
+    text,
+    at: 'overview',
+  })
+
+  it('hides an overview-only layer in EVERY step', () => {
+    const withOver = stepped({ drawing: { layers: [...drawing.layers, over('The whole war')] } })
+    for (const s of steps)
+      expect(texts(inkFor(withOver, s.id)), s.id).not.toContain('The whole war')
+    // …while the timeless and the step's own dated layers are untouched by it
+    expect(texts(inkFor(withOver, 'kiev'))).toEqual(['Army Group Centre', 'Kiev pocket'])
+  })
+
+  it('shows it on the overview, which stays the whole drawing and the same object', () => {
+    const layers = [...drawing.layers, over('The whole war')]
+    const d: Drawing = { layers }
+    const withOver = stepped({ drawing: d })
+    expect(inkFor(withOver)).toBe(withOver.drawing) // rule 1, identity preserved
+    expect(texts(inkFor(withOver))).toContain('The whole war')
+  })
+
+  it('answers per layer too: overview-only is in no step', () => {
+    for (const s of steps) expect(layerInStep(over('x'), s.id, steps, y1941)).toBe(false)
+  })
+
+  it('leaves a step empty rather than timeless when only overview ink remains', () => {
+    const only = stepped({ drawing: { layers: [over('The whole war')] } })
+    expect(inkFor(only, 'kiev'), 'an overview marker crowd leaked into a step').toBeUndefined()
+    expect(texts(inkFor(only))).toEqual(['The whole war'])
+  })
+
+  it('degenerates to timeless on an event with no steps (and the build forbids it there)', () => {
+    // resolveFocusInk returns the drawing whole for a stepless event whatever
+    // the layers say — the honest statement of the code as it stands. The
+    // build script rejects at:'overview' on a stepless event, so the corpus
+    // can never rely on this; the assertion is here so a change to either half
+    // is a decision rather than an accident.
+    const d: Drawing = { layers: [over('x')] }
+    expect(inkFor(stepped({ drawing: d, steps: undefined }), 'kiev')).toBe(d)
+  })
+
   it('is undefined rather than an empty drawing when a step holds nothing', () => {
     const only = stepped({ drawing: { layers: [label('June front', 0)] } })
     expect(inkFor(only, 'kiev')).toBeUndefined()

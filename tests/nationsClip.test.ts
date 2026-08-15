@@ -709,3 +709,110 @@ describe('modernInkAgreement', () => {
     }
   })
 })
+
+/**
+ * ROUND 64 — THE SKETCH CLASSIFICATION. "Modern borders are really great
+ * whereas old borders are really bad": what made modern great is that its
+ * lines come from data, and what made old bad is that a freehand guess wore
+ * the same solid pen. An `approx` keyframe's inland edge now ships as a SKETCH
+ * unless it lies on a `follows` declaration or a `countries` extent boundary
+ * (`classifySketch` in follows-lib.mjs), and the frontier layer draws a sketch
+ * dashed. These are the invariants that keep the classification honest.
+ */
+// @ts-expect-error - .mjs build script, no declarations
+import * as follows from '../scripts/follows-lib.mjs'
+
+describe('the sketch classification', () => {
+  // A closed square with one declared (solid) edge along its top.
+  const ring: number[][] = [
+    [0, 0],
+    [0, 2],
+    [2, 2],
+    [2, 0],
+    [0, 0],
+  ]
+  const coastal = [0, 0, 0, 0]
+  const declared = follows.segmentIndex([[[0, 2], [2, 2]]])
+
+  it('dashes what it cannot back, and leaves the declared edge solid', () => {
+    const flags = follows.classifySketch(ring, coastal, declared)
+    expect(flags).toEqual([1, 0, 1, 1]) // edge 1 lies on the declaration
+  })
+
+  it('never marks a coastal edge: the coast is the map’s line, not ink', () => {
+    const flags = follows.classifySketch(ring, [1, 0, 0, 1], declared)
+    expect(flags).toEqual([0, 0, 1, 0]) // the coastal guesses at 0 and 3 stay unmarked
+  })
+
+  it('ships sketch runs that fit their rings, and only on inland edges', () => {
+    for (const n of nationsCorpus) {
+      for (const k of n.keyframes) {
+        const { pieces, coastal, sketch } = decodeKeyframe(k)
+        for (const [p, rings] of pieces.entries())
+          for (const [r, ring] of rings.entries()) {
+            expect(sketch[p][r].length).toBe(ring.length)
+            for (let i = 0; i < ring.length; i++)
+              if (sketch[p][r][i]) expect(coastal[p][r][i], `${n.id}@${k.time}`).toBe(0)
+          }
+      }
+    }
+  })
+
+  /**
+   * ONE VERDICT PER SHARED EDGE, the round's own version of the shared-ink
+   * gate: a frontier stored identically by two polities may not be dashed by
+   * one and solid by the other, or the dash pattern draws over a solid line.
+   * `reconcileSketch` in clip-nations.mjs makes confidence win at build time;
+   * this asserts the shipped corpus stayed reconciled.
+   */
+  it('ships no shared edge dashed by one side and solid by the other', () => {
+    const disagreements = clip.findInkDisagreements(nationsCorpus, (n: Nation, kf: Nation['keyframes'][number]) => {
+      const { pieces, coastal, sketch } = decodeKeyframe(kf)
+      return pieces.flatMap((rings, p) =>
+        rings.map((ring, r) => {
+          const kinds = new Uint8Array(ring.length)
+          for (let i = 0; i < ring.length; i++) kinds[i] = coastal[p][r][i] ? 1 : sketch[p][r][i] ? 2 : 0
+          return { ring, coastal: kinds }
+        }),
+      )
+    })
+    expect(disagreements).toEqual([])
+  })
+
+  /**
+   * The corpus-level shape of the honesty device. Most pre-modern inland ink
+   * IS an estimate — that is the whole confession — while the polities whose
+   * lines have data behind them stay solid: the two Korean rivers, the modern
+   * unions, the surveyed hand lines.
+   */
+  it('marks most historical inland ink as sketch, and none of the derived ink', () => {
+    const KM = (a: [number, number], b: [number, number]) => follows.distKm(a, b)
+    const share = (id: string) => {
+      const n = nationsCorpus.find((x) => x.id === id)!
+      let inland = 0
+      let sketchKm = 0
+      for (const k of n.keyframes) {
+        const { pieces, coastal, sketch } = decodeKeyframe(k)
+        pieces.forEach((rings, p) =>
+          rings.forEach((ring, r) => {
+            for (let i = 0; i < ring.length; i++) {
+              if (coastal[p][r][i]) continue
+              const km = KM(ring[i], ring[(i + 1) % ring.length])
+              inland += km
+              if (sketch[p][r][i]) sketchKm += km
+            }
+          }),
+        )
+      }
+      return inland > 0 ? sketchKm / inland : 0
+    }
+    for (const surveyed of ['usa', 'germany', 'japan', 'prc', 'india', 'ussr'])
+      expect(share(surveyed), surveyed).toBe(0)
+    expect(share('koreanempire')).toBe(0) // both rivers declared: nothing left to dash
+    for (const estimated of ['xiongnu', 'kievanrus', 'mongol', 'safavid', 'hre'])
+      expect(share(estimated), estimated).toBeGreaterThan(0.9)
+    // Rome's rivers are declared and the rest is honest dashes.
+    expect(share('rome')).toBeGreaterThan(0.5)
+    expect(share('rome')).toBeLessThan(0.95)
+  })
+})

@@ -134,6 +134,8 @@ export function modernBorderEntries(t: Year): BorderRing[] {
         coordinates: paths,
         label: nation.name,
         frontier: paths,
+        // Surveyed lines have no estimated segment: nothing here dashes.
+        sketch: [],
         coast: paths,
       },
     ]

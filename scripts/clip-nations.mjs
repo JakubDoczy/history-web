@@ -66,7 +66,9 @@ import {
   MODERN_TO,
 } from './modern-borders-lib.mjs'
 import {
+  classifySketch,
   countryExtent,
+  distKm,
   countryIndex,
   DECLARED_TOL_DEG,
   declaredShare,
@@ -252,23 +254,68 @@ const ringsOf = (nation, kf) => followed.get(key(nation.id, kf.time))?.rings ?? 
 const zoneRingsOf = (zone) => followed.get(key(zone.id, 'zone'))?.rings ?? zone.rings
 
 /**
- * THE EXTENT the pipeline clips: a declared set of modern states, or the
- * authored rings unioned the way they always were.
+ * ROUND 64: WHAT COUNTS AS A LINE WITH SOMETHING BEHIND IT — the index the
+ * sketch classification tests against (`classifySketch` in follows-lib.mjs).
+ *
+ * Three sources, and they are exactly the three ways this pipeline can point at
+ * where an edge came from: every resolved `follows` path in the corpus (the
+ * rivers and modern-line treaties, ALL of them, not only this keyframe's own —
+ * a frontier rule hands the yielding polity the keeper's line, and the Yalu is
+ * the Yalu whichever side's declaration derived it), and every `countries`
+ * extent's boundary (a present-day border). The coast is the third source and
+ * is already its own classification.
+ *
+ * An `approx` keyframe's inland edge that lies on none of these ships as a
+ * SKETCH and is inked dashed. Built lazily because `--check` reads the shipped
+ * runs instead of re-deriving them.
+ */
+let solidCache
+const solidIndex = () => {
+  if (!solidCache) {
+    const lines = []
+    for (const res of followed.values()) for (const s of res.segments) lines.push(s.path)
+    for (const mp of declaredExtents.values()) for (const poly of mp) for (const ring of poly) lines.push(ring)
+    solidCache = segmentIndex(lines)
+  }
+  return solidCache
+}
+
+/** The authoring flag: a keyframe inherits its polity's `approx`, and may override it. */
+const isSketchy = (nation, kf) => Boolean(kf.approx ?? nation.approx ?? false)
+
+/**
+ * THE EXTENT the pipeline clips: a declared set of modern states, the authored
+ * rings unioned the way they always were — or, from round 64, BOTH.
  *
  * `multiPolygonOf` treats every authored ring as its own polygon, which is
  * right for a hand-drawn extent (a hole is written as a hole in one ring, and
  * the corpus has exactly one) and wrong for a topology's geometry, where a
  * piece is an outer ring followed by its holes. So a declared extent bypasses
  * it and arrives as a MultiPolygon already.
+ *
+ * A PARTIAL EXTENT (round 64) is a keyframe with `countries` AND `rings`: the
+ * union of the two. It exists for the polity whose ground is MOSTLY a union of
+ * present states plus a piece no state keeps today — the Qing at 1800 are
+ * China, Mongolia and Taiwan plus Outer Manchuria, which is Russian since
+ * 1858-60 and therefore in no Chinese unit. The hand ring is drawn OVERLAPPING
+ * into the declared union, so the union dissolves the seam exactly as it
+ * dissolves the line between two republics; `follows` declarations on the ring
+ * still resolve first, so the ring's own edges can be a river rather than a
+ * guess where the record has one.
  */
-const extentOf = (nation, kf) =>
-  declaredExtents.get(key(nation.id, kf.time)) ?? multiPolygonOf(ringsOf(nation, kf))
+const extentOf = (nation, kf) => {
+  const declared = declaredExtents.get(key(nation.id, kf.time))
+  if (!declared) return multiPolygonOf(ringsOf(nation, kf))
+  if (!kf.rings?.length) return declared
+  return robustOp('union', declared, multiPolygonOf(ringsOf(nation, kf)), `${nation.id} countries+rings`)
+}
 
 /** How many vertices a keyframe costs the author — or Natural Earth. */
 const extentVerts = (nation, kf) => {
   const declared = declaredExtents.get(key(nation.id, kf.time))
-  if (declared) return declared.reduce((n, p) => n + p.reduce((m, r) => m + r.length, 0), 0)
-  return ringsOf(nation, kf).reduce((n, r) => n + r.length, 0)
+  const drawn = kf.rings ? ringsOf(nation, kf).reduce((n, r) => n + r.length, 0) : 0
+  if (declared) return drawn + declared.reduce((n, p) => n + p.reduce((m, r) => m + r.length, 0), 0)
+  return drawn
 }
 
 /* --------------------------------------------------------- check-only mode */
@@ -278,7 +325,8 @@ if (checkOnly) {
   const judgedOnDisk = withZones(onDisk.nations, onDisk.contested ?? [])
   const found = validate(judgedOnDisk)
   const split = inkSplits(judgedOnDisk)
-  report(found, onDisk.nations, undefined, split, (onDisk.contested ?? []).length)
+  const skSplit = sketchSplits(onDisk.nations)
+  report(found, onDisk.nations, undefined, split.concat(skSplit), (onDisk.contested ?? []).length)
   const { bad } = followsReport(onDisk.nations)
   // The shipped zones, judged without re-clipping anything: the geometric
   // claims need Natural Earth and `--check` deliberately does not decode it, so
@@ -289,7 +337,9 @@ if (checkOnly) {
   reportModern(modernFaults)
   const inkOff = agreementReport(onDisk.nations, onDisk.contested ?? [], modernPayload)
   process.exit(
-    found.length || split.length || modernFaults.length || bad.length || shipFaults.length || inkOff.length ? 1 : 0,
+    found.length || split.length || skSplit.length || modernFaults.length || bad.length || shipFaults.length || inkOff.length
+      ? 1
+      : 0,
   )
 }
 
@@ -536,16 +586,24 @@ const shrunk = []
  * carved frontier and the zone edge it now coincides with cannot get different
  * verdicts (see `findInkDisagreements`).
  */
-function shippable(mp) {
+function shippable(mp, sketchy = false) {
     const polys = []
     const coast = []
+    const coastFlags = []
+    const sketchFlags = []
     for (const poly of mp) {
       const rings = []
       const runs = []
       const flagsOf = []
+      const sketchOf = []
       for (const [i, ring] of poly.entries()) {
         const flags = classifyCoastal(ring, coasts)
         const thin = simplifyRing(ring, flags, SEA_TOLERANCE_DEG)
+        // ROUND 64: which of the surviving inland edges are a SKETCH — an
+        // estimate with no feature, treaty line or present border behind it.
+        // Classified after the thinning (on the edges that ship) and against
+        // the corpus-wide solid index; see `solidIndex`.
+        const sk = sketchy ? classifySketch(thin.ring, thin.flags, solidIndex()) : new Array(thin.flags.length).fill(0)
         // CW for an outer ring, CCW for a hole. On a sphere a ring bounds two
         // regions and the globe's polygon layer fills the clockwise one (see
         // the winding note in lib/nations.ts). Reversing a ring reverses the
@@ -567,6 +625,7 @@ function shippable(mp) {
         }
         rings.push(encoded)
         flagsOf.push(flipped ? reverseEdgeFlags(thin.flags) : thin.flags)
+        sketchOf.push(flipped ? reverseEdgeFlags(sk) : sk)
         runs.push(encodeRuns(flagsOf[flagsOf.length - 1]))
         vertsOut += open.length
       }
@@ -576,6 +635,8 @@ function shippable(mp) {
           else inlandEdges++
       polys.push(rings)
       coast.push(runs)
+      coastFlags.push(flagsOf)
+      sketchFlags.push(sketchOf)
       holesOut += rings.length - 1
       piecesOut++
     }
@@ -583,6 +644,12 @@ function shippable(mp) {
     // Nothing with no coastal edge at all — a landlocked polity, a zone in
     // Ladakh — carries a `coast` field rather than a nest of empty arrays.
     if (coast.some((p) => p.some((r) => r.length))) entry.coast = coast
+    // The raw flags ride along under private names until `reconcileSketch` has
+    // run — a shared frontier must get ONE verdict, and the other side of it
+    // may not be built yet. They become the `approx` runs there, and the
+    // private fields never reach the file.
+    entry._coastFlags = coastFlags
+    entry._sketchFlags = sketchFlags
     return entry
 }
 
@@ -594,9 +661,74 @@ const built = authored.map((nation) => ({
     shrunk.push({ id: nation.id, time: kf.time, kept: multiPolygonArea(mp) / authoredArea })
     vertsIn += extentVerts(nation, kf)
     vertsClipped += mp.reduce((n, p) => n + p.reduce((m, r) => m + r.length - 1, 0), 0)
-    return { time: kf.time, ...shippable(mp) }
+    return { time: kf.time, ...shippable(mp, isSketchy(nation, kf)) }
   }),
 }))
+
+/**
+ * ONE VERDICT PER SHARED EDGE — the sketch classification reconciled.
+ *
+ * A frontier rule stores a shared frontier as the SAME numbers on both sides
+ * (that is round 52's whole point), so the two sides' sketch verdicts can only
+ * disagree when one polity is `approx` and the other is not — France's edge
+ * along Alsace-Lorraine is Germany's surveyed line, and dashing one side of a
+ * line the other side draws solid would put a dash pattern OVER a solid line,
+ * which reads as neither. Confidence wins: an edge any polity ships solid is
+ * solid for everyone who shares it. The reconciliation is global rather than
+ * per-year because an edge's provenance does not depend on the calendar — the
+ * successor state that inherits a ring inherits its verdicts with it.
+ */
+function reconcileSketch(nations) {
+  const q = (v) => Math.round(v / QUANTUM)
+  const ekey = (a, b) => {
+    const A = `${q(a[0])},${q(a[1])}`
+    const B = `${q(b[0])},${q(b[1])}`
+    return A < B ? `${A}|${B}` : `${B}|${A}`
+  }
+  // Every inland edge in the corpus: who ships it, and with what verdict.
+  const seen = new Map() // key -> { solidBy: Set<id>, sketchy: [{flags, i, id}] }
+  for (const n of nations)
+    for (const kf of n.keyframes)
+      kf.polys.forEach((rings, p) =>
+        rings.forEach((enc, r) => {
+          const ring = decodeRing(enc)
+          const coastal = kf._coastFlags[p][r]
+          const sketch = kf._sketchFlags[p][r]
+          for (let i = 0; i < ring.length; i++) {
+            if (coastal[i]) continue
+            const k = ekey(ring[i], ring[(i + 1) % ring.length])
+            let rec = seen.get(k)
+            if (!rec) seen.set(k, (rec = { solidBy: new Set(), sketchy: [] }))
+            if (sketch[i]) rec.sketchy.push({ flags: sketch, i, id: n.id })
+            else rec.solidBy.add(n.id)
+          }
+        }),
+      )
+  let flipped = 0
+  for (const rec of seen.values()) {
+    if (!rec.sketchy.length) continue
+    // Solid testimony from ANOTHER polity outranks this one's guess. A polity
+    // does not outvote itself: two of its own keyframes may honestly differ.
+    for (const s of rec.sketchy)
+      if ([...rec.solidBy].some((id) => id !== s.id)) {
+        s.flags[s.i] = 0
+        flipped++
+      }
+  }
+  // The flags become the shipped runs, and the private fields go away.
+  let sketchEdges = 0
+  for (const n of nations)
+    for (const kf of n.keyframes) {
+      const runs = kf._sketchFlags.map((rings) => rings.map((f) => encodeRuns(f)))
+      for (const rings of kf._sketchFlags) for (const f of rings) for (const bit of f) if (bit) sketchEdges++
+      if (runs.some((p) => p.some((r) => r.length))) kf.approx = runs
+      delete kf._sketchFlags
+      delete kf._coastFlags
+    }
+  return { flipped, sketchEdges }
+}
+
+const sketchStats = reconcileSketch(built)
 
 /**
  * …and the zones, in the same shape, with `claimants` resolved on the way out.
@@ -624,6 +756,12 @@ const builtZones = zones.map((z) => ({
   }),
   ...shippable(z.carved),
 }))
+// A zone's outline is the dispute dash already; the sketch scaffolding that
+// `shippable` stages for the polities has nothing to say about it.
+for (const z of builtZones) {
+  delete z._coastFlags
+  delete z._sketchFlags
+}
 
 /* --------------------------------------------------------------- validate */
 
@@ -665,6 +803,28 @@ function inkSplits(nations) {
 }
 
 /**
+ * ROUND 64: the same one-verdict rule for the SKETCH classification. A shared
+ * frontier drawn dashed by one side and solid by the other would put a dash
+ * pattern over a solid line — `reconcileSketch` exists to make this impossible
+ * at build time, and this is the check that it stays impossible on the shipped
+ * file. The comparison key is the full edge KIND (solid / coast / sketch), so
+ * one call polices both classifications at once; polities only — a contested
+ * zone's outline has its own dashed pen and is judged by `inkSplits`.
+ */
+function sketchSplits(nations) {
+  return findInkDisagreements(nations, (n, kf) => {
+    const { pieces, coastal, sketch } = decodeKeyframe(kf)
+    return pieces.flatMap((rings, p) =>
+      rings.map((ring, r) => {
+        const kinds = new Uint8Array(ring.length)
+        for (let i = 0; i < ring.length; i++) kinds[i] = coastal[p][r][i] ? 1 : sketch[p][r][i] ? 2 : 0
+        return { ring, coastal: kinds }
+      }),
+    )
+  })
+}
+
+/**
  * THE ERROR REPORT — the number the user's "error rate" becomes.
  *
  * Per polity: what share of its INLAND frontier lies on a declared feature, and
@@ -689,14 +849,23 @@ function followsReport(nations) {
     const src = byId.get(n.id)
     let inlandKm = 0
     let declaredKm = 0
+    let sketchKm = 0
     const snaps = []
     for (const kf of n.keyframes) {
       const res = src ? followed.get(key(n.id, kf.time)) : undefined
-      const { pieces, coastal } = decodeKeyframe(kf)
+      const { pieces, coastal, sketch } = decodeKeyframe(kf)
       const rings = pieces.flatMap((rs, p) => rs.map((ring, r) => ({ ring, coastal: coastal[p][r] })))
       const share = declaredShare(rings, segmentIndex(res ? res.segments.map((s) => s.path) : []), DECLARED_TOL_DEG)
       inlandKm += share.inlandKm
       if (res) declaredKm += share.declaredKm
+      // The sketch's own length — the dashed share of what this polity draws.
+      pieces.forEach((rs, p) =>
+        rs.forEach((ring, r) => {
+          const sk = sketch[p][r]
+          for (let i = 0; i < ring.length; i++)
+            if (sk[i]) sketchKm += distKm(ring[i], ring[(i + 1) % ring.length])
+        }),
+      )
       for (const s of res?.segments ?? []) {
         declarations++
         branches += s.dropped.length
@@ -705,28 +874,37 @@ function followsReport(nations) {
         worstSnap.push({ at: `${n.id}@${kf.time}`, name: s.name, km: Math.max(s.snapFromKm, s.snapToKm) })
       }
     }
-    rows.push({ id: n.id, inlandKm, declaredKm, snaps })
+    rows.push({ id: n.id, inlandKm, declaredKm, sketchKm, snaps })
   }
   const table = errorTable(rows)
   const pad = (s, n) => String(s).padStart(n)
   console.log('')
-  console.log('borders v3 — inland frontier: derived from a named feature, or still freehand')
-  console.log(`  ${'polity'.padEnd(14)} ${pad('inland km', 10)} ${pad('declared', 9)} ${pad('share', 7)} ${pad('mean snap', 11)}`)
+  console.log('borders v3 — inland frontier: derived from a named feature, sketched (dashed), or freehand-solid')
+  console.log(
+    `  ${'polity'.padEnd(14)} ${pad('inland km', 10)} ${pad('declared', 9)} ${pad('share', 7)} ${pad('sketch', 7)} ${pad('mean snap', 11)}`,
+  )
   for (const r of table.rows) {
     if (!r.declaredKm) continue
     console.log(
       `  ${r.id.padEnd(14)} ${pad(r.inlandKm.toFixed(0), 10)} ${pad(r.declaredKm.toFixed(0), 9)}` +
-        ` ${pad((r.share * 100).toFixed(1) + '%', 7)} ${pad(r.meanSnapKm.toFixed(2) + ' km', 11)}`,
+        ` ${pad((r.share * 100).toFixed(1) + '%', 7)} ${pad(((r.sketchKm / (r.inlandKm || 1)) * 100).toFixed(1) + '%', 7)}` +
+        ` ${pad(r.meanSnapKm.toFixed(2) + ' km', 11)}`,
     )
   }
   const freehand = table.rows.filter((r) => !r.declaredKm).length
+  const sketchTotal = rows.reduce((a, r) => a + r.sketchKm, 0)
   console.log(
     `  ${'— CORPUS —'.padEnd(14)} ${pad(table.total.inlandKm.toFixed(0), 10)} ${pad(table.total.declaredKm.toFixed(0), 9)}` +
-      ` ${pad((table.total.share * 100).toFixed(1) + '%', 7)} ${pad(table.total.meanSnapKm.toFixed(2) + ' km', 11)}`,
+      ` ${pad((table.total.share * 100).toFixed(1) + '%', 7)} ${pad(((sketchTotal / (table.total.inlandKm || 1)) * 100).toFixed(1) + '%', 7)}` +
+      ` ${pad(table.total.meanSnapKm.toFixed(2) + ' km', 11)}`,
   )
   console.log(
     `  ${declarations} declaration(s) over ${table.rows.length - freehand} polities; ${freehand} still wholly` +
       ` freehand; ${branches} river branch(es) the mainline did not take; ${joins} seam(s) bridged`,
+  )
+  console.log(
+    `  sketch (dashed) frontier: ${sketchTotal.toFixed(0)} km — ${((sketchTotal / (table.total.inlandKm || 1)) * 100).toFixed(1)}%` +
+      ` of inland ink is marked as an estimate rather than drawn as a survey`,
   )
   const bad = worstSnap.filter((w) => w.km > SNAP_WARN_KM).sort((a, b) => b.km - a.km)
   if (bad.length) {
@@ -790,8 +968,12 @@ function contestedReport(entries) {
 let countryCache
 const judged = withZones(built, builtZones)
 const convictions = validate(judged)
-const splits = inkSplits(judged)
+const splits = inkSplits(judged).concat(sketchSplits(built))
 const errors = followsReport(built)
+console.log(
+  `  sketch reconciliation: ${sketchStats.flipped} shared edge(s) resolved solid; ` +
+    `${sketchStats.sketchEdges} sketch edge(s) shipped`,
+)
 for (const z of zones) {
   const e = builtZones.find((b) => b.id === z.zone.id)
   e.carvedFrom = z.carvedFrom
@@ -852,8 +1034,10 @@ function countryGeometry(name) {
  * the topology gave it (round 63). Built keyframes answer with `polys` and do
  * not need it.
  */
-const authoredRings = (n, kf) =>
-  kf.rings ?? (declaredExtents.get(key(n.id, kf.time)) ?? []).flatMap((poly) => poly)
+const authoredRings = (n, kf) => [
+  ...(kf.rings ?? []),
+  ...(declaredExtents.get(key(n.id, kf.time)) ?? []).flatMap((poly) => poly),
+]
 
 function onGlobe(nations, t, limit = 10) {
   const ranked = []

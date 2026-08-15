@@ -465,13 +465,24 @@ describe('the corpus', () => {
    * one — the Amur and the Ussuri are still its border, they are just no longer
    * something a human has to declare.
    */
-  it('declares four modern extents outright', () => {
+  /**
+   * ROUND 64 grew the club: beside the four modern-era polities, the colonial
+   * empires at their dated peaks (Britain 1900/1920/1947, France 1900) and the
+   * Qing from 1800 declare their extents as unions of present states — the
+   * partition lines of Africa and the Raj's outline ARE the borders those
+   * states kept. The Qing keyframes also carry hand rings (a partial extent:
+   * Outer Manchuria is Russian today and in no Chinese unit).
+   */
+  it('declares its modern-derived extents outright', () => {
     const extents = nations.flatMap((n) =>
       n.keyframes.filter((k) => k.countries).map((k) => ({ id: n.id, time: k.time, codes: k.countries! })),
     )
-    expect(extents.map((e) => e.id).sort()).toEqual(['india', 'prc', 'ussr', 'usa'].sort())
+    expect(new Set(extents.map((e) => e.id))).toEqual(
+      new Set(['india', 'prc', 'ussr', 'usa', 'britain', 'france', 'qing']),
+    )
     for (const e of extents) {
       expect(e.codes.length, `${e.id}@${e.time}`).toBeGreaterThan(0)
+      expect(new Set(e.codes).size, `${e.id}@${e.time} repeats a code`).toBe(e.codes.length)
       for (const c of e.codes) expect(follows.ISO_A3[c as keyof typeof follows.ISO_A3], `${e.id} ${c}`).toBeTruthy()
     }
     // fifteen republics, and the union of them is the Soviet outline

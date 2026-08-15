@@ -50,17 +50,30 @@ export interface DrawingCommon {
    */
   color?: string
   /**
-   * WHEN this layer is true — a year (1941) or a fraction of the event's span
-   * (0..1).
+   * WHEN this layer is true — a year (1941), a fraction of the event's span
+   * (0..1), or the literal `'overview'` (round 64).
    *
-   * Read by lib/steps.ts, which is where the two forms and the comparison
-   * between them are defined. The rule in one line: a layer with no `at` is
-   * TIMELESS and drawn in every step, and one with an `at` is drawn on the
-   * overview and in the single step whose window it falls in. An event with no
-   * `steps` ignores the field entirely and draws every layer, which is what
-   * every drawing authored before stepping existed relies on.
+   * Read by lib/steps.ts, which is where the forms and the comparison between
+   * them are defined (`keepsLayer` is the whole rule, in one place). The rule
+   * in three lines:
+   *
+   *  · no `at` — TIMELESS: drawn on the overview and in every step;
+   *  · a number — DATED: drawn on the overview and in the single step whose
+   *    window it falls in;
+   *  · `'overview'` — OVERVIEW-ONLY: drawn whenever no step is open — the saga
+   *    overview, before the first step and after stepping back out — and
+   *    hidden inside every step. This is what a saga's own summary map is made
+   *    of: dated battle markers and sparse arrows that belong to the whole
+   *    story would, as timeless layers, clutter every single step.
+   *
+   * An event with no `steps` ignores the field entirely and draws every layer,
+   * which is what every drawing authored before stepping existed relies on —
+   * and why the build script rejects `'overview'` there: on a stepless event
+   * it could only mean "always", which is spelt by omitting `at`. It is also
+   * rejected on a STEP's own drawing, whose layers exist only inside their
+   * step and can never be on an overview at all.
    */
-  at?: number
+  at?: number | 'overview'
   /** Shown in the layer's own label, and by the renderer's hit label. */
   label?: string
 }
@@ -231,7 +244,11 @@ export function isDrawingSpec(l: unknown): l is DrawingSpec {
   if (!l || typeof l !== 'object') return false
   const s = l as Record<string, unknown>
   if (!isColor(s.color)) return false
-  if (s.at !== undefined && !Number.isFinite(s.at)) return false
+  // A finite number, or the one literal (see `DrawingCommon.at`). The runtime
+  // guard is structural — where the literal is allowed to appear is contextual
+  // (an event with steps, never a step's own drawing) and is the build
+  // script's check, mirrored over the corpus by tests/eventsData.test.ts.
+  if (s.at !== undefined && s.at !== 'overview' && !Number.isFinite(s.at)) return false
   if (s.label !== undefined && typeof s.label !== 'string') return false
   switch (s.type) {
     case 'route':

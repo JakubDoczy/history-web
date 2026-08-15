@@ -6,6 +6,10 @@ import {
   LINE_FLOOR,
   DASH_DEG,
   GAP_DEG,
+  SKETCH_DASH_DEG,
+  SKETCH_GAP_DEG,
+  sketchPathsOf,
+  solidPathsOf,
 } from '../src/lib/frontierLayer'
 import {
   GLOBE_FACET_DEG,
@@ -43,6 +47,7 @@ const entryOf = (paths: Ring[], kind: 'full' | 'contested' = 'full'): InkEntry =
     ring: paths[0],
     coordinates: paths,
     frontier: paths,
+    sketch: [],
     coast: [],
     label: 'X',
   }) as unknown as InkEntry
@@ -216,6 +221,74 @@ describe('the political ink sits on the planet that is drawn', () => {
     const total = Math.hypot(10 * Math.cos((1.25 * Math.PI) / 180), 8.5)
     expect(ink / total).toBeCloseTo(DASH_DEG / (DASH_DEG + GAP_DEG), 1)
     layer.dispose()
+  })
+})
+
+/**
+ * ROUND 64 — A SKETCHED FRONTIER IS DASHED. An `approx` polity's estimated
+ * inland edges arrive on the entry as `sketch` paths, and the layer draws them
+ * as a broken line in the polity's own pen — a longer dash than the dispute
+ * pattern, so an estimate and a contested line read as different statements.
+ */
+describe('the sketch dashes', () => {
+  const across: Ring = [
+    [-1, -3],
+    [9, 5.5],
+  ]
+  const sketchEntry = (paths: Ring[], sketch: Ring[]): InkEntry =>
+    ({
+      nation,
+      kind: 'full',
+      ring: paths[0] ?? sketch[0],
+      coordinates: [...paths, ...sketch],
+      frontier: paths,
+      sketch,
+      coast: [],
+      label: 'X',
+    }) as unknown as InkEntry
+
+  const inkLength = (layer: FrontierLayer) => {
+    const vs = verticesOf(layer)
+    let ink = 0
+    for (let i = 0; i + 1 < vs.length; i += 2) {
+      const a = geoOf(vs[i])
+      const b = geoOf(vs[i + 1])
+      ink += Math.hypot((b[0] - a[0]) * Math.cos((((a[1] + b[1]) / 2) * Math.PI) / 180), b[1] - a[1])
+    }
+    return ink
+  }
+
+  it('draws the sketch at the sketch duty cycle, in the same buffer', () => {
+    const layer = new FrontierLayer(new Scene(), R)
+    layer.set([sketchEntry([], [across])], () => '#ffffff', () => 'frontier')
+    const total = Math.hypot(10 * Math.cos((1.25 * Math.PI) / 180), 8.5)
+    expect(inkLength(layer) / total).toBeCloseTo(SKETCH_DASH_DEG / (SKETCH_DASH_DEG + SKETCH_GAP_DEG), 1)
+    layer.dispose()
+  })
+
+  it('reads as a different pen from a dispute: a longer dash, a fuller line', () => {
+    expect(SKETCH_DASH_DEG).toBeGreaterThan(DASH_DEG)
+    expect(SKETCH_DASH_DEG / (SKETCH_DASH_DEG + SKETCH_GAP_DEG)).toBeGreaterThan(DASH_DEG / (DASH_DEG + GAP_DEG))
+  })
+
+  it('dashes the sketch on the photograph too, without doubling it under a solid loop', () => {
+    const solid: Ring = [
+      [20, 0],
+      [30, 8.5],
+    ]
+    const entry = sketchEntry([solid], [across])
+    // On 'all' the solid paths are coast+frontier rather than the closed
+    // coordinates, precisely so the sketch is not also drawn solid underneath.
+    expect(solidPathsOf(entry, 'all')).toEqual([solid])
+    expect(sketchPathsOf(entry, 'all')).toEqual([across])
+    // …and an entry that yielded its ink dashes nothing.
+    expect(sketchPathsOf(entry, 'none')).toEqual([])
+    expect(sketchPathsOf(entry, 'coast')).toEqual([])
+  })
+
+  it('never dashes a contested zone twice: its outline is already the dispute dash', () => {
+    const entry = { ...sketchEntry([], [across]), kind: 'contested' } as InkEntry
+    expect(sketchPathsOf(entry, 'frontier')).toEqual([])
   })
 })
 

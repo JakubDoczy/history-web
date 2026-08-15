@@ -337,11 +337,18 @@ export function stepAt(steps: readonly Step[], at: number, span: Time): Step | u
  * while the fronts and the pockets come and go around them. It is also what
  * keeps the feature backward compatible — a drawing authored before steps
  * existed renders identically in every step.
+ *
+ * A layer whose `at` is the literal `'overview'` (round 64) belongs to NO step:
+ * it is the saga's own summary map — dated battle markers, sparse arrows — and
+ * it shows exactly when this predicate is not consulted at all, i.e. whenever
+ * no step is open (`resolveFocusInk` returns the drawing whole). One value,
+ * one clause, and the overview side needs no rule because rule 1 already says
+ * the overview is everything.
  */
 export const keepsLayer =
   (stepId: string, owner: (at: number) => Step | undefined) =>
   (layer: DrawingSpec): boolean =>
-    layer.at === undefined || owner(layer.at)?.id === stepId
+    layer.at === undefined || (layer.at !== 'overview' && owner(layer.at)?.id === stepId)
 
 /** Does this layer belong in the step with this id? */
 export const layerInStep = (
