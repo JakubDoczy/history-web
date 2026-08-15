@@ -26,9 +26,16 @@
  * distances on the planet, so both are invisible at world view and enormous at
  * 100 km — which is exactly the shape of the report.
  *
+ * ROUND 63b adds the OTHER stack to the same instrument. The nations layers had
+ * the identical defect and worse — `FRONTIER_ALT` was 0.0013 R, 8.3 km, twice
+ * what the drawings were convicted at, on the layer a reader stares at most.
+ * `SECTIONS=frontier` measures political borders instead of battle plans: the
+ * same hover and the same slide, read off the FrontierLayer's own buffer.
+ *
  * Run:  node tests/e2e/repro63.e2e.mjs
  * Env:  SHOT_DIR (default /tmp/shots63/ink), SHOT_TAG (default 'before'),
- *       PLAYWRIGHT_MODULE, CHROME_PATH, SHOT_ONLY
+ *       PLAYWRIGHT_MODULE, CHROME_PATH, SHOT_ONLY,
+ *       SECTIONS (default 'drawing,subjects,frontier')
  */
 import { createServer } from 'vite'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -39,6 +46,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..', '..')
 const shots = process.env.SHOT_DIR ?? '/tmp/shots63/ink'
 const tag = process.env.SHOT_TAG ?? 'before'
+const sections = new Set((process.env.SECTIONS ?? 'drawing,subjects,frontier').split(','))
 mkdirSync(shots, { recursive: true })
 
 const pw = await import(process.env.PLAYWRIGHT_MODULE ?? 'playwright')
@@ -246,44 +254,78 @@ const PROBE = () => {
    * vertices in `instanceStart`; `position` on those is the unit quad the
    * shader extrudes and means nothing here.
    */
-  const inkPoints = (limit = 400) => {
+  /**
+   * `which` names the STACK to sample, because round 63b is about a second one.
+   *
+   *   'drawing'  — the DrawingLayer groups (renderOrder 12): the focus layer and
+   *                the selection layer both, since a route hovers as visibly as
+   *                a battle plan.
+   *   'frontier' — the FrontierLayer's single `LineSegments` (renderOrder 6):
+   *                every political border on the globe, the contested zones'
+   *                dashes cut into the same buffer, and the modern set.
+   *
+   * Each point carries the object that produced it, so a hover can be blamed on
+   * a layer rather than on "the ink" — which is how the routes layer's own
+   * floor was told apart from the frontier's altitude.
+   */
+  const inkPoints = (which = 'drawing', limit = 400) => {
     const out = []
-    globe.scene().traverse((o) => {
-      if (!o.isGroup || o.renderOrder !== 12) return
-      o.updateWorldMatrix(true, true)
-      o.traverse((c) => {
+    // A battle plan is a few hundred vertices and sixty of them per object is a
+    // fair sample of it. The frontier buffer is fifty thousand vertices spread
+    // over the whole planet, so the same stride puts one or two on a 40 km
+    // frame — enough to state a hover and not enough to state a slide. So it is
+    // walked whole and filtered to what is actually in the frame.
+    const perObject = which === 'frontier' ? Infinity : 60
+    const harvest = (root, label) => {
+      root.updateWorldMatrix(true, true)
+      root.traverse((c) => {
         const geom = c.geometry
         if (!geom) return
         const attr = geom.getAttribute('instanceStart') ?? geom.getAttribute('position')
         if (!attr || !attr.count) return
         const e = c.matrixWorld.elements
-        const step = Math.max(1, Math.floor(attr.count / 60))
+        const step = Math.max(1, Math.floor(attr.count / perObject))
         for (let i = 0; i < attr.count; i += step) {
           const a = [attr.getX(i), attr.getY(i), attr.getZ(i)]
           if (Math.hypot(a[0], a[1], a[2]) < radius * 0.5) continue
-          out.push([
+          const p = [
             e[0] * a[0] + e[4] * a[1] + e[8] * a[2] + e[12],
             e[1] * a[0] + e[5] * a[1] + e[9] * a[2] + e[13],
             e[2] * a[0] + e[6] * a[1] + e[10] * a[2] + e[14],
-          ])
+          ]
+          if (perObject === Infinity) {
+            const s = project(p)
+            if (!s || s[0] < 0 || s[0] > size.x || s[1] < 0 || s[1] > size.y) continue
+            // …and only the near face. A border round the back of the planet
+            // still projects inside the frame; it is hidden by the globe, and
+            // measuring it would report a hover nobody can see. A point on a
+            // sphere of radius r is visible from C exactly when p·C >= r².
+            const c2 = cam.position
+            if (p[0] * c2.x + p[1] * c2.y + p[2] * c2.z < radius * radius) continue
+          }
+          out.push({ p, src: `${label}:${c.type}` })
           if (out.length >= limit) return
         }
       })
+    }
+    globe.scene().traverse((o) => {
+      if (which === 'drawing' && o.isGroup && o.renderOrder === 12) harvest(o, 'drawing')
+      if (which === 'frontier' && o.isLineSegments && o.renderOrder === 6) harvest(o, 'frontier')
     })
     return out
   }
-  return (samples) => {
+  return (samples, which) => {
     const out = []
     // Every measurement is taken AT A REAL INK VERTEX that is on screen: the
     // hover is between that vertex and the mesh directly below it, and the
     // slide is the same pair projected. `samples` only decides which corner of
     // the frame the imagery comparison is taken at.
-    const pts = inkPoints()
-    const onScreen = pts.filter((p) => {
-      const s = project(p)
+    const pts = inkPoints(which ?? 'drawing')
+    const onScreen = pts.filter((q) => {
+      const s = project(q.p)
       return s && s[0] > 0 && s[0] < size.x && s[1] > 0 && s[1] < size.y
     })
-    for (const p of (onScreen.length ? onScreen : pts).slice(0, 60)) {
+    for (const { p, src } of (onScreen.length ? onScreen : pts).slice(0, 60)) {
       const len = Math.hypot(p[0], p[1], p[2])
       const d = [p[0] / len, p[1] / len, p[2] / len]
       const g = hitRadial(d)
@@ -293,6 +335,7 @@ const PROBE = () => {
       const pg = project(g)
       out.push({
         kind: 'ink',
+        src,
         hoverKm: ((len - gl) / radius) * R,
         slidePx: pi && pg ? Math.hypot(pi[0] - pg[0], pi[1] - pg[1]) : null,
       })
@@ -319,13 +362,13 @@ const PROBE = () => {
   }
 }
 
-const measure = async (page, samples) =>
+const measure = async (page, samples, which = 'drawing') =>
   page.evaluate(
-    ([probeSrc, s]) => {
+    ([probeSrc, s, w]) => {
       const probe = new Function(`return (${probeSrc})()`)()
-      return probe(s)
+      return probe(s, w)
     },
-    [PROBE.toString(), samples],
+    [PROBE.toString(), samples, which],
   )
 
 const setMode = async (page, mode) => {
@@ -368,9 +411,32 @@ const SUBJECTS = [
   { id: 'spanish-armada', year: 1588, at: [50.1, -1.5], name: 'route' },
 ]
 
+/**
+ * …and the NATIONS stack, which is not a drawing at all: one `LineSegments` for
+ * every political border on the globe, plus the modern set, plus the contested
+ * zones' dashes cut into the same buffer.
+ *
+ * The camera sits on the Oder at Frankfurt (Oder) — the Germany/Poland line, a
+ * modern surveyed frontier drawn from the same Natural Earth topology the fills
+ * are, with a nation wash on BOTH sides of it. That is the worst case on this
+ * layer and the one a reader looks at: an inked line between two tinted caps,
+ * where a hover shows up as the ink walking off its own river.
+ *
+ * A second camera at Abyei, where the ink is DASHED and the cap is HATCHED, so
+ * the same numbers cover the one vocabulary the solid case does not.
+ */
+const FRONTIERS = [
+  // `null` is the world view, where the depth buffer is coarsest and the lift
+  // is at its ceiling; 8 km is past the zoom floor a reader can reach, and is
+  // there to prove a border of eighty metres' clearance is still DRAWN rather
+  // than eaten by the planet it is lying on.
+  { name: 'oder', at: [52.34, 14.55], year: 2024, kms: [null, 500, 100, 40, 8] },
+  { name: 'abyei', at: [9.6, 28.4], year: 2015, kms: [500, 100] },
+]
+
 const only = process.env.SHOT_ONLY ? new RegExp(process.env.SHOT_ONLY) : undefined
 const results = []
-for (const mode of ['schematic', 'realistic']) {
+for (const mode of sections.has('drawing') ? ['schematic', 'realistic'] : []) {
   await setMode(page, mode)
   await page.evaluate(() => window.__events.dismiss())
   await page.evaluate(() => window.__setTime(1944.4))
@@ -419,7 +485,7 @@ for (const mode of ['schematic', 'realistic']) {
   }
 }
 
-for (const s of SUBJECTS) {
+for (const s of sections.has('subjects') ? SUBJECTS : []) {
   for (const mode of ['schematic', 'realistic']) {
     const name = `${s.name}-${mode === 'schematic' ? 'map' : 'photo'}`
     if (only && !only.test(name)) continue
@@ -449,6 +515,125 @@ for (const s of SUBJECTS) {
     console.log(`      ${file}`)
     console.log(`      hover ${worstHover.toFixed(3)} km   slide ${worstSlide.toFixed(1)} px`)
     results.push({ name, mode, worstHover, worstSlide, ...m })
+  }
+}
+
+for (const f of sections.has('frontier') ? FRONTIERS : []) {
+  for (const mode of ['schematic', 'realistic']) {
+    // No focus and no selection: focus mode takes the borders off the globe
+    // altogether (see the polygons watcher in GlobeView), so a frontier
+    // measurement has to be taken with the map in its resting state.
+    await setMode(page, mode)
+    await page.evaluate(() => window.__events.dismiss())
+    await page.evaluate((y) => window.__setTime(y), f.year)
+    await page.waitForTimeout(700)
+    await corpusQuiet(page, 400, 8000)
+    for (const km of f.kms) {
+      const name = `${f.name}-${km ?? 'world'}-${mode === 'schematic' ? 'map' : 'photo'}`
+      if (only && !only.test(name)) continue
+      await page.evaluate(
+        ([a, b, c]) => window.__globe.pointOfView({ lat: a, lng: b, altitude: c }, 0),
+        [f.at[0], f.at[1], km === null ? 2.5 : KM(km)],
+      )
+      await page.waitForTimeout(2200)
+      await page.evaluate(() => window.__wake?.(500))
+      await page.waitForTimeout(900)
+      const m = await measure(page, [[f.at[1], f.at[0]]], 'frontier')
+      const file = await shot(page, name)
+      const ink = m.rows.filter((r) => r.kind === 'ink')
+      const worstHover = Math.max(0, ...ink.map((r) => Math.abs(r.hoverKm ?? 0)))
+      const worstSlide = Math.max(0, ...ink.map((r) => r.slidePx ?? 0))
+      const cost = await page.evaluate(() => window.__politicalCost?.() ?? null)
+      // What the whole buffer costs, not the sample: cutting a border at every
+      // facet fold it crosses adds vertices, and this is the number that says
+      // how many. One draw call either way — see framePerf.e2e.mjs for that —
+      // but the geometry is rebuilt on a year change and the size is the price.
+      const built = await page.evaluate(() => {
+        let n = 0
+        window.__globe.scene().traverse((o) => {
+          if (o.isLineSegments && o.renderOrder === 6)
+            n += o.geometry.getAttribute('position')?.count ?? 0
+        })
+        return n
+      })
+      console.log(`\n${name}   ${ink.length} frontier vertices measured of ${m.inkVertices}`)
+      console.log(`      ${file}`)
+      console.log(
+        `      hover ${worstHover.toFixed(3)} km   slide ${worstSlide.toFixed(1)} px` +
+          (cost ? `   segments ${cost.frontierSegments}+${cost.modernSegments}` : '') +
+          `   buffer ${built} vertices`,
+      )
+      results.push({ name, mode, km, worstHover, worstSlide, cost, built, ...m })
+    }
+  }
+}
+
+/**
+ * THE WHOLE STACK IN ONE FRAME — the picture the layering has to survive.
+ *
+ * Five things claim the same ground here and every one of them was placed by a
+ * different rule: the polity CAP (three-globe, on the sphere at 0.0012 R), the
+ * contested CAP (0.0010 R, hatched), the FRONTIER INK (this round, grounded),
+ * the selected event's AREA cap (0.0014 R) and the DRAWING ink over it (round
+ * 63a, grounded). Lowering the frontier from 8.3 km to eighty metres puts it
+ * fifteen kilometres UNDER caps it has to keep painting over, which is only
+ * safe because none of those caps writes depth and renderOrder decides — so
+ * this is the section that proves it rather than asserting it.
+ *
+ * The battle plans are deliberately absent and cannot be here: focus mode takes
+ * every border off the globe (see the polygons watcher in GlobeView), so the
+ * only drawing ink that ever shares a frame with a frontier is the SELECTION
+ * layer's — an event's footprint outline and its routes.
+ */
+const STACK = [
+  // The Ukraine/Belarus line at Chernobyl, 2022, with the invasion selected:
+  // modern frontier ink, two nation washes, the event's own footprint and its
+  // outline, all inside one frame.
+  { name: 'chernobyl-border', at: [51.47, 30.2], year: 2022, select: 'ukraine-invasion', kms: [100, 40] },
+  // …and Crimea, where the ink is dashed and the cap is hatched.
+  { name: 'crimea', at: [45.35, 34.0], year: 2022, select: null, kms: [300, 100] },
+]
+
+for (const s of sections.has('stack') ? STACK : []) {
+  for (const mode of ['schematic', 'realistic']) {
+    await setMode(page, mode)
+    await page.evaluate(() => window.__events.dismiss())
+    await page.evaluate((y) => window.__setTime(y), s.year)
+    await page.waitForTimeout(700)
+    await corpusQuiet(page, 400, 8000)
+    // SELECT, never enter focus: focus is what would take the borders away.
+    if (s.select) await page.evaluate((id) => window.__events.select(id), s.select)
+    await page.waitForTimeout(1500)
+    for (const km of s.kms) {
+      const name = `stack-${s.name}-${km}-${mode === 'schematic' ? 'map' : 'photo'}`
+      if (only && !only.test(name)) continue
+      await page.evaluate(
+        ([a, b, c]) => window.__globe.pointOfView({ lat: a, lng: b, altitude: c }, 0),
+        [s.at[0], s.at[1], KM(km)],
+      )
+      await page.waitForTimeout(2200)
+      await page.evaluate(() => window.__wake?.(500))
+      await page.waitForTimeout(900)
+      const both = {}
+      for (const which of ['frontier', 'drawing']) {
+        const m = await measure(page, [[s.at[1], s.at[0]]], which)
+        const ink = m.rows.filter((r) => r.kind === 'ink')
+        both[which] = {
+          n: ink.length,
+          hover: Math.max(0, ...ink.map((r) => Math.abs(r.hoverKm ?? 0))),
+          slide: Math.max(0, ...ink.map((r) => r.slidePx ?? 0)),
+        }
+      }
+      const file = await shot(page, name)
+      console.log(`\n${name}`)
+      console.log(`      ${file}`)
+      for (const [which, v] of Object.entries(both))
+        console.log(
+          `      ${which.padEnd(8)} ${String(v.n).padStart(3)} vertices   ` +
+            `hover ${v.hover.toFixed(3)} km   slide ${v.slide.toFixed(1)} px`,
+        )
+      results.push({ name, mode, km, both })
+    }
   }
 }
 

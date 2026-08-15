@@ -1,4 +1,5 @@
 import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, type Scene } from 'three'
+import { groundFactor, inkLift, splitAtFacets, SURFACE_ALT } from './drawingLayer'
 import type { FrontierInk, InkEntry, Ring } from './nations'
 
 /**
@@ -41,22 +42,71 @@ const unit = (lng: number, lat: number): [number, number, number] => {
 }
 
 /**
- * The same height the polygon layer's border stroke was at, and for the reason
- * written down there: below this the cap's own 2° chords sag under the sphere
- * between their ends and the planet eats the line.
+ * THE ALTITUDE THIS LAYER'S GEOMETRY IS BUILT AT, before `setCameraAltitude`
+ * scales it to where it belongs. Not the height the ink is drawn at — see
+ * `inkLift` in lib/drawingLayer.ts for that, and `applyLift` below for how the
+ * built height becomes the real one without touching a vertex.
  *
- * ROUND 55. An altitude only buys clearance against a chord whose sag it is
- * bigger than, and `pushLine` draws one GL_LINE per stored vertex pair. 314
- * stored frontier edges in the corpus are long enough that their chord sags
- * *deeper than this* — Russia's 1700 line along 52°N is one edge across thirty
- * degrees of arc, and its chord passes 217 km below the surface, 26 times the
- * clearance. No altitude fixes that; only cutting the edge into arcs does, and
- * `borderRings` now does it before the paths ever reach this layer (see
- * BORDER_SEGMENT_DEG in lib/nations.ts). What is left for the altitude is the
- * 2° residue, which sags 0.97 km against this 8.3 km — a margin of 8.5x, the
- * same order the cap keeps.
+ * ROUND 63b. This was `FRONTIER_ALT = 0.0013` (8.3 km) — a FIXED altitude, on
+ * the layer a reader looks at more than any other, and the same defect round
+ * 63a convicted the drawings of, at twice the size. Measured on the Oder at
+ * Frankfurt (Oder), the Germany/Poland line, with a nation wash on both banks
+ * (tests/e2e/repro63.e2e.mjs, `SECTIONS=frontier`):
+ *
+ *     frame     hover      slide
+ *     500 km    10.87 km    13.4 px
+ *     100 km    13.46 km    46.2 px
+ *      40 km    13.41 km   126.4 px   ← the border a screen-width off its river
+ *
+ * The hover is bigger than the altitude because most of it was never the
+ * altitude: the rendered planet is a 90x45 polyhedron whose facets hang up to
+ * 7.8 km inside the sphere this ink was drawn on (`groundFactor`). 8.3 km of
+ * lift plus 5 km of facet dip is the 13.4 km above, and no smaller constant
+ * could have reached it.
+ *
+ * ROUND 55 is still true and is now somebody else's problem: an altitude only
+ * buys clearance against a chord whose sag it exceeds, and 314 stored frontier
+ * edges in the corpus sag deeper than 8.3 km — Russia's 1700 line along 52°N is
+ * one edge across thirty degrees of arc, and its chord passes 217 km below the
+ * surface. `borderRings` cuts those into 2° arcs before they ever reach this
+ * layer (BORDER_SEGMENT_DEG in lib/nations.ts), and that cut is still what
+ * makes the ink follow the ground rather than cut a hole through it. What has
+ * changed is the 2° residue: a chord between two GROUNDED points inside one
+ * facet lies IN that facet's plane and cannot sag at all, so the 0.97 km this
+ * altitude used to have to cover is nought (`splitAtFacets`).
  */
-export const FRONTIER_ALT = 0.0013
+export const FRONTIER_BUILD_ALT = SURFACE_ALT
+
+/**
+ * THE FLOOR UNDER A GL_LINE'S LIFT, in globe radii. 1.6e-6 R is 10 m.
+ *
+ * The drawings can lift by `MIN_LIFT` — under two metres — because a fat line
+ * is a strip of TRIANGLES and carries `polygonOffset`, which biases in
+ * depth-buffer units and is therefore exactly the right size at every zoom.
+ * This layer is GL_LINES on purpose (one draw call for every border on the
+ * globe, see the header), and WebGL has no polygon offset for line primitives:
+ * `POLYGON_OFFSET_FILL` does nothing to them. Whatever clearance a border has
+ * over the planet, it has in METRES.
+ *
+ * Two clearances are wanted and only one of them is a problem.
+ *
+ *  · Against the DEPTH BUFFER, none is needed. One quantum of a 24-bit depth
+ *    buffer at the surface is about `cameraAlt / (0.35 · 2^24)` radii — 2.7 m
+ *    at world view, where `inkLift` is already at its 3.8 km ceiling, and
+ *    proportionally less all the way down, where `inkLift` is 0.002·cameraAlt.
+ *    The ratio never drops below about 1400.
+ *  · Against the GEOMETRY, this much. `splitAtFacets` cuts a line at the
+ *    geographic grid line, and the mesh's own edge is up to 0.0013° away from
+ *    it — the poleward bulge of a chord against the parallel through its ends.
+ *    Inside that sliver a cut vertex is placed on the neighbouring facet's
+ *    plane, which is the wrong plane by at most 0.0013°·sin 2° = 8e-7 R, or
+ *    5 m; a quarter over is 10 m.
+ *
+ * It binds only below a 4.8 km frame, where `inkLift` has fallen under it, and
+ * costs about one pixel there. Above that the lift is the policy's and this
+ * number is not consulted.
+ */
+export const LINE_FLOOR = 1.6e-6
 
 /** #rrggbb to linear-ish 0..1 triple. Three's `Color` would do it; this is two lines. */
 const rgb = (hex: string): [number, number, number] => {
@@ -64,7 +114,33 @@ const rgb = (hex: string): [number, number, number] => {
   return [((v >> 16) & 255) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255]
 }
 
-/** What a frontier polyline contributes: one segment per step, both endpoints. */
+/**
+ * A place on the RENDERED planet, not on the sphere it is inscribed in.
+ *
+ * `groundFactor` (lib/drawingLayer.ts) is the radius of the actual mesh under a
+ * lat/lng — the facet plane the fragment shader will rasterise there, up to
+ * 7.8 km inside the ideal sphere. Every vertex in this buffer goes through
+ * here, which is what turns a 13 km hover into the lift and nothing else.
+ */
+const grounded = (lng: number, lat: number, radius: number): [number, number, number] => {
+  const u = unit(lng, lat)
+  const r = radius * (groundFactor(lng, lat) + FRONTIER_BUILD_ALT)
+  return [u[0] * r, u[1] * r, u[2] * r]
+}
+
+const place = (lng: number, lat: number, radius: number, positions: number[]) =>
+  positions.push(...grounded(lng, lat, radius))
+
+/**
+ * What a frontier polyline contributes: one segment per step, both endpoints.
+ *
+ * The previous point is CARRIED rather than re-placed, which halves the work:
+ * GL_LINES wants every interior vertex twice and `grounded` is the expensive
+ * call on this layer now — four trig pairs and a plane intersection against the
+ * one multiply it used to be. On the worst year on the globe (1941, 306 pieces,
+ * 22 726 stored vertices) a full rebuild is 17 ms against the 10 ms it was
+ * before grounding; placing each vertex twice made it 25.
+ */
 function pushLine(
   path: Ring,
   color: [number, number, number],
@@ -72,12 +148,13 @@ function pushLine(
   positions: number[],
   colors: number[],
 ) {
-  for (let i = 0; i + 1 < path.length; i++) {
-    for (const [lng, lat] of [path[i], path[i + 1]]) {
-      const u = unit(lng, lat)
-      positions.push(u[0] * radius, u[1] * radius, u[2] * radius)
-      colors.push(color[0], color[1], color[2])
-    }
+  if (path.length < 2) return
+  let prev = grounded(path[0][0], path[0][1], radius)
+  for (let i = 1; i < path.length; i++) {
+    const next = grounded(path[i][0], path[i][1], radius)
+    positions.push(prev[0], prev[1], prev[2], next[0], next[1], next[2])
+    colors.push(color[0], color[1], color[2], color[0], color[1], color[2])
+    prev = next
   }
 }
 
@@ -115,8 +192,7 @@ function pushDashed(
   // dash spans a vertex rather than restarting at every one.
   let at = phase % period
   const point = (lng: number, lat: number) => {
-    const u = unit(lng, lat)
-    positions.push(u[0] * radius, u[1] * radius, u[2] * radius)
+    place(lng, lat, radius, positions)
     colors.push(color[0], color[1], color[2])
   }
   for (let i = 0; i + 1 < path.length; i++) {
@@ -176,6 +252,10 @@ export class FrontierLayer {
   private lines: LineSegments
   /** What is drawn now, so an unchanged border list is not rebuilt per tick. */
   private currentKey = ''
+  /** Where the camera is, in globe radii. The lift is a function of it. */
+  private cameraAlt = 2.5
+  /** The lift on screen now, so an unchanged camera does not touch the object. */
+  private lift = FRONTIER_BUILD_ALT
 
   constructor(
     scene: Scene,
@@ -197,6 +277,24 @@ export class FrontierLayer {
     this.lines = new LineSegments(this.geometry, this.material)
     // Under the DrawingLayer's twelve — a battle plan wins over a border — and
     // over the polygon layer's nought, so a frontier is not lost under a fill.
+    //
+    // ROUND 63b: this, and not an altitude, is what carries the LAYERING the
+    // last four rounds argued about, and grounding the ink is only safe because
+    // of it. Every cap on this globe — a polity's wash, an event footprint, a
+    // contested zone's hatch — is `depthWrite: false` (see `capMaterial` and
+    // lib/hatch.ts), so no cap ever writes a depth value for this line to lose
+    // to. The only depth in the buffer under a border is the PLANET's, which is
+    // what the lift clears; who paints over whom is decided entirely by
+    // renderOrder, and three sorts a transparent object by renderOrder before
+    // anything else. So the ink stays over its own fill after being lowered
+    // fifteen kilometres beneath it, which is the whole reason this change can
+    // ground the ink without touching a single cap.
+    //
+    // What altitude still decides, and what round 60's cap ordering therefore
+    // still means, is which of two things a fragment of the PLANET hides. That
+    // ordering (contested caps lowest, because a zone is the one cap whose own
+    // outline is drawn on top of it) is between caps, all of which are still on
+    // the sphere and none of which moved.
     this.lines.renderOrder = 6
     this.lines.frustumCulled = false
     scene.add(this.lines)
@@ -205,6 +303,44 @@ export class FrontierLayer {
   /** The scene node, exposed so a test can count what was built. */
   get object() {
     return this.lines
+  }
+
+  /**
+   * WHERE THE CAMERA IS, which is the only thing the lift depends on. In globe
+   * radii, straight from `pointOfView().altitude`. Returns true if the ink
+   * moved — the caller's cue to wake the render pump.
+   *
+   * The same mechanism, for the same reason, as `DrawingLayer.setCameraAltitude`
+   * — a uniform scale about the globe's centre, which is a purely radial move
+   * for every vertex at once. It costs one matrix on a buffer of fifty thousand
+   * vertices, which is what makes it affordable on every camera event of every
+   * gesture; rebuilding this layer's geometry per frame is not, and that is the
+   * whole difference between a policy that can track the camera and one that
+   * has to pick a constant and live with it.
+   *
+   * The dash pattern does not move with it: the dashes are cut in the GEOMETRY
+   * in degrees of ground (`pushDashed`), so a radial scale of the whole buffer
+   * leaves every dash exactly where it was on the map.
+   */
+  setCameraAltitude(cameraAlt: number): boolean {
+    this.cameraAlt = cameraAlt
+    return this.applyLift()
+  }
+
+  private applyLift(): boolean {
+    // No chord-sag floor: a line cut at the folds lies in a facet plane and has
+    // nothing to clear but the sliver `LINE_FLOOR` is sized for. That is what
+    // separates this layer from a wash, which cannot be cut (see
+    // `groundClearance` in lib/drawingLayer.ts).
+    const want = inkLift(this.cameraAlt, LINE_FLOOR)
+    // A relative epsilon, for the same reason `DrawingLayer.applyLift` has one:
+    // OrbitControls damping leaves the altitude wandering in the last few
+    // digits, and a scale rewritten sixty times a second to the same value is
+    // sixty frames bought for nothing.
+    if (Math.abs(want - this.lift) <= Math.max(this.lift, want) * 0.02) return false
+    this.lift = want
+    this.lines.scale.setScalar((1 + want) / (1 + FRONTIER_BUILD_ALT))
+    return true
   }
 
   /**
@@ -224,13 +360,21 @@ export class FrontierLayer {
     this.currentKey = key
     const positions: number[] = []
     const colors: number[] = []
-    const r = this.radius * (1 + FRONTIER_ALT)
     for (const entry of entries) {
       const color = rgb(colorOf(entry))
       // A contested zone's outline is the one dashed line on the globe; every
       // other entry here is a frontier somebody agrees about. See `pushDashed`.
       const push = entry.kind === 'contested' ? pushDashed : pushLine
-      for (const path of inkPathsOf(entry, inkOf(entry))) push(path, color, r, positions, colors)
+      for (const path of inkPathsOf(entry, inkOf(entry)))
+        // CUT AT THE PLANET'S OWN FOLDS FIRST — the reason a grounded border
+        // needs a lift of metres rather than kilometres. See `splitAtFacets`.
+        // The dashed walk runs over the cut path too, and has to: it emits a
+        // dash within one segment of the path it is given, so cutting the path
+        // is exactly what keeps a single DASH from straddling a ridge. It
+        // cannot change the pattern — the dash period is measured in degrees of
+        // ground along the same polyline, and inserting a point on a segment
+        // does not move any point of it.
+        push(splitAtFacets(path), color, this.radius, positions, colors)
     }
     this.geometry.dispose()
     this.geometry = new BufferGeometry()

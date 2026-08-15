@@ -284,7 +284,144 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Early_Dynastic_Period_(Egypt)"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        32.9,
+        24.09
+       ],
+       [
+        32.88,
+        25.7
+       ],
+       [
+        32.38,
+        26.2
+       ],
+       [
+        31.8,
+        27.2
+       ],
+       [
+        31.2,
+        28.1
+       ],
+       [
+        31.22,
+        29.3
+       ],
+       [
+        31.25,
+        30.05
+       ]
+      ],
+      [
+       [
+        31.25,
+        30.05
+       ],
+       [
+        30.42,
+        31.4
+       ]
+      ],
+      [
+       [
+        31.25,
+        30.05
+       ],
+       [
+        31.81,
+        31.42
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.6,
+     "label": "The Nile",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "zone",
+     "ring": [
+      [
+       29.7,
+       30.9
+      ],
+      [
+       30.4,
+       31.55
+      ],
+      [
+       31.5,
+       31.58
+      ],
+      [
+       32.3,
+       31.25
+      ],
+      [
+       32.2,
+       30.4
+      ],
+      [
+       31.3,
+       30.0
+      ],
+      [
+       30.3,
+       30.1
+      ]
+     ],
+     "label": "Lower Egypt, the Delta"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      31.2506,
+      29.8494
+     ],
+     "style": "star",
+     "size": 0.15,
+     "label": "Memphis, the new capital",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      31.92,
+      26.18
+     ],
+     "style": "dot",
+     "size": 0.11,
+     "label": "The royal tombs at Abydos"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      32.78,
+      25.1
+     ],
+     "style": "dot",
+     "size": 0.11,
+     "label": "Hierakonpolis"
+    },
+    {
+     "type": "label",
+     "pos": [
+      31.6,
+      26.9
+     ],
+     "text": "Upper Egypt, the Nile valley",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "minoan-civilization",
@@ -338,7 +475,124 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Indus_Valley_Civilisation"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        72.5,
+        34.0
+       ],
+       [
+        71.5,
+        33.0
+       ],
+       [
+        70.9,
+        31.8
+       ],
+       [
+        70.9,
+        30.0
+       ],
+       [
+        70.4,
+        28.4
+       ],
+       [
+        69.3,
+        27.2
+       ],
+       [
+        68.3,
+        26.0
+       ],
+       [
+        67.6,
+        24.2
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The Indus",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        75.6,
+        29.6
+       ],
+       [
+        74.2,
+        29.2
+       ],
+       [
+        72.8,
+        28.6
+       ],
+       [
+        71.6,
+        27.9
+       ],
+       [
+        70.4,
+        27.0
+       ],
+       [
+        69.4,
+        25.8
+       ],
+       [
+        68.6,
+        24.4
+       ]
+      ]
+     ],
+     "dash": "dashed",
+     "width": 2.2,
+     "label": "The seasonal Ghaggar-Hakra",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      68.138,
+      27.325
+     ],
+     "style": "star",
+     "size": 0.15,
+     "label": "Mohenjo-daro",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      72.864,
+      30.633
+     ],
+     "style": "star",
+     "size": 0.15,
+     "label": "Harappa",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      70.5,
+      25.2
+     ],
+     "text": "cities on a grid",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "stonehenge",
@@ -414,7 +668,101 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Akkadian_Empire"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "ring": [
+      [
+       43.5,
+       30.4
+      ],
+      [
+       45.6,
+       30.6
+      ],
+      [
+       47.5,
+       30.2
+      ],
+      [
+       47.9,
+       31.6
+      ],
+      [
+       46.2,
+       32.8
+      ],
+      [
+       44.4,
+       33.6
+      ],
+      [
+       43.2,
+       32.6
+      ]
+     ],
+     "label": "The Sumerian city-states"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       47.6,
+       30.0
+      ],
+      [
+       45.0,
+       32.5
+      ],
+      [
+       41.0,
+       34.8
+      ],
+      [
+       37.5,
+       36.2
+      ],
+      [
+       36.0,
+       36.3
+      ]
+     ],
+     "width": 0.19594,
+     "label": "Campaigns claimed to the sea"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      46.103,
+      30.962
+     ],
+     "style": "star",
+     "size": 0.14,
+     "label": "Ur, where Enheduanna served",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      44.1,
+      33.3
+     ],
+     "text": "Akkad, never located",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      46.5,
+      34.6
+     ],
+     "text": "the Zagros, home of the Gutians",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "ur-nammu-code",
@@ -1352,7 +1700,116 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Achaemenid_Empire"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        28.04,
+        38.49
+       ],
+       [
+        30.6,
+        39.2
+       ],
+       [
+        32.9,
+        39.9
+       ],
+       [
+        35.5,
+        39.4
+       ],
+       [
+        38.8,
+        38.0
+       ],
+       [
+        41.5,
+        37.0
+       ],
+       [
+        43.15,
+        36.36
+       ],
+       [
+        44.01,
+        36.19
+       ],
+       [
+        45.5,
+        34.5
+       ],
+       [
+        47.0,
+        33.0
+       ],
+       [
+        48.26,
+        32.19
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The Royal Road, Sardis to Susa",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      52.891,
+      29.935
+     ],
+     "style": "star",
+     "size": 0.275,
+     "label": "Persepolis, the ceremonial capital",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      48.26,
+      32.19
+     ],
+     "style": "dot",
+     "size": 0.2,
+     "label": "Susa"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      48.52,
+      34.8
+     ],
+     "style": "dot",
+     "size": 0.2,
+     "label": "Ecbatana"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      44.42,
+      32.54
+     ],
+     "style": "dot",
+     "size": 0.2,
+     "label": "Babylon"
+    },
+    {
+     "type": "label",
+     "pos": [
+      28.04,
+      38.0
+     ],
+     "text": "Sardis",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "roman-republic-founded",
@@ -2170,7 +2627,110 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Maurya_Empire"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "ring": [
+      [
+       66.0,
+       32.0
+      ],
+      [
+       70.0,
+       34.0
+      ],
+      [
+       75.0,
+       32.5
+      ],
+      [
+       79.0,
+       30.5
+      ],
+      [
+       84.0,
+       27.5
+      ],
+      [
+       89.0,
+       25.0
+      ],
+      [
+       87.0,
+       22.0
+      ],
+      [
+       85.0,
+       19.0
+      ],
+      [
+       78.0,
+       15.0
+      ],
+      [
+       74.0,
+       15.5
+      ],
+      [
+       72.5,
+       20.0
+      ],
+      [
+       70.0,
+       24.0
+      ],
+      [
+       66.5,
+       29.0
+      ]
+     ],
+     "label": "Afghanistan to Bengal under Ashoka"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      85.137,
+      25.594
+     ],
+     "style": "star",
+     "size": 0.3,
+     "label": "Pataliputra, the capital",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      85.83,
+      20.23
+     ],
+     "style": "cross",
+     "size": 0.275,
+     "label": "Kalinga, conquered about 261 BCE"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      65.71,
+      31.61
+     ],
+     "style": "dot",
+     "size": 0.225,
+     "label": "Edicts in Greek and Aramaic"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      83.02,
+      25.38
+     ],
+     "style": "dot",
+     "size": 0.225,
+     "label": "The lion capital at Sarnath"
+    }
+   ]
+  }
  },
  {
   "id": "roman-roads",
@@ -2195,7 +2755,80 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Roman_roads"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        12.4853,
+        41.886
+       ],
+       [
+        12.7,
+        41.73
+       ],
+       [
+        13.05,
+        41.46
+       ],
+       [
+        13.24,
+        41.29
+       ],
+       [
+        13.6,
+        41.24
+       ],
+       [
+        14.0,
+        41.14
+       ],
+       [
+        14.21,
+        41.09
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 3.0,
+     "label": "The Via Appia, begun 312 BCE",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      12.4853,
+      41.8925
+     ],
+     "style": "star",
+     "size": 0.045,
+     "label": "The golden milestone in the Forum",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      14.21,
+      41.09
+     ],
+     "style": "dot",
+     "size": 0.035,
+     "label": "Capua"
+    },
+    {
+     "type": "label",
+     "pos": [
+      12.35,
+      41.96
+     ],
+     "text": "Rome",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "epicureanism",
@@ -2633,7 +3266,7 @@
  {
   "id": "cannae",
   "name": "Battle of Cannae",
-  "start": -215,
+  "start": -214.41575,
   "lat": 41.3,
   "lng": 16.1,
   "priority": 55,
@@ -2650,6 +3283,446 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Cannae"
+   }
+  ],
+  "end": -214.41427,
+  "steps": [
+   {
+    "id": "deployment",
+    "name": "The armies deploy",
+    "at": -214.41564,
+    "camera": {
+     "lat": 41.2941,
+     "lng": 16.0978,
+     "altitude": 0.0018
+    },
+    "page": "Rome had raised eight legions with allied contingents, perhaps 80,000 men, against about 50,000 with Hannibal. The consuls Aemilius Paullus and Terentius Varro held command on alternating days. The Roman infantry was drawn up in unusually deep maniples, to break the enemy centre by weight.\n\nHannibal put his Spanish and Gallic infantry in the centre and advanced it into a shallow curve bulging towards the Romans, with his African troops in column on either side of it and out of the first contact. His Spanish and Gallic horse stood on one wing and the Numidian light horse on the other. Both armies faced along the plain near the river Aufidus.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          16.07,
+          41.2905
+         ],
+         [
+          16.095,
+          41.3005
+         ],
+         [
+          16.118,
+          41.308
+         ],
+         [
+          16.14,
+          41.316
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 2.4,
+       "label": "The Aufidus",
+       "color": "#7fb2e5"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          16.076,
+          41.2905
+         ],
+         [
+          16.09,
+          41.293
+         ],
+         [
+          16.104,
+          41.2955
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 4.0,
+       "label": "The Roman infantry",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          16.074,
+          41.279
+         ],
+         [
+          16.083,
+          41.2846
+         ],
+         [
+          16.093,
+          41.287
+         ],
+         [
+          16.103,
+          41.2846
+         ],
+         [
+          16.112,
+          41.279
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.2,
+       "label": "Hannibal's centre, bulging forward"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        16.1325,
+        41.3064
+       ],
+       "style": "dot",
+       "size": 0.0028,
+       "label": "Cannae",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        16.114,
+        41.2985
+       ],
+       "text": "Roman cavalry",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        16.06,
+        41.287
+       ],
+       "text": "Numidian cavalry",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        16.1,
+        41.306
+       ],
+       "text": "the Aufidus",
+       "size": "md"
+      }
+     ]
+    }
+   },
+   {
+    "id": "the-centre-gives",
+    "name": "The centre gives way",
+    "at": -214.41518,
+    "camera": {
+     "lat": 41.2908,
+     "lng": 16.0966,
+     "altitude": 0.0019
+    },
+    "page": "The Roman infantry pushed against the Carthaginian centre and drove it back, which is what the deep formation was for and what Hannibal had arranged for it to do. The curve flattened and then reversed, and the legions advanced into the hollow it left.\n\nOn the wings the cavalry decided the battle. Hasdrubal's Spanish and Gallic horse broke the Roman cavalry on the river flank, rode behind the Roman line, and drove off the allied horse on the far wing, which the Numidians had been holding in place. The Roman infantry, still pressing forward, no longer had cavalry on either side of it.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          16.07,
+          41.2905
+         ],
+         [
+          16.095,
+          41.3005
+         ],
+         [
+          16.118,
+          41.308
+         ],
+         [
+          16.14,
+          41.316
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 2.4,
+       "label": "The Aufidus",
+       "color": "#7fb2e5"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          16.076,
+          41.2905
+         ],
+         [
+          16.09,
+          41.293
+         ],
+         [
+          16.104,
+          41.2955
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 4.0,
+       "label": "The legions press forward",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          16.074,
+          41.28
+         ],
+         [
+          16.084,
+          41.2794
+         ],
+         [
+          16.093,
+          41.2786
+         ],
+         [
+          16.102,
+          41.2794
+         ],
+         [
+          16.111,
+          41.28
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 3.2,
+       "label": "The centre gives ground"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         16.112,
+         41.281
+        ],
+        [
+         16.113,
+         41.288
+        ],
+        [
+         16.108,
+         41.2946
+        ]
+       ],
+       "width": 0.00112,
+       "label": "Hasdrubal breaks the Roman horse"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         16.07,
+         41.281
+        ],
+        [
+         16.069,
+         41.288
+        ],
+        [
+         16.074,
+         41.2942
+        ]
+       ],
+       "width": 0.00109,
+       "label": "the Numidians on the far wing"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        16.1325,
+        41.3064
+       ],
+       "style": "dot",
+       "size": 0.0028,
+       "label": "Cannae",
+       "color": "#ffd7a8"
+      }
+     ]
+    }
+   },
+   {
+    "id": "envelopment",
+    "name": "The envelopment",
+    "at": -214.41461,
+    "camera": {
+     "lat": 41.2923,
+     "lng": 16.0974,
+     "altitude": 0.0019
+    },
+    "page": "The African infantry, standing in column on either side of the flattened centre, turned inwards on the flanks of the Roman line as it went past them. Hasdrubal's cavalry, returning from the far wing, closed the fourth side behind it.\n\nThe legions were compressed until the men in the middle could not use their weapons. Polybius puts the Roman dead at about 48,000 and Livy at 55,000, with the consul Aemilius Paullus and eighty senators among them. Rome refused to negotiate, raised new legions, and returned to avoiding battle. Cannae is the standard example of double envelopment.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          16.07,
+          41.2905
+         ],
+         [
+          16.095,
+          41.3005
+         ],
+         [
+          16.118,
+          41.308
+         ],
+         [
+          16.14,
+          41.316
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 2.4,
+       "label": "The Aufidus",
+       "color": "#7fb2e5"
+      },
+      {
+       "type": "zone",
+       "ring": [
+        [
+         16.079,
+         41.293
+        ],
+        [
+         16.088,
+         41.2945
+        ],
+        [
+         16.098,
+         41.294
+        ],
+        [
+         16.105,
+         41.291
+        ],
+        [
+         16.103,
+         41.2846
+        ],
+        [
+         16.093,
+         41.282
+        ],
+        [
+         16.083,
+         41.2846
+        ],
+        [
+         16.079,
+         41.289
+        ]
+       ],
+       "label": "The Roman army, surrounded"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         16.07,
+         41.283
+        ],
+        [
+         16.079,
+         41.2862
+        ],
+        [
+         16.086,
+         41.289
+        ]
+       ],
+       "width": 0.00103,
+       "label": "The African column turns in"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         16.115,
+         41.283
+        ],
+        [
+         16.106,
+         41.2862
+        ],
+        [
+         16.099,
+         41.289
+        ]
+       ],
+       "width": 0.00103,
+       "label": "and the other"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         16.115,
+         41.301
+        ],
+        [
+         16.101,
+         41.301
+        ],
+        [
+         16.093,
+         41.2955
+        ]
+       ],
+       "width": 0.00143,
+       "label": "The cavalry closes the rear"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        16.093,
+        41.274
+       ],
+       "style": "cross",
+       "size": 0.0018,
+       "label": "about 48,000 Roman dead",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        16.1325,
+        41.3064
+       ],
+       "style": "dot",
+       "size": 0.0028,
+       "label": "Cannae"
+      }
+     ]
+    }
    }
   ]
  },
@@ -3167,7 +4240,123 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Gallic_Wars"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        7.6,
+        47.55
+       ],
+       [
+        7.62,
+        48.6
+       ],
+       [
+        8.25,
+        49.9
+       ],
+       [
+        7.6,
+        50.35
+       ],
+       [
+        6.1,
+        51.85
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.6,
+     "label": "The Rhine, bridged twice",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       6.1,
+       46.2
+      ],
+      [
+       5.3,
+       46.6
+      ],
+      [
+       4.5,
+       46.85
+      ],
+      [
+       4.04,
+       46.92
+      ]
+     ],
+     "width": 0.08269,
+     "label": "The Helvetii stopped, 58 BCE"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       3.6,
+       47.8
+      ],
+      [
+       3.9,
+       48.9
+      ],
+      [
+       4.2,
+       50.0
+      ]
+     ],
+     "width": 0.10187,
+     "label": "North against the Belgic tribes"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       1.61,
+       50.72
+      ],
+      [
+       1.5,
+       50.95
+      ],
+      [
+       1.4,
+       51.22
+      ]
+     ],
+     "width": 0.03434,
+     "label": "Two expeditions to Britain"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      4.5,
+      47.537
+     ],
+     "style": "star",
+     "size": 0.11,
+     "label": "Alesia, besieged behind two rings",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      1.5,
+      46.8
+     ],
+     "text": "Gaul",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "rubicon",

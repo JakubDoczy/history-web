@@ -42,7 +42,110 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Gothic_War_(535%E2%80%93554)"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       28.98,
+       41.01
+      ],
+      [
+       24.0,
+       37.0
+      ],
+      [
+       18.0,
+       36.5
+      ],
+      [
+       13.0,
+       36.6
+      ],
+      [
+       10.32,
+       36.85
+      ]
+     ],
+     "width": 0.20903,
+     "label": "Belisarius against the Vandals"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       13.5,
+       36.9
+      ],
+      [
+       14.5,
+       37.4
+      ],
+      [
+       15.3,
+       38.2
+      ],
+      [
+       14.27,
+       40.85
+      ],
+      [
+       12.6,
+       41.7
+      ]
+     ],
+     "width": 0.16441,
+     "label": "Sicily, then Italy, to 554"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       6.0,
+       36.0
+      ],
+      [
+       1.0,
+       35.8
+      ],
+      [
+       -3.5,
+       36.2
+      ],
+      [
+       -4.42,
+       36.72
+      ]
+     ],
+     "width": 0.18156,
+     "label": "Southern Spain, 552"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      12.83,
+      43.13
+     ],
+     "style": "cross",
+     "size": 0.175,
+     "label": "Taginae, 552",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      12.5,
+      41.89
+     ],
+     "style": "star",
+     "size": 0.175,
+     "label": "Rome, changing hands",
+     "color": "#ffd7a8"
+    }
+   ]
+  }
  },
  {
   "id": "hagia-sophia",
@@ -179,7 +282,64 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hijrah"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       39.8262,
+       21.4225
+      ],
+      [
+       39.75,
+       22.4
+      ],
+      [
+       39.68,
+       23.5
+      ],
+      [
+       39.6142,
+       24.42
+      ]
+     ],
+     "width": 0.12008,
+     "label": "The hijra, 622"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      39.6142,
+      24.4686
+     ],
+     "style": "star",
+     "size": 0.05,
+     "label": "Yathrib, afterwards Medina",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      39.8262,
+      21.4225
+     ],
+     "style": "dot",
+     "size": 0.045,
+     "label": "Mecca, which surrendered in 630"
+    },
+    {
+     "type": "label",
+     "pos": [
+      38.4,
+      22.9
+     ],
+     "text": "the Red Sea",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "islamic-conquests",
@@ -432,7 +592,77 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Tours"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       -1.6,
+       42.82
+      ],
+      [
+       -0.9,
+       43.6
+      ],
+      [
+       -0.58,
+       44.84
+      ],
+      [
+       -0.1,
+       45.8
+      ],
+      [
+       0.34,
+       46.58
+      ]
+     ],
+     "width": 0.13867,
+     "label": "North from al-Andalus"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      0.55,
+      46.87
+     ],
+     "style": "cross",
+     "size": 0.08,
+     "label": "The battle, October 732",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      3.0,
+      43.18
+     ],
+     "style": "dot",
+     "size": 0.06,
+     "label": "Narbonne, held until 759"
+    },
+    {
+     "type": "label",
+     "pos": [
+      0.684,
+      47.45
+     ],
+     "text": "Tours",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      0.34,
+      46.42
+     ],
+     "text": "Poitiers",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "harun-al-rashid",
@@ -1022,7 +1252,86 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Norman_Conquest"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "pos": [
+      -0.9147,
+      53.9917
+     ],
+     "style": "cross",
+     "size": 0.08,
+     "label": "Stamford Bridge",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       -1.08,
+       53.96
+      ],
+      [
+       -0.7,
+       52.8
+      ],
+      [
+       -0.13,
+       51.51
+      ],
+      [
+       0.3,
+       51.05
+      ]
+     ],
+     "width": 0.12106,
+     "label": "Harold marches south",
+     "color": "#eaf1fb"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       1.633,
+       50.185
+      ],
+      [
+       1.1,
+       50.45
+      ],
+      [
+       0.334,
+       50.819
+      ]
+     ],
+     "width": 0.06067,
+     "label": "William lands at Pevensey"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      0.4872,
+      50.9114
+     ],
+     "style": "cross",
+     "size": 0.08,
+     "label": "The battle, 14 October 1066",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -0.1273,
+      51.4995
+     ],
+     "style": "dot",
+     "size": 0.06,
+     "label": "Crowned at Westminster"
+    }
+   ]
+  }
  },
  {
   "id": "manzikert",
@@ -1584,7 +1893,81 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Fourth_Crusade"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       12.34,
+       45.44
+      ],
+      [
+       14.0,
+       44.9
+      ],
+      [
+       15.227,
+       44.115
+      ],
+      [
+       17.5,
+       42.7
+      ],
+      [
+       19.5,
+       41.3
+      ],
+      [
+       23.0,
+       40.0
+      ],
+      [
+       26.2,
+       40.1
+      ],
+      [
+       28.6,
+       40.9
+      ]
+     ],
+     "width": 0.20312,
+     "label": "The fleet from Venice"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      15.227,
+      44.115
+     ],
+     "style": "cross",
+     "size": 0.15,
+     "label": "Zara taken, 1202",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      28.98,
+      41.01
+     ],
+     "style": "star",
+     "size": 0.175,
+     "label": "Sacked, April 1204",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      12.34,
+      45.8
+     ],
+     "text": "Venice",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "mongol-conquests",
@@ -1829,7 +2212,125 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Mali_Empire"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        -8.0,
+        12.65
+       ],
+       [
+        -6.27,
+        13.44
+       ],
+       [
+        -4.55,
+        13.91
+       ],
+       [
+        -4.19,
+        14.49
+       ],
+       [
+        -3.01,
+        16.77
+       ],
+       [
+        -0.05,
+        16.27
+       ],
+       [
+        1.0,
+        14.5
+       ],
+       [
+        2.11,
+        13.51
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The upper and middle Niger",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "zone",
+     "ring": [
+      [
+       -11.5,
+       10.5
+      ],
+      [
+       -8.5,
+       10.2
+      ],
+      [
+       -5.5,
+       11.5
+      ],
+      [
+       -3.0,
+       13.5
+      ],
+      [
+       -2.5,
+       16.0
+      ],
+      [
+       -5.0,
+       16.5
+      ],
+      [
+       -8.5,
+       15.5
+      ],
+      [
+       -11.5,
+       14.0
+      ],
+      [
+       -12.5,
+       12.0
+      ]
+     ]
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -3.01,
+      16.77
+     ],
+     "style": "star",
+     "size": 0.275,
+     "label": "Timbuktu",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -8.1,
+      12.6
+     ],
+     "style": "cross",
+     "size": 0.225,
+     "label": "Kirina, about 1235"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -11.3,
+      13.9
+     ],
+     "text": "the goldfields of Bambuk and Bure",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "sukhothai",
@@ -2138,7 +2639,88 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Majapahit"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "ring": [
+      [
+       111.3,
+       -7.0
+      ],
+      [
+       112.8,
+       -6.8
+      ],
+      [
+       114.4,
+       -7.6
+      ],
+      [
+       115.6,
+       -8.2
+      ],
+      [
+       115.4,
+       -8.8
+      ],
+      [
+       114.0,
+       -8.6
+      ],
+      [
+       112.6,
+       -8.4
+      ],
+      [
+       111.2,
+       -8.2
+      ]
+     ],
+     "label": "East Java and Bali"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      112.383,
+      -7.556
+     ],
+     "style": "star",
+     "size": 0.1,
+     "label": "The capital, near Trowulan",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      110.64,
+      -6.89
+     ],
+     "style": "cross",
+     "size": 0.09,
+     "label": "Demak, which ended it in 1527"
+    },
+    {
+     "type": "label",
+     "pos": [
+      112.5,
+      -6.1
+     ],
+     "text": "the Java Sea",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      115.2,
+      -8.5
+     ],
+     "text": "Bali",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "ottoman-empire",
@@ -6455,7 +7037,108 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Songhai_Empire"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        -4.55,
+        13.91
+       ],
+       [
+        -4.19,
+        14.49
+       ],
+       [
+        -3.01,
+        16.77
+       ],
+       [
+        -1.5,
+        16.6
+       ],
+       [
+        -0.05,
+        16.27
+       ],
+       [
+        0.6,
+        15.2
+       ],
+       [
+        1.0,
+        14.5
+       ],
+       [
+        2.11,
+        13.51
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The middle Niger",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -0.04,
+      16.27
+     ],
+     "style": "star",
+     "size": 0.225,
+     "label": "Gao, the capital on the river",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -3.01,
+      16.77
+     ],
+     "style": "dot",
+     "size": 0.175,
+     "label": "Timbuktu, taken in 1468"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       -8.0,
+       31.63
+      ],
+      [
+       -5.0,
+       25.5
+      ],
+      [
+       -2.5,
+       20.5
+      ],
+      [
+       -0.05,
+       16.7
+      ]
+     ],
+     "width": 0.20913,
+     "label": "Across the Sahara, 1591"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -0.05,
+      16.66
+     ],
+     "style": "cross",
+     "size": 0.2,
+     "label": "Tondibi, 1591"
+    }
+   ]
+  }
  },
  {
   "id": "onin-war",

@@ -365,26 +365,6 @@
   ]
  },
  {
-  "id": "waterloo",
-  "name": "Battle of Waterloo",
-  "start": 1815,
-  "lat": 50.68,
-  "lng": 4.41,
-  "priority": 77,
-  "tags": [
-   "war"
-  ],
-  "parent": "napoleonic-wars",
-  "summary": "Wellington held the ridge until the Prussians arrived; Napoleon abdicated four days later and died in exile on St Helena.",
-  "body": "Part of [Napoleonic Wars](event:napoleonic-wars). The Battle of Waterloo was fought on 18 June 1815 a few kilometres south of Brussels, in what is now Belgium. An Anglo-allied army under the Duke of Wellington and a Prussian army under Gebhard von Blücher defeated Napoleon in a single day's fighting. It ended his return to power and the [Napoleonic Wars](event:napoleonic-wars) with them.\n\nNapoleon had escaped from Elba in March and recovered France without a shot, but faced coalition armies assembling on every frontier. He moved first, into Belgium, to beat the British and Prussian forces before they could join. He mauled the Prussians at Ligny on 16 June but failed to destroy them, and they marched to Wellington's support rather than away.\n\nWellington held a ridge at Mont-Saint-Jean through a day of French infantry and cavalry attacks, with the farms of Hougoumont and La Haye Sainte anchoring his line. The Prussians arrived on the French right in the afternoon and in growing strength; the final attack of the Imperial Guard was repulsed and the French army broke. Casualties on all sides ran to about 55,000.\n\nNapoleon abdicated four days later and was exiled to St Helena in the South Atlantic, where he died in 1821.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Waterloo).",
-  "links": [
-   {
-    "label": "Wikipedia",
-    "url": "https://en.wikipedia.org/wiki/Battle_of_Waterloo"
-   }
-  ]
- },
- {
   "id": "tambora",
   "name": "Eruption of Tambora",
   "start": 1815,
@@ -496,6 +476,601 @@
    }
   ],
   "priority": 0
+ },
+ {
+  "id": "waterloo",
+  "name": "Battle of Waterloo",
+  "start": 1815.46153,
+  "lat": 50.68,
+  "lng": 4.41,
+  "priority": 77,
+  "tags": [
+   "war"
+  ],
+  "parent": "napoleonic-wars",
+  "summary": "Wellington held the ridge until the Prussians arrived; Napoleon abdicated four days later and died in exile on St Helena.",
+  "body": "Part of [Napoleonic Wars](event:napoleonic-wars). The Battle of Waterloo was fought on 18 June 1815 a few kilometres south of Brussels, in what is now Belgium. An Anglo-allied army under the Duke of Wellington and a Prussian army under Gebhard von Blücher defeated Napoleon in a single day's fighting. It ended his return to power and the [Napoleonic Wars](event:napoleonic-wars) with them.\n\nNapoleon had escaped from Elba in March and recovered France without a shot, but faced coalition armies assembling on every frontier. He moved first, into Belgium, to beat the British and Prussian forces before they could join. He mauled the Prussians at Ligny on 16 June but failed to destroy them, and they marched to Wellington's support rather than away.\n\nWellington held a ridge at Mont-Saint-Jean through a day of French infantry and cavalry attacks, with the farms of Hougoumont and La Haye Sainte anchoring his line. The Prussians arrived on the French right in the afternoon and in growing strength; the final attack of the Imperial Guard was repulsed and the French army broke. Casualties on all sides ran to about 55,000.\n\nNapoleon abdicated four days later and was exiled to St Helena in the South Atlantic, where he died in 1821.\n\nMore at [Wikipedia](https://en.wikipedia.org/wiki/Battle_of_Waterloo).",
+  "links": [
+   {
+    "label": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Battle_of_Waterloo"
+   }
+  ],
+  "end": 1815.46261,
+  "steps": [
+   {
+    "id": "hougoumont",
+    "name": "The ridge and the farm of Hougoumont",
+    "at": 1815.46159,
+    "camera": {
+     "lat": 50.675,
+     "lng": 4.4075,
+     "altitude": 0.0016
+    },
+    "page": "Wellington drew up about 68,000 men along the ridge at Mont-Saint-Jean, across the Brussels road, with most of them behind the crest and out of sight of the French guns. Three walled farms stood in front of the line: Hougoumont on the right, La Haye Sainte in the centre and Papelotte on the left.\n\nThe first attack of the day, at about half past eleven, went in against Hougoumont. It was meant to draw off Wellington's reserves and instead drew in a growing part of the French left for the rest of the day. The garrison of British Guards and Nassau and Hanoverian troops held the walled garden and the buildings, and the north gate was closed by hand after French infantry forced it open.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          4.376,
+          50.6788
+         ],
+         [
+          4.39,
+          50.68
+         ],
+         [
+          4.402,
+          50.6812
+         ],
+         [
+          4.413,
+          50.682
+         ],
+         [
+          4.425,
+          50.6838
+         ],
+         [
+          4.437,
+          50.6862
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.0,
+       "label": "Wellington's line, Mont-Saint-Jean",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          4.386,
+          50.664
+         ],
+         [
+          4.399,
+          50.6668
+         ],
+         [
+          4.4136,
+          50.669
+         ],
+         [
+          4.427,
+          50.6706
+         ],
+         [
+          4.439,
+          50.6726
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "The French line"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         4.39,
+         50.662
+        ],
+        [
+         4.393,
+         50.6668
+        ],
+        [
+         4.3946,
+         50.6702
+        ]
+       ],
+       "width": 0.00067,
+       "label": "Hougoumont, about 11.30"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        4.3946,
+        50.6714
+       ],
+       "style": "star",
+       "size": 0.0022,
+       "label": "Hougoumont, held all day",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        4.4113,
+        50.6786
+       ],
+       "style": "dot",
+       "size": 0.0018,
+       "label": "La Haye Sainte",
+       "color": "#eaf1fb"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        4.4356,
+        50.6857
+       ],
+       "style": "dot",
+       "size": 0.0018,
+       "label": "Papelotte",
+       "color": "#eaf1fb"
+      },
+      {
+       "type": "label",
+       "pos": [
+        4.4136,
+        50.666
+       ],
+       "text": "La Belle Alliance",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        4.402,
+        50.69
+       ],
+       "text": "to Brussels",
+       "size": "md"
+      }
+     ]
+    }
+   },
+   {
+    "id": "derlon",
+    "name": "D'Erlon's attack and the cavalry",
+    "at": 1815.46182,
+    "camera": {
+     "lat": 50.6751,
+     "lng": 4.4097,
+     "altitude": 0.0016
+    },
+    "page": "At about half past one d'Erlon's corps advanced against Wellington's left centre in heavy columns. It was stopped by musketry and then broken by a charge of the British heavy cavalry, which rode on too far and was cut up by French lancers on the way back.\n\nThrough the middle of the afternoon Ney led repeated cavalry charges against the allied right centre, which formed squares on the reverse slope and held. The horsemen took the ground between the squares and could not take the squares themselves. La Haye Sainte, the farm in the centre, ran out of ammunition and fell at about six o'clock, and French skirmishers and guns pushed up close to the crest.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          4.376,
+          50.6788
+         ],
+         [
+          4.39,
+          50.68
+         ],
+         [
+          4.402,
+          50.6812
+         ],
+         [
+          4.413,
+          50.682
+         ],
+         [
+          4.425,
+          50.6838
+         ],
+         [
+          4.437,
+          50.6862
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.0,
+       "label": "Wellington's line, holding",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          4.386,
+          50.664
+         ],
+         [
+          4.399,
+          50.6668
+         ],
+         [
+          4.4136,
+          50.669
+         ],
+         [
+          4.427,
+          50.6706
+         ],
+         [
+          4.439,
+          50.6726
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 2.6,
+       "label": "The French line"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         4.423,
+         50.67
+        ],
+        [
+         4.42,
+         50.676
+        ],
+        [
+         4.418,
+         50.6806
+        ]
+       ],
+       "width": 0.00085,
+       "label": "D'Erlon, about 13.30"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         4.406,
+         50.669
+        ],
+        [
+         4.403,
+         50.674
+        ],
+        [
+         4.401,
+         50.679
+        ]
+       ],
+       "width": 0.00081,
+       "label": "The cavalry charges, afternoon"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        4.4113,
+        50.6786
+       ],
+       "style": "cross",
+       "size": 0.0022,
+       "label": "La Haye Sainte falls, about 18.00",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        4.39,
+        50.674
+       ],
+       "text": "squares on the reverse slope",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        4.4136,
+        50.665
+       ],
+       "text": "La Belle Alliance",
+       "size": "sm"
+      }
+     ]
+    }
+   },
+   {
+    "id": "prussians",
+    "name": "The Prussians reach Plancenoit",
+    "at": 1815.46216,
+    "camera": {
+     "lat": 50.6775,
+     "lng": 4.4272,
+     "altitude": 0.0023
+    },
+    "page": "Blücher had been beaten at Ligny two days earlier but had withdrawn north, towards Wellington, rather than east along his own supply line. His corps marched from Wavre across country made heavy by rain, and the leading troops came out of the Bois de Paris onto the French right in the late afternoon.\n\nBülow's IV Corps attacked Plancenoit, the village behind the French right rear, from about half past four. Napoleon had to turn his reserve, including part of the Young Guard, to hold it, and the village changed hands several times. The French army was now fighting on two fronts with nothing left in hand.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          4.376,
+          50.6788
+         ],
+         [
+          4.39,
+          50.68
+         ],
+         [
+          4.402,
+          50.6812
+         ],
+         [
+          4.413,
+          50.682
+         ],
+         [
+          4.425,
+          50.6838
+         ],
+         [
+          4.437,
+          50.6862
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 2.8,
+       "label": "Wellington's line",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          4.386,
+          50.664
+         ],
+         [
+          4.399,
+          50.6668
+         ],
+         [
+          4.4136,
+          50.669
+         ],
+         [
+          4.427,
+          50.6706
+         ],
+         [
+          4.439,
+          50.6726
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 2.4,
+       "label": "The French line"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         4.506,
+         50.696
+        ],
+        [
+         4.478,
+         50.69
+        ],
+        [
+         4.452,
+         50.679
+        ],
+        [
+         4.433,
+         50.669
+        ]
+       ],
+       "width": 0.0041,
+       "label": "Bülow, from Wavre",
+       "color": "#4c8dff"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        4.4262,
+        50.6653
+       ],
+       "style": "cross",
+       "size": 0.003,
+       "label": "Plancenoit, taken and retaken",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        4.47,
+        50.696
+       ],
+       "text": "to Wavre",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        4.416,
+        50.664
+       ],
+       "text": "La Belle Alliance",
+       "size": "sm"
+      }
+     ]
+    }
+   },
+   {
+    "id": "the-guard",
+    "name": "The Imperial Guard is repulsed",
+    "at": 1815.4625,
+    "camera": {
+     "lat": 50.6747,
+     "lng": 4.4148,
+     "altitude": 0.0016
+    },
+    "page": "At about half past seven Napoleon sent forward the infantry of the Middle Guard, which had not yet been engaged, up the slope west of La Haye Sainte. The battalions were met by British Guards lying down behind the crest and by flanking fire from the 52nd Light Infantry, and were driven back down the hill.\n\nThe French army had never seen the Guard repulsed. It broke, and Wellington ordered a general advance from the ridge as the Prussians came in on the other flank. Napoleon left the field towards Genappe. Casualties on all sides came to about 55,000. He abdicated four days later.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          4.376,
+          50.6788
+         ],
+         [
+          4.39,
+          50.68
+         ],
+         [
+          4.402,
+          50.6812
+         ],
+         [
+          4.413,
+          50.682
+         ],
+         [
+          4.425,
+          50.6838
+         ],
+         [
+          4.437,
+          50.6862
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.0,
+       "label": "Wellington's line",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         4.409,
+         50.668
+        ],
+        [
+         4.406,
+         50.674
+        ],
+        [
+         4.404,
+         50.6796
+        ]
+       ],
+       "width": 0.00092,
+       "label": "The Middle Guard, about 19.30"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         4.418,
+         50.682
+        ],
+        [
+         4.418,
+         50.674
+        ],
+        [
+         4.417,
+         50.6672
+        ]
+       ],
+       "width": 0.00114,
+       "label": "The general advance",
+       "color": "#eaf1fb"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         4.436,
+         50.67
+        ],
+        [
+         4.43,
+         50.6666
+        ],
+        [
+         4.428,
+         50.6656
+        ]
+       ],
+       "width": 0.00052,
+       "label": "The Prussians close on Plancenoit",
+       "color": "#4c8dff"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        4.404,
+        50.6796
+       ],
+       "style": "star",
+       "size": 0.0022,
+       "label": "The Guard driven back",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        4.4136,
+        50.6644
+       ],
+       "text": "La Belle Alliance",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        4.44,
+        50.662
+       ],
+       "text": "to Genappe",
+       "size": "sm"
+      }
+     ]
+    }
+   }
+  ]
  },
  {
   "id": "year-without-summer",
@@ -780,7 +1355,140 @@
   "parent": "qing-dynasty",
   "weak": [
    "us-civil-war"
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       110.17,
+       23.53
+      ],
+      [
+       111.3,
+       25.5
+      ],
+      [
+       112.0,
+       26.6
+      ],
+      [
+       112.9,
+       28.2
+      ],
+      [
+       114.3,
+       30.6
+      ],
+      [
+       116.5,
+       31.5
+      ],
+      [
+       118.8,
+       32.06
+      ]
+     ],
+     "width": 0.19704,
+     "label": "From Guangxi to Nanjing, 1851"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        114.3,
+        30.58
+       ],
+       [
+        116.0,
+        30.9
+       ],
+       [
+        117.5,
+        31.4
+       ],
+       [
+        118.8,
+        32.06
+       ],
+       [
+        120.3,
+        32.0
+       ],
+       [
+        121.5,
+        31.5
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The Yangtze",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "zone",
+     "ring": [
+      [
+       112.5,
+       30.0
+      ],
+      [
+       115.0,
+       30.2
+      ],
+      [
+       117.5,
+       31.0
+      ],
+      [
+       119.6,
+       31.6
+      ],
+      [
+       120.4,
+       32.6
+      ],
+      [
+       118.0,
+       33.2
+      ],
+      [
+       115.0,
+       32.4
+      ],
+      [
+       112.5,
+       31.4
+      ]
+     ],
+     "label": "Ruled from Nanjing"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      118.8,
+      32.06
+     ],
+     "style": "star",
+     "size": 0.275,
+     "label": "Nanjing, 1853 to 1864",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      110.17,
+      23.53
+     ],
+     "style": "dot",
+     "size": 0.225,
+     "label": "Where it began, in Guangxi"
+    }
+   ]
+  }
  },
  {
   "id": "crimean-war",
@@ -951,7 +1659,70 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Indian_Rebellion_of_1857"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "pos": [
+      77.7,
+      28.99
+     ],
+     "style": "star",
+     "size": 0.11,
+     "label": "The mutiny began at Meerut",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       77.7,
+       28.95
+      ],
+      [
+       77.45,
+       28.8
+      ],
+      [
+       77.23,
+       28.66
+      ]
+     ],
+     "width": 0.03355,
+     "label": "The rebels take Delhi"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      80.35,
+      26.45
+     ],
+     "style": "cross",
+     "size": 0.1,
+     "label": "Kanpur besieged"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      80.95,
+      26.85
+     ],
+     "style": "cross",
+     "size": 0.1,
+     "label": "Lucknow besieged"
+    },
+    {
+     "type": "label",
+     "pos": [
+      79.0,
+      27.9
+     ],
+     "text": "northern and central India",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "transatlantic-telegraph",
@@ -1234,7 +2005,7 @@
  {
   "id": "gettysburg",
   "name": "Battle of Gettysburg",
-  "start": 1863,
+  "start": 1863.49726,
   "lat": 39.81,
   "lng": -77.23,
   "priority": 58,
@@ -1251,6 +2022,500 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Gettysburg"
+   }
+  ],
+  "end": 1863.50274,
+  "steps": [
+   {
+    "id": "first-day",
+    "name": "The armies meet west of the town",
+    "at": 1863.49726,
+    "camera": {
+     "lat": 39.8383,
+     "lng": -77.2429,
+     "altitude": 0.0016
+    },
+    "page": "The armies collided by accident on 1 July, west of Gettysburg, where Confederate infantry moving down the Chambersburg Pike ran into John Buford's Union cavalry on the ridges outside the town. Both sides fed in the troops nearest to hand as they arrived. John Reynolds, commanding the Union I Corps, was killed early in the morning.\n\nIn the afternoon two divisions of Richard Ewell's corps came down from the north and north east, on the flank of the Union line. The Union position collapsed and the men fell back through the streets of the town onto Cemetery Hill and Culp's Hill to the south of it. About 4,000 were taken prisoner in the retreat. The high ground they held that evening decided the next two days.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          -77.256,
+          39.84
+         ],
+         [
+          -77.2545,
+          39.834
+         ],
+         [
+          -77.2528,
+          39.8272
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 2.8,
+       "label": "The I Corps on McPherson Ridge",
+       "color": "#eaf1fb"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         -77.279,
+         39.8362
+        ],
+        [
+         -77.268,
+         39.8352
+        ],
+        [
+         -77.257,
+         39.8344
+        ]
+       ],
+       "width": 0.0013,
+       "label": "Heth, down the Chambersburg Pike"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         -77.247,
+         39.862
+        ],
+        [
+         -77.244,
+         39.852
+        ],
+        [
+         -77.24,
+         39.843
+        ]
+       ],
+       "width": 0.00151,
+       "label": "Rodes, from Oak Hill"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         -77.213,
+         39.86
+        ],
+        [
+         -77.218,
+         39.85
+        ],
+        [
+         -77.2225,
+         39.8425
+        ]
+       ],
+       "width": 0.00145,
+       "label": "Early, from the north east"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         -77.238,
+         39.833
+        ],
+        [
+         -77.233,
+         39.828
+        ],
+        [
+         -77.2308,
+         39.8215
+        ]
+       ],
+       "width": 0.001,
+       "label": "Falling back through the town",
+       "color": "#eaf1fb"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        -77.2545,
+        39.8352
+       ],
+       "style": "cross",
+       "size": 0.0022,
+       "label": "Reynolds killed, morning of 1 July",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.227,
+        39.833
+       ],
+       "text": "Gettysburg",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.227,
+        39.818
+       ],
+       "text": "Cemetery Hill",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.253,
+        39.843
+       ],
+       "text": "McPherson Ridge",
+       "size": "sm"
+      }
+     ]
+    }
+   },
+   {
+    "id": "second-day",
+    "name": "The attacks on both flanks",
+    "at": 1863.5,
+    "camera": {
+     "lat": 39.8111,
+     "lng": -77.2374,
+     "altitude": 0.0016
+    },
+    "page": "By the morning of 2 July the Union army held a line shaped like a fishhook: Culp's Hill at the barb, Cemetery Hill at the bend, and Cemetery Ridge running south to the two hills called Little Round Top and Big Round Top. Interior lines let George Meade move reserves from one end of it to the other faster than an attacker could march round the outside.\n\nLee attacked both flanks. In the late afternoon James Longstreet's corps came in from the south west against ground held forward of the ridge by Daniel Sickles, and fought through the Peach Orchard, the Wheatfield and Devil's Den. Little Round Top was held by a brigade sent up minutes before the attack reached it. Ewell took part of Culp's Hill after dark. The ridge itself held.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          -77.2178,
+          39.8232
+         ],
+         [
+          -77.221,
+          39.8228
+         ],
+         [
+          -77.2262,
+          39.8214
+         ],
+         [
+          -77.2308,
+          39.8205
+         ],
+         [
+          -77.2338,
+          39.8168
+         ],
+         [
+          -77.2372,
+          39.8118
+         ],
+         [
+          -77.2378,
+          39.804
+         ],
+         [
+          -77.2372,
+          39.7972
+         ],
+         [
+          -77.2368,
+          39.7912
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.0,
+       "label": "The Union fishhook, held",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          -77.247,
+          39.842
+         ],
+         [
+          -77.245,
+          39.832
+         ],
+         [
+          -77.2468,
+          39.821
+         ],
+         [
+          -77.2496,
+          39.8092
+         ],
+         [
+          -77.253,
+          39.799
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 2.4,
+       "label": "The Confederate line"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         -77.265,
+         39.793
+        ],
+        [
+         -77.256,
+         39.796
+        ],
+        [
+         -77.2496,
+         39.7988
+        ]
+       ],
+       "width": 0.00101,
+       "label": "Longstreet, late afternoon"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         -77.256,
+         39.7862
+        ],
+        [
+         -77.247,
+         39.7888
+        ],
+        [
+         -77.2394,
+         39.7908
+        ]
+       ],
+       "width": 0.00104,
+       "label": "Devil's Den and the Round Tops"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         -77.2075,
+         39.829
+        ],
+        [
+         -77.213,
+         39.8252
+        ],
+        [
+         -77.2192,
+         39.8228
+        ]
+       ],
+       "width": 0.00084,
+       "label": "Ewell, after dark"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        -77.2368,
+        39.7912
+       ],
+       "style": "star",
+       "size": 0.002,
+       "label": "Little Round Top, held",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.261,
+        39.801
+       ],
+       "text": "Peach Orchard",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.209,
+        39.827
+       ],
+       "text": "Culp's Hill",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.229,
+        39.839
+       ],
+       "text": "Gettysburg",
+       "size": "md"
+      }
+     ]
+    }
+   },
+   {
+    "id": "pickett",
+    "name": "Pickett's Charge",
+    "at": 1863.50274,
+    "camera": {
+     "lat": 39.8148,
+     "lng": -77.2382,
+     "altitude": 0.0016
+    },
+    "page": "On the afternoon of 3 July, after a bombardment by about 150 guns that mostly overshot, Lee sent roughly 12,000 men of three divisions across a kilometre and a quarter of open ground against the Union centre on Cemetery Ridge. The attack is named after George Pickett, one of the three divisional commanders.\n\nThe advancing lines were shelled from the front and enfiladed from Little Round Top and from Cemetery Hill, then met rifle fire at the fence along the Emmitsburg Road. A few hundred men crossed the low stone wall at the angle in the Union line before they were killed or captured. More than half of those who set out did not come back. Lee withdrew towards Virginia the following evening.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          -77.2178,
+          39.8232
+         ],
+         [
+          -77.221,
+          39.8228
+         ],
+         [
+          -77.2262,
+          39.8214
+         ],
+         [
+          -77.2308,
+          39.8205
+         ],
+         [
+          -77.2338,
+          39.8168
+         ],
+         [
+          -77.2372,
+          39.8118
+         ],
+         [
+          -77.2378,
+          39.804
+         ],
+         [
+          -77.2372,
+          39.7972
+         ],
+         [
+          -77.2368,
+          39.7912
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.0,
+       "label": "The Union centre on Cemetery Ridge",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          -77.247,
+          39.842
+         ],
+         [
+          -77.245,
+          39.832
+         ],
+         [
+          -77.2468,
+          39.821
+         ],
+         [
+          -77.2496,
+          39.8092
+         ],
+         [
+          -77.253,
+          39.799
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 2.4,
+       "label": "The Confederate guns"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         -77.25,
+         39.8092
+        ],
+        [
+         -77.244,
+         39.8104
+        ],
+        [
+         -77.2378,
+         39.8117
+        ]
+       ],
+       "width": 0.00074,
+       "label": "Pickett's Charge, about 12,000 men"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        -77.2372,
+        39.8118
+       ],
+       "style": "star",
+       "size": 0.0022,
+       "label": "The angle: the furthest point",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.256,
+        39.809
+       ],
+       "text": "Spangler's Woods",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.229,
+        39.812
+       ],
+       "text": "Cemetery Ridge",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        -77.229,
+        39.835
+       ],
+       "text": "Gettysburg",
+       "size": "md"
+      }
+     ]
+    }
    }
   ]
  },
@@ -1448,7 +2713,134 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/First_transcontinental_railroad"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        -121.49,
+        38.58
+       ],
+       [
+        -120.9,
+        39.0
+       ],
+       [
+        -120.32,
+        39.32
+       ],
+       [
+        -119.81,
+        39.53
+       ],
+       [
+        -118.7,
+        40.4
+       ],
+       [
+        -117.74,
+        40.97
+       ],
+       [
+        -115.76,
+        40.83
+       ],
+       [
+        -114.0,
+        41.0
+       ],
+       [
+        -112.55,
+        41.62
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The Central Pacific",
+     "color": "#f5a623"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        -95.93,
+        41.26
+       ],
+       [
+        -98.38,
+        40.92
+       ],
+       [
+        -100.77,
+        41.13
+       ],
+       [
+        -102.98,
+        41.12
+       ],
+       [
+        -104.82,
+        41.14
+       ],
+       [
+        -106.3,
+        41.59
+       ],
+       [
+        -109.0,
+        41.59
+       ],
+       [
+        -111.97,
+        41.22
+       ],
+       [
+        -112.55,
+        41.62
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The Union Pacific",
+     "color": "#4c8dff"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -112.55,
+      41.62
+     ],
+     "style": "star",
+     "size": 0.275,
+     "label": "The golden spike, 10 May 1869",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -120.3,
+      38.9
+     ],
+     "text": "the Sierra Nevada",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -95.93,
+      41.6
+     ],
+     "text": "the Missouri River",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "periodic-table",
@@ -1839,7 +3231,142 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/1883_eruption_of_Krakatoa"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "ring": [
+      [
+       105.423,
+       -6.0211
+      ],
+      [
+       105.4637,
+       -6.0319
+      ],
+      [
+       105.4935,
+       -6.0615
+      ],
+      [
+       105.5044,
+       -6.102
+      ],
+      [
+       105.4935,
+       -6.1425
+      ],
+      [
+       105.4637,
+       -6.1721
+      ],
+      [
+       105.423,
+       -6.1829
+      ],
+      [
+       105.3823,
+       -6.1721
+      ],
+      [
+       105.3525,
+       -6.1425
+      ],
+      [
+       105.3416,
+       -6.102
+      ],
+      [
+       105.3525,
+       -6.0615
+      ],
+      [
+       105.3823,
+       -6.0319
+      ]
+     ],
+     "label": "The island, 26 and 27 August 1883"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        105.99,
+        -5.93
+       ],
+       [
+        105.8,
+        -6.1
+       ],
+       [
+        105.6,
+        -6.35
+       ],
+       [
+        105.4,
+        -6.55
+       ],
+       [
+        105.25,
+        -6.75
+       ]
+      ],
+      [
+       [
+        105.27,
+        -5.45
+       ],
+       [
+        105.45,
+        -5.6
+       ],
+       [
+        105.6,
+        -5.75
+       ],
+       [
+        105.8,
+        -5.85
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 3.0,
+     "label": "165 villages destroyed by tsunami",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      105.423,
+      -6.102
+     ],
+     "style": "star",
+     "size": 0.05,
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      105.7,
+      -6.6
+     ],
+     "text": "Java",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      105.1,
+      -5.4
+     ],
+     "text": "Sumatra",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "kodak-film",
@@ -1976,7 +3503,118 @@
   "parent": "qing-dynasty",
   "strong": [
    "chinese-revolution"
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "zone",
+     "ring": [
+      [
+       117.5,
+       38.1087
+      ],
+      [
+       118.5823,
+       37.8749
+      ],
+      [
+       119.3588,
+       37.24
+      ],
+      [
+       119.6226,
+       36.3812
+      ],
+      [
+       119.3184,
+       35.5318
+      ],
+      [
+       118.5418,
+       34.9157
+      ],
+      [
+       117.5,
+       34.6913
+      ],
+      [
+       116.4582,
+       34.9157
+      ],
+      [
+       115.6816,
+       35.5318
+      ],
+      [
+       115.3774,
+       36.3812
+      ],
+      [
+       115.6412,
+       37.24
+      ],
+      [
+       116.4177,
+       37.8749
+      ]
+     ],
+     "label": "Where the movement grew"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       117.72,
+       38.98
+      ],
+      [
+       117.2,
+       39.13
+      ],
+      [
+       116.7,
+       39.6
+      ],
+      [
+       116.42,
+       39.9
+      ]
+     ],
+     "width": 0.07559,
+     "label": "The relief expedition, August 1900"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      116.415,
+      39.905
+     ],
+     "style": "star",
+     "size": 0.1,
+     "label": "The legation quarter, besieged",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      117.2,
+      39.13
+     ],
+     "style": "dot",
+     "size": 0.08,
+     "label": "Tianjin, on the route to the sea"
+    },
+    {
+     "type": "label",
+     "pos": [
+      117.5,
+      37.4
+     ],
+     "text": "Shandong",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "boer-war",
@@ -2384,7 +4022,95 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Terra_Nova_Expedition"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       166.417,
+       -77.638
+      ],
+      [
+       168.5,
+       -79.5
+      ],
+      [
+       169.5,
+       -81.5
+      ],
+      [
+       170.0,
+       -83.5
+      ],
+      [
+       172.0,
+       -85.2
+      ],
+      [
+       175.0,
+       -87.5
+      ],
+      [
+       179.0,
+       -89.8
+      ]
+     ],
+     "width": 0.19752,
+     "label": "Ponies, dogs, then man-hauling"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      0.0,
+      -90.0
+     ],
+     "style": "star",
+     "size": 0.275,
+     "label": "The Pole, 17 January 1912",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      169.5,
+      -79.62
+     ],
+     "style": "cross",
+     "size": 0.25,
+     "label": "The tent, short of One Ton"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      166.417,
+      -77.638
+     ],
+     "style": "dot",
+     "size": 0.225,
+     "label": "Cape Evans, the base"
+    },
+    {
+     "type": "label",
+     "pos": [
+      176.0,
+      -81.5
+     ],
+     "text": "the Ross Ice Shelf",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      170.5,
+      -84.2
+     ],
+     "text": "the Beardmore Glacier",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "chinese-revolution",
@@ -2405,7 +4131,100 @@
     "url": "https://en.wikipedia.org/wiki/Xinhai_Revolution"
    }
   ],
-  "parent": "qing-dynasty"
+  "parent": "qing-dynasty",
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        104.07,
+        30.66
+       ],
+       [
+        108.4,
+        30.7
+       ],
+       [
+        111.3,
+        30.7
+       ],
+       [
+        114.302,
+        30.545
+       ],
+       [
+        116.5,
+        31.5
+       ],
+       [
+        118.8,
+        32.06
+       ],
+       [
+        121.5,
+        31.5
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.6,
+     "label": "The Yangtze",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      114.302,
+      30.545
+     ],
+     "style": "star",
+     "size": 0.275,
+     "label": "Wuchang, 10 October 1911",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      118.8,
+      32.06
+     ],
+     "style": "dot",
+     "size": 0.225,
+     "label": "Nanjing: a republic proclaimed"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      116.4,
+      39.9
+     ],
+     "style": "cross",
+     "size": 0.25,
+     "label": "Puyi abdicates, 12 February 1912"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      104.07,
+      30.66
+     ],
+     "style": "dot",
+     "size": 0.225,
+     "label": "Sichuan and the railway protests"
+    },
+    {
+     "type": "label",
+     "pos": [
+      112.0,
+      34.5
+     ],
+     "text": "province after province declared",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "titanic-sinks",
@@ -2864,7 +4683,7 @@
  {
   "id": "somme",
   "name": "Battle of the Somme",
-  "start": 1916,
+  "start": 1916.49863,
   "lat": 50.0,
   "lng": 2.7,
   "priority": 56,
@@ -2881,6 +4700,927 @@
    {
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_the_Somme"
+   }
+  ],
+  "end": 1916.88115,
+  "steps": [
+   {
+    "id": "first-day",
+    "name": "The first day",
+    "at": 1916.49863,
+    "camera": {
+     "lat": 50.0005,
+     "lng": 2.7175,
+     "altitude": 0.008
+    },
+    "page": "The attack opened at 07.30 on 1 July on a front of about 25 kilometres, from Gommecourt in the north to the river Somme, with the French continuing the line to the south of it. Seven days of bombardment were expected to have cut the wire and destroyed the dugouts of the German front position, which was on chalk and dug deep. Much of it had not.\n\nIn the north, from Gommecourt to Thiepval, the attacking divisions were stopped on or in front of the German wire. In the south the British took Mametz and Montauban and the French, attacking with more guns and on a narrower front, took their first objectives on both banks of the river. British casualties on the day were 57,470, of them 19,240 killed, the worst day in the army's history.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.66,
+          50.118
+         ],
+         [
+          2.651,
+          50.108
+         ],
+         [
+          2.66,
+          50.087
+         ],
+         [
+          2.687,
+          50.057
+         ],
+         [
+          2.698,
+          50.033
+         ],
+         [
+          2.696,
+          50.017
+         ],
+         [
+          2.718,
+          49.999
+         ],
+         [
+          2.736,
+          49.995
+         ],
+         [
+          2.757,
+          49.993
+         ],
+         [
+          2.777,
+          49.98
+         ],
+         [
+          2.804,
+          49.964
+         ],
+         [
+          2.828,
+          49.944
+         ],
+         [
+          2.836,
+          49.913
+         ],
+         [
+          2.856,
+          49.872
+         ],
+         [
+          2.83,
+          49.83
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.0,
+       "label": "The German front line, 1 July",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.508,
+          49.908
+         ],
+         [
+          2.6,
+          49.92
+         ],
+         [
+          2.72,
+          49.94
+         ],
+         [
+          2.83,
+          49.933
+         ],
+         [
+          2.937,
+          49.929
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 2.2,
+       "label": "The Somme",
+       "color": "#7fb2e5"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.57,
+         50.12
+        ],
+        [
+         2.615,
+         50.119
+        ],
+        [
+         2.656,
+         50.1165
+        ]
+       ],
+       "width": 0.00418,
+       "label": "Gommecourt, a diversion"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.56,
+         50.092
+        ],
+        [
+         2.61,
+         50.09
+        ],
+        [
+         2.652,
+         50.088
+        ]
+       ],
+       "width": 0.00447,
+       "label": "Stopped on the wire"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.6,
+         50.02
+        ],
+        [
+         2.65,
+         50.019
+        ],
+        [
+         2.69,
+         50.0176
+        ]
+       ],
+       "width": 0.00437,
+       "label": "Ovillers and La Boisselle"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.67,
+         49.956
+        ],
+        [
+         2.71,
+         49.974
+        ],
+        [
+         2.748,
+         49.989
+        ]
+       ],
+       "width": 0.00454,
+       "label": "Mametz and Montauban taken"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.75,
+         49.898
+        ],
+        [
+         2.795,
+         49.92
+        ],
+        [
+         2.828,
+         49.938
+        ]
+       ],
+       "width": 0.00484,
+       "label": "The French objectives taken",
+       "color": "#4c8dff"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        2.66,
+        50.087
+       ],
+       "style": "cross",
+       "size": 0.007,
+       "label": "57,470 British casualties",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.64,
+        50.002
+       ],
+       "text": "Albert",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.85,
+        50.101
+       ],
+       "text": "Bapaume",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.937,
+        49.929
+       ],
+       "text": "Péronne",
+       "size": "md"
+      }
+     ]
+    }
+   },
+   {
+    "id": "attrition",
+    "name": "Four months of limited attacks",
+    "start": 1916.53415,
+    "end": 1916.70355,
+    "camera": {
+     "lat": 49.9991,
+     "lng": 2.7547,
+     "altitude": 0.0079
+    },
+    "page": "After the first day the offensive became a series of limited attacks with heavy artillery support, each aimed at a village, a wood or a ridge. A night attack on 14 July took the German second position on Bazentin Ridge. Delville Wood and High Wood were fought over for weeks, and Australian divisions took Pozières and the ridge beyond it in a series of attacks through July and August.\n\nThe ground gained by the middle of September was a few kilometres deep. Both armies were feeding divisions into the battle and taking them out again worn down, which is the sense in which the Somme is described as attrition. The German command ordered the construction of a new defensive system far to the rear.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.66,
+          50.118
+         ],
+         [
+          2.651,
+          50.108
+         ],
+         [
+          2.66,
+          50.087
+         ],
+         [
+          2.687,
+          50.057
+         ],
+         [
+          2.698,
+          50.033
+         ],
+         [
+          2.696,
+          50.017
+         ],
+         [
+          2.718,
+          49.999
+         ],
+         [
+          2.736,
+          49.995
+         ],
+         [
+          2.757,
+          49.993
+         ],
+         [
+          2.777,
+          49.98
+         ],
+         [
+          2.804,
+          49.964
+         ],
+         [
+          2.828,
+          49.944
+         ],
+         [
+          2.836,
+          49.913
+         ],
+         [
+          2.856,
+          49.872
+         ],
+         [
+          2.83,
+          49.83
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "The line on 1 July",
+       "color": "#eaf1fb"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.66,
+          50.118
+         ],
+         [
+          2.651,
+          50.108
+         ],
+         [
+          2.66,
+          50.087
+         ],
+         [
+          2.7,
+          50.068
+         ],
+         [
+          2.748,
+          50.064
+         ],
+         [
+          2.79,
+          50.056
+         ],
+         [
+          2.815,
+          50.04
+         ],
+         [
+          2.83,
+          50.018
+         ],
+         [
+          2.86,
+          49.993
+         ],
+         [
+          2.88,
+          49.956
+         ],
+         [
+          2.883,
+          49.931
+         ],
+         [
+          2.87,
+          49.89
+         ],
+         [
+          2.856,
+          49.872
+         ],
+         [
+          2.83,
+          49.83
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.0,
+       "label": "The line by mid September",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.508,
+          49.908
+         ],
+         [
+          2.6,
+          49.92
+         ],
+         [
+          2.72,
+          49.94
+         ],
+         [
+          2.83,
+          49.933
+         ],
+         [
+          2.937,
+          49.929
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 2.2,
+       "label": "The Somme",
+       "color": "#7fb2e5"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.66,
+         50.033
+        ],
+        [
+         2.705,
+         50.041
+        ],
+        [
+         2.742,
+         50.047
+        ]
+       ],
+       "width": 0.00412,
+       "label": "Bazentin Ridge, 14 July"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.69,
+         50.018
+        ],
+        [
+         2.73,
+         50.03
+        ],
+        [
+         2.766,
+         50.044
+        ]
+       ],
+       "width": 0.00419,
+       "label": "Pozières, July and August"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        2.791,
+        50.043
+       ],
+       "style": "dot",
+       "size": 0.006,
+       "label": "High Wood",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        2.809,
+        50.029
+       ],
+       "style": "dot",
+       "size": 0.006,
+       "label": "Delville Wood",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.64,
+        50.002
+       ],
+       "text": "Albert",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.85,
+        50.101
+       ],
+       "text": "Bapaume",
+       "size": "md"
+      }
+     ]
+    }
+   },
+   {
+    "id": "flers",
+    "name": "Tanks at Flers-Courcelette",
+    "start": 1916.70628,
+    "end": 1916.72541,
+    "camera": {
+     "lat": 50.0233,
+     "lng": 2.786,
+     "altitude": 0.0085
+    },
+    "page": "Tanks were used in action for the first time on 15 September at Flers-Courcelette. Forty-nine Mark I machines were allotted to the attack, of which about thirty-two reached their start line and rather fewer went forward with the infantry; the rest broke down or ditched.\n\nThe attack took Flers, Courcelette and Martinpuich and advanced some two kilometres on a front of about ten, the largest single gain since 1 July. The tanks were slow, unreliable and used in small numbers, and opinion afterwards divided over whether they should have been kept back until enough were available to be used at once. Production was ordered increased.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.66,
+          50.118
+         ],
+         [
+          2.651,
+          50.108
+         ],
+         [
+          2.66,
+          50.087
+         ],
+         [
+          2.7,
+          50.068
+         ],
+         [
+          2.748,
+          50.064
+         ],
+         [
+          2.79,
+          50.056
+         ],
+         [
+          2.815,
+          50.04
+         ],
+         [
+          2.83,
+          50.018
+         ],
+         [
+          2.86,
+          49.993
+         ],
+         [
+          2.88,
+          49.956
+         ],
+         [
+          2.883,
+          49.931
+         ],
+         [
+          2.87,
+          49.89
+         ],
+         [
+          2.856,
+          49.872
+         ],
+         [
+          2.83,
+          49.83
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "The line before the attack",
+       "color": "#eaf1fb"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.706,
+         50.04
+        ],
+        [
+         2.735,
+         50.049
+        ],
+        [
+         2.756,
+         50.056
+        ]
+       ],
+       "width": 0.00273,
+       "label": "Courcelette"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.762,
+         50.03
+        ],
+        [
+         2.794,
+         50.04
+        ],
+        [
+         2.818,
+         50.048
+        ]
+       ],
+       "width": 0.00306,
+       "label": "Flers, entered behind the tanks"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        2.821,
+        50.049
+       ],
+       "style": "star",
+       "size": 0.006,
+       "label": "Tanks in action, 15 September",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.757,
+        50.062
+       ],
+       "text": "Courcelette",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.83,
+        50.053
+       ],
+       "text": "Flers",
+       "size": "sm"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.85,
+        50.101
+       ],
+       "text": "Bapaume",
+       "size": "md"
+      }
+     ]
+    }
+   },
+   {
+    "id": "november",
+    "name": "The line in November",
+    "start": 1916.75,
+    "end": 1916.88115,
+    "camera": {
+     "lat": 50.0006,
+     "lng": 2.7546,
+     "altitude": 0.008
+    },
+    "page": "The last phase was fought in rain and mud on ground broken by four months of shellfire. The final attack, on the Ancre on 13 November, took Beaumont-Hamel and Beaucourt, objectives of the first morning of the battle. The offensive was closed down on 18 November.\n\nThe Allies had advanced about ten kilometres on a front of some thirty, and had reached neither Bapaume nor Péronne. Casualties are usually given as about 420,000 British, 200,000 French and between 435,000 and 600,000 German. In February and March 1917 the German army withdrew to the prepared positions of the Hindenburg Line, giving up more ground than the battle had taken.",
+    "drawing": {
+     "layers": [
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.66,
+          50.118
+         ],
+         [
+          2.651,
+          50.108
+         ],
+         [
+          2.66,
+          50.087
+         ],
+         [
+          2.687,
+          50.057
+         ],
+         [
+          2.698,
+          50.033
+         ],
+         [
+          2.696,
+          50.017
+         ],
+         [
+          2.718,
+          49.999
+         ],
+         [
+          2.736,
+          49.995
+         ],
+         [
+          2.757,
+          49.993
+         ],
+         [
+          2.777,
+          49.98
+         ],
+         [
+          2.804,
+          49.964
+         ],
+         [
+          2.828,
+          49.944
+         ],
+         [
+          2.836,
+          49.913
+         ],
+         [
+          2.856,
+          49.872
+         ],
+         [
+          2.83,
+          49.83
+         ]
+        ]
+       ],
+       "dash": "dashed",
+       "width": 2.0,
+       "label": "The line on 1 July",
+       "color": "#eaf1fb"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.66,
+          50.118
+         ],
+         [
+          2.651,
+          50.108
+         ],
+         [
+          2.672,
+          50.09
+         ],
+         [
+          2.728,
+          50.07
+         ],
+         [
+          2.766,
+          50.079
+         ],
+         [
+          2.801,
+          50.068
+         ],
+         [
+          2.818,
+          50.051
+         ],
+         [
+          2.842,
+          50.028
+         ],
+         [
+          2.877,
+          49.997
+         ],
+         [
+          2.89,
+          49.956
+         ],
+         [
+          2.883,
+          49.931
+         ],
+         [
+          2.87,
+          49.89
+         ],
+         [
+          2.856,
+          49.872
+         ],
+         [
+          2.83,
+          49.83
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 3.0,
+       "label": "The line on 18 November",
+       "color": "#eaf1fb",
+       "ticks": "left"
+      },
+      {
+       "type": "frontline",
+       "paths": [
+        [
+         [
+          2.508,
+          49.908
+         ],
+         [
+          2.6,
+          49.92
+         ],
+         [
+          2.72,
+          49.94
+         ],
+         [
+          2.83,
+          49.933
+         ],
+         [
+          2.937,
+          49.929
+         ]
+        ]
+       ],
+       "dash": "solid",
+       "width": 2.2,
+       "label": "The Somme",
+       "color": "#7fb2e5"
+      },
+      {
+       "type": "thrust",
+       "path": [
+        [
+         2.6,
+         50.094
+        ],
+        [
+         2.635,
+         50.091
+        ],
+        [
+         2.668,
+         50.0898
+        ]
+       ],
+       "width": 0.00333,
+       "label": "Beaumont-Hamel, 13 November"
+      },
+      {
+       "type": "marker",
+       "pos": [
+        2.672,
+        50.09
+       ],
+       "style": "cross",
+       "size": 0.008,
+       "label": "An objective of 1 July",
+       "color": "#ffd7a8"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.64,
+        50.002
+       ],
+       "text": "Albert",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.85,
+        50.101
+       ],
+       "text": "Bapaume",
+       "size": "md"
+      },
+      {
+       "type": "label",
+       "pos": [
+        2.937,
+        49.929
+       ],
+       "text": "Péronne",
+       "size": "md"
+      }
+     ]
+    }
    }
   ]
  },
@@ -3107,7 +5847,121 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Treaty_of_Versailles"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "pos": [
+      2.12,
+      48.8
+     ],
+     "style": "star",
+     "size": 0.14,
+     "label": "Signed 28 June 1919",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "zone",
+     "ring": [
+      [
+       5.9,
+       51.85
+      ],
+      [
+       7.6,
+       51.2
+      ],
+      [
+       8.2,
+       50.3
+      ],
+      [
+       8.6,
+       49.4
+      ],
+      [
+       7.8,
+       47.6
+      ],
+      [
+       6.8,
+       47.9
+      ],
+      [
+       5.9,
+       49.2
+      ],
+      [
+       5.6,
+       50.4
+      ],
+      [
+       5.5,
+       51.2
+      ]
+     ]
+    },
+    {
+     "type": "label",
+     "pos": [
+      7.4,
+      50.7
+     ],
+     "text": "the Rhineland, demilitarised",
+     "size": "md"
+    },
+    {
+     "type": "zone",
+     "ring": [
+      [
+       18.3,
+       54.4
+      ],
+      [
+       19.0,
+       54.3
+      ],
+      [
+       18.9,
+       53.0
+      ],
+      [
+       17.2,
+       52.4
+      ],
+      [
+       16.8,
+       53.2
+      ],
+      [
+       17.7,
+       54.2
+      ]
+     ],
+     "label": "Posen and West Prussia to Poland"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      6.99,
+      49.23
+     ],
+     "style": "dot",
+     "size": 0.15,
+     "label": "The Saar coalfield"
+    },
+    {
+     "type": "label",
+     "pos": [
+      7.2,
+      48.6
+     ],
+     "text": "Alsace-Lorraine to France",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "prohibition-era",
@@ -4054,7 +6908,105 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Battle_of_Britain"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        -2.45,
+        50.6
+       ],
+       [
+        -1.1,
+        50.75
+       ],
+       [
+        0.5,
+        50.85
+       ],
+       [
+        1.35,
+        51.1
+       ],
+       [
+        1.25,
+        51.75
+       ],
+       [
+        1.75,
+        52.6
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 3.0,
+     "label": "Radar and the sector airfields",
+     "color": "#eaf1fb",
+     "ticks": "left"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       1.65,
+       50.75
+      ],
+      [
+       1.3,
+       51.05
+      ],
+      [
+       0.9,
+       51.3
+      ]
+     ],
+     "width": 0.04568,
+     "label": "Shipping, then the airfields"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       1.4,
+       50.9
+      ],
+      [
+       0.7,
+       51.25
+      ],
+      [
+       -0.13,
+       51.51
+      ]
+     ],
+     "width": 0.06499,
+     "label": "From September, London"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -0.13,
+      51.51
+     ],
+     "style": "star",
+     "size": 0.07,
+     "label": "The airfields were relieved",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      0.5,
+      50.3
+     ],
+     "text": "the Channel",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "pearl-harbor",
@@ -4080,7 +7032,54 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Attack_on_Pearl_Harbor"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       -158.0,
+       24.5
+      ],
+      [
+       -157.98,
+       23.2
+      ],
+      [
+       -157.96,
+       22.0
+      ],
+      [
+       -157.95,
+       21.55
+      ]
+     ],
+     "width": 0.11896,
+     "label": "Two waves, 353 aircraft"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -157.95,
+      21.365
+     ],
+     "style": "star",
+     "size": 0.05,
+     "label": "Four battleships sunk",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -157.95,
+      21.6
+     ],
+     "text": "Oahu",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "holocaust",

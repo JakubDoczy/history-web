@@ -20,7 +20,7 @@ import {
   type NationKeyframe,
   type Ring,
 } from '../src/lib/nations'
-import { FRONTIER_ALT } from '../src/lib/frontierLayer'
+import { FRONTIER_BUILD_ALT } from '../src/lib/frontierLayer'
 
 const square = (size: number): Ring => [[0, 0], [size, 0], [size, size], [0, size]]
 
@@ -558,14 +558,18 @@ describe('borderRings densification', () => {
 
   it('holds the ink above the planet where a raw chord would go under it', () => {
     const [entry] = borderRings(wide, 0)
-    // The stored edge: 30 deg of arc, and its chord at FRONTIER_ALT is buried.
-    expect(sag([0, 0], [30, 0], FRONTIER_ALT)).toBeGreaterThan(FRONTIER_ALT)
+    // The stored edge: 30 deg of arc, and its chord at the altitude this ink is
+    // built at is buried. Round 63b renamed the constant and lowered it: the ink
+    // is grounded and lifted against the camera now, so what this guards is the
+    // SOURCE data — that no stored edge is long enough for its chord to leave
+    // the planet's surface at any height this layer ever draws at.
+    expect(sag([0, 0], [30, 0], FRONTIER_BUILD_ALT)).toBeGreaterThan(FRONTIER_BUILD_ALT)
     // Every drawn segment of it is not.
     const runs = entry.frontier
     expect(runs.length).toBeGreaterThan(0)
     for (const run of runs)
       for (let i = 0; i + 1 < run.length; i++)
-        expect(sag(run[i], run[i + 1], FRONTIER_ALT)).toBeLessThan(0)
+        expect(sag(run[i], run[i + 1], FRONTIER_BUILD_ALT)).toBeLessThan(0)
   })
 
   it('densifies the frontier and the cap with the same stepping', () => {
@@ -589,7 +593,7 @@ describe('borderRings densification', () => {
             }
           for (const run of entry.frontier)
             for (let i = 0; i + 1 < run.length; i++)
-              expect(sag(run[i], run[i + 1], FRONTIER_ALT)).toBeLessThan(0)
+              expect(sag(run[i], run[i + 1], FRONTIER_BUILD_ALT)).toBeLessThan(0)
         }
     expect(edges).toBeGreaterThan(50_000)
   }, 60_000)

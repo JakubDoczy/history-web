@@ -734,7 +734,144 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Early_Dynastic_Period_(Egypt)"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        32.9,
+        24.09
+       ],
+       [
+        32.88,
+        25.7
+       ],
+       [
+        32.38,
+        26.2
+       ],
+       [
+        31.8,
+        27.2
+       ],
+       [
+        31.2,
+        28.1
+       ],
+       [
+        31.22,
+        29.3
+       ],
+       [
+        31.25,
+        30.05
+       ]
+      ],
+      [
+       [
+        31.25,
+        30.05
+       ],
+       [
+        30.42,
+        31.4
+       ]
+      ],
+      [
+       [
+        31.25,
+        30.05
+       ],
+       [
+        31.81,
+        31.42
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.6,
+     "label": "The Nile",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "zone",
+     "ring": [
+      [
+       29.7,
+       30.9
+      ],
+      [
+       30.4,
+       31.55
+      ],
+      [
+       31.5,
+       31.58
+      ],
+      [
+       32.3,
+       31.25
+      ],
+      [
+       32.2,
+       30.4
+      ],
+      [
+       31.3,
+       30.0
+      ],
+      [
+       30.3,
+       30.1
+      ]
+     ],
+     "label": "Lower Egypt, the Delta"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      31.2506,
+      29.8494
+     ],
+     "style": "star",
+     "size": 0.15,
+     "label": "Memphis, the new capital",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      31.92,
+      26.18
+     ],
+     "style": "dot",
+     "size": 0.11,
+     "label": "The royal tombs at Abydos"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      32.78,
+      25.1
+     ],
+     "style": "dot",
+     "size": 0.11,
+     "label": "Hierakonpolis"
+    },
+    {
+     "type": "label",
+     "pos": [
+      31.6,
+      26.9
+     ],
+     "text": "Upper Egypt, the Nile valley",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "great-pyramid",
@@ -833,7 +970,116 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Achaemenid_Empire"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        28.04,
+        38.49
+       ],
+       [
+        30.6,
+        39.2
+       ],
+       [
+        32.9,
+        39.9
+       ],
+       [
+        35.5,
+        39.4
+       ],
+       [
+        38.8,
+        38.0
+       ],
+       [
+        41.5,
+        37.0
+       ],
+       [
+        43.15,
+        36.36
+       ],
+       [
+        44.01,
+        36.19
+       ],
+       [
+        45.5,
+        34.5
+       ],
+       [
+        47.0,
+        33.0
+       ],
+       [
+        48.26,
+        32.19
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The Royal Road, Sardis to Susa",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      52.891,
+      29.935
+     ],
+     "style": "star",
+     "size": 0.275,
+     "label": "Persepolis, the ceremonial capital",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      48.26,
+      32.19
+     ],
+     "style": "dot",
+     "size": 0.2,
+     "label": "Susa"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      48.52,
+      34.8
+     ],
+     "style": "dot",
+     "size": 0.2,
+     "label": "Ecbatana"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      44.42,
+      32.54
+     ],
+     "style": "dot",
+     "size": 0.2,
+     "label": "Babylon"
+    },
+    {
+     "type": "label",
+     "pos": [
+      28.04,
+      38.0
+     ],
+     "text": "Sardis",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "athenian-democracy",
@@ -1401,7 +1647,64 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hijrah"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       39.8262,
+       21.4225
+      ],
+      [
+       39.75,
+       22.4
+      ],
+      [
+       39.68,
+       23.5
+      ],
+      [
+       39.6142,
+       24.42
+      ]
+     ],
+     "width": 0.12008,
+     "label": "The hijra, 622"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      39.6142,
+      24.4686
+     ],
+     "style": "star",
+     "size": 0.05,
+     "label": "Yathrib, afterwards Medina",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      39.8262,
+      21.4225
+     ],
+     "style": "dot",
+     "size": 0.045,
+     "label": "Mecca, which surrendered in 630"
+    },
+    {
+     "type": "label",
+     "pos": [
+      38.4,
+      22.9
+     ],
+     "text": "the Red Sea",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "islamic-conquests",
@@ -6342,7 +6645,62 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/September_11_attacks"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "pos": [
+      -74.0134,
+      40.7115
+     ],
+     "style": "cross",
+     "size": 0.1,
+     "label": "The World Trade Center",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -77.0563,
+      38.8719
+     ],
+     "style": "cross",
+     "size": 0.1,
+     "label": "The Pentagon, struck at 09.37",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -78.9034,
+      40.0563
+     ],
+     "style": "cross",
+     "size": 0.1,
+     "label": "The fourth aircraft",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -73.9,
+      41.0
+     ],
+     "text": "New York",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -77.0,
+      38.6
+     ],
+     "text": "Washington",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "covid",

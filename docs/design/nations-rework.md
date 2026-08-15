@@ -470,3 +470,105 @@ are unchanged.
    be a different app) and this round did not revisit it, but it is what a
    reader is looking at when they say a modern map looks odd: India, China and
    the United States are washed and their neighbours are paper.
+
+## Round 63b: the political ink lands on the ground
+
+Round 63a convicted the drawings of floating and fixed them with one policy:
+every ink vertex on the RENDERED planet's radius (`groundFactor`), a lift that
+tracks the camera's own height (`inkLift`), and polylines cut at the facet folds
+so every chord lies in a facet plane (`splitAtFacets`). The same defect was
+sitting, larger, on the layer a reader looks at most. `FRONTIER_ALT` was
+0.0013 R — 8.3 km, twice what the drawings were convicted at — and every
+political border on the globe was drawn on the ideal sphere at that height.
+
+**Measured, before, on the Oder at Frankfurt (Oder)** — the Germany/Poland line,
+a surveyed modern frontier with a nation wash on both banks, which is the case a
+reader actually stares at (`tests/e2e/repro63.e2e.mjs`, `SECTIONS=frontier`):
+
+    frame      hover  →  after     slide  →  after
+    world    3.83 km    3.89 km    0.2 px    0.2 px
+    500 km  10.87 km    1.06 km   13.4 px    1.4 px
+    100 km  13.46 km    0.22 km   46.2 px    0.8 px
+     40 km  13.41 km    0.09 km  126.4 px    0.8 px
+      8 km       —      0.02 km       —      0.3 px
+
+and at Abyei, where the ink is dashed and the cap hatched: 13.44 → 1.06 km and
+13.0 → 1.4 px at 500 km, 12.99 → 0.22 km and 58.9 → 1.2 px at 100 km. After the
+change the hover IS the lift, to the metre, at every camera: the facet term —
+most of the old number — is gone, because the ink is no longer drawn on a sphere
+the planet is merely inscribed in.
+
+**The layering, which is what made this safe and was the only real question.**
+Four rounds argued about the order of these layers and settled it in altitudes:
+the frontier ink at 0.0013 R above a polity cap at 0.0012, an event footprint at
+0.0014, and round 60 putting the contested cap LOWEST at 0.0010 because a zone
+is the one cap whose own outline is drawn on top of it. Grounding the ink puts
+it up to fifteen kilometres UNDER caps it has to keep painting over, so the
+question is what was carrying that order. It was never the altitude: every cap
+on this globe is `depthWrite: false` (`capMaterial`, `lib/hatch.ts`), so no cap
+writes a depth value for a line to lose to, and three sorts a transparent object
+by `renderOrder` before anything else — the polygon layer's nought against the
+frontier's six against the DrawingLayer's twelve. The only depth under a border
+is the PLANET's, which is what the lift clears. So **not one cap moved**, the
+round-60 ordering between caps is untouched, and the ink still paints over its
+own fill: photographed at Abyei (dashes and hatch unchanged, dash for dash) and
+at Crimea, and with the whole stack in one frame at Chernobyl — modern frontier,
+two washes, an event footprint and the selection layer's ink at a 40 km frame.
+
+**The polygon caps were deliberately left on the sphere.** three-globe owns
+their altitude and their tessellation, and per-vertex grounding is not reachable
+there without forking the layer's cap builder — which would put this app's
+geometry inside a library's data join and re-tessellate on every digest. It buys
+nothing legible either: a cap is a flat tint with no edge to register against
+anything, its hover shows up as at most a soft edge a pixel or two off, and the
+one thing that WOULD have been visible — its own outline drifting away from it —
+does not happen, because a polity's outline is not the cap's stroke. It is this
+layer's ink, and this layer's ink is now on the ground. What the ink's lift is
+sized against is therefore the planet, not the caps.
+
+**What it costs.** Draw calls unchanged at every one of `framePerf.e2e.mjs`'s
+fourteen routes (311 realistic world view, 340 drawn, 78 on a drawn era scrub);
+material invalidations still nought. The cut adds about 5% of vertices to the
+one buffer — 38 504 → 40 436 in map mode at 2024 — computed once per rebuild,
+which happens when the year changes the border list and not otherwise. That
+rebuild goes from 10 ms to 17 ms on the worst year on the globe (1941, 306
+pieces, 22 726 stored vertices), which is a plane intersection per vertex where
+there used to be a multiply; carrying the previous point through `pushLine`
+rather than placing every interior vertex twice is what keeps it at 17 and not
+25. The height itself is a uniform scale on one object, so tracking the camera
+through a gesture costs one matrix for every border on the globe.
+
+**A GL_LINE has no polygon offset**, and that is the one place this layer's
+policy differs from the drawings'. `POLYGON_OFFSET_FILL` does nothing to line
+primitives, so where the DrawingLayer can lift by `MIN_LIFT` (1.9 m) and buy its
+clearance in depth-buffer units, this layer's clearance is in metres. It does
+not need much: `inkLift` never falls below about 1400 depth quanta at any
+camera. What it does need is `LINE_FLOOR` (10 m) — `splitAtFacets` cuts on the
+geographic grid line and the mesh's own edge is up to 0.0013° from it, so a cut
+vertex inside that sliver is placed on the neighbouring facet's plane, wrong by
+at most 5 m. The floor binds only below a 4.8 km frame and costs a pixel there.
+
+**Honest limits.**
+
+ · **The caps still hover**, by 6.4 to 8.9 km plus the facet dip, and that is a
+   deliberate no-op (above). A wash's edge is soft and its ink is grounded, so
+   what is left is a tint reaching a pixel or two past its own line at the
+   deepest zooms.
+ · **The selection layer still rides at its worst mark's floor.** A drawing is
+   lifted as ONE group, by `groundClearance` of the widest thing in it that
+   cannot be cut at the folds — a thrust ribbon's width, a marker's glyph, a
+   zone's triangulation. At Chernobyl with the invasion selected that is 2.36 km
+   and 31 px at a 40 km frame; the armada's routes measure 0.80 km and 3.8 px at
+   120 km, unchanged by this round. Splitting the group so lines ride lower than
+   marks was considered and rejected: it would slide a zone's wash off its own
+   outline, and a drawing that is not rigid is worse than a drawing that is a
+   little high. The real fix is cutting a ribbon and a glyph across the folds,
+   which is a triangulation change, not an altitude one.
+ · **A battle plan and a border are never in the same frame**, so the two
+   grounded stacks can only be photographed together through the SELECTION
+   layer: focus mode takes every border off the globe.
+ · **The tangential term is still untouched**, as in 63a. The imagery for a
+   lat/lng lands up to ~5 km to one side of where the sphere puts it, because a
+   4° facet's texture is interpolated barycentrically. Correcting it would
+   register the ink with the photograph and de-register it from the pins and the
+   caps. It is a constant offset that neither slides nor swings.

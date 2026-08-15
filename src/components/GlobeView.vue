@@ -1061,7 +1061,13 @@ onMounted(() => {
     // floating at higher zoom" the reader reported after round 59 had already
     // made it eight times smaller. Both layers, because a route hovers exactly
     // as visibly as a battle plan does. Costs one matrix each, no rebuild.
-    if ([drawing, routes].filter((l) => l?.setCameraAltitude(pov.altitude)).length) wake()
+    //
+    // …and the FRONTIERS, round 63b, which had the same defect at twice the
+    // size on the layer a reader looks at most: a political border sat at
+    // 0.0013 R and walked 126 px off its own river across a 40 km frame. One
+    // matrix for every border on the globe, because they are one buffer.
+    if ([drawing, routes, frontiers].filter((l) => l?.setCameraAltitude(pov.altitude)).length)
+      wake()
     // The framed span, not the horizon `span` below: close in the two differ by
     // more than an order of magnitude, and it is the framed one that says how
     // many pixels a degree of ground is worth — which is what decides whether

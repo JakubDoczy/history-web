@@ -1428,7 +1428,115 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Cuban_Missile_Crisis"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        -76.5695,
+        28.2761
+       ],
+       [
+        -74.5147,
+        28.5704
+       ],
+       [
+        -72.437,
+        28.434
+       ],
+       [
+        -70.4594,
+        27.8753
+       ],
+       [
+        -68.6949,
+        26.9274
+       ],
+       [
+        -67.2368,
+        25.6455
+       ],
+       [
+        -66.1532,
+        24.1009
+       ],
+       [
+        -65.4853,
+        22.3759
+       ],
+       [
+        -65.2498,
+        20.5581
+       ],
+       [
+        -65.4418,
+        18.7362
+       ],
+       [
+        -66.0388,
+        16.9956
+       ],
+       [
+        -67.0033,
+        15.4162
+       ],
+       [
+        -68.2853,
+        14.0689
+       ],
+       [
+        -69.8245,
+        13.0139
+       ],
+       [
+        -71.5516,
+        12.2978
+       ],
+       [
+        -73.3907,
+        11.9526
+       ]
+      ]
+     ],
+     "dash": "dashed",
+     "width": 2.8,
+     "label": "The quarantine line, 22 October",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -83.05,
+      22.72
+     ],
+     "style": "star",
+     "size": 0.25,
+     "label": "Launch sites under construction",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -79.5,
+      21.5
+     ],
+     "text": "Cuba",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -81.5,
+      27.8
+     ],
+     "text": "Florida",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "jfk-assassination",
@@ -2130,7 +2238,163 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Soviet%E2%80%93Afghan_War"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       67.28,
+       37.23
+      ],
+      [
+       68.0,
+       36.4
+      ],
+      [
+       68.8,
+       35.4
+      ],
+      [
+       69.17,
+       34.53
+      ]
+     ],
+     "width": 0.12252,
+     "label": "Soviet forces enter, 1979"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        69.17,
+        34.53
+       ],
+       [
+        68.42,
+        33.55
+       ],
+       [
+        66.9,
+        32.5
+       ],
+       [
+        65.71,
+        31.61
+       ],
+       [
+        64.0,
+        32.5
+       ],
+       [
+        62.2,
+        34.35
+       ],
+       [
+        63.5,
+        35.5
+       ],
+       [
+        65.5,
+        36.5
+       ],
+       [
+        67.11,
+        36.71
+       ],
+       [
+        68.5,
+        35.8
+       ],
+       [
+        69.17,
+        34.53
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.6,
+     "label": "The cities and the main roads",
+     "color": "#eaf1fb"
+    },
+    {
+     "type": "zone",
+     "ring": [
+      [
+       66.8,
+       36.2188
+      ],
+      [
+       67.8458,
+       36.0601
+      ],
+      [
+       68.8097,
+       35.5279
+      ],
+      [
+       69.4215,
+       34.572
+      ],
+      [
+       68.7646,
+       33.6399
+      ],
+      [
+       67.8096,
+       33.1313
+      ],
+      [
+       66.8,
+       32.9812
+      ],
+      [
+       65.7904,
+       33.1313
+      ],
+      [
+       64.8354,
+       33.6399
+      ],
+      [
+       64.1785,
+       34.572
+      ],
+      [
+       64.7903,
+       35.5279
+      ],
+      [
+       65.7542,
+       36.0601
+      ]
+     ],
+     "label": "The mountains and the villages"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      69.17,
+      34.53
+     ],
+     "style": "star",
+     "size": 0.175,
+     "label": "Kabul, taken in December",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      70.5,
+      32.5
+     ],
+     "text": "five million fled to Pakistan",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "solidarity-poland",
@@ -2539,7 +2803,117 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/German_reunification"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        10.85,
+        53.93
+       ],
+       [
+        10.75,
+        53.1
+       ],
+       [
+        10.45,
+        52.2
+       ],
+       [
+        10.2,
+        51.6
+       ],
+       [
+        10.1,
+        51.3
+       ],
+       [
+        10.5,
+        50.9
+       ],
+       [
+        11.9,
+        50.3
+       ],
+       [
+        12.1,
+        50.25
+       ]
+      ]
+     ],
+     "dash": "dashed",
+     "width": 2.8,
+     "label": "The inner German border",
+     "color": "#eaf1fb"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        14.28,
+        53.92
+       ],
+       [
+        14.14,
+        52.85
+       ],
+       [
+        14.55,
+        52.35
+       ],
+       [
+        14.7,
+        51.8
+       ],
+       [
+        14.98,
+        51.15
+       ],
+       [
+        14.82,
+        50.85
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "The Oder-Neisse line"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      13.3762,
+      52.5186
+     ],
+     "style": "star",
+     "size": 0.1,
+     "label": "Berlin",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      12.6,
+      51.9
+     ],
+     "text": "German Democratic Republic",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      9.0,
+      51.4
+     ],
+     "text": "Federal Republic of Germany",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "yugoslav-breakup",
@@ -2931,7 +3305,62 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/September_11_attacks"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "pos": [
+      -74.0134,
+      40.7115
+     ],
+     "style": "cross",
+     "size": 0.1,
+     "label": "The World Trade Center",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -77.0563,
+      38.8719
+     ],
+     "style": "cross",
+     "size": 0.1,
+     "label": "The Pentagon, struck at 09.37",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -78.9034,
+      40.0563
+     ],
+     "style": "cross",
+     "size": 0.1,
+     "label": "The fourth aircraft",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -73.9,
+      41.0
+     ],
+     "text": "New York",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -77.0,
+      38.6
+     ],
+     "text": "Washington",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "iraq-war",
@@ -2954,7 +3383,72 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/2003_invasion_of_Iraq"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       47.7,
+       29.9
+      ],
+      [
+       46.9,
+       30.5
+      ],
+      [
+       46.26,
+       31.05
+      ],
+      [
+       45.0,
+       31.9
+      ],
+      [
+       44.02,
+       32.61
+      ],
+      [
+       44.35,
+       33.31
+      ]
+     ],
+     "width": 0.1504,
+     "label": "From Kuwait, 20 March 2003"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      44.35,
+      33.31
+     ],
+     "style": "star",
+     "size": 0.14,
+     "label": "Baghdad fell in three weeks",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      47.82,
+      30.51
+     ],
+     "style": "dot",
+     "size": 0.11,
+     "label": "Basra"
+    },
+    {
+     "type": "label",
+     "pos": [
+      47.9,
+      29.4
+     ],
+     "text": "Kuwait",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "human-genome",
@@ -3025,7 +3519,119 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Hurricane_Katrina"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       -85.0,
+       24.5
+      ],
+      [
+       -86.5,
+       25.4
+      ],
+      [
+       -87.5,
+       26.5
+      ],
+      [
+       -88.6,
+       27.8
+      ],
+      [
+       -89.3,
+       28.6
+      ],
+      [
+       -89.53,
+       29.35
+      ],
+      [
+       -89.4,
+       30.3
+      ]
+     ],
+     "width": 0.17387,
+     "label": "Ashore on 29 August"
+    },
+    {
+     "type": "zone",
+     "ring": [
+      [
+       -90.06,
+       30.1059
+      ],
+      [
+       -89.9872,
+       30.089
+      ],
+      [
+       -89.934,
+       30.0429
+      ],
+      [
+       -89.9146,
+       29.9799
+      ],
+      [
+       -89.9342,
+       29.917
+      ],
+      [
+       -89.9874,
+       29.8709
+      ],
+      [
+       -90.06,
+       29.8541
+      ],
+      [
+       -90.1326,
+       29.8709
+      ],
+      [
+       -90.1858,
+       29.917
+      ],
+      [
+       -90.2054,
+       29.9799
+      ],
+      [
+       -90.186,
+       30.0429
+      ],
+      [
+       -90.1328,
+       30.089
+      ]
+     ],
+     "label": "80 per cent of the city flooded"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -89.9,
+      29.9
+     ],
+     "style": "cross",
+     "size": 0.05,
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -88.5,
+      29.0
+     ],
+     "text": "the Gulf of Mexico",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "iphone",
@@ -3698,6 +4304,114 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/2023_Turkey%E2%80%93Syria_earthquakes"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        36.15,
+        36.2
+       ],
+       [
+        36.3,
+        36.6
+       ],
+       [
+        36.6,
+        37.1
+       ],
+       [
+        36.85,
+        37.38
+       ],
+       [
+        37.2,
+        37.6
+       ],
+       [
+        37.8,
+        37.9
+       ],
+       [
+        38.3,
+        38.15
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 3.0,
+     "label": "The East Anatolian Fault rupture"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        36.45,
+        38.05
+       ],
+       [
+        36.95,
+        38.1
+       ],
+       [
+        37.5,
+        38.15
+       ],
+       [
+        37.95,
+        38.2
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 3.0,
+     "label": "A second fault, nine hours later"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      37.042,
+      37.166
+     ],
+     "style": "star",
+     "size": 0.08,
+     "label": "Magnitude 7.8, 04.17 on 6 February",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      37.203,
+      38.024
+     ],
+     "style": "star",
+     "size": 0.08,
+     "label": "Magnitude 7.7 nine hours later",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "label",
+     "pos": [
+      37.38,
+      36.95
+     ],
+     "text": "Gaziantep",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      37.14,
+      36.42
+     ],
+     "text": "Aleppo",
+     "size": "md"
+    }
+   ]
+  }
  }
 ]

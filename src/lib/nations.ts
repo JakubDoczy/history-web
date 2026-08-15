@@ -352,10 +352,13 @@ export type FrontierInk = 'all' | 'frontier' | 'coast' | 'none'
  *
  *  - **The ink vanishes.** The frontier is GL_LINES between the stored
  *    vertices, and a straight line between two points thirty degrees apart
- *    passes 217 km UNDER the sphere it is drawn on — against the 8.3 km
- *    `FRONTIER_ALT` lifts it. The planet eats everything but a stub at each
- *    end. 314 stored edges in the corpus sag deeper than their own altitude,
- *    and in 1922 that is 28% of all the political ink on the globe.
+ *    passes 217 km UNDER the sphere it is drawn on — against the 8.3 km the
+ *    ink was lifted by. The planet eats everything but a stub at each end.
+ *    314 stored edges in the corpus sag deeper than their own altitude, and in
+ *    1922 that is 28% of all the political ink on the globe. Round 63b made the
+ *    lift a function of the camera and this cut MORE necessary, not less: the
+ *    ink now rides eighty metres up at a 40 km frame, so there is no altitude
+ *    left to hide a long chord in (see `FRONTIER_BUILD_ALT`).
  *  - **The fill has bites out of its edge.** three-globe interpolates a cap's
  *    contour along great circles at `polygonCapCurvatureResolution`, then keeps
  *    a boundary triangle only if its centroid is inside the ring *it was

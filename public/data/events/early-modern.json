@@ -165,7 +165,99 @@
     "url": "https://en.wikipedia.org/wiki/Battle_of_Chaldiran"
    }
   ],
-  "priority": 56
+  "priority": 56,
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       37.02,
+       39.75
+      ],
+      [
+       39.49,
+       39.75
+      ],
+      [
+       41.27,
+       39.9
+      ],
+      [
+       43.0,
+       39.4
+      ],
+      [
+       44.2,
+       39.1
+      ]
+     ],
+     "width": 0.15895,
+     "label": "Selim marches east, 1514"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      44.3833,
+      39.0667
+     ],
+     "style": "cross",
+     "size": 0.09,
+     "label": "The battle, 23 August 1514",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      46.29,
+      38.08
+     ],
+     "style": "dot",
+     "size": 0.08,
+     "label": "Tabriz, occupied for a few weeks"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        44.78,
+        37.15
+       ],
+       [
+        44.4,
+        38.2
+       ],
+       [
+        44.42,
+        39.35
+       ],
+       [
+        44.05,
+        39.75
+       ],
+       [
+        43.65,
+        40.05
+       ]
+      ]
+     ],
+     "dash": "dashed",
+     "width": 2.4,
+     "label": "Close to the modern border",
+     "color": "#eaf1fb"
+    },
+    {
+     "type": "label",
+     "pos": [
+      42.95,
+      38.63
+     ],
+     "text": "Lake Van",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "las-casas",
@@ -1733,7 +1825,103 @@
     "url": "https://en.wikipedia.org/wiki/Battle_of_Moh%C3%A1cs"
    }
   ],
-  "priority": 64
+  "priority": 64,
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        20.46,
+        44.82
+       ],
+       [
+        19.6,
+        45.25
+       ],
+       [
+        18.9,
+        45.75
+       ],
+       [
+        18.66,
+        45.99
+       ],
+       [
+        18.9,
+        46.5
+       ],
+       [
+        18.95,
+        47.0
+       ],
+       [
+        19.04,
+        47.5
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.6,
+     "label": "The Danube",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       20.46,
+       44.82
+      ],
+      [
+       19.6,
+       45.3
+      ],
+      [
+       18.8,
+       45.85
+      ],
+      [
+       18.64,
+       45.98
+      ]
+     ],
+     "width": 0.08686,
+     "label": "Suleiman marches up the Danube"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      18.641,
+      45.993
+     ],
+     "style": "cross",
+     "size": 0.07,
+     "label": "The battle, 29 August 1526",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      19.0402,
+      47.4979
+     ],
+     "style": "dot",
+     "size": 0.06,
+     "label": "Buda, occupied in 1541"
+    },
+    {
+     "type": "label",
+     "pos": [
+      18.2,
+      46.6
+     ],
+     "text": "Hungary",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "sack-of-rome",
@@ -1883,7 +2071,83 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/Spanish_conquest_of_the_Inca_Empire"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       -80.45,
+       -3.57
+      ],
+      [
+       -79.6,
+       -5.0
+      ],
+      [
+       -78.51,
+       -7.16
+      ],
+      [
+       -77.0,
+       -9.5
+      ],
+      [
+       -75.0,
+       -11.5
+      ],
+      [
+       -71.98,
+       -13.52
+      ]
+     ],
+     "width": 0.20071,
+     "label": "Pizarro's march, 1532 to 1533"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -78.51,
+      -7.16
+     ],
+     "style": "cross",
+     "size": 0.15,
+     "label": "Cajamarca: Atahualpa seized",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -71.98,
+      -13.52
+     ],
+     "style": "star",
+     "size": 0.15,
+     "label": "Cusco entered in November 1533",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      -73.02,
+      -13.1
+     ],
+     "style": "dot",
+     "size": 0.11,
+     "label": "Vilcabamba, to 1572"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -76.0,
+      -11.0
+     ],
+     "text": "the Andes",
+     "size": "md"
+    }
+   ]
+  }
  },
  {
   "id": "henry-viii-reign",
@@ -6498,7 +6762,98 @@
     "url": "https://en.wikipedia.org/wiki/Battle_of_Blenheim"
    }
   ],
-  "priority": 62
+  "priority": 62,
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        9.98,
+        48.42
+       ],
+       [
+        10.63,
+        48.68
+       ],
+       [
+        11.4,
+        48.8
+       ],
+       [
+        12.1,
+        48.85
+       ],
+       [
+        13.45,
+        48.55
+       ],
+       [
+        14.5,
+        48.3
+       ],
+       [
+        16.37,
+        48.21
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.6,
+     "label": "The Danube",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "thrust",
+     "path": [
+      [
+       6.57,
+       51.0
+      ],
+      [
+       7.6,
+       50.36
+      ],
+      [
+       8.69,
+       49.4
+      ],
+      [
+       9.6,
+       48.9
+      ],
+      [
+       10.6,
+       48.72
+      ]
+     ],
+     "width": 0.13075,
+     "label": "Marlborough, 400 km in five weeks"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      10.63,
+      48.635
+     ],
+     "style": "cross",
+     "size": 0.11,
+     "label": "The battle, 13 August 1704",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "marker",
+     "pos": [
+      16.37,
+      48.21
+     ],
+     "style": "dot",
+     "size": 0.1,
+     "label": "Vienna, within reach"
+    }
+   ]
+  }
  },
  {
   "id": "act-of-union-1707",
@@ -6779,7 +7134,105 @@
     "label": "Wikipedia",
     "url": "https://en.wikipedia.org/wiki/1755_Lisbon_earthquake"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "pos": [
+      -9.14,
+      38.72
+     ],
+     "style": "star",
+     "size": 0.11,
+     "label": "Lisbon: shock, wave, then fires",
+     "color": "#ffd7a8"
+    },
+    {
+     "type": "frontline",
+     "paths": [
+      [
+       [
+        -9.48,
+        38.7
+       ],
+       [
+        -9.0,
+        38.4
+       ],
+       [
+        -8.8,
+        37.9
+       ],
+       [
+        -8.95,
+        37.0
+       ],
+       [
+        -7.9,
+        37.0
+       ],
+       [
+        -7.4,
+        37.15
+       ],
+       [
+        -6.9,
+        36.8
+       ],
+       [
+        -6.29,
+        36.53
+       ]
+      ],
+      [
+       [
+        -5.81,
+        35.79
+       ],
+       [
+        -6.3,
+        35.2
+       ],
+       [
+        -6.84,
+        34.02
+       ],
+       [
+        -8.5,
+        33.2
+       ],
+       [
+        -9.24,
+        32.3
+       ]
+      ]
+     ],
+     "dash": "solid",
+     "width": 2.8,
+     "label": "Coasts struck by the wave",
+     "color": "#7fb2e5"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -8.2,
+      35.6
+     ],
+     "text": "the Atlantic",
+     "size": "md"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -8.0,
+      37.15
+     ],
+     "text": "the Algarve",
+     "size": "sm"
+    }
+   ]
+  }
  },
  {
   "id": "mozart-symphonies",
