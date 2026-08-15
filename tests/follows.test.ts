@@ -6,6 +6,8 @@ import { describe, it, expect } from 'vitest'
 // @ts-expect-error - .mjs build script, no declarations
 import * as follows from '../scripts/follows-lib.mjs'
 // @ts-expect-error - .mjs build script, no declarations
+import * as clipLib from '../scripts/nations-clip-lib.mjs'
+// @ts-expect-error - .mjs build script, no declarations
 import { RIVERS, pickRivers } from '../scripts/vendor-rivers.mjs'
 import riverFile from '../src/data/rivers-named.json'
 import authored from '../src/data/nations.json'
@@ -441,7 +443,7 @@ describe('the vendored rivers', () => {
 describe('the corpus', () => {
   const nations = authored.nations as unknown as {
     id: string
-    keyframes: { time: number; rings: [number, number][][]; follows?: Record<string, unknown>[] }[]
+    keyframes: { time: number; rings?: [number, number][][]; countries?: string[]; follows?: Record<string, unknown>[] }[]
   }[]
   const declarations = nations.flatMap((n) =>
     n.keyframes.flatMap((k) => (k.follows ?? []).map((d) => ({ id: n.id, time: k.time, d }))),
@@ -451,7 +453,29 @@ describe('the corpus', () => {
     expect(declarations.length).toBeGreaterThan(30)
     // …on the frontiers a reader actually looks at
     const ids = new Set(declarations.map((x) => x.id))
-    for (const want of ['rome', 'byzantium', 'usa', 'france', 'russia', 'joseon', 'ussr']) expect(ids.has(want)).toBe(true)
+    for (const want of ['rome', 'byzantium', 'usa', 'france', 'russia', 'joseon']) expect(ids.has(want)).toBe(true)
+  })
+
+  /**
+   * ROUND 63 took the four modern-era polities past declaring their frontiers
+   * to declaring their whole EXTENT: the Republic of India, the PRC, the United
+   * States after 1900 and the USSR are unions of present-day states in the same
+   * Natural Earth topology, so their fills and the modern-border ink are one
+   * geometry rather than two opinions. The USSR left this list when it gained
+   * one — the Amur and the Ussuri are still its border, they are just no longer
+   * something a human has to declare.
+   */
+  it('declares four modern extents outright', () => {
+    const extents = nations.flatMap((n) =>
+      n.keyframes.filter((k) => k.countries).map((k) => ({ id: n.id, time: k.time, codes: k.countries! })),
+    )
+    expect(extents.map((e) => e.id).sort()).toEqual(['india', 'prc', 'ussr', 'usa'].sort())
+    for (const e of extents) {
+      expect(e.codes.length, `${e.id}@${e.time}`).toBeGreaterThan(0)
+      for (const c of e.codes) expect(follows.ISO_A3[c as keyof typeof follows.ISO_A3], `${e.id} ${c}`).toBeTruthy()
+    }
+    // fifteen republics, and the union of them is the Soviet outline
+    expect(extents.find((e) => e.id === 'ussr')!.codes).toHaveLength(15)
   })
 
   it('gives every declaration a river or a modern pair, two endpoints and a reason', () => {
@@ -493,5 +517,74 @@ describe('the corpus', () => {
     const share = follows.declaredShare(rings, index)
     expect(share.inlandKm).toBeGreaterThan(500)
     expect(share.share).toBeGreaterThan(0.8)
+  })
+})
+
+/**
+ * ROUND 63 — an extent that IS the modern map (`countryExtent`,
+ * `splitAntimeridian`). The unit under test is small and the failure it exists
+ * to prevent was not: the first version of `countryExtent` unioned Natural
+ * Earth's Russia without splitting it at 180°, a planar clipper read the
+ * (179.87 → -180) step as a 360°-wide edge, and the USSR came out as a band
+ * round the planet that held northern Alaska.
+ */
+describe('countryExtent', () => {
+  /** A minimal country index: a name -> MultiPolygon map is all it wants. */
+  const box = (x0: number, x1: number, y0 = 0, y1 = 1): number[][][][] => [
+    [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]],
+  ]
+  // The clipper the build uses, reached through the library that owns the
+  // dependency — `follows-lib` deliberately does not import one.
+  const pc = clipLib.polygonClipping
+  const ops = {
+    union: (...mps: never[]) => pc.union(...mps),
+    intersection: (a: never, b: never) => pc.intersection(a, b),
+  }
+
+  it('unions the states it names, dissolving the line between them', () => {
+    const index = new Map([['France', box(0, 1)], ['Germany', box(1, 2)]])
+    const mp = follows.countryExtent(['FRA', 'DEU'], index, ops)
+    // one piece, and nothing of it at x = 1 except the two corners: the shared
+    // edge is gone, which is what makes a merge a merge
+    expect(mp).toHaveLength(1)
+    const xs = (mp[0][0] as number[][]).map((p) => p[0])
+    expect(Math.min(...xs)).toBe(0)
+    expect(Math.max(...xs)).toBe(2)
+  })
+
+  it('names the code it cannot resolve', () => {
+    const index = new Map([['France', box(0, 1)]])
+    expect(() => follows.countryExtent(['XYZ'], index, ops)).toThrow(/XYZ/)
+    expect(() => follows.countryExtent(['DEU'], index, ops)).toThrow(/Germany/)
+    expect(() => follows.countryExtent([], index, ops)).toThrow(/at least one/)
+  })
+
+  it('cuts a ring that walks across the antimeridian into two pieces', () => {
+    // Chukotka in miniature: 178 -> 179 -> -179 -> -178, one continuous walk
+    const wrapped = [
+      [
+        [178, 60],
+        [179, 60],
+        [-179, 60],
+        [-178, 60],
+        [-178, 62],
+        [179, 62],
+        [178, 62],
+        [178, 60],
+      ],
+    ]
+    const out = follows.splitAntimeridian([wrapped], ops.intersection)
+    expect(out.length).toBe(2)
+    for (const poly of out)
+      for (const ring of poly as number[][][])
+        for (let i = 1; i < ring.length; i++) expect(Math.abs(ring[i][0] - ring[i - 1][0])).toBeLessThanOrEqual(180)
+    // and the two halves are on opposite sides of the line
+    const sides = (out as number[][][][]).map((p) => Math.sign(p[0][0][0]))
+    expect(new Set(sides).size).toBe(2)
+  })
+
+  it('leaves a ring that does not cross the line exactly as it found it', () => {
+    const plain = box(10, 20)
+    expect(follows.splitAntimeridian(plain, ops.intersection)).toEqual(plain)
   })
 })

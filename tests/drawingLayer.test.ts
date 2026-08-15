@@ -1,21 +1,45 @@
 import { describe, it, expect } from 'vitest'
-import { BufferGeometry, DoubleSide, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three'
+import {
+  BufferGeometry,
+  DoubleSide,
+  Mesh,
+  MeshBasicMaterial,
+  Ray,
+  Scene,
+  SphereGeometry,
+  Vector3,
+} from 'three'
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import {
   DrawingLayer,
+  FOLD_DIP_PER_DEG,
   FRONTLINE_TICKS,
+  groundClearance,
+  GLOBE_FACET_DEG,
+  LIFT_PER_HEIGHT,
   MARK_CASING_OUTSET,
+  MIN_LIFT,
   SURFACE_ALT,
+  THRUST_TAIL,
+  ZONE_POOL,
   ZONE_MAX_TRIANGLES,
   capGeometry,
+  crossesFold,
   drawingExtentDeg,
   glyphShape,
+  groundFactor,
   headOf,
+  inkLift,
+  maxChordDeg,
+  splitAtFacets,
   offsetPoint,
+  offsetPolygon,
   ribbonGeometry,
+  tailCap,
   tangentFrame,
+  thrustWidthAt,
   tickSegments,
   trimEnd,
 } from '../src/lib/drawingLayer'
@@ -79,10 +103,18 @@ describe('tangentFrame', () => {
 })
 
 describe('offsetPoint', () => {
-  it('lands on the globe.gl sphere at the right radius', () => {
+  it('lands on the globe.gl sphere in the right direction, at the ground', () => {
     const p = offsetPoint(30, 45, 0, 0, R, 0.02)
-    expect(Math.hypot(...p)).toBeCloseTo(R * 1.02, 6)
-    expect(new Vector3(...p).distanceTo(globeCoords(45, 30, 0.02))).toBeLessThan(1e-6)
+    // The DIRECTION is three-globe's own, exactly — a drawing that is plausibly
+    // shaped and 90° out is what this catches…
+    const dir = new Vector3(...p).normalize()
+    expect(dir.distanceTo(globeCoords(45, 30, 0).normalize())).toBeLessThan(1e-9)
+    // …and the RADIUS is the rendered planet's under that point plus the lift,
+    // not the ideal sphere's. See `groundFactor`: at 45°N the facet the point
+    // falls in hangs several kilometres inside the sphere, and ink drawn on the
+    // sphere hovers by exactly that much before its own lift is counted.
+    expect(Math.hypot(...p)).toBeCloseTo(R * (groundFactor(30, 45) + 0.02), 9)
+    expect(groundFactor(30, 45)).toBeLessThan(1)
   })
 
   it('moves a degree east as a degree east', () => {
@@ -118,11 +150,25 @@ describe('glyphShape', () => {
   })
 
   it('makes the battle cross an X and not a plus', () => {
-    // a plus has vertices on the axes; an X has them on the diagonals
-    const onAxis = glyphShape('cross')
-      .flat()
-      .filter(([x, y]) => Math.abs(x) < 1e-6 || Math.abs(y) < 1e-6)
-    expect(onAxis).toHaveLength(0)
+    // A plus reaches furthest along the axes; an X reaches furthest along the
+    // diagonals. Asserted on the OUTER points, because round 63 made the cross
+    // one closed outline rather than two crossed bars, and an outline has its
+    // notches on the axes by construction — the fan origin sits there too.
+    const pts = glyphShape('cross').flat()
+    const far = Math.max(...pts.map(([x, y]) => Math.hypot(x, y)))
+    for (const [x, y] of pts.filter(([x, y]) => Math.hypot(x, y) > far * 0.9))
+      expect(Math.min(Math.abs(x), Math.abs(y)), `${x},${y}`).toBeGreaterThan(far * 0.2)
+  })
+
+  it('draws the cross as one un-overlapped outline', () => {
+    // Two crossed bars blend twice where they cross, which at 0.95 put a lighter
+    // square in the middle of every battle mark. One ring cannot.
+    expect(glyphShape('cross')).toHaveLength(1)
+    // …and it is a closed loop fanned from its own centre
+    const [poly] = glyphShape('cross')
+    expect(poly[0]).toEqual([0, 0])
+    expect(poly[1][0]).toBeCloseTo(poly[poly.length - 1][0], 12)
+    expect(poly[1][1]).toBeCloseTo(poly[poly.length - 1][1], 12)
   })
 
   /**
@@ -242,6 +288,167 @@ describe('ribbonGeometry', () => {
         .fromBufferAttribute(pos, i * 2)
         .angleTo(new Vector3().fromBufferAttribute(pos, i * 2 + 1))
     expect(width(0)).toBeLessThan(width(2))
+  })
+
+  it('parameterises the width by ARC LENGTH, not by vertex index', () => {
+    // The same spine, once evenly sampled and once with an extra vertex crammed
+    // near the tail — which is what `splitAtFacets` does at a fold. Index-based
+    // parameterisation would put a step in the taper there; arc length cannot.
+    const even: GeoPath = [
+      [0, 0],
+      [5, 0],
+      [10, 0],
+    ]
+    const crammed: GeoPath = [
+      [0, 0],
+      [0.4, 0],
+      [5, 0],
+      [10, 0],
+    ]
+    const halfway = (path: GeoPath) => {
+      const g = ribbonGeometry(path, (t) => 0.2 + 0.8 * t, R, 0)
+      const pos = g.getAttribute('position')
+      // the vertex pair at lng 5, wherever it landed in the list
+      const i = path.findIndex(([lng]) => lng === 5)
+      return new Vector3()
+        .fromBufferAttribute(pos, i * 2)
+        .angleTo(new Vector3().fromBufferAttribute(pos, i * 2 + 1))
+    }
+    expect(halfway(crammed)).toBeCloseTo(halfway(even), 6)
+  })
+})
+
+/** ROUND 63 — "they should be painted more nicely", the thrust half. */
+describe('the brush a thrust is drawn with', () => {
+  it('comes up to weight early and holds, where the wedge ramped straight', () => {
+    expect(thrustWidthAt(0)).toBeCloseTo(THRUST_TAIL, 12)
+    expect(thrustWidthAt(1)).toBeCloseTo(1, 12)
+    // monotone, and always ahead of the straight ramp it replaced
+    let last = -1
+    for (let i = 0; i <= 20; i++) {
+      const t = i / 20
+      const v = thrustWidthAt(t)
+      expect(v).toBeGreaterThanOrEqual(last)
+      expect(v).toBeGreaterThanOrEqual(THRUST_TAIL + (1 - THRUST_TAIL) * t - 1e-9)
+      last = v
+    }
+    // a fifth of the way along it is already two thirds of the way from the
+    // tail to full weight, where the straight ramp had covered a fifth
+    const frac = (v: number) => (v - THRUST_TAIL) / (1 - THRUST_TAIL)
+    expect(frac(thrustWidthAt(0.2))).toBeGreaterThan(0.35)
+    expect(frac(thrustWidthAt(0.5))).toBeGreaterThan(0.6)
+    // and it is clamped, so a spine measured a hair past its own end is safe
+    expect(thrustWidthAt(1.4)).toBeCloseTo(1, 12)
+    expect(thrustWidthAt(-2)).toBeCloseTo(THRUST_TAIL, 12)
+  })
+
+  it('reaches the spine backwards far enough to carry a round tail', () => {
+    const shaft: GeoPath = [
+      [10, 0],
+      [11, 0],
+      [12, 0],
+    ]
+    const capped = tailCap(shaft, 0.3)
+    // the authored shaft survives unmoved, at the end
+    expect(capped.slice(-3)).toEqual(shaft)
+    // …and what is added runs BACKWARDS from its first point, to exactly the
+    // reach asked for, so the casing pass's wider cap has room
+    expect(capped.length).toBeGreaterThan(shaft.length)
+    expect(capped[0][0]).toBeCloseTo(9.7, 6)
+    expect(capped[0][1]).toBeCloseTo(0, 9)
+    for (let i = 1; i < capped.length; i++)
+      expect(capped[i][0], `${i}`).toBeGreaterThan(capped[i - 1][0])
+    // a degenerate spine is left alone rather than extrapolated off the planet
+    expect(tailCap([[1, 1]], 0.3)).toEqual([[1, 1]])
+    expect(tailCap(shaft, 0)).toEqual(shaft)
+  })
+})
+
+/** The casing of a shape, which is an OFFSET and was a scale. */
+describe('offsetPolygon', () => {
+  const chevron: [number, number][] = [
+    [0, 1],
+    [-0.83, 0],
+    [0, 0.18],
+    [0.83, 0],
+  ]
+
+  it('stands the same distance outside every edge, tip and wings alike', () => {
+    const d = 0.075
+    const grown = offsetPolygon(chevron, d)
+    // distance from a point to the polygon's boundary, in the plane
+    const toEdge = (p: [number, number], poly: [number, number][]) => {
+      let best = Infinity
+      for (let i = 0; i < poly.length; i++) {
+        const a = poly[i]
+        const b = poly[(i + 1) % poly.length]
+        const ex = b[0] - a[0]
+        const ey = b[1] - a[1]
+        const l2 = ex * ex + ey * ey || 1
+        const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * ex + (p[1] - a[1]) * ey) / l2))
+        best = Math.min(best, Math.hypot(p[0] - (a[0] + ex * t), p[1] - (a[1] + ey * t)))
+      }
+      return best
+    }
+    // the middle of each grown edge is exactly `d` off the original outline
+    for (let i = 0; i < grown.length; i++) {
+      const a = grown[i]
+      const b = grown[(i + 1) % grown.length]
+      const mid: [number, number] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+      expect(toEdge(mid, chevron), `edge ${i}`).toBeCloseTo(d, 6)
+    }
+  })
+
+  it('rims the base edges, where a scale about the base left them bare', () => {
+    const d = 0.075
+    const grown = offsetPolygon(chevron, d)
+    // what the arrowhead's casing used to be: the same chevron, scaled about
+    // the shaft's tip (the origin here) by the same rim
+    const scaled: [number, number][] = chevron.map(([x, y]) => [x * (1 + d), y * (1 + d)])
+    const inside = (p: [number, number], poly: [number, number][]) => {
+      let hit = false
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const [xi, yi] = poly[i]
+        const [xj, yj] = poly[j]
+        if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) hit = !hit
+      }
+      return hit
+    }
+    // A scale grows a shape in proportion to each part's distance from the
+    // anchor, so the edges that RUN THROUGH the anchor barely move: the middle
+    // of the head's own base edge falls OUTSIDE the scaled casing, which means
+    // the arrow's widest, most visible edge had no rim at all and the fill hung
+    // over what casing there was. That is the grey flange photographed behind
+    // every head in /tmp/shots63/ink/paintA-thrust-map.png.
+    const mid: [number, number] = [
+      (chevron[1][0] + chevron[2][0]) / 2,
+      (chevron[1][1] + chevron[2][1]) / 2,
+    ]
+    expect(inside(mid, scaled)).toBe(false)
+    // An offset has no anchor, so every edge — base edges included — stands the
+    // rim outside the fill.
+    expect(inside(mid, grown)).toBe(true)
+    // …and the notch is rimmed too: it moves toward the base, not away from it
+    expect(grown[2][1]).toBeLessThan(chevron[2][1])
+  })
+
+  it('shrinks on a negative distance, which is what the zone skirt needs', () => {
+    const square: [number, number][] = [
+      [-1, -1],
+      [1, -1],
+      [1, 1],
+      [-1, 1],
+    ]
+    for (const [x, y] of offsetPolygon(square, -0.25)) {
+      expect(Math.abs(x)).toBeCloseTo(0.75, 9)
+      expect(Math.abs(y)).toBeCloseTo(0.75, 9)
+    }
+    // …and the winding it is handed does not decide which way "out" is
+    const reversed = [...square].reverse()
+    for (const [x, y] of offsetPolygon(reversed, -0.25)) {
+      expect(Math.abs(x)).toBeCloseTo(0.75, 9)
+      expect(Math.abs(y)).toBeCloseTo(0.75, 9)
+    }
   })
 })
 
@@ -419,6 +626,176 @@ describe('SURFACE_ALT', () => {
     const sagR = 1 - Math.cos((0.5 * Math.PI) / 180)
     expect(SURFACE_ALT).toBeGreaterThan(sagR * 4)
   })
+
+  /**
+   * ROUND 63 — *"for many drawings with higher zoom, drawings are still
+   * floating."* A CONSTANT lift is a constant distance on the planet, so what
+   * it costs on screen doubles every time the frame halves. These are the
+   * numbers the reader was looking at, and the ones they look at now.
+   */
+  it('costs the same handful of pixels at every zoom, which a constant cannot', () => {
+    // The camera's height, for a frame of a given width: the altitude and the
+    // frame are both what `viewSpanDeg` relates, and near the ground the frame
+    // is about 2·H·tan(fov/2).
+    const heightFor = (framedKm: number) => framedKm / 2 / 6371 / Math.tan((25 * Math.PI) / 180)
+    for (const framedKm of [12000, 1900, 500, 100, 40, 5]) {
+      const H = heightFor(framedKm)
+      // a constant lift: fine at world view, absurd close in
+      const fixed = slipPx(SURFACE_ALT, framedKm)
+      // …and the lift the camera now buys
+      const now = slipPx(inkLift(H), framedKm)
+      expect(now).toBeLessThanOrEqual(fixed + 1e-9)
+      // Under a line's own width at every zoom the app allows — including the
+      // 5 km frame, where a fixed lift is off by more than a screenful.
+      expect(now, `${framedKm} km`).toBeLessThan(2.5)
+    }
+    // …against a third of a 1100 px window for the lift that shipped
+    expect(slipPx(SURFACE_ALT, 5)).toBeGreaterThan(350)
+  })
+
+  it('gives the lift back as the camera climbs, and never more than the ceiling', () => {
+    expect(inkLift(2.5)).toBe(SURFACE_ALT)
+    expect(inkLift(0.3)).toBeCloseTo(SURFACE_ALT, 12)
+    expect(inkLift(0.1)).toBeCloseTo(LIFT_PER_HEIGHT * 0.1, 12)
+    expect(inkLift(1e-9)).toBe(MIN_LIFT)
+    // monotone, so a zoom never makes the ink jump the wrong way
+    let last = 0
+    for (const h of [1e-6, 1e-4, 1e-3, 0.01, 0.1, 1, 2.5, 10]) {
+      const v = inkLift(h)
+      expect(v).toBeGreaterThanOrEqual(last)
+      last = v
+    }
+  })
+
+  it('floors the lift on the drawing’s own chords, not on a constant', () => {
+    // A chord of 1° straddling a facet fold passes 1.94 km under it; a chord a
+    // twentieth of that passes a twentieth as deep. So a continental drawing
+    // gets a kilometres-high floor and a beach-scale one gets metres — which is
+    // right, because the first is only ever looked at from far away.
+    expect(FOLD_DIP_PER_DEG * 6371).toBeCloseTo(1.94, 2)
+    expect(inkLift(1e-6, groundClearance(1))).toBeCloseTo(groundClearance(1), 12)
+    expect(inkLift(1e-6, groundClearance(0.05)) * 6371).toBeLessThan(0.13)
+    // A COARSE drawing may climb past the cosmetic ceiling, because the floor
+    // is correctness: an 8° cap edge sags 18 km below the sphere and a lift
+    // shorter than that is a hole in the wash.
+    expect(groundClearance(8) * 6371).toBeGreaterThan(18)
+    expect(inkLift(2.5, groundClearance(8))).toBeGreaterThan(SURFACE_ALT)
+    // …but a fine one never does
+    expect(inkLift(2.5, groundClearance(0.2))).toBe(SURFACE_ALT)
+  })
+
+  it('measures the longest chord a polyline lays down', () => {
+    expect(maxChordDeg([])).toBe(0)
+    expect(maxChordDeg([[0, 0]])).toBe(0)
+    expect(maxChordDeg([[0, 0], [0, 1], [0, 3.5]])).toBeCloseTo(2.5, 6)
+  })
+
+  it('cuts a line at every fold it crosses, and nowhere else', () => {
+    // inside one facet: untouched, so a close-up plan pays nothing
+    const inside: GeoPath = [
+      [1, 47],
+      [2.5, 49.5],
+    ]
+    expect(splitAtFacets(inside)).toEqual(inside)
+    // across a longitude fold (multiples of 4) and a latitude fold (90 - 4k)
+    const across = splitAtFacets([
+      [-1, 47],
+      [1, 47],
+    ])
+    expect(across).toHaveLength(3)
+    expect(across[1][0]).toBeCloseTo(0, 9)
+    const down = splitAtFacets([
+      [1, 47],
+      [1, 45],
+    ])
+    expect(down).toHaveLength(3)
+    expect(down[1][1]).toBeCloseTo(46, 9)
+    // …and every cut point really is on a fold, so both halves lie in a plane
+    const long = splitAtFacets([
+      [-9.5, 51.5],
+      [7.5, 39.5],
+    ])
+    for (let i = 1; i < long.length; i++)
+      expect(crossesFold(long[i - 1], long[i]), `${i}`).toBe(false)
+    // endpoints survive exactly: a front still ends where it was authored
+    expect(long[0]).toEqual([-9.5, 51.5])
+    expect(long[long.length - 1]).toEqual([7.5, 39.5])
+    expect(splitAtFacets([[3, 3]])).toEqual([[3, 3]])
+  })
+})
+
+/**
+ * THE GROUND IS NOT THE SPHERE — the other half of round 63, and the half no
+ * altitude constant could have reached.
+ */
+describe('groundFactor', () => {
+  /**
+   * three-globe's own globe, rebuilt here: `SphereGeometry(R, 90, 45)` turned
+   * -90° about Y (`globeObj.rotation.y`, three-globe/src/layers/globe.js), which
+   * is the mesh every pixel of the planet is drawn on. The model in
+   * `groundFactor` is only worth anything if it agrees with this one, so the
+   * test does not restate the model — it fires a ray at the real geometry.
+   */
+  const hitRadius = (lng: number, lat: number) => {
+    const geom = new SphereGeometry(R, 360 / GLOBE_FACET_DEG, 180 / GLOBE_FACET_DEG)
+    geom.rotateY(-Math.PI / 2)
+    const pos = geom.getAttribute('position')
+    const idx = geom.getIndex()!
+    const p = (lat * Math.PI) / 180
+    const l = (lng * Math.PI) / 180
+    const dir = new Vector3(Math.cos(p) * Math.sin(l), Math.sin(p), Math.cos(p) * Math.cos(l))
+    const ray = new Ray(new Vector3(0, 0, 0), dir)
+    const hit = new Vector3()
+    // the NEAREST hit: a ray from the centre leaves through the far side too,
+    // and the far facet comes first in index order about half the time
+    let best = Infinity
+    for (let i = 0; i < idx.count; i += 3) {
+      const [a, b, c] = [0, 1, 2].map((k) =>
+        new Vector3().fromBufferAttribute(pos, idx.getX(i + k)),
+      )
+      if (ray.intersectTriangle(a, b, c, false, hit)) best = Math.min(best, hit.length())
+    }
+    return best
+  }
+
+  it('is where three-globe really puts the planet, to the metre', () => {
+    for (const [lng, lat] of [
+      [0, 0],
+      [2, 2], // the middle of a facet, where the dip is worst
+      [-0.8, 49.4], // Normandy: the reported drawing
+      [37.6, 55.75], // Moscow
+      [-179.2, -33.1],
+      [123.4, 66.6],
+      [4, 46], // exactly on a grid corner, where the mesh touches the sphere
+    ] as [number, number][]) {
+      const real = hitRadius(lng, lat) / R
+      expect(groundFactor(lng, lat), `${lng},${lat}`).toBeCloseTo(real, 7)
+    }
+  })
+
+  it('says the planet hangs kilometres inside the sphere the ink was drawn on', () => {
+    // The measurement that convicted the old placement: at Normandy the ground
+    // is ~5 km inside the sphere, so ink lifted 3.8 km hovered ~9 km — more than
+    // twice what the altitude constant was reasoned about (measured at 6.9-8.5
+    // km in the running app, tests/e2e/repro63.e2e.mjs).
+    expect((1 - groundFactor(-0.8, 49.4)) * 6371).toBeGreaterThan(3)
+    // …up to 7.8 km at the equator, where a facet's diagonal is longest
+    expect((1 - groundFactor(2, 0)) * 6371).toBeGreaterThan(7)
+    // …and nothing at all on a grid line, which is what makes it a fold rather
+    // than a uniform shrink
+    expect(1 - groundFactor(4, 46)).toBeLessThan(1e-9)
+    // never above the sphere, ever: the mesh is inscribed in it
+    for (let lng = -180; lng < 180; lng += 3.7)
+      for (let lat = -88; lat < 88; lat += 3.3)
+        expect(groundFactor(lng, lat), `${lng},${lat}`).toBeLessThanOrEqual(1 + 1e-12)
+  })
+
+  it('is periodic in longitude and safe at the poles', () => {
+    expect(groundFactor(181, 20)).toBeCloseTo(groundFactor(-179, 20), 12)
+    expect(groundFactor(-180, 20)).toBeCloseTo(groundFactor(180, 20), 12)
+    for (const lat of [90, -90, 89.999, -89.999])
+      expect(Number.isFinite(groundFactor(17, lat)), `${lat}`).toBe(true)
+  })
 })
 
 describe('DrawingLayer routes', () => {
@@ -595,8 +972,9 @@ describe('DrawingLayer routes', () => {
       },
       { color: '#fff', altitude: SURFACE_ALT },
     )
-    // Every solid mesh vertex sits at exactly the stated radius — no kind gets
-    // its own extra lift any more, because a lift is parallax.
+    // Every solid mesh vertex sits at exactly the stated lift ABOVE THE GROUND
+    // under it — no kind gets its own extra height any more, because a height
+    // is parallax, and the ground is the rendered mesh rather than the sphere.
     for (const child of layer.object.children) {
       // LineSegments2 (and Line2, which extends it) keeps its real vertices in
       // instanceStart/instanceEnd; `position` is the unit quad the fat-line
@@ -604,12 +982,94 @@ describe('DrawingLayer routes', () => {
       if (child instanceof LineSegments2) continue
       const pos = ((child as Mesh).geometry as BufferGeometry)?.getAttribute('position')
       if (!pos) continue
-      for (let i = 0; i < pos.count; i++)
-        expect(new Vector3().fromBufferAttribute(pos, i).length()).toBeCloseTo(
-          R * (1 + SURFACE_ALT),
-          4,
-        )
+      for (let i = 0; i < pos.count; i++) {
+        const v = new Vector3().fromBufferAttribute(pos, i)
+        const lat = (Math.asin(v.y / v.length()) * 180) / Math.PI
+        const lng = (Math.atan2(v.x, v.z) * 180) / Math.PI
+        expect(v.length()).toBeCloseTo(R * (groundFactor(lng, lat) + SURFACE_ALT), 4)
+      }
     }
+    layer.dispose()
+  })
+
+  /**
+   * ROUND 63 — the lift follows the camera, and it does it by scaling the group
+   * rather than by rebuilding anything.
+   */
+  it('brings the ink down to the ground as the camera comes down to it', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    // authored at the scale of a beach: short chords, so nothing the drawing
+    // itself contains puts a floor under the lift
+    layer.set(
+      {
+        layers: [
+          { type: 'frontline', paths: [[[-0.9, 49.35], [-0.5, 49.34], [-0.1, 49.33]]] },
+          { type: 'thrust', path: [[-0.8, 49.5], [-0.75, 49.35]], width: 0.028 },
+        ],
+      },
+      { color: '#fff', altitude: SURFACE_ALT },
+    )
+    const liftNow = () => {
+      // read it back off the scene: the geometry is built at SURFACE_ALT and
+      // the group's scale is what actually decides where the ink is
+      // a real mesh, not a fat line: `position` on a Line2 is the unit quad
+      // the shader extrudes, which is nowhere near the planet
+      const child = layer.object.children.find(
+        (c) =>
+          !(c instanceof LineSegments2) &&
+          ((c as Mesh).geometry?.getAttribute?.('position')?.count ?? 0) > 0,
+      ) as Mesh
+      const pos = child.geometry.getAttribute('position')
+      const v = new Vector3().fromBufferAttribute(pos, 0).multiplyScalar(layer.object.scale.x)
+      const lat = (Math.asin(v.y / v.length()) * 180) / Math.PI
+      const lng = (Math.atan2(v.x, v.z) * 180) / Math.PI
+      return v.length() / R - groundFactor(lng, lat)
+    }
+    // world view: exactly what shipped, because up there a lift costs nothing
+    layer.setCameraAltitude(2.5)
+    expect(liftNow()).toBeCloseTo(SURFACE_ALT, 6)
+    // …and 40 km up it is a tenth of a kilometre rather than four
+    layer.setCameraAltitude(0.0067)
+    expect(liftNow() * 6371).toBeLessThan(0.15)
+    expect(liftNow() * 6371).toBeGreaterThan(0.02)
+    // …and it never goes to nothing, or float32 would swallow it
+    layer.setCameraAltitude(1e-9)
+    expect(liftNow()).toBeGreaterThanOrEqual(MIN_LIFT * 0.9)
+    // NOTHING WAS REBUILT to do any of that: same geometries, same vertices
+    const before = layer.object.children.length
+    layer.setCameraAltitude(2.5)
+    expect(layer.object.children.length).toBe(before)
+    // …and an unchanged camera does not even touch the group
+    expect(layer.setCameraAltitude(2.5)).toBe(false)
+    layer.dispose()
+  })
+
+  it('keeps a coarse drawing clear of the folds it is drawn across', () => {
+    const layer = new DrawingLayer(new Scene(), R)
+    // a continental zone: its cap is triangles a degree wide, which cannot be
+    // cut at the folds without cracking the wash, so the lift is floored on
+    // what they would sag
+    layer.set(
+      { layers: [{ type: 'zone', ring: [[-30, 20], [20, 20], [20, 55], [-30, 55]] }] },
+      { color: '#fff', altitude: SURFACE_ALT },
+    )
+    layer.setCameraAltitude(1e-9)
+    const mesh = layer.object.children.find(
+      (c) => (c as Mesh).geometry?.getAttribute?.('poolDist'),
+    ) as Mesh
+    const pos = mesh.geometry.getAttribute('position')
+    let worst = -Infinity
+    for (let i = 0; i < pos.count; i += 3) {
+      const c = new Vector3()
+      for (let k = 0; k < 3; k++) c.add(new Vector3().fromBufferAttribute(pos, i + k))
+      c.divideScalar(3).multiplyScalar(layer.object.scale.x)
+      const lat = (Math.asin(c.y / c.length()) * 180) / Math.PI
+      const lng = (Math.atan2(c.x, c.z) * 180) / Math.PI
+      worst = Math.max(worst, R * groundFactor(lng, lat) - c.length())
+    }
+    // no triangle's middle is under the ground it is drawn on, even with the
+    // camera on the deck
+    expect(worst).toBeLessThan(0)
     layer.dispose()
   })
 
@@ -1037,12 +1497,12 @@ describe('zone caps', () => {
     expect(pos.count % 3).toBe(0)
     for (let i = 0; i < pos.count; i++) {
       const v = new Vector3().fromBufferAttribute(pos, i)
-      // every vertex on the sphere at the layer's own altitude…
-      // to Float32, which is what the attribute holds
-      expect(v.length()).toBeCloseTo(R * (1 + SURFACE_ALT), 3)
-      // …and inside the ring it was cut from, to the Float32 the attribute holds
       const lat = (Math.asin(v.y / v.length()) * 180) / Math.PI
       const lng = (Math.atan2(v.x, v.z) * 180) / Math.PI
+      // every vertex on the GROUND at the layer's own lift…
+      // to Float32, which is what the attribute holds
+      expect(v.length()).toBeCloseTo(R * (groundFactor(lng, lat) + SURFACE_ALT), 3)
+      // …and inside the ring it was cut from, to the Float32 the attribute holds
       // …and inside the ring it was cut from — with the poleward bulge a
       // GREAT CIRCLE has against the parallel through its ends (0.03° across
       // this ring's 6° top edge), because that is the curve `areaCapRing`
@@ -1055,16 +1515,25 @@ describe('zone caps', () => {
   })
 
   it('cuts every triangle fine enough that its chord clears the ground', () => {
-    const pos = capGeometry(ring, R, SURFACE_ALT).getAttribute('position')
-    // the deepest a triangle's plane dips below the sphere, against the
-    // clearance the whole layer is lifted by
+    const g = capGeometry(ring, R, SURFACE_ALT)
+    const pos = g.getAttribute('position')
+    // The deepest a triangle's own plane dips below the RENDERED ground beneath
+    // it — which is the surface it has to clear, and it is not the sphere (see
+    // `groundFactor`). Measured at the centroid, where a flat triangle over a
+    // curved surface is at its worst.
     let deepest = 0
     for (let i = 0; i < pos.count; i += 3) {
       const [a, b, c] = [0, 1, 2].map((k) => new Vector3().fromBufferAttribute(pos, i + k))
       const centroid = a.clone().add(b).add(c).divideScalar(3)
-      deepest = Math.max(deepest, R - centroid.length())
+      const lat = (Math.asin(centroid.y / centroid.length()) * 180) / Math.PI
+      const lng = (Math.atan2(centroid.x, centroid.z) * 180) / Math.PI
+      deepest = Math.max(deepest, R * groundFactor(lng, lat) - centroid.length())
     }
     expect(deepest).toBeLessThan(R * SURFACE_ALT)
+    // …and the geometry says how far it may sag, so the layer can floor its
+    // lift on it rather than on a constant that has to cover every drawing.
+    const claimed = R * 1.25 * FOLD_DIP_PER_DEG * (g.userData.maxEdgeDeg as number)
+    expect(claimed).toBeGreaterThan(deepest)
   })
 
   it('does not explode on a ring authored at continental scale', () => {
@@ -1095,6 +1564,44 @@ describe('zone caps', () => {
 
   it('draws nothing for a ring that is not a ring', () => {
     expect(capGeometry([[0, 0], [1, 1]], R, SURFACE_ALT).getAttribute('position').count).toBe(0)
+  })
+
+  /** ROUND 63: the wash pools at its edge (`ZONE_POOL`). */
+  it('carries a skirt inside the ring, in the same buffer as the wash', () => {
+    const g = capGeometry(ring, R, SURFACE_ALT)
+    const pool = g.getAttribute('poolDist')
+    expect(pool).toBeTruthy()
+    expect(pool.count).toBe(g.getAttribute('position').count)
+    const vals = Array.from({ length: pool.count }, (_, i) => pool.getX(i))
+    // three populations and no others: the wash (2), the skirt's outer edge on
+    // the ring (0) and its inner edge (1). The shader turns those into an
+    // alpha; nothing here bakes a curve, because the mesh is too coarse to
+    // carry one (see `ZONE_POOL`).
+    expect(new Set(vals)).toEqual(new Set([0, 1, 2]))
+    // …and the skirt is CHEAP: two triangles per ring edge, against a cap that
+    // would have to be subdivided into thousands to carry the same band
+    const skirtVerts = vals.filter((v) => v < 2).length
+    expect(skirtVerts % 6).toBe(0)
+    expect(skirtVerts / 6).toBeLessThan(vals.length)
+  })
+
+  it('keeps the skirt inside the ring it belongs to', () => {
+    const g = capGeometry(ring, R, SURFACE_ALT)
+    const pos = g.getAttribute('position')
+    const pool = g.getAttribute('poolDist')
+    for (let i = 0; i < pos.count; i++) {
+      if (pool.getX(i) !== 1) continue // the skirt's INNER edge
+      const v = new Vector3().fromBufferAttribute(pos, i)
+      const lat = (Math.asin(v.y / v.length()) * 180) / Math.PI
+      const lng = (Math.atan2(v.x, v.z) * 180) / Math.PI
+      // strictly inside the 20..26 x 50..54 ring, by a real margin
+      expect(lng).toBeGreaterThan(20)
+      expect(lng).toBeLessThan(26)
+      expect(lat).toBeGreaterThan(50)
+      expect(lat).toBeLessThan(54.06)
+    }
+    expect(ZONE_POOL.edge).toBeGreaterThan(1)
+    expect(ZONE_POOL.band).toBeLessThan(0.5)
   })
 
   it('washes the ring and edges it with a dashed, cased line', () => {

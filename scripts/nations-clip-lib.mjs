@@ -592,6 +592,166 @@ export function findInkDisagreements(nations, keyframesOf) {
   return out
 }
 
+/* ----------------------------------- does the fill agree with the ink (r63) */
+
+/**
+ * HOW FAR A MODERN-ERA FILL EDGE MAY BE FROM THE LINE THE MAP DRAWS THERE.
+ *
+ * From `MODERN_FROM` two layers state where a border is: the polity's clipped
+ * fill, whose inland edge is where its colour stops, and Natural Earth's
+ * surveyed frontiers, which is the only political ink drawn in those years. In
+ * that era they are describing the SAME borders, so any inland fill edge that
+ * is not on a modern line is a place where the map contradicts itself — a wash
+ * ending in the middle of nowhere, or running past the line that is supposed to
+ * contain it.
+ *
+ * The reader found this the way readers do: India's fill covered 76% of
+ * Bangladesh and 70% of Nepal while the Nepalese and Bangladeshi borders were
+ * inked across the top of it — 8 194 of its 9 532 km of inland frontier lay on
+ * no line at all. Nothing in the build could see it, because every
+ * validator here judges the polities against each other and the modern set
+ * against itself, and no one had ever asked the two layers whether they agreed.
+ *
+ * 25 km rather than something tight: this measures a *disagreement between
+ * layers*, not a survey. Both sides are 1:50m geometry quantised at 1e-4°, the
+ * fill has been through a clip, a difference and a codec, and a genuine
+ * historical difference (Sikkim in 1970, the Alaska panhandle in 1850) is
+ * hundreds of kilometres wide. Anything inside 25 km is the same border drawn
+ * twice; anything outside it is two different claims.
+ */
+export const MODERN_INK_TOL_KM = 25
+
+const EARTH_KM = 6371.0088
+const KM_PER_DEG = (EARTH_KM * Math.PI) / 180
+
+/**
+ * A spatial hash over the ink, so "is this point on a border?" is a lookup in
+ * the nine cells around it rather than a walk over sixty thousand.
+ *
+ * SEGMENTS, not vertices, and the difference is the whole usefulness of the
+ * thing. A contested zone's boundary is authored: a hundred kilometres of the
+ * Line of Control is two points, so the nearest VERTEX to the middle of that
+ * run is fifty kilometres away while the line itself passes through it. Asking
+ * the distance to the nearest SEGMENT makes the answer a property of the border
+ * rather than of how finely somebody digitised it — which matters here because
+ * the two sides being compared are digitised at wildly different densities
+ * (Natural Earth at a kilometre, a hand-drawn zone at a hundred).
+ *
+ * A long segment is registered in every cell it crosses, walked at half a cell,
+ * so it is found from anywhere along its length and not only near its ends.
+ */
+export function inkIndex(lines) {
+  const cells = new Map()
+  const segs = []
+  const put = (x, y, i) => {
+    const k = `${Math.floor(x)},${Math.floor(y)}`
+    let list = cells.get(k)
+    if (!list) cells.set(k, (list = []))
+    if (list[list.length - 1] !== i) list.push(i)
+  }
+  for (const line of lines)
+    for (let i = 0; i + 1 < line.length; i++) {
+      const a = line[i]
+      const b = line[i + 1]
+      const idx = segs.push([a, b]) - 1
+      const steps = Math.max(1, Math.ceil(2 * Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]))))
+      for (let s = 0; s <= steps; s++)
+        put(a[0] + ((b[0] - a[0]) * s) / steps, a[1] + ((b[1] - a[1]) * s) / steps, idx)
+    }
+  /** Point-to-segment in a local plane, longitudes scaled by cos(lat). */
+  const distToSeg = (p, a, b) => {
+    const k = Math.cos((p[1] * Math.PI) / 180)
+    const px = p[0] * k
+    const ax = a[0] * k
+    const bx = b[0] * k
+    const vx = bx - ax
+    const vy = b[1] - a[1]
+    const len2 = vx * vx + vy * vy
+    const t = len2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * vx + (p[1] - a[1]) * vy) / len2)) : 0
+    return Math.hypot(px - (ax + t * vx), p[1] - (a[1] + t * vy)) * KM_PER_DEG
+  }
+  return {
+    /** Distance in km from `p` to the nearest indexed line, or Infinity. */
+    nearestKm(p) {
+      const cx = Math.floor(p[0])
+      const cy = Math.floor(p[1])
+      let best = Infinity
+      for (let dx = -1; dx <= 1; dx++)
+        for (let dy = -1; dy <= 1; dy++) {
+          const list = cells.get(`${cx + dx},${cy + dy}`)
+          if (!list) continue
+          for (const i of list) {
+            const d = distToSeg(p, segs[i][0], segs[i][1])
+            if (d < best) best = d
+          }
+        }
+      return best
+    },
+  }
+}
+
+/**
+ * THE METRIC the round-63 defect becomes: per polity, what share of the inland
+ * frontier it draws in the modern era lies on a line the modern layer draws.
+ *
+ * `edgesOf(nation, keyframe)` yields `{ ring, coastal }` per ring, the same
+ * shape `findInkDisagreements` takes. Coastal edges are excluded because they
+ * are the map's own coastline and the modern payload deliberately contains no
+ * coast at all. Contested-zone boundaries are excluded because Natural Earth
+ * does not draw them — that is what makes them contested — so `zoneInk` is a
+ * second index the vertex is allowed to be near instead.
+ *
+ * Length is attributed to the vertex at the start of each edge, so a polity
+ * whose whole frontier is off the ink reads 0% and one that is on it reads 100%.
+ */
+export function modernInkAgreement(nations, edgesOf, { ink, zoneInk, from, to, tolKm = MODERN_INK_TOL_KM }) {
+  const rows = []
+  for (const n of nations) {
+    const spans = n.keyframes.map((kf, i) => [
+      i === 0 ? n.from : kf.time,
+      i + 1 < n.keyframes.length ? n.keyframes[i + 1].time - 1 : n.to,
+    ])
+    let inlandKm = 0
+    let onInkKm = 0
+    const worst = []
+    for (const [i, kf] of n.keyframes.entries()) {
+      const [lo, hi] = spans[i]
+      // The keyframe has to be the one in force somewhere inside the modern
+      // window AND the polity has to be drawn there, or the question is moot.
+      if (hi < from || lo > to) continue
+      if (n.visibleTo < from || n.visibleFrom > to) continue
+      for (const { ring, coastal } of edgesOf(n, kf))
+        for (let v = 0; v < ring.length; v++) {
+          if (coastal[v]) continue
+          const a = ring[v]
+          const b = ring[(v + 1) % ring.length]
+          const km =
+            Math.hypot((b[0] - a[0]) * Math.cos((0.5 * (a[1] + b[1]) * Math.PI) / 180), b[1] - a[1]) * KM_PER_DEG
+          inlandKm += km
+          // BOTH ENDS AND THE MIDDLE. Testing only the vertices would pass a
+          // frontier drawn as one edge from Punjab to Assam — its two ends sit
+          // on real tripoints and everything between them is a ruled line
+          // across Nepal, which is precisely the defect this measures.
+          const probe = (p) => Math.min(ink.nearestKm(p), zoneInk ? zoneInk.nearestKm(p) : Infinity)
+          const mid = [0.5 * (a[0] + b[0]), 0.5 * (a[1] + b[1])]
+          const d = Math.max(probe(a), probe(b), probe(mid))
+          if (d <= tolKm) onInkKm += km
+          else worst.push({ at: `${n.id}@${kf.time}`, km, off: d, where: a })
+        }
+    }
+    if (inlandKm > 0)
+      rows.push({
+        id: n.id,
+        inlandKm,
+        onInkKm,
+        offKm: inlandKm - onInkKm,
+        share: onInkKm / inlandKm,
+        worst: worst.sort((x, y) => y.off - x.off).slice(0, 3),
+      })
+  }
+  return rows.sort((a, b) => b.offKm - a.offKm)
+}
+
 /** One conviction as the build prints it. */
 export const describeOverlap = (o) =>
   `${o.a} × ${o.b}: ${(o.width * 111).toFixed(1)} km wide (${o.width.toFixed(4)}°), ` +

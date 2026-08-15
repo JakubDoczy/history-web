@@ -47,7 +47,9 @@ import {
   findOverlaps,
   isNotableAt,
   keyframeAt,
+  inkIndex,
   landPolygons,
+  modernInkAgreement,
   multiPolygonArea,
   multiPolygonOf,
   OVERLAP_WIDTH_DEG,
@@ -64,6 +66,8 @@ import {
   MODERN_TO,
 } from './modern-borders-lib.mjs'
 import {
+  countryExtent,
+  countryIndex,
   DECLARED_TOL_DEG,
   declaredShare,
   decodeRivers,
@@ -92,6 +96,21 @@ const checkOnly = args.has('--check')
  * Inland frontiers are never touched: see `simplifyRing`.
  */
 const SEA_TOLERANCE_DEG = Number(process.env.NATIONS_SEA_TOL ?? 0.0036)
+
+/**
+ * HOW MUCH OF ONE POLITY'S MODERN-ERA FRONTIER MAY BE OFF THE MODERN INK.
+ *
+ * A budget in kilometres of frontier rather than a share, because a share
+ * forgives a big country the same province it convicts a small one for — the
+ * lesson round 55 learned about the overlap epsilon, applied to the same class
+ * of question. See `MODERN_INK_TOL_KM` for the width; this is the length.
+ *
+ * 200 km is a little over the worst thing left in the corpus after round 63's
+ * data pass (the USSR's Tumen mouth and a scatter of quantisation on the
+ * Amur), and two orders of magnitude below what the defect it exists to catch
+ * measured: India's fill was 8 194 km of frontier that no layer inked.
+ */
+const MODERN_INK_OFF_BUDGET_KM = 200
 
 /** Edge i of a reversed ring is edge (n-1-i) of the original. */
 const reverseEdgeFlags = (flags) => {
@@ -164,12 +183,41 @@ const asPolity = (zone, keyframes) => {
  * anyway.
  */
 const rivers = decodeRivers(read('src/data/rivers-named.json'))
+let topoCache
+const topology = () => (topoCache ??= read('node_modules/world-atlas/countries-50m.json'))
 let arcCache
 const features = {
   rivers,
   get modernArcs() {
-    return (arcCache ??= frontierArcs(read('node_modules/world-atlas/countries-50m.json')))
+    return (arcCache ??= frontierArcs(topology()))
   },
+}
+
+/**
+ * AN EXTENT THAT IS THE MODERN MAP (round 63; see `countryExtent`).
+ *
+ * A keyframe that declares `countries` has no authored rings at all: its
+ * geometry is the union of those states in `countries-50m.json`, which is the
+ * topology the modern-border ink is built from and the file `land-50m.json` is
+ * cut from. Resolved here, beside `follows`, and for the same reason — by the
+ * time anything downstream sees this keyframe it is geometry, and the clip, the
+ * coastal classification, the frontier rules, the contested carve and the codec
+ * do not have to know where it came from.
+ */
+let indexCache
+const countries50m = () => (indexCache ??= countryIndex(topology(), decodeArcs))
+const extentOps = {
+  union: (...mps) => mps.reduce((a, b) => robustOp('union', a, b, 'countries extent')),
+  intersection: (a, b) => robustOp('intersection', a, b, 'antimeridian split'),
+}
+const declaredExtents = new Map() // `id@time` -> MultiPolygon
+const resolveCountries = (at, codes) => {
+  try {
+    declaredExtents.set(at, countryExtent(codes, countries50m(), extentOps))
+  } catch (err) {
+    console.error(`countries: ${at}: ${err.message}`)
+    process.exit(1)
+  }
 }
 
 const followed = new Map() // `id@time` -> { rings, segments, checks }
@@ -186,8 +234,13 @@ const resolveFollows = (at, rings, decls) => {
   }
 }
 for (const nation of authored)
-  for (const kf of nation.keyframes)
+  for (const kf of nation.keyframes) {
+    // `--check` judges the SHIPPED geometry, and a declared extent's only
+    // product is geometry — so unioning fifteen republics to answer a question
+    // about a file already on disk is work with no reader.
+    if (!checkOnly && kf.countries?.length) resolveCountries(key(nation.id, kf.time), kf.countries)
     if (kf.follows?.length) resolveFollows(key(nation.id, kf.time), kf.rings, kf.follows)
+  }
 // A ZONE DECLARES WHAT IT FOLLOWS TOO, and it goes through exactly this code:
 // an occupation line that follows the Dnipro follows the Dnipro, and the
 // boundary of Western Sahara is three arcs of Natural Earth's own topology.
@@ -197,6 +250,26 @@ for (const zone of zonesAuthored)
 /** The rings the rest of the pipeline works on: derived where declared. */
 const ringsOf = (nation, kf) => followed.get(key(nation.id, kf.time))?.rings ?? kf.rings
 const zoneRingsOf = (zone) => followed.get(key(zone.id, 'zone'))?.rings ?? zone.rings
+
+/**
+ * THE EXTENT the pipeline clips: a declared set of modern states, or the
+ * authored rings unioned the way they always were.
+ *
+ * `multiPolygonOf` treats every authored ring as its own polygon, which is
+ * right for a hand-drawn extent (a hole is written as a hole in one ring, and
+ * the corpus has exactly one) and wrong for a topology's geometry, where a
+ * piece is an outer ring followed by its holes. So a declared extent bypasses
+ * it and arrives as a MultiPolygon already.
+ */
+const extentOf = (nation, kf) =>
+  declaredExtents.get(key(nation.id, kf.time)) ?? multiPolygonOf(ringsOf(nation, kf))
+
+/** How many vertices a keyframe costs the author — or Natural Earth. */
+const extentVerts = (nation, kf) => {
+  const declared = declaredExtents.get(key(nation.id, kf.time))
+  if (declared) return declared.reduce((n, p) => n + p.reduce((m, r) => m + r.length, 0), 0)
+  return ringsOf(nation, kf).reduce((n, r) => n + r.length, 0)
+}
 
 /* --------------------------------------------------------- check-only mode */
 
@@ -211,9 +284,73 @@ if (checkOnly) {
   // claims need Natural Earth and `--check` deliberately does not decode it, so
   // what is checkable here is the shape of the payload and the snap numbers.
   const shipFaults = checkContested(onDisk.contested ?? [])
-  const modernFaults = checkModern(read('src/data/borders.modern.json'))
+  const modernPayload = read('src/data/borders.modern.json')
+  const modernFaults = checkModern(modernPayload)
   reportModern(modernFaults)
-  process.exit(found.length || split.length || modernFaults.length || bad.length || shipFaults.length ? 1 : 0)
+  const inkOff = agreementReport(onDisk.nations, onDisk.contested ?? [], modernPayload)
+  process.exit(
+    found.length || split.length || modernFaults.length || bad.length || shipFaults.length || inkOff.length ? 1 : 0,
+  )
+}
+
+/**
+ * THE FILL-VS-INK REPORT (round 63) — and the only validator in this file that
+ * asks the two political layers whether they agree with each other.
+ *
+ * See `modernInkAgreement`. Everything it needs is on disk in both modes, which
+ * is the point: `npm run build` runs `--check`, so the invariant is enforced on
+ * every build and not only when somebody rebuilds the corpus.
+ */
+function agreementReport(nations, zoneEntries, modernPayload) {
+  const lines = [
+    ...modernPayload.lines.map((enc) => decodeRing(enc)),
+    ...modernPayload.dated.flatMap((d) => d.lines.map((enc) => decodeRing(enc))),
+  ]
+  // Closed: a ring's last edge runs back to its first vertex, and a zone's
+  // boundary is a ring rather than the open polylines the modern payload holds.
+  const closed = (ring) => [...ring, ring[0]]
+  const zoneRings = zoneEntries.flatMap((z) => z.polys.flatMap((rings) => rings.map((r) => closed(decodeRing(r)))))
+  const rows = modernInkAgreement(
+    nations,
+    (n, kf) => {
+      const { pieces, coastal } = decodeKeyframe(kf)
+      return pieces.flatMap((rings, p) => rings.map((ring, r) => ({ ring, coastal: coastal[p][r] })))
+    },
+    {
+      ink: inkIndex(lines),
+      zoneInk: inkIndex(zoneRings),
+      from: modernPayload.from,
+      to: modernPayload.to,
+    },
+  )
+  const pad = (s, n) => String(s).padStart(n)
+  console.log('')
+  console.log(`fill against ink — inland frontier a polity draws in ${modernPayload.from}+, and whether the modern layer draws it too`)
+  console.log(`  ${'polity'.padEnd(14)} ${pad('inland km', 10)} ${pad('off ink', 9)} ${pad('on ink', 7)}`)
+  const bad = []
+  for (const r of rows) {
+    console.log(
+      `  ${r.id.padEnd(14)} ${pad(r.inlandKm.toFixed(0), 10)} ${pad(r.offKm.toFixed(0), 9)} ${pad((r.share * 100).toFixed(1) + '%', 7)}` +
+        (r.worst.length
+          ? `  worst ${r.worst[0].at} ${
+              // Infinity is "no border within a degree of it", which is a real
+              // answer and not a bug — the index only searches the nine cells
+              // around the point, because anything further out is already lost.
+              Number.isFinite(r.worst[0].off) ? `${r.worst[0].off.toFixed(0)} km` : '>111 km'
+            } off at ${r.worst[0].where.map((v) => v.toFixed(2)).join(',')}`
+          : ''),
+    )
+    if (r.offKm > MODERN_INK_OFF_BUDGET_KM) bad.push(r)
+  }
+  if (!rows.length) console.log(`  (no polity is drawn in the modern window)`)
+  if (bad.length) {
+    console.error(
+      `  OFF THE INK BY MORE THAN ${MODERN_INK_OFF_BUDGET_KM} km OF FRONTIER — a modern-era fill whose edge is` +
+        ` not a border anybody draws:`,
+    )
+    for (const r of bad) console.error(`    ${r.id}: ${r.offKm.toFixed(0)} km off, ${(r.share * 100).toFixed(1)}% on`)
+  } else console.log(`  fill against ink: green — every modern-era fill edge is a line the modern layer also draws`)
+  return bad
 }
 
 /**
@@ -268,7 +405,7 @@ const t0 = performance.now()
 const clipped = new Map()
 for (const nation of authored)
   for (const kf of nation.keyframes)
-    clipped.set(key(nation.id, kf.time), clipToLand(multiPolygonOf(ringsOf(nation, kf)), land))
+    clipped.set(key(nation.id, kf.time), clipToLand(extentOf(nation, kf), land))
 const clipMs = performance.now() - t0
 
 const empty = []
@@ -453,9 +590,9 @@ const built = authored.map((nation) => ({
   ...nation,
   keyframes: nation.keyframes.map((kf) => {
     const mp = clipped.get(key(nation.id, kf.time))
-    const authoredArea = multiPolygonArea(multiPolygonOf(ringsOf(nation, kf)))
+    const authoredArea = multiPolygonArea(extentOf(nation, kf))
     shrunk.push({ id: nation.id, time: kf.time, kept: multiPolygonArea(mp) / authoredArea })
-    vertsIn += ringsOf(nation, kf).reduce((n, r) => n + r.length, 0)
+    vertsIn += extentVerts(nation, kf)
     vertsClipped += mp.reduce((n, p) => n + p.reduce((m, r) => m + r.length - 1, 0), 0)
     return { time: kf.time, ...shippable(mp) }
   }),
@@ -675,7 +812,7 @@ function claimGeometry(id, from, to) {
   for (const [i, kf] of n.keyframes.entries()) {
     const [holdFrom, holdTo] = holdSpan(n, i)
     if (holdTo < from || holdFrom > to) continue
-    out.push(...clipToLand(multiPolygonOf(ringsOf(n, kf)), land))
+    out.push(...clipToLand(extentOf(n, kf), land))
   }
   return out
 }
@@ -707,7 +844,17 @@ function countryGeometry(name) {
 
 /* ----------------------------------------------------------- the numbers */
 
-/** What is on the globe at t: notable, largest first, capped like the store. */
+/**
+ * What is on the globe at t: notable, largest first, capped like the store.
+ *
+ * `authoredRings` is how an AUTHORING keyframe answers "how big is this" —
+ * either the rings a human drew or, for a `countries` declaration, the extent
+ * the topology gave it (round 63). Built keyframes answer with `polys` and do
+ * not need it.
+ */
+const authoredRings = (n, kf) =>
+  kf.rings ?? (declaredExtents.get(key(n.id, kf.time)) ?? []).flatMap((poly) => poly)
+
 function onGlobe(nations, t, limit = 10) {
   const ranked = []
   for (const n of nations) {
@@ -716,7 +863,7 @@ function onGlobe(nations, t, limit = 10) {
     if (!kf) continue
     const area = kf.polys
       ? decodeKeyframe(kf).pieces.reduce((a, rings) => a + Math.abs(shoelace(rings[0])), 0)
-      : kf.rings.reduce((a, r) => a + Math.abs(shoelace(r)), 0)
+      : authoredRings(n, kf).reduce((a, r) => a + Math.abs(shoelace(r)), 0)
     ranked.push({ n, kf, area })
   }
   return ranked.sort((a, b) => b.area - a.area).slice(0, limit)
@@ -745,9 +892,9 @@ function budget(nations, countOf) {
   for (const t of years) {
     let verts = 0
     let polys = 0
-    for (const { kf } of onGlobe(nations, t)) {
-      verts += countOf(kf).verts
-      polys += countOf(kf).polys
+    for (const { n, kf } of onGlobe(nations, t)) {
+      verts += countOf(kf, n).verts
+      polys += countOf(kf, n).polys
     }
     if (verts > worst.verts) worst = { year: t, verts, polys }
   }
@@ -756,9 +903,9 @@ function budget(nations, countOf) {
 
 function report(convictions, builtNations, sourceNations, splits = [], zoneCount = 0) {
   if (sourceNations) {
-    const before = budget(sourceNations, (kf) => ({
-      verts: kf.rings.reduce((n, r) => n + r.length, 0),
-      polys: kf.rings.length,
+    const before = budget(sourceNations, (kf, n) => ({
+      verts: authoredRings(n, kf).reduce((m, r) => m + r.length, 0),
+      polys: authoredRings(n, kf).length,
     }))
     const after = budget(builtNations, (kf) => ({
       verts: kf.polys.reduce((n, p) => n + p.reduce((m, r) => m + r.length / 2, 0), 0),
@@ -917,7 +1064,11 @@ console.log(
 )
 reportModern(modernFaults)
 console.log(`wrote src/data/borders.modern.json (${(modernBody.length / 1024).toFixed(0)} kB)`)
-if (modernFaults.length || worstKept.kept < 0.999) process.exit(1)
+// LAST, because it is the one report that needs BOTH files: the polities that
+// were just written and the modern lines that were just written. It runs on
+// `--check` too, off what is on disk, which is where the build enforces it.
+const inkOff = agreementReport(built, builtZones, JSON.parse(modernBody))
+if (modernFaults.length || inkOff.length || worstKept.kept < 0.999) process.exit(1)
 
 /**
  * What the shipped modern payload has to satisfy, checkable without decoding

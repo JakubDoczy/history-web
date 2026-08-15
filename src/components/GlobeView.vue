@@ -1055,6 +1055,13 @@ onMounted(() => {
     // A drawing's labels are spaced for the frame "Show on map" flies to; zoomed
     // out they pile into one smear. The geometry stays either way.
     drawing?.setViewSpanDeg(viewSpanDeg(pov.altitude, view.fov))
+    // HOW HIGH THE INK RIDES — see `inkLift` in lib/drawingLayer.ts. A fixed
+    // altitude is a fixed distance on the planet, so it costs twice as many
+    // pixels every time the frame halves, which is the "drawings are still
+    // floating at higher zoom" the reader reported after round 59 had already
+    // made it eight times smaller. Both layers, because a route hovers exactly
+    // as visibly as a battle plan does. Costs one matrix each, no rebuild.
+    if ([drawing, routes].filter((l) => l?.setCameraAltitude(pov.altitude)).length) wake()
     // The framed span, not the horizon `span` below: close in the two differ by
     // more than an order of magnitude, and it is the framed one that says how
     // many pixels a degree of ground is worth — which is what decides whether

@@ -79,45 +79,307 @@ import { markInk, STROKE_CASING } from './present/ink'
 const RAD = Math.PI / 180
 
 /**
- * How far above the surface every overlay sits, in globe radii. 0.0006 R is
- * 3.8 km — the height of a mountain, not of a satellite.
+ * THE HIGHEST this layer's ink is ever lifted off the ground, in globe radii.
+ * 0.0006 R is 3.8 km — the height of a mountain, not of a satellite.
  *
- * WHY IT IS THIS SMALL. Overlay geometry drawn at altitude h does not sit on the
- * ground it names: seen from anywhere except straight overhead it lands on the
- * ground *behind* itself, by h·tan(incidence), and the offset swings as the
- * camera orbits. Measured in the shipped build at 1100 px wide, on a feature
+ * WHY A LIFT COSTS ANYTHING. Overlay geometry drawn at altitude h does not sit
+ * on the ground it names: seen from anywhere except straight overhead it lands
+ * on the ground *behind* itself, by h·tan(incidence), and the offset swings as
+ * the camera orbits. Measured in the shipped build at 1100 px wide, on a feature
  * 45% of the frame from the optical axis:
  *
  *     altitude          172 km view   1921 km view   world view
  *     0.0155 (98.8 km)     336 px         30 px         8 px     ← battle plans
  *     0.0142 (90.5 km)     295 px         27 px         7 px     ← routes
  *     0.0120 (76.5 km)     233 px         23 px         6 px     ← the area cap
- *     0.0006 ( 3.8 km)       9 px          1 px         0 px     ← here
+ *     0.0006 ( 3.8 km)       9 px          1 px         0 px     ← round 59
  *
- * A frontline on the Dnieper that moves a third of the screen when you turn the
- * globe is not on the Dnieper, and that is exactly what was reported. Nine
- * pixels at the tightest zoom the app allows is the residue, and it is under the
- * width of the line drawing it.
+ * ROUND 63, and the reader again: *"for many drawings with higher zoom,
+ * drawings are still floating."* They were, and the table above says why the
+ * fix could not be another smaller number. A FIXED lift is a fixed distance on
+ * the planet, so its cost in pixels doubles every time the frame halves — nine
+ * pixels at 172 km is seventy at 20 km, and this app's zoom floor is a 160 m
+ * frame. Whatever constant is chosen, there is a zoom at which the ink is
+ * plainly in the air. So the lift is not a constant any more: see `inkLift`.
  *
- * WHY IT IS NOT ZERO. Chords. The globe is a 90x45-segment sphere, so its facets
- * dip up to R(1-cos 2°) = 3.9 km *below* the ideal sphere — harmless, that only
- * buys clearance. But the overlays are drawn as chords too, and a chord sags
- * below the sphere it was cut from: 240 m across the 1° a route or a frontline
- * is densified to (`ROUTE_SEGMENT_DEG`), and up to ~800 m across the radius of
- * the largest marker glyph. 3.8 km clears the worst of those by five times.
- * Halving it again was tried and reverted: it looks identical, and it spends the
- * whole margin the glyphs need to buy about six pixels at a zoom the reader has
- * to fight the camera to reach.
+ * This value survives as the CEILING — what the lift is clamped to once the
+ * camera is far enough out that a mountain's height is worth nothing on screen,
+ * and the altitude at which the geometry is built before `setCameraAltitude`
+ * scales it. Two reasons to keep it rather than lift by a pure fraction of the
+ * camera's height: at world view the depth buffer's quantum at the sub-camera
+ * point is ~2.7 km (24-bit, no log depth, near plane at 0.35 of the camera's
+ * height), so the ink needs real clearance up there; and a lift proportional to
+ * a camera 2.5 radii out would be 4000 km.
  *
- * WHY THAT IS NOT ENOUGH ON ITS OWN. The depth buffer is 24-bit with no log
- * depth, and at world view the near plane sits at 0.35 of the camera's height,
- * which puts one depth quantum at ~2.7 km of altitude at the sub-camera point —
- * the same order as the clearance. So every overlay material also carries a
- * negative polygon offset (`groundBias`), which biases in depth-buffer units and
- * is therefore correct at every zoom. Geometry decides where things *are*;
- * polygon offset decides that they are not eaten by their own map.
+ * The OTHER half of round 63 is that a lift was never the whole hover anyway.
+ * See `groundFactor`: the rendered planet is a 90x45 polyhedron inscribed in
+ * the sphere this layer draws on, so ink at 3.8 km measured 6.9-8.5 km above
+ * the ground under it (tests/e2e/repro63.e2e.mjs, before-*). Most of the hover
+ * was the planet's own faceting, and no altitude constant can reach that.
  */
 export const SURFACE_ALT = 0.0006
+
+/**
+ * HOW HIGH THE INK RIDES, as a fraction of the camera's own height.
+ *
+ * The one number that makes the hover cost the same at every zoom. Ink at
+ * height h seen from height H slides against its ground by about
+ * 1.07·(h/H)·tan(incidence) of the frame's width; at the 45%-off-axis point a
+ * reader actually looks at, tan(incidence) is around 0.45. So h/H = 0.002 puts
+ * the slide at a tenth of a percent of the frame — one pixel in a 1100 px
+ * window — and keeps it there from the world view down to the last metre of
+ * zoom, which is the whole point.
+ */
+export const LIFT_PER_HEIGHT = 0.002
+
+/**
+ * The lift never goes below this, in globe radii. 3e-7 R is 1.9 m.
+ *
+ * Not a clearance — `groundBias` buys the clearance, in depth-buffer units,
+ * which is the unit that is correct at every zoom. This is a floating-point
+ * floor: positions are float32 and the globe's radius is 100 scene units, where
+ * one ULP is 7.6e-6 — so a lift under about 1e-7 R stops being representable at
+ * all and the ink lands exactly on the surface it is meant to be over.
+ */
+export const MIN_LIFT = 3e-7
+
+/**
+ * How deep a chord of one degree dips below the RENDERED planet where it
+ * crosses a facet fold, in globe radii.
+ *
+ * The one thing that still makes a lift necessary at all once the ink is
+ * grounded (`groundFactor`). Two facets meet at a ridge with about 4° of
+ * dihedral deficit; a chord of arc length L straddling that ridge passes under
+ * it by (L/4)·sin(4°) — 1.94 km at L = 1°, and proportionally less for the
+ * short segments a close-up plan is authored with. Every builder here reports
+ * the longest chord it laid down (`noteSpan`), and the lift is floored at
+ * 1.25 times the dip that chord implies.
+ *
+ * That floor is self-balancing, which is why it is a floor and not a constant:
+ * a drawing whose chords are a degree long is a drawing that spans a continent,
+ * and 1.94 km of hover is a fifth of a pixel at the zoom anybody looks at a
+ * continent from. A drawing authored at the scale of a beach has chords a
+ * twentieth of that and a floor to match.
+ */
+export const FOLD_DIP_PER_DEG = ((Math.PI / 180) * Math.sin(4 * (Math.PI / 180))) / 4
+
+/**
+ * HOW HIGH A PIECE OF GEOMETRY THAT WIDE HAS TO RIDE to clear the ground it is
+ * drawn on, in globe radii. Two terms, and they change places:
+ *
+ *  · the FOLD it may straddle (`FOLD_DIP_PER_DEG`), which is what a line cut at
+ *    the folds no longer has and a zone's cap still does;
+ *  · the CHORD's own sag below the sphere, R(1-cos(L/2)) — nothing at the scale
+ *    a plan is authored at, and the whole story for a wash whose triangulation
+ *    has been capped at `ZONE_MAX_TRIANGLES`. An 8° cap edge sags 18 km, which
+ *    no altitude constant on this layer ever covered: it used to be paid for
+ *    out of the 7.8 km the ideal sphere stands above the rendered planet, and
+ *    grounding the ink spends exactly that.
+ *
+ * A quarter over, because the bound is a worst case and the cost of being wrong
+ * is a hole in the map.
+ */
+export const groundClearance = (spanDeg: number): number =>
+  1.25 * (1 - Math.cos((spanDeg / 2) * (Math.PI / 180)) + FOLD_DIP_PER_DEG * spanDeg)
+
+/**
+ * THE ONE GROUNDING POLICY: how high the ink sits, for a camera at this height.
+ *
+ * `cameraAlt` and the result are both in globe radii, the units globe.gl's
+ * `pointOfView().altitude` is in. `floor` is what the drawing's own geometry
+ * needs to stay out of the planet (`groundClearance`).
+ *
+ * THE FLOOR BEATS THE CEILING, and it has to: `SURFACE_ALT` is a cosmetic cap
+ * on how much parallax the reader is asked to tolerate, and the floor is the
+ * difference between a wash and a wash with holes in it. Only a drawing
+ * authored at continental scale can reach past the cap, and a drawing authored
+ * at continental scale is one nobody looks at from 40 km.
+ *
+ * Everything this layer draws goes through here, and the frontier ink and the
+ * polygon caps should: one policy, one place, and a number a test can state.
+ */
+export const inkLift = (cameraAlt: number, floor = MIN_LIFT): number =>
+  Math.max(MIN_LIFT, floor, Math.min(SURFACE_ALT, LIFT_PER_HEIGHT * cameraAlt))
+
+/**
+ * THE PLANET IS NOT A SPHERE — it is a 90x45 polyhedron inscribed in one, and
+ * this is where its surface actually is.
+ *
+ * three-globe builds the globe as `SphereGeometry(R, 360/4, 180/4)`
+ * (`globeCurvatureResolution`, 4°), so every facet is a pair of flat triangles
+ * whose corners touch the ideal sphere and whose middles hang below it. The dip
+ * is up to R(1 - cos 2.83°) = 7.8 km at the equator, ~6 km at Normandy's
+ * latitude — twice what round 59 spent the whole altitude budget on. Ink drawn
+ * on the ideal sphere therefore hovers above the ground it names by the FACET
+ * DIP plus its own lift, which measured 6.9 km at the D-Day plan with a lift of
+ * 3.8 km, and slid 17 px against the coast at a 40 km frame.
+ *
+ * So the ink is not drawn on the sphere. Every vertex is placed at
+ * `radius · (groundFactor + lift)`: the exact radius of the rendered surface
+ * under it, plus a lift that is now free to be tiny. Two things fall out of it
+ * for nothing — a chord between two points inside one facet lies IN that
+ * facet's plane, so a grounded polyline does not sag at all where the old one
+ * sagged 240 m, and the ink's own creases are the ground's creases.
+ *
+ * This is the RADIAL correction only. The imagery for a lat/lng also lands up
+ * to ~5 km to one SIDE of where the sphere puts it, because the texture is
+ * interpolated barycentrically across a 4° facet and that is not the radial
+ * projection. Correcting that too would register this layer's ink with the
+ * photograph and de-register it from the pins, the nation caps and the frontier
+ * ink, which are all still on the sphere — a worse map. The tangential term is
+ * the globe's own tessellation to answer (`globeCurvatureResolution`), and it
+ * does not float: it is a constant offset that neither slides nor swings, which
+ * is not what was reported.
+ *
+ * Longitude is periodic and latitude is clamped, so no caller has to normalise.
+ */
+export const GLOBE_FACET_DEG = 4
+
+export function groundFactor(lng: number, lat: number): number {
+  const n = 180 / GLOBE_FACET_DEG
+  // The mesh's grid, in geographic terms: longitude lines at multiples of 4°,
+  // latitude lines at 90 - 4k. Verified against the running globe in
+  // tests/e2e/repro63.e2e.mjs and against three's own SphereGeometry in
+  // tests/drawingLayer.test.ts.
+  const u = ((((lng + 180) % 360) + 360) % 360) / GLOBE_FACET_DEG
+  const v = Math.min(n, Math.max(0, (90 - lat) / GLOBE_FACET_DEG))
+  const iu = Math.floor(u)
+  const iv = Math.min(n - 1, Math.floor(v))
+  const s = u - iu
+  const t = v - iv
+  const lng0 = -180 + iu * GLOBE_FACET_DEG
+  const lat0 = 90 - iv * GLOBE_FACET_DEG
+  // b is the facet's north-west corner; the quad is split along b–d, which is
+  // three's own winding for SphereGeometry (indices a,b,d then b,c,d).
+  const b = unit(lng0, lat0)
+  const d = unit(lng0 + GLOBE_FACET_DEG, lat0 - GLOBE_FACET_DEG)
+  const third =
+    s >= t ? unit(lng0 + GLOBE_FACET_DEG, lat0) : unit(lng0, lat0 - GLOBE_FACET_DEG)
+  // Where the RADIAL through this direction meets the triangle's plane, which
+  // is `plane offset / cos(angle to the plane's normal)`. Not the barycentric
+  // point at these lng/lat: that is where the IMAGERY lands, and the two differ
+  // — the tangential term this correction deliberately leaves alone.
+  const nrm = cross(
+    [b[0] - third[0], b[1] - third[1], b[2] - third[2]],
+    [d[0] - third[0], d[1] - third[1], d[2] - third[2]],
+  )
+  const dir = unit(lng, lat)
+  const denom = dir[0] * nrm[0] + dir[1] * nrm[1] + dir[2] * nrm[2]
+  if (!(Math.abs(denom) > 1e-12)) return 1
+  // Which of the two triangles a direction really falls in differs from the
+  // (s, t) test by up to 0.0013° — the poleward bulge of a chord against the
+  // parallel through its ends. Inside that band the wrong triangle's plane is
+  // still the right answer to within a few metres, because the two planes meet
+  // along the fold the band straddles.
+  return (third[0] * nrm[0] + third[1] * nrm[1] + third[2] * nrm[2]) / denom
+}
+
+/**
+ * A unit direction, put on the ground and lifted: the only way this file turns
+ * a place into a position.
+ *
+ * Takes the direction rather than a lng/lat pair because half its callers have
+ * built one in the tangent frame and have no lng/lat to hand; deriving the pair
+ * back out is two trig calls, against the alternative of two placement rules
+ * that can disagree.
+ */
+function grounded(
+  dir: [number, number, number],
+  radius: number,
+  alt: number,
+): [number, number, number] {
+  const lat = Math.asin(Math.max(-1, Math.min(1, dir[1]))) / RAD
+  const lng = Math.atan2(dir[0], dir[2]) / RAD
+  return scale(dir, radius * (groundFactor(lng, lat) + alt))
+}
+
+/** How long a polyline is, in degrees of arc along its own chords. */
+export function arcLengthDeg(pts: GeoPath): number {
+  let total = 0
+  for (let i = 1; i < pts.length; i++)
+    total += separationDeg(pts[i - 1][1], pts[i - 1][0], pts[i][1], pts[i][0])
+  return total
+}
+
+/** The longest chord in a polyline, in degrees of arc. Feeds the lift floor. */
+export function maxChordDeg(pts: GeoPath): number {
+  let max = 0
+  for (let i = 1; i < pts.length; i++)
+    max = Math.max(max, separationDeg(pts[i - 1][1], pts[i - 1][0], pts[i][1], pts[i][0]))
+  return max
+}
+
+/**
+ * Does the segment between these two places pass over a facet fold?
+ *
+ * An endpoint sitting exactly ON a fold does not count, and that is the whole
+ * of the epsilon: `splitAtFacets` puts its cut points there on purpose, and a
+ * test of "did I cut everything" that answers yes for the cuts themselves is
+ * not a test.
+ */
+export function crossesFold(a: GeoPath[number], b: GeoPath[number]): boolean {
+  const spans = (from: number, to: number) => {
+    const lo = Math.min(from, to) / GLOBE_FACET_DEG
+    const hi = Math.max(from, to) / GLOBE_FACET_DEG
+    return Math.floor(lo + 1e-9) !== Math.floor(hi - 1e-9)
+  }
+  const lngB = a[0] + ((((b[0] - a[0] + 540) % 360) + 360) % 360) - 180
+  return spans(a[0], lngB) || spans(90 - a[1], 90 - b[1])
+}
+
+/**
+ * CUT A POLYLINE AT EVERY FACET FOLD IT CROSSES — the reason a grounded line
+ * needs almost no lift at all.
+ *
+ * A chord whose ends are in one facet lies IN that facet's plane, because both
+ * ends were placed on it: it cannot sink below the ground because it *is* the
+ * ground. A chord that straddles a fold is the only kind that can, and it
+ * passes under the ridge by (L/4)·sin 4° — 1.94 km for a chord a degree long
+ * (`FOLD_DIP_PER_DEG`), which is a lift big enough to put the float back.
+ *
+ * So the crossings get a vertex, and the whole class goes away. It costs about
+ * one extra point per four degrees of line, computed once at build.
+ *
+ * The cut lands on the geographic grid line rather than on the mesh's own edge,
+ * and the two are 0.0013° apart — the poleward bulge of a chord against the
+ * parallel through its ends. In that sliver the ink is drawn on the neighbour's
+ * plane and can sit up to ~10 m low, which is what `MIN_LIFT` is sized for.
+ */
+export function splitAtFacets(path: GeoPath): GeoPath {
+  if (path.length < 2) return [...path]
+  const out: GeoPath = [path[0]]
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1]
+    const b = path[i]
+    const dLng = ((b[0] - a[0] + 540) % 360) - 180
+    const dLat = b[1] - a[1]
+    const ts: number[] = []
+    // grid lines: longitude at multiples of 4°, latitude at 90 - 4k
+    const cuts = (from: number, delta: number, phase: number) => {
+      if (!(Math.abs(delta) > 1e-12)) return
+      const lo = Math.min(from, from + delta)
+      const hi = Math.max(from, from + delta)
+      const first = Math.ceil((lo - phase) / GLOBE_FACET_DEG)
+      const last = Math.floor((hi - phase) / GLOBE_FACET_DEG)
+      // a guard, not a policy: a segment cannot legitimately want hundreds
+      for (let k = first; k <= last && k - first < 128; k++) {
+        const t = (phase + k * GLOBE_FACET_DEG - from) / delta
+        if (t > 1e-9 && t < 1 - 1e-9) ts.push(t)
+      }
+    }
+    cuts(a[0], dLng, 0)
+    cuts(a[1], dLat, 2)
+    ts.sort((x, y) => x - y)
+    let last = 0
+    for (const t of ts) {
+      if (t - last < 1e-9) continue
+      last = t
+      out.push([a[0] + dLng * t, a[1] + dLat * t])
+    }
+    out.push(b)
+  }
+  return out
+}
 
 /**
  * The depth bias every overlay material carries.
@@ -297,7 +559,7 @@ export function offsetPoint(
 ): [number, number, number] {
   const { up, east, north } = tangentFrame(lng, lat)
   const p = norm(add(up, add(scale(east, x * RAD), scale(north, y * RAD))))
-  return scale(p, radius * (1 + alt))
+  return grounded(p, radius, alt)
 }
 
 /* ------------------------------------------------------------ glyph shapes */
@@ -375,21 +637,36 @@ export function glyphShape(style: MarkerStyle, outset = 0): [number, number][][]
     }
     case 'cross': {
       // The battle cross: an X, not a plus. A plus is a hospital and a church.
+      //
+      // ONE OUTLINE, not two crossed bars, and round 63 is why. Two bars are two
+      // fans, and two transparent fans over the same square of ground blend
+      // twice: at the 0.95 a glyph is inked at, the middle of the cross came out
+      // at 0.9975 — a lighter square in the centre of every battle mark, plainly
+      // visible at the zoom the reader had complained about. The twelve-point
+      // outline of the same X has no overlap to blend, and costs four triangles
+      // where the bars cost four.
       const t = CROSS_BAR + outset * CROSS_CASING_BAR
       const l = 1 + outset
-      const bar = (rot: number): [number, number][] =>
-        (
-          [
-            [-l, -t],
-            [l, -t],
-            [l, t],
-            [-l, t],
-          ] as [number, number][]
-        ).map(([x, y]) => [
-          x * Math.cos(rot) - y * Math.sin(rot),
-          x * Math.sin(rot) + y * Math.cos(rot),
-        ])
-      return [bar(Math.PI / 4), bar(-Math.PI / 4)]
+      const ring: [number, number][] = [
+        [l, t],
+        [t, t],
+        [t, l],
+        [-t, l],
+        [-t, t],
+        [-l, t],
+        [-l, -t],
+        [-t, -t],
+        [-t, -l],
+        [t, -l],
+        [t, -t],
+        [l, -t],
+      ]
+      const c = Math.cos(Math.PI / 4)
+      const turned = ring.map(([x, y]): [number, number] => [(x - y) * c, (x + y) * c])
+      // …fanned from the centre, which every point of a plus can see, and closed
+      // by repeating the first point (the same shape `dot` and `star` are built
+      // in, for the same reason).
+      return [[[0, 0], ...turned, turned[0]]]
     }
     case 'star': {
       // centre first (the fan origin), then the ten alternating points, then
@@ -419,6 +696,60 @@ export function glyphShape(style: MarkerStyle, outset = 0): [number, number][][]
       ]
     }
   }
+}
+
+/**
+ * A POLYGON GROWN OUTWARD BY `d` — a rim of constant width, which is what a
+ * casing is and what scaling a shape about a point is not.
+ *
+ * The arrowhead's casing used to be the head scaled about the shaft's tip. A
+ * scale grows a shape in proportion to how far each part of it is from the
+ * anchor, so the chevron's wings — the parts furthest from the tip — grew
+ * backwards past the shaft's own end and stood out as two grey flares behind
+ * every arrowhead on the map (photographed at Gold and Juno,
+ * /tmp/shots63/ink/paintA-thrust-map.png). A true offset has no anchor: each
+ * edge slides out along its own normal by exactly `d`, and the corners follow
+ * from where the slid edges meet.
+ *
+ * Winding is measured rather than assumed, so the caller may hand it either.
+ * A pair of nearly parallel edges is left at the offset edge's own endpoint
+ * instead of chasing an intersection off to infinity.
+ */
+export function offsetPolygon(poly: [number, number][], d: number): [number, number][] {
+  const n = poly.length
+  if (n < 3 || !Number.isFinite(d) || d === 0) return poly.map(([x, y]) => [x, y])
+  let area = 0
+  for (let i = 0; i < n; i++) {
+    const [x1, y1] = poly[i]
+    const [x2, y2] = poly[(i + 1) % n]
+    area += x1 * y2 - x2 * y1
+  }
+  const sign = area >= 0 ? 1 : -1
+  // each edge, slid out along its own normal
+  const lines = poly.map((p, i) => {
+    const q = poly[(i + 1) % n]
+    const ex = q[0] - p[0]
+    const ey = q[1] - p[1]
+    const len = Math.hypot(ex, ey) || 1
+    // outward normal for this winding
+    const nx = (sign * ey) / len
+    const ny = (-sign * ex) / len
+    return { px: p[0] + nx * d, py: p[1] + ny * d, ex, ey }
+  })
+  const out: [number, number][] = []
+  for (let i = 0; i < n; i++) {
+    // vertex i is where edge i-1 meets edge i
+    const a = lines[(i - 1 + n) % n]
+    const b = lines[i]
+    const det = a.ex * b.ey - a.ey * b.ex
+    if (Math.abs(det) < 1e-12 * (Math.hypot(a.ex, a.ey) * Math.hypot(b.ex, b.ey) || 1)) {
+      out.push([b.px, b.py])
+      continue
+    }
+    const t = ((b.px - a.px) * b.ey - (b.py - a.py) * b.ex) / det
+    out.push([a.px + a.ex * t, a.py + a.ey * t])
+  }
+  return out
 }
 
 /** A fan of triangles over `shape`, placed on the sphere and turned by `bearing`. */
@@ -460,6 +791,12 @@ function fanGeometry(
  * dropped short of the spine's end — `headLen` degrees back — because that is
  * where the arrowhead's base goes. A shaft that ran the whole way would poke out
  * of the head like a pin through a dart.
+ *
+ * `t` IS ARC LENGTH ALONG THE SPINE, not the fraction of the vertex list. The
+ * two agree only while the spine is sampled evenly, which it stopped being when
+ * lines started being cut at the planet's facet folds (`splitAtFacets`): an
+ * extra vertex where a thrust crosses 0° meridian would otherwise put a step in
+ * the taper at the Greenwich line, which is not a thing an army does.
  */
 export function ribbonGeometry(
   path: GeoPath,
@@ -469,6 +806,10 @@ export function ribbonGeometry(
 ): BufferGeometry {
   const pos: number[] = []
   const n = path.length
+  const cum: number[] = [0]
+  for (let i = 1; i < n; i++)
+    cum.push(cum[i - 1] + separationDeg(path[i - 1][1], path[i - 1][0], path[i][1], path[i][0]))
+  const total = cum[n - 1] || 1
   for (let i = 0; i < n; i++) {
     const a = path[Math.max(0, i - 1)]
     const b = path[Math.min(n - 1, i + 1)]
@@ -482,7 +823,7 @@ export function ribbonGeometry(
     // perpendicular, pointing left of travel
     const px = -dLat / len
     const py = east / len
-    const w = halfWidthAt(n > 1 ? i / (n - 1) : 0)
+    const w = halfWidthAt(n > 1 ? cum[i] / total : 0)
     pos.push(...offsetPoint(lng, lat, px * w, py * w, radius, alt))
     pos.push(...offsetPoint(lng, lat, -px * w, -py * w, radius, alt))
   }
@@ -495,6 +836,70 @@ export function ribbonGeometry(
   g.setAttribute('position', new Float32BufferAttribute(pos, 3))
   g.setIndex(idx)
   return g
+}
+
+/**
+ * HOW A THRUST'S SHAFT SWELLS from tail to head, as a fraction of its full
+ * half-width, for a point `t` of the way along it by arc length.
+ *
+ * ROUND 63: *"they should be painted more nicely."* The taper was linear from
+ * 0.42 to 1, which over a shaft twenty times its own width is a WEDGE — two
+ * straight edges converging on a point, the shape of a doorstop. A brush loaded
+ * at the start of a stroke does not do that: it comes up to weight quickly and
+ * then holds, so the eye reads a stroke with a beginning rather than a triangle
+ * with a base. The exponent is the whole of it — 0.6 puts the shaft at three
+ * quarters of full width a fifth of the way along, where the linear ramp was at
+ * a little over half.
+ *
+ * The tail is a hair heavier than it was (0.46 against 0.42) for the same
+ * reason: at 0.42 of a half-width the stroke starts at a fifth of its own
+ * weight, which on a 60 km arrow is a hairline.
+ */
+export const THRUST_TAIL = 0.46
+export const thrustWidthAt = (t: number): number =>
+  THRUST_TAIL + (1 - THRUST_TAIL) * Math.pow(Math.max(0, Math.min(1, t)), 0.6)
+
+/**
+ * How many extra spine points the rounded tail is drawn with. Eight is where
+ * the semicircle stops being a chamfer; past twelve nothing on screen changes.
+ */
+const TAIL_SAMPLES = 8
+
+/**
+ * THE TAIL, ROUNDED: the spine extended backwards far enough to carry a
+ * semicircular cap, and the width profile that draws one.
+ *
+ * A ribbon has no end caps — it is a strip of quads, so it stops on a straight
+ * line across, and a straight line across a stroke's start is a cut rather than
+ * an end. Nor does its casing wrap that cut: the casing is the same strip a
+ * rim wider, with the same first vertex, so a cased ribbon had a rim down both
+ * sides and none across the back.
+ *
+ * Both are fixed by the same trick, and it needs no new geometry kind. The
+ * spine is extended `reach` degrees behind its first point, and the half-width
+ * over that stretch follows a circle: √(r² - s²) for s measured back from the
+ * authored tail. The strip then draws its own round cap. Because the casing
+ * pass runs the SAME extended spine at radius r + rim, the two caps are
+ * concentric semicircles, and the rim comes out the same width round the tail
+ * as it is down the sides.
+ */
+export function tailCap(shaft: GeoPath, reach: number): GeoPath {
+  if (shaft.length < 2 || !(reach > 0)) return [...shaft]
+  const [a, b] = shaft
+  const dLng = ((b[0] - a[0] + 540) % 360) - 180
+  const east = dLng * Math.cos(a[1] * RAD)
+  const len = Math.hypot(east, b[1] - a[1])
+  if (!(len > 1e-12)) return [...shaft]
+  // backwards along the first segment's heading, in the same east/north frame
+  // `ribbonGeometry` takes its perpendicular in
+  const bx = -east / len
+  const by = -(b[1] - a[1]) / len
+  const out: GeoPath = []
+  for (let i = TAIL_SAMPLES; i > 0; i--) {
+    const s = (reach * i) / TAIL_SAMPLES
+    out.push([a[0] + (bx * s) / Math.max(Math.cos(a[1] * RAD), 1e-6), a[1] + by * s])
+  }
+  return [...out, ...shaft]
 }
 
 /* -------------------------------------------------------------- teeth */
@@ -605,6 +1010,34 @@ export function tickSegments(pts: GeoPath, side: FrontlineTicks): [GeoPath[numbe
  */
 export const ZONE_MAX_TRIANGLES = 4000
 
+/**
+ * THE WASH POOLS AT ITS EDGE — how much heavier a zone's fill is right at the
+ * ring, and how far in that lasts as a share of the zone's own reach.
+ *
+ * ROUND 63, and the only one of the painterly auditions that is about a FILL.
+ * A flat 18% alpha over a whole pocket is a lid: it says "tinted" without
+ * saying "by hand", and on parchment (`#ece2c8`, and a zone is drawn on it as
+ * often as on a photograph) a flat 18% of a pale accent is very nearly nothing
+ * at all in the middle and equally nothing at the rim. Watercolour does not
+ * behave that way — the pigment carries to the edge of the wet area and dries
+ * darker there, which is the single most recognisable thing about a hand-tinted
+ * map.
+ *
+ * So the wash carries a SKIRT: a strip of the same colour lying just inside the
+ * ring, in the same buffer, whose alpha is strongest at the ring and nothing at
+ * its inner edge. `edge` is how much extra tint it lays down there, in units of
+ * the wash's own alpha — half again is enough to read as a deliberate edge and
+ * not enough to become a second outline, and the zone already has a dashed one.
+ * `band` is how far in it reaches, as a share of the radius of a disc the
+ * zone's own size, so a bridgehead and an occupation zone pool over the same
+ * fraction of themselves rather than over the same number of kilometres.
+ *
+ * It costs NO draw call and no texture: the skirt is appended to the cap's own
+ * geometry, and the ramp across it is two lines of the fragment shader
+ * (`pooledMaterial`). One mesh, one material, one pass.
+ */
+export const ZONE_POOL = { edge: 1.9, band: 0.28 } as const
+
 export function capGeometry(
   ring: GeoPath,
   radius: number,
@@ -642,13 +1075,23 @@ export function capGeometry(
       worst = Math.max(worst, separationDeg(flat[p].y, flat[p].x, flat[q].y, flat[q].x))
   const wanted = Math.max(1, Math.ceil(worst / maxEdgeDeg))
   const n = Math.max(1, Math.min(wanted, Math.floor(Math.sqrt(ZONE_MAX_TRIANGLES / faces.length))))
+  // What the caller needs for the lift floor: the longest edge any triangle in
+  // this mesh actually ends up with, once the global subdivision order has been
+  // capped. See `FOLD_DIP_PER_DEG`.
+  g.userData.maxEdgeDeg = worst / n
   const pos: number[] = []
+  // …and, per vertex, what the pooled edge (`ZONE_POOL`) should do to its
+  // alpha: 2 for the wash itself, and 0 at the ring falling to 1 inward for the
+  // skirt below. See `pooledMaterial` for the ramp it feeds.
+  const pool: number[] = []
   const at = (a: Vector2, b: Vector2, c: Vector2, i: number, j: number) => {
     const u = i / n
     const v = j / n
-    return scale(
+    pool.push(2)
+    return grounded(
       unit(a.x + (b.x - a.x) * u + (c.x - a.x) * v, a.y + (b.y - a.y) * u + (c.y - a.y) * v),
-      radius * (1 + alt),
+      radius,
+      alt,
     )
   }
   for (const [ia, ib, ic] of faces) {
@@ -666,8 +1109,101 @@ export function capGeometry(
           )
       }
   }
+  // THE POOLED EDGE, as a SKIRT: one strip of quads lying just inside the ring,
+  // in the same buffer as the wash and drawn in the same call.
+  //
+  // The obvious construction — a distance-to-the-ring per cap vertex, ramped in
+  // the shader — was built first and does not work, and why is worth writing
+  // down. A cap's triangulation is as coarse as its ring: a four-sided zone is
+  // FOUR TRIANGLES, every one of whose vertices is on the boundary, so a
+  // distance field sampled at them is nought everywhere and the ramp has
+  // nothing to ramp across (measured in the running app: twelve vertices, every
+  // one at distance nought). Subdividing the cap fine enough to carry a band a
+  // tenth of the zone's width would take a pocket from four triangles to a few
+  // thousand, on a layer whose whole budget argument is that a selection may
+  // not add per-frame cost.
+  //
+  // A skirt costs two triangles per ring edge — forty on a densified pocket —
+  // needs no distance field, and puts the tint exactly where a wash pools.
+  const ringPts = flat.slice(0, flat.length - (flat.length > 1 && flat[0].equals(flat[flat.length - 1]) ? 1 : 0))
+  if (ringPts.length >= 3) {
+    // A fair metric: longitudes are shorter than latitudes away from the
+    // equator, and a band that ignored it would be a wide skirt in Norway.
+    const meanLat = ringPts.reduce((t, p) => t + p.y, 0) / ringPts.length
+    const kx = Math.max(Math.cos(meanLat * RAD), 0.05)
+    let area = 0
+    for (let i = 0; i < ringPts.length; i++) {
+      const p = ringPts[i]
+      const q = ringPts[(i + 1) % ringPts.length]
+      area += p.x * kx * q.y - q.x * kx * p.y
+    }
+    // the radius of a disc of the zone's own area: a scale-free "how big is
+    // this pocket" that does not care whether it is a crescent or a square
+    const band = Math.sqrt(Math.abs(area) / 2 / Math.PI) * ZONE_POOL.band
+    const inner = offsetPolygon(
+      ringPts.map((p) => [p.x * kx, p.y] as [number, number]),
+      -band,
+    ).map(([x, y]) => new Vector2(x / kx, y))
+    for (let i = 0; i < ringPts.length; i++) {
+      const j = (i + 1) % ringPts.length
+      const quad: [Vector2, number][] = [
+        [ringPts[i], 0],
+        [ringPts[j], 0],
+        [inner[j], 1],
+        [inner[i], 1],
+      ]
+      for (const [p, q, r] of [
+        [quad[0], quad[1], quad[2]],
+        [quad[0], quad[2], quad[3]],
+      ]) {
+        for (const [v, w] of [p, q, r]) {
+          pos.push(...grounded(unit(v.x, v.y), radius, alt))
+          pool.push(w)
+        }
+      }
+    }
+  }
   g.setAttribute('position', new Float32BufferAttribute(pos, 3))
+  g.setAttribute('poolDist', new Float32BufferAttribute(pool, 1))
   return g
+}
+
+/**
+ * A `MeshBasicMaterial` whose alpha rises toward the edge of the shape, from
+ * the `poolDist` attribute `capGeometry` writes. See `ZONE_POOL`.
+ *
+ * Four string substitutions against three's own basic shader, each anchored on
+ * a whole `#include` line so a miss is a compile error rather than a silently
+ * wrong picture — the same contract `taperMaterial` is written under, and the
+ * cache key has to differ for the same reason.
+ */
+function pooledMaterial(
+  params: ConstructorParameters<typeof MeshBasicMaterial>[0],
+): MeshBasicMaterial {
+  const mat = new MeshBasicMaterial(params)
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uPoolEdge = { value: ZONE_POOL.edge }
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        '#include <clipping_planes_pars_vertex>',
+        '#include <clipping_planes_pars_vertex>\nattribute float poolDist;\nvarying float vPool;',
+      )
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\n\tvPool = poolDist;')
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <clipping_planes_pars_fragment>',
+        '#include <clipping_planes_pars_fragment>\nvarying float vPool;\nuniform float uPoolEdge;',
+      )
+      .replace(
+        '#include <opaque_fragment>',
+        // vPool of 2 is the wash, which is left alone; 0..1 is the skirt, whose
+        // alpha is the EXTRA only and falls to nothing at its inner edge, so
+        // there is no step where the two meet.
+        'float pool = 1.0 - clamp( vPool, 0.0, 1.0 );\n\tdiffuseColor.a *= vPool <= 1.0 ? ( uPoolEdge - 1.0 ) * pool * pool : 1.0;\n\t#include <opaque_fragment>',
+      )
+  }
+  mat.customProgramCacheKey = () => 'zonePool'
+  return mat
 }
 
 /**
@@ -808,6 +1344,14 @@ export class DrawingLayer {
   private currentKey = ''
   /** How wide the drawn thing is, in degrees of arc. See `setViewSpanDeg`. */
   private extentDeg = 0
+  /** The altitude the geometry on screen was BUILT at. See `setCameraAltitude`. */
+  private builtAlt = SURFACE_ALT
+  /** The longest chord anything in this drawing laid down. See `noteSpan`. */
+  private spanDeg = 0
+  /** Where the camera is, in globe radii. The lift is a function of it. */
+  private cameraAlt = 2.5
+  /** The lift on screen now, so an unchanged camera does not touch the group. */
+  private lift = SURFACE_ALT
   /**
    * The dashed pieces of every one-way route, with the distance along the whole
    * route at which each piece starts. `setFlowPhase` walks this; nothing else
@@ -853,6 +1397,70 @@ export class DrawingLayer {
   setViewSpanDeg(spanDeg: number) {
     const show = !(this.extentDeg > 0) || spanDeg <= this.extentDeg * LABEL_SPAN_RATIO
     for (const l of this.labels) l.visible = show
+  }
+
+  /**
+   * WHERE THE CAMERA IS, which is the only thing the lift depends on. In globe
+   * radii, straight from `pointOfView().altitude`. Returns true if the ink
+   * moved — the caller's cue to wake the render pump.
+   *
+   * The lift is applied as a UNIFORM SCALE on the group rather than by
+   * rebuilding the geometry, and that is the whole reason this can run on every
+   * camera event of every gesture. A scale about the globe's centre is a purely
+   * radial move for every vertex at once, which is exactly what a change of
+   * altitude is; it costs one matrix, no allocation, and no geometry is touched.
+   *
+   * It is not quite exact, and the error is worth stating: the ink is built at
+   * `radius·(groundFactor + builtAlt)` where `groundFactor` is within 0.12% of
+   * 1, so scaling by (1+lift)/(1+builtAlt) lands the lift within
+   * 0.0012·(lift - builtAlt) of where it was asked for — under five metres at
+   * the very worst, against a lift whose own job is measured in kilometres.
+   *
+   * Nothing else in the group cares. A fat line's width is in screen pixels and
+   * a dash pattern is measured in the geometry's own local units, so neither
+   * moves; a CSS2D label is placed from its world matrix, so it follows.
+   */
+  setCameraAltitude(cameraAlt: number): boolean {
+    this.cameraAlt = cameraAlt
+    return this.applyLift()
+  }
+
+  /**
+   * `span` if a mark that wide, laid along these points, reaches a facet fold —
+   * and nought if it stays inside one facet, where nothing can sag at all.
+   *
+   * The two ways to reach one: a run of points that crosses a fold, and a point
+   * sitting close enough to one that the mark's own width does.
+   */
+  private foldSpan(pts: GeoPath, span: number): number {
+    const wrap = (v: number) => ((v % GLOBE_FACET_DEG) + GLOBE_FACET_DEG) % GLOBE_FACET_DEG
+    for (let i = 0; i < pts.length; i++) {
+      if (i && crossesFold(pts[i - 1], pts[i])) return span
+      const dLng = wrap(pts[i][0])
+      const dLat = wrap(pts[i][1] - 2)
+      if (Math.min(dLng, GLOBE_FACET_DEG - dLng) <= span) return span
+      if (Math.min(dLat, GLOBE_FACET_DEG - dLat) <= span) return span
+    }
+    return 0
+  }
+
+  /** The floor the drawing's own chords put under the lift. See `FOLD_DIP_PER_DEG`. */
+  private noteSpan(deg: number) {
+    if (deg > this.spanDeg) {
+      this.spanDeg = deg
+      this.applyLift()
+    }
+  }
+
+  private applyLift(): boolean {
+    const want = inkLift(this.cameraAlt, groundClearance(this.spanDeg))
+    // A relative epsilon, for the same reason `povMoved` has one: OrbitControls
+    // damping leaves the altitude wandering in the last few digits, and a scale
+    // rewritten sixty times a second to the same value is sixty wasted frames.
+    if (Math.abs(want - this.lift) <= Math.max(this.lift, want) * 0.02) return false
+    this.lift = want
+    this.group.scale.setScalar((1 + want) / (1 + this.builtAlt))
+    return true
   }
 
   /** Is anything drawn here animating? The caller's cue to buy frames. */
@@ -901,9 +1509,16 @@ export class DrawingLayer {
     this.extentDeg = drawingExtentDeg(drawing)
     if (!drawing) return true
     const alt = opts.altitude ?? SURFACE_ALT
+    this.builtAlt = alt
     const layers = [...drawing.layers].sort((a, b) => KIND_ORDER[a.type] - KIND_ORDER[b.type])
     this.ground = opts.ground ?? 'dark'
     for (const [i, spec] of layers.entries()) this.build(spec, opts.color, alt, i)
+    // The lift belongs to the camera, not to the rebuild: a drawing that
+    // appears while the reader is at 40 km has to arrive on the ground, not at
+    // the altitude the geometry happened to be built at.
+    this.lift = alt
+    this.group.scale.setScalar(1)
+    this.applyLift()
     return true
   }
 
@@ -940,12 +1555,18 @@ export class DrawingLayer {
    * inside the shader — rather than arc length, so the dash pattern the caller
    * asks for is the dash pattern that appears.
    */
-  private place(pts: GeoPath, alt: number): { positions: number[]; cum: number[] } {
+  private place(raw: GeoPath, alt: number): { positions: number[]; cum: number[] } {
     const positions: number[] = []
     const cum: number[] = [0]
     let last: [number, number, number] | undefined
+    // Every line on this globe is cut at the planet's own folds before it is
+    // placed, which is what lets the lift be metres rather than kilometres. See
+    // `splitAtFacets`. It costs a handful of vertices on a line that already
+    // has one every degree, and the dash distances below are measured after it,
+    // so nothing downstream can tell.
+    const pts = splitAtFacets(raw)
     for (const [lng, lat] of pts) {
-      const p = scale(unit(lng, lat), this.radius * (1 + alt))
+      const p = grounded(unit(lng, lat), this.radius, alt)
       positions.push(...p)
       if (last) cum.push(cum[cum.length - 1] + Math.hypot(p[0] - last[0], p[1] - last[1], p[2] - last[2]))
       last = p
@@ -1052,7 +1673,7 @@ export class DrawingLayer {
     // `LineSegmentsGeometry` holds disjoint segments, and two zero-length ones
     // are two discs for the price of a single draw call.
     const ports = [pts[0], pts[pts.length - 1]].flatMap((end) => {
-      const p = scale(unit(end[0], end[1]), this.radius * (1 + alt))
+      const p = grounded(unit(end[0], end[1]), this.radius, alt)
       return [...p, ...p]
     })
     for (const [w, c, o] of [
@@ -1198,7 +1819,16 @@ export class DrawingLayer {
     order: number,
   ) {
     const geom = capGeometry(spec.ring, this.radius, alt)
-    const mat = new MeshBasicMaterial({
+    // A cap is triangles, and a triangle straddling a facet fold dips under it
+    // exactly as a chord does — so the wash reports its own worst edge. Not cut
+    // at the folds like a line is: a crack-free triangulation is a global
+    // subdivision order (see `capGeometry`), and inserting vertices along one
+    // fold would put a T-junction through the wash. A zone big enough to reach
+    // a fold is a zone nobody reads at 40 km.
+    this.noteSpan(this.foldSpan(spec.ring, (geom.userData.maxEdgeDeg as number) ?? 0))
+    // The wash, with its edge pooled (`ZONE_POOL`). Still one mesh, one
+    // material, one draw call, and still `forceSinglePass`: it is one sheet.
+    const mat = pooledMaterial({
       color,
       transparent: true,
       opacity: ZONE_FILL_OPACITY,
@@ -1257,11 +1887,26 @@ export class DrawingLayer {
     const shaft = trimEnd(spine, headLen)
     const taper = spec.taper !== false
     const tip = shaft[shaft.length - 1]
+    const rim = w * STROKE_CASING.outset
+    // The tail's own semicircle, and the rim's outside it: the spine reaches
+    // back far enough to carry the wider of the two. See `tailCap`.
+    const tailR = w * (taper ? THRUST_TAIL : 1)
+    const capped = taper ? tailCap(shaft, tailR + rim) : shaft
+    // A ribbon is a BAND, so cutting its spine at the folds is only half the
+    // job: the quads still span the shaft's own width across one. That width is
+    // the residue, and only where the band actually meets a fold.
+    const cut = splitAtFacets(capped)
+    this.noteSpan(this.foldSpan(cut, 2 * w + rim))
+    // Where the authored shaft starts, along the extended spine — the centre of
+    // the tail's semicircle, in the arc-length units `ribbonGeometry` measures
+    // its parameter in.
+    const capDeg = taper ? tailR + rim : 0
+    const totalDeg = capDeg + Math.max(1e-9, arcLengthDeg(shaft))
     // Half-width of the head, in units of its length: wider than the shaft by
     // enough to read as an arrowhead rather than as the line getting pointy.
     const k = (w * 2.0) / headLen
     for (const [hex, opacity, out, bump] of [
-      [new Color(STROKE_CASING.color), STROKE_CASING.opacity, w * STROKE_CASING.outset, 0],
+      [new Color(STROKE_CASING.color), STROKE_CASING.opacity, rim, 0],
       [color, 0.82, 0, 0.5],
     ] as const) {
       const mat = new MeshBasicMaterial({
@@ -1272,9 +1917,16 @@ export class DrawingLayer {
         depthWrite: false,
         ...groundBias,
       })
+      // r is this pass's own tail radius, so the two caps are concentric.
+      const r = tailR + out
       const geom = ribbonGeometry(
-        shaft,
-        (t) => w * (taper ? 0.42 + 0.58 * t : 1) + out,
+        cut,
+        (t) => {
+          const s = t * totalDeg - capDeg
+          if (!taper) return w + out
+          if (s < 0) return Math.sqrt(Math.max(0, r * r - s * s))
+          return w * thrustWidthAt(s / Math.max(1e-9, totalDeg - capDeg)) + out
+        },
         this.radius,
         alt,
       )
@@ -1291,20 +1943,20 @@ export class DrawingLayer {
       // room, so a head centred on the spine's end floats clear of the line it
       // belongs to (it did, visibly, on every arrow). Built this way the two
       // meet, and the head's point lands on the spine's real end — where the
-      // advance stopped. The casing pass scales the whole glyph about that base
-      // by the same rim the shaft grew by, so the outline stands a constant
-      // distance outside the arrow all the way round.
-      const s = 1 + out / headLen
+      // advance stopped. The casing pass grows the chevron OUTWARD by the same
+      // rim the shaft grew by — see `offsetPolygon` for what it used to do
+      // instead and what that looked like.
       const headGeom = fanGeometry(
         [
-          (
+          offsetPolygon(
             [
               [0, 1],
               [-k, 0],
               [0, 0.18],
               [k, 0],
-            ] as [number, number][]
-          ).map(([x, y]) => [x * s, y * s] as [number, number]),
+            ],
+            out / headLen,
+          ),
         ],
         tip[0],
         tip[1],
@@ -1343,6 +1995,10 @@ export class DrawingLayer {
   ) {
     const style = spec.style ?? 'dot'
     const size = spec.size ?? MARKER_SIZE_DEG
+    // The widest a glyph's own triangles reach: a cross's bar runs corner to
+    // corner, and the casing stands a fifth outside that. It only matters if
+    // the glyph is sitting on a fold, which almost none of them are.
+    this.noteSpan(this.foldSpan([spec.pos], size * 2 * (1 + MARK_CASING_OUTSET) * Math.SQRT2))
     const ink = markInk(hex, this.ground)
     const glyph = (outset: number) =>
       fanGeometry(
@@ -1413,7 +2069,7 @@ export class DrawingLayer {
     // place. It sits at the same altitude as the glyph it belongs to, and the
     // gap between the two is put in *geographically* by `addMarker`, which is a
     // real distance on the map rather than a height above it.
-    const p = scale(unit(spec.pos[0], spec.pos[1]), this.radius * (1 + alt))
+    const p = grounded(unit(spec.pos[0], spec.pos[1]), this.radius, alt)
     obj.position.set(p[0], p[1], p[2])
     this.group.add(obj)
     this.labels.push(obj)
@@ -1423,6 +2079,7 @@ export class DrawingLayer {
     for (const l of this.labels) l.element.remove()
     this.labels = []
     this.flowing = []
+    this.spanDeg = 0
     this.group.clear()
     for (const g of this.geometries) g.dispose()
     for (const m of this.materials) m.dispose()

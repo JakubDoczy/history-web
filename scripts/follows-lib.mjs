@@ -229,6 +229,12 @@ export const ISO_A3 = {
   PRT: 'Portugal', ROU: 'Romania', RUS: 'Russia', SDN: 'Sudan', SRB: 'Serbia',
   SSD: 'S. Sudan', SVK: 'Slovakia', SVN: 'Slovenia', SWE: 'Sweden', TUR: 'Turkey',
   UKR: 'Ukraine', USA: 'United States of America',
+  // The other fourteen union republics, for the USSR's `countries` extent
+  // (round 63). Its external border from 1945 to 1991 is exactly the union of
+  // the fifteen, because every metre of it is still somebody's border today.
+  ARM: 'Armenia', AZE: 'Azerbaijan', EST: 'Estonia', GEO: 'Georgia', KAZ: 'Kazakhstan',
+  KGZ: 'Kyrgyzstan', LTU: 'Lithuania', LVA: 'Latvia', TJK: 'Tajikistan',
+  TKM: 'Turkmenistan', UZB: 'Uzbekistan',
   // NOT COUNTRIES, and in the table for the same reason the countries are: a
   // declaration has to be able to NAME them. Natural Earth's admin-0 layer
   // carries three disputed territories as their own units, so the boundary
@@ -280,6 +286,152 @@ export function modernLines(arcs, code) {
     out.push(...got)
   }
   return out
+}
+
+/* --------------------------------------------- an extent that IS the modern map */
+
+/**
+ * ROUND 63: a keyframe can declare that its extent IS a set of modern states,
+ * and the build takes the geometry from Natural Earth rather than from a
+ * drawing.
+ *
+ *     { "time": 1947, "countries": ["IND"] }
+ *
+ * This is `follows` taken to its conclusion. Round 59's insight was that a
+ * hand-authored FRONTIER is a dozen points guessed over a mental map and no
+ * pipeline can add truth to a guess. The same is true of a whole EXTENT, and it
+ * bites hardest exactly where the corpus reaches the present: the Republic of
+ * India was eighty guessed points whose northern edge was six of them, so the
+ * fill covered 76% of Bangladesh and 70% of Nepal while the modern-border layer
+ * drew the real lines on top of it — two layers, built from different data,
+ * contradicting each other in the one era where the truth is not in doubt.
+ *
+ * WHEN IT IS HONEST. Only where a polity's extent really is a union of present
+ * borders, and only over the years that is true: the Republic of India from
+ * 1947 (differing from today by Sikkim and Goa, which are three tenths of a
+ * percent of it), the PRC from 1949, the United States from 1900, the USSR
+ * after 1945. It is NOT a way to draw an empire — the British Empire is a union
+ * of forty modern states at forty different dates — and it is not a substitute
+ * for a keyframe at the year a border actually moved.
+ *
+ * WHAT IT BUYS. Fill and ink stop being two opinions: `countries-50m.json` is
+ * the topology the modern-border layer is built from AND the file
+ * `land-50m.json` is cut from, so the derived extent agrees with the modern
+ * frontiers by identity and with the coastline by construction, which is the
+ * same argument round 52 made about the sea and round 57 made about shared
+ * arcs. `modernInkAgreement` in nations-clip-lib.mjs is the check that it stays
+ * true.
+ */
+
+/** NE admin-0 English name -> MultiPolygon, closed rings, holes after outer. */
+export function countryIndex(topo, decodeArcs) {
+  const arcs = decodeArcs(topo)
+  const ringOf = (list) => {
+    const pts = []
+    for (const idx of list) {
+      const arc = idx < 0 ? [...arcs[~idx]].reverse() : arcs[idx]
+      for (const p of pts.length ? arc.slice(1) : arc) pts.push([p[0], p[1]])
+    }
+    const [fx, fy] = pts[0]
+    const [lx, ly] = pts[pts.length - 1]
+    if (fx !== lx || fy !== ly) pts.push([fx, fy])
+    return pts
+  }
+  const out = new Map()
+  for (const g of topo.objects.countries.geometries) {
+    const polys = g.type === 'Polygon' ? [g.arcs] : g.arcs
+    out.set(g.properties?.name, polys.map((rings) => rings.map(ringOf)))
+  }
+  return out
+}
+
+/**
+ * THE ANTIMERIDIAN, which is where the first version of this went wrong and is
+ * worth the code it costs.
+ *
+ * Natural Earth does NOT split Russia at 180°: its mainland ring runs
+ * (179.87, 69.26) → (-180, 68.98) → (-179.80, 68.94), one continuous walk
+ * across the line. A polygon clipper is planar and reads that step as a
+ * 360°-wide edge, so the union of the fifteen Soviet republics came out as a
+ * BAND ROUND THE WHOLE PLANET at 65-71° N — and since the clip to land then
+ * kept every piece of land inside it, the USSR shipped holding northern Alaska
+ * and the Canadian Arctic. The overlap validator convicted it, which is what
+ * the overlap validator is for, but nothing downstream could have fixed it.
+ *
+ * So a ring is UNWRAPPED first (longitudes made continuous, which may take them
+ * past ±180), then cut at each 360° window and shifted back. The result is the
+ * same geometry every other consumer of this topology already sees, because the
+ * drawn map's own land is cut the same way.
+ */
+export function splitAntimeridian(mp, intersection) {
+  const unwrap = (ring) => {
+    const out = [[ring[0][0], ring[0][1]]]
+    for (let i = 1; i < ring.length; i++) {
+      const prev = out[i - 1][0]
+      let x = ring[i][0]
+      while (x - prev > 180) x -= 360
+      while (x - prev < -180) x += 360
+      out.push([x, ring[i][1]])
+    }
+    return out
+  }
+  const meanX = (ring) => ring.reduce((n, p) => n + p[0], 0) / ring.length
+  const box = (x0, x1) => [[[[x0, -91], [x1, -91], [x1, 91], [x0, 91], [x0, -91]]]]
+  const out = []
+  for (const poly of mp) {
+    const outer = unwrap(poly[0])
+    let lo = Infinity
+    let hi = -Infinity
+    for (const [x] of outer) {
+      if (x < lo) lo = x
+      if (x > hi) hi = x
+    }
+    if (lo >= -180 && hi <= 180) {
+      out.push(poly)
+      continue
+    }
+    // A hole is unwrapped on its own and then carried into the outer ring's
+    // 360° frame — the two are one piece and must not end up in different ones.
+    const rings = [outer]
+    for (const hole of poly.slice(1)) {
+      const h = unwrap(hole)
+      const k = Math.round((meanX(outer) - meanX(h)) / 360)
+      rings.push(k ? h.map(([x, y]) => [x + k * 360, y]) : h)
+    }
+    const first = Math.floor((lo + 180) / 360)
+    const last = Math.floor((hi + 180) / 360)
+    for (let k = first; k <= last; k++) {
+      const part = intersection([rings], box(k * 360 - 180, k * 360 + 180))
+      for (const p of part) out.push(p.map((r) => r.map(([x, y]) => [x - k * 360, y])))
+    }
+  }
+  return out
+}
+
+/**
+ * The declared extent, as one MultiPolygon.
+ *
+ * UNION, not concatenation, and that is the whole subtlety. Two adjacent
+ * countries in one topology share an arc; simply listing both polygons leaves
+ * that arc inside the extent, where `classifyCoastal` would find an edge that
+ * is not the coast, call it INLAND FRONTIER and ink it — the USSR would ship
+ * with the borders of its fifteen republics drawn across it. The union removes
+ * the interior lines, which is exactly what a merge means.
+ *
+ * `ops` is passed in so this module keeps having no dependency of its own on a
+ * clipping library; `clipToLand` in nations-clip-lib.mjs owns that choice.
+ */
+export function countryExtent(codes, index, ops) {
+  if (!codes?.length) throw new Error('follows: "countries" must name at least one state')
+  const parts = []
+  for (const code of codes) {
+    const name = ISO_A3[code.toUpperCase()]
+    if (!name) throw new Error(`follows: no ISO alpha-3 "${code}" in ISO_A3 (scripts/follows-lib.mjs)`)
+    const mp = index.get(name)
+    if (!mp) throw new Error(`follows: the topology has no country named "${name}" (${code})`)
+    parts.push(splitAntimeridian(mp, ops.intersection))
+  }
+  return parts.length === 1 ? parts[0] : ops.union(...parts)
 }
 
 /* ------------------------------------------------------------- the resolver */

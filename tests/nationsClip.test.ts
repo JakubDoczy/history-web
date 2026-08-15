@@ -16,6 +16,7 @@ import {
   type Ring,
 } from '../src/lib/nations'
 import clippedFile from '../src/data/nations.clipped.json'
+import modernFile from '../src/data/borders.modern.json'
 
 /** The shipped corpus, typed once for every describe that walks it. */
 const nationsCorpus = clippedFile.nations as unknown as Nation[]
@@ -590,5 +591,121 @@ describe('the Korean peninsula', () => {
     // 1450 keyframe, which goes past the Tumen at 42.9.
     expect(north(1392)).toBeLessThan(42) // the six garrisons are Sejong's
     expect(north(1450)).toBeGreaterThan(42.5)
+  })
+})
+
+/**
+ * ROUND 63 — DOES THE FILL AGREE WITH THE INK.
+ *
+ * The defect the reader reported ("still full of mistakes… for example modern
+ * India") was invisible to every validator in this file, because each of them
+ * judges one layer: overlap judges polities against each other, the ink-split
+ * check judges a shared frontier against itself, and the modern set is checked
+ * against its own merge table. Nobody asked the polity fills and the modern
+ * frontiers — the two political layers that are on the globe TOGETHER after
+ * 1992 — whether they were describing the same borders. They were not: 14% of
+ * India's inland fill edge lay on a line the map draws, and the other 8 194 km
+ * of it ran through Nepal and Bangladesh.
+ */
+describe('modernInkAgreement', () => {
+  /** A polity with one keyframe, from encoded rings, all edges inland. */
+  const polity = (id: string, from: number, to: number, rings: number[][][]): Nation =>
+    ({
+      id,
+      name: id,
+      color: '#000000',
+      from,
+      to,
+      visibleFrom: from,
+      visibleTo: to,
+      keyframes: [{ time: from, polys: rings.map((r) => [encodeRing(r as Ring)]) }],
+    }) as unknown as Nation
+
+  const edgesOf = (_n: Nation, kf: { polys: number[][]; coast?: number[][][] }) => {
+    const { pieces, coastal } = decodeKeyframe(kf as never)
+    return pieces.flatMap((rs, p) => rs.map((ring, r) => ({ ring, coastal: coastal[p][r] })))
+  }
+
+  /** A frontier down the meridian at x, and the square that stops on it. */
+  const border = (x: number): number[][] => [
+    [x, 0],
+    [x, 1],
+    [x, 2],
+    [x, 3],
+  ]
+  const window = { from: 1992, to: 2100 }
+
+  it('reads 100% when the fill edge is the line the modern layer draws', () => {
+    const n = polity('good', 2000, 2050, [[[0, 0], [0, 3], [5, 3], [5, 0]]])
+    const [row] = clip.modernInkAgreement([n], edgesOf, {
+      ink: clip.inkIndex([border(0), border(5)]),
+      ...window,
+    })
+    // the two north-south sides are on the ink; the top and bottom run five
+    // degrees across open ground between two tripoints, so this is a fill that
+    // partly agrees and the number says how much
+    expect(row.share).toBeGreaterThan(0.3)
+    expect(row.share).toBeLessThan(0.45)
+    expect(row.inlandKm).toBeGreaterThan(0)
+  })
+
+  it('reads 0% for a fill whose edge is nowhere near a border', () => {
+    const n = polity('bad', 2000, 2050, [[[40, 40], [40, 43], [45, 43], [45, 40]]])
+    const [row] = clip.modernInkAgreement([n], edgesOf, {
+      ink: clip.inkIndex([border(0), border(5)]),
+      ...window,
+    })
+    expect(row.share).toBe(0)
+    expect(row.offKm).toBe(row.inlandKm)
+    expect(row.worst[0].at).toBe('bad@2000')
+  })
+
+  it('excuses an edge that runs along a contested zone, which no modern layer draws', () => {
+    const n = polity('claimant', 2000, 2050, [[[40, 40], [40, 43], [45, 43], [45, 40]]])
+    const zone = [
+      [40, 40],
+      [40, 43],
+      [45, 43],
+      [45, 40],
+      [40, 40],
+    ]
+    const [row] = clip.modernInkAgreement([n], edgesOf, {
+      ink: clip.inkIndex([border(0)]),
+      zoneInk: clip.inkIndex([zone]),
+      ...window,
+    })
+    expect(row.share).toBe(1)
+  })
+
+  it('says nothing about a polity that is gone before the modern window opens', () => {
+    const n = polity('ancient', -300, -100, [[[40, 40], [40, 43], [45, 43], [45, 40]]])
+    expect(clip.modernInkAgreement([n], edgesOf, { ink: clip.inkIndex([border(0)]), ...window })).toEqual([])
+  })
+
+  /**
+   * And the corpus: the invariant `npm run build` now enforces. Three polities
+   * are drawn after 1992 and every metre of inland frontier all three of them
+   * draw is a line Natural Earth draws too, because their extents ARE Natural
+   * Earth (`countries` in nations.json).
+   */
+  it('is green over the shipped corpus', () => {
+    const lines = [
+      ...modernFile.lines.map((enc) => decodeRing(enc)),
+      ...modernFile.dated.flatMap((d) => d.lines.map((enc) => decodeRing(enc))),
+    ]
+    const zoneRings = clippedFile.contested.flatMap((z) =>
+      z.polys.flatMap((rings) => rings.map((r) => { const g = decodeRing(r); return [...g, g[0]] })),
+    )
+    const rows = clip.modernInkAgreement(nationsCorpus, edgesOf, {
+      ink: clip.inkIndex(lines),
+      zoneInk: clip.inkIndex(zoneRings),
+      from: modernFile.from,
+      to: modernFile.to,
+    })
+    expect(rows.map((r: { id: string }) => r.id).sort()).toEqual(['india', 'prc', 'usa'])
+    for (const r of rows) {
+      expect(r.inlandKm, r.id).toBeGreaterThan(1000)
+      expect(r.offKm, r.id).toBeLessThan(200)
+    }
   })
 })

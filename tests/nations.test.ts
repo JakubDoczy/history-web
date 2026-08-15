@@ -133,7 +133,7 @@ interface Authored {
   to: number
   visibleFrom: number
   visibleTo: number
-  keyframes: { time: number; rings: Ring[] }[]
+  keyframes: { time: number; rings?: Ring[]; countries?: string[] }[]
 }
 
 /**
@@ -168,8 +168,27 @@ describe('nations.json (authoring)', () => {
     }
   })
 
+  /**
+   * ROUND 63: a keyframe is EITHER hand-drawn rings or a `countries`
+   * declaration — an extent that IS the modern map, taken from the same
+   * Natural Earth topology the modern-border ink and the coastline come from
+   * (scripts/follows-lib.mjs, `countryExtent`). There is nothing for the
+   * authoring rules below to say about the second kind: it has no authored
+   * vertices, so there is no vertex cap, no winding to get wrong and no
+   * coordinate order to swap. What it does have is a validator the drawn rings
+   * do not — `modernInkAgreement`, which fails the build if the fill's edge is
+   * not a line the map draws.
+   */
+  it.each(nations.map((n) => [n.id, n] as const))('%s declares each keyframe exactly one way', (_id, n) => {
+    for (const k of n.keyframes) {
+      expect(Boolean(k.rings) !== Boolean(k.countries), `${n.id}@${k.time}`).toBe(true)
+      if (k.countries) expect(k.countries.length).toBeGreaterThan(0)
+    }
+  })
+
   it.each(nations.map((n) => [n.id, n] as const))('%s has rings in [lng, lat] order', (_id, n) => {
     for (const k of n.keyframes) {
+      if (!k.rings) continue // a `countries` extent: see above
       expect(k.rings.length).toBeGreaterThan(0)
       for (const ring of k.rings) {
         // Enough vertices to look drawn rather than sketched, few enough to
@@ -368,6 +387,47 @@ describe('borders at a date', () => {
     ['qing', 1700, 'Pyongyang', 125.75, 39.03, false], // tribute is not a border
     ['qing', 1700, 'Dandong, north of the Yalu', 124.35, 40.15, true],
     ['ming', 1500, 'Pyongyang', 125.75, 39.03, false],
+
+    // ROUND 63, the modern extents. The reader's complaint was that these were
+    // wrong in ways a glance could see, and every case below failed before this
+    // round: India's hand-drawn ring covered 76% of Bangladesh, 70% of Nepal
+    // and 16% of Pakistan, China's covered a quarter of Mongolia and 12% of
+    // Vietnam, and the United States' 1900 ring stopped short of south Florida,
+    // the Alaska panhandle and Hawaii. All four extents are now the union of
+    // named present-day states in Natural Earth (`countries` in nations.json).
+    ['india', 2000, 'Delhi', 77.2, 28.6, true],
+    ['india', 2000, 'Kolkata', 88.36, 22.57, true],
+    ['india', 2000, 'Itanagar in Arunachal', 93.6, 27.1, true], // NE draws it Indian
+    ['india', 2000, 'Dhaka', 90.4, 23.8, false], // East Pakistan, then Bangladesh
+    ['india', 2000, 'Chittagong', 91.83, 22.36, false],
+    ['india', 2000, 'Kathmandu', 85.32, 27.71, false],
+    ['india', 2000, 'Thimphu', 89.64, 27.47, false],
+    ['india', 2000, 'Karachi', 67.0, 24.86, false],
+    ['india', 2000, 'Multan', 71.52, 30.2, false],
+    ['india', 2000, 'Colombo', 79.86, 6.93, false],
+    ['india', 2000, 'Srinagar', 74.8, 34.08, false], // the contested zone holds it
+    ['india', 1950, 'Delhi', 77.2, 28.6, true], // and the same shape from 1947
+    ['india', 1950, 'Dhaka', 90.4, 23.8, false],
+    ['prc', 2000, 'Beijing', 116.4, 39.9, true],
+    ['prc', 2000, 'Lhasa', 91.1, 29.65, true],
+    ['prc', 2000, 'Kashgar', 75.99, 39.47, true],
+    ['prc', 2000, 'Ulaanbaatar', 106.9, 47.9, false], // Mongolia, since 1921
+    ['prc', 2000, 'Hanoi', 105.85, 21.03, false],
+    ['prc', 2000, 'Bishkek', 74.6, 42.87, false],
+    ['prc', 2000, 'Almaty', 76.9, 43.24, false],
+    ['prc', 2000, 'Vladivostok', 131.89, 43.12, false],
+    ['usa', 2000, 'the Everglades', -81.0, 25.9, true], // the 1900 ring stopped at 28° N
+    ['usa', 2000, 'Skagway in the panhandle', -135.31, 59.46, true],
+    ['usa', 2000, 'Ketchikan', -131.65, 55.35, true],
+    ['usa', 2000, 'Honolulu', -157.86, 21.31, true],
+    ['usa', 2000, 'Vancouver', -123.12, 49.28, false],
+    ['ussr', 1980, 'Moscow', 37.6, 55.75, true],
+    ['ussr', 1980, 'Tallinn', 24.75, 59.44, true],
+    ['ussr', 1980, 'Almaty', 76.9, 43.24, true],
+    ['ussr', 1980, 'Kaliningrad', 20.51, 54.71, true],
+    ['ussr', 1980, 'Warsaw', 21.01, 52.23, false], // a satellite is not a republic
+    ['ussr', 1980, 'Kabul', 69.2, 34.53, false],
+    ['ussr', 1980, 'Helsinki', 24.94, 60.17, false],
   ]
 
   it.each(cases)('%s at %i: %s', (id, year, _place, lng, lat, inside) => {
