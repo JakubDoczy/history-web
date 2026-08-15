@@ -1293,8 +1293,13 @@ describe('items — stepped focus', () => {
    * own because the child supplies everything. World War II is that shape, and
    * holding it to "every step owns a layer" would be holding it to a rule about
    * a drawing it does not have.
+   *
+   * A drawing made ONLY of `at:'overview'` layers (round 64) is a saga's
+   * summary map, not a plan: its ink exists exactly while no step is open, so
+   * its steps read nothing from it and the partition rules below have nothing
+   * to say about it. A plan is a drawing with at least one layer the steps see.
    */
-  const planned = stepped.filter((e) => e.drawing)
+  const planned = stepped.filter((e) => e.drawing?.layers.some((l) => l.at !== 'overview'))
   /** The parsed event behind a raw one — what the resolvers actually read. */
   const parsed = (e: RawEvent) => byId.get(e.id) as HistoricalEvent
   /** Its steps in order, and the span they are measured in. */

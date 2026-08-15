@@ -99,7 +99,83 @@
     "at": 1815.8863,
     "page": "The Congress of Vienna closed its Final Act nine days before Waterloo. It restored the Bourbons, enlarged the Netherlands and Prussia as barriers against France, confirmed the end of the Holy Roman Empire, and set up a balance in which no single power could dominate the continent.\n\nThe second Treaty of Paris of 20 November 1815 imposed an indemnity and an army of occupation on France but left its 1790 borders intact. Napoleon was sent to St Helena. The settlement held the great powers back from a general European war until [1914](item:ww1)."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      -6.03,
+      36.18
+     ],
+     "at": "overview",
+     "label": "Trafalgar 1805"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      16.76,
+      49.13
+     ],
+     "at": "overview",
+     "label": "Austerlitz 1805"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      -4.0,
+      40.4
+     ],
+     "at": "overview",
+     "label": "Peninsular War 1808-14"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      37.62,
+      55.75
+     ],
+     "at": "overview",
+     "label": "Moscow 1812"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      12.38,
+      51.34
+     ],
+     "at": "overview",
+     "label": "Leipzig 1813"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      4.41,
+      50.68
+     ],
+     "at": "overview",
+     "label": "Waterloo 1815"
+    }
+   ]
+  }
  },
  {
   "id": "trafalgar",
@@ -1201,7 +1277,47 @@
     },
     "page": "After envoys sent under a flag of truce were imprisoned and several of them killed, Lord Elgin ordered the Old Summer Palace (the Yuanmingyuan, a complex of palaces and gardens north-west of Peking) looted and burned. It took two days and 3,500 troops.\n\nThe Convention of Peking, signed on 24 October 1860, ratified the Tianjin treaties, opened Tianjin, ceded Kowloon, doubled the indemnity, legalised the opium trade and the emigration of Chinese labour, and admitted missionaries to the interior. The ruins of the Summer Palace have been left unrestored."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.3,
+     "color": "#ffd7a8",
+     "pos": [
+      113.26,
+      23.13
+     ],
+     "at": "overview",
+     "label": "Canton: opium destroyed 1839"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.3,
+     "color": "#ffd7a8",
+     "pos": [
+      118.78,
+      32.06
+     ],
+     "at": "overview",
+     "label": "Treaty of Nanking 1842"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.3,
+     "color": "#ffd7a8",
+     "pos": [
+      116.27,
+      40.0
+     ],
+     "at": "overview",
+     "label": "Summer Palace burned 1860"
+    }
+   ]
+  }
  },
  {
   "id": "telegraph",
@@ -1977,7 +2093,108 @@
     "child": "lincoln-assassination",
     "at": 1865.28356
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       -84.39,
+       33.75
+      ],
+      [
+       -83.0,
+       32.9
+      ],
+      [
+       -81.09,
+       32.08
+      ]
+     ],
+     "width": 0.22,
+     "label": "March to the Sea 1864",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.26,
+     "color": "#ffd7a8",
+     "pos": [
+      -79.87,
+      32.75
+     ],
+     "at": "overview",
+     "label": "Fort Sumter, Apr 1861"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      -77.52,
+      38.81
+     ],
+     "at": "overview",
+     "label": "Bull Run 1861"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      -90.88,
+      32.35
+     ],
+     "at": "overview",
+     "label": "Vicksburg 1863"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      -77.23,
+      39.81
+     ],
+     "at": "overview",
+     "label": "Gettysburg, Jul 1863"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.26,
+     "color": "#ffd7a8",
+     "pos": [
+      -78.8,
+      37.38
+     ],
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -81.7,
+      36.9
+     ],
+     "text": "Appomattox, Apr 1865",
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -85.7,
+      32.4
+     ],
+     "text": "March to the Sea 1864",
+     "at": "overview"
+    }
+   ]
+  }
  },
  {
   "id": "emancipation",
@@ -4543,7 +4760,99 @@
     },
     "page": "The Allied counter-offensive opened at Amiens on 8 August 1918 with tanks, aircraft and predicted artillery fire, and did not stop. Through the autumn the German army was pushed back off the Hindenburg Line while Bulgaria, the Ottoman Empire and Austria-Hungary left the war in turn.\n\nMutiny in the German fleet at Kiel spread into revolution; the Kaiser abdicated on 9 November. The armistice was signed in a railway carriage at Compiègne and took effect at 11 a.m. on 11 November 1918."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.32,
+     "pos": [
+      18.43,
+      43.86
+     ],
+     "label": "Sarajevo, 28 June 1914",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.32,
+     "color": "#f5a623",
+     "pos": [
+      3.4,
+      48.95
+     ],
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      1.1,
+      48.3
+     ],
+     "text": "The Marne 1914",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.32,
+     "color": "#f5a623",
+     "pos": [
+      26.3,
+      40.2
+     ],
+     "at": "overview",
+     "label": "Gallipoli 1915"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.32,
+     "color": "#f5a623",
+     "pos": [
+      5.42,
+      49.2
+     ],
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      7.1,
+      48.8
+     ],
+     "text": "Verdun 1916",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.32,
+     "color": "#f5a623",
+     "pos": [
+      2.7,
+      50.0
+     ],
+     "at": "overview",
+     "label": "The Somme 1916"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.32,
+     "color": "#ffd7a8",
+     "pos": [
+      23.7,
+      52.1
+     ],
+     "at": "overview",
+     "label": "Brest-Litovsk 1918"
+    }
+   ]
+  }
  },
  {
   "id": "easter-rising",
@@ -5708,7 +6017,47 @@
     "child": "ussr-founded",
     "at": 1922.99589
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      30.31,
+      59.94
+     ],
+     "at": "overview",
+     "label": "Petrograd 1917"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      29.77,
+      59.99
+     ],
+     "at": "overview",
+     "label": "Kronstadt 1921"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.14,
+     "pos": [
+      37.6186,
+      55.7601
+     ],
+     "label": "USSR founded 1922",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "october-revolution",
@@ -6269,7 +6618,47 @@
     "end": 1938.49452,
     "page": "By 1937 output was approaching its 1929 level, and the administration cut spending to balance the budget while the Federal Reserve raised bank reserve requirements. The economy fell back sharply: industrial production dropped by about a third in nine months and unemployment rose again by several million.\n\nSpending resumed in 1938 and the recovery with it. Full employment returned only with war orders. The sequence was later read as evidence for the argument John Maynard Keynes published in 1936."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.5,
+     "pos": [
+      -74.01,
+      40.71
+     ],
+     "label": "Wall Street crash, Oct 1929",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.5,
+     "pos": [
+      -100.0,
+      36.5
+     ],
+     "label": "The Dust Bowl 1930s",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.5,
+     "pos": [
+      -77.0,
+      38.9
+     ],
+     "label": "The New Deal 1933",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "wall-street-crash",

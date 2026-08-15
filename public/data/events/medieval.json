@@ -569,7 +569,71 @@
     "at": 1492,
     "child": "granada"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.14,
+     "color": "#f5a623",
+     "pos": [
+      -5.06,
+      43.31
+     ],
+     "at": "overview",
+     "label": "Covadonga 722"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      -4.02,
+      39.86
+     ],
+     "at": "overview",
+     "label": "Toledo 1085"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.14,
+     "color": "#f5a623",
+     "pos": [
+      -3.58,
+      38.28
+     ],
+     "at": "overview",
+     "label": "Las Navas de Tolosa 1212"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      -5.99,
+      37.39
+     ],
+     "at": "overview",
+     "label": "Seville 1248"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      -3.6,
+      37.18
+     ],
+     "at": "overview",
+     "label": "Granada 1492"
+    }
+   ]
+  }
  },
  {
   "id": "tours",
@@ -796,7 +860,59 @@
     "at": 1066,
     "page": "Harald Hardrada of Norway, the last of the great Viking commanders, invaded England in September 1066 and was killed at Stamford Bridge by Harold Godwinson, who then marched south to meet [William of Normandy](event:hastings) at Hastings. The year is the conventional end of the age, though the deeper change was that Scandinavia had become Christian and had been organised into kingdoms whose rulers made war as European monarchs rather than as sea-captains."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.3,
+     "color": "#f5a623",
+     "pos": [
+      -1.8,
+      55.68
+     ],
+     "at": "overview",
+     "label": "Lindisfarne 793"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.3,
+     "pos": [
+      -21.9,
+      64.14
+     ],
+     "label": "Iceland settled c. 870",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.3,
+     "pos": [
+      1.1,
+      49.44
+     ],
+     "label": "Normandy granted 911",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.3,
+     "color": "#f5a623",
+     "pos": [
+      -0.91,
+      53.99
+     ],
+     "at": "overview",
+     "label": "Stamford Bridge 1066"
+    }
+   ]
+  }
  },
  {
   "id": "lindisfarne",
@@ -1487,7 +1603,47 @@
     "at": 1291,
     "child": "acre-1291"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      35.22,
+      31.78
+     ],
+     "at": "overview",
+     "label": "Jerusalem 1099 & 1187"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      28.98,
+      41.01
+     ],
+     "at": "overview",
+     "label": "Constantinople sacked 1204"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      35.08,
+      32.93
+     ],
+     "at": "overview",
+     "label": "Acre falls 1291"
+    }
+   ]
+  }
  },
  {
   "id": "first-crusade",
@@ -2911,7 +3067,83 @@
     "end": 1453,
     "page": "Burgundy left the English alliance at Arras in 1435, and Charles VII rebuilt his army around paid companies and a corps of gunners under the Bureau brothers. Normandy was retaken in a fourteen-month campaign that ended at Formigny in April 1450, where French cannon broke the English line. Guyenne followed: at Castillon, on 17 July 1453, an English army attacked an entrenched artillery park and was destroyed, and the English commander John Talbot was killed. Bordeaux surrendered on 19 October. No treaty was signed; the fighting simply stopped."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.11,
+     "color": "#f5a623",
+     "pos": [
+      3.35,
+      51.32
+     ],
+     "at": "overview",
+     "label": "Sluys 1340"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.11,
+     "color": "#f5a623",
+     "pos": [
+      1.9,
+      50.25
+     ],
+     "at": "overview",
+     "label": "Crecy 1346"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.11,
+     "color": "#ffd7a8",
+     "pos": [
+      1.86,
+      50.95
+     ],
+     "at": "overview",
+     "label": "Calais taken 1347"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.11,
+     "color": "#f5a623",
+     "pos": [
+      2.14,
+      50.46
+     ],
+     "at": "overview",
+     "label": "Agincourt 1415"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.11,
+     "color": "#ffd7a8",
+     "pos": [
+      2.42,
+      47.22
+     ],
+     "at": "overview",
+     "label": "Orleans relieved 1429"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.11,
+     "color": "#f5a623",
+     "pos": [
+      -0.04,
+      44.85
+     ],
+     "at": "overview",
+     "label": "Castillon 1453"
+    }
+   ]
+  }
  },
  {
   "id": "alhambra",
@@ -3072,7 +3304,99 @@
     "end": 1353,
     "page": "The pandemic completed a circuit. Having entered Europe from the Black Sea, it arrived in northern Russia only in 1352, reaching Novgorod and Pskov by way of the Baltic, and Moscow in 1353, where it killed the grand prince and his family. That is the conventional end of the first wave. Plague returned to Europe in 1361, in 1374, and every decade or two thereafter until the eighteenth century."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      35.38,
+      45.03
+     ],
+     "label": "Caffa 1346",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      28.98,
+      41.01
+     ],
+     "label": "Constantinople 1347",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      15.55,
+      38.19
+     ],
+     "label": "Messina, Oct 1347",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      29.92,
+      31.2
+     ],
+     "label": "Alexandria 1347",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      8.93,
+      44.41
+     ],
+     "label": "Genoa, Jan 1348",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      -0.1,
+      51.5
+     ],
+     "label": "London 1348",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      5.32,
+      60.39
+     ],
+     "label": "Bergen 1349",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      37.62,
+      55.75
+     ],
+     "label": "Moscow 1352",
+     "at": "overview"
+    }
+   ]
+  }
  },
  {
   "id": "crecy",
@@ -4672,7 +4996,83 @@
     "at": 1434.40959
    }
   ],
-  "priority": 70
+  "priority": 70,
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.07,
+     "color": "#ffd7a8",
+     "pos": [
+      14.4213,
+      50.0875
+     ],
+     "at": "overview",
+     "label": "Prague 1419"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.07,
+     "color": "#f5a623",
+     "pos": [
+      15.581,
+      49.6079
+     ],
+     "at": "overview",
+     "label": "Nemecky Brod 1422"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.07,
+     "color": "#f5a623",
+     "pos": [
+      14.0323,
+      50.6607
+     ],
+     "at": "overview",
+     "label": "Usti nad Labem 1426"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.07,
+     "color": "#f5a623",
+     "pos": [
+      12.6317,
+      49.7961
+     ],
+     "at": "overview",
+     "label": "Tachov 1427"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.07,
+     "color": "#f5a623",
+     "pos": [
+      12.9294,
+      49.4406
+     ],
+     "at": "overview",
+     "label": "Domazlice 1431"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.07,
+     "color": "#f5a623",
+     "pos": [
+      14.877,
+      50.035
+     ],
+     "at": "overview",
+     "label": "Lipany 1434"
+    }
+   ]
+  }
  },
  {
   "id": "aztec-empire",
@@ -6993,7 +7393,71 @@
     }
    }
   ],
-  "priority": 70
+  "priority": 70,
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.08,
+     "color": "#f5a623",
+     "pos": [
+      -0.336,
+      51.752
+     ],
+     "at": "overview",
+     "label": "First St Albans 1455"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.08,
+     "color": "#f5a623",
+     "pos": [
+      -1.267,
+      53.837
+     ],
+     "at": "overview",
+     "label": "Towton 1461"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.08,
+     "color": "#f5a623",
+     "pos": [
+      -2.16,
+      51.993
+     ],
+     "at": "overview",
+     "label": "Tewkesbury 1471"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.08,
+     "color": "#f5a623",
+     "pos": [
+      -1.41,
+      52.59
+     ],
+     "at": "overview",
+     "label": "Bosworth 1485"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.08,
+     "color": "#f5a623",
+     "pos": [
+      -0.883,
+      53.014
+     ],
+     "at": "overview",
+     "label": "Stoke Field 1487"
+    }
+   ]
+  }
  },
  {
   "id": "towton",
@@ -8080,7 +8544,71 @@
     }
    }
   ],
-  "priority": 82
+  "priority": 82,
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.15,
+     "color": "#ffd7a8",
+     "pos": [
+      14.2681,
+      40.8518
+     ],
+     "at": "overview",
+     "label": "Naples entered 1495"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.15,
+     "color": "#f5a623",
+     "pos": [
+      10.1,
+      44.693
+     ],
+     "at": "overview",
+     "label": "Fornovo 1495"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.15,
+     "color": "#f5a623",
+     "pos": [
+      9.17,
+      45.19
+     ],
+     "at": "overview",
+     "label": "Pavia 1525"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.15,
+     "color": "#ffd7a8",
+     "pos": [
+      12.4964,
+      41.9028
+     ],
+     "at": "overview",
+     "label": "Rome sacked 1527"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.15,
+     "color": "#ffd7a8",
+     "pos": [
+      3.55,
+      50.1
+     ],
+     "at": "overview",
+     "label": "Cateau-Cambresis 1559"
+    }
+   ]
+  }
  },
  {
   "id": "da-gama",

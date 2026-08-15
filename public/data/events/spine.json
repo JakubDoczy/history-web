@@ -688,7 +688,59 @@
     "end": -6000,
     "page": "Farmers moved from Anatolia into Greece and the Balkans, then up the Danube and along the Mediterranean coast, carrying the Fertile Crescent crop package with them. Ancient DNA shows this was largely a migration of people rather than the spread of an idea: European farmers descend substantially from Anatolian ancestors, mixed to varying degrees with the hunter-gatherers already there."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      38.92,
+      37.22
+     ],
+     "label": "Gobekli Tepe, c. 9500 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      35.44,
+      31.87
+     ],
+     "label": "Jericho, c. 9000 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      44.0,
+      37.0
+     ],
+     "label": "First livestock",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      32.83,
+      37.67
+     ],
+     "label": "Catalhoyuk",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "writing",
@@ -1218,7 +1270,107 @@
     "at": -322,
     "page": "Alexander returned to Babylon and was planning an expedition into Arabia when he fell ill after a long banquet and died eleven days later, in June 323 BCE, aged thirty-two. Fever, poison and heavy drinking have all been proposed. Asked who should succeed him, he is reported to have said 'the strongest'; his generals fought over the answer for forty years."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      27.25,
+      40.23
+     ],
+     "at": "overview",
+     "label": "Granicus 334 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      36.22,
+      36.84
+     ],
+     "at": "overview",
+     "label": "Issus 333 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      35.2,
+      33.27
+     ],
+     "at": "overview",
+     "label": "Tyre 332 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.5,
+     "pos": [
+      29.92,
+      31.2
+     ],
+     "label": "Alexandria founded 331 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      43.3,
+      36.6
+     ],
+     "at": "overview",
+     "label": "Gaugamela 331 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.5,
+     "color": "#ffd7a8",
+     "pos": [
+      52.89,
+      29.93
+     ],
+     "at": "overview",
+     "label": "Persepolis 330 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      73.73,
+      32.93
+     ],
+     "at": "overview",
+     "label": "Hydaspes 326 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.5,
+     "color": "#ffd7a8",
+     "pos": [
+      44.42,
+      32.54
+     ],
+     "at": "overview",
+     "label": "Babylon 323 BCE"
+    }
+   ]
+  }
  },
  {
   "id": "qin-unification",
@@ -1924,7 +2076,47 @@
     "at": 1291,
     "child": "acre-1291"
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      35.22,
+      31.78
+     ],
+     "at": "overview",
+     "label": "Jerusalem 1099 & 1187"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      28.98,
+      41.01
+     ],
+     "at": "overview",
+     "label": "Constantinople sacked 1204"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      35.08,
+      32.93
+     ],
+     "at": "overview",
+     "label": "Acre falls 1291"
+    }
+   ]
+  }
  },
  {
   "id": "temujin-genghis-khan",
@@ -2244,7 +2436,99 @@
     "end": 1353,
     "page": "The pandemic completed a circuit. Having entered Europe from the Black Sea, it arrived in northern Russia only in 1352, reaching Novgorod and Pskov by way of the Baltic, and Moscow in 1353, where it killed the grand prince and his family. That is the conventional end of the first wave. Plague returned to Europe in 1361, in 1374, and every decade or two thereafter until the eighteenth century."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      35.38,
+      45.03
+     ],
+     "label": "Caffa 1346",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      28.98,
+      41.01
+     ],
+     "label": "Constantinople 1347",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      15.55,
+      38.19
+     ],
+     "label": "Messina, Oct 1347",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      29.92,
+      31.2
+     ],
+     "label": "Alexandria 1347",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      8.93,
+      44.41
+     ],
+     "label": "Genoa, Jan 1348",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      -0.1,
+      51.5
+     ],
+     "label": "London 1348",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      5.32,
+      60.39
+     ],
+     "label": "Bergen 1349",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.4,
+     "pos": [
+      37.62,
+      55.75
+     ],
+     "label": "Moscow 1352",
+     "at": "overview"
+    }
+   ]
+  }
  },
  {
   "id": "renaissance",
@@ -4309,7 +4593,83 @@
     "start": 1618.39041,
     "end": 1648.81284
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      12.6383,
+      51.8663
+     ],
+     "at": "overview",
+     "label": "Wittenberg 1517"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      -0.1248,
+      51.4995
+     ],
+     "label": "England breaks with Rome 1534",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      11.12,
+      46.07
+     ],
+     "label": "Council of Trent 1545-63",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      10.89,
+      48.36
+     ],
+     "label": "Peace of Augsburg 1555",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      -1.55,
+      47.22
+     ],
+     "label": "Edict of Nantes 1598",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      14.44,
+      50.08
+     ],
+     "label": "Prague 1618",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "spanish-conquest",
@@ -4799,7 +5159,71 @@
     "child": "newton",
     "at": 1687
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      19.6836,
+      54.3583
+     ],
+     "label": "Copernicus, Frombork 1543",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      14.42,
+      50.09
+     ],
+     "label": "Kepler, Prague 1609",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      11.88,
+      45.41
+     ],
+     "label": "Galileo, Padua 1609",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      -0.1002,
+      51.5177
+     ],
+     "label": "Harvey, London 1628",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      0.12,
+      52.21
+     ],
+     "label": "Newton's Principia 1687",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "copernicus",
@@ -5105,7 +5529,59 @@
     "at": 1783.6726,
     "page": "Negotiations opened in Paris in 1782, with Franklin, Adams and Jay dealing separately with Britain despite the French alliance and getting better terms for it.\n\nThe treaty signed on 3 September 1783 recognised the United States as independent and granted a western boundary at the Mississippi, more than the fighting had won, over the heads of the Native nations who had fought as British allies. Britain settled separately with France and Spain the same day."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.14,
+     "color": "#f5a623",
+     "pos": [
+      -71.23,
+      42.45
+     ],
+     "at": "overview",
+     "label": "Lexington, Apr 1775"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      -75.15,
+      39.95
+     ],
+     "at": "overview",
+     "label": "Independence declared 1776"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.14,
+     "color": "#f5a623",
+     "pos": [
+      -73.64,
+      42.99
+     ],
+     "at": "overview",
+     "label": "Saratoga 1777"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      -76.51,
+      37.24
+     ],
+     "at": "overview",
+     "label": "Yorktown 1781"
+    }
+   ]
+  }
  },
  {
   "id": "french-revolution",
@@ -5282,7 +5758,83 @@
     "at": 1815.8863,
     "page": "The Congress of Vienna closed its Final Act nine days before Waterloo. It restored the Bourbons, enlarged the Netherlands and Prussia as barriers against France, confirmed the end of the Holy Roman Empire, and set up a balance in which no single power could dominate the continent.\n\nThe second Treaty of Paris of 20 November 1815 imposed an indemnity and an army of occupation on France but left its 1790 borders intact. Napoleon was sent to St Helena. The settlement held the great powers back from a general European war until [1914](item:ww1)."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      -6.03,
+      36.18
+     ],
+     "at": "overview",
+     "label": "Trafalgar 1805"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      16.76,
+      49.13
+     ],
+     "at": "overview",
+     "label": "Austerlitz 1805"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      -4.0,
+      40.4
+     ],
+     "at": "overview",
+     "label": "Peninsular War 1808-14"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      37.62,
+      55.75
+     ],
+     "at": "overview",
+     "label": "Moscow 1812"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      12.38,
+      51.34
+     ],
+     "at": "overview",
+     "label": "Leipzig 1813"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.45,
+     "color": "#f5a623",
+     "pos": [
+      4.41,
+      50.68
+     ],
+     "at": "overview",
+     "label": "Waterloo 1815"
+    }
+   ]
+  }
  },
  {
   "id": "charles-darwin",
@@ -5516,7 +6068,108 @@
     "child": "lincoln-assassination",
     "at": 1865.28356
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       -84.39,
+       33.75
+      ],
+      [
+       -83.0,
+       32.9
+      ],
+      [
+       -81.09,
+       32.08
+      ]
+     ],
+     "width": 0.22,
+     "label": "March to the Sea 1864",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.26,
+     "color": "#ffd7a8",
+     "pos": [
+      -79.87,
+      32.75
+     ],
+     "at": "overview",
+     "label": "Fort Sumter, Apr 1861"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      -77.52,
+      38.81
+     ],
+     "at": "overview",
+     "label": "Bull Run 1861"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      -90.88,
+      32.35
+     ],
+     "at": "overview",
+     "label": "Vicksburg 1863"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      -77.23,
+      39.81
+     ],
+     "at": "overview",
+     "label": "Gettysburg, Jul 1863"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.26,
+     "color": "#ffd7a8",
+     "pos": [
+      -78.8,
+      37.38
+     ],
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -81.7,
+      36.9
+     ],
+     "text": "Appomattox, Apr 1865",
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      -85.7,
+      32.4
+     ],
+     "text": "March to the Sea 1864",
+     "at": "overview"
+    }
+   ]
+  }
  },
  {
   "id": "mohandas-gandhi",
@@ -5780,7 +6433,99 @@
     },
     "page": "The Allied counter-offensive opened at Amiens on 8 August 1918 with tanks, aircraft and predicted artillery fire, and did not stop. Through the autumn the German army was pushed back off the Hindenburg Line while Bulgaria, the Ottoman Empire and Austria-Hungary left the war in turn.\n\nMutiny in the German fleet at Kiel spread into revolution; the Kaiser abdicated on 9 November. The armistice was signed in a railway carriage at Compiègne and took effect at 11 a.m. on 11 November 1918."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.32,
+     "pos": [
+      18.43,
+      43.86
+     ],
+     "label": "Sarajevo, 28 June 1914",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.32,
+     "color": "#f5a623",
+     "pos": [
+      3.4,
+      48.95
+     ],
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      1.1,
+      48.3
+     ],
+     "text": "The Marne 1914",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.32,
+     "color": "#f5a623",
+     "pos": [
+      26.3,
+      40.2
+     ],
+     "at": "overview",
+     "label": "Gallipoli 1915"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.32,
+     "color": "#f5a623",
+     "pos": [
+      5.42,
+      49.2
+     ],
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      7.1,
+      48.8
+     ],
+     "text": "Verdun 1916",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.32,
+     "color": "#f5a623",
+     "pos": [
+      2.7,
+      50.0
+     ],
+     "at": "overview",
+     "label": "The Somme 1916"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.32,
+     "color": "#ffd7a8",
+     "pos": [
+      23.7,
+      52.1
+     ],
+     "at": "overview",
+     "label": "Brest-Litovsk 1918"
+    }
+   ]
+  }
  },
  {
   "id": "russian-revolution",
@@ -5866,7 +6611,47 @@
     "child": "ussr-founded",
     "at": 1922.99589
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      30.31,
+      59.94
+     ],
+     "at": "overview",
+     "label": "Petrograd 1917"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      29.77,
+      59.99
+     ],
+     "at": "overview",
+     "label": "Kronstadt 1921"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.14,
+     "pos": [
+      37.6186,
+      55.7601
+     ],
+     "label": "USSR founded 1922",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "spanish-flu",
@@ -5991,7 +6776,47 @@
     "end": 1938.49452,
     "page": "By 1937 output was approaching its 1929 level, and the administration cut spending to balance the budget while the Federal Reserve raised bank reserve requirements. The economy fell back sharply: industrial production dropped by about a third in nine months and unemployment rose again by several million.\n\nSpending resumed in 1938 and the recovery with it. Full employment returned only with war orders. The sequence was later read as evidence for the argument John Maynard Keynes published in 1936."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.5,
+     "pos": [
+      -74.01,
+      40.71
+     ],
+     "label": "Wall Street crash, Oct 1929",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.5,
+     "pos": [
+      -100.0,
+      36.5
+     ],
+     "label": "The Dust Bowl 1930s",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.5,
+     "pos": [
+      -77.0,
+      38.9
+     ],
+     "label": "The New Deal 1933",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "ww2",

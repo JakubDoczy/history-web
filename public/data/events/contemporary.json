@@ -846,7 +846,47 @@
     "end": 1953.56849,
     "page": "From the summer of 1951 the front stabilised near the 38th parallel and the war became one of trenches, hills and heavy air bombardment. Armistice talks opened on 10 July 1951 at Kaesong, moved to Panmunjom, and dragged on for two years, mostly over whether prisoners who did not want to go home had to be repatriated. The armistice signed on 27 July 1953 fixed the line where the fighting had stopped and created a demilitarised zone about four kilometres wide across the peninsula. No peace treaty has followed it."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      129.04,
+      35.1
+     ],
+     "at": "overview",
+     "label": "Pusan Perimeter 1950"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      126.63,
+      37.45
+     ],
+     "at": "overview",
+     "label": "Inchon, Sep 1950"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.11,
+     "color": "#ffd7a8",
+     "pos": [
+      126.68,
+      37.94
+     ],
+     "at": "overview",
+     "label": "Panmunjom 1953"
+    }
+   ]
+  }
  },
  {
   "id": "dna-structure",
@@ -947,7 +987,71 @@
     "child": "mlk-assassination",
     "at": 1968.2582
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      -86.3,
+      32.37
+     ],
+     "label": "Montgomery 1955-56",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      -86.8,
+      33.52
+     ],
+     "label": "Birmingham 1963",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      -77.05,
+      38.89
+     ],
+     "at": "overview",
+     "label": "March on Washington 1963"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      -87.02,
+      32.41
+     ],
+     "label": "Selma 1965",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      -90.05,
+      35.13
+     ],
+     "label": "Memphis, 4 April 1968",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "polio-vaccine",

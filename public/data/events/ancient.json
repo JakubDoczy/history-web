@@ -76,7 +76,59 @@
     "end": -6000,
     "page": "Farmers moved from Anatolia into Greece and the Balkans, then up the Danube and along the Mediterranean coast, carrying the Fertile Crescent crop package with them. Ancient DNA shows this was largely a migration of people rather than the spread of an idea: European farmers descend substantially from Anatolian ancestors, mixed to varying degrees with the hunter-gatherers already there."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      38.92,
+      37.22
+     ],
+     "label": "Gobekli Tepe, c. 9500 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      35.44,
+      31.87
+     ],
+     "label": "Jericho, c. 9000 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      44.0,
+      37.0
+     ],
+     "label": "First livestock",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      32.83,
+      37.67
+     ],
+     "label": "Catalhoyuk",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "gobekli-tepe",
@@ -2024,7 +2076,59 @@
     "end": -448,
     "page": "Athens took over the leadership from Sparta in 478 BCE and organised the Aegean states into an alliance with its treasury on Delos. Over the next thirty years it cleared Persian garrisons from Thrace and the straits, destroyed a Persian army and fleet at the Eurymedon about 466, and lost a large expedition supporting a revolt in Egypt. Fighting stopped around 449, by tradition under a Peace of Callias whose existence ancient writers already doubted."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.06,
+     "color": "#f5a623",
+     "pos": [
+      23.97,
+      38.15
+     ],
+     "at": "overview",
+     "label": "Marathon 490 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.06,
+     "color": "#f5a623",
+     "pos": [
+      22.54,
+      38.8
+     ],
+     "at": "overview",
+     "label": "Thermopylae 480 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.06,
+     "color": "#f5a623",
+     "pos": [
+      23.53,
+      37.94
+     ],
+     "at": "overview",
+     "label": "Salamis 480 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.06,
+     "color": "#f5a623",
+     "pos": [
+      23.27,
+      38.22
+     ],
+     "at": "overview",
+     "label": "Plataea 479 BCE"
+    }
+   ]
+  }
  },
  {
   "id": "marathon",
@@ -2379,7 +2483,47 @@
     "at": -403,
     "page": "Athens capitulated in the spring of 404 BCE after a winter of blockade and hunger. The Long Walls were pulled down, the fleet reduced to a dozen ships, and the empire dissolved. A Spartan-backed oligarchy of thirty ruled for a year and killed some fifteen hundred citizens; democracy was restored in 403, and Socrates was tried four years later."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.18,
+     "pos": [
+      23.73,
+      37.98
+     ],
+     "label": "Plague at Athens 430 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.18,
+     "color": "#f5a623",
+     "pos": [
+      15.29,
+      37.07
+     ],
+     "at": "overview",
+     "label": "Syracuse 415-413 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.18,
+     "color": "#f5a623",
+     "pos": [
+      26.65,
+      40.33
+     ],
+     "at": "overview",
+     "label": "Aegospotami 405 BCE"
+    }
+   ]
+  }
  },
  {
   "id": "maya-calendar",
@@ -2562,7 +2706,107 @@
     "at": -322,
     "page": "Alexander returned to Babylon and was planning an expedition into Arabia when he fell ill after a long banquet and died eleven days later, in June 323 BCE, aged thirty-two. Fever, poison and heavy drinking have all been proposed. Asked who should succeed him, he is reported to have said 'the strongest'; his generals fought over the answer for forty years."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      27.25,
+      40.23
+     ],
+     "at": "overview",
+     "label": "Granicus 334 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      36.22,
+      36.84
+     ],
+     "at": "overview",
+     "label": "Issus 333 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      35.2,
+      33.27
+     ],
+     "at": "overview",
+     "label": "Tyre 332 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.5,
+     "pos": [
+      29.92,
+      31.2
+     ],
+     "label": "Alexandria founded 331 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      43.3,
+      36.6
+     ],
+     "at": "overview",
+     "label": "Gaugamela 331 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.5,
+     "color": "#ffd7a8",
+     "pos": [
+      52.89,
+      29.93
+     ],
+     "at": "overview",
+     "label": "Persepolis 330 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.5,
+     "color": "#f5a623",
+     "pos": [
+      73.73,
+      32.93
+     ],
+     "at": "overview",
+     "label": "Hydaspes 326 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.5,
+     "color": "#ffd7a8",
+     "pos": [
+      44.42,
+      32.54
+     ],
+     "at": "overview",
+     "label": "Babylon 323 BCE"
+    }
+   ]
+  }
  },
  {
   "id": "gaugamela",
@@ -3054,7 +3298,87 @@
     "end": -145,
     "page": "Carthage recovered commercially under the peace terms, and when it defended itself against its Numidian neighbour without Roman permission, Rome declared war in 149 BCE. Cato had been ending his speeches with the demand that Carthage be destroyed. The city held out for three years, was stormed street by street in the spring of 146 BCE, and was razed; the survivors were enslaved and the territory became the province of Africa."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      12.09,
+      43.13
+     ],
+     "at": "overview",
+     "label": "Lake Trasimene 217 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      16.1,
+      41.3
+     ],
+     "at": "overview",
+     "label": "Cannae 216 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      12.85,
+      43.72
+     ],
+     "at": "overview",
+     "label": "The Metaurus 207 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      9.4,
+      36.3
+     ],
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      8.1,
+      35.7
+     ],
+     "text": "Zama 202 BCE",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.26,
+     "color": "#ffd7a8",
+     "pos": [
+      10.32,
+      36.85
+     ],
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      12.7,
+      36.5
+     ],
+     "text": "Carthage destroyed 146 BCE",
+     "at": "overview"
+    }
+   ]
+  }
  },
  {
   "id": "qin-unification",
@@ -3885,7 +4209,59 @@
     "at": -26,
     "page": "In January 27 BCE Octavian offered to give up his powers, and the Senate returned them with the name Augustus and a province containing most of the legions. A second settlement in 23 gave him the powers of a tribune for life and authority over other governors. He held no permanent office that was not republican, and he was answerable to no one."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.25,
+     "pos": [
+      3.0,
+      47.0
+     ],
+     "label": "Gaul, 58-50 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.25,
+     "pos": [
+      12.4,
+      44.1
+     ],
+     "label": "The Rubicon 49 BCE",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.25,
+     "color": "#ffd7a8",
+     "pos": [
+      12.4767,
+      41.8955
+     ],
+     "at": "overview",
+     "label": "Ides of March 44 BCE"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.25,
+     "color": "#f5a623",
+     "pos": [
+      20.74,
+      38.94
+     ],
+     "at": "overview",
+     "label": "Actium 31 BCE"
+    }
+   ]
+  }
  },
  {
   "id": "silk-road",

@@ -375,7 +375,83 @@
     "start": 1618.39041,
     "end": 1648.81284
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      12.6383,
+      51.8663
+     ],
+     "at": "overview",
+     "label": "Wittenberg 1517"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      -0.1248,
+      51.4995
+     ],
+     "label": "England breaks with Rome 1534",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      11.12,
+      46.07
+     ],
+     "label": "Council of Trent 1545-63",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      10.89,
+      48.36
+     ],
+     "label": "Peace of Augsburg 1555",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      -1.55,
+      47.22
+     ],
+     "label": "Edict of Nantes 1598",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.22,
+     "pos": [
+      14.44,
+      50.08
+     ],
+     "label": "Prague 1618",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "95-theses",
@@ -1521,7 +1597,108 @@
     }
    }
   ],
-  "priority": 82
+  "priority": 82,
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       26.56,
+       41.68
+      ],
+      [
+       21.9,
+       43.85
+      ],
+      [
+       20.45,
+       44.82
+      ],
+      [
+       18.64,
+       45.99
+      ],
+      [
+       16.37,
+       48.21
+      ]
+     ],
+     "width": 0.2,
+     "label": "Ottoman advance 1521-29",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      20.4489,
+      44.82
+     ],
+     "at": "overview",
+     "label": "Belgrade 1521"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      18.641,
+      45.993
+     ],
+     "at": "overview",
+     "label": "Mohacs 1526"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      16.3738,
+      48.2082
+     ],
+     "at": "overview",
+     "label": "Vienna 1529 & 1683"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      14.5186,
+      35.9008
+     ],
+     "at": "overview",
+     "label": "Malta 1565"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      21.3,
+      38.25
+     ],
+     "at": "overview",
+     "label": "Lepanto 1571"
+    },
+    {
+     "type": "label",
+     "pos": [
+      23.2,
+      45.85
+     ],
+     "text": "Peace of Karlowitz 1699",
+     "at": "overview"
+    }
+   ]
+  }
  },
  {
   "id": "battle-of-pavia",
@@ -2268,7 +2445,71 @@
     "child": "newton",
     "at": 1687
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      19.6836,
+      54.3583
+     ],
+     "label": "Copernicus, Frombork 1543",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      14.42,
+      50.09
+     ],
+     "label": "Kepler, Prague 1609",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      11.88,
+      45.41
+     ],
+     "label": "Galileo, Padua 1609",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      -0.1002,
+      51.5177
+     ],
+     "label": "Harvey, London 1628",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.2,
+     "pos": [
+      0.12,
+      52.21
+     ],
+     "label": "Newton's Principia 1687",
+     "at": "overview",
+     "color": "#f2f6fc"
+    }
+   ]
+  }
  },
  {
   "id": "copernicus",
@@ -2907,7 +3148,83 @@
     "at": 1614.88356
    }
   ],
-  "priority": 80
+  "priority": 80,
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      137.0006,
+      35.0617
+     ],
+     "at": "overview",
+     "label": "Okehazama 1560"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      137.5583,
+      34.9083
+     ],
+     "at": "overview",
+     "label": "Nagashino 1575"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.09,
+     "color": "#ffd7a8",
+     "pos": [
+      135.755,
+      35.01
+     ],
+     "at": "overview",
+     "label": "Honnoji 1582"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.09,
+     "color": "#ffd7a8",
+     "pos": [
+      139.1533,
+      35.2506
+     ],
+     "at": "overview",
+     "label": "Odawara 1590"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      136.4681,
+      35.3708
+     ],
+     "at": "overview",
+     "label": "Sekigahara 1600"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      135.5259,
+      34.6873
+     ],
+     "at": "overview",
+     "label": "Osaka 1614-15"
+    }
+   ]
+  }
  },
  {
   "id": "french-wars-religion",
@@ -3996,7 +4313,120 @@
     }
    }
   ],
-  "priority": 70
+  "priority": 70,
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       129.04,
+       35.1
+      ],
+      [
+       128.16,
+       36.42
+      ],
+      [
+       127.93,
+       36.99
+      ],
+      [
+       126.98,
+       37.57
+      ],
+      [
+       125.76,
+       39.04
+      ]
+     ],
+     "width": 0.12,
+     "label": "Japanese advance 1592",
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      130.75,
+      36.7
+     ],
+     "text": "Japanese advance 1592",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.12,
+     "color": "#ffd7a8",
+     "pos": [
+      129.04,
+      35.1
+     ],
+     "at": "overview",
+     "label": "Busan taken 1592"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.12,
+     "color": "#ffd7a8",
+     "pos": [
+      126.978,
+      37.5665
+     ],
+     "at": "overview",
+     "label": "Hanseong falls 1592"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      128.48,
+      34.78
+     ],
+     "at": "overview",
+     "label": "Hansan Island 1592"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      125.7625,
+      39.0392
+     ],
+     "at": "overview",
+     "label": "Pyongyang retaken 1593"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      126.3,
+      34.57
+     ],
+     "at": "overview",
+     "label": "Myeongnyang 1597"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      127.87,
+      34.94
+     ],
+     "at": "overview",
+     "label": "Noryang 1598"
+    }
+   ]
+  }
  },
  {
   "id": "myeongnyang",
@@ -4390,7 +4820,71 @@
     "child": "westphalia",
     "at": 1648.81284
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.2,
+     "color": "#f5a623",
+     "pos": [
+      14.32,
+      50.08
+     ],
+     "at": "overview",
+     "label": "White Mountain 1620"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.2,
+     "color": "#f5a623",
+     "pos": [
+      12.14,
+      51.26
+     ],
+     "at": "overview",
+     "label": "Lutzen 1632"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.2,
+     "color": "#f5a623",
+     "pos": [
+      10.49,
+      48.85
+     ],
+     "at": "overview",
+     "label": "Nordlingen 1634"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.2,
+     "color": "#f5a623",
+     "pos": [
+      4.52,
+      49.93
+     ],
+     "at": "overview",
+     "label": "Rocroi 1643"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.2,
+     "color": "#ffd7a8",
+     "pos": [
+      7.63,
+      51.96
+     ],
+     "at": "overview",
+     "label": "Westphalia 1648"
+    }
+   ]
+  }
  },
  {
   "id": "plymouth-colony",
@@ -4562,7 +5056,71 @@
     "end": 1651.6726,
     "page": "The Scots proclaimed Charles II king and took him on Presbyterian terms. Cromwell invaded, was cornered at Dunbar in September 1650 and destroyed a much larger Scottish army there in a dawn attack.\n\nCharles marched south with a new army the following summer and was beaten at Worcester on 3 September 1651, exactly a year later. He escaped abroad after six weeks in hiding. The wars were over, and the three kingdoms were ruled from London until 1660."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      -1.47,
+      52.14
+     ],
+     "at": "overview",
+     "label": "Edgehill 1642"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      -1.24,
+      53.96
+     ],
+     "at": "overview",
+     "label": "Marston Moor 1644"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      -0.99,
+      52.4
+     ],
+     "at": "overview",
+     "label": "Naseby 1645"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      -2.52,
+      56.0
+     ],
+     "at": "overview",
+     "label": "Dunbar 1650"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.09,
+     "color": "#f5a623",
+     "pos": [
+      -2.22,
+      52.19
+     ],
+     "at": "overview",
+     "label": "Worcester 1651"
+    }
+   ]
+  }
  },
  {
   "id": "isaac-newton",
@@ -5200,7 +5758,108 @@
     }
    }
   ],
-  "priority": 65
+  "priority": 65,
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       14.55,
+       53.43
+      ],
+      [
+       16.73,
+       53.05
+      ],
+      [
+       16.93,
+       52.41
+      ],
+      [
+       18.6,
+       52.3
+      ],
+      [
+       20.45,
+       52.28
+      ]
+     ],
+     "width": 0.1,
+     "label": "Swedish invasion 1655",
+     "at": "overview"
+    },
+    {
+     "type": "label",
+     "pos": [
+      15.35,
+      52.5
+     ],
+     "text": "Swedish invasion 1655",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.15,
+     "color": "#f5a623",
+     "pos": [
+      16.73,
+      53.05
+     ],
+     "at": "overview",
+     "label": "Ujscie 1655"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.15,
+     "color": "#ffd7a8",
+     "pos": [
+      21.0122,
+      52.2297
+     ],
+     "at": "overview",
+     "label": "Warsaw 1655-56"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.15,
+     "color": "#ffd7a8",
+     "pos": [
+      19.945,
+      50.0647
+     ],
+     "at": "overview",
+     "label": "Krakow 1655"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.15,
+     "color": "#ffd7a8",
+     "pos": [
+      19.0966,
+      50.8118
+     ],
+     "at": "overview",
+     "label": "Jasna Gora 1655"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.15,
+     "color": "#ffd7a8",
+     "pos": [
+      18.56,
+      54.41
+     ],
+     "at": "overview",
+     "label": "Oliva 1660"
+    }
+   ]
+  }
  },
  {
   "id": "aurangzeb-reign",
@@ -6210,7 +6869,136 @@
     }
    }
   ],
-  "priority": 73
+  "priority": 73,
+  "drawing": {
+   "layers": [
+    {
+     "type": "thrust",
+     "path": [
+      [
+       17.0,
+       52.6
+      ],
+      [
+       23.0,
+       53.2
+      ],
+      [
+       28.0,
+       54.2
+      ],
+      [
+       30.33,
+       53.9
+      ],
+      [
+       32.0,
+       52.5
+      ],
+      [
+       34.55,
+       49.8
+      ]
+     ],
+     "width": 0.2,
+     "label": "Charles XII 1708-09",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      28.1917,
+      59.3797
+     ],
+     "at": "overview",
+     "label": "Narva 1700"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      20.6,
+      50.55
+     ],
+     "at": "overview",
+     "label": "Kliszow 1702"
+    },
+    {
+     "type": "marker",
+     "style": "dot",
+     "size": 0.24,
+     "pos": [
+      30.3141,
+      59.9386
+     ],
+     "label": "St Petersburg 1703",
+     "at": "overview",
+     "color": "#f2f6fc"
+    },
+    {
+     "type": "label",
+     "pos": [
+      25.7,
+      51.7
+     ],
+     "text": "Charles XII 1708-09",
+     "at": "overview"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      34.5514,
+      49.5883
+     ],
+     "at": "overview",
+     "label": "Poltava 1709"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      22.97,
+      59.82
+     ],
+     "at": "overview",
+     "label": "Gangut 1714"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.26,
+     "color": "#f5a623",
+     "pos": [
+      11.39,
+      59.12
+     ],
+     "at": "overview",
+     "label": "Fredriksten 1718"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.26,
+     "color": "#ffd7a8",
+     "pos": [
+      21.41,
+      60.8
+     ],
+     "at": "overview",
+     "label": "Nystad 1721"
+    }
+   ]
+  }
  },
  {
   "id": "narva",
@@ -6722,7 +7510,95 @@
     }
    }
   ],
-  "priority": 70
+  "priority": 70,
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      10.63,
+      48.635
+     ],
+     "at": "overview",
+     "label": "Blenheim 1704"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      -5.3536,
+      36.1408
+     ],
+     "at": "overview",
+     "label": "Gibraltar taken 1704"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      4.91,
+      50.635
+     ],
+     "at": "overview",
+     "label": "Ramillies 1706"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      7.6869,
+      45.0703
+     ],
+     "at": "overview",
+     "label": "Turin 1706"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      -1.098,
+      38.869
+     ],
+     "at": "overview",
+     "label": "Almansa 1707"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.22,
+     "color": "#f5a623",
+     "pos": [
+      3.842,
+      50.305
+     ],
+     "at": "overview",
+     "label": "Malplaquet 1709"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.22,
+     "color": "#ffd7a8",
+     "pos": [
+      5.1214,
+      52.0907
+     ],
+     "at": "overview",
+     "label": "Utrecht 1713"
+    }
+   ]
+  }
  },
  {
   "id": "st-petersburg-founded",
@@ -7636,7 +8512,71 @@
      "altitude": 0.2966
     }
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      14.07,
+      50.83
+     ],
+     "at": "overview",
+     "label": "Lobositz 1756"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      11.88,
+      51.27
+     ],
+     "at": "overview",
+     "label": "Rossbach 1757"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      16.8,
+      51.13
+     ],
+     "at": "overview",
+     "label": "Leuthen 1757"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.12,
+     "color": "#f5a623",
+     "pos": [
+      14.65,
+      52.34
+     ],
+     "at": "overview",
+     "label": "Kunersdorf 1759"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.12,
+     "color": "#ffd7a8",
+     "pos": [
+      12.95,
+      51.32
+     ],
+     "at": "overview",
+     "label": "Hubertusburg 1763"
+    }
+   ]
+  }
  },
  {
   "id": "battle-plassey",
@@ -8632,7 +9572,59 @@
     "at": 1783.6726,
     "page": "Negotiations opened in Paris in 1782, with Franklin, Adams and Jay dealing separately with Britain despite the French alliance and getting better terms for it.\n\nThe treaty signed on 3 September 1783 recognised the United States as independent and granted a western boundary at the Mississippi, more than the fighting had won, over the heads of the Native nations who had fought as British allies. Britain settled separately with France and Spain the same day."
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.14,
+     "color": "#f5a623",
+     "pos": [
+      -71.23,
+      42.45
+     ],
+     "at": "overview",
+     "label": "Lexington, Apr 1775"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      -75.15,
+      39.95
+     ],
+     "at": "overview",
+     "label": "Independence declared 1776"
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.14,
+     "color": "#f5a623",
+     "pos": [
+      -73.64,
+      42.99
+     ],
+     "at": "overview",
+     "label": "Saratoga 1777"
+    },
+    {
+     "type": "marker",
+     "style": "star",
+     "size": 0.14,
+     "color": "#ffd7a8",
+     "pos": [
+      -76.51,
+      37.24
+     ],
+     "at": "overview",
+     "label": "Yorktown 1781"
+    }
+   ]
+  }
  },
  {
   "id": "wealth-of-nations",
