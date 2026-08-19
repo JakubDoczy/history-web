@@ -130,11 +130,14 @@ describe('paleoFrames.json', () => {
     for (const f of frameList) expect([239.5, 201.3, 178.4]).not.toContain(f.ma)
   })
   // Map mode's deep time is the same reconstruction printed for paper, not the
-  // photograph re-graded in the shader; both files of each pair must ship.
-  it('ships a photographic frame and a drawn twin, and both exist', () => {
+  // photograph re-graded in the shader; both files of each pair must ship —
+  // and, since round 67, so must the coastline SDF the drawn transition
+  // morphs by (see render_sdf in scripts/gen_paleo_v4.py).
+  it('ships a photographic frame, a drawn twin and a coastline SDF, and all exist', () => {
     for (const f of frameList) {
       expect(f.drawn).toBe(f.file.replace(/^pf/, 'pd'))
-      for (const file of [f.file, f.drawn]) {
+      expect(f.sdf).toBe(f.file.replace(/^pf/, 'ps'))
+      for (const file of [f.file, f.drawn, f.sdf]) {
         expect(
           existsSync(join(__dirname, '..', 'public', 'textures', 'paleo', file)),
           file,

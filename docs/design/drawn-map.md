@@ -573,3 +573,79 @@ first fill of a session shows the base texture (nothing has ever been shown —
 realistic does the same), a pan's leading edge can run 1–2 frames coarse
 (worst 2 of 8 tiles), and a fast zoom OUT exposes new ground at the frame's
 edge that no tile has ever covered — parity with realistic in all three.
+
+## As built, round 67: deep time morphs, it does not crossfade
+
+*"It's not very pretty how continents move in prehistoric times, especially
+in map mode. The blending is very apparent."* It was: the transition between
+two paleo keyframes was `mix(uEraA, uEraB, uEraMix)` — a uniform crossfade of
+whole textures — and in map mode the two frames are drawn plates, so every
+mid-blend was a double exposure of two inked coastlines: doubled grey pens,
+sea showing through land, ghost shelves. (Deep time streams no tiles in
+either mode — `detailAllowed` gates drawn tiles at `DRAWN_ERA_FROM` — so the
+base-texture blend is the whole of the transition.)
+
+**The morph.** Every drawn deep-time frame now ships a coastline signed
+distance field (`ps*.webp`, 1024x512 single-channel, square-root encoded over
+a ±128 px clamp; `render_sdf` in scripts/gen_paleo_v4.py, computed from the
+same land masks the pd twins are inked from). Between two frames the shader
+(uMorph block, lib/globeSurface.ts) mixes the two DISTANCES and thresholds:
+one crisp coastline that genuinely moves — bays close, epicontinental seas
+drain, plates advance — with the pen drawn in-shader at the blended zero
+crossing and the shoreline wash hugging it. Colours still come from the two
+pd twins, weighted by each frame's own interior distance on the morph's side
+of the coast: highlands, ice, shelf bathymetry and the graticule ride along,
+while a frame's own baked pen and wash — which live exactly where its
+distance is zero, i.e. where its weight is zero — can never double-expose.
+At f→0/1 the construction converges to the settled pd frame, so there is no
+handoff; settled frames measured byte-identical before/after. The pd twins
+therefore STAY (they carry detail no SDF render could — hillshade, aridity,
+ice — and the settled path is untouched); the SDF is transition-only.
+
+**Three lessons the first cut paid for.**
+
+1. *A mix of two SDFs is not an SDF.* Where two coasts moved ~40° their
+   ramps oppose and the blended field flattens toward zero across the whole
+   corridor: a texture-width pen test (|d| < pen) inked entire Cambrian
+   islets as solid brown blobs. The pen and wash now measure distance in
+   screen pixels via the field's own gradient (fwidth).
+2. *A degenerate field's contour is quantisation noise divided by a tiny
+   gradient.* The shader estimates the field's HEALTH — its gradient against
+   the 1/clamp-per-texel a true SDF has — and: withholds the pen below 0.55
+   of it (8-bit dither tops out around half), dissolves the land/sea
+   threshold into a soft gradient (a fast coast melts and re-forms rather
+   than flickering a staircase), and side-selects colour weights by the
+   smoothed threshold rather than sign(d) so the strip blends two shores
+   instead of strobing. The square-root encoding halves the noise where it
+   matters (precision is spent at the zero crossing).
+3. *One denser keyframe beats any shader where the plates genuinely sprint.*
+   541→515 Ma was the widest gap shipped (26 Myr; p99 coast displacement
+   230 px of the 2048 grid) and stayed visibly mushy mid-morph, so a 525 Ma
+   frame was added (source map clean by round 65's shelf-band test: 2.80%
+   against neighbours' 1.96–3.12%; splits the displacement to 169/85). All
+   76 pre-existing pf/pd files are byte-identical after the renumbering —
+   the generator is deterministic — and both modes gain the frame.
+
+**Costs, measured.** Payload: 39 SDFs, 2.87 MB lossless (lossy q97 would be
+~0.7 MB but wobbles the pen up to 5 px and breaks endpoint convergence), plus
+one new frame (pf 55.5 kB + pd 33.2 kB); all of it lazy — fetched only when a
+reader scrubs deep time (SDFs in map mode only), requested and evicted with
+the era window (frame and SDF travel together through `requestEra`/
+`evictEras`). Shader: the settled path gains one uniform compare and nothing
+else — surfaceCost before/after within one vsync tick on every view (e.g.
+map:world 233→217 ms, globe:world 517→483 ms under SwiftShader). The morph
+itself, poked on/off at the same mid-blend frame: 183.3 vs 166.7 ms at world
+view — one tick, ~10%, paid only while actually between two drawn frames
+(two extra R8 fetches, straight-line inside one uniform branch;
+forceSinglePass untouched). SwiftShader ms are shader-work proxies, not GPU
+predictions.
+
+**Satellite mode is untouched** — same crossfade, pixel-identical at matched
+blend positions (photographic ghosting reads as haze, and the denser 525 Ma
+keyframe helps it too). Honest limits: the two fastest corridors still read
+as a soft melt rather than a rigid plate motion (an SDF interpolates shapes,
+it does not rotate them); small sprinting islets can shed dotted pen crumbs
+mid-blend; the drawn-world↔0 Ma handover keeps its crossfade on purpose
+(same geography, different styling). Instrument:
+tests/e2e/paleoMorph67.e2e.mjs (mid-blend at stated fractions of real pairs,
+both modes, plus settled parity).

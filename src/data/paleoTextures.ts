@@ -67,7 +67,17 @@ export const DRAWN_TEXTURE = `${base}textures/map/drawn-world.webp`
  * so a change to the frame list cannot reach one mode and miss the other.
  */
 export const DRAWN_FRAMES: TextureKeyframe[] = [
-  ...frames.map((f) => ({ time: f.time, url: `${base}textures/paleo/${f.drawn}` })),
+  ...frames.map((f) => ({
+    time: f.time,
+    url: `${base}textures/paleo/${f.drawn}`,
+    // The coastline SDF (`ps*.webp`), which is what lets the shader MORPH
+    // between two drawn frames instead of double-exposing them — see the
+    // uMorph block in lib/globeSurface.ts and render_sdf in the generator.
+    sdf: `${base}textures/paleo/${f.sdf}`,
+  })),
+  // The drawn world has no SDF: the 0 Ma reconstruction and the modern drawn
+  // map are the same geography in two levels of detail, so their crossfade
+  // changes styling, not coastlines — the one blend a crossfade is right for.
   { time: -10_000, url: DRAWN_TEXTURE },
 ]
 

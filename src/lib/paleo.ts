@@ -3,6 +3,17 @@ import type { Year } from './time'
 export interface TextureKeyframe {
   time: Year
   url: string
+  /**
+   * The frame's coastline signed-distance field, when its timeline morphs.
+   *
+   * Only the DRAWN timeline carries one: map mode's transition between two
+   * reconstructions is a thresholded mix of the two frames' SDFs — a single
+   * coastline that moves — where a plain crossfade of two drawn plates is a
+   * double exposure of two inked coastlines. The photographic timeline keeps
+   * the crossfade (haze on a photograph reads as weather, not as a defect) and
+   * simply has no `sdf`, which is also what switches the shader path off.
+   */
+  sdf?: string
 }
 
 /** Crossfade state: render `from`, overlay `to` at opacity `f` (0 → pure from). */
@@ -41,7 +52,7 @@ export function textureBlend(frames: TextureKeyframe[], t: Year): TextureBlend {
  * How many keyframes either side of the blend pair stay resident.
  *
  * Every deep-time frame is a 4096x2048 sRGB texture — 32 MB on the GPU with its
- * mip chain, and there are 39 of them. Loading them and never letting one go
+ * mip chain, and there are 40 of them. Loading them and never letting one go
  * (which is what a plain URL cache does) reaches 336 MB after a scrub across a
  * couple of eras, on top of everything else the globe holds; the browser starts
  * evicting the whole context long before the user runs out of timeline.

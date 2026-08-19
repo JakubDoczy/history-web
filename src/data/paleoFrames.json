@@ -3,228 +3,273 @@
     "time": -541000000,
     "ma": 541.0,
     "file": "pf00.webp",
-    "drawn": "pd00.webp"
+    "drawn": "pd00.webp",
+    "sdf": "ps00.webp"
+  },
+  {
+    "time": -525000000,
+    "ma": 525.0,
+    "file": "pf01.webp",
+    "drawn": "pd01.webp",
+    "sdf": "ps01.webp"
   },
   {
     "time": -515000000,
     "ma": 515.0,
-    "file": "pf01.webp",
-    "drawn": "pd01.webp"
+    "file": "pf02.webp",
+    "drawn": "pd02.webp",
+    "sdf": "ps02.webp"
   },
   {
     "time": -491800000,
     "ma": 491.8,
-    "file": "pf02.webp",
-    "drawn": "pd02.webp"
+    "file": "pf03.webp",
+    "drawn": "pd03.webp",
+    "sdf": "ps03.webp"
   },
   {
     "time": -470000000,
     "ma": 470.0,
-    "file": "pf03.webp",
-    "drawn": "pd03.webp"
+    "file": "pf04.webp",
+    "drawn": "pd04.webp",
+    "sdf": "ps04.webp"
   },
   {
     "time": -449100000,
     "ma": 449.1,
-    "file": "pf04.webp",
-    "drawn": "pd04.webp"
+    "file": "pf05.webp",
+    "drawn": "pd05.webp",
+    "sdf": "ps05.webp"
   },
   {
     "time": -430400000,
     "ma": 430.4,
-    "file": "pf05.webp",
-    "drawn": "pd05.webp"
+    "file": "pf06.webp",
+    "drawn": "pd06.webp",
+    "sdf": "ps06.webp"
   },
   {
     "time": -409200000,
     "ma": 409.2,
-    "file": "pf06.webp",
-    "drawn": "pd06.webp"
+    "file": "pf07.webp",
+    "drawn": "pd07.webp",
+    "sdf": "ps07.webp"
   },
   {
     "time": -390500000,
     "ma": 390.5,
-    "file": "pf07.webp",
-    "drawn": "pd07.webp"
+    "file": "pf08.webp",
+    "drawn": "pd08.webp",
+    "sdf": "ps08.webp"
   },
   {
     "time": -370000000,
     "ma": 370.0,
-    "file": "pf08.webp",
-    "drawn": "pd08.webp"
+    "file": "pf09.webp",
+    "drawn": "pd09.webp",
+    "sdf": "ps09.webp"
   },
   {
     "time": -358900000,
     "ma": 358.9,
-    "file": "pf09.webp",
-    "drawn": "pd09.webp"
+    "file": "pf10.webp",
+    "drawn": "pd10.webp",
+    "sdf": "ps10.webp"
   },
   {
     "time": -338800000,
     "ma": 338.8,
-    "file": "pf10.webp",
-    "drawn": "pd10.webp"
+    "file": "pf11.webp",
+    "drawn": "pd11.webp",
+    "sdf": "ps11.webp"
   },
   {
     "time": -319200000,
     "ma": 319.2,
-    "file": "pf11.webp",
-    "drawn": "pd11.webp"
+    "file": "pf12.webp",
+    "drawn": "pd12.webp",
+    "sdf": "ps12.webp"
   },
   {
     "time": -301300000,
     "ma": 301.3,
-    "file": "pf12.webp",
-    "drawn": "pd12.webp"
+    "file": "pf13.webp",
+    "drawn": "pd13.webp",
+    "sdf": "ps13.webp"
   },
   {
     "time": -286800000,
     "ma": 286.8,
-    "file": "pf13.webp",
-    "drawn": "pd13.webp"
+    "file": "pf14.webp",
+    "drawn": "pd14.webp",
+    "sdf": "ps14.webp"
   },
   {
     "time": -268700000,
     "ma": 268.7,
-    "file": "pf14.webp",
-    "drawn": "pd14.webp"
+    "file": "pf15.webp",
+    "drawn": "pd15.webp",
+    "sdf": "ps15.webp"
   },
   {
     "time": -252000000,
     "ma": 252.0,
-    "file": "pf15.webp",
-    "drawn": "pd15.webp"
+    "file": "pf16.webp",
+    "drawn": "pd16.webp",
+    "sdf": "ps16.webp"
   },
   {
     "time": -233600000,
     "ma": 233.6,
-    "file": "pf16.webp",
-    "drawn": "pd16.webp"
+    "file": "pf17.webp",
+    "drawn": "pd17.webp",
+    "sdf": "ps17.webp"
   },
   {
     "time": -222400000,
     "ma": 222.4,
-    "file": "pf17.webp",
-    "drawn": "pd17.webp"
+    "file": "pf18.webp",
+    "drawn": "pd18.webp",
+    "sdf": "ps18.webp"
   },
   {
     "time": -204900000,
     "ma": 204.9,
-    "file": "pf18.webp",
-    "drawn": "pd18.webp"
+    "file": "pf19.webp",
+    "drawn": "pd19.webp",
+    "sdf": "ps19.webp"
   },
   {
     "time": -190800000,
     "ma": 190.8,
-    "file": "pf19.webp",
-    "drawn": "pd19.webp"
+    "file": "pf20.webp",
+    "drawn": "pd20.webp",
+    "sdf": "ps20.webp"
   },
   {
     "time": -172200000,
     "ma": 172.2,
-    "file": "pf20.webp",
-    "drawn": "pd20.webp"
+    "file": "pf21.webp",
+    "drawn": "pd21.webp",
+    "sdf": "ps21.webp"
   },
   {
     "time": -164800000,
     "ma": 164.8,
-    "file": "pf21.webp",
-    "drawn": "pd21.webp"
+    "file": "pf22.webp",
+    "drawn": "pd22.webp",
+    "sdf": "ps22.webp"
   },
   {
     "time": -154700000,
     "ma": 154.7,
-    "file": "pf22.webp",
-    "drawn": "pd22.webp"
+    "file": "pf23.webp",
+    "drawn": "pd23.webp",
+    "sdf": "ps23.webp"
   },
   {
     "time": -145000000,
     "ma": 145.0,
-    "file": "pf23.webp",
-    "drawn": "pd23.webp"
+    "file": "pf24.webp",
+    "drawn": "pd24.webp",
+    "sdf": "ps24.webp"
   },
   {
     "time": -131200000,
     "ma": 131.2,
-    "file": "pf24.webp",
-    "drawn": "pd24.webp"
+    "file": "pf25.webp",
+    "drawn": "pd25.webp",
+    "sdf": "ps25.webp"
   },
   {
     "time": -115800000,
     "ma": 115.8,
-    "file": "pf25.webp",
-    "drawn": "pd25.webp"
+    "file": "pf26.webp",
+    "drawn": "pd26.webp",
+    "sdf": "ps26.webp"
   },
   {
     "time": -102600000,
     "ma": 102.6,
-    "file": "pf26.webp",
-    "drawn": "pd26.webp"
+    "file": "pf27.webp",
+    "drawn": "pd27.webp",
+    "sdf": "ps27.webp"
   },
   {
     "time": -91900000,
     "ma": 91.9,
-    "file": "pf27.webp",
-    "drawn": "pd27.webp"
+    "file": "pf28.webp",
+    "drawn": "pd28.webp",
+    "sdf": "ps28.webp"
   },
   {
     "time": -80800000,
     "ma": 80.8,
-    "file": "pf28.webp",
-    "drawn": "pd28.webp"
+    "file": "pf29.webp",
+    "drawn": "pd29.webp",
+    "sdf": "ps29.webp"
   },
   {
     "time": -69000000,
     "ma": 69.0,
-    "file": "pf29.webp",
-    "drawn": "pd29.webp"
+    "file": "pf30.webp",
+    "drawn": "pd30.webp",
+    "sdf": "ps30.webp"
   },
   {
     "time": -66000000,
     "ma": 66.0,
-    "file": "pf30.webp",
-    "drawn": "pd30.webp"
+    "file": "pf31.webp",
+    "drawn": "pd31.webp",
+    "sdf": "ps31.webp"
   },
   {
     "time": -56000000,
     "ma": 56.0,
-    "file": "pf31.webp",
-    "drawn": "pd31.webp"
+    "file": "pf32.webp",
+    "drawn": "pd32.webp",
+    "sdf": "ps32.webp"
   },
   {
     "time": -44500000,
     "ma": 44.5,
-    "file": "pf32.webp",
-    "drawn": "pd32.webp"
+    "file": "pf33.webp",
+    "drawn": "pd33.webp",
+    "sdf": "ps33.webp"
   },
   {
     "time": -35900000,
     "ma": 35.9,
-    "file": "pf33.webp",
-    "drawn": "pd33.webp"
+    "file": "pf34.webp",
+    "drawn": "pd34.webp",
+    "sdf": "ps34.webp"
   },
   {
     "time": -25600000,
     "ma": 25.6,
-    "file": "pf34.webp",
-    "drawn": "pd34.webp"
+    "file": "pf35.webp",
+    "drawn": "pd35.webp",
+    "sdf": "ps35.webp"
   },
   {
     "time": -14900000,
     "ma": 14.9,
-    "file": "pf35.webp",
-    "drawn": "pd35.webp"
+    "file": "pf36.webp",
+    "drawn": "pd36.webp",
+    "sdf": "ps36.webp"
   },
   {
     "time": -4470000,
     "ma": 4.47,
-    "file": "pf36.webp",
-    "drawn": "pd36.webp"
+    "file": "pf37.webp",
+    "drawn": "pd37.webp",
+    "sdf": "ps37.webp"
   },
   {
     "time": -50000,
     "ma": 0.0,
-    "file": "pf37.webp",
-    "drawn": "pd37.webp"
+    "file": "pf38.webp",
+    "drawn": "pd38.webp",
+    "sdf": "ps38.webp"
   }
 ]

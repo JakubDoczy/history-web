@@ -107,8 +107,14 @@ SOURCE_AGES = [
 # it is not a whole-map datum shift that could be subtracted out; the maps are
 # simply skipped for their nearest clean neighbour (239.5 → 233.6, and
 # 178.4 → 172.2; 201.3 was never shipped).
+# 525.0 was added in round 67: 541→515 was the widest gap shipped (26 Myr) and
+# the one the SDF morph is still visibly wrong across — the Cambrian terranes
+# translate ~40 degrees, the two distance ramps oppose, and the blended field
+# degenerates over whole islets (p99 coast displacement 230 px of the 2048
+# grid, against 169/85 for the two halves; measured round 67). Its source map
+# is clean by round 65's test: shelf band 2.80% against neighbours' 1.96-3.12%.
 AGES = [
-    541.0, 515.0, 491.8, 470.0, 449.1, 430.4, 409.2, 390.5, 370.0, 358.9,
+    541.0, 525.0, 515.0, 491.8, 470.0, 449.1, 430.4, 409.2, 390.5, 370.0, 358.9,
     338.8, 319.2, 301.3, 286.8, 268.7, 252.0, 233.6, 222.4, 204.9, 190.8,
     172.2, 164.8, 154.7, 145.0, 131.2, 115.8, 102.6, 91.9, 80.8, 69.0,
     66.0, 56.0, 44.5, 35.9, 25.6, 14.9, 4.47, 0.0,
@@ -490,11 +496,75 @@ def render_drawn(age, dem_slice, cls):
     return np.clip(img, 0, 255).astype(np.uint8)
 
 
+# ---------------------------------------------------------------------------
+# The COASTLINE SIGNED DISTANCE FIELD of each frame (`ps*.webp`, one channel):
+# what lets map mode MORPH between two reconstructions instead of crossfading
+# them. A crossfade of two drawn plates is a double exposure of two inked
+# coastlines; a thresholded mix of two SDFs is a single coastline that actually
+# moves — bays close, epicontinental seas drain, plates advance. The shader
+# (lib/globeSurface.ts, the uMorph block) mixes the two decoded distances by
+# the era fraction and rebuilds the drawn palette around the blended zero
+# crossing, taking its colours from the pd twins weighted by interior distance
+# so highlands, ice, shelf wash and graticule all ride along.
+#
+# Geometry: distance to the land mask's 0.5 level set, in pixels of the 2048
+# grid, positive on land, longitude-wrapped (the map's left edge touches its
+# right), stored at 1024x512 — a distance field is locally linear, so half
+# resolution costs nothing a bilinear tap cannot restore.
+#
+# Clamp: +-128 px (22.5 deg of longitude). Two things size it, measured over
+# all 37 shipped pairs (round 67):
+#   * quantisation: 8 bits over +-clamp is one 2048-grid pixel per code at 128,
+#     which is the pd pen's own roughness;
+#   * the t=0.5 plateau: a region saturated in BOTH frames with OPPOSITE signs
+#     flips as a block at half-blend. At 96 px the worst pair (233.6->222.4 Ma,
+#     the Triassic epicontinental seas) pops 0.15% of the globe; at 128 px it
+#     is 0.002% and every other pair is zero.
+SDF_CLAMP = 128.0
+SDF_W, SDF_H = 1024, 512
+
+
+def render_sdf(cls):
+    """Signed distance to the coastline, encoded for an 8-bit texture.
+
+    scipy's EDT measures to the nearest pixel *centre* of the other set, so the
+    raw field has a +-1 px dead band across the coast; the mask's own
+    anti-aliased coverage supplies the sub-pixel remainder there (the refine()
+    band is ~2 px wide, so (coverage - 0.5) * 2 is the distance within it).
+    """
+    from scipy import ndimage
+
+    land, _ = masks(cls)
+    b = land >= 0.5
+    t = np.concatenate([b, b, b], axis=1)  # wrap longitude
+    d = ndimage.distance_transform_edt(t) - ndimage.distance_transform_edt(~t)
+    d = d[:, land.shape[1]:2 * land.shape[1]].astype(np.float32)
+    d -= np.sign(d) * 0.5
+    edge = (land > 0.02) & (land < 0.98)
+    d = np.where(edge, (land - 0.5) * 2.0, d)
+    d = resize_f(d, SDF_W, SDF_H, Image.BOX)
+    # Square-root encoding: code = sign(d) * sqrt(|d| / clamp), so 8 bits spend
+    # their precision near the zero crossing — which is where the shader
+    # thresholds, inks and measures the blend's health. The worst case for the
+    # morph is a CANCELLATION PLATEAU (two frames' ramps opposing, the blended
+    # field flat near zero): its contour position is quantisation noise divided
+    # by a tiny gradient, and this encoding halves that noise exactly there.
+    # The shader decodes with d = sign(s) * s * s; bilinear filtering runs on
+    # the encoded value, which preserves the zero crossing exactly (s = 0 iff
+    # d = 0) and only warps distances between texels, which nothing reads.
+    v = np.clip(d / SDF_CLAMP, -1, 1)
+    s = np.sign(v) * np.sqrt(np.abs(v)) * 0.5 + 0.5
+    return np.clip(np.round(s * 255), 0, 255).astype(np.uint8)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--no-cache', action='store_true', help='refetch source data')
     ap.add_argument('--quality', type=int, default=85, help='WebP quality')
     ap.add_argument('--only', type=float, nargs='*', help='render just these ages (Ma)')
+    ap.add_argument('--sdf-only', action='store_true',
+                    help='write only the ps*.webp distance fields (and frames.json), '
+                         'leaving the shipped pf/pd frames byte-identical')
     args = ap.parse_args()
 
     if not os.path.isdir(OUT_DIR):
@@ -503,11 +573,12 @@ def main():
     if unknown:
         raise SystemExit(f'not reconstruction ages: {unknown}')
 
-    dem = load_dem(not args.no_cache)
+    dem = None if args.sdf_only else load_dem(not args.no_cache)
     ages = sorted(AGES, reverse=True)  # oldest first, so frame order is time order
     if not args.only:
+        prefixes = ('ps',) if args.sdf_only else ('pf', 'pd', 'ps')
         for f in os.listdir(OUT_DIR):
-            if f.startswith(('pf', 'pd')) and f.endswith(('.jpg', '.webp')):
+            if f.startswith(prefixes) and f.endswith(('.jpg', '.webp')):
                 os.remove(os.path.join(OUT_DIR, f))
 
     frames, total = [], 0
@@ -515,34 +586,44 @@ def main():
         n = SOURCE_AGES.index(age) + 1
         name = f'pf{i:02d}.webp'
         drawn_name = f'pd{i:02d}.webp'
+        sdf_name = f'ps{i:02d}.webp'
         # 0 Ma is the present, but the frame list ends with the real modern
         # basemap pinned at 10 ka; giving the two the same time would divide by a
         # zero-length interval. Half a frame of slack, invisible at this scale.
         # round, not truncate: int(-131.2 * 1e6) lands a year short of the age
         year = -50_000 if age == 0 else round(-age * 1e6)
-        frames.append({'time': year, 'file': name, 'drawn': drawn_name, 'ma': age})
+        frames.append({'time': year, 'file': name, 'drawn': drawn_name, 'sdf': sdf_name, 'ma': age})
         if args.only and age not in args.only:
             continue
         cls = load_classes(n, not args.no_cache)
-        img = render(age, dem[n - 1], cls)
-        path = os.path.join(OUT_DIR, name)
-        # method=6 is libwebp's slowest search; it costs seconds per frame in a
-        # script that is run by hand and saves ~4% on every download forever.
-        Image.fromarray(img).save(path, format='WEBP', quality=args.quality, method=6)
-        kb = os.path.getsize(path) / 1024
-        # The drawn twin: three flat washes and a pen compress far better than a
-        # photograph, and quality 80 is transparent on them — measured 46 dB
-        # PSNR against its own render, where the photographic frame's q85 is 42.
-        dimg = render_drawn(age, dem[n - 1], cls)
-        dpath = os.path.join(OUT_DIR, drawn_name)
-        Image.fromarray(dimg).save(dpath, format='WEBP', quality=80, method=6)
-        dkb = os.path.getsize(dpath) / 1024
-        total += kb + dkb
-        print(f'{name}  {age:>6} Ma  (map {n:>3})  {kb:6.0f} KB  + drawn {dkb:5.0f} KB')
+        kb = dkb = 0
+        if not args.sdf_only:
+            img = render(age, dem[n - 1], cls)
+            path = os.path.join(OUT_DIR, name)
+            # method=6 is libwebp's slowest search; it costs seconds per frame in a
+            # script that is run by hand and saves ~4% on every download forever.
+            Image.fromarray(img).save(path, format='WEBP', quality=args.quality, method=6)
+            kb = os.path.getsize(path) / 1024
+            # The drawn twin: three flat washes and a pen compress far better than a
+            # photograph, and quality 80 is transparent on them — measured 46 dB
+            # PSNR against its own render, where the photographic frame's q85 is 42.
+            dimg = render_drawn(age, dem[n - 1], cls)
+            dpath = os.path.join(OUT_DIR, drawn_name)
+            Image.fromarray(dimg).save(dpath, format='WEBP', quality=80, method=6)
+            dkb = os.path.getsize(dpath) / 1024
+        # The coastline SDF: LOSSLESS, because the shader thresholds it — a
+        # lossy ringing artefact near the zero crossing is a wobble in the pen.
+        # A smooth ramp is lossless WebP's best case; measured ~8-16 KB a frame.
+        simg = render_sdf(cls)
+        spath = os.path.join(OUT_DIR, sdf_name)
+        Image.fromarray(simg, 'L').save(spath, format='WEBP', lossless=True, quality=100, method=6)
+        skb = os.path.getsize(spath) / 1024
+        total += kb + dkb + skb
+        print(f'{name}  {age:>6} Ma  (map {n:>3})  {kb:6.0f} KB  + drawn {dkb:5.0f} KB  + sdf {skb:5.0f} KB')
 
     if not args.only:
         with open(FRAMES_JSON, 'w') as f:
-            json.dump([{k: fr[k] for k in ('time', 'ma', 'file', 'drawn')} for fr in frames], f, indent=2)
+            json.dump([{k: fr[k] for k in ('time', 'ma', 'file', 'drawn', 'sdf')} for fr in frames], f, indent=2)
             f.write('\n')
     print(f'{len(ages)} frames, {total / 1024:.2f} MB total', file=sys.stderr)
 

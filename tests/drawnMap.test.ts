@@ -1290,6 +1290,20 @@ describe('the era the drawn map is honest in', () => {
     expect(framesFor('drawn')).toBe(DRAWN_FRAMES)
     expect(framesFor('modern')).toBe(PALEO_FRAMES)
   })
+
+  it('morphs the drawn timeline only: SDFs on the twins, none anywhere else', () => {
+    // Every deep-time drawn frame carries its coastline SDF (ps for pd), which
+    // is what arms the shader's uMorph between two reconstructions…
+    expect(DRAWN_FRAMES.slice(0, -1).map((f) => f.sdf)).toEqual(
+      DRAWN_FRAMES.slice(0, -1).map((f) => f.url.replace(/pd(\d\d)\.webp$/, 'ps$1.webp')),
+    )
+    // …but the modern drawn frame does not: the 0 Ma reconstruction and the
+    // drawn world are the same geography in two levels of detail, so their
+    // blend is a change of styling and a crossfade is the honest transition.
+    expect(DRAWN_FRAMES[DRAWN_FRAMES.length - 1].sdf).toBeUndefined()
+    // …and the photographic timeline keeps its crossfade wholesale.
+    for (const f of PALEO_FRAMES) expect(f.sdf).toBeUndefined()
+  })
 })
 
 describe('the drawn source in the pipeline', () => {

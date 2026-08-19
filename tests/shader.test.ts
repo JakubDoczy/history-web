@@ -150,7 +150,30 @@ describe('detail patch shading', () => {
     // is the whole modern era; the unconditional mix() cost a full-resolution
     // texture fetch per fragment per frame to blend by zero
     expect(glsl).toMatch(/vec3 albedo = texture\(uEraA, vUv\)\.rgb;/)
-    expect(glsl).toMatch(/if \(uEraMix > 0\.0\) albedo = mix\(albedo, texture\(uEraB, vUv\)\.rgb, uEraMix\);/)
+    expect(glsl).toMatch(
+      /\} else if \(uEraMix > 0\.0\) \{\s*albedo = mix\(albedo, texture\(uEraB, vUv\)\.rgb, uEraMix\);/,
+    )
+  })
+
+  it('morphs the drawn timeline behind its own uniform, and never mid-settle', () => {
+    // The morph's four fetches (both eras, both SDFs) are straight-line inside
+    // one uniform branch — round 61's safe shape — and the crossfade branch is
+    // its mutually-exclusive else, so a settled frame still pays one fetch.
+    expect(glsl).toMatch(/if \(uMorph > 0\.0\) \{/)
+    for (const fetch of [
+      'texture(uEraB, vUv).rgb;',
+      'texture(uSdfA, vUv).r',
+      'texture(uSdfB, vUv).r',
+    ]) {
+      expect(glsl).toContain(fetch)
+    }
+    // the two distances are mixed and thresholded — the whole point: one
+    // coastline that moves, not two pictures double-exposed
+    expect(glsl).toMatch(/float md = mix\(mdA, mdB, uEraMix\);/)
+    // the pen is drawn at the blended zero crossing from the same ink the
+    // paper grade prints with, so the morph and the settled twins share a pen
+    expect(glsl).toContain('${v3(PAPER_TONES.ink)}')
+    expect(glsl).toContain('${v3(PAPER_TONES.sea)}')
   })
 
   it('gates every optional tap on a uniform, never on a per-pixel value', () => {

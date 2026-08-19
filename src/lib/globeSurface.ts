@@ -549,6 +549,57 @@ const linearOf = (hex: string): [number, number, number] =>
 export const PAPER_TONES = {
   ink: linearOf(PAPER.ink),
   paper: linearOf(PAPER.land),
+  /** Open sea and the deepest shoreline-wash step — the morph's flat palette. */
+  sea: linearOf(PAPER.ocean),
+  wash: linearOf(PAPER.wash[2]),
+} as const
+
+/**
+ * THE DEEP-TIME MORPH, map mode's answer to "the blending is very apparent".
+ *
+ * A crossfade of two drawn plates is a double exposure of two inked
+ * coastlines: mid-blend, every coast is two grey ghosts of itself and the sea
+ * shows through the land. So when both frames of a drawn-timeline blend carry
+ * a coastline SDF (`ps*.webp`, rendered by `render_sdf` in
+ * scripts/gen_paleo_v4.py from the same land masks the pd twins are inked
+ * from), the shader mixes the two DISTANCES instead of the two pictures and
+ * thresholds the result: one crisp coastline that genuinely moves — bays
+ * close, epicontinental seas drain, plates advance — with the pen drawn
+ * in-shader at the blended zero crossing.
+ *
+ * The colours still come from the two pd twins, weighted by each frame's own
+ * INTERIOR distance on the morph's side of the coast. That weighting is the
+ * half of the idea that keeps the drawing whole: highlands, ice, shelf
+ * bathymetry and the graticule all ride along from the textures (they blend
+ * softly, which is right for washes), while a frame's own inked coast and
+ * shoreline wash — which live exactly where its distance is zero, i.e. where
+ * its weight is zero — can never print into the middle of the other frame's
+ * land or sea. Where neither frame has interior signal (the hairline strip
+ * along the moving coast itself) the flat palette takes over, which is exactly
+ * what a coast strip is made of: parchment, wash, sea. At f→0 and f→1 the
+ * whole construction converges to the settled pd frame, so there is no
+ * handoff to hide.
+ *
+ * All lengths are in pixels of the 2048-wide equirect grid the masks were
+ * rendered on, matching the pd pen's own units.
+ */
+export const SDF_MORPH = {
+  /** Half-range of the encoded distance. See SDF_CLAMP in the generator. */
+  clampPx: 128,
+  /**
+   * The pen at the blended zero crossing: same alpha as render_drawn's, but
+   * measured in SCREEN pixels via the blended field's own gradient (fwidth) —
+   * a mix of two SDFs is not an SDF, and where the two coasts moved far apart
+   * the field flattens toward zero across the whole corridor, so a
+   * texture-width test inked entire islets solid (measured on 541→515 Ma).
+   */
+  inkAlpha: 0.85,
+  inkScreenPx: 1.3,
+  /** The shoreline wash hugging the moving coast: screen-px reach, and depth. */
+  washScreenPx: 6,
+  washMax: 0.7,
+  /** Interior weight (px of the 2048 grid) under which colours fall back flat. */
+  trustPx: 5,
 } as const
 
 const G = ENHANCED_GRADE
@@ -568,6 +619,9 @@ out vec4 fragColor;
 uniform sampler2D uEraA;      // surface texture, era A
 uniform sampler2D uEraB;      // surface texture, era B
 uniform float uEraMix;        // 0 = A, 1 = B
+uniform sampler2D uSdfA;      // coastline signed distance, era A (drawn timeline)
+uniform sampler2D uSdfB;      // …and era B
+uniform float uMorph;         // 1 = morph the coastline instead of crossfading
 uniform sampler2D uNight;     // city lights
 uniform float uNightMix;      // 0 until the night map has landed, then ramps in
 uniform sampler2D uRelief;    // topography, used as a height field
@@ -708,7 +762,7 @@ void main() {
   float floor_ = mix(0.45, 0.72, uBoost);
   float lambert = mix(clamp(cosSun * slope + floor_, 0.0, 1.3), 1.0, uFlatLight);
 
-  // --- surface: crossfade between two era textures (both are the modern map today) ---
+  // --- surface: two era textures, crossfaded — or, on the drawn timeline, MORPHED ---
   // uEraMix is 0 except during a paleo crossfade — textureBlend returns f = 0
   // for every time that is not between two frames, which is the whole modern
   // era and most of deep time. Sampling the second map unconditionally spent a
@@ -716,8 +770,76 @@ void main() {
   // Branching is safe here for the same reason it is safe for uDetailMix: the
   // condition is a uniform, so it is the same for every fragment in the draw and
   // the derivatives inside stay defined.
+  //
+  // uMorph is only ever 1 while uEraMix is strictly between 0 and 1 AND both
+  // SDFs are decoded (see applyEra), so the branches are uniform across the
+  // draw and mutually exclusive, and every fetch inside them is straight-line.
+  // See SDF_MORPH in the TS above for what the morph is and why; distances
+  // here are in clamp units (1.0 = ${SDF_MORPH.clampPx} px of the 2048 grid).
   vec3 albedo = texture(uEraA, vUv).rgb;
-  if (uEraMix > 0.0) albedo = mix(albedo, texture(uEraB, vUv).rgb, uEraMix);
+  if (uMorph > 0.0) {
+    vec3 eraB = texture(uEraB, vUv).rgb;
+    // square-root encoded (see render_sdf): decode to linear distance before
+    // mixing, or the blend's timing would warp with depth
+    float msA = texture(uSdfA, vUv).r * 2.0 - 1.0;
+    float msB = texture(uSdfB, vUv).r * 2.0 - 1.0;
+    float mdA = sign(msA) * msA * msA;
+    float mdB = sign(msB) * msB * msB;
+    float md = mix(mdA, mdB, uEraMix);
+    // A MIX OF TWO SDFs IS NOT AN SDF. Where the two frames' coasts moved far
+    // and their distance ramps oppose, the blended field flattens toward zero
+    // across the whole corridor: its zero "line" degenerates into an area, and
+    // an 8-bit plateau dithers across it. Measured on the 541→515 Ma pair, a
+    // texture-width pen test (|md| < pen) inked entire islets as brown blobs
+    // with speckled edges. So everything below is scaled by the field's HEALTH:
+    // its screen-space gradient against the gradient a true SDF would have here
+    // (1/clamp per SDF texel). ~1 on any honest coast; ~0 on a plateau, where
+    // 8-bit dither tops out at half a true gradient — the 0.55 floor is above
+    // that on purpose.
+    float mStep = max(fwidth(vUv.x) * ${f(2048 / SDF_MORPH.clampPx)},
+      fwidth(vUv.y) * ${f(1024 / SDF_MORPH.clampPx)});
+    float mHealth = fwidth(md) / max(mStep, 1e-6);
+    float mConf = smoothstep(0.30, 0.55, mHealth);
+    // The land/sea threshold: crisp where the field is healthy, dissolving
+    // into a soft gradient where it is degenerate — a fast-moving coast melts
+    // and re-forms rather than flickering a quantisation staircase. The
+    // softening starts earlier than the pen gives up (0.85 against 0.55),
+    // because a half-dithered edge drawn crisp is a staircase.
+    float mAa = mix(0.10, max(fwidth(md) * 0.75, ${f(0.5 / SDF_MORPH.clampPx)}),
+      smoothstep(0.30, 0.85, mHealth));
+    float mLand = smoothstep(-mAa, mAa, md);
+    // Each frame's picture is trusted as far as ITS OWN coast is from here, on
+    // the morph's side of the blended coast — a frame's inked coastline and
+    // shoreline wash live exactly where its distance is zero, so they carry
+    // zero weight and cannot double-expose; its highlands, ice, shelf tones
+    // and graticule are interior and ride along. The side selection is mLand
+    // rather than sign(md), so a degenerate strip blends the two shores
+    // instead of strobing between them.
+    float mWA = (1.0 - uEraMix) * mix(max(-mdA, 0.0), max(mdA, 0.0), mLand);
+    float mWB = uEraMix * mix(max(-mdB, 0.0), max(mdB, 0.0), mLand);
+    vec3 sorted = (albedo * mWA + eraB * mWB) / max(mWA + mWB, 1e-6);
+    // The hairline strip along the moving coast, where neither frame has
+    // interior colour: flat parchment against flat sea, which is exactly what
+    // a coast strip is made of.
+    vec3 paperFlat = mix(${v3(PAPER_TONES.sea)}, ${v3(PAPER_TONES.paper)}, mLand);
+    albedo = mix(paperFlat, sorted,
+      smoothstep(0.0, ${f(SDF_MORPH.trustPx / SDF_MORPH.clampPx)}, mWA + mWB));
+    // The pen and the wash measure their distance in SCREEN pixels, by the
+    // field's own gradient, and carry its confidence: a healthy coast keeps
+    // the ink, a degenerate corridor gets the soft wash edge alone.
+    float mPx = abs(md) / max(fwidth(md), 1e-4);
+    // the engraver's wash, hugging the sea side of the moving coast — the pd
+    // twins only carry it at their own coasts, which the weighting suppressed
+    float mWash = ${f(SDF_MORPH.washMax)} * mConf *
+      (1.0 - smoothstep(0.0, ${f(SDF_MORPH.washScreenPx)}, mPx)) * (1.0 - mLand);
+    albedo = mix(albedo, ${v3(PAPER_TONES.wash)}, mWash);
+    // and the pen, at the blended zero crossing
+    float mInk = ${f(SDF_MORPH.inkAlpha)} * mConf * (1.0 - smoothstep(
+      ${f(SDF_MORPH.inkScreenPx * 0.45)}, ${f(SDF_MORPH.inkScreenPx * 1.55)}, mPx));
+    albedo = mix(albedo, ${v3(PAPER_TONES.ink)}, mInk);
+  } else if (uEraMix > 0.0) {
+    albedo = mix(albedo, texture(uEraB, vUv).rgb, uEraMix);
+  }
 
   // --- streamed imagery, assembled here from the tile atlas ---
   // uDetailMix is uniform across the draw, so branching on it is safe. Branching
@@ -1181,7 +1303,7 @@ export class GlobeSurface {
   /**
    * …and the ones eviction may never consider, however far the cursor moves.
    *
-   * `evictEras` exists because 39 paleo frames at 32 MB with mips is 1.2 GB, and
+   * `evictEras` exists because 40 paleo frames at 32 MB with mips is 1.2 GB, and
    * it is right about every one of them: a reconstruction of the Devonian is a
    * frame the reader is passing through. A MODE'S OWN BASE MAP is not that. It
    * is the anchor at the modern end of a timeline, it is what the other mode is
@@ -1194,7 +1316,7 @@ export class GlobeSurface {
    *
    * The memory this costs is one more 4096x2048 colour map — the same 32 MB the
    * night map has held permanently since the first round, and against a budget
-   * that was sized for 39 of them.
+   * that was sized for 40 of them.
    */
   private held = new Set<string>()
   /** URLs whose image has actually decoded — the rest would render black. */
@@ -1224,6 +1346,12 @@ export class GlobeSurface {
    */
   private baseHeld = false
   private baseFrames = new Set<string>()
+  /**
+   * Frame URL → its coastline-SDF URL, for the timelines that morph (the drawn
+   * one; see `TextureKeyframe.sdf`). Empty for every caller that never calls
+   * `setBaseFrames` with SDFs, which keeps the whole morph inert there.
+   */
+  private sdfOf = new Map<string, string>()
   /** The URL behind `lastGood`, which is what `baseFrames` is asked about. */
   private lastGoodUrl?: string
   /**
@@ -1265,6 +1393,9 @@ export class GlobeSurface {
         uEraA: { value: day },
         uEraB: { value: day },
         uEraMix: { value: 0 },
+        uSdfA: { value: null },
+        uSdfB: { value: null },
+        uMorph: { value: 0 },
         uNight: { value: null },
         uNightMix: { value: 0 },
         uRelief: { value: null },
@@ -1595,7 +1726,7 @@ export class GlobeSurface {
    *    the length of a decode. Holding the previous frame instead is at worst
    *    one keyframe stale for a few hundred milliseconds, which on a scale where
    *    a keyframe is ten million years is not a lie worth blacking a globe for;
-   *  - everything outside the window is disposed. 39 paleo frames at 32 MB with
+   *  - everything outside the window is disposed. 40 paleo frames at 32 MB with
    *    mips is 1.2 GB if they are merely cached, and a cache is what this was.
    */
   setEra(plan: EraPlan) {
@@ -1610,6 +1741,17 @@ export class GlobeSurface {
   /** An era frame, loading if need be, re-applied to the shader when it lands. */
   private requestEra(url: string): Texture {
     this.eraUrls.add(url)
+    // …and its coastline SDF, when this timeline morphs: requested alongside
+    // the frame (including the prefetch) so a steady scrub crosses a keyframe
+    // boundary with the morph ready, not with one crossfaded stopgap first.
+    const sdf = this.sdfOf.get(url)
+    if (sdf) {
+      this.eraUrls.add(sdf)
+      this.texture(sdf, 'data', () => {
+        this.applyEra()
+        this.onDirty?.()
+      })
+    }
     return this.texture(url, 'color', () => {
       this.applyEra()
       // and sweep again: the frame that just landed may have released the stale
@@ -1637,12 +1779,16 @@ export class GlobeSurface {
       u.uEraA.value = a
       u.uEraB.value = b
       u.uEraMix.value = plan.f
+      this.applyMorph(plan)
       const near = plan.f < 0.5
       this.lastGood = near ? a : b
       this.lastGoodUrl = near ? plan.from : plan.to
       this.setBaseHeld(false) // both halves are this timeline's own
       return
     }
+    u.uMorph.value = 0
+    u.uSdfA.value = null
+    u.uSdfB.value = null
     const url = hasFrom ? plan.from : hasTo ? plan.to : this.lastGoodUrl
     const held = hasFrom
       ? this.cache.get(plan.from)!
@@ -1667,9 +1813,43 @@ export class GlobeSurface {
    * exist — that is `framesFor` in data/paleoTextures.ts, and it belongs to the
    * mode.
    */
-  setBaseFrames(frames: readonly { url: string }[]) {
+  setBaseFrames(frames: readonly { url: string; sdf?: string }[]) {
     this.baseFrames = new Set(frames.map((f) => f.url))
+    this.sdfOf = new Map(
+      frames.filter((f): f is { url: string; sdf: string } => !!f.sdf).map((f) => [f.url, f.sdf]),
+    )
     this.applyEra()
+  }
+
+  /**
+   * Bind the coastline-SDF pair and arm the morph — or disarm it.
+   *
+   * Armed only when the blend is strictly mid-flight AND both distances are
+   * really decoded; every other state falls back to the plain crossfade, so a
+   * scrub that outruns the SDF downloads degrades to exactly the old picture
+   * rather than thresholding an unbound sampler (which reads as black, i.e.
+   * "everything is deepest ocean").
+   */
+  private applyMorph(plan: EraPlan) {
+    const u = this.material.uniforms
+    const sdfA = this.sdfOf.get(plan.from)
+    const sdfB = this.sdfOf.get(plan.to)
+    const on =
+      plan.f > 0 &&
+      plan.f < 1 &&
+      sdfA !== undefined &&
+      sdfB !== undefined &&
+      this.decoded.has(sdfA) &&
+      this.decoded.has(sdfB)
+    u.uMorph.value = on ? 1 : 0
+    if (!on) {
+      // unbind, so the era window's eviction can take the textures with it
+      u.uSdfA.value = null
+      u.uSdfB.value = null
+      return
+    }
+    u.uSdfA.value = this.cache.get(sdfA!)!
+    u.uSdfB.value = this.cache.get(sdfB!)!
   }
 
   /** See `baseHeld`; the paper grade is the only thing that reads it. */
@@ -1723,11 +1903,17 @@ export class GlobeSurface {
   private evictEras(keep: string[]) {
     const u = this.material.uniforms
     const live = new Set(keep)
+    // a kept frame keeps its coastline SDF: the pair travel together
+    for (const url of keep) {
+      const sdf = this.sdfOf.get(url)
+      if (sdf) live.add(sdf)
+    }
     const pinned = new Set<string>([...Object.values(this.urls), ...this.held])
     for (const url of this.eraUrls) {
       if (live.has(url) || pinned.has(url)) continue
       const t = this.cache.get(url)
       if (!t || t === u.uEraA.value || t === u.uEraB.value || t === this.lastGood) continue
+      if (t === u.uSdfA.value || t === u.uSdfB.value) continue
       t.dispose()
       this.cache.delete(url)
       this.decoded.delete(url)
