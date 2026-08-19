@@ -858,12 +858,15 @@ export interface ClickIntent {
  * gesture — an unmodified primary click — and every other one is left alone to
  * do what it has always done: go to Wikipedia.
  *
- * `desktop` is the second half of it: below the app's 641px break the reader is
- * not offered at all (a modal that fills a phone is a worse Wikipedia than
- * Wikipedia), so the link is simply a link.
+ * Through round 64 this also took a `desktop` flag and said no below the app's
+ * 641px break, on the argument that a modal filling a phone is a worse
+ * Wikipedia than Wikipedia. Round 65 built the phone its own reading — a
+ * full-screen sheet in the app's chrome (WikiReader.vue) — so the offer is now
+ * the same on both form factors and the flag is gone. What a phone tap gives up
+ * (reading mode, the share sheet) still exists one press away behind the
+ * reader's own "Open on Wikipedia" glyph.
  */
-export function opensInReader(e: ClickIntent, desktop: boolean): boolean {
-  if (!desktop) return false
+export function opensInReader(e: ClickIntent): boolean {
   if ((e.button ?? 0) !== 0) return false
   return !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
 }

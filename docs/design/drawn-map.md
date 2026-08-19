@@ -500,3 +500,27 @@ year's share. A plan change in the detail layer also publishes immediately
 by accident. The first switch of a session is now one tonal step (printed
 photograph → drawn world) rather than a medium hybrid; settled frames in
 both modes are byte-identical to before the fix.
+
+## As built, round 65: deep time is drawn, not duotoned
+
+*"Map mode is pretty ugly and looks bad there"* — and it was, because deep
+time in map mode was never a drawing: it was the photographic paleo frame run
+through the shader's ink→paper duotone by luminance (`uPaperMix`). A
+photograph's land is midtone and its ocean is dark, so the duotone printed
+both within a few steps of each other — a khaki ball with no sea.
+
+Every deep-time frame now has a build-time drawn twin (`pd*.webp`, rendered by
+`render_drawn` in scripts/gen_paleo_v4.py from the same PaleoDEMs): duck-egg
+sea, the shoreline wash driven by the real bathymetry (the epicontinental
+shelves are the band), parchment land tinted toward the paper's dark fibre in
+the highlands, ice as pale paper, a 10° graticule and the coast inked from the
+mask's own anti-aliased edge — the tiles' palette restated in the script,
+since Python cannot import drawnTile.ts. Build-time rather than in-shader
+because the classification is exact there (the script owns the land/shelf
+masks; a shader would have to reverse-engineer them from compressed RGB) and
+because round 61 priced dynamic branching on this shader. The twins cost
+2.1 MB across 38 frames (35–83 kB each, q80 — three flat washes compress far
+better than a photograph) and are only fetched when a reader scrubs deep time
+in map mode. The year-derived paper share is now a constant zero; the duotone
+survives solely as round 62's paper floor for a frame held across a mode
+switch.

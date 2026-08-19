@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * THE ARTICLE READER — a Wikipedia article, in this app's chrome, on a desktop.
+ * THE ARTICLE READER — a Wikipedia article, in this app's chrome.
  *
  * Every item in this corpus ends with the same sentence: *More at Wikipedia*.
  * Following it used to mean leaving — a new tab, a white page, a different
@@ -11,15 +11,21 @@
  *
  * FOUR THINGS DECIDED HERE, EACH FOR A REASON WORTH WRITING DOWN.
  *
- * 1. DESKTOP ONLY, and the gate is the app's own 641px break
- *    (`SIDE_BY_SIDE_MIN_PX`, stores/events.ts — the same number every stylesheet
- *    in this app is written against). A modal that fills a phone with someone
- *    else's encyclopaedia is a worse Wikipedia than Wikipedia: no back gesture,
- *    no reading mode, no font control, no share sheet. On a phone the closer
- *    link stays what it has always been — a link to the site — and this
- *    component does not render at all. The gate is live, not read once: a
- *    window dragged narrow while the reader is open closes it, which is the
- *    only sane end state for a layout that no longer fits.
+ * 1. ONE READER, TWO SHAPES — and the split is CSS, not a second component.
+ *    Above the app's 641px break it is the centred desktop modal it has been
+ *    since round 58. Below it (round 65) it is a full-screen sheet cut to the
+ *    app's own mobile layout rules: it clears the top bar (--bar-clear) and
+ *    stands on the bottom rail (--rail-clear), exactly as the event panel's
+ *    own sheet does. Everything behavioural — the stack, the scroll restore,
+ *    the focus trap, Escape — is one code path, which is the reason a window
+ *    dragged across the break mid-read keeps its place instead of closing:
+ *    nothing but the box changes. Round 58 gated the reader off phones
+ *    entirely on the argument that a modal filling a phone is a worse
+ *    Wikipedia than Wikipedia; what a phone actually got was an ejection into
+ *    a browser tab and the globe lost behind it, and the sheet — thumb-sized
+ *    controls, a Close under the thumb in the footer, the live page still one
+ *    press away — is the better trade. See `opensInReader` in lib/wikiArticle.ts
+ *    for the other half of the round-65 change.
  *
  * 2. THE WALK IS A STACK, not a single article. Following a link inside the
  *    reader pushes; the back control in the header pops (`pushHistory` /
@@ -44,7 +50,6 @@
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useUiStore } from '../stores/ui'
-import { SIDE_BY_SIDE_MIN_PX } from '../stores/events'
 import {
   canGoBack,
   currentRef,
@@ -58,19 +63,6 @@ import {
 } from '../lib/wikiArticle'
 
 const ui = useUiStore()
-
-/* --- the desktop gate, live -------------------------------------------- */
-const media =
-  typeof window !== 'undefined' && window.matchMedia
-    ? window.matchMedia(`(min-width: ${SIDE_BY_SIDE_MIN_PX}px)`)
-    : null
-const desktop = ref(media ? media.matches : true)
-const onMedia = (e: MediaQueryListEvent) => {
-  desktop.value = e.matches
-  // A window dragged below the break while the reader is open: close it and
-  // leave the reader on the panel they came from, which is the phone behaviour.
-  if (!e.matches) ui.closeReader()
-}
 
 /* --- the walk ----------------------------------------------------------- */
 const stack = ref<WikiRef[]>([])
@@ -143,6 +135,8 @@ function goBack() {
  * request for 905px landed at 358px). So it is re-asserted for a few frames,
  * and stops the moment it takes — or the moment the reader scrolls themselves,
  * because a scroll position fighting the wheel is worse than one that is wrong.
+ * "Scrolls themselves" is a wheel on a desktop and a finger on the sheet, so
+ * both gestures interrupt it.
  */
 function restoreScroll(top: number) {
   if (top <= 0) return
@@ -150,11 +144,13 @@ function restoreScroll(top: number) {
   const onWheel = () => (interrupted = true)
   const until = performance.now() + RESTORE_WINDOW_MS
   scrollBox.value?.addEventListener('wheel', onWheel, { once: true, passive: true })
+  scrollBox.value?.addEventListener('touchstart', onWheel, { once: true, passive: true })
   const tick = () => {
     const el = scrollBox.value
     const done = !el || interrupted || Math.abs((el?.scrollTop ?? 0) - top) <= 1
     if (done || performance.now() > until) {
       el?.removeEventListener('wheel', onWheel)
+      el?.removeEventListener('touchstart', onWheel)
       return
     }
     el.scrollTop = top
@@ -178,7 +174,7 @@ const RESTORE_WINDOW_MS = 1500
 function onArticleClick(ev: MouseEvent) {
   const a = (ev.target as HTMLElement | null)?.closest?.('a[data-wiki-title]') as HTMLElement | null
   if (!a) return
-  if (!opensInReader(ev, desktop.value)) return // a new tab was asked for: let it happen
+  if (!opensInReader(ev)) return // a new tab was asked for: let it happen
   ev.preventDefault()
   go({ lang: a.dataset.wikiLang || 'en', title: a.dataset.wikiTitle || '' })
 }
@@ -257,22 +253,20 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  media?.addEventListener('change', onMedia)
   window.addEventListener('keydown', onKeydown, true)
 })
 onBeforeUnmount(() => {
-  media?.removeEventListener('change', onMedia)
   window.removeEventListener('keydown', onKeydown, true)
   inflight?.abort()
 })
 </script>
 
 <template>
-  <!-- Nothing at all below the break: on a phone the entry points are plain
-       links to the site (see the head of this file). -->
+  <!-- One layer on every form factor; the box inside it is a centred modal on
+       a desktop and a full-screen sheet on a phone (see the head of this file). -->
   <Transition name="fade">
     <div
-      v-if="ui.reader && desktop"
+      v-if="ui.reader"
       class="reader-layer"
       data-test="wiki-reader-layer"
     >
@@ -356,12 +350,25 @@ onBeforeUnmount(() => {
              our own adapted text is. Both links: the article it came from, and
              the licence it comes under. -->
         <footer class="foot" data-test="wiki-reader-attribution">
-          From
-          <a :href="liveUrl" target="_blank" rel="noopener noreferrer">Wikipedia</a>
-          —
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">
-            CC BY-SA 4.0
-          </a>
+          <span class="foot-licence">
+            From
+            <a :href="liveUrl" target="_blank" rel="noopener noreferrer">Wikipedia</a>
+            —
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">
+              CC BY-SA 4.0
+            </a>
+          </span>
+          <!-- The phone's way out, where the thumb already is: the sheet fills
+               the screen, so the header's X is the one control furthest from the
+               hand holding it. Desktop keeps the corner X alone and this button
+               does not render there (CSS below). -->
+          <button
+            class="foot-close"
+            data-test="wiki-reader-close-foot"
+            @click="ui.closeReader()"
+          >
+            Close
+          </button>
         </footer>
       </div>
     </div>
@@ -656,12 +663,19 @@ onBeforeUnmount(() => {
 
 /* --- the licence, at the foot, in the same quiet type Settings uses ------ */
 .foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
   padding: var(--s2) var(--s5);
   border-top: 1px solid var(--line);
   font-family: var(--cond);
   font-size: var(--t-xs);
   letter-spacing: 0.06em;
   color: var(--muted);
+}
+.foot-licence {
+  flex: 1;
+  min-width: 0;
 }
 .foot a {
   color: var(--frost-dim);
@@ -671,5 +685,75 @@ onBeforeUnmount(() => {
 }
 .foot a:hover {
   color: var(--brass);
+}
+/* The thumb's close (see the template). A phone-only control: on a desktop the
+   corner X and Escape are nearer than the foot of an 88vh window. */
+.foot-close {
+  display: none;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--frost-dim);
+  font-family: var(--cond);
+  font-size: var(--t-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0 var(--s4);
+  cursor: pointer;
+  transition:
+    color var(--fast),
+    border-color var(--fast),
+    background-color var(--fast);
+}
+.foot-close:active {
+  transform: scale(0.96);
+}
+
+/* --- THE PHONE'S SHAPE: a full-screen sheet in the app's own layout -------
+   The same rules the event panel's mobile sheet lives by (EventPanel.vue's own
+   640px query): clear of the top bar, standing on the bottom rail, inset from
+   the sides by the app's gutter and the device's safe areas. Height is FIXED
+   rather than a max — an article is never short, and a sheet whose top edge
+   moved with every article would make the back control a moving target. */
+@media (max-width: 640px) {
+  .reader {
+    position: absolute;
+    top: calc(var(--bar-clear) + var(--s2));
+    bottom: calc(var(--rail-clear) + var(--s2));
+    left: calc(var(--s3) + var(--safe-l));
+    right: calc(var(--s3) + var(--safe-r));
+    width: auto;
+    height: auto;
+    max-height: none;
+    animation-name: reader-sheet-in;
+  }
+  @keyframes reader-sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+  /* the chrome grows to thumb size, the same 40px the panel's own X uses */
+  .head {
+    padding: var(--s2) var(--s2) var(--s2) var(--s4);
+  }
+  .icon-btn,
+  .chip {
+    min-width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+  }
+  .body {
+    padding: var(--s3) var(--s4) var(--s4);
+  }
+  /* the foot carries the way out, where the thumb already is */
+  .foot {
+    padding: var(--s2) var(--s4);
+  }
+  .foot-close {
+    display: block;
+    min-height: 40px;
+  }
 }
 </style>

@@ -14,8 +14,13 @@
   settings panel whenever a deep-time frame is on screen. Each frame is one of
   the 109 reconstructions, rendered to this project's palette by
   `scripts/gen_paleo_v4.py` (hypsometric tint, hillshade off the reconstructed
-  elevations, shelf seas, and ice caps from the age's climate state). No
-  geography in them is invented or interpolated.
+  elevations, shelf seas, and ice caps from the age's climate state). The
+  `pd*.webp` files are the same reconstructions printed in the drawn map's
+  parchment palette for map mode — same source, same licence, same required
+  attribution. No geography in them is invented or interpolated; three source
+  ages (239.5, 201.3, 178.4 Ma) are skipped for their nearest clean neighbour
+  because their shallow-sea band is stored above sea level (see the note on
+  `AGES` in the script).
 - `moon.jpg` — generated procedurally by `scripts/gen_moon.py` in this repository.
 
 ## Streamed imagery

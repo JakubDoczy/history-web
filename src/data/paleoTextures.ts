@@ -54,16 +54,22 @@ export const DRAWN_TEXTURE = `${base}textures/map/drawn-world.webp`
 /**
  * …and the era timeline it stands in.
  *
- * The SAME frames, with only the modern one swapped, so map mode inherits deep
- * time whole: the reconstructions are not redrawn (nobody has vector coastlines
- * for the Cretaceous), they are printed on the drawn map's paper by the shader
- * instead — see `paper` in lib/present/globe.ts. Derived from PALEO_FRAMES
- * rather than rebuilt, so a change to the frame list cannot reach one mode and
- * miss the other.
+ * The SAME reconstruction ages, printed for paper: every deep-time frame has a
+ * drawn twin (`pd*.webp`, rendered by the same script from the same DEMs in
+ * the drawn map's own palette — see `render_drawn` in scripts/gen_paleo_v4.py),
+ * and the modern frame is the drawn world itself. It used to be the
+ * photographic frames re-graded by the shader's paper duotone (`uPaperMix`),
+ * which collapsed sea and land into one khaki: a photograph's land is midtone
+ * and its ocean is dark, so ink-by-luminance printed both within a few steps
+ * of each other. The duotone still exists, but only as the paper FLOOR for a
+ * frame held over from the other mode's timeline (see `applyPaper` in
+ * lib/globeSurface.ts). Derived from the same frames.json rather than rebuilt,
+ * so a change to the frame list cannot reach one mode and miss the other.
  */
-export const DRAWN_FRAMES: TextureKeyframe[] = PALEO_FRAMES.map((f) =>
-  f.url === MODERN_TEXTURE ? { ...f, url: DRAWN_TEXTURE } : f,
-)
+export const DRAWN_FRAMES: TextureKeyframe[] = [
+  ...frames.map((f) => ({ time: f.time, url: `${base}textures/paleo/${f.drawn}` })),
+  { time: -10_000, url: DRAWN_TEXTURE },
+]
 
 /** The base-texture timeline a mode reads. See `GlobeStyle.base`. */
 export const framesFor = (base: 'modern' | 'drawn'): TextureKeyframe[] =>

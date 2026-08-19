@@ -24,10 +24,14 @@
  *   4. an internal wiki link navigates INSIDE the reader, and back comes back —
  *      to where the reader was on the page, not to the top of it;
  *   5. Escape and the scrim close it, and the panel behind is untouched;
- *   6. a modifier-click is still the browser's, not ours;
- *   7. a phone does NOT get the modal;
- *   8. when the first endpoint fails the chain falls to the next, in the browser;
- *   9. when every endpoint fails the reader apologises and offers the live link.
+ *   6. a modifier-click is still the browser's, not ours — and (6b, round 65)
+ *      the W roundel in the panel header: placed with the corner controls, a
+ *      real href, a serif W rather than anyone's trademark, and Enter opens it;
+ *   7. when the first endpoint fails the chain falls to the next, in the browser;
+ *   8. when every endpoint fails the reader apologises and offers the live link;
+ *   9. a phone gets the reader too (round 65): a full-screen sheet that clears
+ *      the top bar and stands on the rail, with the walk, the scroll restore
+ *      and a thumb-reachable Close, opened from the closer link and the roundel.
  *
  * Needs `openssl` on PATH once, to mint the loopback certificate.
  *
@@ -46,7 +50,7 @@ import { createServer as createHttps } from 'node:https'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..', '..')
-const shots = process.env.SHOT_DIR ?? '/tmp/shots58/wiki'
+const shots = process.env.SHOT_DIR ?? '/tmp/shots65/wiki'
 mkdirSync(shots, { recursive: true })
 
 const pw = await import(process.env.PLAYWRIGHT_MODULE ?? 'playwright')
@@ -536,6 +540,67 @@ await check('…and a plain click on it opens the reader', async () => eq(await 
 await page.keyboard.press('Escape')
 await reader.waitFor({ state: 'detached', timeout: 8000 })
 
+/* --------------------------------------- 6b. the W roundel in the header */
+
+console.log('\n6b. the W roundel sits with the corner controls and opens the reader')
+// The panel was scrolled by the sections above; the header row is the subject.
+await page.evaluate(() => (document.querySelector('article.panel').scrollTop = 0))
+await page.waitForTimeout(250)
+await page.screenshot({ path: join(shots, '00-desktop-panel-header.png') })
+const roundel = await page.evaluate(() => {
+  const panel = document.querySelector('article.panel')
+  const w = document.querySelector('[data-test="wiki-open"]')
+  const x = document.querySelector('[data-test="panel-close"]')
+  const wb = w?.getBoundingClientRect()
+  const xb = x.getBoundingClientRect()
+  return w
+    ? {
+        there: true,
+        href: w.getAttribute('href'),
+        title: w.getAttribute('title'),
+        label: w.getAttribute('aria-label'),
+        tag: w.tagName,
+        text: w.textContent.trim(),
+        top: wb.top - panel.getBoundingClientRect().top,
+        sameRow: Math.abs(wb.top - xb.top) < 1,
+        leftOfClose: wb.right <= xb.left,
+        size: { w: Math.round(wb.width), h: Math.round(wb.height) },
+        serif: /IBM Plex Serif/.test(getComputedStyle(w.querySelector('.wiki-w')).fontFamily),
+      }
+    : { there: false }
+})
+await check('the roundel is there, near the top, on the close button’s row', () => {
+  ok(roundel.there, 'no [data-test="wiki-open"] in the panel')
+  ok(roundel.top >= 0 && roundel.top < 40, `it sits ${Math.round(roundel.top)}px below the panel top`)
+  eq(roundel.sameRow, true, 'not level with the close button')
+  eq(roundel.leftOfClose, true, 'not beside the close button')
+})
+await check('it is a real link at the live article, named for a tooltip and a screen reader', () => {
+  eq(roundel.tag, 'A', 'element')
+  eq(roundel.href, 'https://en.wikipedia.org/wiki/Battle_of_Trafalgar', 'href')
+  eq(roundel.title, 'Read on Wikipedia', 'title')
+  eq(roundel.label, 'Read on Wikipedia', 'aria-label')
+})
+await check('the mark is the serif W, not an image of anyone’s logo', () => {
+  eq(roundel.text, 'W', 'glyph text')
+  eq(roundel.serif, true, 'the W is not in the app’s serif')
+})
+
+// Keyboard: focus the link and press Enter — a plain click by other means.
+await page.focus('[data-test="wiki-open"]')
+await page.keyboard.press('Enter')
+await reader.waitFor({ state: 'visible', timeout: 15000 })
+await check('Enter on the focused roundel opens the reader', async () => eq(await reader.count(), 1, 'readers on screen'))
+await page.keyboard.press('Escape')
+await reader.waitFor({ state: 'detached', timeout: 8000 })
+
+// …and the pointer, the ordinary way.
+await page.locator('[data-test="wiki-open"]').click()
+await reader.waitFor({ state: 'visible', timeout: 15000 })
+await check('a click on the roundel opens the reader', async () => eq(await reader.count(), 1, 'readers on screen'))
+await page.keyboard.press('Escape')
+await reader.waitFor({ state: 'detached', timeout: 8000 })
+
 /* ------------------------------------------------ 7. the fallback, in a browser */
 
 console.log('\n7. when Parsoid HTML fails, the chain falls to mobile-html')
@@ -619,37 +684,138 @@ await check('nothing uncaught reached the console', () => {
 
 /* ------------------------------------------------------------- 9. the phone */
 
-console.log('\n9. a phone gets the link it always had, not a cramped modal')
+console.log('\n9. a phone gets the reader too, as a full-screen sheet (round 65)')
 const phone = await context.newPage()
 await phone.setViewportSize({ width: 390, height: 844 })
 await openApp(phone)
 await phone.evaluate(() => window.__events.select('trafalgar'))
 await phone.locator('article .body').waitFor({ state: 'visible', timeout: 15000 })
-await phone.screenshot({ path: join(shots, '06-phone-panel-before.png') })
+await phone.waitForTimeout(400)
+await phone.screenshot({ path: join(shots, '06-phone-panel-header.png') })
+
+// The W roundel is in the phone header too, at thumb size, beside the X.
+const phoneRoundel = await phone.evaluate(() => {
+  const w = document.querySelector('[data-test="wiki-open"]')
+  const x = document.querySelector('[data-test="panel-close"]')
+  if (!w) return { there: false }
+  const wb = w.getBoundingClientRect()
+  const xb = x.getBoundingClientRect()
+  return {
+    there: true,
+    size: { w: Math.round(wb.width), h: Math.round(wb.height) },
+    sameRow: Math.abs(wb.top - xb.top) < 1,
+    overlapsClose: wb.right > xb.left,
+  }
+})
+await check('the roundel is on the sheet’s header, thumb-sized, clear of the X', () => {
+  ok(phoneRoundel.there, 'no [data-test="wiki-open"] on the phone panel')
+  ok(phoneRoundel.size.w >= 40 && phoneRoundel.size.h >= 40, `target is ${JSON.stringify(phoneRoundel.size)}`)
+  eq(phoneRoundel.sameRow, true, 'not level with the close button')
+  eq(phoneRoundel.overlapsClose, false, 'overlaps the close button')
+})
+
+// The closer link opens the READER now — not a tab. A popup appearing here
+// would mean the phone was ejected into the browser, the round-58 behaviour.
 const phoneLink = phone.locator('article .body a[href*="wikipedia.org"]').last()
 const phoneHref = await phoneLink.getAttribute('href')
-// target="_blank": the click opens a tab rather than navigating this one, and
-// that tab is exactly what a phone should get.
-const popup = context.waitForEvent('page', { timeout: 5000 }).catch(() => null)
+const popup = context.waitForEvent('page', { timeout: 2500 }).catch(() => null)
 await phoneLink.click()
-await phone.waitForTimeout(900)
+const phoneReader = phone.locator('[data-test="wiki-reader"]')
+await phoneReader.waitFor({ state: 'visible', timeout: 15000 })
+await phone.locator('[data-test="wiki-reader-body"] .prose').waitFor({ state: 'visible', timeout: 15000 })
+await phone.waitForTimeout(600)
+await phone.screenshot({ path: join(shots, '07-phone-reader.png') })
 const opened = await popup
-const onPhone = await phone.evaluate(() => ({
-  reader: document.querySelectorAll('[data-test="wiki-reader"]').length,
-  layer: document.querySelectorAll('[data-test="wiki-reader-layer"]').length,
-  panel: !!document.querySelector('article .body'),
-}))
-await phone.screenshot({ path: join(shots, '07-phone-unchanged.png') })
-await check('no modal, no scrim, nothing new on the phone', () => {
-  eq(onPhone.reader, 0, 'readers on screen')
-  eq(onPhone.layer, 0, 'reader layers on screen')
-  eq(onPhone.panel, true, 'the panel is gone')
-})
-await check('the closer link is still a link to Wikipedia', () =>
+await check('the closer link is still a real link to Wikipedia', () =>
   ok(phoneHref.includes('en.wikipedia.org/wiki/Battle_of_Trafalgar'), `href was ${phoneHref}`),
 )
-await check('and it went to the site', () => ok(!!opened, 'no new tab opened'))
-await opened?.close()
+await check('…and a plain tap keeps the reading here: no new tab', () => ok(!opened, 'a tab opened anyway'))
+
+const sheet = await phone.evaluate(() => {
+  const dialog = document.querySelector('[data-test="wiki-reader"]')
+  const box = dialog.getBoundingClientRect()
+  const bar = getComputedStyle(document.documentElement).getPropertyValue('--bar-clear')
+  const styles = getComputedStyle(dialog)
+  const footClose = document.querySelector('[data-test="wiki-reader-close-foot"]')
+  const fb = footClose?.getBoundingClientRect()
+  return {
+    box: { x: Math.round(box.x), y: Math.round(box.y), w: Math.round(box.width), h: Math.round(box.height) },
+    win: { w: innerWidth, h: innerHeight },
+    role: dialog.getAttribute('role'),
+    modal: dialog.getAttribute('aria-modal'),
+    animation: styles.animationName,
+    footClose: fb ? { visible: fb.height > 0, h: Math.round(fb.height), bottom: Math.round(fb.bottom) } : null,
+    headClose: Math.round(document.querySelector('[data-test="wiki-reader-close"]').getBoundingClientRect().height),
+  }
+})
+await check('the sheet clears the top bar and stands on the rail', () => {
+  // --bar is 64px on a phone; the sheet starts below it and ends above the rail
+  ok(sheet.box.y >= 64, `sheet top is ${sheet.box.y}px — under the top bar`)
+  ok(sheet.box.y <= 64 + 24, `sheet top is ${sheet.box.y}px — a band of dead map above it`)
+  ok(sheet.win.h - (sheet.box.y + sheet.box.h) >= 84, 'the sheet covers the bottom rail')
+  ok(sheet.box.w >= sheet.win.w - 40, `sheet width is ${sheet.box.w} of ${sheet.win.w}`)
+})
+await check('it is still the same modal dialog', () => {
+  eq(sheet.role, 'dialog', 'role')
+  eq(sheet.modal, 'true', 'aria-modal')
+})
+await check('the way out is under the thumb: a Close in the foot, 40px tall', () => {
+  ok(sheet.footClose?.visible, 'no footer close on the phone')
+  ok(sheet.footClose.h >= 40, `footer close is ${sheet.footClose.h}px tall`)
+  ok(sheet.win.h - sheet.footClose.bottom < 160, 'the footer close is nowhere near the bottom')
+  ok(sheet.headClose >= 40, `header close is ${sheet.headClose}px tall`)
+})
+
+// The walk works on the sheet exactly as on the desktop: follow a link, come back.
+await phone.evaluate(() => {
+  const box = document.querySelector('[data-test="wiki-reader-body"]')
+  const links = [...box.querySelectorAll('a[data-wiki-title="HMS_Victory"]')]
+  links[links.length - 1].scrollIntoView({ block: 'center' })
+})
+await phone.waitForTimeout(300)
+const phoneScrollBefore = await phone.evaluate(
+  () => document.querySelector('[data-test="wiki-reader-body"]').scrollTop,
+)
+await phone.locator('[data-test="wiki-reader-body"] a[data-wiki-title="HMS_Victory"]').last().click()
+await phone.waitForFunction(
+  () => document.querySelector('[data-test="wiki-reader-title"]').textContent.trim() === 'HMS Victory',
+  null,
+  { timeout: 15000 },
+)
+await check('an internal link navigates inside the sheet', async () =>
+  eq(await phoneReader.count(), 1, 'the reader closed instead of navigating'),
+)
+await phone.locator('[data-test="wiki-reader-back"]').click()
+await phone.waitForFunction(
+  () => document.querySelector('[data-test="wiki-reader-title"]').textContent.trim() === 'Battle of Trafalgar',
+  null,
+  { timeout: 15000 },
+)
+await phone.waitForTimeout(2000) // the restore keeps trying while pictures land
+const phoneBack = await phone.evaluate(() => ({
+  scroll: document.querySelector('[data-test="wiki-reader-body"]').scrollTop,
+  back: !!document.querySelector('[data-test="wiki-reader-back"]'),
+}))
+await check('back returns to where the sheet was scrolled to', () =>
+  ok(Math.abs(phoneBack.scroll - phoneScrollBefore) < 40, `was at ${phoneScrollBefore}, came back to ${phoneBack.scroll}`),
+)
+
+// …and the footer Close puts the phone back on the panel it came from.
+await phone.locator('[data-test="wiki-reader-close-foot"]').click()
+await phoneReader.waitFor({ state: 'detached', timeout: 8000 })
+const phoneAfter = await phone.evaluate(() => ({
+  selected: window.__events.selectedId,
+  panel: !!document.querySelector('article .body'),
+}))
+await check('the thumb’s Close closes the sheet and the panel is untouched', () => {
+  eq(phoneAfter.selected, 'trafalgar', 'selected event')
+  eq(phoneAfter.panel, true, 'the panel is gone')
+})
+
+// The header roundel opens it on the phone too.
+await phone.locator('[data-test="wiki-open"]').click()
+await phoneReader.waitFor({ state: 'visible', timeout: 15000 })
+await check('the W roundel opens the sheet on the phone', async () => eq(await phoneReader.count(), 1, 'readers on screen'))
 await phone.close()
 
 /* ------------------------------------------------------------------ wrap up */

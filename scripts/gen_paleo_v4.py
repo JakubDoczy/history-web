@@ -94,11 +94,23 @@ SOURCE_AGES = [
 # is not a reconstruction age would be an interpolation we never computed. Spaced
 # ~15-20 Myr, tightened where the map changes fast (Pangaea assembly, the
 # breakup, the Cenozoic) and snapped to period boundaries people scrub to (541,
-# 252, 201.3, 145, 66).
+# 252, 145, 66).
+#
+# THREE SOURCE MAPS ARE AVOIDED: 239.5, 201.3 and 178.4 Ma. In each, the band
+# the neighbouring maps store just BELOW sea level (the -50..0 m epicontinental
+# shelf) is stored one 40 m quantum ABOVE it, so the map's shallow seas render
+# as a plain of low land: at 239.5 Ma the shallow-sea band is 0.7% of the globe
+# against ~6% in the maps 5 Myr either side, and the misplaced band sits at
+# exactly +40 m. Crossfaded in a timeline, that is a continent's worth of sea
+# flooding out and back within one frame — the "weird discontinuity around
+# 200 Ma" a reader saw. Ocean depths in those maps match their neighbours, so
+# it is not a whole-map datum shift that could be subtracted out; the maps are
+# simply skipped for their nearest clean neighbour (239.5 → 233.6, and
+# 178.4 → 172.2; 201.3 was never shipped).
 AGES = [
     541.0, 515.0, 491.8, 470.0, 449.1, 430.4, 409.2, 390.5, 370.0, 358.9,
-    338.8, 319.2, 301.3, 286.8, 268.7, 252.0, 239.5, 222.4, 204.9, 190.8,
-    178.4, 164.8, 154.7, 145.0, 131.2, 115.8, 102.6, 91.9, 80.8, 69.0,
+    338.8, 319.2, 301.3, 286.8, 268.7, 252.0, 233.6, 222.4, 204.9, 190.8,
+    172.2, 164.8, 154.7, 145.0, 131.2, 115.8, 102.6, 91.9, 80.8, 69.0,
     66.0, 56.0, 44.5, 35.9, 25.6, 14.9, 4.47, 0.0,
 ]
 
@@ -299,14 +311,38 @@ ICE_WOBBLE = sum(
 )
 
 
+def refine(mask):
+    """Round the source's staircase without moving the coast.
+
+    The deep-time DEMs are drawn coarsely — whole degrees in places — and a
+    mask off them staircases visibly at 2048 wide; a straight blur (what this
+    used to be) softens the steps but keeps every corner, which photographed as
+    blocky terraces along the Tethys shelf. Blur wide instead, pull the 0.5
+    level set back out, and anti-alias that: the level set of a symmetric blur
+    runs through the middle of each step, so the corners become curves while
+    the coast stays where the data put it. The restore slope (x3) is gentle on
+    purpose — a hard threshold would drop islets smaller than the blur radius,
+    and the Panthalassic arcs are made of exactly those.
+    """
+    m = blur(mask, 2.2)
+    m = np.clip((m - 0.5) * 3.0 + 0.5, 0, 1)
+    return np.clip(blur(m, 1.0), 0, 1)
+
+
+def masks(cls):
+    """Land and shelf coverage at output size, staircase rounded.
+
+    Cumulative masks, differenced — refining the shelf BAND directly would
+    erase it wherever it is narrower than the smoothing radius, and the whole
+    point of the shelf is that it hugs the coast.
+    """
+    land = refine(np.clip(resize_f((cls >= LAND_CLASS).astype(np.float32)), 0, 1))
+    wet = refine(np.clip(resize_f((cls >= SHELF_CLASS).astype(np.float32)), 0, 1))
+    return land, np.clip(wet - land, 0, 1)
+
+
 def render(age, dem_slice, cls):
-    land = np.clip(resize_f((cls >= LAND_CLASS).astype(np.float32)), 0, 1)
-    shelf = np.clip(resize_f(((cls >= SHELF_CLASS) & (cls < LAND_CLASS)).astype(np.float32)), 0, 1)
-    # The deep-time DEMs are drawn coarsely -- whole degrees in places -- and a
-    # hard mask off them staircases visibly at 2048 wide. Half a pixel of blur
-    # rounds the steps without moving the coast.
-    land = np.clip(blur(land, 1.3), 0, 1)
-    shelf = np.clip(blur(shelf, 1.3), 0, 1)
+    land, shelf = masks(cls)
     elev = elevation(dem_slice, cls)
 
     # --- climate: how dry is this pixel ---------------------------------------
@@ -369,6 +405,91 @@ def render(age, dem_slice, cls):
     return np.clip(img, 0, 255).astype(np.uint8)
 
 
+# ---------------------------------------------------------------------------
+# The DRAWN twin of each frame: the same reconstruction printed in the drawn
+# map's own palette (src/lib/drawnTile.ts, PAPER), so that map mode's deep time
+# is a page of the same atlas rather than a photograph run through a duotone —
+# which is what the shader's paper grade made of these, and it read as grey
+# porridge: a paleo frame's land is midtone and its ocean is dark, so ink-by-
+# luminance put sea and land within a few steps of each other. Here the sea is
+# the duck-egg wash, the land is parchment, the shelf is the shoreline wash
+# (driven by the real bathymetry), and the coast is the pen. Restated as
+# literals because this file cannot import TypeScript; tests/drawnMap.test.ts
+# guards the TS side and scripts/gen_paleo_v4.py is the only other holder.
+D_SEA = np.array((177, 191, 187), np.float32)     # PAPER.ocean  #b1bfbb
+D_WASH = np.array((154, 170, 166), np.float32)    # PAPER.wash[2] #9aaaa6
+D_LAND = np.array((236, 226, 200), np.float32)    # PAPER.land   #ece2c8
+D_INK = np.array((46, 37, 25), np.float32)        # PAPER.ink    #2e2519
+D_HIGH = np.array((141, 125, 92), np.float32)     # PAPER.fleckDark #8d7d5c
+D_ICE = np.array((247, 242, 230), np.float32)     # paper, a step toward white
+D_GRAT = np.array((70, 56, 36), np.float32)       # PAPER.graticule (α 0.16)
+
+
+def render_drawn(age, dem_slice, cls):
+    """One deep-time frame as the drawn atlas would print it.
+
+    Same masks and elevation as the photographic render, different medium:
+      * open sea flat duck-egg; the shelf deepens toward the shoreline-wash
+        tone by real bathymetry, which is the engraved coastal band the tiles
+        draw — here it is the Sundaland-sized epicontinental seas that carry it
+      * land is parchment, highlands tinted toward the paper's own dark fibre,
+        relief as a whisper of the same — a drawing suggests mountains, it does
+        not photograph them
+      * ice is pale paper (the caps must survive, they are geography here)
+      * a 10-degree graticule under the ink, same pen and alpha as the tiles
+      * coastline ink from the mask's own transition band: the anti-aliased
+        edge is ~2 px wide, and land*(1-land) peaks exactly on it
+    """
+    land, shelf = masks(cls)
+    elev = elevation(dem_slice, cls)
+
+    # --- the sea, and the wash where it shallows -----------------------------
+    coast_t = np.clip((elev + 300.0) / 300.0, 0, 1) ** 1.4       # bathymetric
+    coastal = np.clip(blur(land, 4.0) * 1.8, 0, 1)               # hugs the pen
+    wash = np.maximum(coast_t, coastal * 0.7) * (1 - land)
+    sea_col = D_SEA + (D_WASH - D_SEA) * wash[..., None]
+
+    # --- the land ------------------------------------------------------------
+    h = np.clip(elev / 3200.0, 0, 1) ** 1.3
+    land_col = D_LAND + (D_HIGH - D_LAND) * (h * 0.5)[..., None]
+    gy, gx = np.gradient(blur(elev, 1.2))
+    gx = gx / np.maximum(np.cos(np.radians(LAT)), 0.35)
+    slope = (gx * 0.55 - gy * 0.55) / 190.0
+    slope *= np.clip((88.0 - ABSLAT) / 4.0, 0, 1)
+    land_col *= np.clip(1.0 + slope * 0.35, 0.87, 1.08)[..., None]
+
+    # --- ice, in paper -------------------------------------------------------
+    south_lim, north_lim = lerp_table(ICE_LIMITS, age)
+    (snow_off,) = lerp_table(SNOWLINE_OFFSET, age)
+    limit = np.where(LAT < 0, south_lim, north_lim) + ICE_WOBBLE
+    reach = ABSLAT + np.clip(elev, 0, 3000) / 900.0
+    polar = np.clip((reach - limit) / 6.0, 0, 1)
+    snowline = 5300 - 5100 * (ABSLAT / 90.0) ** 1.6 + snow_off
+    alpine = np.clip((elev - snowline) / 700.0, 0, 1)
+    ice = np.maximum(polar, alpine)
+    land_col = land_col * (1 - ice[..., None]) + D_ICE * ice[..., None]
+
+    img = sea_col * (1 - land[..., None]) + land_col * land[..., None]
+
+    # --- graticule, under the ink --------------------------------------------
+    # Same pen and alpha as the drawn tiles (PAPER.graticule at 0.16), one
+    # output pixel wide. Faded at the poles, where meridians crowd.
+    ppd_x, ppd_y = W / 360.0, H / 180.0
+    dx = np.abs(((np.arange(W) + 0.5) / ppd_x + 5.0) % 10.0 - 5.0) * ppd_x
+    dy = np.abs(((np.arange(H) + 0.5) / ppd_y + 5.0) % 10.0 - 5.0) * ppd_y
+    ga = np.maximum(np.clip(1.0 - dx, 0, 1)[None, :] * np.clip((80.0 - ABSLAT) / 10.0, 0, 1),
+                    np.clip(1.0 - dy, 0, 1)[:, None] * np.ones((1, W), np.float32)) * 0.16
+    img = img * (1 - ga[..., None]) + D_GRAT * ga[..., None]
+
+    # --- the pen -------------------------------------------------------------
+    edge = np.clip(land * (1 - land) * 4.0, 0, 1) ** 1.5
+    img = img * (1 - (edge * 0.85)[..., None]) + D_INK * (edge * 0.85)[..., None]
+
+    w = np.clip((ABSLAT - 86.0) / 4.0, 0, 1)
+    img = img * (1 - w[..., None]) + img.mean(axis=1, keepdims=True) * w[..., None]
+    return np.clip(img, 0, 255).astype(np.uint8)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--no-cache', action='store_true', help='refetch source data')
@@ -386,33 +507,42 @@ def main():
     ages = sorted(AGES, reverse=True)  # oldest first, so frame order is time order
     if not args.only:
         for f in os.listdir(OUT_DIR):
-            if f.startswith('pf') and f.endswith(('.jpg', '.webp')):
+            if f.startswith(('pf', 'pd')) and f.endswith(('.jpg', '.webp')):
                 os.remove(os.path.join(OUT_DIR, f))
 
     frames, total = [], 0
     for i, age in enumerate(ages):
         n = SOURCE_AGES.index(age) + 1
         name = f'pf{i:02d}.webp'
+        drawn_name = f'pd{i:02d}.webp'
         # 0 Ma is the present, but the frame list ends with the real modern
         # basemap pinned at 10 ka; giving the two the same time would divide by a
         # zero-length interval. Half a frame of slack, invisible at this scale.
         # round, not truncate: int(-131.2 * 1e6) lands a year short of the age
         year = -50_000 if age == 0 else round(-age * 1e6)
-        frames.append({'time': year, 'file': name, 'ma': age})
+        frames.append({'time': year, 'file': name, 'drawn': drawn_name, 'ma': age})
         if args.only and age not in args.only:
             continue
-        img = render(age, dem[n - 1], load_classes(n, not args.no_cache))
+        cls = load_classes(n, not args.no_cache)
+        img = render(age, dem[n - 1], cls)
         path = os.path.join(OUT_DIR, name)
         # method=6 is libwebp's slowest search; it costs seconds per frame in a
         # script that is run by hand and saves ~4% on every download forever.
         Image.fromarray(img).save(path, format='WEBP', quality=args.quality, method=6)
         kb = os.path.getsize(path) / 1024
-        total += kb
-        print(f'{name}  {age:>6} Ma  (map {n:>3})  {kb:6.0f} KB')
+        # The drawn twin: three flat washes and a pen compress far better than a
+        # photograph, and quality 80 is transparent on them — measured 46 dB
+        # PSNR against its own render, where the photographic frame's q85 is 42.
+        dimg = render_drawn(age, dem[n - 1], cls)
+        dpath = os.path.join(OUT_DIR, drawn_name)
+        Image.fromarray(dimg).save(dpath, format='WEBP', quality=80, method=6)
+        dkb = os.path.getsize(dpath) / 1024
+        total += kb + dkb
+        print(f'{name}  {age:>6} Ma  (map {n:>3})  {kb:6.0f} KB  + drawn {dkb:5.0f} KB')
 
     if not args.only:
         with open(FRAMES_JSON, 'w') as f:
-            json.dump([{k: fr[k] for k in ('time', 'ma', 'file')} for fr in frames], f, indent=2)
+            json.dump([{k: fr[k] for k in ('time', 'ma', 'file', 'drawn')} for fr in frames], f, indent=2)
             f.write('\n')
     print(f'{len(ages)} frames, {total / 1024:.2f} MB total', file=sys.stderr)
 

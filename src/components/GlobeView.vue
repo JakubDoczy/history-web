@@ -1621,18 +1621,22 @@ onMounted(() => {
       }
       // The shader's half of the same decision: whether a streamed tile
       // modulates the ground or IS the ground, whether the planet has an
-      // atmospheric limb, how much of the paper grade a deep-time frame takes,
-      // whether this mode prints at all, and whether the output is encoded.
+      // atmospheric limb, whether this mode prints at all, and whether the
+      // output is encoded.
       //
-      // The last two used to be one number, and the collapse is what let a
-      // photograph reach the screen inside map mode: a modern year asks for no
-      // paper, which is also what realistic mode asks for at every year, and
-      // the surface could not tell "this mode does not print" from "this frame
-      // needs no printing". See `applyPaper` in lib/globeSurface.ts.
+      // The paper MIX is zero at every year now, in both modes: every frame on
+      // the drawn timeline is already printed — the deep-time frames have
+      // build-time drawn twins in the map's own palette (DRAWN_FRAMES), where
+      // they used to be the photographic frames duotoned here by
+      // `1 - modernShare`. What survives of the paper grade is the FLOOR: the
+      // `prints` flag still marks map mode, so a frame held over from the
+      // OTHER mode's timeline — the one case the year cannot see — is still
+      // duotoned rather than shown as a photograph. See `applyPaper` in
+      // lib/globeSurface.ts, and round 62's as-built in docs/design/drawn-map.md.
       surface!.setSurfaceMode(
         style.value.detail,
         style.value.rim,
-        style.value.paper ? 1 - modernShare(frames.value, time.currentTime) : 0,
+        0,
         style.value.encode ? 1 : 0,
         style.value.paper,
       )

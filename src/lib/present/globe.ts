@@ -78,14 +78,16 @@ export interface GlobeStyle {
    */
   rim: number
   /**
-   * Print deep-time frames on the drawn map's paper.
+   * This mode prints on the drawn map's paper.
    *
    * Deep time keeps its existing reconstructions — nobody has vector coastlines
-   * for the Cretaceous — but in map mode they pass through a duotone of the
-   * drawn map's own ink and paper, so scrubbing from 1940 to 200 Ma changes the
-   * geography without changing the medium. How MUCH is a function of how far
-   * the frames have taken over from the modern map, which is the caller's
-   * (`modernShare`), not this file's.
+   * for the Cretaceous — but map mode's timeline carries them as build-time
+   * drawn twins in the map's own palette (DRAWN_FRAMES), so scrubbing from
+   * 1940 to 200 Ma changes the geography without changing the medium and the
+   * shader adds nothing. What this flag still gates is the paper FLOOR: a
+   * frame held over from the other mode's timeline (the one case the year
+   * cannot see) is duotoned into ink-on-paper rather than shown as a
+   * photograph. See `applyPaper` in lib/globeSurface.ts.
    */
   paper: boolean
   /** The whole-globe base texture: the photographed planet, or the drawn world. */

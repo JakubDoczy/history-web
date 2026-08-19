@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { SIDE_BY_SIDE_MIN_PX, useEventStore } from '../stores/events'
+import { useEventStore } from '../stores/events'
 import { useTimeStore } from '../stores/time'
 import { useUiStore } from '../stores/ui'
 import { opensInReader } from '../lib/wikiArticle'
@@ -9,7 +9,7 @@ import { renderRichText } from '../lib/richtext'
 import { anchorYearOf, assertNever, timeOf, type Item, type Place } from '../lib/events'
 import { resolvePillKind, sagaOf } from '../lib/present/saga'
 import { stationAt, stations } from '../lib/present/sagaTimeline'
-import { fetchWikiImage, parseWikiUrl, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
+import { articleUrl, fetchWikiImage, parseWikiUrl, wikiDebug, wikiRefForEvent, type WikiImage } from '../lib/wikiImage'
 
 const events = useEventStore()
 const time = useTimeStore()
@@ -241,32 +241,39 @@ function goTo(id: string) {
   if (year !== undefined) time.setTime(year)
 }
 /**
- * A WIKIPEDIA LINK IN THE PANEL OPENS THE READER — on a desktop, on a plain
- * click, and never otherwise.
+ * A WIKIPEDIA LINK IN THE PANEL OPENS THE READER — on a plain click, on every
+ * form factor, and never otherwise.
  *
- * There are two of them and they are the same link twice: the closer sentence
- * every body ends with (*More at [Wikipedia](…)*, rendered into the body's HTML)
- * and the "Read more" strip's Wikipedia entry. Both stay real `<a href>`s at the
+ * There are three of them and they are the same link three times: the closer
+ * sentence every body ends with (*More at [Wikipedia](…)*, rendered into the
+ * body's HTML), the "Read more" strip's Wikipedia entry, and the W roundel in
+ * the panel's own header (see `wikiRef`). All stay real `<a href>`s at the
  * live article, so a middle-click or a modifier-click still gets the tab the
  * reader asked their browser for, and "copy link address" still copies
  * Wikipedia's URL rather than something of ours. What changes is only the plain
- * click, and only where there is room for the reader to be better than a new tab
- * (`opensInReader`, lib/wikiArticle.ts).
- *
- * The width is read at the moment of the click rather than watched: this is a
- * decision about one gesture, and a `matchMedia` subscription on a component
- * that mounts and unmounts with every selection would be a lifecycle to maintain
- * for a number that is free to ask for.
+ * click (`opensInReader`, lib/wikiArticle.ts). Until round 65 this also asked
+ * the window's width and stood down on a phone; the reader has a phone shape of
+ * its own now (WikiReader.vue) and the gesture means the same thing everywhere.
  */
 function openReader(ev: MouseEvent, url: string | undefined): boolean {
   const ref = parseWikiUrl(url)
   if (!ref) return false
-  const desktop = (globalThis.innerWidth || 0) >= SIDE_BY_SIDE_MIN_PX
-  if (!opensInReader(ev, desktop)) return false
+  if (!opensInReader(ev)) return false
   ev.preventDefault()
   ui.openReader(ref)
   return true
 }
+
+/**
+ * THE HEADER'S OWN WAY INTO THE ARTICLE (round 65): the item's Wikipedia
+ * article, resolved exactly as the lead picture resolves it — the structured
+ * `links[]` entry first, the closer sentence in the body as the fallback
+ * (`wikiRefForEvent`, lib/wikiImage.ts). `null` when the item points at no
+ * article, and the roundel is then simply not there: a W that opened an apology
+ * would teach the reader not to press it.
+ */
+const wikiRef = computed(() => wikiRefForEvent(e.value))
+const wikiHref = computed(() => (wikiRef.value ? articleUrl(wikiRef.value) : undefined))
 
 function onBodyClick(ev: MouseEvent) {
   const id = (ev.target as HTMLElement).dataset?.event
@@ -478,9 +485,31 @@ onBeforeUnmount(() => inflight?.abort())
         v-else
         key="article"
         class="sheet panel scroll-y"
-        :class="{ 'has-minimise': events.focus }"
+        :class="{ 'has-minimise': events.focus, 'has-wiki': !!wikiRef }"
       >
     <span class="grabber" aria-hidden="true" />
+    <!-- THE W ROUNDEL (round 65): the article on Wikipedia, opened in the
+         reader, from the top of the panel — level with the close controls so it
+         is reachable before a line has been read. It is the app's own mark for
+         the encyclopaedia: a serif W in the corner-button frame, not the
+         trademarked puzzle globe. A real <a href> at the live page, like every
+         other Wikipedia entry point here: a plain click opens the in-app reader
+         on both form factors, a modifier or middle click is the browser's, and
+         Enter on the focused link is a plain click (see `openReader`). Absent
+         entirely when the item resolves no article (see `wikiRef`). -->
+    <a
+      v-if="wikiRef"
+      class="close wiki-open"
+      data-test="wiki-open"
+      :href="wikiHref"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Read on Wikipedia"
+      aria-label="Read on Wikipedia"
+      @click="openReader($event, wikiHref)"
+    >
+      <span class="wiki-w" aria-hidden="true">W</span>
+    </a>
     <!-- In focus mode the article can fold back down to the pill without
          leaving the mode: the drawing stays, the pins stay, the reading stops. -->
     <button
@@ -1052,6 +1081,32 @@ onBeforeUnmount(() => inflight?.abort())
   right: calc(var(--s3) + 32px);
 }
 
+/* THE W ROUNDEL: the leftmost seat of the corner cluster — [W] [fold] [X] —
+   in the cluster's own 30px frame, so it reads as one row of panel chrome
+   rather than as a badge stuck on. The mark is typographic: a serif capital W
+   (the convention for naming Wikipedia without its trademarked puzzle globe),
+   in the app's own serif and the cluster's own muted ink. Only its HOVER
+   differs from its neighbours — brass, the accent every control that leads
+   somewhere wears — because unlike the X beside it, this one is a door. */
+.close.wiki-open {
+  right: calc(var(--s3) + 32px);
+  text-decoration: none;
+}
+.has-minimise .close.wiki-open {
+  right: calc(var(--s3) + 64px);
+}
+.close.wiki-open:hover {
+  color: var(--brass);
+  border-color: var(--brass-line);
+  background: var(--brass-soft);
+}
+.wiki-w {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .close {
   position: absolute;
   top: var(--s3);
@@ -1123,8 +1178,13 @@ h2 {
   padding-right: 46px;
   text-wrap: balance;
 }
-.has-minimise h2 {
+/* each corner button the header carries reserves its 32px on the title's line */
+.has-minimise h2,
+.has-wiki h2 {
   padding-right: 78px;
+}
+.has-minimise.has-wiki h2 {
+  padding-right: 110px;
 }
 .when {
   margin: 6px 0 0;
@@ -1574,8 +1634,22 @@ ul {
     width: 40px;
     height: 40px;
   }
+  /* the corner cluster at thumb size: 40px seats, 42px apart */
+  .close.wiki-open {
+    right: calc(var(--s2) + 42px);
+  }
+  .has-minimise .close.wiki-open {
+    right: calc(var(--s2) + 84px);
+  }
   h2 {
     padding-right: 40px;
+  }
+  .has-minimise h2,
+  .has-wiki h2 {
+    padding-right: 84px;
+  }
+  .has-minimise.has-wiki h2 {
+    padding-right: 126px;
   }
   .body {
     font-size: 15.5px;

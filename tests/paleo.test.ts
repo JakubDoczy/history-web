@@ -80,7 +80,7 @@ describe('imageryCredit', () => {
   })
 })
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { MODERN_TEXTURE, PALEO_FRAMES } from '../src/data/paleoTextures'
 import frameList from '../src/data/paleoFrames.json'
@@ -119,6 +119,28 @@ describe('paleoFrames.json', () => {
   it('reaches the start of the Cambrian and ends at the present', () => {
     expect(frameList[0].ma).toBeGreaterThanOrEqual(538.8)
     expect(frameList[frameList.length - 1].ma).toBe(0)
+  })
+  // In the 239.5, 201.3 and 178.4 Ma PaleoDEMs the -50..0 m epicontinental
+  // band is stored one 40 m quantum ABOVE sea level (their ocean depths match
+  // their neighbours', so it is not a datum shift that could be subtracted
+  // out): their shallow seas render as plains of low land, and crossfading one
+  // pulses a continent's worth of coastline out and back — the reader's "weird
+  // discontinuity around 200 Ma". See AGES in scripts/gen_paleo_v4.py.
+  it('avoids the three source maps whose shallow seas are stored as land', () => {
+    for (const f of frameList) expect([239.5, 201.3, 178.4]).not.toContain(f.ma)
+  })
+  // Map mode's deep time is the same reconstruction printed for paper, not the
+  // photograph re-graded in the shader; both files of each pair must ship.
+  it('ships a photographic frame and a drawn twin, and both exist', () => {
+    for (const f of frameList) {
+      expect(f.drawn).toBe(f.file.replace(/^pf/, 'pd'))
+      for (const file of [f.file, f.drawn]) {
+        expect(
+          existsSync(join(__dirname, '..', 'public', 'textures', 'paleo', file)),
+          file,
+        ).toBe(true)
+      }
+    }
   })
 })
 

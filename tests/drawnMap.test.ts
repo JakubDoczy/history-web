@@ -1278,11 +1278,13 @@ describe('the era the drawn map is honest in', () => {
     expect(minAltitudeFor(-9000, true, null)).toBe(MIN_ALTITUDE_DETAIL)
   })
 
-  it('swaps only the modern frame, so deep time is inherited whole', () => {
+  it('carries the same ages as the photographic timeline, as drawn twins', () => {
     expect(DRAWN_FRAMES).toHaveLength(PALEO_FRAMES.length)
     expect(DRAWN_FRAMES[DRAWN_FRAMES.length - 1].url).toBe(DRAWN_TEXTURE)
+    // one drawn twin per deep-time frame — same directory, pd for pf — so a
+    // frame-list change cannot reach one mode and miss the other
     expect(DRAWN_FRAMES.slice(0, -1).map((f) => f.url)).toEqual(
-      PALEO_FRAMES.slice(0, -1).map((f) => f.url),
+      PALEO_FRAMES.slice(0, -1).map((f) => f.url.replace(/pf(\d\d)\.webp$/, 'pd$1.webp')),
     )
     expect(DRAWN_FRAMES.map((f) => f.time)).toEqual(PALEO_FRAMES.map((f) => f.time))
     expect(framesFor('drawn')).toBe(DRAWN_FRAMES)

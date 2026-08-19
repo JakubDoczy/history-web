@@ -1682,14 +1682,13 @@ export class GlobeSurface {
   /**
    * THE MEDIUM IS A PROPERTY OF THE MODE, NOT OF THE YEAR.
    *
-   * Map mode already prints every frame that is not its own on paper: nobody
-   * has vector coastlines for the Cretaceous, so the deep-time reconstructions
-   * are kept and duotoned into the drawn map's own ink and paper rather than
-   * redrawn (`uPaperMix`, and `paper` in lib/present/globe.ts). The share was
-   * computed from the YEAR — `1 - modernShare` — which is exact for every frame
-   * the timeline plans and silently wrong for the one frame it does not: the
-   * map held over from the OTHER mode while this mode's own base map is still
-   * decoding.
+   * Map mode's own timeline needs no printing at all any more: since round 65
+   * every deep-time frame on it is a build-time drawn twin in the map's own
+   * palette (DRAWN_FRAMES; `render_drawn` in scripts/gen_paleo_v4.py), so the
+   * year-derived share (`1 - modernShare`, before that round) is passed as a
+   * constant zero. What the duotone (`uPaperMix`) is still FOR is the one
+   * frame the timeline does not plan: the map held over from the OTHER mode
+   * while this mode's own base map is still decoding.
    *
    * That is what the field reported after round 61 — *"I can sometimes see a
    * block of satellite map on the edges of screen"* and *"switching … produces

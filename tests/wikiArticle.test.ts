@@ -528,22 +528,24 @@ describe('the reader history stack', () => {
 /* -------------------------------------------------------------- the intent */
 
 describe('opensInReader', () => {
-  it('opens on an unmodified primary click, on a desktop', () => {
-    expect(opensInReader({ button: 0 }, true)).toBe(true)
-    expect(opensInReader({}, true)).toBe(true)
+  it('opens on an unmodified primary click', () => {
+    expect(opensInReader({ button: 0 })).toBe(true)
+    expect(opensInReader({})).toBe(true)
   })
 
   it('leaves a middle click to the browser', () => {
-    expect(opensInReader({ button: 1 }, true)).toBe(false)
+    expect(opensInReader({ button: 1 })).toBe(false)
   })
 
   it('leaves every modifier click to the browser', () => {
     for (const mod of ['metaKey', 'ctrlKey', 'shiftKey', 'altKey'] as const)
-      expect(opensInReader({ button: 0, [mod]: true }, true)).toBe(false)
+      expect(opensInReader({ button: 0, [mod]: true })).toBe(false)
   })
 
-  it('never opens below the desktop break: on a phone the link is a link', () => {
-    expect(opensInReader({ button: 0 }, false)).toBe(false)
+  // Round 65: the desktop flag is gone — the reader has a phone shape of its
+  // own now, so the decision is about the gesture alone on every form factor.
+  it('leaves a secondary click to the browser too', () => {
+    expect(opensInReader({ button: 2 })).toBe(false)
   })
 })
 
