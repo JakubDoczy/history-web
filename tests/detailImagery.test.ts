@@ -7,6 +7,7 @@ import {
   MIN_ALTITUDE_DETAIL,
   MIN_ALTITUDE_PRE_ERA,
   PRE_ERA_VIEW_KM,
+  ZOOM_FLOOR_SCALE,
   PATCH_MARGIN,
   viewSpanDeg,
   DEFAULT_FOV,
@@ -298,15 +299,43 @@ describe('altitudeForViewKm', () => {
 })
 
 describe('era-dependent zoom floors', () => {
-  it('permits a ~100 km view in the satellite era', () => {
-    const span = visibleSpanDeg(minAltitudeFor(2000, true))
-    expect(span * 111.32).toBeCloseTo(100, 0)
+  // ROUND 68: "Lower the max zoom for all eras by about 10x." Both floors are
+  // the pre-68 constants scaled by ZOOM_FLOOR_SCALE, so each era's closest
+  // approach stops ten times further out and the ratio between the eras — the
+  // pre-1930 clamp is about what a photograph may claim of a century — holds.
+  it('scales both closest-approach floors by exactly the one factor', () => {
+    expect(ZOOM_FLOOR_SCALE).toBe(10)
+    expect(MIN_ALTITUDE_DETAIL).toBeCloseTo(altitudeForViewKm(100) * ZOOM_FLOOR_SCALE, 12)
+    expect(MIN_ALTITUDE_PRE_ERA).toBeCloseTo(
+      altitudeForFrameKm(PRE_ERA_VIEW_KM) * ZOOM_FLOOR_SCALE,
+      12,
+    )
+    // …which is a ~2 km eye in the satellite era (196 m before round 68)
+    expect(MIN_ALTITUDE_DETAIL * 6371).toBeGreaterThan(1.8)
+    expect(MIN_ALTITUDE_DETAIL * 6371).toBeLessThan(2.2)
   })
-  it('caps earlier periods at a 100 km frame, where modern building does not read', () => {
+  it('permits a ~1000 km view (10x the old 100 km horizon) in the satellite era', () => {
+    const span = visibleSpanDeg(minAltitudeFor(2000, true))
+    // the horizon grows with the square root of the altitude, so ten times the
+    // floor is √10 times the horizon
+    expect(span * 111.32).toBeCloseTo(100 * Math.sqrt(ZOOM_FLOOR_SCALE), 0)
+  })
+  it('caps earlier periods ten times further out than the old 100 km frame', () => {
     for (const year of [1929, 1600, -3000]) {
       const span = viewSpanDeg(minAltitudeFor(year, true))
-      expect(span * 111.32).toBeCloseTo(PRE_ERA_VIEW_KM, 1)
+      // altitudeForFrameKm is nearly linear in km, so the frame is ~10x wider
+      expect(span * 111.32).toBeGreaterThan(PRE_ERA_VIEW_KM * 9)
+      expect(span * 111.32).toBeLessThan(PRE_ERA_VIEW_KM * 11)
     }
+  })
+
+  // Every authored step camera must still reach its framing where plans are
+  // read (the drawn map and the bare globe, where MIN_ALTITUDE_DETAIL is the
+  // floor): the closest camera in the corpus sits at 1.6e-3 R — a ~9.5 km
+  // frame — five times above the new floor.
+  it('keeps the corpus reachable: the closest authored step camera clears the floor', () => {
+    const closestAuthored = 0.0016 // modern.json, checked by jq in round 68
+    expect(closestAuthored).toBeGreaterThan(MIN_ALTITUDE_DETAIL * 4)
   })
 
   it('holds the camera further out before 1930 than after it', () => {
@@ -759,8 +788,13 @@ describe('streaming era model', () => {
     d.dispose()
   })
 
-  it('leaves the satellite era own floor exactly where it was', () => {
-    expect(visibleSpanDeg(MIN_ALTITUDE_DETAIL) * 111.32).toBeCloseTo(100, 0)
+  it('holds the satellite era floor at ten times the pre-68 approach', () => {
+    // the old floor was the 100 km-horizon altitude; ten times that altitude
+    // puts the horizon at √10 times the span (round 68)
+    expect(visibleSpanDeg(MIN_ALTITUDE_DETAIL) * 111.32).toBeCloseTo(
+      100 * Math.sqrt(ZOOM_FLOOR_SCALE),
+      0,
+    )
   })
 })
 

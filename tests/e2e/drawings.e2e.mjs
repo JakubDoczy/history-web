@@ -134,6 +134,24 @@ const TEST_INK = {
   ],
 }
 
+/**
+ * ROUND 68's vocabulary, injected the same way: a strength-labelled thrust and
+ * front, and the military-map glyphs — every unitType, an echelon, a fortress.
+ * Shot at two zooms in both map modes (`r68*`; SHOT_ONLY=r68).
+ */
+const TEST_INK_68 = {
+  layers: [
+    { type: 'thrust', path: [[26.4, 53.6], [29.2, 52.6], [31.4, 51.6], [33.2, 51.2]], width: 0.4, strength: '250,000' },
+    { type: 'frontline', paths: [[[28.2, 52.6], [29.8, 51.4], [31.0, 50.0], [31.8, 48.6]]], ticks: 'left', width: 2.6, strength: '6 divisions' },
+    { type: 'marker', style: 'unit', unitType: 'infantry', unitSize: 'XX', pos: [28.6, 50.4], size: 0.42 },
+    { type: 'marker', style: 'unit', unitType: 'armor', unitSize: 'XXX', pos: [30.2, 49.4], size: 0.42 },
+    { type: 'marker', style: 'unit', unitType: 'cavalry', pos: [33.0, 49.6], size: 0.42 },
+    { type: 'marker', style: 'unit', unitType: 'artillery', unitSize: 'X', pos: [34.4, 50.4], size: 0.42 },
+    { type: 'marker', style: 'unit', unitType: 'mixed', unitSize: 'XXXX', pos: [35.2, 51.6], size: 0.42 },
+    { type: 'marker', style: 'fortress', pos: [30.52, 50.45], size: 0.5, label: 'Kiev' },
+  ],
+}
+
 const page = await open(1280, 860)
 
 const CAMERAS = [
@@ -152,6 +170,11 @@ const CAMERAS = [
   // THE NEW KINDS, injected for one frame (see TEST_INK).
   { name: 'g-zone-map', mode: 'schematic', select: 'barbarossa', ink: TEST_INK, view: [50.6, 31.2, 0.16] },
   { name: 'h-zone-realistic', mode: 'realistic', select: 'barbarossa', ink: TEST_INK, view: [50.6, 31.2, 0.16] },
+  // ROUND 68: strengths and military glyphs, two zooms, both grounds.
+  { name: 'r68a-glyphs-map-far', mode: 'schematic', select: 'barbarossa', ink: TEST_INK_68, view: [50.9, 31.0, 0.28] },
+  { name: 'r68b-glyphs-map-near', mode: 'schematic', select: 'barbarossa', ink: TEST_INK_68, view: [50.4, 31.4, 0.075] },
+  { name: 'r68c-glyphs-realistic-far', mode: 'realistic', select: 'barbarossa', ink: TEST_INK_68, view: [50.9, 31.0, 0.28] },
+  { name: 'r68d-glyphs-realistic-near', mode: 'realistic', select: 'barbarossa', ink: TEST_INK_68, view: [50.4, 31.4, 0.075] },
 ]
 
 const only = process.env.SHOT_ONLY ? new RegExp(process.env.SHOT_ONLY) : undefined

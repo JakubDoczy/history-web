@@ -3,6 +3,7 @@ import GlobeView from '../components/GlobeView.vue'
 import TopBar from '../components/TopBar.vue'
 import BottomRail from '../components/BottomRail.vue'
 import EventPanel from '../components/EventPanel.vue'
+import PointChip from '../components/PointChip.vue'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import SearchBox from '../components/SearchBox.vue'
 import ScaleBar from '../components/ScaleBar.vue'
@@ -62,6 +63,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
        in two places. See components/ModeToggle.vue. -->
   <ModeToggle />
   <EventPanel />
+  <!-- The info chip a clicked POINT opens — a named place, not an event, so
+       not the event panel. See components/PointChip.vue and lib/points.ts. -->
+  <PointChip />
   <BottomRail />
   <!-- The Wikipedia article, read inside the app, on a desktop. Mounted here
        rather than inside the panel that opens it: it is a modal over the whole

@@ -69,6 +69,11 @@ import {
   type PinDatum,
 } from '../lib/eventClusters'
 import { cameraScope, sameScope } from '../lib/viewport'
+// POINTS (round 68): the named-places context layer. See the delimited section
+// at the end of onMounted, lib/points.ts and lib/pointsLayer.ts.
+import { PointsLayer } from '../lib/pointsLayer'
+import { POINT_LABEL_MAX_SPAN_DEG } from '../lib/points'
+import { usePointsStore } from '../stores/points'
 import { stableByKey } from '../lib/stableIdentity'
 import type { Tier } from '../lib/eventTiers'
 import { primaryTag, tagColor } from '../lib/tags'
@@ -83,6 +88,7 @@ import {
 
 const events = useEventStore()
 const nations = useNationStore()
+const pointsStore = usePointsStore()
 const time = useTimeStore()
 const settings = useSettingsStore()
 const view = useViewStore()
@@ -147,6 +153,8 @@ let starsWanted = true
 let drawing: DrawingLayer | undefined
 /** Nation frontiers — the inland edges only; see lib/frontierLayer.ts. */
 let frontiers: FrontierLayer | undefined
+/** The named-places context markers (round 68). See lib/pointsLayer.ts. */
+let pointsLayer: PointsLayer | undefined
 /** The selected event's routes and their terminus dots. */
 let routes: DrawingLayer | undefined
 let resizeObs: ResizeObserver | undefined
@@ -1749,6 +1757,48 @@ onMounted(() => {
     }),
   )
 
+  /* ------------------------------------------------------------------------
+   * POINTS OF INTEREST (round 68) — everything the points layer needs of this
+   * component, in one block. The layer itself is lib/pointsLayer.ts (CSS2D
+   * markers in the pins' container, forced under them by the stylesheet at the
+   * end of this file); which points exist at the cursor's year, called what,
+   * is stores/points.ts over lib/points.ts.
+   * --------------------------------------------------------------------- */
+  pointsLayer = new PointsLayer(globe.scene(), coords)
+  // The far side of the planet: CSS2DRenderer culls the frustum but not the
+  // sphere, so the layer re-answers "which markers face the camera" whenever
+  // the camera says it moved — the same event the render pump wakes on.
+  const syncPoints = () => {
+    if (pointsLayer!.sync(globe!.camera())) wake()
+  }
+  globe.controls().addEventListener('change', syncPoints)
+  if (import.meta.env.DEV)
+    (window as unknown as { __points?: ReturnType<typeof usePointsStore> }).__points = pointsStore
+  stops.push(
+    // The set itself: the store re-resolves on cursor and setting changes, and
+    // the layer rebuilds only when the rendered content actually differs.
+    watchEffect(() => {
+      if (
+        pointsLayer!.set(pointsStore.visible, {
+          mode: mode.value,
+          onSelect: (id) => pointsStore.select(id),
+        })
+      ) {
+        syncPoints()
+        wake()
+      }
+    }),
+    // Labels ride along once the frame is down to about a continent. Reading
+    // the published (quantised) altitude rather than hooking applyPov keeps
+    // this block self-contained; a threshold crossing is far coarser than the
+    // quantisation. Hover shows a label at any zoom (CSS).
+    watchEffect(() => {
+      if (pointsLayer!.setLabels(viewSpanDeg(view.altitude, view.fov) <= POINT_LABEL_MAX_SPAN_DEG))
+        wake()
+    }),
+  )
+  /* --------------------------------------------------- end points section */
+
   resizeObs = new ResizeObserver(() => {
     globe?.width(dom.clientWidth).height(dom.clientHeight)
     // Fat lines are sized in screen pixels, so their material has to be told
@@ -1774,6 +1824,7 @@ onBeforeUnmount(() => {
   drawing?.dispose()
   routes?.dispose()
   frontiers?.dispose()
+  pointsLayer?.dispose()
   for (const m of capMaterials.values()) m.dispose()
   capMaterials.clear()
   resizeObs?.disconnect()
@@ -1844,6 +1895,22 @@ onBeforeUnmount(() => {
   font-size: 12.5px;
   letter-spacing: 0.18em;
   color: #fff;
+}
+/* ROUND 68 — words that annotate a mark rather than name a place.
+   A STRENGTH ("250,000", "6 divisions") is written along a thrust's shaft or
+   at a front's midpoint: a hair smaller and tighter than a place label, so a
+   count reads as writing ON the arrow and never outranks the name of the
+   ground it crosses. The rotation and the width-derived scale are inline on an
+   inner element (lib/drawingLayer.ts, addLabel) because CSS2DRenderer owns
+   this element's own transform. An ECHELON ('XX', 'XXX') sits above a unit
+   frame, smaller still and spaced like the tally mark it is. */
+.drawing-label--strength {
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+.drawing-label--unitsize {
+  font-size: 9px;
+  letter-spacing: 0.22em;
 }
 /* ON PAPER (lib/drawingLayer.ts, `ground`). The rule above is white letters
    inside a hard black halo, which is the only thing that reads over snowfield,
@@ -1957,5 +2024,76 @@ onBeforeUnmount(() => {
 }
 .event-pin--flat .pin-footprint {
   animation: none;
+}
+</style>
+
+<!-- POINTS (round 68). A block of its own, so the points layer's whole look is
+     in one place. Created imperatively (lib/pointsLayer.ts), so unscoped, like
+     the pins and the drawing labels above. -->
+<style>
+/* A point marker: a 16px line-art icon, centred on its coordinate — not
+   tip-anchored like a teardrop, so a point under a pin stacks under its head
+   rather than fighting it. */
+.map-point {
+  width: 16px;
+  height: 16px;
+  /* UNDER THE EVENT PINS, always. CSS2DRenderer stamps a depth-sorted inline
+     z-index (1..N) on every element in this container; an !important author
+     rule is what outranks an inline declaration (see --z-pin-selected above).
+     Pinning every point to the bottom of that range is the whole z-contract:
+     points are context, events are content, and a badge or a teardrop always
+     paints over a point sharing its spot. Points overlap each other so rarely
+     (≤25 markers on a planet) that their internal order is not worth keeping. */
+  z-index: 0 !important;
+}
+.map-point svg {
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+.map-point:hover svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) brightness(1.25);
+}
+/* The label: map text in the drawing labels' own voice, one size down and
+   quieter — a point is context. Hidden at world view (the layer adds
+   --labelled once the frame is down to about a continent, see
+   POINT_LABEL_MAX_SPAN_DEG) and shown for the hovered marker at any zoom. */
+.map-point__label {
+  position: absolute;
+  left: 19px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--cond);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d9e2ee;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  text-shadow:
+    0 0 3px rgba(2, 5, 10, 0.95),
+    0 0 6px rgba(2, 5, 10, 0.8);
+  opacity: 0;
+  transition: opacity var(--fast);
+}
+.map-point--labelled .map-point__label,
+.map-point:hover .map-point__label {
+  opacity: 0.92;
+}
+/* ON PAPER: the same inversion the drawing labels make — the map's own ink for
+   the letters, its paper for the halo, and no modelled light on the icon. */
+.map-point--flat svg {
+  filter: none;
+}
+.map-point--flat:hover svg {
+  filter: brightness(0.7);
+}
+.map-point--flat .map-point__label {
+  color: #3a3122;
+  font-weight: 700;
+  text-shadow:
+    0 0 3px rgba(240, 232, 210, 0.95),
+    0 0 6px rgba(240, 232, 210, 0.85);
 }
 </style>

@@ -62,6 +62,47 @@ describe('isDrawingSpec', () => {
     expect(isDrawingSpec({ type: 'label', pos: [1, 2], text: 'Caen', size: 'md' })).toBe(true)
   })
 
+  /**
+   * ROUND 68 — strength on the strokes and the military-map glyphs. The same
+   * checks live in check_drawing (scripts/build_event_chunks.py) and over the
+   * corpus in tests/eventsData.test.ts, the three places every drawing field
+   * is validated.
+   */
+  it('accepts a strength — free text on a thrust or a frontline', () => {
+    expect(isDrawingSpec({ type: 'thrust', path: line, strength: '250,000' })).toBe(true)
+    expect(isDrawingSpec({ type: 'thrust', path: line, strength: '6 divisions' })).toBe(true)
+    expect(isDrawingSpec({ type: 'frontline', paths: [line], strength: 'Second Army' })).toBe(true)
+  })
+
+  it('accepts the military-map markers: the unit frame and the fortress', () => {
+    expect(isDrawingSpec({ type: 'marker', pos: [1, 2], style: 'fortress' })).toBe(true)
+    expect(isDrawingSpec({ type: 'marker', pos: [1, 2], style: 'unit' })).toBe(true)
+    for (const unitType of ['infantry', 'armor', 'cavalry', 'artillery', 'mixed'])
+      expect(
+        isDrawingSpec({ type: 'marker', pos: [1, 2], style: 'unit', unitType, unitSize: 'XX' }),
+        unitType,
+      ).toBe(true)
+    // the echelon is a free string: numbered corps and non-NATO conventions
+    expect(
+      isDrawingSpec({ type: 'marker', pos: [1, 2], style: 'unit', unitSize: 'XXXX' }),
+    ).toBe(true)
+  })
+
+  it('rejects unit fields anywhere but on a unit frame, and typos in them', () => {
+    const bad: unknown[] = [
+      { type: 'thrust', path: line, strength: '' },
+      { type: 'thrust', path: line, strength: 250000 },
+      { type: 'frontline', paths: [line], strength: 6 },
+      { type: 'marker', pos: [1, 2], style: 'unit', unitType: 'panzer' },
+      { type: 'marker', pos: [1, 2], style: 'dot', unitType: 'infantry' },
+      { type: 'marker', pos: [1, 2], style: 'fortress', unitSize: 'XX' },
+      { type: 'marker', pos: [1, 2], style: 'unit', unitSize: '' },
+      { type: 'marker', pos: [1, 2], style: 'unit', unitSize: 20 },
+      { type: 'marker', pos: [1, 2], style: 'castle' },
+    ]
+    for (const b of bad) expect(isDrawingSpec(b), JSON.stringify(b)).toBe(false)
+  })
+
   it('accepts at: "overview" — the saga summary literal (round 64) — and only that string', () => {
     // structurally valid on any kind; WHERE it may appear (an event with steps,
     // never a step's own drawing) is the build script's check, mirrored over

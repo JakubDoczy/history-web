@@ -1162,6 +1162,42 @@ describe('items — drawings', () => {
   })
 
   /**
+   * ROUND 68's vocabulary, mirrored over the corpus the same way the zone is:
+   * `strength` (free text on a thrust or a frontline) and the military-map
+   * markers (`unit` with unitType/unitSize, `fortress`). The corpus may not
+   * use them yet; any later content pass that does is held to the same rules
+   * `check_drawing` and `isDrawingSpec` state.
+   */
+  it('keeps every strength text, and the unit fields on unit frames alone', () => {
+    const layers = drawn.flatMap((e) => [
+      ...e.drawing!.layers.map((l) => [e.id, l] as const),
+      ...(e.steps ?? []).flatMap(
+        (s) => s.drawing?.layers.map((l) => [`${e.id}/${s.id}`, l] as const) ?? [],
+      ),
+    ])
+    for (const [id, l] of layers) {
+      if ((l.type === 'thrust' || l.type === 'frontline') && l.strength !== undefined) {
+        expect(typeof l.strength, `${id}: strength`).toBe('string')
+        expect(l.strength.length, `${id}: strength is empty`).toBeGreaterThan(0)
+      }
+      if (l.type === 'marker') {
+        if (l.unitType !== undefined) {
+          expect(l.style, `${id}: unitType belongs to a unit frame`).toBe('unit')
+          expect(
+            ['infantry', 'armor', 'cavalry', 'artillery', 'mixed'],
+            `${id}: unitType`,
+          ).toContain(l.unitType)
+        }
+        if (l.unitSize !== undefined) {
+          expect(l.style, `${id}: unitSize belongs to a unit frame`).toBe('unit')
+          expect(typeof l.unitSize, `${id}: unitSize`).toBe('string')
+          expect(l.unitSize.length, `${id}: unitSize is empty`).toBeGreaterThan(0)
+        }
+      }
+    }
+  })
+
+  /**
    * `at` in one of its three forms, in the places each is allowed — the
    * corpus-wide mirror of `check_drawing`'s round-64 rule (and of
    * `isDrawingSpec`, which is structural and cannot see the context). The

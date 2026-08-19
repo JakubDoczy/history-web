@@ -306,7 +306,11 @@ def validate_paths(e: dict) -> None:
         check_line(e, f'path {i}', path)
 
 
-MARKER_STYLES = ('cross', 'star', 'dot', 'arrow')
+MARKER_STYLES = ('cross', 'star', 'dot', 'arrow', 'unit', 'fortress')
+
+# The interior devices a `unit` frame knows (round 68) — see `UnitType` in
+# src/lib/drawing.ts.
+UNIT_TYPES = ('infantry', 'armor', 'cavalry', 'artillery', 'mixed')
 
 
 def check_drawing(e: dict, what: str, d, overview_ok: bool = False) -> None:
@@ -362,6 +366,8 @@ def check_drawing(e: dict, what: str, d, overview_ok: bool = False) -> None:
                 sys.exit(f'{e["id"]}: {where} dash must be "solid" or "dashed"')
             if layer.get('ticks') not in (None, 'left', 'right'):
                 sys.exit(f'{e["id"]}: {where} ticks must be "left" or "right" (of travel)')
+            if 'strength' in layer and not (isinstance(layer['strength'], str) and layer['strength']):
+                sys.exit(f'{e["id"]}: {where} strength must be non-empty text ("6 divisions")')
         elif t == 'zone':
             # A ring, authored OPEN like an event's `area`, and closed by the
             # renderer. Three points is what makes it enclose anything: two is a
@@ -375,12 +381,26 @@ def check_drawing(e: dict, what: str, d, overview_ok: bool = False) -> None:
             check_line(e, f'{where} (thrust)', layer.get('path'))
             if 'taper' in layer and not isinstance(layer['taper'], bool):
                 sys.exit(f'{e["id"]}: {where} taper must be a boolean')
+            if 'strength' in layer and not (isinstance(layer['strength'], str) and layer['strength']):
+                sys.exit(f'{e["id"]}: {where} strength must be non-empty text ("250,000")')
         elif t == 'marker':
             check_point(e, f'{where} pos', layer.get('pos'))
             if layer.get('style') not in (None,) + MARKER_STYLES:
                 sys.exit(f'{e["id"]}: {where} style must be one of {MARKER_STYLES}')
             if layer.get('style') == 'arrow' and not isinstance(layer.get('bearing'), (int, float)):
                 sys.exit(f'{e["id"]}: {where} is an arrow and needs a numeric "bearing"')
+            # The unit fields belong to the unit frame (round 68): a device or
+            # an echelon on any other glyph is a typo, not a request.
+            if 'unitType' in layer:
+                if layer.get('style') != 'unit':
+                    sys.exit(f'{e["id"]}: {where} carries unitType but is not a "unit" marker')
+                if layer['unitType'] not in UNIT_TYPES:
+                    sys.exit(f'{e["id"]}: {where} unitType must be one of {UNIT_TYPES}')
+            if 'unitSize' in layer:
+                if layer.get('style') != 'unit':
+                    sys.exit(f'{e["id"]}: {where} carries unitSize but is not a "unit" marker')
+                if not (isinstance(layer['unitSize'], str) and layer['unitSize']):
+                    sys.exit(f'{e["id"]}: {where} unitSize must be non-empty text ("XX")')
         elif t == 'label':
             check_point(e, f'{where} pos', layer.get('pos'))
             if not isinstance(layer.get('text'), str) or not layer['text']:

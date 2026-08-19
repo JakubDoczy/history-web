@@ -87,8 +87,37 @@ export const altitudeForViewKm = (km: number): number => {
   return 1 / Math.cos(halfAngle) - 1
 }
 
-/** Closest approach once modern imagery is appropriate: a ~100 km view. */
-export const MIN_ALTITUDE_DETAIL = altitudeForViewKm(100)
+/**
+ * ROUND 68: EVERY ERA'S CLOSEST APPROACH STOPS TEN TIMES FURTHER OUT.
+ *
+ * "Lower the max zoom for all eras by about 10x." The two floors below are the
+ * only closest-approach limits the camera has (GlobeView writes them into
+ * `controls().minDistance` through `minAltitudeFor`), and both are scaled by
+ * this one factor so the ratio between the eras — the pre-1930 clamp is about
+ * what a photograph may claim of a century, not about zoom comfort — survives
+ * the change. The FIT floor (`MIN_FIT_ALTITUDE` in lib/geoFocus.ts, ~300 km)
+ * is a different thing — how close "Show on map" frames an event — and is
+ * deliberately untouched.
+ *
+ * What the factor does to the numbers: the satellite-era floor goes from
+ * 3.07e-5 R (a 196 m eye, a ~180 m frame) to 3.07e-4 R (a ~2 km eye, a ~1.8 km
+ * frame); the pre-1930 floor goes from 1.68e-2 R (a 107 km eye, a 100 km
+ * frame) to 1.68e-1 R (a ~1070 km eye, a ~1000 km frame). Checked against the
+ * corpus: the closest authored step camera sits at 1.6e-3 R (a ~9.5 km frame),
+ * five times above the new satellite-era floor, so every authored framing is
+ * still reachable in the modes plans are authored for; a step camera under a
+ * floor is clamped by OrbitControls' own `minDistance`, exactly as pre-1930
+ * step cameras already were under the old pre-era floor in imagery mode.
+ *
+ * And to the pyramid: nothing becomes unreachable. At the new floor a 900 px
+ * viewport still wants raw level ~16 (`levelWanted`), so `DRAWN_Z_MAX` = 11
+ * and imagery's z12 are both still exercised — the old floor overshot the
+ * ceiling by ~7 levels and the new one overshoots it by ~4.
+ */
+export const ZOOM_FLOOR_SCALE = 10
+
+/** Closest approach once modern imagery is appropriate. See ZOOM_FLOOR_SCALE. */
+export const MIN_ALTITUDE_DETAIL = altitudeForViewKm(100) * ZOOM_FLOOR_SCALE
 
 /** Ground span, across the frame, of the closest view allowed before 1930. */
 export const PRE_ERA_VIEW_KM = 100
@@ -117,8 +146,11 @@ export const altitudeForFrameKm = (km: number, fovDeg = DEFAULT_FOV): number => 
  * whole city is a smudge a few pixels wide and no road exists at all — the
  * scale of a regional map rather than a street map, which is the scale at which
  * modern imagery stops making a claim about the century on screen.
+ *
+ * Scaled with the other floor (see ZOOM_FLOOR_SCALE), so the pre-1930 clamp
+ * stays the stricter of the two by the same margin it always was.
  */
-export const MIN_ALTITUDE_PRE_ERA = altitudeForFrameKm(PRE_ERA_VIEW_KM)
+export const MIN_ALTITUDE_PRE_ERA = altitudeForFrameKm(PRE_ERA_VIEW_KM) * ZOOM_FLOOR_SCALE
 
 /**
  * How close the camera may come. Inverted from the old rule: the era no longer

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { defaultPaletteFor, type Palette } from '../lib/palette'
 import { DEFAULT_MODE, type RenderMode } from '../lib/present/mode'
+import { POINTS_SHOWN } from '../lib/points'
 
 export type ToggleKey =
   | 'clouds'
@@ -27,6 +28,15 @@ export const useSettingsStore = defineStore('settings', {
      * hides so much.
      */
     maxEvents: MAX_EVENTS.default as number,
+    /**
+     * How many POINTS — the named-places context layer (lib/points.ts) — the
+     * globe may show at once. Not part of the event budget above: points are
+     * context under the pins, ranked by their own per-era priorities. Zero is
+     * a real value and switches the layer off. Bounds live in `POINTS_SHOWN`
+     * beside the resolution they feed, and the store getter clamps, so a bad
+     * write cannot blow the slice up.
+     */
+    maxPoints: POINTS_SHOWN.default as number,
     /**
      * Show the minor tier: everything absent from data/events/ranking.txt,
      * including the birth and death pins derived from every person. Off by

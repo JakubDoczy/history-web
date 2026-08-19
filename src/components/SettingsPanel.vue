@@ -11,6 +11,7 @@ import { framesFor } from '../data/paleoTextures'
 import { DRAWN_ATTRIBUTION } from '../lib/drawnSource'
 import { buildLabel } from '../lib/build'
 import { MODERN_FROM } from '../lib/modernBorders'
+import { POINTS_SHOWN } from '../lib/points'
 
 const events = useEventStore()
 const settings = useSettingsStore()
@@ -18,7 +19,7 @@ const ui = useUiStore()
 const view = useViewStore()
 const time = useTimeStore()
 
-type Section = 'events' | 'imagery' | 'sky' | 'light' | 'display'
+type Section = 'events' | 'points' | 'imagery' | 'sky' | 'light' | 'display'
 /**
  * The credit line follows the MODE, not just the year: map mode draws the same
  * deep-time reconstructions (PALEOMAP, credited as ever) but its modern frame is
@@ -149,6 +150,56 @@ const imageryLine = () => {
           >
             Clear all filters
           </button>
+        </div>
+      </section>
+
+      <!-- POINTS (round 68): the named-places context layer — not events, not
+           part of the event budget, culled by its own per-era priorities. One
+           control: how many the globe may carry, zero switching the layer off.
+           See lib/points.ts and docs/design/points.md. -->
+      <section>
+        <button
+          class="row-head"
+          :class="{ open: open === 'points' }"
+          :aria-expanded="open === 'points'"
+          @click="toggleSection('points')"
+        >
+          <span>Points</span>
+          <svg
+            class="chev"
+            :class="{ up: open === 'points' }"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        <div v-if="open === 'points'" class="body">
+          <label class="slider-row" for="max-points"
+            ><span>Points shown</span
+            ><strong class="tnum" data-test="points-shown">{{
+              settings.maxPoints === 0 ? 'Off' : settings.maxPoints
+            }}</strong></label
+          >
+          <input
+            id="max-points"
+            v-model.number="settings.maxPoints"
+            type="range"
+            data-test="points-slider"
+            :min="POINTS_SHOWN.min"
+            :max="POINTS_SHOWN.max"
+            :step="POINTS_SHOWN.step"
+          />
+          <p class="hint">
+            Named places of the year — cities, fortresses, volcanoes, straits — drawn as
+            small ink marks under the event pins. Each has its own eras: what exists and
+            what matters follows the year. Zero hides the layer.
+          </p>
         </div>
       </section>
 

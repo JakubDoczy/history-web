@@ -28,14 +28,20 @@ import {
   capGeometry,
   crossesFold,
   drawingExtentDeg,
+  FORTRESS_PLAN,
+  GLYPH_STROKE,
+  UNIT_FRAME,
   glyphShape,
   groundFactor,
   headOf,
   inkLift,
   maxChordDeg,
+  midOf,
+  outlineBand,
   splitAtFacets,
   offsetPoint,
   offsetPolygon,
+  textAngleDeg,
   ribbonGeometry,
   tailCap,
   tangentFrame,
@@ -197,6 +203,172 @@ describe('glyphShape', () => {
           MARK_CASING_OUTSET * 0.5,
         )
       }
+    }
+  })
+})
+
+/**
+ * ROUND 68 — the military-map glyphs: the APP-6 unit frame and the star fort.
+ * Line art built from the same triangle fans as every glyph, so the geometry
+ * is countable: an outline band is one quad per ring edge, a saltire is one
+ * closed ring, a device is a known number of extra polygons.
+ */
+describe('glyphShape — military glyphs (round 68)', () => {
+  it('draws the unit frame as a four-quad outline band', () => {
+    const parts = glyphShape('unit')
+    expect(parts).toHaveLength(4)
+    for (const poly of parts) expect(poly).toHaveLength(4)
+  })
+
+  it('shapes the frame to APP-6: half again as wide as it is tall', () => {
+    expect(UNIT_FRAME.w / UNIT_FRAME.h).toBeCloseTo(1.5, 9)
+    const pts = glyphShape('unit').flat()
+    const reachX = Math.max(...pts.map(([x]) => x))
+    const reachY = Math.max(...pts.map(([, y]) => y))
+    expect(reachX).toBeCloseTo(UNIT_FRAME.w + GLYPH_STROKE, 9)
+    expect(reachY).toBeCloseTo(UNIT_FRAME.h + GLYPH_STROKE, 9)
+  })
+
+  it('adds the interior device each unitType names, and only that', () => {
+    const frame = glyphShape('unit').length
+    // infantry: the saltire, ONE closed ring (two crossed bars would blend
+    // twice where they cross — the round-63 cross defect)
+    expect(glyphShape('unit', 0, 'infantry')).toHaveLength(frame + 1)
+    // armor: the oval, a 20-edge outline band
+    expect(glyphShape('unit', 0, 'armor')).toHaveLength(frame + 20)
+    // cavalry: the single diagonal, one stroke quad
+    expect(glyphShape('unit', 0, 'cavalry')).toHaveLength(frame + 1)
+    // artillery: the filled dot, one fan
+    expect(glyphShape('unit', 0, 'artillery')).toHaveLength(frame + 1)
+    // mixed: saltire over oval
+    expect(glyphShape('unit', 0, 'mixed')).toHaveLength(frame + 21)
+  })
+
+  it('fans the saltire from its own centre and closes it, like the battle cross', () => {
+    const parts = glyphShape('unit', 0, 'infantry')
+    const saltire = parts[parts.length - 1]
+    expect(saltire[0]).toEqual([0, 0])
+    expect(saltire[1][0]).toBeCloseTo(saltire[saltire.length - 1][0], 12)
+    expect(saltire[1][1]).toBeCloseTo(saltire[saltire.length - 1][1], 12)
+    // …and it is an X across the frame's interior: it reaches into all four
+    // quadrants and stays inside the frame's own stroke
+    for (const [sx, sy] of [
+      [1, 1],
+      [-1, 1],
+      [1, -1],
+      [-1, -1],
+    ])
+      expect(
+        saltire.some(([x, y]) => x * sx > 0.4 && y * sy > 0.25),
+        `quadrant ${sx},${sy}`,
+      ).toBe(true)
+    for (const [x, y] of saltire) {
+      expect(Math.abs(x)).toBeLessThan(UNIT_FRAME.w - GLYPH_STROKE)
+      expect(Math.abs(y)).toBeLessThan(UNIT_FRAME.h - GLYPH_STROKE)
+    }
+  })
+
+  it('keeps every device inside the frame, so nothing double-blends against it', () => {
+    for (const unitType of ['infantry', 'armor', 'cavalry', 'artillery', 'mixed'] as const) {
+      const frame = glyphShape('unit').length
+      const device = glyphShape('unit', 0, unitType).slice(frame).flat()
+      for (const [x, y] of device) {
+        expect(Math.abs(x), unitType).toBeLessThan(UNIT_FRAME.w - GLYPH_STROKE)
+        expect(Math.abs(y), unitType).toBeLessThan(UNIT_FRAME.h - GLYPH_STROKE)
+      }
+    }
+  })
+
+  it('draws the fortress as a ten-quad band: five bastion tips, five wall points', () => {
+    const parts = glyphShape('fortress')
+    expect(parts).toHaveLength(FORTRESS_PLAN.bastions * 2)
+    for (const poly of parts) expect(poly).toHaveLength(4)
+    const pts = parts.flat()
+    // a bastion tip due north at the full radius (plus the stroke)…
+    const north = Math.max(...pts.map(([, y]) => y))
+    expect(north).toBeGreaterThan(FORTRESS_PLAN.tip)
+    expect(north).toBeLessThan(FORTRESS_PLAN.tip + GLYPH_STROKE * 3)
+    // …and the walls drawn well back from the tips, or it is a decagon
+    expect(FORTRESS_PLAN.wall).toBeLessThan(FORTRESS_PLAN.tip * 0.75)
+  })
+
+  it('cases the new glyphs like every glyph: the outset grows them outward', () => {
+    for (const [style, unitType] of [
+      ['unit', undefined],
+      ['unit', 'infantry'],
+      ['fortress', undefined],
+    ] as const) {
+      const plain = glyphShape(style, 0, unitType)
+      const cased = glyphShape(style, MARK_CASING_OUTSET, unitType)
+      expect(cased.length, style).toBe(plain.length)
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2
+        const reach = (parts: [number, number][][]) =>
+          Math.max(...parts.flat().map(([x, y]) => x * Math.cos(a) + y * Math.sin(a)))
+        // the strokes grow by CROSS_CASING_BAR of the outset (the cross's own
+        // rule, for the same reason: a full outset on a thin stroke closes
+        // the frame's notches), so the rim floor is half of that
+        expect(reach(cased) - reach(plain), `${style} @ ${k}`).toBeGreaterThan(
+          MARK_CASING_OUTSET * 0.25,
+        )
+      }
+    }
+  })
+
+  it('bands an outline without overlap: neighbouring quads share their corners', () => {
+    const ring: [number, number][] = [
+      [-1, -1],
+      [1, -1],
+      [1, 1],
+      [-1, 1],
+    ]
+    const band = outlineBand(ring, 0.1)
+    expect(band).toHaveLength(4)
+    for (let i = 0; i < band.length; i++) {
+      const next = band[(i + 1) % band.length]
+      // quad i's outer/inner END corners are quad i+1's START corners, exactly
+      expect(band[i][1]).toEqual(next[0])
+      expect(band[i][2]).toEqual(next[3])
+    }
+  })
+})
+
+/**
+ * ROUND 68 — where a strength label sits and which way it runs.
+ */
+describe('midOf and textAngleDeg', () => {
+  it('finds the midpoint by arc length, not by vertex index', () => {
+    // three vertices, unevenly spaced: the middle of the LINE is at lng 5,
+    // nowhere near the middle vertex
+    const mid = midOf([
+      [0, 0],
+      [8, 0],
+      [10, 0],
+    ])
+    expect(mid.lng).toBeCloseTo(5, 6)
+    expect(mid.lat).toBeCloseTo(0, 6)
+    expect(mid.bearing).toBeCloseTo(90, 6)
+  })
+
+  it('crosses the antimeridian without labelling the far side of the planet', () => {
+    const mid = midOf([
+      [179, 0],
+      [-179, 0],
+    ])
+    expect(Math.abs(Math.abs(mid.lng) - 180)).toBeLessThan(1e-6)
+    expect(mid.bearing).toBeCloseTo(90, 6)
+  })
+
+  it('lays text along the bearing and keeps it upright', () => {
+    expect(textAngleDeg(90)).toBeCloseTo(0, 9) // east: horizontal
+    expect(textAngleDeg(270)).toBeCloseTo(0, 9) // west: flipped upright
+    expect(textAngleDeg(45)).toBeCloseTo(-45, 9) // north-east: uphill
+    expect(textAngleDeg(135)).toBeCloseTo(45, 9) // south-east: downhill
+    expect(textAngleDeg(225)).toBeCloseTo(-45, 9) // south-west reads north-east
+    // never upside down, whatever the bearing
+    for (let b = 0; b < 360; b += 7) {
+      const a = textAngleDeg(b)
+      expect(Math.abs(a), `${b}`).toBeLessThanOrEqual(90)
     }
   })
 })

@@ -27,8 +27,16 @@ import { directionOf, isGeoPath, type GeoPath, type PathDirection } from './path
  *                  that belongs to the operation rather than to the event's
  *                  whole footprint.
  *  · `marker`    — a point with a glyph: a battle cross, a star, a dot, a
- *                  chevron. Where something happened.
+ *                  chevron — and, since round 68, the military-map symbols: a
+ *                  NATO APP-6 friendly-unit frame (`unit`, with an optional
+ *                  interior device and an echelon string above it) and a
+ *                  bastioned star fort (`fortress`). Where something happened,
+ *                  or what stood there.
  *  · `label`     — words on the map. Small caps, haloed, no leader line.
+ *
+ * A `thrust` or a `frontline` may also carry `strength` (round 68) — free text
+ * ("250,000", "6 divisions") set along the shaft / at the line's midpoint in
+ * the map-label style, which is what puts troop counts on the arrows.
  *
  * Everything is `[lng, lat]`, GeoJSON order, like every other coordinate in the
  * dataset. Colour defaults to the event's tag colour and is overridable per
@@ -121,6 +129,11 @@ export interface FrontlineSpec extends DrawingCommon {
    * authored before this existed relies on.
    */
   ticks?: FrontlineTicks
+  /**
+   * What held the line, as free text — "6 divisions", "250,000". Set at the
+   * line's midpoint in the map-label style. See ThrustSpec.strength.
+   */
+  strength?: string
 }
 
 /**
@@ -140,6 +153,16 @@ export interface ThrustSpec extends DrawingCommon {
   width?: number
   /** Narrow at the tail, full width at the head. Default true. */
   taper?: boolean
+  /**
+   * What the arrow is made of, as free text: "250,000", "6 divisions", "Second
+   * Army". ROUND 68 — "I want to see things like for example troop counts on
+   * some arrows." Set along the shaft at its midpoint, oriented on the spine's
+   * mid-tangent and sized with the thrust's own width, in the map-label style
+   * (small caps, haloed), so it reads on both grounds. Free text on purpose:
+   * a count, an echelon and a name are all things an operational map writes
+   * on an arrow, and the schema should not have an opinion about which.
+   */
+  strength?: string
 }
 
 /**
@@ -164,7 +187,39 @@ export interface ZoneSpec extends DrawingCommon {
   ring: GeoPath
 }
 
-export type MarkerStyle = 'cross' | 'star' | 'dot' | 'arrow'
+/**
+ * ROUND 68 adds the military-map glyphs — "really custom paintings", NATO
+ * markings on divisions and fortresses.
+ *
+ *  · `unit`     — the APP-6 friendly-unit frame: a rectangle, monochrome
+ *                 line-art in the layer's colour, with an optional interior
+ *                 device (`unitType`) and an optional echelon string above the
+ *                 frame (`unitSize`).
+ *  · `fortress` — a bastioned star fort in outline: a pentagon with pointed
+ *                 bastions, the plan-view symbol every C17 map draws a
+ *                 fortified place with.
+ *
+ * Both are ordinary markers: sized in degrees of arc, cased like every glyph,
+ * coloured by the layer (a two-sided battle already overrides colour per
+ * layer), legible on both grounds through `markInk`.
+ */
+export type MarkerStyle = 'cross' | 'star' | 'dot' | 'arrow' | 'unit' | 'fortress'
+
+/**
+ * The interior device of a `unit` frame — the APP-6 friendly-unit icons this
+ * vocabulary knows: infantry is the saltire, armor the oval, cavalry the single
+ * diagonal, artillery the filled dot, mixed (mechanised infantry) the saltire
+ * over the oval.
+ */
+export type UnitType = 'infantry' | 'armor' | 'cavalry' | 'artillery' | 'mixed'
+
+export const UNIT_TYPES: readonly UnitType[] = [
+  'infantry',
+  'armor',
+  'cavalry',
+  'artillery',
+  'mixed',
+]
 
 /** A point with a glyph on it. */
 export interface MarkerSpec extends DrawingCommon {
@@ -176,6 +231,14 @@ export interface MarkerSpec extends DrawingCommon {
   size?: number
   /** Degrees clockwise from north. Only 'arrow' is oriented. */
   bearing?: number
+  /** The interior device. Only a `unit` frame has an interior to draw in. */
+  unitType?: UnitType
+  /**
+   * The echelon, set above the frame as small text: 'X' brigade, 'XX'
+   * division, 'XXX' corps, 'XXXX' army. Free string — a numbered echelon or a
+   * non-NATO convention is as sayable as the standard four.
+   */
+  unitSize?: string
 }
 
 /** Words on the map. */
@@ -238,6 +301,8 @@ const isPos = (p: unknown): p is [number, number] =>
 
 const isColor = (c: unknown) => c === undefined || (typeof c === 'string' && c.length > 0)
 const isSize = (n: unknown) => n === undefined || (typeof n === 'number' && n > 0 && n < 90)
+/** Free text that is actually text: `strength`, `unitSize`. */
+const isText = (t: unknown) => t === undefined || (typeof t === 'string' && t.length > 0)
 
 /** Is this one drawable layer? The runtime twin of `validate_drawing`. */
 export function isDrawingSpec(l: unknown): l is DrawingSpec {
@@ -265,10 +330,16 @@ export function isDrawingSpec(l: unknown): l is DrawingSpec {
         s.paths.every(isGeoPath) &&
         (s.dash === undefined || s.dash === 'solid' || s.dash === 'dashed') &&
         (s.ticks === undefined || s.ticks === 'left' || s.ticks === 'right') &&
-        isSize(s.width)
+        isSize(s.width) &&
+        isText(s.strength)
       )
     case 'thrust':
-      return isGeoPath(s.path) && isSize(s.width) && (s.taper === undefined || typeof s.taper === 'boolean')
+      return (
+        isGeoPath(s.path) &&
+        isSize(s.width) &&
+        (s.taper === undefined || typeof s.taper === 'boolean') &&
+        isText(s.strength)
+      )
     case 'zone':
       // A ring, not a line: `isGeoPath` checks the coordinates, and three points
       // is what makes the thing enclose anything at all.
@@ -276,9 +347,16 @@ export function isDrawingSpec(l: unknown): l is DrawingSpec {
     case 'marker':
       return (
         isPos(s.pos) &&
-        (s.style === undefined || (['cross', 'star', 'dot', 'arrow'] as unknown[]).includes(s.style)) &&
+        (s.style === undefined ||
+          (['cross', 'star', 'dot', 'arrow', 'unit', 'fortress'] as unknown[]).includes(s.style)) &&
         isSize(s.size) &&
-        (s.bearing === undefined || Number.isFinite(s.bearing))
+        (s.bearing === undefined || Number.isFinite(s.bearing)) &&
+        // The unit fields belong to the unit frame: an interior device on a dot
+        // is a typo, and this guard is structural — the same layer says both.
+        (s.unitType === undefined ||
+          (s.style === 'unit' && (UNIT_TYPES as unknown[]).includes(s.unitType))) &&
+        (s.unitSize === undefined ||
+          (s.style === 'unit' && typeof s.unitSize === 'string' && s.unitSize.length > 0))
       )
     case 'label':
       return (

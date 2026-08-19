@@ -44,6 +44,7 @@ import {
   type DrawingSpec,
   type FrontlineTicks,
   type MarkerStyle,
+  type UnitType,
 } from './drawing'
 import { markInk, STROKE_CASING } from './present/ink'
 
@@ -606,25 +607,74 @@ const CROSS_CASING_BAR = 0.55
 export const MARK_CASING_OUTSET = 0.22
 
 /**
+ * Half-width of the military glyphs' line-art strokes, in glyph units.
+ *
+ * ROUND 68. A unit frame and a fortress are LINE ART — a symbol is its outline,
+ * not a filled block — and this is the pen they are drawn with. 0.09 of the
+ * size puts about the same ink on a 0.45° unit frame as `CROSS_BAR` puts on a
+ * battle cross of the same footprint, which is what keeps the new glyphs in
+ * the house weight next to the old ones.
+ */
+export const GLYPH_STROKE = 0.09
+
+/**
+ * The APP-6 unit frame's half-extents, in glyph units: a rectangle half again
+ * as wide as tall, which is the standard's own proportion for a friendly-unit
+ * frame (friend = rectangle; the app draws no hostile diamonds — both sides of
+ * a battle are drawn in their layer's colour, which is this map's convention
+ * for allegiance already).
+ */
+export const UNIT_FRAME = { w: 1, h: 2 / 3 } as const
+
+/** How far a unit frame's interior device stands clear of the frame's stroke. */
+export const UNIT_DEVICE_INSET = GLYPH_STROKE * 2
+
+/**
+ * The star fort's plan, in glyph units: five bastion tips at the full radius,
+ * walls drawn back between them. Five because a pentagon with pointed bastions
+ * is the trace italienne every seventeenth-century plan draws — three reads as
+ * a triangle and six as a snowflake.
+ */
+export const FORTRESS_PLAN = { bastions: 5, tip: 1, wall: 0.72 } as const
+
+/**
  * The 2-D outline of each marker glyph, in units of its `size` (a radius). x is
  * east, y is north before any bearing is applied.
  *
  * Every entry is a TRIANGLE FAN around its FIRST point, and that constraint is
  * the whole trick: no triangulation library, no winding rules, and the same six
- * lines of code place all four glyphs. It does mean the first point has to see
+ * lines of code place all the glyphs. It does mean the first point has to see
  * every edge — which is true of a rectangle from any corner and of a chevron
  * from its tip, but *not* of a star from one of its points. A star fanned from a
  * point renders as a lopsided dart (it did), so the star and the circle carry an
  * explicit centre as their first vertex and repeat their first ring point at the
  * end to close the loop.
  *
+ * The LINE-ART glyphs (round 68: `unit`, `fortress`) are made of the same fans:
+ * an outline is the band between a ring offset outward and inward by the
+ * stroke's half-width (`outlineBand`), one convex quad per edge, and a straight
+ * stroke is one quad. Mitred corners are shared between neighbouring quads, so
+ * a band never overlaps itself — two transparent sheets over one piece of
+ * ground blend twice, which is the round-63 cross defect and the reason the
+ * saltire inside an infantry frame is one 12-point outline rather than two
+ * crossed bars.
+ *
  * `outset` grows the shape outward by that many glyph units, for the casing pass
  * (`MARK_CASING_OUTSET`). It is a true outset for the dot, the cross and the
  * star; for the chevron it is a scale about the origin, which is the same thing
  * everywhere except at the tail notch, where it deepens the notch by a fifth of
- * the outset. A casing's job is a rim, and the notch has a rim either way.
+ * the outset. The line-art glyphs grow their STROKES by `CROSS_CASING_BAR` of
+ * it, for the reason the cross's bars do: a thin stroke fattened by the whole
+ * outset on both sides closes its own notches and the frame stops reading as a
+ * frame.
+ *
+ * `unitType` is read by `unit` alone: the APP-6 interior device.
  */
-export function glyphShape(style: MarkerStyle, outset = 0): [number, number][][] {
+export function glyphShape(
+  style: MarkerStyle,
+  outset = 0,
+  unitType?: UnitType,
+): [number, number][][] {
   switch (style) {
     case 'dot': {
       const r = 1 + outset
@@ -695,7 +745,158 @@ export function glyphShape(style: MarkerStyle, outset = 0): [number, number][][]
         ).map(([x, y]) => [x * k, y * k]),
       ]
     }
+    case 'unit': {
+      // The APP-6 friendly-unit frame: a rectangle in line art, with the
+      // interior device the unitType names. Monochrome on purpose — the
+      // layer's colour is the allegiance, exactly as it is for every thrust
+      // and frontline of a two-sided battle.
+      const t = GLYPH_STROKE + outset * CROSS_CASING_BAR
+      const { w, h } = UNIT_FRAME
+      const polys = outlineBand(
+        [
+          [-w, -h],
+          [w, -h],
+          [w, h],
+          [-w, h],
+        ],
+        t,
+      )
+      // The device stops clear of the frame's inner edge: butting against it
+      // would blend twice where the two meet (see the fan comment above).
+      const dw = w - GLYPH_STROKE - UNIT_DEVICE_INSET
+      const dh = h - GLYPH_STROKE - UNIT_DEVICE_INSET
+      const saltire = () => [saltireRing(dw, dh, t / ((dw + dh) / 2))]
+      const oval = (rx: number, ry: number) => outlineBand(ellipseRing(rx, ry), t)
+      switch (unitType) {
+        case 'infantry':
+          polys.push(...saltire())
+          break
+        case 'armor':
+          polys.push(...oval(dw * 0.72, dh * 0.6))
+          break
+        case 'cavalry':
+          // the single diagonal, lower-left to upper-right, lengthened by the
+          // casing's own growth so the rim wraps its ends too
+          polys.push(strokeQuad([-dw, -dh], [dw, dh], t, outset * CROSS_CASING_BAR))
+          break
+        case 'artillery': {
+          // the filled dot — the one device that is a solid, like the marker dot
+          const r = 0.24 + outset * CROSS_CASING_BAR
+          const ring: [number, number][] = [[0, 0]]
+          for (let i = 0; i <= 14; i++) {
+            const a = (i / 14) * Math.PI * 2
+            ring.push([Math.cos(a) * r, Math.sin(a) * r])
+          }
+          polys.push(ring)
+          break
+        }
+        case 'mixed':
+          // mechanised: the saltire over the oval, as APP-6 composes them. The
+          // two devices cross in four small patches that blend twice; at a
+          // glyph's opacity that is a 5% lightening over a few pixels, judged
+          // acceptable against drawing the union outline of an X and an oval.
+          polys.push(...saltire(), ...oval(dw * 0.72, dh * 0.6))
+          break
+      }
+      return polys
+    }
+    case 'fortress': {
+      // The trace italienne in plan: five pointed bastions round a pentagon,
+      // as an outline. One closed ring, banded, so nothing overlaps.
+      const t = GLYPH_STROKE + outset * CROSS_CASING_BAR
+      const ring: [number, number][] = []
+      const n = FORTRESS_PLAN.bastions * 2
+      for (let i = 0; i < n; i++) {
+        const a = Math.PI / 2 + (i / n) * Math.PI * 2
+        const r = i % 2 === 0 ? FORTRESS_PLAN.tip : FORTRESS_PLAN.wall
+        ring.push([Math.cos(a) * r, Math.sin(a) * r])
+      }
+      return outlineBand(ring, t)
+    }
   }
+}
+
+/**
+ * A closed ring drawn as LINE ART: the band between the ring offset outward and
+ * inward by the stroke's half-width, one quad per edge, each a fan from its own
+ * first corner. The mitred corners come from `offsetPolygon`, so neighbouring
+ * quads share their boundary vertices exactly — no crack, and no overlap for
+ * transparency to double-blend.
+ */
+export function outlineBand(ring: [number, number][], halfW: number): [number, number][][] {
+  const outer = offsetPolygon(ring, halfW)
+  const inner = offsetPolygon(ring, -halfW)
+  const out: [number, number][][] = []
+  for (let i = 0; i < ring.length; i++) {
+    const j = (i + 1) % ring.length
+    out.push([outer[i], outer[j], inner[j], inner[i]])
+  }
+  return out
+}
+
+/**
+ * One straight stroke as a quad: `a` to `b` at half-width `halfW`, the ends
+ * pushed out by `lengthen` so a casing pass wraps them as well as the sides.
+ */
+function strokeQuad(
+  a: [number, number],
+  b: [number, number],
+  halfW: number,
+  lengthen = 0,
+): [number, number][] {
+  const dx = b[0] - a[0]
+  const dy = b[1] - a[1]
+  const len = Math.hypot(dx, dy) || 1
+  const ux = dx / len
+  const uy = dy / len
+  const px = -uy * halfW
+  const py = ux * halfW
+  const a2 = [a[0] - ux * lengthen, a[1] - uy * lengthen]
+  const b2 = [b[0] + ux * lengthen, b[1] + uy * lengthen]
+  return [
+    [a2[0] + px, a2[1] + py],
+    [b2[0] + px, b2[1] + py],
+    [b2[0] - px, b2[1] - py],
+    [a2[0] - px, a2[1] - py],
+  ]
+}
+
+/**
+ * The infantry saltire as ONE closed outline — two bars drawn as two quads
+ * would blend twice where they cross, the round-63 cross defect. Built the way
+ * the battle cross is: the 12-point outline of a plus of half-width `t`,
+ * turned 45° and stretched anisotropically so its four tips land on the
+ * corners (±w, ±h). The stretch keeps it one ring fanned from its own centre,
+ * which every point of an X can see.
+ */
+function saltireRing(w: number, h: number, t: number): [number, number][] {
+  const plus: [number, number][] = [
+    [1, t],
+    [t, t],
+    [t, 1],
+    [-t, 1],
+    [-t, t],
+    [-1, t],
+    [-1, -t],
+    [-t, -t],
+    [-t, -1],
+    [t, -1],
+    [t, -t],
+    [1, -t],
+  ]
+  // rotate 45° then scale to the corners; the two compose to this one map
+  const pts = plus.map(([x, y]): [number, number] => [(x - y) * w, (x + y) * h])
+  return [[0, 0], ...pts, pts[0]]
+}
+
+/** A closed ellipse ring, for the armor oval. Twenty edges is a smooth oval. */
+function ellipseRing(rx: number, ry: number, segments = 20): [number, number][] {
+  const pts: [number, number][] = []
+  for (let i = 0; i < segments; i++) {
+    const a = (i / segments) * Math.PI * 2
+    pts.push([Math.cos(a) * rx, Math.sin(a) * ry])
+  }
+  return pts
 }
 
 /**
@@ -1244,6 +1445,50 @@ export function headOf(path: GeoPath): { lng: number; lat: number; bearing: numb
 }
 
 /**
+ * The midpoint of a polyline BY ARC LENGTH, and the bearing through it — where
+ * a `strength` label sits and which way it runs (round 68). Arc length rather
+ * than the middle vertex for the reason `ribbonGeometry`'s taper is: the spine
+ * is cut at facet folds and densified unevenly, and "halfway along the arrow"
+ * is a place, not an index.
+ */
+export function midOf(path: GeoPath): { lng: number; lat: number; bearing: number } {
+  if (path.length === 1) return { lng: path[0][0], lat: path[0][1], bearing: 0 }
+  const cum: number[] = [0]
+  for (let i = 1; i < path.length; i++)
+    cum.push(cum[i - 1] + separationDeg(path[i - 1][1], path[i - 1][0], path[i][1], path[i][0]))
+  const half = cum[cum.length - 1] / 2
+  let i = 1
+  while (i < path.length - 1 && cum[i] < half) i++
+  const a = path[i - 1]
+  const b = path[i]
+  const seg = cum[i] - cum[i - 1]
+  const f = seg > 0 ? (half - cum[i - 1]) / seg : 0
+  const dLng = ((b[0] - a[0] + 540) % 360) - 180
+  const lng = ((a[0] + dLng * f + 540) % 360) - 180
+  const lat = a[1] + (b[1] - a[1]) * f
+  const east = dLng * Math.cos(lat * RAD)
+  const bearing = (Math.atan2(east, b[1] - a[1]) / RAD + 360) % 360
+  return { lng, lat, bearing }
+}
+
+/**
+ * A bearing, as the CSS rotation that lays text ALONG it, kept upright.
+ *
+ * The globe's camera never rolls, so at the centre of the frame screen-up is
+ * north and text running along bearing b is rotated (b − 90°) clockwise from
+ * horizontal; anything that would come out upside-down is turned 180°, because
+ * a map label reads along a line in whichever direction keeps it legible. Away
+ * from the frame's centre meridian convergence tilts this by a few degrees —
+ * accepted, because a CSS2D label is placed once per build and the exact
+ * screen tangent is a per-frame projection this layer deliberately never does.
+ */
+export function textAngleDeg(bearing: number): number {
+  let a = (((bearing - 90) % 360) + 360) % 360
+  if (a > 90 && a <= 270) a -= 180
+  return ((a + 540) % 360) - 180
+}
+
+/**
  * Trim `headLen` degrees off the end of a path — where the shaft stops so the
  * arrowhead can start. Returns at least the first two points, since a ribbon
  * needs a direction even when the head eats the whole spine.
@@ -1531,6 +1776,17 @@ export class DrawingLayer {
         break
       case 'frontline':
         for (const path of spec.paths) this.addLine(path, color, spec, alt, order)
+        // The strength at the LINE's midpoint (round 68) — of the first path,
+        // because a multi-path front is one front and one count, and writing
+        // it once per piece would claim the count once per piece.
+        if (spec.strength && spec.paths.length && spec.paths[0].length >= 2) {
+          const mid = midOf(densifyPath(spec.paths[0], ROUTE_SEGMENT_DEG))
+          this.addLabel(
+            { type: 'label', pos: [mid.lng, mid.lat], text: spec.strength },
+            alt,
+            { extraClass: 'drawing-label--strength' },
+          )
+        }
         break
       case 'thrust':
         this.addThrust(spec, color, alt, order)
@@ -1970,6 +2226,21 @@ export class DrawingLayer {
       this.group.add(headMesh)
       this.geometries.push(headGeom)
     }
+
+    // THE STRENGTH ALONG THE SHAFT (round 68) — "troop counts on some arrows".
+    // At the smoothed spine's own midpoint, laid along the mid-tangent so it
+    // reads as writing ON the arrow rather than a caption near it, and sized
+    // with the shaft: an army group's ribbon carries a bigger count than a
+    // division's. √ of the width ratio, because label area is what the eye
+    // sizes and the default already reads at 1.
+    if (spec.strength) {
+      const mid = midOf(spine)
+      this.addLabel({ type: 'label', pos: [mid.lng, mid.lat], text: spec.strength }, alt, {
+        extraClass: 'drawing-label--strength',
+        rotateDeg: textAngleDeg(mid.bearing),
+        scale: Math.min(1.6, Math.max(0.8, Math.sqrt(w / THRUST_WIDTH_DEG))),
+      })
+    }
   }
 
   /**
@@ -2002,7 +2273,7 @@ export class DrawingLayer {
     const ink = markInk(hex, this.ground)
     const glyph = (outset: number) =>
       fanGeometry(
-        glyphShape(style, outset),
+        glyphShape(style, outset, spec.unitType),
         spec.pos[0],
         spec.pos[1],
         size,
@@ -2039,6 +2310,20 @@ export class DrawingLayer {
       this.geometries.push(geom)
       this.materials.push(mat)
     }
+    // THE ECHELON over a unit frame (round 68): 'XX' is a division, 'XXX' a
+    // corps, exactly where APP-6 sets it — above the frame, closer in than a
+    // name label so the two never collide. In the frame's own units, so a big
+    // frame pushes it as far as a small one, proportionally.
+    if (style === 'unit' && spec.unitSize)
+      this.addLabel(
+        {
+          type: 'label',
+          pos: [spec.pos[0], spec.pos[1] + size * (UNIT_FRAME.h + 0.55)],
+          text: spec.unitSize,
+        },
+        alt,
+        { extraClass: 'drawing-label--unitsize' },
+      )
     // A marker's label goes ABOVE the glyph, not on it. The offset is in the
     // glyph's own units, so a big cross pushes its label further than a small
     // dot does and the gap looks the same at either size.
@@ -2049,15 +2334,39 @@ export class DrawingLayer {
       )
   }
 
-  private addLabel(spec: Extract<DrawingSpec, { type: 'label' }>, alt: number) {
+  private addLabel(
+    spec: Extract<DrawingSpec, { type: 'label' }>,
+    alt: number,
+    /**
+     * How the words are SET (round 68): `extraClass` picks the variant (a
+     * strength along a shaft, an echelon over a unit frame), `rotateDeg` lays
+     * the text along a bearing (`textAngleDeg`), `scale` sizes it with the
+     * thing it annotates — a wide thrust carries a bigger count than a narrow
+     * one, in em so the paper/dark variants keep their own base sizes.
+     */
+    opts?: { extraClass?: string; rotateDeg?: number; scale?: number },
+  ) {
     // A drawing may be rendered where there is no DOM (a test, a build-time
     // check of the geometry); labels are the one part that needs one.
     if (typeof document === 'undefined') return
     const el = document.createElement('div')
     el.className =
       `drawing-label drawing-label--${spec.size ?? 'sm'}` +
-      (this.ground === 'paper' ? ' drawing-label--paper' : '')
-    el.textContent = spec.text
+      (this.ground === 'paper' ? ' drawing-label--paper' : '') +
+      (opts?.extraClass ? ` ${opts.extraClass}` : '')
+    // The turned or scaled part is an INNER element, and has to be:
+    // CSS2DRenderer owns the outer element's `transform` — it writes the
+    // centring translate inline on every render — so a rotation put there
+    // would be overwritten on the next frame.
+    if (opts?.rotateDeg || opts?.scale) {
+      const inner = document.createElement('div')
+      inner.textContent = spec.text
+      if (opts.scale) inner.style.fontSize = `${opts.scale}em`
+      if (opts.rotateDeg) inner.style.transform = `rotate(${opts.rotateDeg}deg)`
+      el.appendChild(inner)
+    } else {
+      el.textContent = spec.text
+    }
     if (spec.color) el.style.color = spec.color
     // Labels must never eat a click meant for a pin or the globe behind them.
     el.style.pointerEvents = 'none'
