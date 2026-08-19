@@ -15,7 +15,9 @@ import {
   type TilePlan,
 } from './tilePyramid'
 import {
+  ATLAS_SLOTS,
   ATLAS_UPLOADS_PER_FRAME,
+  FADE_MS,
   UPLOAD_WINDOW_MS,
   TileAtlas,
   buildIndex,
@@ -783,6 +785,24 @@ export class DetailImagery {
    */
   private held?: number
   private lagging = false
+  /**
+   * The label the plan streams under, and the one it streamed under a moment
+   * ago. A source that RENAMES itself over a live view — the drawn map's data
+   * rungs, 110m → 50m → 10m, or the sharp imagery source being demoted —
+   * re-keys every cached tile at once, which used to un-resolve the whole
+   * index in one frame: the entire picture fell to the base texture and
+   * refilled at two slots a frame. The slots behind the old keys still hold
+   * the same ground drawn from the previous data, so while `prevLabel` is set
+   * the index resolves through them wherever the new key has not landed, and
+   * the swap becomes per-tile replacement instead of a flash. Cleared the
+   * moment the new keys cover the plan (see `covered`), and by `setPlan` —
+   * across a mode switch the old slots are the OTHER source's picture, which
+   * is round 62's defect and must never resolve.
+   */
+  private label?: string
+  private prevLabel?: string
+  /** Atlas capacity, kept for the handoff's pinning headroom. See `displayed`. */
+  private slotCap: number
   /** The last camera this was updated with, so the settle can re-derive from it. */
   private last?: [number, number, number, number, number, number]
 
@@ -790,6 +810,7 @@ export class DetailImagery {
     this.tileBudget = opts.tileBudget ?? TILE_MEMORY_BUDGET
     this.plan = opts.plan ?? IMAGERY_PLAN
     this.tiles = new TileCache(this.tileBudget, (img) => this.release(img))
+    this.slotCap = opts.atlasSlots ?? ATLAS_SLOTS
     this.atlas = new TileAtlas(opts.renderer, opts.atlasSlots)
   }
 
@@ -850,6 +871,9 @@ export class DetailImagery {
     this.index = undefined
     this.status = 'idle'
     this.sourceLabel = '—'
+    // the other mode's slots must never stand in for this one's — round 62
+    this.label = undefined
+    this.prevLabel = undefined
     this.onReady?.()
   }
 
@@ -916,15 +940,36 @@ export class DetailImagery {
     // atlas's 64 slots doing the giving — the same 4096² ceiling `patchPixelCap`
     // used to enforce on a canvas. It is also what bounds the lag on the way
     // out: a held level whose grid no longer fits is refused here.
-    const z = fitLevel(target, pick)
+    const fit = fitLevel(target, pick)
+    // …and what actually streams may be one rung of the LADDER toward it
+    // rather than the level itself; see `step`. Local sources only — for a
+    // drawing the flash this prevents is the whole picture, and gating a
+    // remote plan on full residency would let one hung request hold the
+    // sharpening of everything else hostage.
+    const z =
+      !this.plan.remote && this.held !== undefined && this.want && fit !== this.held
+        ? this.step(target, fit)
+        : fit
     this.held = z
-    // Lagging means THE HOLD DEVIATED, not merely that the level is not the
-    // density's first choice. `fitLevel` also lowers the level — permanently,
-    // on a dense enough screen — and reading that as a lag would arm the
-    // settle's replay forever, which is a timer firing four times a second at
-    // rest for a view that is already correct. Frame-on-demand is a promise
-    // about a parked globe and this is one of the things that could break it.
-    this.lagging = pick !== wanted
+    // The rename detector for the handoff above: a plan whose source answers
+    // to a new name re-keys every tile, and the old name is what still
+    // addresses the picture on screen. `prevLabel` may not point at itself —
+    // a rename that flips straight back (the rank guard in the drawn source
+    // makes that impossible, but this must not depend on it) simply clears.
+    const label = this.sourceAt(z).label
+    if (this.label !== undefined && this.label !== label) this.prevLabel = this.label
+    if (this.prevLabel === label) this.prevLabel = undefined
+    this.label = label
+    // Lagging means the streamed level is short of where a STILL camera would
+    // end up — the hold deviated, or the ladder has rungs left to climb — and
+    // it is what arms the settle's replay. `fitLevel` also lowers the level:
+    // permanently, on a dense enough screen, and reading that as a lag would
+    // arm the replay forever, a timer firing four times a second at rest for a
+    // view that is already correct. Frame-on-demand is a promise about a
+    // parked globe and this is one of the things that could break it. So the
+    // comparison is against the level the camera's own choice would fit to,
+    // never against a level this view can not have.
+    this.lagging = pick !== wanted || z !== fit
 
     // The plan is a pure function of (target, z), and `update` is reached two
     // or three times per animation frame — the camera-change handler and the
@@ -953,6 +998,16 @@ export class DetailImagery {
     // the picture. Neither is a trade worth making for an ordering that buys
     // nothing: a request is asynchronous either way.
     this.absorb(now)
+    // The handoff ends the moment the new keys cover the plan by themselves:
+    // holding the old slots pinned past that point would only keep the atlas
+    // fuller than the view it serves.
+    if (
+      this.prevLabel !== undefined &&
+      this.want &&
+      this.covered([...this.want.plan.fallback, ...this.want.plan.level], label)
+    ) {
+      this.prevLabel = undefined
+    }
     this.pump()
     this.reindex(now)
     this.arm()
@@ -994,14 +1049,117 @@ export class DetailImagery {
       keys.add(tileKey(parentOf(t), label))
     }
     this.tiles.pin(keys)
-    this.atlas.slots.pin(this.indexed(label))
+    this.atlas.slots.pin(this.displayed(label))
   }
 
-  /** The tiles the index addresses this frame — fallback first, then the level. */
-  private indexed(label: string): string[] {
+  /**
+   * One key per indexed tile: the slot the shader will actually show.
+   *
+   * Ordinarily the tile's own key. During a label handoff a tile whose new key
+   * has not landed is shown through its OLD key's slot (see `reindex`), and
+   * that slot is what must not be evicted from under it. The pin may not shut
+   * the atlas, though: with every slot held and pinned, `acquire` has nothing
+   * to give the very uploads that would finish the handoff, so an upload
+   * budget's worth of headroom is kept by un-pinning stand-ins from the tail
+   * of the plan — the edge of the view, where a briefly bare tile costs least.
+   */
+  private displayed(label: string): string[] {
     const w = this.want
     if (!w) return []
-    return [...w.plan.fallback, ...w.plan.level].map((t) => tileKey(t, label))
+    const prev = this.prevLabel
+    const out: string[] = []
+    const standIns: number[] = []
+    for (const t of [...w.plan.fallback, ...w.plan.level]) {
+      const key = tileKey(t, label)
+      if (prev !== undefined && !this.atlas.slots.has(key)) {
+        const old = tileKey(t, prev)
+        if (this.atlas.slots.has(old)) {
+          standIns.push(out.length)
+          out.push(old)
+          continue
+        }
+      }
+      out.push(key)
+    }
+    if (prev !== undefined) {
+      const room = this.slotCap - 2 * ATLAS_UPLOADS_PER_FRAME
+      let held = 0
+      for (const k of out) if (this.atlas.slots.has(k)) held++
+      for (let i = standIns.length - 1; i >= 0 && held > room; i--) {
+        out.splice(standIns[i], 1)
+        held--
+      }
+    }
+    return out
+  }
+
+  /**
+   * THE LADDER — round 66, and the drawn map's answer to "normal mode doesn't
+   * stagger because it uses a lower-res map in the meantime".
+   *
+   * The index the shader resolves through holds exactly two levels: the target
+   * and its parent. A level change is therefore an exchange of BOTH grids at
+   * once, and when the streamed level snapped across octaves — `heldLevel`
+   * releasing a gesture's hold, or the settle sharpening a stopped camera —
+   * neither of the two new levels had a tile in a slot, so on that frame the
+   * whole streamed picture resolved to nothing and the ground fell through to
+   * the level-3 base texture: a 4096-wide drawing magnified up to ~90× at the
+   * zoom floor, whose fixed-width pen becomes a hundred-pixel smear. Measured
+   * before this (tests/e2e/stagger66.e2e.mjs): on the scripted world→city
+   * zoom the fraction of the target grid with neither its own slot nor its
+   * parent's hit 1.0 — the entire frame — on every one of the gesture's three
+   * level changes, and took 8–13 frames of upload budget to recover. That
+   * full-frame flash, repeated per level crossed, is the reader's "stagger".
+   * The ratio path survives the same gap because losing its tiles only costs a
+   * bounded luminance gain over a photograph; paint mode loses the picture.
+   *
+   * So the level now moves ONE RUNG AT A TIME, and only when the exchange is
+   * invisible:
+   *
+   *  · ascending, the next plan's fallback (z) is the level on screen NOW, so
+   *    the step is taken only once that level is whole — on the frame the grids
+   *    swap, every parent cell resolves and the finer tiles dissolve into the
+   *    picture they sharpen rather than into bare base texture;
+   *  · descending, the next plan's target (z − 1) is the current plan's OWN
+   *    fallback, which `pump` fetches first — so the step waits for that, and
+   *    is forced only when the held grid stops fitting the atlas at all
+   *    (`fitLevel`), which is the one case a hole is the honest answer.
+   *
+   * A rung whose tiles are all resident is a plan the pump has nothing to do
+   * for, so climbing costs exactly the tiles of the levels between — bounded by
+   * the same two-slots-a-frame budget as everything else — and `lagging` keeps
+   * the settle re-arming until the top. Local plans only: their tiles cannot
+   * hang, only fail, and a failed render is `refused`, which counts as done.
+   */
+  private step(target: Bbox, to: number): number {
+    const held = this.held!
+    const w = this.want!
+    const label = this.sourceAt(w.plan.z).label
+    if (to > held) {
+      if (!this.covered(w.plan.level, label, this.prevLabel)) return held
+      // never past the next rung, and never a grid that does not fit
+      return fitLevel(target, held + 1)
+    }
+    const stay = fitLevel(target, held)
+    if (stay === held && !this.covered(w.plan.fallback, label, this.prevLabel)) return held
+    return Math.max(to, Math.min(held - 1, stay))
+  }
+
+  /**
+   * Is every one of these tiles slotted — or refused, so it never will be?
+   *
+   * With `prev`, a tile SHOWING through its old label's slot counts too: the
+   * ladder's gates ask "is the picture on screen whole", and during a label
+   * handoff the stand-ins are part of that picture.
+   */
+  private covered(tiles: Tile[], label: string, prev?: string): boolean {
+    for (const t of tiles) {
+      const key = tileKey(t, label)
+      if (this.atlas.slots.has(key) || this.refused.has(key)) continue
+      if (prev !== undefined && this.atlas.slots.has(tileKey(t, prev))) continue
+      return false
+    }
+    return true
   }
 
   /**
@@ -1216,8 +1374,14 @@ export class DetailImagery {
       if (!image) continue
       if (budget > 0) {
         // …without the reduced copy where the shader paints rather than
-        // divides: see SourcePlan.paint and TileAtlas.put.
-        this.atlas.put(key, image, t.z, now, !this.plan.paint)
+        // divides: see SourcePlan.paint and TileAtlas.put. A tile REPLACING
+        // its own ground across a label handoff arrives born-old: the reader
+        // is already looking at this ground sharp, and a fresh dissolve would
+        // sink it to the parent level for FADE_MS before bringing it back —
+        // a blink down, per tile, for a swap that is otherwise invisible.
+        const swap =
+          this.prevLabel !== undefined && this.atlas.slots.has(tileKey(t, this.prevLabel))
+        this.atlas.put(key, image, t.z, swap ? now - FADE_MS : now, !this.plan.paint)
         budget--
         this.credit--
       } else left++
@@ -1237,11 +1401,17 @@ export class DetailImagery {
     const w = this.want
     if (!w) return
     const label = this.sourceAt(w.plan.z).label
+    // …resolving through the OLD label's slot wherever the new key has not
+    // landed yet: the same ground drawn from the previous data rung, which is
+    // what the reader was already looking at. See `prevLabel`.
+    const prev = this.prevLabel
     const index = buildIndex(
       w.plan.z,
       w.plan.level,
       w.plan.fallback,
-      (t) => this.atlas.slots.slotOf(tileKey(t, label)),
+      (t) =>
+        this.atlas.slots.slotOf(tileKey(t, label)) ??
+        (prev !== undefined ? this.atlas.slots.slotOf(tileKey(t, prev)) : undefined),
       now,
     )
     this.index = index

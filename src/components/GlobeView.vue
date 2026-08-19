@@ -1184,8 +1184,13 @@ onMounted(() => {
     drawnTiles = new DrawnTiles(import.meta.env.BASE_URL)
     // …and `paint`, which is the upload path's half of `DETAIL_MODE`: a drawn
     // tile IS the ground, so the reduced copy the sharp/blurred ratio divides
-    // by is never sampled and is never made.
-    drawnPlan = singleSourcePlan(drawnTiles.source, DRAWN_Z_MAX, true)
+    // by is never sampled and is never made. The plan answers per level rather
+    // than with one source, so the 10m rung landing retires only the levels
+    // that consult 10m geometry — see DrawnTiles.coarseSource.
+    drawnPlan = {
+      ...singleSourcePlan(drawnTiles.source, DRAWN_Z_MAX, true),
+      at: (z) => drawnTiles!.sourceFor(z),
+    }
     // The 50m geometry landing renames the source, which retires every tile
     // drawn from the 110m stand-in. Nothing else would ask for the new ones:
     // the camera has not moved, so the tick's own guard would skip the sync —

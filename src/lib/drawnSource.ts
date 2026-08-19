@@ -156,6 +156,21 @@ export const DRAWN_PX_PER_DEG = (TILE_PX * 2 ** DRAWN_Z_MAX) / 360
  */
 export class DrawnTiles {
   readonly source: TileSource
+  /**
+   * The same rasterizer under a label the 10m rung never touches.
+   *
+   * `landAt` only reaches for 10m geometry from `LOD_FINE_Z` up, so a tile
+   * below that level is byte-identical before and after the rung lands — and
+   * retiring it anyway (which one label for the whole pyramid did) re-rendered
+   * and re-uploaded the entire coarse pyramid for pixels that could not
+   * change. Measured on the scripted city→world zoom out: 21 re-renders of
+   * world- and continental-level tiles, every one of them identical to the
+   * tile it replaced. So the plan answers `sourceFor(z)`: levels at and above
+   * the rung stream under the fine label and are retired by it; levels below
+   * keep the 50m label for as long as the session lives, which is also the
+   * honest provenance — that is the data they are drawn from.
+   */
+  readonly coarseSource: TileSource
   private worker?: Worker
   private pending = new Map<number, (r: DrawnTileResponse) => void>()
   /** When each request was posted, on the same epoch clock the worker stamps. */
@@ -197,7 +212,18 @@ export class DrawnTiles {
       attribution: DRAWN_ATTRIBUTION,
       render: (t) => this.render(t),
     }
+    this.coarseSource = {
+      label: DRAWN_LABEL_COARSE,
+      pxPerDeg: DRAWN_PX_PER_DEG,
+      attribution: DRAWN_ATTRIBUTION,
+      render: (t) => this.render(t),
+    }
     this.worker = this.spawn()
+  }
+
+  /** Which source label a pyramid level streams under; see `coarseSource`. */
+  sourceFor(z: number): TileSource {
+    return z >= LOD_FINE_Z ? this.source : this.coarseSource
   }
 
   private spawn(): Worker | undefined {
@@ -245,9 +271,20 @@ export class DrawnTiles {
    */
   private upgrade(stage: DrawnStage) {
     const label = DRAWN_LABELS[stage]
-    if (STAGE_RANK[label] <= STAGE_RANK[this.source.label]) return
-    this.source.label = label
-    this.onUpgrade?.()
+    let changed = false
+    if (STAGE_RANK[label] > STAGE_RANK[this.source.label]) {
+      this.source.label = label
+      changed = true
+    }
+    // The coarse levels' label is capped at the 50m stage: 10m geometry is
+    // never consulted below LOD_FINE_Z (`landAt`), so those tiles are the same
+    // drawing whichever rung is resident and must not be retired by it.
+    const cap = STAGE_RANK[label] > STAGE_RANK[DRAWN_LABEL] ? DRAWN_LABEL : label
+    if (STAGE_RANK[cap] > STAGE_RANK[this.coarseSource.label]) {
+      this.coarseSource.label = cap
+      changed = true
+    }
+    if (changed) this.onUpgrade?.()
   }
 
   /**

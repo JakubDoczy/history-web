@@ -1601,3 +1601,254 @@ describe('changing the plan tells the surface', () => {
     d.dispose()
   })
 })
+
+/**
+ * THE LADDER — round 66.
+ *
+ * The index the shader resolves through holds exactly two levels, so a level
+ * change exchanges both grids at once. When the streamed level snapped across
+ * octaves — `heldLevel` releasing a gesture's hold, or the settle sharpening a
+ * stopped camera — neither of the two new levels had a tile in a slot, and the
+ * whole streamed picture fell through to the level-3 base texture for the 8–13
+ * frames the upload budget needed to refill it. In paint mode (the drawn map)
+ * that base texture is a 4096-wide drawing magnified up to ~90x, so the flash
+ * is the reader's "stagger"; measured in tests/e2e/stagger66.e2e.mjs as a
+ * bare-grid fraction of 1.0 on every level change of a scripted zoom.
+ *
+ * The rule: a LOCAL plan's level moves one rung at a time, ascending only when
+ * the level on screen is whole (it becomes the next plan's fallback), and
+ * descending only when the current fallback is whole (it becomes the next
+ * plan's target) unless the atlas no longer fits the held grid at all.
+ */
+describe('the ladder a local plan climbs between levels', () => {
+  const flush = async () => {
+    for (let i = 0; i < 12; i++) await Promise.resolve()
+  }
+  const localPlan = (drawn: string[]) => ({
+    zMax: 9,
+    remote: false,
+    paint: true,
+    at: () => ({
+      label: 'local',
+      pxPerDeg: 1e4,
+      render: (t: { z: number; x: number; y: number }) => {
+        drawn.push(`${t.z}/${t.x}/${t.y}`)
+        return Promise.resolve({ width: TILE_PX, height: TILE_PX } as unknown as CanvasImageSource)
+      },
+    }),
+  })
+
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  interface Inner {
+    want?: { plan: { z: number; level: { z: number; x: number; y: number }[]; fallback: { z: number; x: number; y: number }[] } }
+    atlas: { slots: { has(k: string): boolean } }
+  }
+
+  /** Settle a fresh instance at one altitude, then jump it to another. */
+  const settleAt = async (d: DetailImagery, alt: number, frames = 60) => {
+    for (let i = 0; i < frames; i++) {
+      d.update(45, 10, alt, 900, 1.4)
+      await flush()
+      vi.advanceTimersByTime(16)
+    }
+  }
+
+  it('climbs one rung at a time, and only over a whole picture', async () => {
+    vi.clearAllTimers()
+    const drawn: string[] = []
+    const d = new DetailImagery({ plan: localPlan(drawn) })
+    const inner = d as unknown as Inner
+    await settleAt(d, 0.3) // a coarse level, fully resident
+    const from = d.index!.z
+    expect(d.still).toBe(true)
+
+    // The jump a settle used to snap across: several octaves in one frame.
+    const zs: number[] = []
+    const bare: number[] = []
+    for (let i = 0; i < 120; i++) {
+      d.update(45, 10, 0.004, 900, 1.4)
+      await flush()
+      const w = inner.want!
+      zs.push(w.plan.z)
+      // The invariant the round is about: once a picture has been shown, no
+      // tile of the target grid may resolve to NOTHING — its own slot or its
+      // parent's must be there. Every violation is a rectangle of base map.
+      let holes = 0
+      for (const t of w.plan.level) {
+        const own = inner.atlas.slots.has(`${t.z}/${t.x}/${t.y}/local`)
+        const parent = inner.atlas.slots.has(`${t.z - 1}/${t.x >> 1}/${t.y >> 1}/local`)
+        if (!own && !parent) holes++
+      }
+      bare.push(holes)
+      vi.advanceTimersByTime(16)
+    }
+    // one rung at a time, never a snap
+    for (let i = 1; i < zs.length; i++) expect(zs[i] - zs[i - 1]).toBeLessThanOrEqual(1)
+    // no frame of the climb ever showed bare base texture
+    expect(bare.every((b) => b === 0)).toBe(true)
+    // and the top of the ladder is exactly where the old rule snapped to
+    const view = viewBboxFor(45, 10, 0.004, 1.4)
+    const wanted = fitLevel(view, targetLevel(baseTexelsPerScreenPx(0.004, 900), 9))
+    expect(zs[zs.length - 1]).toBe(wanted)
+    expect(zs[zs.length - 1]).toBeGreaterThan(from)
+    expect(d.lagging).toBe(false)
+    d.dispose()
+  })
+
+  it('still sharpens fully after the settle, exactly as before', async () => {
+    vi.clearAllTimers()
+    const drawn: string[] = []
+    const d = new DetailImagery({ plan: localPlan(drawn) })
+    await settleAt(d, 0.3)
+    await settleAt(d, 0.004, 150)
+    const view = viewBboxFor(45, 10, 0.004, 1.4)
+    const wanted = fitLevel(view, targetLevel(baseTexelsPerScreenPx(0.004, 900), 9))
+    expect(d.index?.z).toBe(wanted)
+    expect(d.index?.resident).toBeGreaterThan(0)
+    expect(d.animating).toBe(false)
+    expect(d.lagging).toBe(false)
+    d.dispose()
+  })
+
+  it('climbs back down the same way, one rung per whole fallback', async () => {
+    vi.clearAllTimers()
+    const drawn: string[] = []
+    const d = new DetailImagery({ plan: localPlan(drawn) })
+    const inner = d as unknown as Inner
+    await settleAt(d, 0.03, 100) // settle somewhere sharp
+    const from = d.index!.z
+    const zs: number[] = []
+    for (let i = 0; i < 120; i++) {
+      d.update(45, 10, 0.1, 900, 1.4) // one-ish octave out: the held grid still fits
+      await flush()
+      zs.push(inner.want!.plan.z)
+      vi.advanceTimersByTime(16)
+    }
+    // never more than one rung per frame on the way down either, unless the
+    // atlas refused the held grid — which at this modest step it does not
+    for (let i = 1; i < zs.length; i++) expect(zs[i - 1] - zs[i]).toBeLessThanOrEqual(1)
+    const view = viewBboxFor(45, 10, 0.1, 1.4)
+    const wanted = fitLevel(view, targetLevel(baseTexelsPerScreenPx(0.1, 900), 9))
+    expect(zs[zs.length - 1]).toBe(wanted)
+    expect(from).toBeGreaterThan(wanted)
+    d.dispose()
+  })
+
+  it('does not gate a remote plan, whose tiles can hang rather than fail', async () => {
+    // The imagery plan keeps its round-54 behaviour bit for bit: a snap to the
+    // wanted level at the settle, however many octaves that is. A remote tile
+    // that never answers is merely slow, and a residency gate would let it
+    // hold the sharpening of every other tile hostage.
+    vi.clearAllTimers()
+    FakeImage.reset()
+    vi.stubGlobal('Image', FakeImage)
+    vi.stubGlobal('document', { createElement: () => new FakeCanvas() })
+    const d = new DetailImagery()
+    const inner = d as unknown as Inner
+    for (let i = 0; i < 40; i++) {
+      d.update(45, 10, 0.3, 900, 1.4)
+      FakeImage.landAll(6)
+      vi.advanceTimersByTime(16)
+    }
+    const from = inner.want!.plan.z
+    d.update(45, 10, 0.004, 900, 1.4)
+    // the first frame of the jump already streams the wanted level — no rungs
+    const view = viewBboxFor(45, 10, 0.004, 1.4)
+    expect(inner.want!.plan.z).toBe(fitLevel(view, targetLevel(baseTexelsPerScreenPx(0.004, 900), Z_MAX)))
+    expect(inner.want!.plan.z - from).toBeGreaterThan(1)
+    vi.unstubAllGlobals()
+    d.dispose()
+  })
+})
+
+/**
+ * THE LABEL HANDOFF — round 66's other half.
+ *
+ * A source that renames itself over a live view (the drawn map's data rungs,
+ * 110m → 50m → 10m) re-keys every cached tile at once, which used to
+ * un-resolve the whole index in one frame: measured in the browser as the
+ * entire picture falling to the base texture mid-gesture (bare fraction 1.0,
+ * tests/e2e/stagger66.e2e.mjs) and refilling at two slots a frame. The slots
+ * behind the old keys still hold the same ground, so the index now resolves
+ * through them until the new keys land, and the swap is per-tile replacement.
+ */
+describe('a source rename hands the picture over, never drops it', () => {
+  const flush = async () => {
+    for (let i = 0; i < 12; i++) await Promise.resolve()
+  }
+  const renameable = (drawn: string[]) => {
+    const source = {
+      label: 'v1',
+      pxPerDeg: 1e4,
+      render: (t: { z: number; x: number; y: number }) => {
+        drawn.push(`${t.z}/${t.x}/${t.y}`)
+        return Promise.resolve({ width: TILE_PX, height: TILE_PX } as unknown as CanvasImageSource)
+      },
+    }
+    return { source, plan: { zMax: 9, remote: false, paint: true, at: () => source } }
+  }
+
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('keeps every tile resolvable through the swap, then finishes it', async () => {
+    vi.clearAllTimers()
+    const drawn: string[] = []
+    const { source, plan } = renameable(drawn)
+    const d = new DetailImagery({ plan })
+    const inner = d as unknown as {
+      want?: { plan: { level: { z: number; x: number; y: number }[] } }
+      atlas: { slots: { has(k: string): boolean } }
+      prevLabel?: string
+    }
+    for (let i = 0; i < 60; i++) {
+      d.update(45, 10, 0.05, 900, 1.4)
+      await flush()
+      vi.advanceTimersByTime(16)
+    }
+    const before = d.index!.resident
+    expect(before).toBeGreaterThan(0)
+    const rendered = drawn.length
+
+    source.label = 'v2'
+    let minResident = Infinity
+    for (let i = 0; i < 80; i++) {
+      d.update(45, 10, 0.05, 900, 1.4)
+      await flush()
+      minResident = Math.min(minResident, d.index!.resident)
+      vi.advanceTimersByTime(16)
+    }
+    // the picture never thinned, let alone vanished — the old slots stood in
+    expect(minResident).toBeGreaterThanOrEqual(before)
+    // every tile of the plan was re-rendered under the new name…
+    expect(drawn.length).toBeGreaterThanOrEqual(rendered * 2 - 2)
+    // …and once they covered the plan, the handoff ended
+    expect(inner.prevLabel).toBeUndefined()
+    for (const t of inner.want!.plan.level) {
+      expect(inner.atlas.slots.has(`${t.z}/${t.x}/${t.y}/v2`)).toBe(true)
+    }
+    d.dispose()
+  })
+
+  it('never lets the other mode stand in across a plan switch — round 62', async () => {
+    vi.clearAllTimers()
+    const drawn: string[] = []
+    const { plan } = renameable(drawn)
+    const d = new DetailImagery({ plan })
+    const inner = d as unknown as { label?: string; prevLabel?: string }
+    for (let i = 0; i < 40; i++) {
+      d.update(45, 10, 0.05, 900, 1.4)
+      await flush()
+      vi.advanceTimersByTime(16)
+    }
+    expect(inner.label).toBe('v1')
+    const other: string[] = []
+    d.setPlan(renameable(other).plan)
+    // the old mode's label may not survive into the new one as a stand-in
+    expect(inner.label).toBeUndefined()
+    expect(inner.prevLabel).toBeUndefined()
+    d.dispose()
+  })
+})

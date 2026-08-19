@@ -1427,3 +1427,68 @@ describe('the side toggle', () => {
     expect(toggle).toMatch(/:aria-label="o\.hint"/)
   })
 })
+
+/**
+ * ROUND 66 — the 10m rung retires only the levels it changes.
+ *
+ * `landAt` consults 10m geometry from LOD_FINE_Z up and nowhere below, so a
+ * level-5 tile is byte-identical before and after the rung lands. One label
+ * for the whole pyramid retired those tiles anyway: measured on the scripted
+ * city→world zoom out, 21 re-renders of world- and continental-level tiles,
+ * each replacing itself. The plan therefore answers per level (`sourceFor`),
+ * and the coarse levels' label is capped at the 50m stage.
+ */
+describe('per-level drawn labels', () => {
+  const make = () => {
+    const g = globalThis as unknown as { Worker?: unknown }
+    const real = g.Worker
+    g.Worker = undefined
+    try {
+      return new DrawnTiles('/base/')
+    } finally {
+      g.Worker = real
+    }
+  }
+  const upgrade = (tiles: DrawnTiles, stage: '50m' | '10m') =>
+    (tiles as unknown as { upgrade(s: string): void }).upgrade(stage)
+
+  it('serves the fine label at the rung and above, the coarse one below', () => {
+    const tiles = make()
+    expect(tiles.sourceFor(LOD_FINE_Z)).toBe(tiles.source)
+    expect(tiles.sourceFor(DRAWN_Z_MAX)).toBe(tiles.source)
+    expect(tiles.sourceFor(LOD_FINE_Z - 1)).toBe(tiles.coarseSource)
+    expect(tiles.sourceFor(BASE_LEVEL)).toBe(tiles.coarseSource)
+    // both rasterize through the same path — two labels, one pen
+    expect(typeof tiles.coarseSource.render).toBe('function')
+    tiles.dispose()
+  })
+
+  it('lets the 50m stage retire both, and the 10m stage only the fine levels', () => {
+    const tiles = make()
+    expect(tiles.source.label).toBe(DRAWN_LABEL_COARSE)
+    expect(tiles.coarseSource.label).toBe(DRAWN_LABEL_COARSE)
+    upgrade(tiles, '50m')
+    expect(tiles.source.label).toBe(DRAWN_LABEL)
+    expect(tiles.coarseSource.label).toBe(DRAWN_LABEL)
+    upgrade(tiles, '10m')
+    expect(tiles.source.label).toBe(DRAWN_LABEL_FINE)
+    // …and the coarse levels keep the tiles they already drew
+    expect(tiles.coarseSource.label).toBe(DRAWN_LABEL)
+    tiles.dispose()
+  })
+
+  it('caps the coarse label even when 10m lands before 50m', () => {
+    const tiles = make()
+    upgrade(tiles, '10m')
+    expect(tiles.source.label).toBe(DRAWN_LABEL_FINE)
+    expect(tiles.coarseSource.label).toBe(DRAWN_LABEL)
+    // the late 50m stage neither downgrades the fine label nor re-fires
+    let calls = 0
+    tiles.onUpgrade = () => calls++
+    upgrade(tiles, '50m')
+    expect(tiles.source.label).toBe(DRAWN_LABEL_FINE)
+    expect(tiles.coarseSource.label).toBe(DRAWN_LABEL)
+    expect(calls).toBe(0)
+    tiles.dispose()
+  })
+})

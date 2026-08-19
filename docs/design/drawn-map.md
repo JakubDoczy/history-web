@@ -524,3 +524,52 @@ better than a photograph) and are only fetched when a reader scrubs deep time
 in map mode. The year-derived paper share is now a constant zero; the duotone
 survives solely as round 62's paper floor for a frame held across a mode
 switch.
+
+## As built, round 66: a pending drawn tile shows the level below, never the base sheet
+
+*"Try again to fix that frustrating staggering in map mode … normal mode
+doesn't stagger even when it loads tiles because it uses lower res map in the
+meantime."* The reader's diagnosis was exact. The index the shader resolves
+through holds two levels — target and parent — and there were two ways for
+BOTH to go empty at once, each measured as a bare-grid fraction of 1.0
+(tests/e2e/stagger66.e2e.mjs, per-frame counts of plan tiles with neither
+their own slot nor their parent's):
+
+1. **A level snap.** `heldLevel` releasing a gesture's hold, or the settle
+   sharpening a stopped camera, exchanged both grids for levels with no
+   resident tile, so the whole streamed picture fell to the level-3 base
+   texture and refilled at two slots a frame (8–13 frames). Realistic mode has
+   the same gap and shrugs it off — losing a ratio tile costs a bounded
+   luminance gain over a photograph — but map mode paints, so it lost the
+   picture: a fixed-width pen magnified ~90x is a hundred-pixel smear, not a
+   softer photo. The fix is **the ladder** (`step`, lib/detailImagery.ts):
+   a local plan's level moves one rung at a time, ascending only when the
+   level on screen is whole (it becomes the next plan's fallback row) and
+   descending only when the current fallback is whole (it becomes the next
+   plan's target), forced through only when `fitLevel` refuses the held grid.
+   Local plans only: a drawn tile can fail but cannot hang, and gating a
+   remote plan on full residency would let one hung request hold everything.
+2. **A data-rung rename.** The 50m→10m upgrade re-keys every cached tile, and
+   the swap un-resolved the whole index in one frame — round 58 priced the
+   re-render (ten–twenty tiles at 0.4 ms) and missed the display cost. Two
+   fixes: the index now resolves through the OLD label's slot wherever the new
+   key has not landed (`prevLabel`; pinned via `displayed`, replacement tiles
+   arrive born-old so they do not blink down to the parent), and the plan
+   answers per level (`DrawnTiles.sourceFor`) so the 10m rung retires only
+   levels ≥ `LOD_FINE_Z` — below it 10m geometry is never consulted and the
+   tiles are byte-identical, yet one pyramid-wide label re-rendered 21 of them
+   on the scripted zoom out.
+
+Scripted world→country→city zoom, pan, and zoom out, before → after (counts,
+machine-independent): frames on which the index resolved nothing, 3+1+1 → 0
+outside the first fill of a session; full-frame bare flashes per zoom, one per
+level crossed → none; recovery after the worst hole 8 → 4 frames; duplicate
+tile renders 0 → 0 (no cache tier regressed). The gesture now crosses every
+rung (6→7→8→9→10→11 instead of 6→8→10→11) at the same request count (64 → 59),
+because each rung's tiles are the next rung's fallback. The settled picture is
+unchanged — the ladder ends at exactly the level the old rule snapped to,
+asserted in tests/detailImagery.test.ts. What remains and is accepted: the
+first fill of a session shows the base texture (nothing has ever been shown —
+realistic does the same), a pan's leading edge can run 1–2 frames coarse
+(worst 2 of 8 tiles), and a fast zoom OUT exposes new ground at the frame's
+edge that no tile has ever covered — parity with realistic in all three.
