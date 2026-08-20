@@ -1654,8 +1654,8 @@
     },
     {
      "type": "marker",
-     "style": "cross",
-     "size": 0.22,
+     "style": "fortress",
+     "size": 0.286,
      "color": "#f5a623",
      "pos": [
       16.3738,
@@ -1666,8 +1666,8 @@
     },
     {
      "type": "marker",
-     "style": "cross",
-     "size": 0.22,
+     "style": "fortress",
+     "size": 0.286,
      "color": "#f5a623",
      "pos": [
       14.5186,
@@ -2065,7 +2065,8 @@
       ]
      ],
      "width": 0.08686,
-     "label": "Suleiman marches up the Danube"
+     "label": "Suleiman marches up the Danube",
+     "strength": "50,000 men"
     },
     {
      "type": "marker",
@@ -6152,18 +6153,19 @@
        48.19
       ]
      ],
-     "width": 0.0145
+     "width": 0.0145,
+     "strength": "100,000 men"
     },
     {
      "type": "marker",
-     "style": "cross",
+     "style": "fortress",
      "color": "#ffd7a8",
      "pos": [
       16.372,
       48.208
      ],
      "label": "Starhemberg's 15,000 held",
-     "size": 0.0116
+     "size": 0.016
     },
     {
      "type": "thrust",

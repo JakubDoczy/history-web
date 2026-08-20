@@ -1390,16 +1390,20 @@
        53.96
       ],
       [
-       -0.7,
-       52.8
+       -0.3,
+       52.6
       ],
       [
-       -0.13,
-       51.51
+       -0.11,
+       51.52
       ],
       [
        0.3,
-       51.05
+       51.1
+      ],
+      [
+       0.45,
+       50.97
       ]
      ],
      "width": 0.12106,
@@ -3091,8 +3095,7 @@
       1.9,
       50.25
      ],
-     "at": "overview",
-     "label": "Crecy 1346"
+     "at": "overview"
     },
     {
      "type": "marker",
@@ -3115,8 +3118,7 @@
       2.14,
       50.46
      ],
-     "at": "overview",
-     "label": "Agincourt 1415"
+     "at": "overview"
     },
     {
      "type": "marker",
@@ -3141,6 +3143,26 @@
      ],
      "at": "overview",
      "label": "Castillon 1453"
+    },
+    {
+     "type": "label",
+     "text": "Crécy 1346",
+     "size": "sm",
+     "at": "overview",
+     "pos": [
+      0.75,
+      49.97
+     ]
+    },
+    {
+     "type": "label",
+     "text": "Agincourt 1415",
+     "size": "sm",
+     "at": "overview",
+     "pos": [
+      3.4400000000000004,
+      50.64
+     ]
     }
    ]
   }
@@ -5447,8 +5469,8 @@
       {
        "type": "label",
        "pos": [
-        28.96,
-        41.03
+        28.9485,
+        41.0265
        ],
        "text": "Golden Horn",
        "size": "sm"
@@ -5698,8 +5720,8 @@
       {
        "type": "label",
        "pos": [
-        28.96,
-        41.03
+        28.9485,
+        41.0265
        ],
        "text": "Golden Horn",
        "size": "sm"
@@ -5935,8 +5957,8 @@
       {
        "type": "label",
        "pos": [
-        28.96,
-        41.03
+        28.9485,
+        41.0265
        ],
        "text": "Golden Horn",
        "size": "sm"
@@ -6165,8 +6187,8 @@
       {
        "type": "label",
        "pos": [
-        28.96,
-        41.03
+        28.9485,
+        41.0265
        ],
        "text": "Golden Horn",
        "size": "sm"
@@ -6405,8 +6427,8 @@
       {
        "type": "label",
        "pos": [
-        28.96,
-        41.03
+        28.9485,
+        41.0265
        ],
        "text": "Golden Horn",
        "size": "sm"
@@ -6612,8 +6634,8 @@
       {
        "type": "label",
        "pos": [
-        28.96,
-        41.03
+        28.9485,
+        41.0265
        ],
        "text": "Golden Horn",
        "size": "sm"
@@ -6821,8 +6843,8 @@
       {
        "type": "label",
        "pos": [
-        28.96,
-        41.03
+        28.9485,
+        41.0265
        ],
        "text": "Golden Horn",
        "size": "sm"
@@ -6933,15 +6955,147 @@
        "size": 0.004,
        "color": "#f5a623",
        "pos": [
-        28.9265,
-        41.015
+        28.9295,
+        41.0075
        ],
        "label": "Constantine XI killed"
       }
      ]
     }
    }
-  ]
+  ],
+  "drawing": {
+   "layers": [
+    {
+     "type": "frontline",
+     "label": "Theodosian land walls",
+     "color": "#eaf1fb",
+     "dash": "solid",
+     "width": 3.0,
+     "at": "overview",
+     "paths": [
+      [
+       [
+        28.9227,
+        40.9931
+       ],
+       [
+        28.9199,
+        41.0028
+       ],
+       [
+        28.9186,
+        41.0079
+       ],
+       [
+        28.9204,
+        41.0141
+       ],
+       [
+        28.9244,
+        41.0234
+       ],
+       [
+        28.9315,
+        41.032
+       ],
+       [
+        28.94,
+        41.037
+       ],
+       [
+        28.9452,
+        41.0402
+       ]
+      ]
+     ],
+     "strength": "under 8,000 defenders"
+    },
+    {
+     "type": "frontline",
+     "label": "Sea walls",
+     "color": "#eaf1fb",
+     "dash": "solid",
+     "width": 2.0,
+     "at": "overview",
+     "paths": [
+      [
+       [
+        28.9227,
+        40.9931
+       ],
+       [
+        28.9509,
+        40.9917
+       ],
+       [
+        28.976,
+        40.9964
+       ],
+       [
+        28.9905,
+        41.0044
+       ],
+       [
+        28.9838,
+        41.0135
+       ]
+      ]
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "fortress",
+     "size": 0.005,
+     "color": "#eaf1fb",
+     "at": "overview",
+     "pos": [
+      28.9186,
+      41.0079
+     ]
+    },
+    {
+     "type": "thrust",
+     "color": "#e5484d",
+     "width": 0.01,
+     "at": "overview",
+     "label": "Mehmed II, from Edirne",
+     "strength": "50,000–80,000 men",
+     "path": [
+      [
+       26.57,
+       41.68
+      ],
+      [
+       27.35,
+       41.35
+      ],
+      [
+       28.1,
+       41.15
+      ],
+      [
+       28.75,
+       41.06
+      ],
+      [
+       28.905,
+       41.019
+      ]
+     ]
+    },
+    {
+     "type": "label",
+     "text": "Golden Horn",
+     "size": "sm",
+     "at": "overview",
+     "pos": [
+      28.96,
+      41.03
+     ]
+    }
+   ]
+  }
  },
  {
   "id": "gutenberg-42-line",

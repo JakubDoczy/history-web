@@ -2284,7 +2284,7 @@
        38.802
       ]
      ],
-     "width": 0.012
+     "width": 0.02
     },
     {
      "type": "thrust",
@@ -2307,7 +2307,7 @@
        38.792
       ]
      ],
-     "width": 0.012
+     "width": 0.016
     },
     {
      "type": "marker",
@@ -3672,7 +3672,8 @@
        "width": 4.0,
        "label": "The Roman infantry",
        "color": "#eaf1fb",
-       "ticks": "left"
+       "ticks": "left",
+       "strength": "80,000"
       },
       {
        "type": "frontline",
@@ -3702,7 +3703,8 @@
        ],
        "dash": "solid",
        "width": 3.2,
-       "label": "Hannibal's centre, bulging forward"
+       "label": "Hannibal's centre, bulging forward",
+       "strength": "50,000"
       },
       {
        "type": "marker",

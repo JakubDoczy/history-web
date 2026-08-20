@@ -173,6 +173,67 @@
      ],
      "at": "overview",
      "label": "Waterloo 1815"
+    },
+    {
+     "type": "thrust",
+     "width": 0.24,
+     "at": "overview",
+     "label": "The invasion of Russia, June 1812",
+     "path": [
+      [
+       23.9,
+       54.9
+      ],
+      [
+       25.3,
+       54.7
+      ],
+      [
+       30.2,
+       55.2
+      ],
+      [
+       32.05,
+       54.79
+      ],
+      [
+       35.8,
+       55.5
+      ],
+      [
+       37.35,
+       55.72
+      ]
+     ]
+    },
+    {
+     "type": "thrust",
+     "width": 0.16,
+     "at": "overview",
+     "color": "#eaf1fb",
+     "label": "The retreat, October to December",
+     "path": [
+      [
+       37.5,
+       55.55
+      ],
+      [
+       32.0,
+       54.55
+      ],
+      [
+       30.4,
+       54.35
+      ],
+      [
+       28.95,
+       54.25
+      ],
+      [
+       25.55,
+       54.6
+      ]
+     ]
     }
    ]
   }
@@ -620,7 +681,8 @@
        "width": 3.0,
        "label": "Wellington's line, Mont-Saint-Jean",
        "color": "#eaf1fb",
-       "ticks": "left"
+       "ticks": "left",
+       "strength": "68,000"
       },
       {
        "type": "frontline",
@@ -1724,6 +1786,16 @@
      ],
      "label": "Balaclava",
      "size": 0.0134
+    },
+    {
+     "type": "marker",
+     "style": "fortress",
+     "size": 0.016,
+     "color": "#eaf1fb",
+     "pos": [
+      33.52,
+      44.6
+     ]
     }
    ]
   }
@@ -2114,7 +2186,8 @@
      ],
      "width": 0.22,
      "label": "March to the Sea 1864",
-     "at": "overview"
+     "at": "overview",
+     "strength": "60,000 men"
     },
     {
      "type": "marker",
@@ -2691,7 +2764,8 @@
         ]
        ],
        "width": 0.00074,
-       "label": "Pickett's Charge, about 12,000 men"
+       "label": "Pickett's Charge, about 12,000 men",
+       "strength": "12,000 men"
       },
       {
        "type": "marker",
@@ -4764,6 +4838,83 @@
   "drawing": {
    "layers": [
     {
+     "type": "frontline",
+     "label": "The Western Front, 1914–1918",
+     "color": "#e5484d",
+     "dash": "solid",
+     "width": 3.2,
+     "at": "overview",
+     "paths": [
+      [
+       [
+        2.75,
+        51.13
+       ],
+       [
+        2.87,
+        51.03
+       ],
+       [
+        2.89,
+        50.85
+       ],
+       [
+        2.88,
+        50.69
+       ],
+       [
+        2.78,
+        50.29
+       ],
+       [
+        2.65,
+        50.0
+       ],
+       [
+        3.0,
+        49.58
+       ],
+       [
+        3.32,
+        49.38
+       ],
+       [
+        4.03,
+        49.26
+       ],
+       [
+        4.7,
+        49.2
+       ],
+       [
+        5.38,
+        49.16
+       ],
+       [
+        5.54,
+        48.93
+       ],
+       [
+        6.05,
+        48.9
+       ],
+       [
+        6.5,
+        48.59
+       ],
+       [
+        7.1,
+        48.2
+       ],
+       [
+        7.5,
+        47.6
+       ]
+      ]
+     ],
+     "ticks": "left"
+    },
+    {
      "type": "marker",
      "style": "dot",
      "size": 0.32,
@@ -4789,8 +4940,8 @@
     {
      "type": "label",
      "pos": [
-      1.1,
-      48.3
+      4.5,
+      48.7
      ],
      "text": "The Marne 1914",
      "at": "overview"
@@ -4821,8 +4972,8 @@
     {
      "type": "label",
      "pos": [
-      7.1,
-      48.8
+      6.45,
+      49.45
      ],
      "text": "Verdun 1916",
      "at": "overview"
@@ -4909,37 +5060,37 @@
      "label": "The German attack opened on a narrow front, 21 February 1916",
      "path": [
       [
-       5.44,
-       49.32
+       5.43,
+       49.42
       ],
       [
-       5.441,
-       49.272
+       5.437,
+       49.33
       ],
       [
        5.442,
-       49.228
+       49.238
       ]
      ],
-     "width": 0.0082
+     "width": 0.016
     },
     {
      "type": "marker",
-     "style": "cross",
+     "style": "fortress",
      "color": "#ffd7a8",
      "pos": [
       5.4406,
       49.2211
      ],
      "label": "Fort Douaumont",
-     "size": 0.0066
+     "size": 0.012
     },
     {
      "type": "frontline",
      "color": "#eaf1fb",
      "dash": "solid",
      "ticks": "right",
-     "width": 2.6,
+     "width": 3.6,
      "label": "The advance was halted in July",
      "paths": [
       [
@@ -4985,6 +5136,16 @@
       ]
      ],
      "width": 0.0082
+    },
+    {
+     "type": "marker",
+     "style": "fortress",
+     "size": 0.012,
+     "color": "#eaf1fb",
+     "pos": [
+      5.384,
+      49.159
+     ]
     }
    ]
   }
@@ -6029,8 +6190,7 @@
       30.31,
       59.94
      ],
-     "at": "overview",
-     "label": "Petrograd 1917"
+     "at": "overview"
     },
     {
      "type": "marker",
@@ -6041,8 +6201,7 @@
       29.77,
       59.99
      ],
-     "at": "overview",
-     "label": "Kronstadt 1921"
+     "at": "overview"
     },
     {
      "type": "marker",
@@ -6055,6 +6214,26 @@
      "label": "USSR founded 1922",
      "at": "overview",
      "color": "#f2f6fc"
+    },
+    {
+     "type": "label",
+     "text": "Petrograd 1917",
+     "size": "sm",
+     "at": "overview",
+     "pos": [
+      32.3,
+      59.98
+     ]
+    },
+    {
+     "type": "label",
+     "text": "Kronstadt 1921",
+     "size": "sm",
+     "at": "overview",
+     "pos": [
+      28.1,
+      59.72
+     ]
     }
    ]
   }
@@ -7444,8 +7623,9 @@
        21.55
       ]
      ],
-     "width": 0.11896,
-     "label": "Two waves, 353 aircraft"
+     "width": 0.09,
+     "label": "Two waves, 353 aircraft",
+     "strength": "353 aircraft"
     },
     {
      "type": "marker",
@@ -7461,8 +7641,8 @@
     {
      "type": "label",
      "pos": [
-      -157.95,
-      21.6
+      -158.85,
+      21.8
      ],
      "text": "Oahu",
      "size": "md"
@@ -7625,7 +7805,8 @@
        ]
       ]
      ],
-     "ticks": "left"
+     "ticks": "left",
+     "strength": "3.8 million men"
     },
     {
      "type": "frontline",
@@ -7746,7 +7927,8 @@
        30.25,
        59.8
       ]
-     ]
+     ],
+     "strength": "Army Group North"
     },
     {
      "type": "thrust",
@@ -7786,7 +7968,8 @@
        37.25,
        55.9
       ]
-     ]
+     ],
+     "strength": "Army Group Centre"
     },
     {
      "type": "thrust",
@@ -7830,7 +8013,8 @@
        39.55,
        47.28
       ]
-     ]
+     ],
+     "strength": "Army Group South"
     },
     {
      "type": "marker",
@@ -7941,6 +8125,39 @@
      ],
      "label": "Vyazma–Bryansk pockets · 673,000",
      "at": 1941.78219
+    },
+    {
+     "type": "marker",
+     "style": "unit",
+     "unitSize": "XXXX",
+     "size": 0.32,
+     "color": "#ff8a4c",
+     "pos": [
+      20.6,
+      55.0
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "unit",
+     "unitSize": "XXXX",
+     "size": 0.32,
+     "color": "#ff8a4c",
+     "pos": [
+      21.9,
+      53.1
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "unit",
+     "unitSize": "XXXX",
+     "size": 0.32,
+     "color": "#ff8a4c",
+     "pos": [
+      22.0,
+      50.05
+     ]
     }
    ]
   },
@@ -8267,6 +8484,25 @@
       ]
      ],
      "width": 0.0129
+    },
+    {
+     "type": "marker",
+     "style": "fortress",
+     "size": 0.02,
+     "color": "#eaf1fb",
+     "pos": [
+      23.657,
+      52.0835
+     ]
+    },
+    {
+     "type": "label",
+     "text": "The citadel · 9,000 men",
+     "size": "sm",
+     "pos": [
+      23.75,
+      52.028
+     ]
     }
    ]
   }
@@ -8872,7 +9108,8 @@
        56.0
       ]
      ],
-     "width": 0.0624
+     "width": 0.0624,
+     "strength": "Typhoon"
     },
     {
      "type": "frontline",
@@ -8916,23 +9153,24 @@
      "label": "The counter-offensive of 5 December drove them back 100 to 250 km",
      "path": [
       [
-       37.45,
-       56.05
+       37.8,
+       56.35
       ],
       [
        36.6,
-       56.0
+       56.3
       ],
       [
-       35.5,
-       55.9
+       35.4,
+       56.18
       ],
       [
-       34.6,
-       55.8
+       34.4,
+       56.05
       ]
      ],
-     "width": 0.0624
+     "width": 0.0624,
+     "strength": "5 December"
     }
    ]
   }
@@ -9064,7 +9302,8 @@
        48.7
       ]
      ],
-     "width": 0.027
+     "width": 0.027,
+     "strength": "Uranus, 19 Nov"
     },
     {
      "type": "thrust",
@@ -9107,7 +9346,8 @@
        48.14
       ]
      ],
-     "width": 0.027
+     "width": 0.027,
+     "strength": "the relief attempt"
     },
     {
      "type": "marker",
@@ -9128,6 +9368,32 @@
      ],
      "text": "Sixth Army encircled · 250,000",
      "size": "sm"
+    },
+    {
+     "type": "marker",
+     "style": "unit",
+     "unitType": "infantry",
+     "unitSize": "XXXX",
+     "size": 0.028,
+     "color": "#eaf1fb",
+     "label": "Sixth Army",
+     "pos": [
+      43.95,
+      48.42
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "unit",
+     "unitType": "infantry",
+     "unitSize": "XXXX",
+     "size": 0.028,
+     "color": "#e5484d",
+     "label": "62nd Army",
+     "pos": [
+      44.78,
+      48.72
+     ]
     }
    ]
   }
@@ -9188,7 +9454,8 @@
        28.55
       ]
      ],
-     "width": 0.0579
+     "width": 0.0579,
+     "strength": "4 fleet carriers"
     },
     {
      "type": "marker",
@@ -9204,7 +9471,7 @@
     {
      "type": "thrust",
      "color": "#4c8dff",
-     "label": "Four fleet carriers sunk on 4 June",
+     "label": "The American strike, morning of 4 June",
      "path": [
       [
        -176.3,
@@ -9215,11 +9482,22 @@
        30.9
       ],
       [
-       -177.6,
-       29.95
+       -177.95,
+       29.9
       ]
      ],
      "width": 0.0579
+    },
+    {
+     "type": "marker",
+     "style": "cross",
+     "size": 0.05,
+     "color": "#f5a623",
+     "label": "Four carriers sunk, 4 June",
+     "pos": [
+      -178.05,
+      29.75
+     ]
     }
    ]
   }
@@ -9326,7 +9604,8 @@
         49.24
        ]
       ]
-     ]
+     ],
+     "strength": "156,000 ashore"
     },
     {
      "type": "frontline",
@@ -9390,8 +9669,8 @@
        49.56
       ],
       [
-       -1.18,
-       49.44
+       -1.185,
+       49.425
       ]
      ],
      "label": "Utah",
@@ -9411,8 +9690,8 @@
        49.54
       ],
       [
-       -0.88,
-       49.4
+       -0.875,
+       49.37
       ]
      ],
      "label": "Omaha",
@@ -9432,8 +9711,8 @@
        49.52
       ],
       [
-       -0.54,
-       49.37
+       -0.55,
+       49.345
       ]
      ],
      "label": "Gold",
@@ -9453,8 +9732,8 @@
        49.5
       ],
       [
-       -0.39,
-       49.36
+       -0.42,
+       49.34
       ]
      ],
      "label": "Juno",
@@ -9474,35 +9753,11 @@
        49.48
       ],
       [
-       -0.28,
-       49.32
+       -0.29,
+       49.3
       ]
      ],
      "label": "Sword",
-     "at": 1944.43033
-    },
-    {
-     "type": "marker",
-     "style": "star",
-     "size": 0.035,
-     "color": "#f5a623",
-     "pos": [
-      -1.32,
-      49.41
-     ],
-     "label": "82nd & 101st Airborne",
-     "at": 1944.43033
-    },
-    {
-     "type": "marker",
-     "style": "star",
-     "size": 0.035,
-     "color": "#f5a623",
-     "pos": [
-      -0.18,
-      49.245
-     ],
-     "label": "6th Airborne",
      "at": 1944.43033
     },
     {
@@ -9532,8 +9787,8 @@
     {
      "type": "label",
      "pos": [
-      -1.2,
-      49.47
+      -1.34,
+      49.77
      ],
      "text": "Utah",
      "size": "sm"
@@ -9541,8 +9796,8 @@
     {
      "type": "label",
      "pos": [
-      -0.9,
-      49.435
+      -0.99,
+      49.75
      ],
      "text": "Omaha",
      "size": "sm"
@@ -9550,8 +9805,8 @@
     {
      "type": "label",
      "pos": [
-      -0.55,
-      49.425
+      -0.64,
+      49.72
      ],
      "text": "Gold",
      "size": "sm"
@@ -9559,8 +9814,8 @@
     {
      "type": "label",
      "pos": [
-      -0.39,
-      49.47
+      -0.46,
+      49.7
      ],
      "text": "Juno",
      "size": "sm"
@@ -9568,8 +9823,8 @@
     {
      "type": "label",
      "pos": [
-      -0.28,
-      49.515
+      -0.26,
+      49.67
      ],
      "text": "Sword",
      "size": "sm"
@@ -9601,8 +9856,8 @@
     {
      "type": "label",
      "pos": [
-      -1.45,
-      49.3
+      -2.0,
+      49.33
      ],
      "text": "Cotentin cut, 18 June",
      "size": "sm",
@@ -9629,6 +9884,48 @@
      "text": "Operation Cobra, 25 July",
      "size": "sm",
      "at": 1944.56421
+    },
+    {
+     "type": "marker",
+     "style": "unit",
+     "unitType": "infantry",
+     "unitSize": "XX",
+     "size": 0.02,
+     "color": "#4c8dff",
+     "label": "82nd Airborne",
+     "at": 1944.43033,
+     "pos": [
+      -1.38,
+      49.45
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "unit",
+     "unitType": "infantry",
+     "unitSize": "XX",
+     "size": 0.02,
+     "color": "#4c8dff",
+     "label": "101st Airborne",
+     "at": 1944.43033,
+     "pos": [
+      -1.27,
+      49.35
+     ]
+    },
+    {
+     "type": "marker",
+     "style": "unit",
+     "unitType": "infantry",
+     "unitSize": "XX",
+     "size": 0.02,
+     "color": "#34d1bf",
+     "label": "6th Airborne",
+     "at": 1944.43033,
+     "pos": [
+      -0.21,
+      49.235
+     ]
     }
    ]
   },

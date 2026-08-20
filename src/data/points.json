@@ -3,594 +3,2824 @@
     "id": "rome",
     "name": "Rome",
     "kind": "city",
-    "pos": [12.4964, 41.9028],
+    "pos": [
+      12.4964,
+      41.9028
+    ],
     "note": "Capital of the Roman world, then of the Church, then of Italy",
     "eras": [
-      { "from": -752, "to": -509, "priority": 3 },
-      { "from": -509, "to": -27, "priority": 2 },
-      { "from": -27, "to": 476, "priority": 1 },
-      { "from": 476, "to": 1420, "priority": 3 },
-      { "from": 1420, "priority": 2 }
+      {
+        "from": -752,
+        "to": -509,
+        "priority": 3
+      },
+      {
+        "from": -509,
+        "to": -27,
+        "priority": 2
+      },
+      {
+        "from": -27,
+        "to": 476,
+        "priority": 1
+      },
+      {
+        "from": 476,
+        "to": 1420,
+        "priority": 3
+      },
+      {
+        "from": 1420,
+        "priority": 2
+      }
     ]
   },
   {
     "id": "constantinople",
     "name": "Istanbul",
     "kind": "city",
-    "pos": [28.9784, 41.0082],
+    "pos": [
+      28.9784,
+      41.0082
+    ],
     "note": "Capital of two empires across sixteen centuries",
     "eras": [
-      { "from": -660, "to": 330, "priority": 4, "name": "Byzantion" },
-      { "from": 330, "to": 1453, "priority": 1, "name": "Constantinople" },
-      { "from": 1453, "to": 1930, "priority": 1, "name": "Constantinople" },
-      { "from": 1930, "priority": 2, "name": "Istanbul" }
+      {
+        "from": -660,
+        "to": 330,
+        "priority": 4,
+        "name": "Byzantion"
+      },
+      {
+        "from": 330,
+        "to": 1453,
+        "priority": 1,
+        "name": "Constantinople"
+      },
+      {
+        "from": 1453,
+        "to": 1930,
+        "priority": 1,
+        "name": "Constantinople"
+      },
+      {
+        "from": 1930,
+        "priority": 2,
+        "name": "Istanbul"
+      }
     ]
   },
   {
     "id": "athens",
     "name": "Athens",
     "kind": "city",
-    "pos": [23.7275, 37.9838],
+    "pos": [
+      23.7275,
+      37.9838
+    ],
     "note": "The classical city of philosophy and the first democracy",
     "eras": [
-      { "from": -800, "to": -510, "priority": 3 },
-      { "from": -510, "to": -322, "priority": 1 },
-      { "from": -322, "to": 1832, "priority": 4 },
-      { "from": 1832, "priority": 3 }
+      {
+        "from": -800,
+        "to": -510,
+        "priority": 3
+      },
+      {
+        "from": -510,
+        "to": -322,
+        "priority": 1
+      },
+      {
+        "from": -322,
+        "to": 1832,
+        "priority": 4
+      },
+      {
+        "from": 1832,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "babylon",
     "name": "Babylon",
     "kind": "city",
-    "pos": [44.4207, 32.5364],
+    "pos": [
+      44.4207,
+      32.5364
+    ],
     "note": "Mesopotamian capital; abandoned by late antiquity",
     "eras": [
-      { "from": -1894, "to": -626, "priority": 2 },
-      { "from": -626, "to": -538, "priority": 1 },
-      { "from": -538, "to": -140, "priority": 3 }
+      {
+        "from": -1894,
+        "to": -626,
+        "priority": 2
+      },
+      {
+        "from": -626,
+        "to": -538,
+        "priority": 1
+      },
+      {
+        "from": -538,
+        "to": -140,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "xian",
     "name": "Xi'an",
     "kind": "city",
-    "pos": [108.9542, 34.2658],
+    "pos": [
+      108.9542,
+      34.2658
+    ],
     "note": "Eastern terminus of the Silk Road",
     "eras": [
-      { "from": -202, "to": 220, "priority": 1, "name": "Chang'an" },
-      { "from": 220, "to": 618, "priority": 3, "name": "Chang'an" },
-      { "from": 618, "to": 907, "priority": 1, "name": "Chang'an" },
-      { "from": 907, "priority": 4 }
+      {
+        "from": -202,
+        "to": 220,
+        "priority": 1,
+        "name": "Chang'an"
+      },
+      {
+        "from": 220,
+        "to": 618,
+        "priority": 3,
+        "name": "Chang'an"
+      },
+      {
+        "from": 618,
+        "to": 907,
+        "priority": 1,
+        "name": "Chang'an"
+      },
+      {
+        "from": 907,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "baghdad",
     "name": "Baghdad",
     "kind": "city",
-    "pos": [44.3661, 33.3152],
+    "pos": [
+      44.3661,
+      33.3152
+    ],
     "note": "Abbasid capital and seat of the House of Wisdom until 1258",
     "eras": [
-      { "from": 762, "to": 1258, "priority": 1 },
-      { "from": 1258, "to": 1920, "priority": 3 },
-      { "from": 1920, "priority": 2 }
+      {
+        "from": 762,
+        "to": 1258,
+        "priority": 1
+      },
+      {
+        "from": 1258,
+        "to": 1920,
+        "priority": 3
+      },
+      {
+        "from": 1920,
+        "priority": 2
+      }
     ]
   },
   {
     "id": "tenochtitlan",
     "name": "Mexico City",
     "kind": "city",
-    "pos": [-99.1332, 19.4326],
+    "pos": [
+      -99.1332,
+      19.4326
+    ],
     "note": "Aztec island capital, rebuilt as the seat of New Spain",
     "eras": [
-      { "from": 1325, "to": 1521, "priority": 1, "name": "Tenochtitlan" },
-      { "from": 1521, "priority": 2, "name": "Mexico City" }
+      {
+        "from": 1325,
+        "to": 1521,
+        "priority": 1,
+        "name": "Tenochtitlan"
+      },
+      {
+        "from": 1521,
+        "priority": 2,
+        "name": "Mexico City"
+      }
     ]
   },
   {
     "id": "cusco",
     "name": "Cusco",
     "kind": "city",
-    "pos": [-71.9675, -13.532],
+    "pos": [
+      -71.9675,
+      -13.532
+    ],
     "note": "Capital of the Inca Empire",
     "eras": [
-      { "from": 1200, "to": 1533, "priority": 2 },
-      { "from": 1533, "priority": 4 }
+      {
+        "from": 1200,
+        "to": 1533,
+        "priority": 2
+      },
+      {
+        "from": 1533,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "alexandria",
     "name": "Alexandria",
     "kind": "city",
-    "pos": [29.9187, 31.2001],
+    "pos": [
+      29.9187,
+      31.2001
+    ],
     "note": "Ptolemaic capital; its library and lighthouse led the ancient world",
     "eras": [
-      { "from": -330, "to": 641, "priority": 1 },
-      { "from": 641, "priority": 3 }
+      {
+        "from": -330,
+        "to": 641,
+        "priority": 1
+      },
+      {
+        "from": 641,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "carthage",
     "name": "Carthage",
     "kind": "city",
-    "pos": [10.3236, 36.8528],
+    "pos": [
+      10.3236,
+      36.8528
+    ],
     "note": "Phoenician sea power, razed in -146, refounded, gone after 698",
     "eras": [
-      { "from": -813, "to": -146, "priority": 1 },
-      { "from": -45, "to": 698, "priority": 3 }
+      {
+        "from": -813,
+        "to": -146,
+        "priority": 1
+      },
+      {
+        "from": -45,
+        "to": 698,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "london",
     "name": "London",
     "kind": "city",
-    "pos": [-0.1276, 51.5072],
+    "pos": [
+      -0.1276,
+      51.5072
+    ],
     "eras": [
-      { "from": 47, "to": 410, "priority": 4, "name": "Londinium" },
-      { "from": 886, "to": 1500, "priority": 3 },
-      { "from": 1500, "priority": 1 }
+      {
+        "from": 47,
+        "to": 410,
+        "priority": 4,
+        "name": "Londinium"
+      },
+      {
+        "from": 886,
+        "to": 1500,
+        "priority": 3
+      },
+      {
+        "from": 1500,
+        "priority": 1
+      }
     ]
   },
   {
     "id": "paris",
     "name": "Paris",
     "kind": "city",
-    "pos": [2.3522, 48.8566],
+    "pos": [
+      2.3522,
+      48.8566
+    ],
     "eras": [
-      { "from": 508, "to": 1000, "priority": 4 },
-      { "from": 1000, "to": 1789, "priority": 2 },
-      { "from": 1789, "priority": 1 }
+      {
+        "from": 508,
+        "to": 1000,
+        "priority": 4
+      },
+      {
+        "from": 1000,
+        "to": 1789,
+        "priority": 2
+      },
+      {
+        "from": 1789,
+        "priority": 1
+      }
     ]
   },
   {
     "id": "beijing",
     "name": "Beijing",
     "kind": "city",
-    "pos": [116.4074, 39.9042],
+    "pos": [
+      116.4074,
+      39.9042
+    ],
     "eras": [
-      { "from": 1271, "to": 1403, "priority": 1, "name": "Khanbaliq" },
-      { "from": 1403, "priority": 1, "name": "Beijing" }
+      {
+        "from": 1271,
+        "to": 1403,
+        "priority": 1,
+        "name": "Khanbaliq"
+      },
+      {
+        "from": 1403,
+        "priority": 1,
+        "name": "Beijing"
+      }
     ]
   },
   {
     "id": "kyoto",
     "name": "Kyoto",
     "kind": "city",
-    "pos": [135.7681, 35.0116],
+    "pos": [
+      135.7681,
+      35.0116
+    ],
     "note": "Imperial capital of Japan for a millennium",
     "eras": [
-      { "from": 794, "to": 1100, "priority": 2, "name": "Heian-kyō" },
-      { "from": 1100, "to": 1868, "priority": 2 },
-      { "from": 1868, "priority": 4 }
+      {
+        "from": 794,
+        "to": 1100,
+        "priority": 2,
+        "name": "Heian-kyō"
+      },
+      {
+        "from": 1100,
+        "to": 1868,
+        "priority": 2
+      },
+      {
+        "from": 1868,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "jerusalem",
     "name": "Jerusalem",
     "kind": "city",
-    "pos": [35.2137, 31.7683],
+    "pos": [
+      35.2137,
+      31.7683
+    ],
     "note": "Holy city of three faiths",
     "eras": [
-      { "from": -1000, "to": -586, "priority": 2 },
-      { "from": -538, "to": 70, "priority": 2 },
-      { "from": 70, "to": 638, "priority": 3 },
-      { "from": 638, "to": 1099, "priority": 2 },
-      { "from": 1099, "to": 1291, "priority": 1 },
-      { "from": 1291, "priority": 2 }
+      {
+        "from": -1000,
+        "to": -586,
+        "priority": 2
+      },
+      {
+        "from": -538,
+        "to": 70,
+        "priority": 2
+      },
+      {
+        "from": 70,
+        "to": 638,
+        "priority": 3
+      },
+      {
+        "from": 638,
+        "to": 1099,
+        "priority": 2
+      },
+      {
+        "from": 1099,
+        "to": 1291,
+        "priority": 1
+      },
+      {
+        "from": 1291,
+        "priority": 2
+      }
     ]
   },
   {
     "id": "timbuktu",
     "name": "Timbuktu",
     "kind": "city",
-    "pos": [-3.0026, 16.7735],
+    "pos": [
+      -3.0026,
+      16.7735
+    ],
     "note": "Saharan crossroads of gold, salt and manuscripts",
     "eras": [
-      { "from": 1100, "to": 1600, "priority": 2 },
-      { "from": 1600, "priority": 5 }
+      {
+        "from": 1100,
+        "to": 1600,
+        "priority": 2
+      },
+      {
+        "from": 1600,
+        "priority": 5
+      }
     ]
   },
   {
     "id": "venice",
     "name": "Venice",
     "kind": "city",
-    "pos": [12.3155, 45.4408],
+    "pos": [
+      12.3155,
+      45.4408
+    ],
     "note": "Merchant republic that ruled the eastern Mediterranean trade",
     "eras": [
-      { "from": 697, "to": 1000, "priority": 3 },
-      { "from": 1000, "to": 1797, "priority": 1 },
-      { "from": 1797, "priority": 3 }
+      {
+        "from": 697,
+        "to": 1000,
+        "priority": 3
+      },
+      {
+        "from": 1000,
+        "to": 1797,
+        "priority": 1
+      },
+      {
+        "from": 1797,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "samarkand",
     "name": "Samarkand",
     "kind": "city",
-    "pos": [66.9749, 39.627],
+    "pos": [
+      66.9749,
+      39.627
+    ],
     "note": "Silk Road city; razed by the Mongols, reborn as Timur's capital",
     "eras": [
-      { "from": -700, "to": 1220, "priority": 3 },
-      { "from": 1370, "to": 1500, "priority": 1 },
-      { "from": 1500, "priority": 4 }
+      {
+        "from": -700,
+        "to": 1220,
+        "priority": 3
+      },
+      {
+        "from": 1370,
+        "to": 1500,
+        "priority": 1
+      },
+      {
+        "from": 1500,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "moscow",
     "name": "Moscow",
     "kind": "city",
-    "pos": [37.6173, 55.7558],
+    "pos": [
+      37.6173,
+      55.7558
+    ],
     "eras": [
-      { "from": 1147, "to": 1712, "priority": 2 },
-      { "from": 1712, "to": 1918, "priority": 4 },
-      { "from": 1918, "priority": 1 }
+      {
+        "from": 1147,
+        "to": 1712,
+        "priority": 2
+      },
+      {
+        "from": 1712,
+        "to": 1918,
+        "priority": 4
+      },
+      {
+        "from": 1918,
+        "priority": 1
+      }
     ]
   },
   {
     "id": "new-york",
     "name": "New York",
     "kind": "city",
-    "pos": [-74.006, 40.7128],
+    "pos": [
+      -74.006,
+      40.7128
+    ],
     "eras": [
-      { "from": 1624, "to": 1664, "priority": 4, "name": "New Amsterdam" },
-      { "from": 1664, "to": 1800, "priority": 3 },
-      { "from": 1800, "priority": 1 }
+      {
+        "from": 1624,
+        "to": 1664,
+        "priority": 4,
+        "name": "New Amsterdam"
+      },
+      {
+        "from": 1664,
+        "to": 1800,
+        "priority": 3
+      },
+      {
+        "from": 1800,
+        "priority": 1
+      }
     ]
   },
   {
     "id": "cahokia",
     "name": "Cahokia",
     "kind": "city",
-    "pos": [-90.062, 38.6551],
+    "pos": [
+      -90.062,
+      38.6551
+    ],
     "note": "Largest pre-Columbian city north of Mexico; abandoned by 1350",
-    "eras": [{ "from": 1050, "to": 1350, "priority": 3 }]
+    "eras": [
+      {
+        "from": 1050,
+        "to": 1350,
+        "priority": 3
+      }
+    ]
   },
   {
     "id": "angkor",
     "name": "Angkor",
     "kind": "city",
-    "pos": [103.867, 13.4125],
+    "pos": [
+      103.867,
+      13.4125
+    ],
     "note": "Khmer capital, the largest city of the medieval world",
     "eras": [
-      { "from": 802, "to": 1431, "priority": 1 },
-      { "from": 1431, "priority": 4 }
+      {
+        "from": 802,
+        "to": 1431,
+        "priority": 1
+      },
+      {
+        "from": 1431,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "gibraltar",
     "name": "Gibraltar",
     "kind": "fortress",
-    "pos": [-5.3536, 36.1408],
+    "pos": [
+      -5.3536,
+      36.1408
+    ],
     "note": "The Rock: key to the Mediterranean's Atlantic gate",
     "eras": [
-      { "from": 711, "to": 1462, "priority": 3, "name": "Jabal Tariq" },
-      { "from": 1462, "to": 1704, "priority": 3 },
-      { "from": 1704, "priority": 2 }
+      {
+        "from": 711,
+        "to": 1462,
+        "priority": 3,
+        "name": "Jabal Tariq"
+      },
+      {
+        "from": 1462,
+        "to": 1704,
+        "priority": 3
+      },
+      {
+        "from": 1704,
+        "priority": 2
+      }
     ]
   },
   {
     "id": "valletta",
     "name": "Valletta",
     "kind": "fortress",
-    "pos": [14.5146, 35.8989],
+    "pos": [
+      14.5146,
+      35.8989
+    ],
     "note": "Fortress-city of the Knights of Malta",
     "eras": [
-      { "from": 1566, "to": 1798, "priority": 2 },
-      { "from": 1798, "to": 1940, "priority": 4 },
-      { "from": 1940, "to": 1945, "priority": 1 },
-      { "from": 1945, "priority": 4 }
+      {
+        "from": 1566,
+        "to": 1798,
+        "priority": 2
+      },
+      {
+        "from": 1798,
+        "to": 1940,
+        "priority": 4
+      },
+      {
+        "from": 1940,
+        "to": 1945,
+        "priority": 1
+      },
+      {
+        "from": 1945,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "masada",
     "name": "Masada",
     "kind": "fortress",
-    "pos": [35.3536, 31.3156],
+    "pos": [
+      35.3536,
+      31.3156
+    ],
     "note": "Herod's desert stronghold; fell to Rome in 73",
-    "eras": [{ "from": -36, "to": 73, "priority": 2 }]
+    "eras": [
+      {
+        "from": -36,
+        "to": 73,
+        "priority": 2
+      }
+    ]
   },
   {
     "id": "alamut",
     "name": "Alamut",
     "kind": "fortress",
-    "pos": [50.586, 36.4453],
+    "pos": [
+      50.586,
+      36.4453
+    ],
     "note": "Mountain castle of the Assassins; destroyed by the Mongols in 1256",
-    "eras": [{ "from": 1090, "to": 1256, "priority": 2 }]
+    "eras": [
+      {
+        "from": 1090,
+        "to": 1256,
+        "priority": 2
+      }
+    ]
   },
   {
     "id": "verdun",
     "name": "Verdun",
     "kind": "fortress",
-    "pos": [5.3843, 49.159],
+    "pos": [
+      5.3843,
+      49.159
+    ],
     "note": "Ring of forts that anchored the longest battle of 1916",
     "eras": [
-      { "from": 1200, "to": 1914, "priority": 4 },
-      { "from": 1914, "to": 1919, "priority": 1 },
-      { "from": 1919, "priority": 4 }
+      {
+        "from": 1200,
+        "to": 1914,
+        "priority": 4
+      },
+      {
+        "from": 1914,
+        "to": 1919,
+        "priority": 1
+      },
+      {
+        "from": 1919,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "kronborg",
     "name": "Kronborg",
     "kind": "fortress",
-    "pos": [12.6214, 56.039],
+    "pos": [
+      12.6214,
+      56.039
+    ],
     "note": "Castle at the Sound, tolling every ship into the Baltic",
     "eras": [
-      { "from": 1420, "to": 1857, "priority": 3 },
-      { "from": 1857, "priority": 5 }
+      {
+        "from": 1420,
+        "to": 1857,
+        "priority": 3
+      },
+      {
+        "from": 1857,
+        "priority": 5
+      }
     ]
   },
   {
     "id": "krak-des-chevaliers",
     "name": "Krak des Chevaliers",
     "kind": "fortress",
-    "pos": [36.2944, 34.7569],
+    "pos": [
+      36.2944,
+      34.7569
+    ],
     "note": "Crusader castle of the Hospitallers",
     "eras": [
-      { "from": 1142, "to": 1271, "priority": 2 },
-      { "from": 1271, "priority": 4 }
+      {
+        "from": 1142,
+        "to": 1271,
+        "priority": 2
+      },
+      {
+        "from": 1271,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "himeji",
     "name": "Himeji",
     "kind": "fortress",
-    "pos": [134.6939, 34.8394],
+    "pos": [
+      134.6939,
+      34.8394
+    ],
     "note": "The White Heron castle",
     "eras": [
-      { "from": 1333, "to": 1600, "priority": 4 },
-      { "from": 1600, "to": 1868, "priority": 3 },
-      { "from": 1868, "priority": 4 }
+      {
+        "from": 1333,
+        "to": 1600,
+        "priority": 4
+      },
+      {
+        "from": 1600,
+        "to": 1868,
+        "priority": 3
+      },
+      {
+        "from": 1868,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "el-morro",
     "name": "El Morro",
     "kind": "fortress",
-    "pos": [-66.124, 18.4708],
+    "pos": [
+      -66.124,
+      18.4708
+    ],
     "note": "Spanish citadel guarding San Juan and the treasure route",
     "eras": [
-      { "from": 1539, "to": 1898, "priority": 3 },
-      { "from": 1898, "priority": 5 }
+      {
+        "from": 1539,
+        "to": 1898,
+        "priority": 3
+      },
+      {
+        "from": 1898,
+        "priority": 5
+      }
     ]
   },
   {
     "id": "sevastopol",
     "name": "Sevastopol",
     "kind": "fortress",
-    "pos": [33.5254, 44.6054],
+    "pos": [
+      33.5254,
+      44.6054
+    ],
     "note": "Black Sea naval fortress, twice besieged for a year",
     "eras": [
-      { "from": 1783, "to": 1853, "priority": 4 },
-      { "from": 1853, "to": 1856, "priority": 1 },
-      { "from": 1856, "to": 1941, "priority": 4 },
-      { "from": 1941, "to": 1945, "priority": 1 },
-      { "from": 1945, "priority": 4 }
+      {
+        "from": 1783,
+        "to": 1853,
+        "priority": 4
+      },
+      {
+        "from": 1853,
+        "to": 1856,
+        "priority": 1
+      },
+      {
+        "from": 1856,
+        "to": 1941,
+        "priority": 4
+      },
+      {
+        "from": 1941,
+        "to": 1945,
+        "priority": 1
+      },
+      {
+        "from": 1945,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "vesuvius",
     "name": "Vesuvius",
     "kind": "volcano",
-    "pos": [14.426, 40.822],
+    "pos": [
+      14.426,
+      40.822
+    ],
     "note": "Buried Pompeii and Herculaneum in 79",
     "eras": [
-      { "from": -9999, "to": 79, "priority": 5 },
-      { "from": 79, "to": 120, "priority": 1 },
-      { "from": 120, "priority": 3 }
+      {
+        "from": -9999,
+        "to": 79,
+        "priority": 5
+      },
+      {
+        "from": 79,
+        "to": 120,
+        "priority": 1
+      },
+      {
+        "from": 120,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "thera",
     "name": "Santorini",
     "kind": "volcano",
-    "pos": [25.3963, 36.4041],
+    "pos": [
+      25.3963,
+      36.4041
+    ],
     "note": "Bronze Age eruption that shook the Minoan world",
     "eras": [
-      { "from": -9999, "to": -1650, "priority": 5, "name": "Thera" },
-      { "from": -1650, "to": -1500, "priority": 1, "name": "Thera" },
-      { "from": -1500, "to": 1200, "priority": 4, "name": "Thera" },
-      { "from": 1200, "priority": 4 }
+      {
+        "from": -9999,
+        "to": -1650,
+        "priority": 5,
+        "name": "Thera"
+      },
+      {
+        "from": -1650,
+        "to": -1500,
+        "priority": 1,
+        "name": "Thera"
+      },
+      {
+        "from": -1500,
+        "to": 1200,
+        "priority": 4,
+        "name": "Thera"
+      },
+      {
+        "from": 1200,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "krakatoa",
     "name": "Krakatoa",
     "kind": "volcano",
-    "pos": [105.423, -6.102],
+    "pos": [
+      105.423,
+      -6.102
+    ],
     "note": "Its 1883 eruption was heard three thousand miles away",
     "eras": [
-      { "from": -9999, "to": 1883, "priority": 5 },
-      { "from": 1883, "to": 1890, "priority": 1 },
-      { "from": 1890, "priority": 4 }
+      {
+        "from": -9999,
+        "to": 1883,
+        "priority": 5
+      },
+      {
+        "from": 1883,
+        "to": 1890,
+        "priority": 1
+      },
+      {
+        "from": 1890,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "tambora",
     "name": "Tambora",
     "kind": "volcano",
-    "pos": [118.0, -8.247],
+    "pos": [
+      118.0,
+      -8.247
+    ],
     "note": "1815: the largest eruption in recorded history, then a year without summer",
     "eras": [
-      { "from": -9999, "to": 1815, "priority": 5 },
-      { "from": 1815, "to": 1820, "priority": 1 },
-      { "from": 1820, "priority": 4 }
+      {
+        "from": -9999,
+        "to": 1815,
+        "priority": 5
+      },
+      {
+        "from": 1815,
+        "to": 1820,
+        "priority": 1
+      },
+      {
+        "from": 1820,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "everest",
     "name": "Mount Everest",
     "kind": "mountain",
-    "pos": [86.925, 27.9881],
+    "pos": [
+      86.925,
+      27.9881
+    ],
     "note": "The highest point on Earth; first climbed in 1953",
     "eras": [
-      { "from": -9999, "to": 1856, "priority": 5 },
-      { "from": 1856, "to": 1953, "priority": 4 },
-      { "from": 1953, "priority": 3 }
+      {
+        "from": -9999,
+        "to": 1856,
+        "priority": 5
+      },
+      {
+        "from": 1856,
+        "to": 1953,
+        "priority": 4
+      },
+      {
+        "from": 1953,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "olympus",
     "name": "Mount Olympus",
     "kind": "mountain",
-    "pos": [22.3583, 40.0859],
+    "pos": [
+      22.3583,
+      40.0859
+    ],
     "note": "Home of the Greek gods",
     "eras": [
-      { "from": -800, "to": 400, "priority": 3 },
-      { "from": 400, "priority": 5 }
+      {
+        "from": -800,
+        "to": 400,
+        "priority": 3
+      },
+      {
+        "from": 400,
+        "priority": 5
+      }
     ]
   },
   {
     "id": "kilimanjaro",
     "name": "Kilimanjaro",
     "kind": "mountain",
-    "pos": [37.3556, -3.0674],
+    "pos": [
+      37.3556,
+      -3.0674
+    ],
     "note": "Africa's highest peak, snow-capped on the equator",
-    "eras": [{ "from": -9999, "priority": 5 }]
+    "eras": [
+      {
+        "from": -9999,
+        "priority": 5
+      }
+    ]
   },
   {
     "id": "bosporus",
     "name": "Bosporus",
     "kind": "strait",
-    "pos": [29.063, 41.119],
+    "pos": [
+      29.063,
+      41.119
+    ],
     "note": "The channel between Europe and Asia",
     "eras": [
-      { "from": -700, "to": 330, "priority": 3 },
-      { "from": 330, "priority": 3 }
+      {
+        "from": -700,
+        "to": 330,
+        "priority": 3
+      },
+      {
+        "from": 330,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "hormuz",
     "name": "Strait of Hormuz",
     "kind": "strait",
-    "pos": [56.45, 26.95],
+    "pos": [
+      56.45,
+      26.95
+    ],
     "note": "The Gulf's one gate to the ocean",
     "eras": [
-      { "from": -500, "to": 1500, "priority": 4 },
-      { "from": 1500, "priority": 3 }
+      {
+        "from": -500,
+        "to": 1500,
+        "priority": 4
+      },
+      {
+        "from": 1500,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "malacca",
     "name": "Strait of Malacca",
     "kind": "strait",
-    "pos": [102.25, 2.19],
+    "pos": [
+      102.25,
+      2.19
+    ],
     "note": "The narrows between the Indian Ocean and the China seas",
     "eras": [
-      { "from": 1400, "to": 1511, "priority": 2 },
-      { "from": 1511, "priority": 3 }
+      {
+        "from": 1400,
+        "to": 1511,
+        "priority": 2
+      },
+      {
+        "from": 1511,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "dardanelles",
     "name": "Dardanelles",
     "kind": "strait",
-    "pos": [26.4064, 40.2],
+    "pos": [
+      26.4064,
+      40.2
+    ],
     "note": "The Hellespont: gateway between the Aegean and the Black Sea",
     "eras": [
-      { "from": -1300, "to": -1100, "priority": 2, "name": "Hellespont" },
-      { "from": -1100, "to": 1453, "priority": 3, "name": "Hellespont" },
-      { "from": 1453, "to": 1915, "priority": 4 },
-      { "from": 1915, "to": 1917, "priority": 1 },
-      { "from": 1917, "priority": 4 }
+      {
+        "from": -1300,
+        "to": -1100,
+        "priority": 2,
+        "name": "Hellespont"
+      },
+      {
+        "from": -1100,
+        "to": 1453,
+        "priority": 3,
+        "name": "Hellespont"
+      },
+      {
+        "from": 1453,
+        "to": 1915,
+        "priority": 4
+      },
+      {
+        "from": 1915,
+        "to": 1917,
+        "priority": 1
+      },
+      {
+        "from": 1917,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "giza",
     "name": "Giza",
     "kind": "site",
-    "pos": [31.1342, 29.9792],
+    "pos": [
+      31.1342,
+      29.9792
+    ],
     "note": "The pyramids and the Sphinx",
     "eras": [
-      { "from": -2560, "to": -2100, "priority": 1 },
-      { "from": -2100, "priority": 2 }
+      {
+        "from": -2560,
+        "to": -2100,
+        "priority": 1
+      },
+      {
+        "from": -2100,
+        "priority": 2
+      }
     ]
   },
   {
     "id": "stonehenge",
     "name": "Stonehenge",
     "kind": "site",
-    "pos": [-1.8262, 51.1789],
+    "pos": [
+      -1.8262,
+      51.1789
+    ],
     "eras": [
-      { "from": -3000, "to": -1500, "priority": 2 },
-      { "from": -1500, "priority": 4 }
+      {
+        "from": -3000,
+        "to": -1500,
+        "priority": 2
+      },
+      {
+        "from": -1500,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "persepolis",
     "name": "Persepolis",
     "kind": "site",
-    "pos": [52.8916, 29.9354],
+    "pos": [
+      52.8916,
+      29.9354
+    ],
     "note": "Ceremonial capital of the Achaemenids; burned by Alexander",
     "eras": [
-      { "from": -518, "to": -330, "priority": 1 },
-      { "from": -330, "priority": 4 }
+      {
+        "from": -518,
+        "to": -330,
+        "priority": 1
+      },
+      {
+        "from": -330,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "machu-picchu",
     "name": "Machu Picchu",
     "kind": "site",
-    "pos": [-72.545, -13.1631],
+    "pos": [
+      -72.545,
+      -13.1631
+    ],
     "note": "Inca mountain estate, lost to the outside world until 1911",
     "eras": [
-      { "from": 1450, "to": 1572, "priority": 2 },
-      { "from": 1911, "priority": 3 }
+      {
+        "from": 1450,
+        "to": 1572,
+        "priority": 2
+      },
+      {
+        "from": 1911,
+        "priority": 3
+      }
     ]
   },
   {
     "id": "petra",
     "name": "Petra",
     "kind": "site",
-    "pos": [35.4444, 30.3285],
+    "pos": [
+      35.4444,
+      30.3285
+    ],
     "note": "Nabataean caravan city carved into rose-red rock",
     "eras": [
-      { "from": -312, "to": 363, "priority": 2 },
-      { "from": 363, "to": 700, "priority": 4 },
-      { "from": 1812, "priority": 4 }
+      {
+        "from": -312,
+        "to": 363,
+        "priority": 2
+      },
+      {
+        "from": 363,
+        "to": 700,
+        "priority": 4
+      },
+      {
+        "from": 1812,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "easter-island",
     "name": "Easter Island",
     "kind": "site",
-    "pos": [-109.3497, -27.1127],
+    "pos": [
+      -109.3497,
+      -27.1127
+    ],
     "note": "Rapa Nui and its moai",
     "eras": [
-      { "from": 1250, "to": 1722, "priority": 3 },
-      { "from": 1722, "priority": 4 }
+      {
+        "from": 1250,
+        "to": 1722,
+        "priority": 3
+      },
+      {
+        "from": 1722,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "gobekli-tepe",
     "name": "Göbekli Tepe",
     "kind": "site",
-    "pos": [38.9224, 37.2231],
+    "pos": [
+      38.9224,
+      37.2231
+    ],
     "note": "The oldest known monumental sanctuary, raised by hunter-gatherers",
     "eras": [
-      { "from": -9500, "to": -8000, "priority": 1 },
-      { "from": 1994, "priority": 4 }
+      {
+        "from": -9500,
+        "to": -8000,
+        "priority": 1
+      },
+      {
+        "from": 1994,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "lascaux",
     "name": "Lascaux",
     "kind": "site",
-    "pos": [1.1677, 45.049],
+    "pos": [
+      1.1677,
+      45.049
+    ],
     "note": "Ice Age painted caves",
     "eras": [
-      { "from": -15000, "to": -10000, "priority": 2 },
-      { "from": 1940, "priority": 4 }
+      {
+        "from": -15000,
+        "to": -10000,
+        "priority": 2
+      },
+      {
+        "from": 1940,
+        "priority": 4
+      }
     ]
   },
   {
     "id": "great-zimbabwe",
     "name": "Great Zimbabwe",
     "kind": "site",
-    "pos": [30.9344, -20.2675],
+    "pos": [
+      30.9344,
+      -20.2675
+    ],
     "note": "Stone capital of a gold-trading kingdom",
     "eras": [
-      { "from": 1100, "to": 1450, "priority": 2 },
-      { "from": 1450, "priority": 5 }
+      {
+        "from": 1100,
+        "to": 1450,
+        "priority": 2
+      },
+      {
+        "from": 1450,
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "id": "cairo",
+    "name": "Cairo",
+    "kind": "city",
+    "pos": [
+      31.2357,
+      30.0444
+    ],
+    "note": "Capital of Egypt since the Fatimids",
+    "eras": [
+      {
+        "from": 641,
+        "to": 969,
+        "priority": 3,
+        "name": "Fustat"
+      },
+      {
+        "from": 969,
+        "to": 1517,
+        "priority": 1
+      },
+      {
+        "from": 1517,
+        "to": 1798,
+        "priority": 3
+      },
+      {
+        "from": 1798,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "id": "damascus",
+    "name": "Damascus",
+    "kind": "city",
+    "pos": [
+      36.2765,
+      33.5138
+    ],
+    "note": "Among the oldest continuously inhabited cities",
+    "eras": [
+      {
+        "from": -2000,
+        "to": 661,
+        "priority": 3
+      },
+      {
+        "from": 661,
+        "to": 750,
+        "priority": 1
+      },
+      {
+        "from": 750,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "mecca",
+    "name": "Mecca",
+    "kind": "city",
+    "pos": [
+      39.8579,
+      21.3891
+    ],
+    "note": "Birthplace of Islam and goal of the hajj",
+    "eras": [
+      {
+        "from": -400,
+        "to": 622,
+        "priority": 4
+      },
+      {
+        "from": 622,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "id": "delhi",
+    "name": "Delhi",
+    "kind": "city",
+    "pos": [
+      77.23,
+      28.61
+    ],
+    "note": "Seat of the Sultanate, the Mughals and modern India",
+    "eras": [
+      {
+        "from": 1206,
+        "to": 1526,
+        "priority": 2
+      },
+      {
+        "from": 1526,
+        "to": 1857,
+        "priority": 2
+      },
+      {
+        "from": 1857,
+        "to": 1911,
+        "priority": 4
+      },
+      {
+        "from": 1911,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "id": "tokyo",
+    "name": "Tokyo",
+    "kind": "city",
+    "pos": [
+      139.6917,
+      35.6895
+    ],
+    "note": "Edo: the shogun's capital, renamed in 1868",
+    "eras": [
+      {
+        "from": 1457,
+        "to": 1603,
+        "priority": 4,
+        "name": "Edo"
+      },
+      {
+        "from": 1603,
+        "to": 1868,
+        "priority": 1,
+        "name": "Edo"
+      },
+      {
+        "from": 1868,
+        "priority": 1
+      }
+    ]
+  },
+  {
+    "id": "nanjing",
+    "name": "Nanjing",
+    "kind": "city",
+    "pos": [
+      118.7969,
+      32.0603
+    ],
+    "note": "Southern capital of six dynasties and the early Ming",
+    "eras": [
+      {
+        "from": 229,
+        "to": 589,
+        "priority": 2,
+        "name": "Jiankang"
+      },
+      {
+        "from": 1368,
+        "to": 1421,
+        "priority": 1
+      },
+      {
+        "from": 1421,
+        "to": 1912,
+        "priority": 3
+      },
+      {
+        "from": 1912,
+        "to": 1949,
+        "priority": 2
+      },
+      {
+        "from": 1949,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "hangzhou",
+    "name": "Hangzhou",
+    "kind": "city",
+    "pos": [
+      120.1551,
+      30.2741
+    ],
+    "note": "The Southern Song capital Marco Polo called the world's finest city",
+    "eras": [
+      {
+        "from": 1127,
+        "to": 1276,
+        "priority": 1,
+        "name": "Lin'an"
+      },
+      {
+        "from": 1276,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "karakorum",
+    "name": "Karakorum",
+    "kind": "city",
+    "pos": [
+      102.8456,
+      47.1975
+    ],
+    "note": "Capital of the Mongol Empire under Ögedei",
+    "eras": [
+      {
+        "from": 1235,
+        "to": 1260,
+        "priority": 1
+      },
+      {
+        "from": 1260,
+        "to": 1388,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "isfahan",
+    "name": "Isfahan",
+    "kind": "city",
+    "pos": [
+      51.6676,
+      32.6546
+    ],
+    "note": "The Safavid capital: 'Isfahan is half the world'",
+    "eras": [
+      {
+        "from": 1050,
+        "to": 1220,
+        "priority": 3
+      },
+      {
+        "from": 1598,
+        "to": 1722,
+        "priority": 1
+      },
+      {
+        "from": 1722,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "cordoba",
+    "name": "Córdoba",
+    "kind": "city",
+    "pos": [
+      -4.7794,
+      37.8882
+    ],
+    "note": "Umayyad capital of al-Andalus",
+    "eras": [
+      {
+        "from": 756,
+        "to": 1031,
+        "priority": 1
+      },
+      {
+        "from": 1031,
+        "to": 1236,
+        "priority": 3
+      },
+      {
+        "from": 1236,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "granada-city",
+    "name": "Granada",
+    "kind": "city",
+    "pos": [
+      -3.5986,
+      37.1773
+    ],
+    "note": "Last Muslim kingdom of Iberia, and the Alhambra",
+    "eras": [
+      {
+        "from": 1238,
+        "to": 1492,
+        "priority": 2
+      },
+      {
+        "from": 1492,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "kiev",
+    "name": "Kyiv",
+    "kind": "city",
+    "pos": [
+      30.5234,
+      50.4501
+    ],
+    "note": "Mother of Rus' cities on the Dnieper",
+    "eras": [
+      {
+        "from": 882,
+        "to": 1240,
+        "priority": 2,
+        "name": "Kiev"
+      },
+      {
+        "from": 1240,
+        "to": 1917,
+        "priority": 4,
+        "name": "Kiev"
+      },
+      {
+        "from": 1917,
+        "to": 1991,
+        "priority": 3,
+        "name": "Kiev"
+      },
+      {
+        "from": 1991,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "id": "tikal",
+    "name": "Tikal",
+    "kind": "city",
+    "pos": [
+      -89.6237,
+      17.2221
+    ],
+    "note": "Great Maya city of the Petén lowlands",
+    "eras": [
+      {
+        "from": 200,
+        "to": 900,
+        "priority": 2
+      },
+      {
+        "from": 900,
+        "to": 950,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "teotihuacan",
+    "name": "Teotihuacan",
+    "kind": "city",
+    "pos": [
+      -98.8438,
+      19.6925
+    ],
+    "note": "Metropolis of the Valley of Mexico; its builders are unnamed",
+    "eras": [
+      {
+        "from": -100,
+        "to": 550,
+        "priority": 1
+      },
+      {
+        "from": 550,
+        "to": 750,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "memphis-egypt",
+    "name": "Memphis",
+    "kind": "city",
+    "pos": [
+      31.2544,
+      29.8442
+    ],
+    "note": "First capital of unified Egypt",
+    "eras": [
+      {
+        "from": -3100,
+        "to": -2181,
+        "priority": 1
+      },
+      {
+        "from": -2181,
+        "to": -332,
+        "priority": 3
+      },
+      {
+        "from": -332,
+        "to": 640,
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "id": "nineveh",
+    "name": "Nineveh",
+    "kind": "city",
+    "pos": [
+      43.1567,
+      36.359
+    ],
+    "note": "Assyrian capital, destroyed in 612 BCE",
+    "eras": [
+      {
+        "from": -1800,
+        "to": -700,
+        "priority": 4
+      },
+      {
+        "from": -700,
+        "to": -612,
+        "priority": 1
+      }
+    ]
+  },
+  {
+    "id": "ur",
+    "name": "Ur",
+    "kind": "city",
+    "pos": [
+      46.103,
+      30.9626
+    ],
+    "note": "Sumerian city of the ziggurat and the royal tombs",
+    "eras": [
+      {
+        "from": -3800,
+        "to": -2112,
+        "priority": 3
+      },
+      {
+        "from": -2112,
+        "to": -2004,
+        "priority": 1
+      },
+      {
+        "from": -2004,
+        "to": -500,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "mohenjo-daro",
+    "name": "Mohenjo-daro",
+    "kind": "city",
+    "pos": [
+      68.1375,
+      27.3243
+    ],
+    "note": "Largest city of the Indus civilisation",
+    "eras": [
+      {
+        "from": -2600,
+        "to": -1900,
+        "priority": 1
+      }
+    ]
+  },
+  {
+    "id": "luoyang",
+    "name": "Luoyang",
+    "kind": "city",
+    "pos": [
+      112.454,
+      34.6197
+    ],
+    "note": "Eastern capital of nine Chinese dynasties",
+    "eras": [
+      {
+        "from": -770,
+        "to": -256,
+        "priority": 2
+      },
+      {
+        "from": 25,
+        "to": 220,
+        "priority": 1
+      },
+      {
+        "from": 220,
+        "to": 907,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "axum",
+    "name": "Axum",
+    "kind": "city",
+    "pos": [
+      38.7241,
+      14.1211
+    ],
+    "note": "Capital of the Aksumite trading empire",
+    "eras": [
+      {
+        "from": 100,
+        "to": 700,
+        "priority": 2
+      },
+      {
+        "from": 700,
+        "to": 940,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "cape-town",
+    "name": "Cape Town",
+    "kind": "city",
+    "pos": [
+      18.4241,
+      -33.9249
+    ],
+    "note": "The Dutch victualling station at the Cape",
+    "eras": [
+      {
+        "from": 1652,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "sydney",
+    "name": "Sydney",
+    "kind": "city",
+    "pos": [
+      151.2093,
+      -33.8688
+    ],
+    "note": "First European settlement in Australia, 1788",
+    "eras": [
+      {
+        "from": 1788,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "rio-de-janeiro",
+    "name": "Rio de Janeiro",
+    "kind": "city",
+    "pos": [
+      -43.1729,
+      -22.9068
+    ],
+    "note": "Capital of colonial and imperial Brazil",
+    "eras": [
+      {
+        "from": 1565,
+        "to": 1763,
+        "priority": 4
+      },
+      {
+        "from": 1763,
+        "to": 1960,
+        "priority": 2
+      },
+      {
+        "from": 1960,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "chichen-itza",
+    "name": "Chichén Itzá",
+    "kind": "city",
+    "pos": [
+      -88.5678,
+      20.6843
+    ],
+    "note": "Maya-Toltec city of the sacred cenote",
+    "eras": [
+      {
+        "from": 600,
+        "to": 1250,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "id": "lhasa",
+    "name": "Lhasa",
+    "kind": "city",
+    "pos": [
+      91.1409,
+      29.6456
+    ],
+    "note": "Seat of the Tibetan kings and the Dalai Lamas",
+    "eras": [
+      {
+        "from": 633,
+        "to": 842,
+        "priority": 2
+      },
+      {
+        "from": 842,
+        "to": 1642,
+        "priority": 4
+      },
+      {
+        "from": 1642,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "seoul",
+    "name": "Seoul",
+    "kind": "city",
+    "pos": [
+      126.978,
+      37.5665
+    ],
+    "note": "Capital of Korea since the Joseon founding",
+    "eras": [
+      {
+        "from": 1394,
+        "to": 1897,
+        "priority": 2,
+        "name": "Hanseong"
+      },
+      {
+        "from": 1897,
+        "to": 1948,
+        "priority": 3
+      },
+      {
+        "from": 1948,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "id": "washington-dc",
+    "name": "Washington",
+    "kind": "city",
+    "pos": [
+      -77.0369,
+      38.9072
+    ],
+    "note": "The planned capital of the United States",
+    "eras": [
+      {
+        "from": 1800,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "id": "st-petersburg",
+    "name": "Saint Petersburg",
+    "kind": "city",
+    "pos": [
+      30.3351,
+      59.9343
+    ],
+    "note": "Peter's window on the West, capital of the Russian Empire",
+    "eras": [
+      {
+        "from": 1703,
+        "to": 1914,
+        "priority": 1
+      },
+      {
+        "from": 1914,
+        "to": 1924,
+        "priority": 2,
+        "name": "Petrograd"
+      },
+      {
+        "from": 1924,
+        "to": 1991,
+        "priority": 3,
+        "name": "Leningrad"
+      },
+      {
+        "from": 1991,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "vienna",
+    "name": "Vienna",
+    "kind": "city",
+    "pos": [
+      16.3738,
+      48.2082
+    ],
+    "note": "Habsburg capital, twice besieged by the Ottomans",
+    "eras": [
+      {
+        "from": 1155,
+        "to": 1278,
+        "priority": 4
+      },
+      {
+        "from": 1278,
+        "to": 1918,
+        "priority": 2
+      },
+      {
+        "from": 1918,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "amsterdam",
+    "name": "Amsterdam",
+    "kind": "city",
+    "pos": [
+      4.9041,
+      52.3676
+    ],
+    "note": "Entrepôt of the Dutch Golden Age",
+    "eras": [
+      {
+        "from": 1300,
+        "to": 1585,
+        "priority": 4
+      },
+      {
+        "from": 1585,
+        "to": 1795,
+        "priority": 2
+      },
+      {
+        "from": 1795,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "singapore",
+    "name": "Singapore",
+    "kind": "city",
+    "pos": [
+      103.8198,
+      1.3521
+    ],
+    "note": "Free port at the tip of the Malay peninsula",
+    "eras": [
+      {
+        "from": 1819,
+        "to": 1942,
+        "priority": 3
+      },
+      {
+        "from": 1942,
+        "to": 1945,
+        "priority": 2
+      },
+      {
+        "from": 1945,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "id": "carcassonne",
+    "name": "Carcassonne",
+    "kind": "fortress",
+    "pos": [
+      2.3637,
+      43.2119
+    ],
+    "note": "Double-walled city guarding the Aude corridor",
+    "eras": [
+      {
+        "from": 1130,
+        "to": 1659,
+        "priority": 3
+      },
+      {
+        "from": 1659,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "edinburgh-castle",
+    "name": "Edinburgh Castle",
+    "kind": "fortress",
+    "pos": [
+      -3.1999,
+      55.9486
+    ],
+    "note": "Stronghold on the rock above the Scottish capital",
+    "eras": [
+      {
+        "from": 1100,
+        "to": 1707,
+        "priority": 3
+      },
+      {
+        "from": 1707,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "tower-of-london",
+    "name": "Tower of London",
+    "kind": "fortress",
+    "pos": [
+      -0.0761,
+      51.5081
+    ],
+    "note": "The Conqueror's keep, arsenal and state prison",
+    "eras": [
+      {
+        "from": 1078,
+        "to": 1600,
+        "priority": 3
+      },
+      {
+        "from": 1600,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "rhodes",
+    "name": "Rhodes",
+    "kind": "fortress",
+    "pos": [
+      28.2278,
+      36.4467
+    ],
+    "note": "Fortress-harbour of the Knights Hospitaller",
+    "eras": [
+      {
+        "from": 1310,
+        "to": 1522,
+        "priority": 2
+      },
+      {
+        "from": 1522,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "malbork",
+    "name": "Malbork",
+    "kind": "fortress",
+    "pos": [
+      19.028,
+      54.0397
+    ],
+    "note": "Brick headquarters of the Teutonic Order",
+    "eras": [
+      {
+        "from": 1309,
+        "to": 1457,
+        "priority": 2
+      },
+      {
+        "from": 1457,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "brest-fortress",
+    "name": "Brest Fortress",
+    "kind": "fortress",
+    "pos": [
+      23.6574,
+      52.0836
+    ],
+    "note": "Border citadel on the Bug, held a week in 1941",
+    "eras": [
+      {
+        "from": 1842,
+        "to": 1941,
+        "priority": 4
+      },
+      {
+        "from": 1941,
+        "to": 1945,
+        "priority": 1
+      },
+      {
+        "from": 1945,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "golconda",
+    "name": "Golconda",
+    "kind": "fortress",
+    "pos": [
+      78.4011,
+      17.3833
+    ],
+    "note": "Deccan diamond-market fortress",
+    "eras": [
+      {
+        "from": 1518,
+        "to": 1687,
+        "priority": 3
+      },
+      {
+        "from": 1687,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "louisbourg",
+    "name": "Louisbourg",
+    "kind": "fortress",
+    "pos": [
+      -59.9852,
+      45.892
+    ],
+    "note": "French fortress commanding the Gulf of St Lawrence",
+    "eras": [
+      {
+        "from": 1713,
+        "to": 1758,
+        "priority": 3
+      },
+      {
+        "from": 1758,
+        "to": 1760,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "osaka-castle",
+    "name": "Osaka Castle",
+    "kind": "fortress",
+    "pos": [
+      135.5262,
+      34.6873
+    ],
+    "note": "Hideyoshi's great keep, twice besieged in 1614-15",
+    "eras": [
+      {
+        "from": 1583,
+        "to": 1615,
+        "priority": 2
+      },
+      {
+        "from": 1615,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "przemysl",
+    "name": "Przemyśl",
+    "kind": "fortress",
+    "pos": [
+      22.7684,
+      49.7838
+    ],
+    "note": "Austrian ring fortress, besieged half a year in 1914-15",
+    "eras": [
+      {
+        "from": 1873,
+        "to": 1914,
+        "priority": 5
+      },
+      {
+        "from": 1914,
+        "to": 1916,
+        "priority": 1
+      },
+      {
+        "from": 1916,
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "id": "fort-sumter",
+    "name": "Fort Sumter",
+    "kind": "fortress",
+    "pos": [
+      -79.8747,
+      32.7523
+    ],
+    "note": "Harbour fort where the American Civil War opened",
+    "eras": [
+      {
+        "from": 1829,
+        "to": 1861,
+        "priority": 5
+      },
+      {
+        "from": 1861,
+        "to": 1866,
+        "priority": 1
+      },
+      {
+        "from": 1866,
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "id": "fuji",
+    "name": "Mount Fuji",
+    "kind": "volcano",
+    "pos": [
+      138.7274,
+      35.3606
+    ],
+    "note": "Japan's sacred cone; last erupted 1707",
+    "eras": [
+      {
+        "from": -9999,
+        "to": 1707,
+        "priority": 4
+      },
+      {
+        "from": 1707,
+        "to": 1708,
+        "priority": 1
+      },
+      {
+        "from": 1708,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "etna",
+    "name": "Mount Etna",
+    "kind": "volcano",
+    "pos": [
+      14.9955,
+      37.751
+    ],
+    "note": "The most active volcano in Europe",
+    "eras": [
+      {
+        "from": -9999,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "pinatubo",
+    "name": "Pinatubo",
+    "kind": "volcano",
+    "pos": [
+      120.3496,
+      15.1429
+    ],
+    "note": "Its 1991 eruption cooled the planet half a degree",
+    "eras": [
+      {
+        "from": -9999,
+        "to": 1991,
+        "priority": 5
+      },
+      {
+        "from": 1991,
+        "to": 1992,
+        "priority": 1
+      },
+      {
+        "from": 1992,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "mount-st-helens",
+    "name": "Mount St Helens",
+    "kind": "volcano",
+    "pos": [
+      -122.1944,
+      46.1914
+    ],
+    "note": "Blew its north face off in May 1980",
+    "eras": [
+      {
+        "from": -9999,
+        "to": 1980,
+        "priority": 5
+      },
+      {
+        "from": 1980,
+        "to": 1981,
+        "priority": 1
+      },
+      {
+        "from": 1981,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "pelee",
+    "name": "Mont Pelée",
+    "kind": "volcano",
+    "pos": [
+      -61.1652,
+      14.8097
+    ],
+    "note": "Destroyed Saint-Pierre in minutes, 1902",
+    "eras": [
+      {
+        "from": -9999,
+        "to": 1902,
+        "priority": 5
+      },
+      {
+        "from": 1902,
+        "to": 1903,
+        "priority": 1
+      },
+      {
+        "from": 1903,
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "id": "ararat",
+    "name": "Mount Ararat",
+    "kind": "mountain",
+    "pos": [
+      44.2975,
+      39.702
+    ],
+    "note": "The mountain of the Ark, on the old Armenian highland",
+    "eras": [
+      {
+        "from": -9999,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "sinai",
+    "name": "Mount Sinai",
+    "kind": "mountain",
+    "pos": [
+      33.9744,
+      28.5394
+    ],
+    "note": "The mountain of the Law",
+    "eras": [
+      {
+        "from": -9999,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "matterhorn",
+    "name": "Matterhorn",
+    "kind": "mountain",
+    "pos": [
+      7.6583,
+      45.9766
+    ],
+    "note": "First climbed, at the cost of four lives, in 1865",
+    "eras": [
+      {
+        "from": -9999,
+        "to": 1865,
+        "priority": 5
+      },
+      {
+        "from": 1865,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "khyber-pass",
+    "name": "Khyber Pass",
+    "kind": "pass",
+    "pos": [
+      71.0761,
+      34.0776
+    ],
+    "note": "The invasion road between Central Asia and India",
+    "eras": [
+      {
+        "from": -9999,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "thermopylae",
+    "name": "Thermopylae",
+    "kind": "pass",
+    "pos": [
+      22.5372,
+      38.796
+    ],
+    "note": "The hot gates between mountain and sea",
+    "eras": [
+      {
+        "from": -9999,
+        "to": -480,
+        "priority": 4
+      },
+      {
+        "from": -480,
+        "to": -479,
+        "priority": 1
+      },
+      {
+        "from": -479,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "roncevaux",
+    "name": "Roncevaux Pass",
+    "kind": "pass",
+    "pos": [
+      -1.3211,
+      43.0202
+    ],
+    "note": "Where Charlemagne's rearguard and Roland fell, 778",
+    "eras": [
+      {
+        "from": -9999,
+        "to": 778,
+        "priority": 5
+      },
+      {
+        "from": 778,
+        "to": 779,
+        "priority": 2
+      },
+      {
+        "from": 779,
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "id": "brenner",
+    "name": "Brenner Pass",
+    "kind": "pass",
+    "pos": [
+      11.5061,
+      47.0022
+    ],
+    "note": "The lowest road over the main Alpine chain",
+    "eras": [
+      {
+        "from": -9999,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "strait-of-dover",
+    "name": "Strait of Dover",
+    "kind": "strait",
+    "pos": [
+      1.4,
+      51.0
+    ],
+    "note": "The narrow sea between England and the Continent",
+    "eras": [
+      {
+        "from": -9999,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "strait-of-magellan",
+    "name": "Strait of Magellan",
+    "kind": "strait",
+    "pos": [
+      -70.7869,
+      -53.4667
+    ],
+    "note": "The passage between the oceans, threaded in 1520",
+    "eras": [
+      {
+        "from": 1520,
+        "to": 1914,
+        "priority": 2
+      },
+      {
+        "from": 1914,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "tsushima-strait",
+    "name": "Tsushima Strait",
+    "kind": "strait",
+    "pos": [
+      129.5,
+      34.3
+    ],
+    "note": "Where the Mongol fleets and the Russian Baltic Fleet came to grief",
+    "eras": [
+      {
+        "from": -9999,
+        "to": 1905,
+        "priority": 4
+      },
+      {
+        "from": 1905,
+        "to": 1906,
+        "priority": 1
+      },
+      {
+        "from": 1906,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "bering-strait",
+    "name": "Bering Strait",
+    "kind": "strait",
+    "pos": [
+      -168.9,
+      65.7
+    ],
+    "note": "The gap - once a land bridge - between Asia and America",
+    "eras": [
+      {
+        "from": -9999,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "pompeii",
+    "name": "Pompeii",
+    "kind": "site",
+    "pos": [
+      14.4989,
+      40.7462
+    ],
+    "note": "Buried by Vesuvius in 79, unearthed since 1748",
+    "eras": [
+      {
+        "from": -700,
+        "to": 79,
+        "priority": 3
+      },
+      {
+        "from": 79,
+        "to": 1748,
+        "priority": 5
+      },
+      {
+        "from": 1748,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "troy",
+    "name": "Troy",
+    "kind": "site",
+    "pos": [
+      26.2389,
+      39.9576
+    ],
+    "note": "The mound of Hisarlik, city of the Iliad",
+    "eras": [
+      {
+        "from": -3000,
+        "to": -1180,
+        "priority": 2
+      },
+      {
+        "from": -1180,
+        "to": 500,
+        "priority": 4
+      },
+      {
+        "from": 1871,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "olympia",
+    "name": "Olympia",
+    "kind": "site",
+    "pos": [
+      21.63,
+      37.6384
+    ],
+    "note": "Sanctuary of Zeus and home of the ancient games",
+    "eras": [
+      {
+        "from": -776,
+        "to": 393,
+        "priority": 2
+      },
+      {
+        "from": 393,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "delphi",
+    "name": "Delphi",
+    "kind": "site",
+    "pos": [
+      22.501,
+      38.4824
+    ],
+    "note": "The oracle at the navel of the Greek world",
+    "eras": [
+      {
+        "from": -800,
+        "to": 390,
+        "priority": 2
+      },
+      {
+        "from": 390,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "borobudur",
+    "name": "Borobudur",
+    "kind": "site",
+    "pos": [
+      110.2038,
+      -7.6079
+    ],
+    "note": "The mountain-mandala of Javanese Buddhism",
+    "eras": [
+      {
+        "from": 778,
+        "to": 930,
+        "priority": 2
+      },
+      {
+        "from": 930,
+        "to": 1815,
+        "priority": 5
+      },
+      {
+        "from": 1815,
+        "priority": 3
+      }
+    ]
+  },
+  {
+    "id": "nazca-lines",
+    "name": "Nazca Lines",
+    "kind": "site",
+    "pos": [
+      -75.13,
+      -14.739
+    ],
+    "note": "Desert figures drawn to be seen from above",
+    "eras": [
+      {
+        "from": -500,
+        "to": 650,
+        "priority": 3
+      },
+      {
+        "from": 650,
+        "priority": 4
+      }
+    ]
+  },
+  {
+    "id": "mesa-verde",
+    "name": "Mesa Verde",
+    "kind": "site",
+    "pos": [
+      -108.4618,
+      37.2309
+    ],
+    "note": "Cliff palaces of the Ancestral Puebloans",
+    "eras": [
+      {
+        "from": 600,
+        "to": 1300,
+        "priority": 3
+      },
+      {
+        "from": 1300,
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "id": "nalanda",
+    "name": "Nalanda",
+    "kind": "site",
+    "pos": [
+      85.4437,
+      25.1367
+    ],
+    "note": "The great Buddhist university of eastern India",
+    "eras": [
+      {
+        "from": 427,
+        "to": 1200,
+        "priority": 2
+      },
+      {
+        "from": 1200,
+        "priority": 5
+      }
     ]
   }
 ]

@@ -884,6 +884,78 @@
      ],
      "at": "overview",
      "label": "Panmunjom 1953"
+    },
+    {
+     "type": "thrust",
+     "width": 0.14,
+     "at": "overview",
+     "color": "#e5484d",
+     "label": "North Korean invasion, June 1950",
+     "path": [
+      [
+       126.85,
+       38.35
+      ],
+      [
+       127.1,
+       37.6
+      ],
+      [
+       127.6,
+       36.5
+      ],
+      [
+       128.55,
+       35.55
+      ]
+     ]
+    },
+    {
+     "type": "thrust",
+     "width": 0.16,
+     "at": "overview",
+     "color": "#ff8a4c",
+     "label": "Chinese intervention, from October 1950",
+     "strength": "300,000",
+     "path": [
+      [
+       125.3,
+       40.45
+      ],
+      [
+       125.9,
+       39.55
+      ],
+      [
+       126.5,
+       38.6
+      ],
+      [
+       126.95,
+       37.85
+      ]
+     ]
+    },
+    {
+     "type": "thrust",
+     "width": 0.09,
+     "at": "overview",
+     "color": "#4c8dff",
+     "label": "Inchon, 15 September 1950",
+     "path": [
+      [
+       125.9,
+       37.2
+      ],
+      [
+       126.3,
+       37.35
+      ],
+      [
+       126.58,
+       37.45
+      ]
+     ]
     }
    ]
   }
